@@ -61,8 +61,8 @@ create_site <- function(input, check = TRUE) {
 }
 
 #' Modify a reference `data.frame`
-#' 
-#' Wrapper around `modifyList` to allow expanding a `data.frame` by modifying 
+#'
+#' Wrapper around `modifyList` to allow expanding a `data.frame` by modifying
 #' only a single column.
 #'
 #' @param input Named `list` or `data.frame` containing columns to replace in `base`

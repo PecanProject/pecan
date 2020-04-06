@@ -5,10 +5,10 @@
 #' @param path_prefix Full path and prefix to initial condition files.
 #' @param latitude Run latitude (default = `NULL`). If `NULL`, deduced from file name.
 #' @param longitude Run longitude (default = `NULL`). If `NULL`, deduced from file name.
-#' @param check Whether or not to check css, pss, and site files for validity.  
+#' @param check Whether or not to check css, pss, and site files for validity.
 #' Default = `TRUE`.
-#' @return List containing `css`, `pss`, and `site` objects, `latitude` and 
-#' `longitude`, and `orig_paths`, a list of paths to the original `css`, `pss`, 
+#' @return List containing `css`, `pss`, and `site` objects, `latitude` and
+#' `longitude`, and `orig_paths`, a list of paths to the original `css`, `pss`,
 #' and `site` files.
 #' @export
 read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
@@ -65,12 +65,12 @@ read_ed_veg <- function(path_prefix, latitude = NULL, longitude = NULL,
 
 #' Parse latitude or longitude
 #'
-#' Automatically determine latitude or longitude from an ED input filepath. If 
-#' the latitude/longitude regular expression isn't matched, this will throw an 
+#' Automatically determine latitude or longitude from an ED input filepath. If
+#' the latitude/longitude regular expression isn't matched, this will throw an
 #' error.
 #'
 #' @param filepath Path to a css, pss, or site file
-#' @param latlon Which value to retrieve, either "lat" for latitude or "lon" 
+#' @param latlon Which value to retrieve, either "lat" for latitude or "lon"
 #' for longitude
 #' @return Numeric value of latitude or longitude
 get_latlon <- function(filepath, latlon) {
@@ -124,4 +124,3 @@ read_site <- function(filepath, check = TRUE, ...) {
   }
   site
 }
-

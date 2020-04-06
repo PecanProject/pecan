@@ -1,14 +1,14 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
 .datatable.aware <- TRUE
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' Converts a met CF file to a model specific met file. The input
 ##' files are called <in.path>/<in.prefix>.YYYY.cf
 ##'
@@ -24,52 +24,60 @@
 ##' @return a dataframe of information about the written file
 ##' @export
 ##' @author Rob Kooper, David LeBauer
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
                              lat, lon, start_date, end_date, ...) {
-  start_date <- lubridate::parse_date_time(start_date, tz = "UTC",
-                                           orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd"))
-  end_date <- lubridate::parse_date_time(end_date, tz = "UTC",
-                                           orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd"))
+  start_date <- lubridate::parse_date_time(start_date,
+    tz = "UTC",
+    orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd")
+  )
+  end_date <- lubridate::parse_date_time(end_date,
+    tz = "UTC",
+    orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd")
+  )
   dir.create(file.path(outfolder), recursive = TRUE, showWarnings = FALSE)
   years_wanted <- lubridate::year(start_date):lubridate::year(end_date)
 
   res <- list()
   for (year in years_wanted) {
-    yrstart = max(lubridate::date(start_date), lubridate::ymd(paste0(year, "-01-01")))
-    yrend = min(lubridate::date(end_date), lubridate::ymd(paste0(year, "-12-31")))
+    yrstart <- max(lubridate::date(start_date), lubridate::ymd(paste0(year, "-01-01")))
+    yrend <- min(lubridate::date(end_date), lubridate::ymd(paste0(year, "-12-31")))
 
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     csvfile <- file.path(outfolder, paste(in.prefix, year, "csv", sep = "."))
 
-    if (file.exists(csvfile) && as.logical(overwrite) != TRUE){
+    if (file.exists(csvfile) && as.logical(overwrite) != TRUE) {
       PEcAn.logger::logger.warn(paste("Output file", csvfile, "already exists! Moving to next year."))
       next
     }
 
     met.nc <- ncdf4::nc_open(ncfile)
     on.exit(close_nc_if_open(met.nc), add = FALSE)
-      # add = FALSE because any previous file was closed at end of prev. loop
+    # add = FALSE because any previous file was closed at end of prev. loop
 
     dt <- mean(diff(udunits2::ud.convert(
       met.nc$dim$time$vals,
       met.nc$dim$time$units,
-      "hours since 1700-01-01 00:00:00")))
+      "hours since 1700-01-01 00:00:00"
+    )))
     if (dt < 1) {
       # More than one obs/hour. Write upscaled hourly file and reload.
       ncdf4::nc_close(met.nc)
 
       upscale_result <- PEcAn.data.atmosphere::upscale_met(
         outfolder = outfolder, input_met = ncfile,
-        site.id = in.prefix, resolution = 1/24,
-        overwrite = overwrite)
+        site.id = in.prefix, resolution = 1 / 24,
+        overwrite = overwrite
+      )
 
       met.nc <- ncdf4::nc_open(upscale_result$file)
     }
 
     tmp.met <- PEcAn.data.atmosphere::load.cfmet(
-      met.nc, lat = lat, lon = lon,
-      start.date = yrstart, end.date = yrend)
+      met.nc,
+      lat = lat, lon = lon,
+      start.date = yrstart, end.date = yrend
+    )
 
     # NB we need this nc_close even though on.exit is set:
     # close here to avoid leaking filehandle at end of loop iteration,
@@ -93,15 +101,16 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
       startdate = yrstart,
       enddate = yrend,
       dbfile.name = in.prefix,
-      stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
   }
 
   result <- do.call("rbind", res)
   return(result)
-}  # met2model.BIOCRO
+} # met2model.BIOCRO
 
 
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' Converts a CF data frame into a BioCro met input
 ##'
 ##' @name cf2biocro
@@ -141,9 +150,8 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
-
   if ((!is.null(longitude)) & zulu2solarnoon) {
-    solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
+    solarnoon_offset <- udunits2::ud.convert(longitude / 360, "day", "minute")
     met[, `:=`(solardate = met$date + lubridate::minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
@@ -151,11 +159,14 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
       rh <- PEcAn.data.atmosphere::qair2rh(
         qair = met$specific_humidity,
         temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
-        press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
+        press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa")
+      )
       met[, `:=`(relative_humidity = rh)]
     } else {
-      PEcAn.logger::logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
-                   "are in met data")
+      PEcAn.logger::logger.error(
+        "neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]",
+        "are in met data"
+      )
     }
   }
   if (!"ppfd" %in% colnames(met)) {
@@ -175,19 +186,21 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
       PEcAn.logger::logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
     }
   }
-  
+
   ## Convert RH from percent to fraction BioCro functions just to confirm
   if (max(met$relative_humidity) > 1) {
-    met[, `:=`(relative_humidity = met$relative_humidity/100)]
+    met[, `:=`(relative_humidity = met$relative_humidity / 100)]
   }
-  newmet <- met[, list(year = lubridate::year(met$date),
-                       doy = lubridate::yday(met$date),
-                       hour = round(lubridate::hour(met$date) + lubridate::minute(met$date) / 60, 0),
-                       solar = ppfd,
-                       Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
-                       RH = met$relative_humidity,
-                       windspeed = wind_speed,
-                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))]
-  newmet <- newmet[newmet$hour <= 23,]
+  newmet <- met[, list(
+    year = lubridate::year(met$date),
+    doy = lubridate::yday(met$date),
+    hour = round(lubridate::hour(met$date) + lubridate::minute(met$date) / 60, 0),
+    solar = ppfd,
+    Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+    RH = met$relative_humidity,
+    windspeed = wind_speed,
+    precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1")
+  )]
+  newmet <- newmet[newmet$hour <= 23, ]
   return(as.data.frame(newmet))
-}  # cf2biocro
+} # cf2biocro

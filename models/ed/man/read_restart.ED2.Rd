@@ -24,11 +24,11 @@ State data assimilation read-restart for ED2
 }
 \examples{
 \dontrun{
-  outdir <- "~/sda-hackathon/outputs"
-  runid <- "99000000020"
-  settings_file <- "outputs/pecan.CONFIGS.xml"
-  settings <- PEcAn.settings::read.settings(settings_file)
-  forecast <- read_restart.ED2(...)
+outdir <- "~/sda-hackathon/outputs"
+runid <- "99000000020"
+settings_file <- "outputs/pecan.CONFIGS.xml"
+settings <- PEcAn.settings::read.settings(settings_file)
+forecast <- read_restart.ED2(...)
 }
 
 }

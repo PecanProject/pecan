@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials 
+# All rights reserved. This program and the accompanying materials
 # are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
@@ -44,13 +44,13 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")) {
 ##' @name read.output.ED2
 ##' @param run.id the id distiguishing the model run
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
+##' @param start.year
 ##' @param end.year
 ##' @param output.type type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT
 ##' @return vector of output variable for all runs within ensemble
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-read.output.ED2 <- function(run.id, outdir, start.year = NA, end.year = NA, 
+read.output.ED2 <- function(run.id, outdir, start.year = NA, end.year = NA,
                             variables = c("AGB_CO", "NPLANT"), output.type = "Y") {
   print(run.id)
   # if(any(grep(run.id, dir(outdir, pattern = 'finished')))){
@@ -67,15 +67,14 @@ read.output.ED2 <- function(run.id, outdir, start.year = NA, end.year = NA,
     }
     file.names <- file.names[!is.na(file.names)]
     print(file.names)
-    
-    result <- mean(sapply(file.names, read.output.file.ed, variables))  ## if any are NA, NA is returned
-    
+
+    result <- mean(sapply(file.names, read.output.file.ed, variables)) ## if any are NA, NA is returned
   } else {
     warning(cat(paste("no output files in", outdir, "\nfor", run.id, "\n")))
     result <- NA
   }
   # } else { warning(cat(paste(run.id, 'not finished \n'))) result <- NA }
-  
+
   return(result)
 } # read.output.ED2
 # ==================================================================================================#
@@ -87,7 +86,7 @@ read.output.ED2 <- function(run.id, outdir, start.year = NA, end.year = NA,
 ##'
 ##' @name get.model.output.ED2
 ##' @title Retrieve ED2 HDF model output from local or remote server
-##' 
+##'
 ##' @import PEcAn.utils
 ##' @export
 ##'
@@ -95,46 +94,45 @@ read.output.ED2 <- function(run.id, outdir, start.year = NA, end.year = NA,
 ##' @author David LeBauer
 get.model.output.ED2 <- function(settings) {
   model <- settings$model$type
-  
+
   ### Get ED2 model output on the localhost
   if (settings$host$name == "localhost") {
     # setwd(settings$host$outdir) # Host model output directory
     get.results(settings)
     ### Move required functions to host TODO: take out functions read.output.file.ed & read.output.ed
     ### from write.configs.ed & put into a new file specific for reading ED output
-    
+
     ### Is the previous necessary for localhost?  These functions should be availible within R & should
     ### not need to be copied and run but could instead be called within the running R shell.  SPS
-    
+
     # setwd(settings$outdir) source('PEcAn.functions.R') # This won't work yet
-    
-    
   } else {
     ### Make a copy of the settings object for use on the remote sever
     save(settings, file = paste0(settings$outdir, "settings.Rdata"))
-    
+
     ### Make a copy of required functions and place in file PEcAn.functions.R
-    dump(c("get.run.id", "left.pad.zeros", "read.ensemble.output", 
-           "read.sa.output", "read.output", "model2netcdf.ED2", "get.results"), 
-         file = paste0(settings$outdir, "PEcAn.functions.R"))
-    
+    dump(c(
+      "get.run.id", "left.pad.zeros", "read.ensemble.output",
+      "read.sa.output", "read.output", "model2netcdf.ED2", "get.results"
+    ),
+    file = paste0(settings$outdir, "PEcAn.functions.R")
+    )
+
     ### Add execution of get.results to the end of the PEcAn.functions.R file This will execute all the
     ### code needed to extract output on remote host --- added loading of pecan settings object
     cat("load(\"settings.Rdata\")", file = paste0(settings$outdir, "PEcAn.functions.R"), append = TRUE)
     cat("\n", file = paste0(settings$outdir, "PEcAn.functions.R"), append = TRUE)
     cat("get.results(settings)", file = paste0(settings$outdir, "PEcAn.functions.R"), append = TRUE)
-    
+
     ### Copy required PEcAn.functions.R and settings object to remote host
     rsync("-outi", paste0(settings$outdir, "settings.Rdata"), paste0(settings$host$name, ":", settings$host$outdir))
     rsync("-outi", paste0(settings$outdir, "PEcAn.functions.R"), paste0(settings$host$name, ":", settings$host$outdir))
-    
+
     ### Run script on remote host
     system(paste("ssh -T", settings$host$name, "'", "cd", settings$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
-    
+
     ### Get PEcAn output from remote host
     rsync("-outi", from = paste0(settings$host$name, ":", settings$host$outdir, "output.Rdata"), to = settings$outdir)
-    
-  }  ### End of if/else
-  
+  } ### End of if/else
 } # get.model.output.ED2
 # ==================================================================================================#

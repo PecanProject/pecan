@@ -4,7 +4,7 @@
 #'
 #' @param ed_metheader ED meteorlogy header object (see [read_ed_metheader])
 #' @param filename Full file name (including path) of ED met header
-#' @param header_line Character string for top line of output file. Default is 
+#' @param header_line Character string for top line of output file. Default is
 #' `'header'`.
 #' @export
 write_ed_metheader <- function(ed_metheader, filename,

@@ -11,25 +11,25 @@
 #' @export
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
-
   start.date <- lubridate::date(config$run$start.date)
-  end.date   <- lubridate::date(config$run$end.date)
+  end.date <- lubridate::date(config$run$end.date)
   genus <- config$pft$type$genus
   years <- lubridate::year(start.date):lubridate::year(end.date)
 
   if (!is.null(soil.nc)) {
     soil <- PEcAn.data.land::get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
-    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, 
-                                              soil$usda_class, 
-                                              10)
+    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10,
+      soil$usda_class,
+      10
+    )
     config$pft$soilControl$soilDepth <- soil$ref_depth
   }
 
   if (coppice.interval > 1) {
-    config$pft$coppice.interval = coppice.interval
+    config$pft$coppice.interval <- coppice.interval
   }
 
-  if (utils::packageVersion('BioCro') >= 1.0) {
+  if (utils::packageVersion("BioCro") >= 1.0) {
     caller_fn <- call_biocro_1
   } else {
     caller_fn <- call_biocro_0.9
@@ -40,7 +40,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     metfile <- paste(metpath, yeari, "csv", sep = ".")
     WetDat <- data.table::fread(metfile)
-    if(!all(sapply(WetDat, is.numeric))){
+    if (!all(sapply(WetDat, is.numeric))) {
       PEcAn.logger::logger.severe("Format error in weather file: All columns must be numeric, but got (", sapply(WetDat, class), ")")
     }
 
@@ -52,8 +52,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       day1 <- lubridate::yday(config$simulationPeriod$dateofplanting)
       dayn <- lubridate::yday(config$simulationPeriod$dateofharvest)
     } else if (lat > 0) {
-      day1 <- max(WetDat[ (WetDat[,"doy"] < 180 & WetDat[,"Temp"] < -2), "doy"])
-      dayn <- min(WetDat[ (WetDat[,"doy"] > 180 & WetDat[,"Temp"] < -2), "doy"])
+      day1 <- max(WetDat[(WetDat[, "doy"] < 180 & WetDat[, "Temp"] < -2), "doy"])
+      dayn <- min(WetDat[(WetDat[, "doy"] > 180 & WetDat[, "Temp"] < -2), "doy"])
       ## day1 = last spring frost dayn = first fall frost from Miguez et al 2009
     } else {
       day1 <- NULL
@@ -61,7 +61,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     }
     WetDat <- WetDat[
       WetDat$doy >= max(day1, lubridate::yday(starti))
-      & WetDat$doy <= min(dayn, lubridate::yday(endi)), ]
+      & WetDat$doy <= min(dayn, lubridate::yday(endi)),
+    ]
 
     HarvestedYield <- 0
 
@@ -72,12 +73,14 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       config = config,
       lat = lat, lon = lon,
       tmp.result = tmp.result,
-      HarvestedYield = HarvestedYield)
+      HarvestedYield = HarvestedYield
+    )
 
     tmp.result <- call_result$tmp.result
     HarvestedYield <- call_result$HarvestedYield
 
-    result.yeari.hourly <- with(tmp.result,
+    result.yeari.hourly <- with(
+      tmp.result,
       data.table::data.table(
         year = yeari,
         doy, hour, ThermalT,
@@ -85,15 +88,19 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
         AboveLitter, BelowLitter,
         Rhizome, Grain, LAI,
         SoilEvaporation, CanopyTrans,
-        key = c("year", "doy", "hour")))
-    result.yeari.withmet <- merge(x = result.yeari.hourly,
-                                  y = WetDat, by = c("year", "doy", "hour"))
+        key = c("year", "doy", "hour")
+      )
+    )
+    result.yeari.withmet <- merge(
+      x = result.yeari.hourly,
+      y = WetDat, by = c("year", "doy", "hour")
+    )
     hourly.results[[i]] <- result.yeari.withmet
   }
 
-  
+
   hourly.results <- do.call("rbind", hourly.results)
-  hourly.results <- hourly.results[order(hourly.results$year, hourly.results$doy, hourly.results$hour),]
+  hourly.results <- hourly.results[order(hourly.results$year, hourly.results$doy, hourly.results$hour), ]
 
   # Compute daily and yearly results by taking max or sum as appropriate.
   # This notation could be more compact if we used nonstandard evaluation
@@ -104,49 +111,68 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
-                "Rhizome", "Grain", "LAI", tmax = "Temp"),
-      .fun = max),
+        "Rhizome", "Grain", "LAI",
+        tmax = "Temp"
+      ),
+      .fun = max
+    ),
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c("SoilEvaporation", "CanopyTrans", "precip"),
-      .fun = sum),
+      .fun = sum
+    ),
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c(tmin = "Temp"),
-      .fun = min),
+      .fun = min
+    ),
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c(tavg = "Temp"),
-      .fun = mean))
+      .fun = mean
+    )
+  )
   # bind_cols on 4 tables leaves 3 sets of duplicate year and day columns.
   # Let's drop these.
-  col_order <- c("year", "doy", "Stem", "Leaf", "Root",
-                 "AboveLitter", "BelowLitter", "Rhizome",
-                 "SoilEvaporation", "CanopyTrans", "Grain", "LAI",
-                 "tmax", "tmin", "tavg", "precip")
+  col_order <- c(
+    "year", "doy", "Stem", "Leaf", "Root",
+    "AboveLitter", "BelowLitter", "Rhizome",
+    "SoilEvaporation", "CanopyTrans", "Grain", "LAI",
+    "tmax", "tmin", "tavg", "precip"
+  )
   daily.results <- daily.results[, col_order]
-  
+
   daily_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = "year")
   annual.results <- dplyr::bind_cols(
     dplyr::summarize_at(
       .tbl = daily_grp,
-      .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
-                "Rhizome", "Grain"),
-      .fun = max),
+      .vars = c(
+        "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+        "Rhizome", "Grain"
+      ),
+      .fun = max
+    ),
     dplyr::summarize_at(
       .tbl = daily_grp,
       .vars = c("SoilEvaporation", "CanopyTrans", map = "precip"),
-      .fun = sum),
+      .fun = sum
+    ),
     dplyr::summarize_at(
       .tbl = daily_grp,
       .vars = c(mat = "Temp"),
-      .fun = mean))
-  col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
-                 "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
-                 "map", "mat")
+      .fun = mean
+    )
+  )
+  col_order <- c(
+    "year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+    "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
+    "map", "mat"
+  )
   annual.results <- annual.results[, col_order]
 
-  return(list(hourly = hourly.results, 
-              daily = daily.results, 
-              annually = data.table::data.table(lat = lat, lon = lon, annual.results)))
+  return(list(
+    hourly = hourly.results,
+    daily = daily.results,
+    annually = data.table::data.table(lat = lat, lon = lon, annual.results)
+  ))
 } # run.biocro

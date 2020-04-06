@@ -31,7 +31,7 @@ met2model.MAAT(
 
 \item{verbose}{should the function be very verbose}
 
-\item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. 
+\item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days.
 If set to false, will require all years to have 365 days. Default = TRUE.}
 }
 \description{

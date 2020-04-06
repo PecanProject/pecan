@@ -13,7 +13,6 @@ model2netcdf.FATES(outdir)
 Code to convert FATES netcdf output into into CF standard
 }
 \examples{
- 
 \dontrun{
 example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
 model2netcdf.FATES(outdir="~/")

@@ -1,13 +1,13 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' Writes a PRELES config file.
 ##'
 ##' @name write.config.PRELES
@@ -20,29 +20,30 @@
 ##' @export
 ##' @author Tony Gardella, Micheal Dietze
 write.config.PRELES <- function(defaults, trait.values, settings, run.id) {
-  
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
-  
+
   ### Define PARAMETERS
   filename <- paste(rundir, "/", "PRELES_params.", run.id, ".Rdata", sep = "")
   preles.params <- save(trait.values, file = filename)
-  
+
   #-----------------------------------------------------------------------
-  
+
   ### WRITE JOB.SH
-  jobsh <- paste0("#!/bin/bash\n",
-                  'echo "',
-                  ' library(PEcAn.PRELES); runPRELES.jobsh(',
-                  "'",settings$run$inputs$met$path,"',",
-                  "'",outdir,"',",
-                  "'",filename,"',",
-                  "'",settings$run$site$lat,"',",
-                  "'",settings$run$site$lon,"',",
-                  "'",settings$run$start.date,"',",
-                  "'",settings$run$end.date,"') ",
-                  '" | R --vanilla'
+  jobsh <- paste0(
+    "#!/bin/bash\n",
+    'echo "',
+    " library(PEcAn.PRELES); runPRELES.jobsh(",
+    "'", settings$run$inputs$met$path, "',",
+    "'", outdir, "',",
+    "'", filename, "',",
+    "'", settings$run$site$lat, "',",
+    "'", settings$run$site$lon, "',",
+    "'", settings$run$start.date, "',",
+    "'", settings$run$end.date, "') ",
+    '" | R --vanilla'
   )
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

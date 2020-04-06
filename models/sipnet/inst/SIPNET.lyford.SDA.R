@@ -6,11 +6,11 @@ options(warn = 1, keep.source = TRUE, error = quote({
 }))
 
 status.start <- function(name) {
-  cat(paste(name, format(Sys.time(), "%F %T"), sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+  cat(paste(name, format(Sys.time(), "%F %T"), sep = "\t"), file = file.path(settings$outdir, "STATUS"), append = TRUE)
 }
 
-status.end <- function(status="DONE") {
-  cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep="\t"), file=file.path(settings$outdir, "STATUS"), append=TRUE)      
+status.end <- function(status = "DONE") {
+  cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep = "\t"), file = file.path(settings$outdir, "STATUS"), append = TRUE)
 }
 
 #---------------- Load libraries. -----------------------------------------------------------------#
@@ -23,7 +23,7 @@ library(rjags)
 library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 #
-# 
+#
 # <state.data.assimilation>
 #   <n.ensemble>35</n.ensemble>
 #   <process.variance>FALSE</process.variance>
@@ -65,22 +65,24 @@ library(reshape2)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("pecan.SDA.xml") 
+settings <- read.settings("pecan.SDA.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load data. -------------------------------------------------------#
-load('~/sipnet_lyford_summary.Rdata')
-years<-1962:2015
-names(obs.mean) <- paste0(years,'/12/31')
+load("~/sipnet_lyford_summary.Rdata")
+years <- 1962:2015
+names(obs.mean) <- paste0(years, "/12/31")
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-ne = as.numeric(settings$state.data.assimilation$n.ensemble)
-IC = sample.IC.SIPNET(ne,state,year=1)
+ne <- as.numeric(settings$state.data.assimilation$n.ensemble)
+IC <- sample.IC.SIPNET(ne, state, year = 1)
 status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("EnKF")
-sda.enkf(settings=settings, obs.mean = obs.mean,
-         obs.cov = obs.cov, IC = IC, Q = NULL)
+sda.enkf(
+  settings = settings, obs.mean = obs.mean,
+  obs.cov = obs.cov, IC = IC, Q = NULL
+)
 status.end()

@@ -28,7 +28,6 @@
 ##' @importFrom ncdf4 ncvar_get ncvar_def ncdim_def ncatt_get ncatt_put nc_close
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
-
   library(PEcAn.utils)
 
   print("START met2model.LPJGUESS")
@@ -38,31 +37,37 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   end_year <- lubridate::year(end_date)
 
   year <- sprintf("%04d", seq(start_year, end_year, 1))
-  nyear <- length(year)  #number of years to simulate
+  nyear <- length(year) # number of years to simulate
 
   ## LPJ-GUESS looks for different input files for different climate variables
   out.file <- out.files.full <- list()
   var.names <- c("tmp", "pre", "cld")
   n.var <- length(var.names)
-  long.names <- c("air_temperature",
-                  "precipitation_flux",
-                  "surface_downwelling_shortwave_flux_in_air")
+  long.names <- c(
+    "air_temperature",
+    "precipitation_flux",
+    "surface_downwelling_shortwave_flux_in_air"
+  )
   for (i in seq_len(n.var)) {
     out.file[[i]] <- paste(in.prefix, sprintf("%04d", start_year), end_year, var.names[[i]],
-                           "nc", sep = ".")
+      "nc",
+      sep = "."
+    )
   }
   for (i in seq_len(n.var)) {
     out.files.full[[i]] <- file.path(outfolder, out.file[[i]])
   }
 
-  results <- data.frame(file = unlist(out.files.full),
-                        host = PEcAn.remote::fqdn(),
-                        mimetype = "application/x-netcdf",
-                        formatname = "lpj-guess.metfile",
-                        startdate = start_date,
-                        enddate = end_date,
-                        dbfile.name = unlist(out.file),
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = unlist(out.files.full),
+    host = PEcAn.remote::fqdn(),
+    mimetype = "application/x-netcdf",
+    formatname = "lpj-guess.metfile",
+    startdate = start_date,
+    enddate = end_date,
+    dbfile.name = unlist(out.file),
+    stringsAsFactors = FALSE
+  )
   print("internal results")
   print(results)
 
@@ -84,8 +89,9 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   ## calculate time step from the time-dimension length, check for leap year
   tstep <- ifelse(ncin[[1]]$dim$time$len %% 365 == 0,
-                  ncin[[1]]$dim$time$len / 365,
-                  ncin[[1]]$dim$time$len / 366)
+    ncin[[1]]$dim$time$len / 365,
+    ncin[[1]]$dim$time$len / 366
+  )
 
   ## read climate data
   nc.tmp <- lapply(ncin, ncdf4::ncvar_get, long.names[1])
@@ -108,20 +114,22 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   ## write climate data define dimensions
 
-  latdim  <- ncdf4::ncdim_def(name = "lat", "degrees_north", as.double(lat))
-  londim  <- ncdf4::ncdim_def(name = "lon", "degrees_east", as.double(lon))
+  latdim <- ncdf4::ncdim_def(name = "lat", "degrees_north", as.double(lat))
+  londim <- ncdf4::ncdim_def(name = "lon", "degrees_east", as.double(lon))
   timedim <- ncdf4::ncdim_def("time", paste0("days since ", start_year - 1, "-12-31", sep = ""), as.double(c(1:length(unlist(tmp.list)))))
 
   fillvalue <- 9.96920996838687e+36
 
   for (n in seq_len(n.var)) {
     # define variable
-    var.def <- ncdf4::ncvar_def(name = var.names[n],
-                         units = var.units[n],
-                         dim = (list(londim, latdim, timedim)),
-                         fillvalue, long.names[n],
-                         verbose = verbose,
-                         prec = "float")
+    var.def <- ncdf4::ncvar_def(
+      name = var.names[n],
+      units = var.units[n],
+      dim = (list(londim, latdim, timedim)),
+      fillvalue, long.names[n],
+      verbose = verbose,
+      prec = "float"
+    )
 
     # create netCD file for LPJ-GUESS
     ncfile <- ncdf4::nc_create(out.files.full[[n]], vars = var.def, force_v4 = TRUE)

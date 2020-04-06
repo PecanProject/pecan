@@ -1,13 +1,13 @@
 #' Write ED2IN list to file
 #'
-#' This writes a ED2IN file from an `ed2in` list. Default method writes a 
-#' barebones file without comments. S3 method for `ed2in` objects extracts 
-#' comments and their locations from the object attributes (if `barebones` is 
+#' This writes a ED2IN file from an `ed2in` list. Default method writes a
+#' barebones file without comments. S3 method for `ed2in` objects extracts
+#' comments and their locations from the object attributes (if `barebones` is
 #' `FALSE`).
 #'
 #' @param ed2in Named list of ED2IN tag-value pairs. See [read_ed2in].
 #' @param filename Target file name
-#' @param custom_header Character vector for additional header comments. Each 
+#' @param custom_header Character vector for additional header comments. Each
 #' item gets its own line.
 #' @param barebones Logical. If `TRUE`, omit comments and only write tag-value pairs.
 #' @export

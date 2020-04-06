@@ -20,22 +20,21 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##' @return dataframe with values transformed
 ##' @export
 ##' @author David LeBauer
-convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
-
+convert.samples.BIOCRO <- function(trait.samples, biocro_version = 1.0) {
   trait.samples <- as.data.frame(trait.samples)
   trait.names <- colnames(trait.samples)
 
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("cuticular_cond" %in% trait.names) {
-    trait.samples$cuticular_cond = udunits2::ud.convert(trait.samples$cuticular_cond, "umol", "mol")
+    trait.samples$cuticular_cond <- udunits2::ud.convert(trait.samples$cuticular_cond, "umol", "mol")
   }
   if ("SLA" %in% trait.names) {
-    trait.samples$SLA = udunits2::ud.convert(trait.samples$SLA, "kg/m2", "g/cm2")
+    trait.samples$SLA <- udunits2::ud.convert(trait.samples$SLA, "kg/m2", "g/cm2")
   }
 
   ## rename bety variables to match active version of biocro
-  names(trait.names) <- trait.names #looks weird, but naming this vector simplifies indexing below
+  names(trait.names) <- trait.names # looks weird, but naming this vector simplifies indexing below
 
   name_lookup <- dplyr::tribble(
     ~bety_name, ~biocro_0.9_name, ~biocro_1.0_name,
@@ -50,7 +49,7 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
     "chi_leaf", "chi.l", "chil",
     "quantum_efficiency", "alpha", "alpha"
   )
-  name_lookup <- name_lookup[name_lookup$bety_name %in% trait.names,]
+  name_lookup <- name_lookup[name_lookup$bety_name %in% trait.names, ]
 
   if (biocro_version >= 1.0) {
     biocro_name <- "biocro_1.0_name"
@@ -61,7 +60,7 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
   colnames(trait.samples) <- trait.names
 
   return(trait.samples)
-}  # convert.samples.BIOCRO
+} # convert.samples.BIOCRO
 
 
 ##' Writes a configuration files for the biocro model
@@ -88,31 +87,37 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   }
 
   ## create launch script (which will create symlink)
-  writeLines(c("#!/bin/bash",
-               paste(settings$model$job.sh),
-               paste("mkdir -p", outdir),
-               paste("cd", rundir),
-               paste(settings$model$binary, normalizePath(rundir, mustWork = FALSE), normalizePath(outdir, mustWork = FALSE)),
-               "if [ $? -ne 0 ]; then",
-               "    echo ERROR IN MODEL RUN >&2",
-               "    exit 1",
-               "fi",
-               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
-             con = file.path(settings$rundir, run.id, "job.sh"))
+  writeLines(c(
+    "#!/bin/bash",
+    paste(settings$model$job.sh),
+    paste("mkdir -p", outdir),
+    paste("cd", rundir),
+    paste(settings$model$binary, normalizePath(rundir, mustWork = FALSE), normalizePath(outdir, mustWork = FALSE)),
+    "if [ $? -ne 0 ]; then",
+    "    echo ERROR IN MODEL RUN >&2",
+    "    exit 1",
+    "fi",
+    paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))
+  ),
+  con = file.path(settings$rundir, run.id, "job.sh")
+  )
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
   ## write configuration file
   traits <- convert.samples.BIOCRO(
     trait.samples = trait.values[[settings$pfts$pft$name]],
-    biocro_version = settings$model$revision)
-  
+    biocro_version = settings$model$revision
+  )
+
   pft_member_file <- file.path(settings$pfts$pft$outdir, "species.csv")
-  if(!file.exists(pft_member_file)){
+  if (!file.exists(pft_member_file)) {
     pft_member_file <- file.path(settings$pfts$pft$outdir, "cultivars.csv")
   }
-  if(!file.exists(pft_member_file)){
-    PEcAn.logger::logger.severe("Can't find PFT info: No species.csv nor cultivars.csv in",
-                                settings$pfts$pft$outdir)
+  if (!file.exists(pft_member_file)) {
+    PEcAn.logger::logger.severe(
+      "Can't find PFT info: No species.csv nor cultivars.csv in",
+      settings$pfts$pft$outdir
+    )
   }
 
   pft_members <- utils::read.csv(pft_member_file)
@@ -138,15 +143,16 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 
   if (is.null(defaults.file) && settings$model$revision >= 1.0 && utils::packageVersion("BioCro") >= 1.0) {
     # Look for defaults provided as datasets in the BioCro model package
-     defaults = get_biocro_defaults(genus)
+    defaults <- get_biocro_defaults(genus)
   }
 
- if (is.null(defaults) && is.null(defaults.file)) {
+  if (is.null(defaults) && is.null(defaults.file)) {
     defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")),
-                                 package = "PEcAn.BIOCRO")
-    if(defaults.file != ""){
+      package = "PEcAn.BIOCRO"
+    )
+    if (defaults.file != "") {
       defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
-    } else{
+    } else {
       PEcAn.logger::logger.severe("no defaults file given and ", genus, "not supported in BioCro")
     }
   }
@@ -170,13 +176,17 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   ### Replace Defaults with meta-analysis results
   unused.traits <- !traits.used
   ## a clunky way to only use logger for MEDIAN rather than all runs
-  if (any(grepl("MEDIAN", scan(file = file.path(settings$rundir, run.id, "README.txt"),
-                               character(0),
-                               sep = ":",
-                               strip.white = TRUE)))) {
+  if (any(grepl("MEDIAN", scan(
+    file = file.path(settings$rundir, run.id, "README.txt"),
+    character(0),
+    sep = ":",
+    strip.white = TRUE
+  )))) {
     if (sum(unused.traits) > 0) {
-      PEcAn.logger::logger.warn("the following traits parameters are not added to config file:",
-                  PEcAn.utils::vecpaste(names(unused.traits)[unused.traits == TRUE]))
+      PEcAn.logger::logger.warn(
+        "the following traits parameters are not added to config file:",
+        PEcAn.utils::vecpaste(names(unused.traits)[unused.traits == TRUE])
+      )
     }
   }
 
@@ -184,19 +194,31 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 
   ## Put defaults and other parts of config file together
   parms.xml <- PEcAn.settings::listToXml(defaults, "pft")
-  location.xml <- PEcAn.settings::listToXml(list(latitude = settings$run$site$lat,
-                                 longitude = settings$run$site$lon),
-                            "location")
-  run.xml <- PEcAn.settings::listToXml(list(start.date = settings$run$start.date,
-                            end.date = settings$run$end.date,
-                            met.path = settings$run$inputs$met$path,
-                            soil.file = settings$run$inputs$soil$path),
-                       "run")
+  location.xml <- PEcAn.settings::listToXml(
+    list(
+      latitude = settings$run$site$lat,
+      longitude = settings$run$site$lon
+    ),
+    "location"
+  )
+  run.xml <- PEcAn.settings::listToXml(
+    list(
+      start.date = settings$run$start.date,
+      end.date = settings$run$end.date,
+      met.path = settings$run$inputs$met$path,
+      soil.file = settings$run$inputs$soil$path
+    ),
+    "run"
+  )
 
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
-  simulationPeriod.xml <- PEcAn.settings::listToXml(list(dateofplanting = slashdate(settings$run$start.date),
-                                         dateofharvest = slashdate(settings$run$end.date)),
-                                    "simulationPeriod")
+  simulationPeriod.xml <- PEcAn.settings::listToXml(
+    list(
+      dateofplanting = slashdate(settings$run$start.date),
+      dateofharvest = slashdate(settings$run$end.date)
+    ),
+    "simulationPeriod"
+  )
 
   config.xml <- XML::xmlNode("config")
   config.xml <- XML::append.xmlNode(config.xml, run.xml)
@@ -204,9 +226,11 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   config.xml <- XML::append.xmlNode(config.xml, simulationPeriod.xml)
   config.xml <- XML::append.xmlNode(config.xml, parms.xml)
 
-  XML::saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"),
-          indent = TRUE)
-}  # write.config.BIOCRO
+  XML::saveXML(config.xml,
+    file = file.path(settings$rundir, run.id, "config.xml"),
+    indent = TRUE
+  )
+} # write.config.BIOCRO
 
 
 ##' Clear out previous config and parameter files.
@@ -222,17 +246,17 @@ remove.config.BIOCRO <- function(main.outdir, settings) {
 
   ## Remove files on localhost
   if (settings$host$name == "localhost") {
-    files   <- paste0(settings$outdir, list.files(path = settings$outdir, recursive = FALSE))  # Need to change this to the run folder when implemented
-    files   <- files[-grep("*.xml", files)]  # Keep pecan.xml file
+    files <- paste0(settings$outdir, list.files(path = settings$outdir, recursive = FALSE)) # Need to change this to the run folder when implemented
+    files <- files[-grep("*.xml", files)] # Keep pecan.xml file
     pft.dir <- strsplit(settings$pfts$pft$outdir, "/")[[1]]
-    ln      <- length(pft.dir)
+    ln <- length(pft.dir)
     pft.dir <- pft.dir[ln]
-    files <- files[-grep(pft.dir, files)]  # Keep pft folder
+    files <- files[-grep(pft.dir, files)] # Keep pft folder
     # file.remove(files,recursive=TRUE)
-    system(paste("rm -r ", files, sep = "", collapse = " "), ignore.stderr = TRUE)  # remove files/dirs
+    system(paste("rm -r ", files, sep = "", collapse = " "), ignore.stderr = TRUE) # remove files/dirs
 
     ## On remote host
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
-}  # remove.config.BIOCRO
+} # remove.config.BIOCRO

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2016 NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -11,169 +11,177 @@
 ##' @title Code to convert FATES netcdf output into into CF standard
 ##'
 ##' @param outdir Location of FATES model output
-##' 
-##' @examples  
+##'
+##' @examples
 ##' \dontrun{
 ##' example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
 ##' model2netcdf.FATES(outdir="~/")
 ##' }
-##' 
+##'
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
 model2netcdf.FATES <- function(outdir) {
 
-    # E.g. var_update("AR","AutoResp","kgC m-2 s-1", "Autotrophic Respiration")
-    # currently only works for xyt variables, need to expand to work for cohort-level outputs, 
-    # age bins, soils, etc
-    var_update <- function(out,oldname,newname,newunits=NULL,long_name=NULL){
-      if (oldname %in% ncin_names) {
-        ## define variable
-        oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
-        if (oldunits=="gC/m^2/s") oldunits <- "gC m-2 s-1"
-        if (oldname=="TLAI" && oldunits=="none") oldunits <- "m2 m-2"
-        if(is.null(newunits)) newunits = oldunits
-        newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = xyt)
-        
-        ## convert data
-        dat <- ncdf4::ncvar_get(ncin,oldname)
-        dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
-        
-        ## prep for writing
-        if(is.null(out)) {
-          out <- list(var <- list(),dat <- list())
-          out$var[[1]] <- newvar
-          out$dat[[1]] <- dat.new
-        } else {
-          i <- length(out$var) + 1
-          out$var[[i]] <- newvar
-          out$dat[[i]] <- dat.new
-        }
+  # E.g. var_update("AR","AutoResp","kgC m-2 s-1", "Autotrophic Respiration")
+  # currently only works for xyt variables, need to expand to work for cohort-level outputs,
+  # age bins, soils, etc
+  var_update <- function(out, oldname, newname, newunits = NULL, long_name = NULL) {
+    if (oldname %in% ncin_names) {
+      ## define variable
+      oldunits <- ncdf4::ncatt_get(ncin, oldname, "units")$value
+      if (oldunits == "gC/m^2/s") oldunits <- "gC m-2 s-1"
+      if (oldname == "TLAI" && oldunits == "none") oldunits <- "m2 m-2"
+      if (is.null(newunits)) newunits <- oldunits
+      newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname = long_name, dim = xyt)
+
+      ## convert data
+      dat <- ncdf4::ncvar_get(ncin, oldname)
+      dat.new <- PEcAn.utils::misc.convert(dat, oldunits, newunits)
+
+      ## prep for writing
+      if (is.null(out)) {
+        out <- list(var <- list(), dat <- list())
+        out$var[[1]] <- newvar
+        out$dat[[1]] <- dat.new
       } else {
-        ## correct way to "skip" and output variables that may be missing in the HLM-FATES output?
-        PEcAn.logger::logger.info(paste0("HLM-FATES variable: ", oldname," not present. Skipping conversion"))
+        i <- length(out$var) + 1
+        out$var[[i]] <- newvar
+        out$dat[[i]] <- dat.new
       }
-      return(out)
+    } else {
+      ## correct way to "skip" and output variables that may be missing in the HLM-FATES output?
+      PEcAn.logger::logger.info(paste0("HLM-FATES variable: ", oldname, " not present. Skipping conversion"))
     }
-    
-    ## Get files and years
-    files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)  # currently specific to clm2.h0 files
-    file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
-    years <- lubridate::year(file.dates)
-    init_year <- unique(years)[1]
+    return(out)
+  }
 
-    ## Loop over years
-    for (year in unique(years)) {
-        ysel <- which(years == year)  ## subselect files for selected year
-        if (length(ysel) > 1) {
-            PEcAn.logger::logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
-        }
-        
-        fname <- files[ysel[1]]
-        oname <- file.path(dirname(fname), paste0(year, ".nc"))
-        PEcAn.logger::logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
-        ncin <- ncdf4::nc_open(fname, write = TRUE)
-        ncin_names <- names(ncin$var)                               # get netCDF variable names in HLM-FATES output
-        
-        
-        ## FATES time is in multiple columns, create 'time'
-        mcdate <- ncdf4::ncvar_get(ncin, "mcdate")                  # current date (YYYYMMDD)
-        if (length(mcdate)==1) {
-          ## do we need to bother converting outputs where FATES provides only a single timepoint for a date?
-          ## usually happens when the model starts/finishes at the end/start of a new year
-          PEcAn.logger::logger.debug("*** Skipping conversion for output with only a single timepoint ***")
-          next
-        }
-        cal_dates <- as.Date(as.character(mcdate),format="%Y%m%d")  # in standard YYYY-MM-DD format
-        julian_dates <- lubridate::yday(cal_dates)                  # current year DOY values
-        day  <- ncdf4::ncvar_get(ncin, "mdcur")                     # current day (from base day)
-        sec  <- ncdf4::ncvar_get(ncin, "mscur")                     # current seconds of current day
-        nstep <- ncdf4::ncvar_get(ncin, "nstep")                    # model time step
-        time <- day + sec / 86400                                   # fractional time since base date (typically first day of full model simulation)
-        iter_per_day <- length(unique(sec))                         # how many outputs per day (e.g. 1, 24, 48)
-        timesteps <- head(seq(0, 1, by = 1 / iter_per_day), -1)     # time of day fraction
-        current_year_tvals <- (julian_dates-1 + timesteps)          # fractional DOY of current year
-        nt <- length(time)                                          # output length
-        nc_time <- ncin$dim$time$vals                               # days since "start_date"
+  ## Get files and years
+  files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE) # currently specific to clm2.h0 files
+  file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
+  years <- lubridate::year(file.dates)
+  init_year <- unique(years)[1]
 
-        # !! Is this a useful/reasonable check? That is that our calculated time
-        # matches FATES internal time var.
-        if (length(time)!=length(nc_time)) {
-          PEcAn.logger::logger.severe("Time dimension mismatch in output, simulation error?")
-        }
+  ## Loop over years
+  for (year in unique(years)) {
+    ysel <- which(years == year) ## subselect files for selected year
+    if (length(ysel) > 1) {
+      PEcAn.logger::logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
+    }
 
-        ## Create time bounds to populate time_bounds variable
-        bounds <- array(data = NA, dim = c(length(time), 2))
-        bounds[, 1] <- time
-        bounds[, 2] <- bounds[, 1] + (1 / iter_per_day)
-        bounds <- round(bounds, 4)  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+    fname <- files[ysel[1]]
+    oname <- file.path(dirname(fname), paste0(year, ".nc"))
+    PEcAn.logger::logger.info(paste("model2netcdf.FATES - Converting:", fname, "to", oname))
+    ncin <- ncdf4::nc_open(fname, write = TRUE)
+    ncin_names <- names(ncin$var) # get netCDF variable names in HLM-FATES output
 
-        #******************** Declare netCDF dimensions ********************#
-        nc_var  <- list()
-        sitelat <- ncdf4::ncvar_get(ncin,"lat")
-        sitelon <- ncdf4::ncvar_get(ncin,"lon")
-        ## time variable based on internal calc, nc$dim$time is the FATES output time
-        t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", init_year, "-01-01 00:00:00"),
-                       vals = as.vector(time), calendar = "noleap", unlim = TRUE)
-        time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
-                                          longname = "history time interval endpoint dimensions", 
-                                          vals = 1:2, units = "")
-        lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
-        lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
-        xyt <- list(lon, lat, t)
-        
-        ### build netCDF data
-        ## !! TODO: ADD MORE OUTPUTS HERE
-        out <- NULL
-        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1","Autotrophic Respiration")
-        out <- var_update(out,"HR","HeteroResp","kgC m-2 s-1","Heterotrophic Respiration")
-        out <- var_update(out,"GPP","GPP","kgC m-2 s-1","Gross Primary Productivity")
-        out <- var_update(out,"NPP","NPP","kgC m-2 s-1","Net Primary Productivity")
-        out <- var_update(out,"NEP","NEE","kgC m-2 s-1", "Net Ecosystem Exchange")
-        out <- var_update(out,"FLDS","LWdown","W m-2","Surface incident longwave radiation") 
-        out <- var_update(out,"FSDS","SWdown","W m-2","Surface incident shortwave radiation")
-        out <- var_update(out,"TBOT","Tair","K","Near surface air temperature") # not certain these are equivelent yet
-        out <- var_update(out,"QBOT","Qair","kg kg-1","Near surface specific humidity") # not certain these are equivelent yet
-        out <- var_update(out,"RH","RH","%","Relative Humidity") 
-        out <- var_update(out,"WIND","Wind","m s-1","Near surface module of the wind") # not certain these are equivelent yet
-        out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2","Latent heat")
-        out <- var_update(out,"QVEGT","Transp","mm s-1","Total Transpiration") ## equiv to std of kg m-2 s but don't trust udunits to get right
-        out <- var_update(out,"ED_balive","TotLivBiom","kgC m-2","Total living biomass")
-        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2","Above ground woody biomass")  # not actually correct, need to update
-        out <- var_update(out,"AGB","AGB","kgC m-2","Total aboveground biomass") # not actually correct, need to update
-        out <- var_update(out,"ED_bleaf","leaf_carbon_content","kgC m-2","Leaf Carbon Content")
-        out <- var_update(out,"TLAI","LAI","m2 m-2","Leaf Area Index")
-        out <- var_update(out,"TSOI_10CM","SoilTemp","K","Average Layer Soil Temperature at 10cm")
-        
-        ## put in time_bounds before writing out new nc file
-        length(out$var)
-        out$var[[length(out$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
-                                                           longname = "history time interval endpoints", 
-                                                           dim=list(time_interval,time = t), 
-                                                           prec = "double")
-        out$dat[[length(out$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
-  
-        ## close input nc file
-        try(ncdf4::nc_close(ncin))
-        
-        ## write netCDF data
-        ncout <- ncdf4::nc_create(oname,out$var)
-        ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
-        for (i in seq_along(out$var)) {
-          ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]])
-        }
 
-        ## extract variable and long names to VAR file for PEcAn vis
-        write.table(sapply(ncout$var, function(x) { x$longname }), 
-                    file = paste0(oname, ".var"), 
-                    col.names = FALSE, 
-                    row.names = TRUE, 
-                    quote = FALSE)
-        
-        
-        try(ncdf4::nc_close(ncout))
+    ## FATES time is in multiple columns, create 'time'
+    mcdate <- ncdf4::ncvar_get(ncin, "mcdate") # current date (YYYYMMDD)
+    if (length(mcdate) == 1) {
+      ## do we need to bother converting outputs where FATES provides only a single timepoint for a date?
+      ## usually happens when the model starts/finishes at the end/start of a new year
+      PEcAn.logger::logger.debug("*** Skipping conversion for output with only a single timepoint ***")
+      next
+    }
+    cal_dates <- as.Date(as.character(mcdate), format = "%Y%m%d") # in standard YYYY-MM-DD format
+    julian_dates <- lubridate::yday(cal_dates) # current year DOY values
+    day <- ncdf4::ncvar_get(ncin, "mdcur") # current day (from base day)
+    sec <- ncdf4::ncvar_get(ncin, "mscur") # current seconds of current day
+    nstep <- ncdf4::ncvar_get(ncin, "nstep") # model time step
+    time <- day + sec / 86400 # fractional time since base date (typically first day of full model simulation)
+    iter_per_day <- length(unique(sec)) # how many outputs per day (e.g. 1, 24, 48)
+    timesteps <- head(seq(0, 1, by = 1 / iter_per_day), -1) # time of day fraction
+    current_year_tvals <- (julian_dates - 1 + timesteps) # fractional DOY of current year
+    nt <- length(time) # output length
+    nc_time <- ncin$dim$time$vals # days since "start_date"
 
-    } # end of year for loop
+    # !! Is this a useful/reasonable check? That is that our calculated time
+    # matches FATES internal time var.
+    if (length(time) != length(nc_time)) {
+      PEcAn.logger::logger.severe("Time dimension mismatch in output, simulation error?")
+    }
+
+    ## Create time bounds to populate time_bounds variable
+    bounds <- array(data = NA, dim = c(length(time), 2))
+    bounds[, 1] <- time
+    bounds[, 2] <- bounds[, 1] + (1 / iter_per_day)
+    bounds <- round(bounds, 4) # create time bounds for each timestep in t, t+1; t+1, t+2... format
+
+    #******************** Declare netCDF dimensions ********************#
+    nc_var <- list()
+    sitelat <- ncdf4::ncvar_get(ncin, "lat")
+    sitelon <- ncdf4::ncvar_get(ncin, "lon")
+    ## time variable based on internal calc, nc$dim$time is the FATES output time
+    t <- ncdf4::ncdim_def(
+      name = "time", units = paste0("days since ", init_year, "-01-01 00:00:00"),
+      vals = as.vector(time), calendar = "noleap", unlim = TRUE
+    )
+    time_interval <- ncdf4::ncdim_def(
+      name = "hist_interval",
+      longname = "history time interval endpoint dimensions",
+      vals = 1:2, units = ""
+    )
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
+    xyt <- list(lon, lat, t)
+
+    ### build netCDF data
+    ## !! TODO: ADD MORE OUTPUTS HERE
+    out <- NULL
+    out <- var_update(out, "AR", "AutoResp", "kgC m-2 s-1", "Autotrophic Respiration")
+    out <- var_update(out, "HR", "HeteroResp", "kgC m-2 s-1", "Heterotrophic Respiration")
+    out <- var_update(out, "GPP", "GPP", "kgC m-2 s-1", "Gross Primary Productivity")
+    out <- var_update(out, "NPP", "NPP", "kgC m-2 s-1", "Net Primary Productivity")
+    out <- var_update(out, "NEP", "NEE", "kgC m-2 s-1", "Net Ecosystem Exchange")
+    out <- var_update(out, "FLDS", "LWdown", "W m-2", "Surface incident longwave radiation")
+    out <- var_update(out, "FSDS", "SWdown", "W m-2", "Surface incident shortwave radiation")
+    out <- var_update(out, "TBOT", "Tair", "K", "Near surface air temperature") # not certain these are equivelent yet
+    out <- var_update(out, "QBOT", "Qair", "kg kg-1", "Near surface specific humidity") # not certain these are equivelent yet
+    out <- var_update(out, "RH", "RH", "%", "Relative Humidity")
+    out <- var_update(out, "WIND", "Wind", "m s-1", "Near surface module of the wind") # not certain these are equivelent yet
+    out <- var_update(out, "EFLX_LH_TOT", "Qle", "W m-2", "Latent heat")
+    out <- var_update(out, "QVEGT", "Transp", "mm s-1", "Total Transpiration") ## equiv to std of kg m-2 s but don't trust udunits to get right
+    out <- var_update(out, "ED_balive", "TotLivBiom", "kgC m-2", "Total living biomass")
+    out <- var_update(out, "ED_biomass", "AbvGrndWood", "kgC m-2", "Above ground woody biomass") # not actually correct, need to update
+    out <- var_update(out, "AGB", "AGB", "kgC m-2", "Total aboveground biomass") # not actually correct, need to update
+    out <- var_update(out, "ED_bleaf", "leaf_carbon_content", "kgC m-2", "Leaf Carbon Content")
+    out <- var_update(out, "TLAI", "LAI", "m2 m-2", "Leaf Area Index")
+    out <- var_update(out, "TSOI_10CM", "SoilTemp", "K", "Average Layer Soil Temperature at 10cm")
+
+    ## put in time_bounds before writing out new nc file
+    length(out$var)
+    out$var[[length(out$var) + 1]] <- ncdf4::ncvar_def(
+      name = "time_bounds", units = "",
+      longname = "history time interval endpoints",
+      dim = list(time_interval, time = t),
+      prec = "double"
+    )
+    out$dat[[length(out$dat) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
+
+    ## close input nc file
+    try(ncdf4::nc_close(ncin))
+
+    ## write netCDF data
+    ncout <- ncdf4::nc_create(oname, out$var)
+    ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec = NA)
+    for (i in seq_along(out$var)) {
+      ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]])
+    }
+
+    ## extract variable and long names to VAR file for PEcAn vis
+    write.table(sapply(ncout$var, function(x) {
+      x$longname
+    }),
+    file = paste0(oname, ".var"),
+    col.names = FALSE,
+    row.names = TRUE,
+    quote = FALSE
+    )
+
+
+    try(ncdf4::nc_close(ncout))
+  } # end of year for loop
 } # model2netcdf.FATES
 
 ### !!! NOTES
@@ -231,7 +239,7 @@ model2netcdf.FATES <- function(outdir) {
 #   DEADSTEMC:long_name = "dead stem C" ;
 #   DEADSTEMN:long_name = "dead stem N" ;
 #   DENIT:long_name = "total rate of denitrification" ;
-#   DISPVEGC:long_name = "displayed veg carbon, excluding storage and cpool" 
+#   DISPVEGC:long_name = "displayed veg carbon, excluding storage and cpool"
 #   DISPVEGN:long_name = "displayed vegetation nitrogen" ;
 #   DSTDEP:long_name = "total dust deposition (dry+wet) from atmosphere" ;
 #   DSTFLXT:long_name = "total surface dust emission" ;
@@ -585,6 +593,6 @@ model2netcdf.FATES <- function(outdir) {
 #   WOODC_LOSS:long_name = "wood C loss" ;
 #   WOOD_HARVESTC:long_name = "wood harvest carbon (to product pools)" ;
 #   WOOD_HARVESTN:long_name = "wood harvest N (to product pools)" ;
-#   W_SCALAR:long_name = "Moisture (dryness) inhibition of decomposition" 
+#   W_SCALAR:long_name = "Moisture (dryness) inhibition of decomposition"
 ## ==================================================================================================#
 ## EOF

@@ -38,9 +38,9 @@ that will be inserted into database
 }
 \description{
 Function to convert NetCDF met files in PEcAn-CF format into GDAY met driver files.
-This function is an R wrapper to the python script "generate_forcing_data.py" 
-in the inst/ folder. The python script supports arguments to generate sub-daily (30 min) 
-weather data as well as soil temperature from 6 day running mean. These arguments are 
+This function is an R wrapper to the python script "generate_forcing_data.py"
+in the inst/ folder. The python script supports arguments to generate sub-daily (30 min)
+weather data as well as soil temperature from 6 day running mean. These arguments are
 hard-coded in this function to generate daily GDAY files without soil temperature.
 }
 \details{

@@ -9,9 +9,9 @@
 
 #' met2model wrapper for ED2
 #'
-#' If files already exist in 'Outfolder', the default function is NOT to 
-#' overwrite them and only gives user the notice that file already exists. If 
-#' user wants to overwrite the existing files, just change overwrite statement 
+#' If files already exist in 'Outfolder', the default function is NOT to
+#' overwrite them and only gives user the notice that file already exists. If
+#' user wants to overwrite the existing files, just change overwrite statement
 #' below to TRUE.
 #'
 #' @export
@@ -26,12 +26,11 @@
 #' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
-  
   overwrite <- as.logical(overwrite)
 
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
-  end_date   <- as.POSIXlt(end_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   met_folder <- outfolder
   met_header_file <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
@@ -61,8 +60,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       mo <- findInterval(day, dm)
       return(mo)
     } else {
-      leap      <- lubridate::leap_year(year)
-      mo[leap]  <- findInterval(day[leap], dl)
+      leap <- lubridate::leap_year(year)
+      mo[leap] <- findInterval(day[leap], dl)
       mo[!leap] <- findInterval(day[!leap], dm)
       return(mo)
     }
@@ -149,27 +148,27 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## determine GMT adjustment lst <- site$LST_shift[which(site$acro == froot)]
 
     ## extract variables
-    lat  <- eval(parse(text = lat))
-    lon  <- eval(parse(text = lon))
-    sec  <- nc$dim$time$vals
+    lat <- eval(parse(text = lat))
+    lon <- eval(parse(text = lon))
+    sec <- nc$dim$time$vals
     Tair <- ncdf4::ncvar_get(nc, "air_temperature")
-    Qair <- ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
-    U    <- try(ncdf4::ncvar_get(nc, "eastward_wind"),  silent = TRUE)
-    V    <- try(ncdf4::ncvar_get(nc, "northward_wind"), silent = TRUE)
+    Qair <- ncdf4::ncvar_get(nc, "specific_humidity") # humidity (kg/kg)
+    U <- try(ncdf4::ncvar_get(nc, "eastward_wind"), silent = TRUE)
+    V <- try(ncdf4::ncvar_get(nc, "northward_wind"), silent = TRUE)
     Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
     pres <- ncdf4::ncvar_get(nc, "air_pressure")
-    SW   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
-    LW   <- ncdf4::ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
-    CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
+    SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
+    LW <- ncdf4::ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
+    CO2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
 
     use_UV <- is.numeric(U) & is.numeric(V)
 
-    if(!use_UV){
+    if (!use_UV) {
       U <- try(ncdf4::ncvar_get(nc, "wind_speed"), silent = TRUE)
-      if(is.numeric(U)){
+      if (is.numeric(U)) {
         PEcAn.logger::logger.info("eastward_wind and northward_wind are absent, using wind_speed to approximate eastward_wind")
         V <- rep(0, length(U))
-      }else{
+      } else {
         PEcAn.logger::logger.severe("No eastward_wind and northward_wind or wind_speed in the met data")
       }
     }
@@ -188,12 +187,12 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     slen <- seq_along(SW)
     Tair <- c(rep(Tair[1], toff), Tair)[slen]
     Qair <- c(rep(Qair[1], toff), Qair)[slen]
-    U  <- c(rep(U[1], toff), U)[slen]
-    V  <- c(rep(V[1], toff), V)[slen]
+    U <- c(rep(U[1], toff), U)[slen]
+    V <- c(rep(V[1], toff), V)[slen]
     Rain <- c(rep(Rain[1], toff), Rain)[slen]
     pres <- c(rep(pres[1], toff), pres)[slen]
-    SW   <- c(rep(SW[1], toff), SW)[slen]
-    LW   <- c(rep(LW[1], toff), LW)[slen]
+    SW <- c(rep(SW[1], toff), SW)[slen]
+    LW <- c(rep(LW[1], toff), LW)[slen]
     if (useCO2) {
       CO2 <- c(rep(CO2[1], toff), CO2)[slen]
     }
@@ -201,22 +200,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## build time variables (year, month, day of year)
     skip <- FALSE
     nyr <- floor(length(sec) * dt / 86400 / 365)
-    yr   <- NULL
-    doy  <- NULL
-    hr   <- NULL
+    yr <- NULL
+    doy <- NULL
+    hr <- NULL
     asec <- sec
     for (y in seq(year, year + nyr - 1)) {
       diy <- PEcAn.utils::days_in_year(y, leap_year)
       ytmp <- rep(y, udunits2::ud.convert(diy / dt, "days", "seconds"))
       dtmp <- rep(seq_len(diy), each = day_secs / dt)
       if (is.null(yr)) {
-        yr  <- ytmp
+        yr <- ytmp
         doy <- dtmp
-        hr  <- rep(NA, length(dtmp))
+        hr <- rep(NA, length(dtmp))
       } else {
-        yr  <- c(yr, ytmp)
+        yr <- c(yr, ytmp)
         doy <- c(doy, dtmp)
-        hr  <- c(hr, rep(NA, length(dtmp)))
+        hr <- c(hr, rep(NA, length(dtmp)))
       }
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
@@ -225,7 +224,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng]   <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
+      hr[rng] <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
     }
     mo <- day2mo(yr, doy, leap_year)
     if (length(yr) < length(sec)) {
@@ -235,9 +234,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
-      yr[rng]  <- rep(y + 1, length(rng))
+      yr[rng] <- rep(y + 1, length(rng))
       doy[rng] <- rep(1:366, each = day_secs / dt)[1:length(rng)]
-      hr[rng]  <- rep(seq(0, length = day_secs / dt, by = dt / day_secs * 24), 366)[1:length(rng)]
+      hr[rng] <- rep(seq(0, length = day_secs / dt, by = dt / day_secs * 24), 366)[1:length(rng)]
     }
     if (skip) {
       print("Skipping to next year")
@@ -251,31 +250,31 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     rpot <- 1366 * cosz
     rpot <- rpot[1:length(SW)]
 
-    SW[rpot < SW] <- rpot[rpot < SW]  ## ensure radiation < max
+    SW[rpot < SW] <- rpot[rpot < SW] ## ensure radiation < max
     ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
-    frac <- SW/rpot
-    frac[frac > 0.9] <- 0.9  ## ensure some diffuse
+    frac <- SW / rpot
+    frac[frac > 0.9] <- 0.9 ## ensure some diffuse
     frac[frac < 0] <- 0
     frac[is.na(frac)] <- 0
     frac[is.nan(frac)] <- 0
-    SWd <- SW * (1 - frac)  ## Diffuse portion of total short wave rad
+    SWd <- SW * (1 - frac) ## Diffuse portion of total short wave rad
 
     ### convert to ED2.1 hdf met variables
-    n      <- length(Tair)
-    nbdsfA <- (SW - SWd) * 0.57  # near IR beam downward solar radiation [W/m2]
-    nddsfA <- SWd * 0.48  # near IR diffuse downward solar radiation [W/m2]
-    vbdsfA <- (SW - SWd) * 0.43  # visible beam downward solar radiation [W/m2]
-    vddsfA <- SWd * 0.52  # visible diffuse downward solar radiation [W/m2]
-    prateA <- Rain  # precipitation rate [kg_H2O/m2/s]
-    dlwrfA <- LW  # downward long wave radiation [W/m2]
-    presA  <- pres  # pressure [Pa]
-    hgtA   <- rep(50, n)  # geopotential height [m]
-    ugrdA <- U  # zonal wind [m/s]
-    vgrdA <- V  # meridional wind [m/s]
-    shA    <- Qair  # specific humidity [kg_H2O/kg_air]
-    tmpA   <- Tair  # temperature [K]
+    n <- length(Tair)
+    nbdsfA <- (SW - SWd) * 0.57 # near IR beam downward solar radiation [W/m2]
+    nddsfA <- SWd * 0.48 # near IR diffuse downward solar radiation [W/m2]
+    vbdsfA <- (SW - SWd) * 0.43 # visible beam downward solar radiation [W/m2]
+    vddsfA <- SWd * 0.52 # visible diffuse downward solar radiation [W/m2]
+    prateA <- Rain # precipitation rate [kg_H2O/m2/s]
+    dlwrfA <- LW # downward long wave radiation [W/m2]
+    presA <- pres # pressure [Pa]
+    hgtA <- rep(50, n) # geopotential height [m]
+    ugrdA <- U # zonal wind [m/s]
+    vgrdA <- V # meridional wind [m/s]
+    shA <- Qair # specific humidity [kg_H2O/kg_air]
+    tmpA <- Tair # temperature [K]
     if (useCO2) {
-      co2A <- CO2 * 1e+06  # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
+      co2A <- CO2 * 1e+06 # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
     }
 
     ## create directory if(system(paste('ls',froot),ignore.stderr=TRUE)>0)
@@ -298,19 +297,19 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         } else {
           ed_met_h5 <- hdf5r::H5File$new(mout)
         }
-        dims  <- c(length(selm), 1, 1)
+        dims <- c(length(selm), 1, 1)
         nbdsf <- array(nbdsfA[selm], dim = dims)
         nddsf <- array(nddsfA[selm], dim = dims)
         vbdsf <- array(vbdsfA[selm], dim = dims)
         vddsf <- array(vddsfA[selm], dim = dims)
         prate <- array(prateA[selm], dim = dims)
         dlwrf <- array(dlwrfA[selm], dim = dims)
-        pres  <- array(presA[selm], dim = dims)
-        hgt   <- array(hgtA[selm], dim = dims)
-        ugrd  <- array(ugrdA[selm], dim = dims)
-        vgrd  <- array(vgrdA[selm], dim = dims)
-        sh    <- array(shA[selm], dim = dims)
-        tmp   <- array(tmpA[selm], dim = dims)
+        pres <- array(presA[selm], dim = dims)
+        hgt <- array(hgtA[selm], dim = dims)
+        ugrd <- array(ugrdA[selm], dim = dims)
+        vgrd <- array(vgrdA[selm], dim = dims)
+        sh <- array(shA[selm], dim = dims)
+        tmp <- array(tmpA[selm], dim = dims)
         if (useCO2) {
           co2 <- array(co2A[selm], dim = dims)
         }
@@ -334,16 +333,20 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     }
 
     ## write DRIVER file
-    metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
-                "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2")
+    metvar <- c(
+      "nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
+      "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2"
+    )
     metvar_table <- data.frame(
       variable = metvar,
       update_frequency = dt,
       flag = 1
     )
     if (!useCO2) {
-      metvar_table[metvar_table$variable == "co2",
-                   c("update_frequency", "flag")] <- list(380, 4)
+      metvar_table[
+        metvar_table$variable == "co2",
+        c("update_frequency", "flag")
+      ] <- list(380, 4)
     }
 
     ed_metheader <- list(list(
@@ -359,8 +362,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     check_ed_metheader(ed_metheader)
     write_ed_metheader(ed_metheader, met_header_file,
-                       header_line = shQuote("Made_by_PEcAn_met2model.ED2"))
-  }  ### end loop over met files
+      header_line = shQuote("Made_by_PEcAn_met2model.ED2")
+    )
+  } ### end loop over met files
 
   PEcAn.logger::logger.info("Done with met2model.ED2")
   return(invisible(results))

@@ -2,8 +2,8 @@
 #'
 #' Uses [base::system2] to run ED or EDR via a Singularity container.
 #'
-#' On some systems, to run Singularity properly, you will need to bind 
-#' additional paths. To do this, pass the arguments as a character vector to 
+#' On some systems, to run Singularity properly, you will need to bind
+#' additional paths. To do this, pass the arguments as a character vector to
 #' `singularity_args`. For instance:
 #'
 #' ```
@@ -11,10 +11,10 @@
 #' run_ed_singularity(..., singularity_args = paste("--bind", bindpaths))
 #' ```
 #'
-#' By default, [base::system2] prints the output to the console. To store 
-#' standard ED output in a variable as a character vector, set `stdout = TRUE`. 
-#' To redirect all output to the variable, including GCC exceptions, use 
-#' `stderr = TRUE` (this will automatically set `stdout = TRUE` as well). 
+#' By default, [base::system2] prints the output to the console. To store
+#' standard ED output in a variable as a character vector, set `stdout = TRUE`.
+#' To redirect all output to the variable, including GCC exceptions, use
+#' `stderr = TRUE` (this will automatically set `stdout = TRUE` as well).
 #' Output can also be redirected to a file via `stderr = "/path/to/file.log"`.
 #'
 #' @param img_path Path to Singularity container (usually a `.simg` file)

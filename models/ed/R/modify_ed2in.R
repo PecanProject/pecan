@@ -1,53 +1,53 @@
 #' Modify an ED2IN object
 #'
-#' This is a convenience function for modifying an `ed2in` list object.  
-#' Arguments passed in all caps are assumed to be ED2IN namelist parameters and 
-#' are inserted directly into the `ed2in` list objects. Lowercase arguments are 
-#' defined explicitly (see "Parameters"), and those that do not match explicit 
-#' arguments will be ignored with a warning. Because the lowercase arguments 
-#' come with additional validity checks, they are recommended over modifying 
+#' This is a convenience function for modifying an `ed2in` list object.
+#' Arguments passed in all caps are assumed to be ED2IN namelist parameters and
+#' are inserted directly into the `ed2in` list objects. Lowercase arguments are
+#' defined explicitly (see "Parameters"), and those that do not match explicit
+#' arguments will be ignored with a warning. Because the lowercase arguments
+#' come with additional validity checks, they are recommended over modifying
 #' the ED2IN file directly via uppercase arguments. For all lowercase
 #' arguments, the default (`NULL`) means to use whatever is currently
 #' in the input `ed2in`.
 #'
-#' Namelist arguments are applied last, and will silently overwrite any 
+#' Namelist arguments are applied last, and will silently overwrite any
 #' arguments set by special case arguments.
 #'
-#' Namelist arguments can be stored in a list and passed in via the `.dots` 
-#' argument (e.g. `.dots = list(SFILIN = "/path/prefix_", ...)`), or using the 
-#' `rlang::!!!` splicing operator. If both are provided, they will be spliced 
+#' Namelist arguments can be stored in a list and passed in via the `.dots`
+#' argument (e.g. `.dots = list(SFILIN = "/path/prefix_", ...)`), or using the
+#' `rlang::!!!` splicing operator. If both are provided, they will be spliced
 #' together, with the `...` taking precedence.
 #'
 #' For `output_types`, select one or more of the following:
 #'  - "fast" -- Fast analysis; mostly polygon-level averages (`IFOUTPUT`)
 #'  - "daily -- Daily means (one file per day) (`IDOUTPUT`)
 #'  - "monthly" -- Monthly means (one file per month) (`IMOUTPUT`)
-#'  - "monthly_diurnal" -- Monthly means of the diurnal cycle (one file per 
+#'  - "monthly_diurnal" -- Monthly means of the diurnal cycle (one file per
 #'  month) (`IQOUTPUT`)
 #'  - "annual" -- Annual (one file per year) (`IYOUTPUT`)
-#'  - "instant" -- Instantaneous fluxes, mostly polygon-level variables, one 
+#'  - "instant" -- Instantaneous fluxes, mostly polygon-level variables, one
 #'  file per year (`ITOUTPUT`)
 #'  - "restart" -- Restart file for HISTORY runs. (`ISOUTPUT`)
 #'  - "all" -- All output types
 #'
 #' @inheritParams read_ed2in
 #' @param ... Namelist arguments (see Description and Details)
-#' @param veg_prefix Vegetation file prefix (`SFILIN`). If `lat` and `lon` are part of the prefix, 
-#' @param latitude Run latitude coordinate. If `veg_prefix` is also provided, 
-#' pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if 
+#' @param veg_prefix Vegetation file prefix (`SFILIN`). If `lat` and `lon` are part of the prefix,
+#' @param latitude Run latitude coordinate. If `veg_prefix` is also provided,
+#' pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if
 #' `lat` and `lon` are already part of `veg_prefix`.
-#' @param longitude Run longitude coordinate. If `veg_prefix` is also provided, 
-#' pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if 
+#' @param longitude Run longitude coordinate. If `veg_prefix` is also provided,
+#' pass to [read_ed_veg], otherwise set in ED2IN directly. Should be omitted if
 #' `lat` and `lon` are already part of `veg_prefix`.
-#' @param met_driver Path and filename of met driver header 
+#' @param met_driver Path and filename of met driver header
 #' (`ED_MET_DRIVER_DB`)
 #' @param start_date Run start date (`IMONTHA`, `IDATEA`, `IYEARA`, `ITIMEA`)
 #' @param end_date Run end date (`IMONTHZ`, `IDATEZ`, `IYEARZ` `ITIMEZ`)
-#' @param EDI_path Path to `EDI` directory, which often has the `VEG_DATABASE` 
+#' @param EDI_path Path to `EDI` directory, which often has the `VEG_DATABASE`
 #' and `THSUMS_DATABASE` files.
 #' @param output_types Character vector of output types (see Details)
-#' @param output_dir Output directory, for `FFILOUT` (analysis) and `SFILOUT` 
-#'(history) files
+#' @param output_dir Output directory, for `FFILOUT` (analysis) and `SFILOUT`
+#' (history) files
 #' @param run_dir Directory in which to store run-related config files (e.g. `config.xml`).
 #' @param runtype ED initialization mode; either "INITIAL" or "HISTORY"
 #' @param run_name Give the run an informative name/description. Sets
@@ -60,9 +60,9 @@
 #'   (`NULL`) means to use whatever is already in the current ED2IN
 #'   file, which is usually all (1-17) of ED's PFTs.
 #' @param pecan_defaults Logical. If `TRUE`, set common `ED2IN` defaults.
-#' @param add_if_missing Logical. If `TRUE`, all-caps arguments not found in 
-#'existing `ed2in` list will be added to the end.  Default = `FALSE`.
-#' @param check_paths Logical. If `TRUE` (default), for any parameters that 
+#' @param add_if_missing Logical. If `TRUE`, all-caps arguments not found in
+#' existing `ed2in` list will be added to the end.  Default = `FALSE`.
+#' @param check_paths Logical. If `TRUE` (default), for any parameters that
 #' expect files, check that files exist and throw an error if they don't.
 #' @param .dots A list of `...` arguments.
 #' @return Modified `ed2in` list object. See [read_ed2in].
@@ -85,7 +85,6 @@ modify_ed2in <- function(ed2in, ...,
                          add_if_missing = FALSE,
                          check_paths = TRUE,
                          .dots = list()) {
-
   if (is.null(.dots)) {
     .dots <- list()
   }
@@ -177,7 +176,7 @@ modify_ed2in <- function(ed2in, ...,
       as.numeric(strftime(start_date, "%H%M", tz = "UTC"))
     ed2in[["METCYC1"]] <- ed2in[["IYEARA"]]
   }
-  
+
 
   if (!is.null(end_date)) {
     ed2in[["IYEARZ"]] <- lubridate::year(end_date)

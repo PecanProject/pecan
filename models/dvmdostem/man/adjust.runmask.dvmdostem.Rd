@@ -18,7 +18,7 @@ adjust.runmask.dvmdostem(siteDataPath, rundir, pixel_X, pixel_Y)
 \description{
 Adjust the runmask for dvmdostem. This is necessary if you are
 using a mutisite dvmdostem dataset (more than one grid cell/pixel)
-and you are not forcing the community (cmt or vegetation) type. In 
+and you are not forcing the community (cmt or vegetation) type. In
 other words you are using a vegetation map to determine the pixel's cmt
 type. In this case you must make sure that for the site and PFTs
 you have selected, the underlying veg map classifies the site as the

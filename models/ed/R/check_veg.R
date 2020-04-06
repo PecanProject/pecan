@@ -1,6 +1,6 @@
 #' Check individual ED input files
 #'
-#' Check internal file formatting, and optionally check for compatibility 
+#' Check internal file formatting, and optionally check for compatibility
 #' against related files.
 #'
 #' @param css css data object (see [read_css])
@@ -16,8 +16,10 @@ check_css <- function(css, pss = NULL) {
       testthat::expect_gte(nrow(css), 1)
       testthat::expect_equal(
         colnames(css),
-        c("time", "patch", "cohort", "dbh", "hite", "pft",
-          "n", "bdead", "balive", "lai")
+        c(
+          "time", "patch", "cohort", "dbh", "hite", "pft",
+          "n", "bdead", "balive", "lai"
+        )
       )
     }
   )

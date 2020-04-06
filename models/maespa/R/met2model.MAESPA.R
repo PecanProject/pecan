@@ -26,28 +26,31 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Tony Gardella
-met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, 
+met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
   end.date <- as.POSIXlt(end_date, tz = "GMT")
 
   out.file <- paste(in.prefix,
-                    strptime(start.date, "%Y-%m-%d"),
-                    strptime(end.date, "%Y-%m-%d"),
-                    "dat",
-                    sep = ".")
+    strptime(start.date, "%Y-%m-%d"),
+    strptime(end.date, "%Y-%m-%d"),
+    "dat",
+    sep = "."
+  )
 
   out.file.full <- file.path(outfolder, out.file)
 
-  results <- data.frame(file = out.file.full,
-                        host = PEcAn.remote::fqdn(),
-                        mimetype = "text/plain",
-                        formatname = "maespa.met",
-                        startdate = start_date,
-                        enddate = end_date,
-                        dbfile.name = out.file,
-                        stringsAsFactors = FALSE)
+  results <- data.frame(
+    file = out.file.full,
+    host = PEcAn.remote::fqdn(),
+    mimetype = "text/plain",
+    formatname = "maespa.met",
+    startdate = start_date,
+    enddate = end_date,
+    dbfile.name = out.file,
+    stringsAsFactors = FALSE
+  )
 
   print("internal results")
   print(results)
@@ -88,19 +91,19 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       # Check which variables are available and which are not
 
       ## extract variables
-      lat   <- ncdf4::ncvar_get(nc, "latitude")
-      lon   <- ncdf4::ncvar_get(nc, "longitude")
-      RAD   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  #W m-2
-      PAR   <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  #mol m-2 s-1
-      TAIR  <- ncdf4::ncvar_get(nc, "air_temperature")  # K
-      QAIR  <- ncdf4::ncvar_get(nc, "specific_humidity")  # 1
-      PPT   <- ncdf4::ncvar_get(nc, "precipitation_flux")  #kg m-2 s-1
-      CA    <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))  #mol/mol
-      PRESS <- ncdf4::ncvar_get(nc, "air_pressure")  # Pa
-      
+      lat <- ncdf4::ncvar_get(nc, "latitude")
+      lon <- ncdf4::ncvar_get(nc, "longitude")
+      RAD <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") # W m-2
+      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air")) # mol m-2 s-1
+      TAIR <- ncdf4::ncvar_get(nc, "air_temperature") # K
+      QAIR <- ncdf4::ncvar_get(nc, "specific_humidity") # 1
+      PPT <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
+      CA <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air")) # mol/mol
+      PRESS <- ncdf4::ncvar_get(nc, "air_pressure") # Pa
+
       ## Convert specific humidity to fractional relative humidity
       RH <- PEcAn.data.atmosphere::qair2rh(QAIR, TAIR, PRESS)
-      
+
       ## Process PAR
       if (!is.numeric(PAR)) {
         # Function from data.atmosphere will convert SW to par in W/m2
@@ -140,8 +143,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     } else {
       out <- rbind(out, tmp)
     }
-
-  }  ### end loop over years
+  } ### end loop over years
 
   ### Check for NA
   if (anyNA(out)) {
@@ -177,7 +179,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   ## Write output met.dat file
   metfile <- system.file("met.dat", package = "PEcAn.MAESPA")
   met.dat <- Maeswrap::replacemetdata(out, oldmetfile = metfile, newmetfile = out.file.full)
-  
+
   Maeswrap::replacePAR(out.file.full, "difsky", "environ", newval = difsky, noquotes = TRUE)
   Maeswrap::replacePAR(out.file.full, "ca", "environ", newval = defaultCO2, noquotes = TRUE)
   Maeswrap::replacePAR(out.file.full, "lat", "latlong", newval = lat, noquotes = TRUE)
@@ -187,6 +189,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   Maeswrap::replacePAR(out.file.full, "startdate", "metformat", newval = startdate, noquotes = TRUE)
   Maeswrap::replacePAR(out.file.full, "enddate", "metformat", newval = enddate, noquotes = TRUE)
   Maeswrap::replacePAR(out.file.full, "columns", "metformat", newval = columnnames, noquotes = TRUE)
-  
+
   return(invisible(results))
 } # met2model.MAESPA

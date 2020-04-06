@@ -3,7 +3,7 @@
 #
 # Needs to be a function because `::`(pkg, name) treats its arguments as
 # literals, so need to fully substitute before calling
-from_bc <- function(dfname){
+from_bc <- function(dfname) {
   do.call(`::`, list("BioCro", dfname))
 }
 
@@ -18,17 +18,18 @@ from_bc <- function(dfname){
 #'   or NULL if genus not found
 #' @export
 #'
-get_biocro_defaults <- function(genus){
-
+get_biocro_defaults <- function(genus) {
   default_names <- grep(
     pattern = genus,
-    x = utils::data(package = "BioCro")$results[,"Item"],
+    x = utils::data(package = "BioCro")$results[, "Item"],
     ignore.case = TRUE,
-    value = TRUE)
+    value = TRUE
+  )
 
   if (length(default_names) < 3) {
     PEcAn.logger::logger.error(
-      "No default parameter sets for", genus, "found in BioCro")
+      "No default parameter sets for", genus, "found in BioCro"
+    )
     return(NULL)
   }
 
@@ -38,23 +39,26 @@ get_biocro_defaults <- function(genus){
 
   # Report the name BioCro uses
   # We're matching on prefixes only, so this may not be the same as `genus`
-  biocro_genus_name <- gsub("_modules$", "", genus_module_name) 
+  biocro_genus_name <- gsub("_modules$", "", genus_module_name)
 
   if (length(default_names) > 3) {
     PEcAn.logger::logger.error(
       "Multiple possible default parameter sets for", genus, "found in BioCro.",
       "Using '", biocro_genus_name, "', the first one found.",
-      "If this is wrong, specify a parameter file in settings$pft$constants$file")
+      "If this is wrong, specify a parameter file in settings$pft$constants$file"
+    )
   }
 
   genus_photosynth <- sub(
     pattern = "^c([34]).*",
     replacement = "C\\1",
-    x = from_bc(genus_module_name)$canopy_module_name)
+    x = from_bc(genus_module_name)$canopy_module_name
+  )
 
   list(
     type = list(photosynthesis = genus_photosynth, genus = biocro_genus_name),
     initial_values = from_bc(genus_init_name),
     parameters = from_bc(genus_param_name),
-    modules = from_bc(genus_module_name))
+    modules = from_bc(genus_module_name)
+  )
 }

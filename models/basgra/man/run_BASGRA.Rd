@@ -38,7 +38,7 @@ BASGRA wrapper function. Runs and writes model outputs in PEcAn standard.
 \details{
 BASGRA is written in fortran is run through R by wrapper functions written by Marcel Van Oijen.
 This function makes use of those wrappers but gives control of datastream in and out of the model to PEcAn.
-With this function we skip model2netcdf, we can also skip met2model but keeping it for now. 
+With this function we skip model2netcdf, we can also skip met2model but keeping it for now.
 write.config.BASGRA modifies args of this function through template.job
 then job.sh runs calls this function to run the model
 }

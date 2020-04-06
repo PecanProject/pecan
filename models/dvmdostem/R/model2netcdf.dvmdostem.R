@@ -1,14 +1,14 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2016 NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(lubridate)
 
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' @title Write data into PEcAn shaped output file.
 ##' @param y_starts a list of years, i.e.: 1901, 1902, 1903, etc.
 ##' @param outdir a path to the location where were we will look for dvmdostem outputs and write PEcAn outputs.
@@ -40,9 +40,9 @@ write.data2pecan.file <- function(y_starts, outdir, pecan_requested_vars, monthl
       for (k in unlist(strsplit(vmap_reverse[[j]][["depends_on"]], ","))) {
 
         # Determine if dvmdostem file is monthly or yearly
-        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^", k, "_"), x))) {
           ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(k, "_monthly_tr.nc")))
-        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^", k, "_"), x))) {
           ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(k, "_yearly_tr.nc")))
         } else {
           PEcAn.logger::logger.error(paste0("ERROR!: ", k, " is not a monthly or yearly variable!"))
@@ -66,31 +66,30 @@ write.data2pecan.file <- function(y_starts, outdir, pecan_requested_vars, monthl
 
         # Coerce the data into the right shape (y, x, time).
         # With a single pixel run, the Y and X dimensions are lost when
-        # reading from the file with ncdf4::ncvar_get, and the subsequent 
+        # reading from the file with ncdf4::ncvar_get, and the subsequent
         # ncdf4::ncvar_put call fails. So here we make sure that the
         # vardata_new data is a 3D structure:
         dim_lengths <- sapply(ncin_tr_y$var[[1]]$dim, function(x) x$len)
         vardata_new <- array(vardata_new, dim = dim_lengths)
 
         dim.order <- sapply(ncin_tr_y$var[[k]]$dim, function(x) x$name)
-        starts <-c(y = px_Y, x = px_X, time = 1)
+        starts <- c(y = px_Y, x = px_X, time = 1)
 
 
-        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+        if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^", k, "_"), x))) {
           # The current variable (j) is a monthly output
-          counts <- c(y=1, x=1, time=12)
-          startidx <- ((i-1)*12)+1
-          endidx <- i*12
-          newVector <- cbind(newVector, vardata_new[px_X, px_Y,startidx:endidx])
-        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
+          counts <- c(y = 1, x = 1, time = 12)
+          startidx <- ((i - 1) * 12) + 1
+          endidx <- i * 12
+          newVector <- cbind(newVector, vardata_new[px_X, px_Y, startidx:endidx])
+        } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^", k, "_"), x))) {
           # The current variable (k) is a yearly output
-          counts <- c(y=1, x=1, time=1)
+          counts <- c(y = 1, x = 1, time = 1)
           newVector <- cbind(newVector, vardata_new[px_X, px_Y, i])
         } else {
           PEcAn.logger::logger.error(paste0("ERROR!: ", k, " is not a monthly or yearly variable!"))
           stop()
         }
-
       }
 
       # Maybe we will support more operations in the future besides sum...
@@ -103,42 +102,45 @@ write.data2pecan.file <- function(y_starts, outdir, pecan_requested_vars, monthl
   }
 }
 
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
 ##' @title Code to convert dvmdostem netcdf output into into CF standard
-##' 
+##'
 ##' @param outdir Location of dvmdostem model output
 ##' @param runstart ??
 ##' @param runend ??
 ##' @param pecan_requested_vars a space separated string with names of the PEcAn variables to output.
-##' @examples  
+##' @examples
 ##' \dontrun{
 ##' # example code here?
 ##' }
-##' 
+##'
 ##' @export
 ##'
 ##' @author Tobey Carman, Shawn Serbin
 ##'
 model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_vars) {
-
   PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
   PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
   PEcAn.logger::logger.info(paste0("Building the following PEcAn variables: ", pecan_requested_vars))
 
   # Split apart the string of pecan vars passed into the function
   pecan_requested_vars <- unlist(lapply(unlist(strsplit(pecan_requested_vars, ",")), trimws))
-  pecan_requested_vars <- unlist(lapply(pecan_requested_vars, function(x){x[!x==""]}))
+  pecan_requested_vars <- unlist(lapply(pecan_requested_vars, function(x) {
+    x[!x == ""]
+  }))
   # Look up the required dvmdostem variables.
   dvmdostem_outputs <- ""
   for (pov in pecan_requested_vars) {
     dvmdostem_outputs <- trimws(paste(dvmdostem_outputs, vmap_reverse[[pov]][["depends_on"]], sep = ","))
   }
-  dvmdostem_outputs <- unlist(lapply(unlist(strsplit(trimws(dvmdostem_outputs), ",")), function(x){x[!x== ""]}))
+  dvmdostem_outputs <- unlist(lapply(unlist(strsplit(trimws(dvmdostem_outputs), ",")), function(x) {
+    x[!x == ""]
+  }))
 
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
-  nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write=FALSE)
+  nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write = FALSE)
   if (length(nc_runstatus$var) != 1) {
     PEcAn.logger::logger.error(c("INVALID run_status.nc file! Expecting 1 variable, found: ", length(nc_runstatus$var)))
     stop()
@@ -146,12 +148,12 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
 
   run_status <- ncdf4::ncvar_get(nc_runstatus, nc_runstatus$var$run_status)
 
-  # Cooerce the array into the right shape. the ncvar_get function does the 
+  # Cooerce the array into the right shape. the ncvar_get function does the
   # right thing if we are reading run_mask with more than one pixel. But if
   # there is only one pixel, then a 1D list is returned, which causes problems
   # later in the function. So here we force the array into a 2D shape.
-  dim.lengths = sapply(nc_runstatus$var[[1]]$dim, function(x) x$len)
-  run_status <- array(run_status, dim=dim.lengths)
+  dim.lengths <- sapply(nc_runstatus$var[[1]]$dim, function(x) x$len)
+  run_status <- array(run_status, dim = dim.lengths)
 
   ncdf4::nc_close(nc_runstatus)
   good_px <- which(run_status > 0)
@@ -160,8 +162,8 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
     PEcAn.logger::logger.error("Not sure what to do, so quitting.")
     stop()
     # Not sure we even need to check bad_px or skipped_px?
-    #skipped_px <- which(run_status == 0)
-    #bad_px <- which(run_status < 0)
+    # skipped_px <- which(run_status == 0)
+    # bad_px <- which(run_status < 0)
   }
 
   # Get the actual pixel coords of the cell that ran
@@ -209,13 +211,13 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
 
   # Look at the first dvmdostem output, see if it is was provided by dvmdostem
   # as monthly or yearly, and adjust accordingly.
-  # NOTE: Assumes that all dvmdostem output files are at the same 
+  # NOTE: Assumes that all dvmdostem output files are at the same
   # time resolution!
-  if(TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",dvmdostem_outputs[1],"_"), x))) {
+  if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^", dvmdostem_outputs[1], "_"), x))) {
     trfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_tr.nc"))
     scfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_monthly_sc.nc"))
     timedivisor <- 12
-  } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^",dvmdostem_outputs[1],"_"), x))) {
+  } else if (TRUE %in% sapply(yearly_dvmdostem_outputs, function(x) grepl(paste0("^", dvmdostem_outputs[1], "_"), x))) {
     trfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_yearly_tr.nc"))
     scfile <- file.path(outdir, paste0(dvmdostem_outputs[1], "_yearly_sc.nc"))
     timedivisor <- 1
@@ -227,43 +229,48 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (transient): ", dvmdostem_outputs[1]))
   ncin_y_tr <- ncdf4::nc_open(trfile)
   y_tr_time_start <- ncin_y_tr$dim$time$units
-  y_tr_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_tr_time_start) )
-  y_tr_time_end <- y_tr_time_start + (ncin_y_tr$dim$time$len/timedivisor) - 1
+  y_tr_time_start <- as.numeric(sub("\\D*(\\d+).*", "\\1", y_tr_time_start))
+  y_tr_time_end <- y_tr_time_start + (ncin_y_tr$dim$time$len / timedivisor) - 1
   y_tr_starts <- paste0(seq(y_tr_time_start, y_tr_time_end, 1), "-01-01 00:00:00")
 
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (scenario): ", dvmdostem_outputs[1]))
   ncin_y_sc <- ncdf4::nc_open(scfile)
   y_sc_time_start <- ncin_y_sc$dim$time$units
-  y_sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_sc_time_start) )
-  y_sc_time_end <- y_sc_time_start + (ncin_y_sc$dim$time$len/timedivisor) - 1
+  y_sc_time_start <- as.numeric(sub("\\D*(\\d+).*", "\\1", y_sc_time_start))
+  y_sc_time_end <- y_sc_time_start + (ncin_y_sc$dim$time$len / timedivisor) - 1
   y_sc_starts <- paste0(seq(y_sc_time_start, y_sc_time_end, 1), "-01-01 00:00:00")
 
 
   # Check that transient and sceario runs were contiguous...
   if ((lubridate::year(y_tr_starts[length(y_tr_starts)]) + 1) != lubridate::year(y_sc_starts[1])) {
     PEcAn.logger::logger.error("WARNING! There is a gap between your transient and scenario datasets!!")
-    PEcAn.logger::logger.error(paste0("End of transient:",
-                                      lubridate::year(y_tr_starts[length(y_tr_starts)]),
-                                      " Begining of scenario: ",
-                                      lubridate::year(y_sc_starts[1])))
+    PEcAn.logger::logger.error(paste0(
+      "End of transient:",
+      lubridate::year(y_tr_starts[length(y_tr_starts)]),
+      " Begining of scenario: ",
+      lubridate::year(y_sc_starts[1])
+    ))
   }
 
   PEcAn.logger::logger.info("Creating one netcdf file for each output year...")
   all_yrs <- c(y_tr_starts, y_sc_starts)
   for (i in seq_along(1:length(all_yrs))) {
-
     PEcAn.logger::logger.info("Creating dimensions (and coordinate variables) for new PEcAn style files...")
     # The way R netcdf works is that you pass a vals argument when creating dimensions
     # and it creates the coordinate variables for you.
-    lond <- ncdf4::ncdim_def(name='lon',
-                             units="degrees_east",
-                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
-                             longname="coordinate_longitude")
+    lond <- ncdf4::ncdim_def(
+      name = "lon",
+      units = "degrees_east",
+      vals = c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
+      longname = "coordinate_longitude"
+    )
 
-    latd <- ncdf4::ncdim_def(name='lat',
-                             units="degrees_north",
-                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
-                             longname="coordinate_latitude")
+    latd <- ncdf4::ncdim_def(
+      name = "lat",
+      units = "degrees_north",
+      vals = c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
+      longname = "coordinate_latitude"
+    )
 
     if (length(monthly_dvmdostem_outputs) > 0) {
       # last day of each month
@@ -271,37 +278,44 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
     } else {
       timed_vals <- c(0)
     }
-    timed <- ncdf4::ncdim_def(name='time',
-                              units=paste0("days since ", all_yrs[i]),
-                              vals=timed_vals,
-                              unlim=TRUE,
-                              longname="time",
-                              calendar='365_day')
+    timed <- ncdf4::ncdim_def(
+      name = "time",
+      units = paste0("days since ", all_yrs[i]),
+      vals = timed_vals,
+      unlim = TRUE,
+      longname = "time",
+      calendar = "365_day"
+    )
 
-    out_nc_dims <- list(lon=lond, lat=latd, time=timed) # dimension order: X, Y, time
+    out_nc_dims <- list(lon = lond, lat = latd, time = timed) # dimension order: X, Y, time
 
     PEcAn.logger::logger.info("Creating variables for new PEcAn style files...")
 
     newvars <- c() # Not very efficient, would be better to pre-allocate space
     j <- 0
-    for (name in pecan_requested_vars){
+    for (name in pecan_requested_vars) {
       j <- j + 1
       print(paste0("Creating variable named: ", name))
-      ncvar <- ncdf4::ncvar_def(name = name,
-                                units = vmap_reverse[[name]][["newunits"]],
-                                longname = vmap_reverse[[name]][["longname"]],
-                                dim = out_nc_dims, -999, prec = "double")
+      ncvar <- ncdf4::ncvar_def(
+        name = name,
+        units = vmap_reverse[[name]][["newunits"]],
+        longname = vmap_reverse[[name]][["longname"]],
+        dim = out_nc_dims, -999, prec = "double"
+      )
       newvars[[j]] <- ncvar
     }
 
     ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(lubridate::year(all_yrs[i])), ".nc")), newvars)
     # extract variable and long names to VAR file for PEcAn visibility
     # THIS NEEDS TO BE KEPT AND USED FOR PROPER PLOTTING
-    write.table(sapply(ncout$var, function(x) { x$longname }),
-                file = file.path(outdir,paste0(as.character(lubridate::year(all_yrs[i])), ".nc.var")),
-                col.names = FALSE,
-                row.names = TRUE,
-                quote = FALSE)
+    write.table(sapply(ncout$var, function(x) {
+      x$longname
+    }),
+    file = file.path(outdir, paste0(as.character(lubridate::year(all_yrs[i])), ".nc.var")),
+    col.names = FALSE,
+    row.names = TRUE,
+    quote = FALSE
+    )
 
     ncdf4::nc_close(ncout)
   }
@@ -311,7 +325,6 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
 
   # Write the scenario data to pecan files.
   write.data2pecan.file(y_sc_starts, outdir, pecan_requested_vars, monthly_dvmdostem_outputs, yearly_dvmdostem_outputs, px_Y, px_X)
-
 } # end of function
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 ## EOF

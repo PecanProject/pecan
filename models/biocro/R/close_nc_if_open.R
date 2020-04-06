@@ -2,11 +2,11 @@
 # Used by met2model.BIOCRO to allow closing files cleanly on exit
 # without keeping them open longer than needed while looping over other years
 close_nc_if_open <- function(ncfile) {
-
   if (!inherits(ncfile, "ncdf4")) {
     PEcAn.logger::logger.error(
       substitute(ncfile),
-      " is not an NCDF file object. Don't know how to close it.")
+      " is not an NCDF file object. Don't know how to close it."
+    )
     return(invisible())
   }
 
@@ -21,6 +21,7 @@ close_nc_if_open <- function(ncfile) {
     return(invisible())
   } else {
     PEcAn.logger::logger.error(
-      "Closing NCDF file", ncfile$filename, "failed with message", res)
+      "Closing NCDF file", ncfile$filename, "failed with message", res
+    )
   }
 }

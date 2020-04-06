@@ -1,6 +1,6 @@
 #' Write ED inputs to directory
 #'
-#' Write a complete [ED inputs object][read_ed_veg] to disk. `css`, `pss`, and 
+#' Write a complete [ED inputs object][read_ed_veg] to disk. `css`, `pss`, and
 #' `site` files are automatically named and correctly formatted.
 #'
 #' @param ed_veg ED vegetation inputs object (see [read_ed_veg]).
@@ -24,9 +24,9 @@ write_ed_veg <- function(ed_veg, path_prefix) {
 #'
 #' Functions for writing css, pss, and site files from their respective objects.
 #'
-#' Latitude and longitude coordinates will be converted directly to character, 
-#' without any changes to their precision. If they are `NULL` (default), the 
-#' function assumes that `lat` and `lon` are already in the `path_prefix`, and 
+#' Latitude and longitude coordinates will be converted directly to character,
+#' without any changes to their precision. If they are `NULL` (default), the
+#' function assumes that `lat` and `lon` are already in the `path_prefix`, and
 #' if they are absent, the function will throw an error.
 #'
 #' @param css css object (see [read_css])
@@ -67,9 +67,9 @@ write_site <- function(site, path_prefix, latitude = NULL, longitude = NULL) {
 
 #' Format file name for ED vegetation inputs
 #'
-#' Adds the latitude and longitude, or checks if they are formatted correctly. 
-#' Then, splits the prefix into the directory and base name, appends the suffix 
-#' to the base name (adding a starting dot, if necessary), and returns the 
+#' Adds the latitude and longitude, or checks if they are formatted correctly.
+#' Then, splits the prefix into the directory and base name, appends the suffix
+#' to the base name (adding a starting dot, if necessary), and returns the
 #' filename as a character.
 #'
 #' @param suffix Character string of filename suffix.
