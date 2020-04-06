@@ -82,8 +82,10 @@ if (grepl("pecan.zip$", args[1])) {
 
 # convert CF to output, in this case ed.zip
 library(PEcAn.LINKAGES)
-result <- met2model.LINKAGES(cffolder, site, outfolder, start_date = startDate, end_date = endDate, 
-  overwrite = overwrite)
+result <- met2model.LINKAGES(cffolder, site, outfolder,
+  start_date = startDate, end_date = endDate,
+  overwrite = overwrite
+)
 
 # next rename outfile to output file
 file.rename(result$file, outputFile)

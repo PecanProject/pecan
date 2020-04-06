@@ -32,9 +32,9 @@ download.browndog <- function(url, file, timeout = 60, .opts = list()) {
   f <- CFILE(file, mode = "wb")
   curlPerform(url = url, writedata = f@ref, .opts = .opts)
   RCurl::close(f)
-  
+
   return(file)
-}  # download.browndog
+} # download.browndog
 
 type <- "NARR"
 site <- "US-NR1"
@@ -48,18 +48,22 @@ output <- "clim"
 
 outputfile <- paste(site, output, sep = ".")
 
-xmldata <- paste0("<input>", 
-                  "<type>", type, "</type>", 
-                  "<site>", site, "</site>", 
-                  "<lat>", site_lat, "</lat>", 
-                  "<lon>", site_lon, "</lon>", 
-                  "<start_date>", startDate, "</start_date>", 
-                  "<end_date>", endDate, "</end_date>", 
-                  "</input>")
+xmldata <- paste0(
+  "<input>",
+  "<type>", type, "</type>",
+  "<site>", site, "</site>",
+  "<lat>", site_lat, "</lat>",
+  "<lon>", site_lon, "</lon>",
+  "<start_date>", startDate, "</start_date>",
+  "<end_date>", endDate, "</end_date>",
+  "</input>"
+)
 
 # post to browndog
 curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-result <- postForm(paste0(browndog, output, "/"), fileData = fileUpload("pecan.xml", xmldata, "text/xml"), 
-  .opts = curloptions)
+result <- postForm(paste0(browndog, output, "/"),
+  fileData = fileUpload("pecan.xml", xmldata, "text/xml"),
+  .opts = curloptions
+)
 url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
 download.browndog(url, outputfile, 120, curloptions)

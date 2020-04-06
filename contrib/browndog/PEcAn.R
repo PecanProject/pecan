@@ -55,12 +55,16 @@ site_lon <- ifelse(is.null(input$lon), NA, input$lon)
 # connect to DB and get site name
 con <- db.open(dbparams)
 # query site based on location
-site <- db.query(paste0("SELECT id, sitename AS name FROM sites ORDER BY st_distance(geometry, ST_GeogFromText('POINT(", 
-  site_lon, " ", site_lat, ")'))  limit 1"), con)
+site <- db.query(paste0(
+  "SELECT id, sitename AS name FROM sites ORDER BY st_distance(geometry, ST_GeogFromText('POINT(",
+  site_lon, " ", site_lat, ")'))  limit 1"
+), con)
 if (length(site) < 0) {
   # query site based on name
-  site <- db.query(paste0("SELECT id, sitename AS name FROM sites WHERE sitename LIKE '%", input$site, 
-    "%'"), con)
+  site <- db.query(paste0(
+    "SELECT id, sitename AS name FROM sites WHERE sitename LIKE '%", input$site,
+    "%'"
+  ), con)
 }
 if (length(site) < 0) {
   # insert site info
@@ -104,10 +108,12 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1) && grepl("\\.pec
   # get list of files we need to zip
   files <- c()
   for (year in start_year:end_year) {
-    files <- c(files, files <- file.path(folder, list.files(folder, pattern = paste0("*", year, 
-      "*"))))
+    files <- c(files, files <- file.path(folder, list.files(folder, pattern = paste0(
+      "*", year,
+      "*"
+    ))))
   }
-  
+
   # use intermediate file so it does not get marked as done until really done
   dir.create(tempDir, showWarnings = FALSE, recursive = TRUE)
   zipfile <- file.path(tempDir, "temp.zip")
