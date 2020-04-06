@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -19,16 +19,16 @@
 ##' @return Function does not return a value but does print out diagnostic statements.
 ##' @author Michael C. Dietze
 pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
-  
+
   ## establish database connection
   if (is.null(con)) {
     con <- query.bety.con(...)
   }
-  
+
   ## look up pfts.id based on pfts.name
   q <- dbSendQuery(con, paste0("select * from pfts where name =\"", pft, "\""))
   my.pft <- fetch(q, n = -1)
-  
+
   ## if pfts.name does not exist, stop and send error
   if (nrow(my.pft) != 1) {
     print("PFT did not match uniquely.  Match=")
@@ -41,10 +41,10 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
     print("using PFT:")
     print(my.pft)
   }
-  
+
   ## loop over acronyms
   for (acro in acronym) {
-    
+
     ## look up plant_id based on acronyms
     q <- dbSendQuery(con, paste0("select id, ScientificName,Symbol from plants where Symbol = '", acro, "'"))
     my.plant <- fetch(q, n = -1)
@@ -53,7 +53,7 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
       print(my.plant)
       next
     }
-    
+
     ## look up species.id based on plant_id
     q <- dbSendQuery(con, paste0("select * from species where plant_id = '", my.plant$id, "'"))
     my.species <- fetch(q, n = -1)
@@ -62,17 +62,19 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
       print(my.species)
       next
     }
-    
+
     ## look up pfts_species.specie_id to check for duplicates
-    q <- dbSendQuery(con, paste0("select * from pfts_species where pft_id = '", my.pft$id, "' and specie_id = '", my.species$id, 
-                                 "'"))
+    q <- dbSendQuery(con, paste0(
+      "select * from pfts_species where pft_id = '", my.pft$id, "' and specie_id = '", my.species$id,
+      "'"
+    ))
     my.pft2spp <- fetch(q, n = -1)
     if (nrow(my.pft2spp) > 0) {
       print(c("Species already exists for PFT", acro))
       print(my.species)
       next
     }
-    
+
     ## give list of species
     print(c("ADDING", acro))
     # print(my.plant) print(my.species)
@@ -80,14 +82,12 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
       # print('TEST ONLY')
       next
     }
-    
+
     ## if a species is not already in the pft, add
     q <- dbSendQuery(con, paste0("insert into pfts_species set pft_id = '", my.pft$id, "', specie_id = '", my.species$id, "'"))
-    
-  }  ## end loop over acronyms
-  
+  } ## end loop over acronyms
+
   if (test) {
     print("THIS WAS A TEST, NO SPECIES WERE ADDED. SET 'test = FALSE' TO COMMIT CHANGES")
   }
-  
 } # pft.add.spp

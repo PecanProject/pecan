@@ -1,7 +1,7 @@
 library(PEcAn.all)
 
 # Insert settings file path here. Use the same one supplied to the original failed workflow
-settings.file = ""
+settings.file <- ""
 
 # Read in settings
 settings <- read.settings(settings.file)

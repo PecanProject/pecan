@@ -21,7 +21,7 @@ if (args[1] != "NULL") {
 
 ## check that function exists
 if (exists(args[2])) {
-  
+
   ## put function arguments into a list
   fcn.args <- list()
   if (length(args) > 2) {
@@ -29,7 +29,7 @@ if (exists(args[2])) {
       fcn.args[[i]] <- args[i + 2]
     }
   }
-  
+
   ## call function
   do.call(args[2], fcn.args)
 }

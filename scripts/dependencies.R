@@ -1,16 +1,16 @@
 #!/usr/bin/env Rscript
-##--------------------------------------------------------------------------------------------------#
+## --------------------------------------------------------------------------------------------------#
 ##'
 ##' Create a dependency graph for a list of packages. Each package is checked for their dependencies
 ##' both Depends as well Suggests.
-##' 
+##'
 ##' @name dependencygraph
 ##' @title Create a graph of all package dependencies
 ##' @param packages TODO
 ##' @param filename TODO
 ##' @param suggests TODO
 ##' @param filter TODO
-##' @export 
+##' @export
 ##' @examples
 ##' dependencygraph(c('igraph'), suggests=TRUE)
 ##' @author Rob Kooper
@@ -18,10 +18,10 @@
 dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = NA) {
   library(graphics)
   library(igraph)
-  
+
   graphData <- data.frame(from = numeric(0), to = numeric(0), relationship = numeric(0))
   seen <- c()
-  
+
   scanPackageField <- function(package, field) {
     packages <- packageDescription(package, fields = field)
     packages <- gsub("\n", "", packages)
@@ -39,7 +39,7 @@ dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = 
       scanPackage(p)
     }
   } # scanPackageField
-  
+
   scanPackage <- function(package) {
     if (!(package %in% seen)) {
       seen <<- c(seen, package)
@@ -49,26 +49,26 @@ dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = 
       }
     }
   } # scanPackageField
-  
+
   for (p in packages) {
     scanPackage(p)
   }
-  
+
   graph <- graph.data.frame(graphData)
-  
+
   V(graph)$size <- 10
   V(graph)$color <- "white"
   V(graph)$label.color <- "black"
-  
+
   E(graph)$arrow.size <- 0.5
   E(graph)[relationship == "Depends"]$color <- "red"
   E(graph)[relationship == "Suggests"]$color <- "blue"
   # colors <- heat.colors(vcount(graph)) E(graph)$color <- colors[match(graphData$to, unique(graphData$to))]
-  
+
   set.seed(3952)
   layout <- layout.fruchterman.reingold.grid(graph)
   # layout <- layout.circle(graph)
-  
+
   if (length(grep("\\.pdf$", filename)) != 0) {
     pdf(file = filename)
     plot(graph, layout = layout, frame = true)
@@ -94,10 +94,12 @@ dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = 
   }
 } # dependencygraph
 
-packages <- c("PEcAn.BIOCRO", "PEcAn.DB", "PEcAn.ED2", "PEcAn.MA", "PEcAn.SIPNET", 
-              "PEcAn.assim.batch", "PEcAn.assim.sequential", 
-              "PEcAn.data.atmosphere", "PEcAn.data.land", "PEcAn.priors", "PEcAn.settings", 
-              "PEcAn.uncertainty", "PEcAn.utils", "PEcAn.visualization")
+packages <- c(
+  "PEcAn.BIOCRO", "PEcAn.DB", "PEcAn.ED2", "PEcAn.MA", "PEcAn.SIPNET",
+  "PEcAn.assim.batch", "PEcAn.assim.sequential",
+  "PEcAn.data.atmosphere", "PEcAn.data.land", "PEcAn.priors", "PEcAn.settings",
+  "PEcAn.uncertainty", "PEcAn.utils", "PEcAn.visualization"
+)
 
 # dependencygraph(packages, suggests=FALSE, filename='graph.png')
 dependencygraph(packages, suggests = TRUE, filename = "graph.png", filter = "PEcAn")

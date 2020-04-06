@@ -10,13 +10,13 @@ runtests <- as.logical(Sys.getenv("RUN_TESTS", unset = TRUE))
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (file.exists(old_file)) {
-    # Package has old unfixed warnings that we should ignore by default
-    # (but if log/die level are explicitly set, respect them)
-    if (is.na(log_level)) log_level <- "error"
-    if (is.na(die_level)) die_level <- "error"
+  # Package has old unfixed warnings that we should ignore by default
+  # (but if log/die level are explicitly set, respect them)
+  if (is.na(log_level)) log_level <- "error"
+  if (is.na(die_level)) die_level <- "error"
 } else {
-    if (is.na(log_level)) log_level <- "all"
-    if (is.na(die_level)) die_level <- "note"
+  if (is.na(log_level)) log_level <- "all"
+  if (is.na(die_level)) die_level <- "note"
 }
 
 log_level <- match.arg(log_level, c("error", "warning", "note", "all"))
@@ -27,33 +27,35 @@ log_notes <- log_level %in% c("note", "all")
 
 # should test se run
 if (!runtests) {
-    args <- c("--no-tests", "--timings")
+  args <- c("--no-tests", "--timings")
 } else {
-    args <- c("--timings")
+  args <- c("--timings")
 }
 
-chk <- devtools::check(pkg, args = args, quiet = TRUE,
-    error_on = die_level, document = redocument)
+chk <- devtools::check(pkg,
+  args = args, quiet = TRUE,
+  error_on = die_level, document = redocument
+)
 
 errors <- chk[["errors"]]
 n_errors <- length(errors)
 if (n_errors > 0) {
-    cat(errors, "\n")
-    stop(n_errors, " errors found in ", pkg, ".")
+  cat(errors, "\n")
+  stop(n_errors, " errors found in ", pkg, ".")
 }
 
 warns <- chk[["warnings"]]
 n_warns <- length(warns)
 message(n_warns, " warnings found in ", pkg, ".")
 if ((log_warn) && n_warns > 0) {
-    cat(warns, "\n")
+  cat(warns, "\n")
 }
 
 notes <- chk[["notes"]]
 n_notes <- length(notes)
 message(n_notes, " notes found in ", pkg, ".")
 if (log_notes && n_notes > 0) {
-    cat(notes, "\n")
+  cat(notes, "\n")
 }
 
 
@@ -89,71 +91,74 @@ if (log_notes && n_notes > 0) {
 
 # everything beyond this point is comparing to old version
 if (!file.exists(old_file)) {
-    quit("no")
+  quit("no")
 }
 
 old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
 msg_lines <- function(msg) {
-    # leading double-space indicates wrapped line -> rejoin
-    msg <- gsub("\n  ", " ", msg, fixed = TRUE)
+  # leading double-space indicates wrapped line -> rejoin
+  msg <- gsub("\n  ", " ", msg, fixed = TRUE)
 
-    #split lines, delete empty ones
-    msg <- strsplit(msg, split = "\n", fixed = TRUE)
-    msg <- lapply(msg, function(x)x[x != ""])
+  # split lines, delete empty ones
+  msg <- strsplit(msg, split = "\n", fixed = TRUE)
+  msg <- lapply(msg, function(x) x[x != ""])
 
-    # prepend message title (e.g. "checking Rd files ... NOTE") to each line
-    unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep = ": ")))
+  # prepend message title (e.g. "checking Rd files ... NOTE") to each line
+  unlist(lapply(msg, function(x) paste(x[[1]], x[-1], sep = ": ")))
 }
 
 if (cmp$status != "+") {
-    # rcmdcheck found new messages, so check has failed
-    print(cmp)
-    cat("R check of", pkg, "reports the following new problems.",
-        "Please fix these and resubmit:\n")
-    cat(cmp$cmp$output[cmp$cmp$change == 1], sep = "\n")
-    stop("Please fix these and resubmit.")
+  # rcmdcheck found new messages, so check has failed
+  print(cmp)
+  cat(
+    "R check of", pkg, "reports the following new problems.",
+    "Please fix these and resubmit:\n"
+  )
+  cat(cmp$cmp$output[cmp$cmp$change == 1], sep = "\n")
+  stop("Please fix these and resubmit.")
 } else {
-    # No new messages, but need to check details of pre-existing ones
-    # We stopped earlier for errors, so all entries here are WARNING or NOTE
-    cur_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "new"])
-    prev_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "old"])
+  # No new messages, but need to check details of pre-existing ones
+  # We stopped earlier for errors, so all entries here are WARNING or NOTE
+  cur_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "new"])
+  prev_msgs <- msg_lines(cmp$cmp$output[cmp$cmp$which == "old"])
 
-    # avoids false positives from tempdir changes
-    cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
-    prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
+  # avoids false positives from tempdir changes
+  cur_msgs <- gsub(chk$checkdir, "...", cur_msgs)
+  prev_msgs <- gsub(old$checkdir, "...", prev_msgs)
 
-    # R 3.6.0 switched style for lists of packages
-    # from space-separated fancy quotes to comma-separated straight quotes
-    # We'll meet halfway, with space-separated straight quotes
-    cur_msgs <- gsub("[‘’]", "'", cur_msgs)
-    cur_msgs <- gsub("', '", "' '", cur_msgs)
-    prev_msgs <- gsub("[‘’]", "'", prev_msgs)
-    prev_msgs <- gsub("', '", "' '", prev_msgs)
+  # R 3.6.0 switched style for lists of packages
+  # from space-separated fancy quotes to comma-separated straight quotes
+  # We'll meet halfway, with space-separated straight quotes
+  cur_msgs <- gsub("[‘’]", "'", cur_msgs)
+  cur_msgs <- gsub("', '", "' '", cur_msgs)
+  prev_msgs <- gsub("[‘’]", "'", prev_msgs)
+  prev_msgs <- gsub("', '", "' '", prev_msgs)
 
-    # Compression warnings report slightly different sizes on different R
-    # versions. If the only difference is in the numbers, don't complain
-    cmprs_msg <- grepl("significantly better compression", cur_msgs)
-    if (any(cmprs_msg)) {
-        prev_cmprs_msg <- grepl("significantly better compression", prev_msgs)
-        cur_cmprs_nodigit <- gsub("[0-9]", "", cur_msgs[cmprs_msg])
-        prev_cmprs_nodigit <- gsub("[0-9]", "", prev_msgs[prev_cmprs_msg])
-        if (all(cur_cmprs_nodigit %in% prev_cmprs_nodigit)) {
-            cur_msgs <- cur_msgs[!cmprs_msg]
-        }
+  # Compression warnings report slightly different sizes on different R
+  # versions. If the only difference is in the numbers, don't complain
+  cmprs_msg <- grepl("significantly better compression", cur_msgs)
+  if (any(cmprs_msg)) {
+    prev_cmprs_msg <- grepl("significantly better compression", prev_msgs)
+    cur_cmprs_nodigit <- gsub("[0-9]", "", cur_msgs[cmprs_msg])
+    prev_cmprs_nodigit <- gsub("[0-9]", "", prev_msgs[prev_cmprs_msg])
+    if (all(cur_cmprs_nodigit %in% prev_cmprs_nodigit)) {
+      cur_msgs <- cur_msgs[!cmprs_msg]
     }
+  }
 
-    # These lines are redundant summaries of issues also reported individually
-    # and create false positives when an existing issue is fixed
-    cur_msgs <- cur_msgs[!grepl(
-        "NOTE: Undefined global functions or variables:", cur_msgs)]
-    cur_msgs <- cur_msgs[!grepl("NOTE: Consider adding importFrom", cur_msgs)]
+  # These lines are redundant summaries of issues also reported individually
+  # and create false positives when an existing issue is fixed
+  cur_msgs <- cur_msgs[!grepl(
+    "NOTE: Undefined global functions or variables:", cur_msgs
+  )]
+  cur_msgs <- cur_msgs[!grepl("NOTE: Consider adding importFrom", cur_msgs)]
 
-    lines_changed <- setdiff(cur_msgs, prev_msgs)
-    if (length(lines_changed) > 0) {
-        cat("R check of", pkg, "returned new problems:\n")
-        cat(lines_changed, sep = "\n")
-        stop("Please fix these and resubmit.")
-    }
+  lines_changed <- setdiff(cur_msgs, prev_msgs)
+  if (length(lines_changed) > 0) {
+    cat("R check of", pkg, "returned new problems:\n")
+    cat(lines_changed, sep = "\n")
+    stop("Please fix these and resubmit.")
+  }
 }

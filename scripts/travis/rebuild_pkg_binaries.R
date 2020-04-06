@@ -27,7 +27,8 @@ is_wrong_build <- function(pkgname) {
 
   built_str <- tryCatch(
     packageDescription(pkgname)$Built,
-    error = function(e)e)
+    error = function(e) e
+  )
   if (inherits(built_str, "error")) {
     # In the rare case we can't read the description,
     # assume package is broken and needs rebuilding
@@ -48,10 +49,12 @@ needs_rebuild <- vapply(all_pkgs, is_wrong_build, logical(1))
 if (any(needs_rebuild)) {
   print(paste(
     "Found R packages that were built for a different R version.",
-    "Reinstalling these from source."))
+    "Reinstalling these from source."
+  ))
   install.packages(
     all_pkgs[needs_rebuild],
     repos = "cloud.r-project.org",
     dependencies = FALSE,
-    Ncpus = 2)
+    Ncpus = 2
+  )
 }

@@ -38,8 +38,8 @@ trees <- read.csv("~/Camp2016/ForestPlots/2016/TenderfootBog_2016_Cleaned.csv")
 rings <- Read_Tucson("~/Camp2016/ForestPlots/2016/TucsonCombined/")
 
 ## Match observations & format for JAGS
-combined <- matchInventoryRings(trees, rings, extractor = "Tag", nyears = 39, coredOnly = FALSE)  #WARNINGS
-data <- buildJAGSdata_InventoryRings(combined)  #WARNINGS
+combined <- matchInventoryRings(trees, rings, extractor = "Tag", nyears = 39, coredOnly = FALSE) # WARNINGS
+data <- buildJAGSdata_InventoryRings(combined) # WARNINGS
 status.end()
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
@@ -62,11 +62,13 @@ pft.data <- list()
 for (ipft in seq_along(settings$pfts)) {
   ## loop over PFTs
   pft_name <- settings$pfts[[ipft]]$name
-  query <- paste0("SELECT s.spcd,", "s.\"Symbol\"", " as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",
-                  pft_name, "%'")
+  query <- paste0(
+    "SELECT s.spcd,", "s.\"Symbol\"", " as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",
+    pft_name, "%'"
+  )
   pft.data[[pft_name]] <- db.query(query, con)
 }
-allom.stats <- AllomAve(pft.data, outdir = settings$outdir, ngibbs = n.iter/10)
+allom.stats <- AllomAve(pft.data, outdir = settings$outdir, ngibbs = n.iter / 10)
 save(allom.stats, file = file.path(settings$outdir, "allom.stats.Rdata"))
 status.end()
 
@@ -74,17 +76,17 @@ status.end()
 status.start("PLOT2AGB")
 out <- as.matrix(jags.out)
 sel <- grep("x[", colnames(out), fixed = TRUE)
-unit.conv <- pi * 10^2/10000
+unit.conv <- pi * 10^2 / 10000
 state <- plot2AGB(combined, out[, sel], settings$outdir, list(allom.stats[[2]]), unit.conv = unit.conv)
 
 biomass2carbon <- 0.48
 
-state$NPP <- udunits2::ud.convert(state$NPP,'Mg/ha/yr','kg/m^2/s') * biomass2carbon# kgC/m^2/s 
-state$AGB <- udunits2::ud.convert(state$AGB,'Mg/ha','kg/m^2') * biomass2carbon# kgC/m2
+state$NPP <- udunits2::ud.convert(state$NPP, "Mg/ha/yr", "kg/m^2/s") * biomass2carbon # kgC/m^2/s
+state$AGB <- udunits2::ud.convert(state$AGB, "Mg/ha", "kg/m^2") * biomass2carbon # kgC/m2
 
 NPP <- apply(state$NPP[1, , ], 2, mean, na.rm = TRUE)
 AGB <- apply(state$AGB[1, , ], 2, mean, na.rm = TRUE)
-        
+
 obs.mean <- list()
 for (i in seq_along(NPP)) {
   obs.mean[[i]] <- c(NPP[i], AGB[i])
@@ -101,8 +103,8 @@ for (i in seq_along(NPP)) {
 obs.times <- seq(as.Date(settings$state.data.assimilation$start.date), as.Date(settings$state.data.assimilation$end.date), by = settings$state.data.assimilation$forecast.time.step)
 obs.times <- lubridate::year(obs.times)
 
-names(obs.mean) <- paste0(obs.times,'/12/31')
-names(obs.cov) <- paste0(obs.times,'/12/31')
+names(obs.mean) <- paste0(obs.times, "/12/31")
+names(obs.cov) <- paste0(obs.times, "/12/31")
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#

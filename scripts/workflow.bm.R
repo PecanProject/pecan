@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -29,13 +29,16 @@ status.end <- function(status = "DONE") {
 }
 status.skip <- function(name) {
   if (exists("settings")) {
-    cat(paste(name, format(Sys.time(), "%F %T"), "", format(Sys.time(), "%F %T"), "SKIPPED", "\n", sep = "\t"), file = file.path(settings$outdir, 
-                                                                                                                                 "STATUS"), append = TRUE)
+    cat(paste(name, format(Sys.time(), "%F %T"), "", format(Sys.time(), "%F %T"), "SKIPPED", "\n", sep = "\t"), file = file.path(
+      settings$outdir,
+      "STATUS"
+    ), append = TRUE)
   }
 }
 status.check <- function(name) {
-  if (!exists("settings")) 
+  if (!exists("settings")) {
     return(0)
+  }
   status.file <- file.path(settings$outdir, "STATUS")
   if (!file.exists(status.file)) {
     return(0)
@@ -78,9 +81,9 @@ options(error = quote({
 }))
 
 
-# ---------------------------------------------------------------------- 
+# ----------------------------------------------------------------------
 # PEcAn Workflow
-# ---------------------------------------------------------------------- 
+# ----------------------------------------------------------------------
 # Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 # if (is.na(args[1])){ settings <- read.settings('pecan.xml') } else { settings.file = args[1] settings <-
@@ -100,9 +103,9 @@ for (i in seq_along(settings$run$inputs)) {
   if (is.null(input)) {
     next
   }
-  
+
   input.tag <- names(settings$run$input)[i]
-  
+
   # fia database
   if ((input["input"] == "fia") && (status.check("FIA2ED") == 0)) {
     status.start("FIA2ED")
@@ -110,21 +113,23 @@ for (i in seq_along(settings$run$inputs)) {
     status.end()
     needsave <- TRUE
   }
-  
+
   # met conversion
   if (input.tag == "met") {
     name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
     if (is.null(input$path) && (status.check(name) == 0)) {
       status.start(name)
-      result <- PEcAn.data.atmosphere::met.process(site = settings$run$site, 
-                                                   input_met = settings$run$inputs$met, 
-                                                   start_date = settings$run$start.date, 
-                                                   end_date = settings$run$end.date, 
-                                                   model = settings$model$type, 
-                                                   host = settings$run$host, 
-                                                   dbparms = settings$database$bety, 
-                                                   dir = settings$run$dbfiles, 
-                                                   browndog = settings$browndog)
+      result <- PEcAn.data.atmosphere::met.process(
+        site = settings$run$site,
+        input_met = settings$run$inputs$met,
+        start_date = settings$run$start.date,
+        end_date = settings$run$end.date,
+        model = settings$model$type,
+        host = settings$run$host,
+        dbparms = settings$database$bety,
+        dir = settings$run$dbfiles,
+        browndog = settings$browndog
+      )
       settings$run$inputs[[i]][["path"]] <- result
       status.end()
       needsave <- TRUE
@@ -151,12 +156,14 @@ if (status.check("TRAIT") == 0) {
 if ("meta.analysis" %in% names(settings)) {
   if (status.check("META") == 0) {
     status.start("META")
-    run.meta.analysis(settings$pfts, 
-                      settings$meta.analysis$iter, 
-                      settings$meta.analysis$random.effects, 
-                      settings$meta.analysis$threshold, 
-                      settings$run$dbfiles, 
-                      settings$database$bety)
+    run.meta.analysis(
+      settings$pfts,
+      settings$meta.analysis$iter,
+      settings$meta.analysis$random.effects,
+      settings$meta.analysis$threshold,
+      settings$run$dbfiles,
+      settings$database$bety
+    )
     status.end()
   }
 }
@@ -164,9 +171,10 @@ if ("meta.analysis" %in% names(settings)) {
 # Write model specific configs
 if (status.check("CONFIG") == 0) {
   status.start("CONFIG")
-  settings <- run.write.configs(settings, 
-                                write = settings$database$bety$write, 
-                                ens.sample.method = settings$ensemble$method)
+  settings <- run.write.configs(settings,
+    write = settings$database$bety$write,
+    ens.sample.method = settings$ensemble$method
+  )
   saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.CONFIGS.xml"))
   status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {
@@ -220,11 +228,13 @@ if (status.check("FINISHED") == 0) {
   status.start("FINISHED")
   kill.tunnel()
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params = settings$database$bety)
-  
+
   # Send email if configured
   if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
-    sendmail(settings$email$from, settings$email$to, paste0("Workflow has finished executing at ", date()), paste0("You can find the results on ", 
-                                                                                                                   settings$email$url))
+    sendmail(settings$email$from, settings$email$to, paste0("Workflow has finished executing at ", date()), paste0(
+      "You can find the results on ",
+      settings$email$url
+    ))
   }
   status.end()
 }
