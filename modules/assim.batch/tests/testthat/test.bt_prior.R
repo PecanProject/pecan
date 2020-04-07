@@ -3,6 +3,8 @@ library(testthat)
 
 context("BayesianTools prior functions")
 
+set.seed(26353451)
+
 prior_list <- list(list('normal', 'norm', 0.5, 2),
                    list('lognormal', 'lnorm', 1, 1),
                    list('gamma', 'gamma', 0.5, 0.5))
