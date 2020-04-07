@@ -11,15 +11,14 @@
 ##' \dontrun{
 ##' xmlfile <- the full path to a pecan .xml settings file.
 ##' 
-##' results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
-##'            site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
-##'            run_parallel = TRUE, ncores = 8)
-##' }
+
+##' site_info <- get_site_info(xmlfile = "/data/bmorrison/sda/lai/pecan_MultiSite_SDA_LAI_AGB_8_Sites_2009.xml")
+##'  }          
 ##' @export
 ##' @author Bailey Morrison
 ##'
 get_site_info <- function(xmlfile) {
-  require(PEcAn.all)
+  #require(PEcAn.all)
   
   settings <- read.settings(xmlfile)
   
@@ -73,9 +72,9 @@ get_site_info <- function(xmlfile) {
 ##' run_parallel <- optional. Can be used to speed up download process if there are more than 2 cores available on computer
 ##' 
 
-##' results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = TRUE, outdir = NULL)
+##' results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = FALSE, outdir = NULL)
 ##' }        
-##'            
+##' @importFrom foreach %do% %dopar%           
 ##' @export
 ##' @author Bailey Morrison
 ##'
@@ -83,7 +82,8 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
   
   #until the issues with parallel runs are fixed.
   run_parallel = FALSE
-  require("foreach")
+  #require("foreach")
+  
   
   #### check that dates are within the date range of the dataset
   
@@ -98,93 +98,71 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
       dates <- c(as.Date(dates[1], "%Y%m%d"), as.Date(dates[2], "%Y%m%d"))
     }
     # Julien Date
-    if (nchar(dates) == 7) {
+    if (any(nchar(dates) == 7)) {
       dates <- c(as.Date(dates[1], "%Y%j"), as.Date(dates[2], "%Y%j"))
     }
   }
   
+  date_range = unique(lubridate::year(seq(dates[1], dates[2], by = '1 year')))
+  
+  output = data.frame()
   if (!(is.null(dir_url)))
   {
-    #https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files/1981/catalog.html -> link for directory files, not downloads
-    result <- RCurl::getURL(paste(dir_url, "catalog.html", sep = "/"), verbose=FALSE ,ftp.use.epsv = TRUE, dirlistonly = TRUE)
-    files <- XML::getHTMLLinks(result)
-    
-    date_year_range = unique(lubridate::year(dates))
-    if (all((!(substr(files, 1, 4) %in% date_year_range))))
+    for (i in seq_along(date_range))
     {
-      # give warning that dates aren't available
-      print("something")
-    }
-    
-  }
-  
-  # get list of catalog file links to determine actual dates that can be downloaded with in user range
-  links <- vector()
-  for (i in 1:length(date_year_range))
-  {
-    links[i] <- RCurl::getURL(paste(dir_url, date_year_range[i], "catalog.html", sep = "/"), verbose= FALSE, ftp.use.epsv = TRUE, dirlistonly = TRUE)
-  }
-  
-  # get list of all dates available from year range provided
-  files <- foreach::foreach(i = 1:length(links), .combine = c) %do% XML::getHTMLLinks(links[i])
-  
-  #remove files with no dates and get list of dates available.
-  index_dates <- regexpr(pattern = "[0-9]{8}", files)
-  files <- files[-(which(index_dates < 0))]
-  index_dates <- index_dates[which(index_dates > 0)]
-  
-  # get list of files that fall within the specific date range user asks for (Ymd, not Y)
-  dates_avail <- as.Date(substr(files, index_dates, index_dates+7), "%Y%m%d")
-  date_range <- seq(dates[1], dates[2], by = "day")
-  get_dates <-  date_range[which(date_range %in% dates_avail)]
-  
-  # only keep files that are within the true yyyymmdd date range user requested
-  files <- files[foreach(i = seq_along(get_dates), .combine = c) %do% grep(files, pattern = format(get_dates[i], '%Y%m%d'))]
-  filenames <- basename(files)
-  
-  # user must supply data_URL or the netcdf files cannot be downloaded through thredds. if user has supplied no data_url, the job will fail
-  # supply a warning
-  if (!(is.null(data_url)))
-  {
-    #https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1981/AVHRR-Land_v005_AVH15C1_NOAA-07_19810624_c20181025194251.nc.html
-    # this is what a link looks like to download threeds data.
-    urls <- sort(paste(data_url, substr(dates_avail, 1, 4), filenames, sep = "/"))
-    
-    # parallel seems to have a problem right now with > 500 urls.
-    if (run_parallel)
-    {
-      #require("parallel")
-      require("doParallel")
-      ncores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)
-      # This is a failsafe for computers with low numbers of CPUS to reduce risk of blowing RAM.
-      if (ncores >= 3)
+      result <- RCurl::getURL(paste(dir_url, date_range[i], "/catalog.html", sep = "/"), 
+                              verbose=FALSE ,ftp.use.epsv = TRUE, dirlistonly = TRUE)
+      files <- XML::getHTMLLinks(result)
+      
+      index_dates <- regexpr(pattern = "_[0-9]{8}_", files)
+      files <- files[-(which(index_dates < 0))]
+      index_dates <- index_dates[which(index_dates > 0)]
+      
+      dates_avail <- as.Date(substr(files, index_dates+1, index_dates+8), "%Y%m%d")
+      
+      if (!(is.null(data_url)))
       {
-        # failsafe in case someone has a computer with 2-4 nodes.
-        ncores <- ncores-2
+        urls <- sort(paste(data_url, substr(dates_avail, 1, 4), "/", basename(files), sep = ""))
+        
+        if (run_parallel)
+        {
+          #require("parallel")
+          #require("doParallel")
+          #ncores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)
+          # This is a failsafe for computers with low numbers of CPUS to reduce risk of blowing RAM.
+          # if (ncores >= 3)
+          # {
+          #   # failsafe in case someone has a computer with 2-4 nodes.
+          #   ncores <- ncores-2
+          # }
+          # # THREDDS has a 10 job limit. Will fail if you try to download more than 10 values at a time
+          # if (ncores >= 10)
+          # {
+          #   ncores <- 9 # went 1 less becasue it still fails sometimes
+          # }
+          # cl <- parallel::makeCluster(ncores, outfile="")
+          # doParallel::registerDoParallel(cl)
+          # out <- foreach(i = urls, .combine = rbind) %dopar% 
+          #   extract_thredds_nc(site_info = site_info, url_info = i)
+          # parallel::stopCluster(cl)
+        } else {
+          out <- foreach::foreach(i = urls, .combine = rbind) %do% 
+            extract_thredds_nc(site_info, url_info = i)
+        }
+        output = rbind(output, out)
+        
+        if (!(is.null(outdir)))
+        {
+          # this will need to be changed in the future if users want to be able to save data they haven't already extracted at different sites/dates.
+          write.csv(out, file = paste(outdir, "/THREDDS_", varid, "_", dates[1], "-", dates[2], ".csv", sep = ""))
+        } 
       }
-      # THREDDS has a 10 job limit. Will fail if you try to download more than 10 values at a time
-      if (ncores >= 10)
-      {
-        ncores <- 9 # went 1 less becasue it still fails sometimes
-      }
-      cl <- parallel::makeCluster(ncores, outfile="")
-      doParallel::registerDoParallel(cl)
-      output <- foreach(i = urls, .combine = rbind) %dopar% extract_thredds_nc(site_info = site_info, url = i)
-      parallel::stopCluster(cl)
-    } else {
-      output <- foreach(i = urls, .combine = rbind) %do% extract_thredds_nc(site_info, url = i)
+      
     }
-    
-    if (!(is.null(outdir)))
-    {
-      # this will need to be changed in the future if users want to be able to save data they haven't already extracted at different sites/dates.
-      write.csv(output, file = paste(outdir, "/THREDDS_", varid, "_", dates[1], "-", dates[2], ".csv", sep = ""))
-    } 
-    
-    return(output)
-    
   }
+  return(output)
 }
+
 
 ##' @title extract_thredds_nc
 ##' @name  extract_thredds_nc
@@ -209,8 +187,10 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
 extract_thredds_nc <- function(site_info, url_info)
 {
   #print(url)
-  require("foreach")
-  require("ncdf4")
+  #require("foreach")
+  #require("ncdf4")
+  index = regexpr(pattern = "_[0-9]{8}_", url_info)
+  date<- as.Date(substr(url_info, index+1, index+8), "%Y%m%d")
   
   mylats <- site_info$lat
   mylons <- site_info$lon
@@ -226,17 +206,25 @@ extract_thredds_nc <- function(site_info, url_info)
   lons <- ncdf4::ncvar_get(data, "longitude")
   
   # find the cell that site coordinates are located in
-  dist_y <- foreach(i = mylats, .combine = cbind) %do% sqrt((lats - i)^2)
-  dist_x <- foreach(i = mylons, .combine = cbind) %do% sqrt((lons - i)^2)
-  y <- foreach(i = 1:ncol(dist_y), .combine = c) %do% which(dist_y[,i] == min(dist_y[,i]), arr.ind = TRUE)
-  x <- foreach(i = 1:ncol(dist_x), .combine = c) %do% which(dist_x[,i] == min(dist_x[,i]), arr.ind = TRUE)
+  dist_y <- foreach::foreach(i = mylats, .combine = cbind) %do% sqrt((lats - i)^2)
+  dist_x <- foreach::foreach(i = mylons, .combine = cbind) %do% sqrt((lons - i)^2)
+  y <- foreach::foreach(i = 1:ncol(dist_y), .combine = cbind) %do% which(dist_y[,i] == min(dist_y[,i]), arr.ind = TRUE)
+  x <- foreach::foreach(i = 1:ncol(dist_x), .combine = cbind) %do% which(dist_x[,i] == min(dist_x[,i]), arr.ind = TRUE)
   
   scale <- data$var[[var]]$scaleFact
   
-  d <- as.vector(foreach(i = seq_along(x), .combine = rbind) %do% ncdf4::ncvar_get(data, var, start = c(x[i], y[i], 1), count = c(1,1,1)))
+  d <- as.vector(foreach::foreach(i = seq_along(x), .combine = rbind) %do% ncdf4::ncvar_get(data, var, start = c(x[i], y[i], 1), count = c(1,1,1)))
   
-  info <- as.data.frame(cbind(sites, mylons, mylats, d), stringsAsFactors = FALSE)
-  names(info) <- c("site_id", "lon", "lat", "value")
+  info <- as.data.frame(cbind(sites, mylons, mylats, as.character(rep(date, length(mylats))), d), stringsAsFactors = FALSE)
+  names(info) <- c("site_id", "lon", "lat", "date", "value")
+  
+  na = which(is.na(info$value))
+  if (length(na) != length(info$site_id) | length(na) != 0)
+  {
+    info = info[-na,]
+  } else {
+    info = info
+  }
   
   return(info)
 }
