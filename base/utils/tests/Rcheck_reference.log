@@ -78,11 +78,10 @@ summarize.result: no visible binding for global variable ‘time’
 summarize.result: no visible binding for global variable ‘cultivar_id’
 summarize.result: no visible binding for global variable ‘specie_id’
 summarize.result: no visible binding for global variable ‘statname’
-transformstats: no visible binding for global variable ‘trait’
 Undefined global functions or variables:
   . citation_id control cultivar_id ensemble.samples
   get.parameter.samples greenhouse id median n nr runs.samples
-  sa.samples se settings site_id specie_id statname time trait
+  sa.samples se settings site_id specie_id statname time
   trait.samples trt_id x y years yieldarray
 Consider adding
   importFrom("stats", "median", "time")
