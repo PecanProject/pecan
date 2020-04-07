@@ -15,8 +15,8 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue is stale because it has been open 365 days with no activity.'
         stale-pr-message: 'This PR is stale because it has been open 365 days with no activity.'
-        stale-issue-label: 'Status:Stale'
-        stale-pr-label: 'Status:Stale'
+        stale-issue-label: 'Status: Stale'
+        stale-pr-label: 'Status: Stale'
         days-before-stale: 365
         days-before-close: 100000
         operations-per-run: 25
