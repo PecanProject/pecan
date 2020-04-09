@@ -56,7 +56,14 @@ data to store the file
 }
 \examples{
 \dontrun{
-  dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
+  dbfile.input.insert(
+    in.path = 'trait.data.Rdata',
+    in.prefix = siteid,
+    startdate = startdate,
+    enddate = enddate,
+    mimetype = 'application/x-RData',
+    formatname = 'traits',
+    con = dbcon)
 }
 }
 \author{

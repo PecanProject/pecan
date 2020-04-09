@@ -9,9 +9,11 @@ query_pfts(dbcon, pft_names, modeltype = NULL, strict = FALSE)
 \arguments{
 \item{dbcon}{Database connection object}
 
-\item{pft_names}{Character vector of PFT names}
+\item{pft_names}{character vector of PFT names}
 
-\item{modeltype}{}
+\item{modeltype}{character.
+If specified, only returns PFTs matching this modeltype.
+If NULL, considers all modeltypes.}
 }
 \value{
 `data.frame` containing PFT ID (`id`), type (`pft_type`),
