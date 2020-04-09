@@ -30,7 +30,14 @@
 ##' @author Rob Kooper, Betsy Cowdery
 ##' @examples
 ##' \dontrun{
-##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
+##'   dbfile.input.insert(
+##'     in.path = 'trait.data.Rdata',
+##'     in.prefix = siteid,
+##'     startdate = startdate,
+##'     enddate = enddate,
+##'     mimetype = 'application/x-RData',
+##'     formatname = 'traits',
+##'     con = dbcon)
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
                                 parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE, ens=FALSE) {

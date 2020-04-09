@@ -21,15 +21,22 @@
 #' @examples
 #' \dontrun{
 #' bety <- PEcAn.DB::betyConnect()
-#' 
+#'
 #' formats_variables_tibble <- tibble::tibble(
-#'        variable_id = c(411, 135, 382), 
-#'        name = c("NPP", NA, "YEAR"),  
-#'        unit = c("g C m-2 yr-1", NA, NA),
-#'        storage_type = c(NA, NA, "%Y"),
-#'        column_number = c(2, NA, 4),
-#'  )
-#'   insert.format.vars(con = bety$con, format_name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FALSE, skip = 0, formats_variables = formats_variables_tibble)
+#'   variable_id = c(411, 135, 382),
+#'   name = c("NPP", NA, "YEAR"),
+#'   unit = c("g C m-2 yr-1", NA, NA),
+#'   storage_type = c(NA, NA, "%Y"),
+#'   column_number = c(2, NA, 4))
+#'
+#' insert.format.vars(
+#'   con = bety$con,
+#'   format_name = "LTER-HFR-103",
+#'   mimetype_id = 1090,
+#'   notes = "NPP from Harvard Forest.",
+#'   header = FALSE,
+#'   skip = 0,
+#'   formats_variables = formats_variables_tibble)
 #' }
 insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, header = TRUE, skip = 0, formats_variables = NULL, suppress = TRUE){
   
