@@ -171,11 +171,12 @@ for version in 0.95; do
 done
 
 # build ed2
-for version in git; do
+for version in git 2.2.0; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg BINARY_VERSION="2.2" \
         models/ed
 done
 
