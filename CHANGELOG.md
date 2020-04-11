@@ -19,6 +19,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - sipnet2netcdf will now only extract the data for the year requested (#2187)
 - Fixed Priors vignette (#2439).
 - When building sipnet model would not set correct model version
+- Update pecan/depends docker image to have latest Roxygen and devtools.
+- Update ED docker build, will now build version 2.2.0 and git
 
 ### Changed
 - `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
