@@ -11,7 +11,7 @@ FROM pecan/models:${IMAGE_VERSION}
 # ----------------------------------------------------------------------
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=agri
+ARG MODEL_VERSION=BASGRA_N_v1.0
 
 # Setup model_info file
 COPY model_info.json /work/model.json
