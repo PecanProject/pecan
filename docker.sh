@@ -160,6 +160,15 @@ done
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------
 
+# build basgra
+for version in agri; do
+    ${DEBUG} docker build \
+        --tag pecan/model-basgra-${version}:${IMAGE_VERSION} \
+        --build-arg MODEL_VERSION="${version}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/basgra
+done
+
 # build biocro
 for version in 0.95; do
     ${DEBUG} docker build \
