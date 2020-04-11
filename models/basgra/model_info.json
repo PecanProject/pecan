@@ -1,7 +1,8 @@
 {
   "name": "BASGRA_N",
   "type": "BASGRA",
-  "version": "315d503",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
   "description": "A version of the BASic GRAssland model (BASGRA) that includes simulation of the N-cycle and digestibility.",
   "creator": "Marcel van Oijen",
   "contributors": ["Marcel van Oijen", "Mats Hoglind", "David Cameron"],
