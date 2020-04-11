@@ -17,7 +17,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: pecan/depends:latest
+    container: pecan/depends:develop
     steps:
     - uses: actions/checkout@v2
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
@@ -49,7 +49,7 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:latest
+    container: pecan/depends:develop
     services:
       postgres:
         image: mdillon/postgis:9.5
@@ -90,7 +90,7 @@ jobs:
   check:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:latest
+    container: pecan/depends:develop
     env:
       NCPUS: 2
       CI: true
@@ -127,7 +127,7 @@ jobs:
   sipnet:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:latest
+    container: pecan/depends:develop
     services:
       postgres:
         image: mdillon/postgis:9.5
