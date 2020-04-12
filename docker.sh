@@ -163,7 +163,7 @@ done
 # build basgra
 for version in BASGRA_N_v1.0; do
     ${DEBUG} docker build \
-        --tag pecan/model-basgra-${version}:${IMAGE_VERSION} \
+        --tag pecan/model-basgra-$(echo $version | tr '[A-Z]' '[a-z]'):${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/basgra
