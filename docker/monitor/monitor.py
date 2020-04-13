@@ -148,6 +148,8 @@ def insert_model(model_info):
             postgres_host, postgres_port, postgres_database, postgres_user, postgres_password
         )
 
+    conn = None
+
     try:
         # connect to the PostgreSQL database
         conn = psycopg2.connect(postgres_uri)
