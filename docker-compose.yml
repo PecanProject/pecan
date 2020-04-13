@@ -258,6 +258,7 @@ services:
   # PEcAn models, list each model you want to run below
   # ----------------------------------------------------------------------
 
+  # PEcAn basgra model runner
   basgra:
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
