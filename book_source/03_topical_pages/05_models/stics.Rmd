@@ -1,4 +1,4 @@
-### STICS {#models-stics}
+## STICS {#models-stics}
 
 | Model Information ||
 | -- | -- |

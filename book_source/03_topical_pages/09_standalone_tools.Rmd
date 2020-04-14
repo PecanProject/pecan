@@ -5,7 +5,7 @@
 - Allometry ([`modules/allometry`](https://pecanproject.github.io/modules/allometry/docs/index.html)); [vignette](https://pecanproject.github.io/modules/allometry/docs/articles/AllomVignette.html)
 - Load data ([`modules/benchmark`](https://pecanproject.github.io/modules/benchmark/docs/index.html) -- `PEcAn.benchmark::load_data`)
 
-### Loading Data in PEcAn {#LoadData}
+## Loading Data in PEcAn {#LoadData}
 
 If you are loading data in to PEcAn for benchmarking, using the Benchmarking shiny app [provide link?] is recommended. 
 
@@ -13,9 +13,7 @@ Data can be loaded manually using the `load_data` function which in turn require
 
 Below is a description of the `load_data` function an a simple example of loading data manually. 
 
-### Function `load_data`
-
-#### Inputs
+### Inputs
 
 Required
 
@@ -28,11 +26,12 @@ Optional
 - `end_year = NA`:
 - `site = NA`
 - `vars.used.index=NULL`
-### Output 
+
+### Output
 
 - R data frame containing the requested variables converted in to PEcAn standard name and units and time steps in `POSIX` format. 
 
-#### Example
+### Example
 
 The data for this example has already been entered in to the database. To add new data go to [new data documentation](#NewInput).
 
@@ -49,7 +48,7 @@ bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
 2. Look up the inputs record for the data in BETY. 
 
 ```{r, echo=FALSE, out.height = "50%", out.width = "50%", fig.align = 'center'}
-knitr::include_graphics("04_advanced_user_guide/images/Input_ID_name.png")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/Input_ID_name.png")
 ```
 
    To find the input ID, either look at
