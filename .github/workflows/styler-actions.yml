@@ -1,6 +1,6 @@
 on: 
   pull_request:
-    branches: master
+    branches: styler-workflow
 name: Commands
 jobs:
   style:
