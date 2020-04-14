@@ -48,7 +48,7 @@ bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
 2. Look up the inputs record for the data in BETY. 
 
 ```{r, echo=FALSE, out.height = "50%", out.width = "50%", fig.align = 'center'}
-knitr::include_graphics("04_advanced_user_guide/images/Input_ID_name.png")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/Input_ID_name.png")
 ```
 
    To find the input ID, either look at
