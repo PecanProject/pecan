@@ -1,11 +1,11 @@
-#### Mac OSX {#macosx}
+### Mac OSX {#macosx}
 
 These are specific notes for installing PEcAn on Mac OSX and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
 
 This document also contains information on how to install the Rstudio server edition as well as any other packages that can be helpful.
 
 
-##### Install build environment
+#### Install build environment
 
 ```bash
 # install R
@@ -42,7 +42,7 @@ sudo make install
 cd ..
 ```
 
-##### Install Postgres
+#### Install Postgres
 
 For those on a Mac I use the following app for postgresql which has
 postgis already installed (http://postgresapp.com/)
@@ -62,14 +62,14 @@ CREATE EXTENSION postgis_tiger_geocoder;
 
 To check your postgis run the following command again in psql: `SELECT PostGIS_full_version();`
 
-##### Additional installs
+#### Additional installs
 
 
-###### Install JAGS
+##### Install JAGS
 
 Download JAGS from http://sourceforge.net/projects/mcmc-jags/files/JAGS/3.x/Mac%20OS%20X/JAGS-Mavericks-3.4.0.dmg/download
 
-###### Install udunits
+##### Install udunits
 
 Installing udunits-2 on MacOSX is done from source.
 
@@ -86,7 +86,7 @@ make
 sudo make install
 ```
 
-##### Apache Configuration
+#### Apache Configuration
 
 Mac does not support pdo/postgresql by default. The easiest way to install is use: http://php-osx.liip.ch/
 
@@ -102,10 +102,10 @@ Alias /pecan ${PWD}/pecan/web
 EOF
 ```
 
-##### Ruby
+#### Ruby
 
 The default version of ruby should work. Or use [JewelryBox](https://jewelrybox.unfiniti.com/).
 
-##### Rstudio Server
+#### Rstudio Server
 
 For the mac you can download [Rstudio Desktop](http://www.rstudio.com/).

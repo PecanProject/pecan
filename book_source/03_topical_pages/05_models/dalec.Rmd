@@ -1,4 +1,4 @@
-### DALEC {#models-dalec}
+## DALEC {#models-dalec}
 
 | Model Information ||
 | -- | -- |
