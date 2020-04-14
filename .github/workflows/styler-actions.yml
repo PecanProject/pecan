@@ -1,0 +1,41 @@
+on: 
+  pull_request:
+    branches: master
+name: Commands
+jobs:
+  style:
+    name: style
+    runs-on: macOS-latest
+    steps:
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.3
+      - name: testing
+        run: echo '${{ steps.file_changes.outputs.files_modified}}'   
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/pr-fetch@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: r-lib/actions/setup-r@master
+      - name: Install dependencies
+        run: Rscript -e 'install.packages("styler")'
+      - name: string operations
+        run: |
+          echo '${{ steps.file_changes.outputs.files_modified}}' > names.txt
+          cat names.txt | tr -d '[]' > new.txt
+          text=$(cat new.txt)
+          IFS=',' read -ra ids <<< "$text"
+          for i in "${ids[@]}"; do if [[ "$i" == *.R || "$i" == *.Rmd ]]; then echo "$i" >> new2.txt; fi; done
+      - name: Style
+        run: for i in $(cat new2.txt); do Rscript -e "styler::style_file("$i")"; done
+      - name: commit
+        run: |
+          git add \*.R
+          git commit -m 'Style'
+      - uses: r-lib/actions/pr-push@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+  # A mock job just to ensure we have a successful build status
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
