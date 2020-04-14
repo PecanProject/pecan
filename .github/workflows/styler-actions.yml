@@ -24,7 +24,7 @@ jobs:
           cat names.txt | tr -d '[]' > new.txt
           text=$(cat new.txt)
           IFS=',' read -ra ids <<< "$text"
-          for i in "${ids[@]}"; do if [[ "$i" == *.R || "$i" == *.Rmd ]]; then echo "$i" >> new2.txt; fi; done
+          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> new2.txt; fi; done
       - name: Style
         run: for i in $(cat new2.txt); do Rscript -e "styler::style_file("$i")"; done
       - name: commit
