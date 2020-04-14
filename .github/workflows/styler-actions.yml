@@ -1,9 +1,10 @@
-on: 
-  pull_request:
-    branches: styler-workflow
+on:
+  issue_comment:
+    types: [created]
 name: Commands
 jobs:
   style:
+    if: startsWith(github.event.comment.body, '/style')
     name: style
     runs-on: macOS-latest
     steps:
