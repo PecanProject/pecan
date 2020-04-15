@@ -73,7 +73,9 @@ jobs:
     - name: install utils
       run: apt-get update && apt-get install -y openssh-client postgresql-client curl
     - name: db setup
-      run: scripts/setup_testing_db.sh
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
@@ -156,7 +158,9 @@ jobs:
         cd sipnet_unk
         make
     - name: db setup
-      run: scripts/setup_testing_db.sh
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
