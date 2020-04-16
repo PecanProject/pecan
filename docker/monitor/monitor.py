@@ -24,7 +24,7 @@ rabbitmq_password = None
 
 # parameters to connect to BETY database
 postgres_host = os.getenv('PGHOST', 'postgres')
-postgres_port = os.getenv('PGPORT', 'postgres')
+postgres_port = os.getenv('PGPORT', 5432)
 postgres_user = os.getenv('BETYUSER', 'bety')
 postgres_password = os.getenv('BETYPASSWORD', 'bety')
 postgres_database = os.getenv('BETYDATABASE', 'bety')
