@@ -12,13 +12,13 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
-  out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu", "x_ic", "tau_ic")
+  out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
   # if(save.state) out.variables <- c(out.variables,"x")
   if(!exists("model")) model = 0
   
@@ -71,15 +71,13 @@ model{
   
   #### Priors
   tau_dbh ~ dgamma(a_dbh,r_dbh)
-  tau_inc ~ dgamma(a_inc,r_inc)
+  tau_inc ~ dnorm(a_inc,r_inc)
   tau_add ~ dgamma(a_add,r_add)
   mu ~ dnorm(0.5,0.5)
   ## FIXED EFFECTS BETAS
   ## ENDOGENOUS BETAS
   ## TIME VARYING BETAS
   ## RANDOM EFFECT TAUS
-  
-  ## PREDICT OUT OF SAMPLE DBH 
  }"
   
   Pformula <- NULL
@@ -408,7 +406,7 @@ model{
   
   ## JAGS initial conditions
   init   <- list()
-  source("modules/data.land/R/mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
+  source("pecan/modules/data.land/R/mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
   if(is.mcmc.list(restart)){
     init <- mcmc.list2initIGF(restart)
     nchain <- length(init)
@@ -431,7 +429,7 @@ model{
       init[[i]] <- list(x = z0ragged, 
                         tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
                         tau_dbh = 1, 
-                        tau_inc = 1500,
+                        tau_inc = 90,
                         tau_ind = 50, 
                         tau_yr = 100,
                         betaX2 = 0, 

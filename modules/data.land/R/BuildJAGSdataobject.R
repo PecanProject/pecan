@@ -1,7 +1,7 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
+buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDISTURBED = FALSE,trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
   
   # helper function
   # for standardizing covariates (from K. Holsinger)
@@ -440,7 +440,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, trunc.yr
   
   
   ### BA ## SDI and BA are tightly correlated, can't use both
-  if(is.null(Tree2Tree)){
+  if(is.null(Tree2Tree) & YEARDISTURBED == FALSE){
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
                            STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT)
     
@@ -448,7 +448,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, trunc.yr
     
   }else{
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, MAP =MAP, MAT =MAT)
+                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, DSTRBCD2 = DSTRBCD2, DSTRBYR2 =DSTRBYR2, DSTRBCD3 = DSTRBCD3, DSTRBYR3 =DSTRBYR3,MAP =MAP, MAT =MAT)
   }
   #cov.data <- cbind(cov.data, SICOND, SDI)
   
