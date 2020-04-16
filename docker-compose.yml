@@ -301,7 +301,7 @@ services:
 # Shiny Apps
 # ----------------------------------------------------------------------
   # PEcAn DB Sync visualization
-  maespa:
+  dbsync:
     image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
