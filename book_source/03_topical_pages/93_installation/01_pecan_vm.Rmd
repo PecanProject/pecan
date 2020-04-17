@@ -1,6 +1,6 @@
 ## PEcAn Virtual Machine {#pecanvm}
 
-This section includes the following VM related documentation:
+See also other VM related documentation sections:
 
 * [Maintaining your PEcAn VM](#maintain-vm)
 * [Connecting to the VM via SSH](#ssh-vm)
