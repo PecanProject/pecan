@@ -37,7 +37,7 @@ To run a model within PEcAn requires that the PEcAn database has sufficient info
 
 The instructions in this section assume that you will be specifying this information using the BETYdb web-based interface. This can be done either on your local VM (localhost:3280/bety or localhost:6480/bety) or on a server installation of BETYdb. However you interact with BETYdb, we encourage you to set up your PEcAn instance to support [database syncs](#database-sync) so that these changes can be shared and backed-up across the PEcAn network.
 
-![](11_images/bety_main_page.png)
+![](03_topical_pages/11_images/bety_main_page.png)
 
 The figure below summarizes the relevant database tables that need to be updated to add a new model and the primary variables that define each table.
 
@@ -49,8 +49,8 @@ The first step to adding a model is to create a new MODEL_TYPE, which defines th
 
 The MODEL_TYPE is created by selecting Runs > Model Type and then clicking on _New Model Type_. The MODEL_TYPE name should be identical to the MODEL package name (see Interface Module below) and is case sensitive. 
 
-![](11_images/bety_modeltype_1.png)
-![](11_images/bety_modeltype_2.png)
+![](03_topical_pages/11_images/bety_modeltype_1.png)
+![](03_topical_pages/11_images/bety_modeltype_2.png)
 
 ### MACHINE
 
@@ -84,12 +84,12 @@ Since many of the PEcAn tools are designed to keep track of parameter uncertaint
 
 Create a new PFT entry by selecting Data > PFTs and then clicking on _New PFT_. 
 
-![](11_images/bety_pft_1.png)
-![](11_images/bety_pft_2.png)
+![](03_topical_pages/11_images/bety_pft_1.png)
+![](03_topical_pages/11_images/bety_pft_2.png)
 
 Give the PFT a descriptive name (e.g., temperate deciduous). PFTs are MODEL_TYPE specific, so choose your MODEL_TYPE from the pull down menu. 
 
-![](11_images/bety_pft_3.png)
+![](03_topical_pages/11_images/bety_pft_3.png)
 
 #### Species
 
@@ -109,15 +109,15 @@ There are a wide variety of priors already defined in the PEcAn database that of
 
 These pre-existing prior distributions can be added to a PFT. Navigate to the PFT from Data > PFTs and selecting the edit button in the Actions column for the chosen PFT. 
 
-![](11_images/bety_priors_1.png)
+![](03_topical_pages/11_images/bety_priors_1.png)
 
 Click on "View Related Priors" button and search through the list for desired prior distributions. The list can be filtered by adding terms into the search box. Add a prior to the PFT by clicking on the far left button for the desired prior, changing it to an X. 
 
-![](11_images/bety_priors_2.png)
+![](03_topical_pages/11_images/bety_priors_2.png)
 
 Save this by scrolling to the bottom of the PFT page and hitting the Update button. 
 
-![](11_images/bety_priors_3.png)
+![](03_topical_pages/11_images/bety_priors_3.png)
 
 #### Creating new prior distributions
 
@@ -131,7 +131,7 @@ A new prior distribution can be created for a pre-existing variable, if a more c
 * Specify the prior sample size in _N_ if the prior is based on observed data (independent of data in the PEcAn database)
 * When this is done, scroll down and hit the Create button
 
-![](11_images/bety_priors_4.png)
+![](03_topical_pages/11_images/bety_priors_4.png)
 
 The new prior distribution can then be added a PFT as described in the "Adding Priors for Each Variable" section. 
 
@@ -141,7 +141,7 @@ It is important to note that the priors are defined for the variable name and un
 
 To add a new variable, select Data > Variables and click the New Variable button. Fill in the _Name_ field with the desired name for the variable and the units in the _Units_ field. There are additional fields, such as _Standard Units_, _Notes_, and _Description_, that can be filled out if desired. When done, hit the Create button. 
 
-![](11_images/bety_priors_5.png)
+![](03_topical_pages/11_images/bety_priors_5.png)
 
 The new variable can be used to create a prior distribution for it as in the "Creating new prior distributions" section. 
 
@@ -592,7 +592,7 @@ The Data-Ingest application is capable of loading data from the DataONE data fed
 <br>
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/D1Ingest-1.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/D1Ingest-1.gif")
 ```
 <br>
 The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the `Import From DataONE` field and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. 
@@ -607,11 +607,11 @@ After this step, the workflow is identical for both methods. However, please not
 <br>
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/Local_loader_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/Local_loader_sm.gif")
 ```
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/local_browse.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/local_browse.gif")
 ```
 ### 2. Creating an Input Record
 Creating an input record requires some basic metadata about the file that is being ingested. Each entry field is briefly explained below. 
@@ -620,7 +620,7 @@ Creating an input record requires some basic metadata about the file that is bei
   - Site: To link the selected file with a site, the user can scroll or type to search all the sites in PEcAn. See Example: 
   <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/Selectize_Input_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/Selectize_Input_sm.gif")
 ```
 <br>
 - Parent: To link the selected file with another dataset, type to search existing datasets in the `Parent` field. 
@@ -635,7 +635,7 @@ knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studi
 
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/DateTime.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/DateTime.gif")
 ```
 
 - Notes: Describe the data that is being uploaded. Please include any citations or references. 
@@ -656,7 +656,7 @@ If it is necessary to add a new format to PEcAn, the user should fill out the fo
 Example: 
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/new_format_record.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/new_format_record.gif")
 ```
 ### 4. Formats_Variables Record
 The final step in the ingest process is to register a formats-variables record. This record links pecan variables with variables from the selected data. 
@@ -672,7 +672,7 @@ The final step in the ingest process is to register a formats-variables record. 
 - Column Number: Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("04_advanced_user_guide/02_adding_to_pecan/01_case_studies/images/data-ingest/D1Ingest-9_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/D1Ingest-9_sm.gif")
 ```
 
 Finally, the path to the ingest data is displayed in the `Select Files` box. 
@@ -707,7 +707,7 @@ If the Format you are looking for is not available, you will need to create a ne
 
 Here is an example using a fake dataset:
 
-![example_data](04_advanced_user_guide/images/example_data.png)
+![example_data](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/example_data.png)
 
 
 
@@ -725,7 +725,8 @@ You will need to fill out the following fields:
 
 Here is the Formats record for the example data:
 
-![format_record_1](04_advanced_user_guide/images/format_record_1.png)
+![format_record_1](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/format_record_1.png)
+
 When you have finished this section, hit Create. The final record will be displayed on the screen. 
 
 #### Formats -> Variables
@@ -736,7 +737,7 @@ To enter this data, select Edit Record and on the edit screen select View Relate
 
 Here is the record for the example data after adding related variables:
 
-![format_record_2](04_advanced_user_guide/images/format_record_2.png)
+![format_record_2](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/format_record_2.png)
 
 ##### Name and Unit
 

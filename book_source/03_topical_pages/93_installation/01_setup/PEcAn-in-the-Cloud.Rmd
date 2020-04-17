@@ -1,15 +1,13 @@
-### AWS Setup 
+## AWS Setup
 
 ***********Mirror of earlier section in installation section?*********************
-
-### Porting VM to AWS
 
 The following are Mike's rough notes from a first attempt to port the PEcAn VM to the AWS. This was done on a Mac
 
 These notes are based on following the instructions [here](http://www.rittmanmead.com/2014/09/obiee-sampleapp-in-the-cloud-importing-virtualbox-machines-to-aws-ec2/)
 
 
-#### Convert PEcAn VM
+### Convert PEcAn VM
 
 AWS allows upload of files as VMDK but the default PEcAn VM is in OVA format
 
@@ -21,7 +19,7 @@ AWS allows upload of files as VMDK but the default PEcAn VM is in OVA format
 tar xf <ovafile>
 ```
 
-#### Set up an account on [AWS](http://aws.amazon.com/)
+### Set up an account on [AWS](http://aws.amazon.com/)
 
 After you have an account you need to set up a user and save your [access key and secret key](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html)
 
@@ -29,7 +27,7 @@ In my case I created a user named 'carya'
 
 Note: the key that ended up working had to be made at [https://console.aws.amazon.com/iam/home#security_credential](https://console.aws.amazon.com/iam/home#security_credential), not the link above.
 
-#### Install [EC2 command line tools](http://docs.aws.amazon.com/AWSEC2/latest/CommandLineReference/set-up-ec2-cli-linux.html)
+### Install [EC2 command line tools](http://docs.aws.amazon.com/AWSEC2/latest/CommandLineReference/set-up-ec2-cli-linux.html)
 
 ```
 wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip
@@ -58,14 +56,14 @@ Then set your user credentials as environment variables:
 
 Note: you may want to add all the variables set in the above EXPORT commands above into your .bashrc or equivalent.
 
-#### Create an AWS S3 'bucket' to upload VM to
+### Create an AWS S3 'bucket' to upload VM to
 
 Go to [https://console.aws.amazon.com/s3](https://console.aws.amazon.com/s3) and click "Create Bucket"
 
 In my case I named the bucket 'pecan'
 
 
-#### Upload
+### Upload
 
 In the code below, make sure to change the PEcAn version, the name of the bucket, and the name of the region. Make sure that the PEcAn version matches the one you downloaded.
 
@@ -81,7 +79,7 @@ Make sure to note the ID of the image since you'll need it to check the VM statu
 ec2-describe-conversion-tasks <image.ID>
 ```
 
-#### Configuring the VM
+### Configuring the VM
 
 On the EC2 management webpage, [https://console.aws.amazon.com/ec2](https://console.aws.amazon.com/ec2), if you select **Instances** on the left hand side (LHS) you should be able to see your new PEcAn image as an option under Launch Instance.
 
@@ -101,7 +99,7 @@ Select "Load Balancers" on the LHS, click on "Create Load Balancer", follow Wiza
 
 To be able to launch multiple VMs: Under "Instances" convert VM to an Image. When done, select Launch, enable multiple instances, and associate with the previous security group. Once running, go back to "Load Balancers" and add the instances to the load balancer. Each instance can be accessed individually by it's own public IP, but external users should access the system more generally via the Load Balancers DNS.
 
-#### Booting the VM
+### Booting the VM
 
 Return to "Instances" using the menu on the LHS.
 
