@@ -24,7 +24,7 @@ rabbitmq_password = None
 
 # parameters to connect to BETY database
 postgres_host = os.getenv('PGHOST', 'postgres')
-postgres_port = os.getenv('PGPORT', 'postgres')
+postgres_port = os.getenv('PGPORT', '5432')
 postgres_user = os.getenv('BETYUSER', 'bety')
 postgres_password = os.getenv('BETYPASSWORD', 'bety')
 postgres_database = os.getenv('BETYDATABASE', 'bety')
@@ -148,6 +148,7 @@ def insert_model(model_info):
             postgres_host, postgres_port, postgres_database, postgres_user, postgres_password
         )
 
+    conn = None
     try:
         # connect to the PostgreSQL database
         conn = psycopg2.connect(postgres_uri)
