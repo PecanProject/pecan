@@ -17,6 +17,17 @@ maxtime <- 24
 # number of bins to use when rendering lines
 maxbins <- 5
 
+# show hosts with missing sync_url
+allow_no_url <- FALSE
+
+# mapping to fix hostnames
+host_mapping <- list(
+    "wisconsin"="tree.aos.wisc.edu",
+    "terra-mepp.igb.illinois.edu"="terra-mepp.illinois.edu",
+    "ecn.purdue.edu"="engineering.purdue.edu",
+    "paleon-pecan.virtual.crc.nd.edu"="crc.nd.edu"
+)
+
 # given a IP address lookup geo spatital info
 # uses a cache to prevent to many requests (1000 per day)
 get_geoip <- function(ip) {
@@ -55,26 +66,32 @@ get_servers <- function() {
 
     servers <- dplyr::tbl(bety, "machines") %>% 
         dplyr::filter(!is.na(sync_host_id)) %>%
-        dplyr::filter(sync_url != "") %>%
+        dplyr::filter(sync_url != "" || allow_no_url) %>%
         dplyr::arrange(sync_host_id) %>%
         dplyr::select(hostname, sync_host_id, sync_url, sync_start, sync_end) %>% 
         dplyr::collect() %>%
-        dplyr::mutate(hostname = replace(hostname, hostname=="wisconsin", "tree.aos.wisc.edu")) %>%
-        dplyr::mutate(hostname = replace(hostname, hostname=="terra-mepp.igb.illinois.edu", "terra-mepp.illinois.edu")) %>%
         dplyr::mutate(ip = unlist(lapply(hostname, function(x) {
-            ip <- nsl(x)
+            if (x %in% names(host_mapping)) {
+                ip <- nsl(host_mapping[[x]])
+            } else {
+                ip <- nsl(x)
+            }
             ifelse(is.null(ip), NA, ip)
         }))) %>%
-        dplyr::mutate(version = NA, lastdump = NA, migrations = NA) #%>%
-        #dplyr::filter(!is.na(ip))
-    
+        dplyr::mutate(version = NA, lastdump = NA, migrations = NA) %>%
+        dplyr::filter(!is.na(ip)) %>%
+        dplyr::arrange(ip)
+        
     # close connection
     DBI::dbDisconnect(bety)
     
     # convert ip address to geo location
     lapply(servers$ip, get_geoip)
-    locations <- geoip %>% dplyr::select("city", "country", "latitude", "longitude")
-        
+    locations <- geoip %>% 
+        dplyr::filter(ip %in% servers$ip) %>%
+        dplyr::arrange(ip) %>%
+        dplyr::select("city", "country", "latitude", "longitude")
+    
     # combine tables
     servers <- cbind(servers, locations)
     
@@ -82,7 +99,7 @@ get_servers <- function() {
     servers[, paste0("server_", servers$sync_host_id)] <- NA
     
     # return servers
-    servers
+    servers %>% dplyr::arrange(sync_host_id)
 }
 
 # fetch information from the actual servers
