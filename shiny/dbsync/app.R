@@ -235,11 +235,7 @@ ui <- fluidPage(
 
     # Refresh button
     actionButton("refresh_servers", "Update Servers"),
-    actionButton("refresh_sync", "Update Sync"),
-    
-    # footer
-    hr(),
-    div(HTML('This site or product includes IP2Location LITE data available from <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.'))
+    actionButton("refresh_sync", "Update Sync")
 )
 
 # Define server logic required to draw map
