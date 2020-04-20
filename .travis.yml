@@ -22,6 +22,7 @@ _apt: &apt-base
   - libgdal-dev
   - libgl1-mesa-dev
   - libglu1-mesa-dev
+  - libglpk-dev # indirectly needed by BayesianTools
   - libgmp-dev
   - libhdf5-dev
   - liblapack-dev

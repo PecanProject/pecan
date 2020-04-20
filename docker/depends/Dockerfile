@@ -14,6 +14,7 @@ RUN apt-get update \
        jags \
        time \
        libgdal-dev \
+       libglpk-dev \
        librdf0-dev \
        libnetcdf-dev \
        libudunits2-dev \
