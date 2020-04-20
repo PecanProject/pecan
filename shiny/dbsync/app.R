@@ -1,12 +1,57 @@
 library(shiny)
 library(leaflet)
 library(dbplyr)
-library(rgeolocate)
 library(RPostgreSQL)
 
-# this file can be downloaded from 
-# https://lite.ip2location.com/database/ip-country-region-city-latitude-longitude
-file <- "IP2LOCATION-LITE-DB5.BIN"
+# cached geo information to prevent frequent lookups
+geoip <- list()
+geocache <- Sys.getenv("GEOCACHE", "geoip.json")
+
+# maximum number of lines to consider of sync log, if this is
+# large the update sync can take long time
+maxlines <- 5000
+
+# maximum time in hours before sync is red
+maxtime <- 24
+
+# number of bins to use when rendering lines
+maxbins <- 5
+
+# show hosts with missing sync_url
+allow_no_url <- FALSE
+
+# mapping to fix hostnames
+host_mapping <- list(
+    "wisconsin"="tree.aos.wisc.edu",
+    "terra-mepp.igb.illinois.edu"="terra-mepp.illinois.edu",
+    "ecn.purdue.edu"="engineering.purdue.edu",
+    "paleon-pecan.virtual.crc.nd.edu"="crc.nd.edu"
+)
+
+# given a IP address lookup geo spatital info
+# uses a cache to prevent to many requests (1000 per day)
+get_geoip <- function(ip) {
+    if (length(geoip) == 0 && file.exists("geoip.json")) {
+        geoip <<- jsonlite::read_json(geocache, simplifyVector = TRUE)
+    }
+    if (! ip %in% geoip$ip) {
+        print(paste("CACHE MISS", ip))
+        res <- curl::curl_fetch_memory(paste0("http://free.ipwhois.io/json/", ip))
+        if (res$status -- 200) {
+            geoloc <- jsonlite::parse_json(rawToChar(res$content))
+            geoloc[lengths(geoloc) == 0] <- NA
+            geoloc <- type.convert(geoloc, as.is = TRUE)
+        } else {
+            geoloc <- list(ip=ip, lat=0, lon=0, city="?", countr="?")
+        }
+        if (length(geoip) == 0) {
+            geoip <<- as.data.frame(geoloc)
+        } else {
+            geoip <<- rbind(geoip, as.data.frame(geoloc))
+        }
+        jsonlite::write_json(geoip, geocache)
+    }
+}
 
 # get a list of all servers in BETY and their geospatial location
 get_servers <- function() {
@@ -14,31 +59,38 @@ get_servers <- function() {
     bety <- DBI::dbConnect(
         DBI::dbDriver("PostgreSQL"), 
         dbname = Sys.getenv("PGDATABASE", "bety"),
-        host = Sys.getenv("PGHOST", "postgres"),
+        host = Sys.getenv("PGHOST", "localhost"),
         user = Sys.getenv("PGUSER", "bety"),
         password = Sys.getenv("PGPASSWORD", "bety")
     )
 
     servers <- dplyr::tbl(bety, "machines") %>% 
         dplyr::filter(!is.na(sync_host_id)) %>%
-        dplyr::filter(sync_url != "") %>%
+        dplyr::filter(sync_url != "" || allow_no_url) %>%
         dplyr::arrange(sync_host_id) %>%
         dplyr::select(hostname, sync_host_id, sync_url, sync_start, sync_end) %>% 
         dplyr::collect() %>%
-        dplyr::mutate(hostname = replace(hostname, hostname=="wisconsin", "tree.aos.wisc.edu")) %>%
-        dplyr::mutate(hostname = replace(hostname, hostname=="terra-mepp.igb.illinois.edu", "terra-mepp.illinois.edu")) %>%
         dplyr::mutate(ip = unlist(lapply(hostname, function(x) {
-            ip <- nsl(x)
+            if (x %in% names(host_mapping)) {
+                ip <- nsl(host_mapping[[x]])
+            } else {
+                ip <- nsl(x)
+            }
             ifelse(is.null(ip), NA, ip)
         }))) %>%
-        dplyr::mutate(version = NA, lastdump = NA) #%>%
-        #dplyr::filter(!is.na(ip))
-    
+        dplyr::mutate(version = NA, lastdump = NA, migrations = NA) %>%
+        dplyr::filter(!is.na(ip)) %>%
+        dplyr::arrange(ip)
+        
     # close connection
     DBI::dbDisconnect(bety)
     
-    # convert ip address to geo location    
-    locations <- rgeolocate::ip2location(servers$ip, file, c("city", "lat", "long"))
+    # convert ip address to geo location
+    lapply(servers$ip, get_geoip)
+    locations <- geoip %>% 
+        dplyr::filter(ip %in% servers$ip) %>%
+        dplyr::arrange(ip) %>%
+        dplyr::select("city", "country", "latitude", "longitude")
     
     # combine tables
     servers <- cbind(servers, locations)
@@ -47,7 +99,7 @@ get_servers <- function() {
     servers[, paste0("server_", servers$sync_host_id)] <- NA
     
     # return servers
-    servers
+    servers %>% dplyr::arrange(sync_host_id)
 }
 
 # fetch information from the actual servers
@@ -66,9 +118,11 @@ check_servers <- function(servers, progress) {
             if (!is.na(as.numeric(version[1]))) {
                 servers[servers$sync_url == url,'version'] <<- version[2]
                 servers[servers$sync_url == url,'lastdump']  <<- version[4]
+                servers[servers$sync_url == url,'migrations']  <<- version[1]
             } else {
                 servers[servers$sync_url == url,'version'] <<- NA
                 servers[servers$sync_url == url,'lastdump'] <<- NA
+                servers[servers$sync_url == url,'migrations']  <<- NA
             }
         }
         progress$inc(amount = 1)
@@ -82,12 +136,14 @@ check_servers <- function(servers, progress) {
         if (res$status == 200) {
             url <- sub("sync.log", "bety.tar.gz", res$url)
             lines <- strsplit(rawToChar(res$content), '\n', fixed = TRUE)[[1]]
-            data <- list()
-            for (line in lines) {
+            now <- as.POSIXlt(Sys.time(), tz="UTC")
+            for (line in tail(lines, maxlines)) {
                 pieces <- strsplit(trimws(line), ' ', fixed=TRUE)[[1]]
                 if (length(pieces) == 8) {
                     if (pieces[8] == 0) {
-                        servers[servers$sync_url == url, paste0('server_', pieces[7])] <<- paste(pieces[1:6], collapse = " ")
+                        when <- strptime(paste(pieces[1:6], collapse = " "), format="%a %b %d %T UTC %Y", tz="UTC")
+                        tdiff <- min(maxtime, difftime(now, when, units = "hours"))
+                        servers[servers$sync_url == url, paste0('server_', pieces[7])] <<- tdiff
                     }
                 } else {
                     print(line)
@@ -106,7 +162,7 @@ check_servers <- function(servers, progress) {
 }
 
 # return vector to use in polylines
-check_sync <- function(servers, what) {
+check_sync <- function(servers) {
     ids <- servers$sync_host_id
     
     # helper function to see if two servers are connected    
@@ -116,44 +172,34 @@ check_sync <- function(servers, what) {
     }
     
     # build up list of all connections
-    result <- c()
+    lat <- c()
+    lon <- c()
+    tdiff <- c()
+    
     for (src in ids) {
+        src_x <- servers[servers$sync_host_id==src, 'longitude']
+        src_y <- servers[servers$sync_host_id==src, 'latitude']
         for (dst in ids) {
             if (connected(src, dst)) {
-                if (what == "color") {
-                    when <- strptime(servers[servers$sync_host_id==src, paste0("server_", dst)],
-                                     format="%a %b %d %T UTC %Y",
-                                     tz="UTC")
-                    now <- as.POSIXlt(Sys.time(), tz="UTC")
-                    tdiff <- difftime(now, when, units = "hours")
-                    if (tdiff < 0) {
-                        result <- c(result, "purple")
-                    } else if (tdiff < 6) {
-                        result <- c(result, "green")
-                    } else if (tdiff < 24) {
-                        result <- c(result, "yellow")
-                    } else {
-                        result <- c(result, "red")
-                    }
-                    mycolors <<- result
-                } else {
-                    src_x <- servers[servers$sync_host_id==src, what]
-                    dst_x <- servers[servers$sync_host_id==dst, what]
-                    result <- c(result, c(src_x, src_x + (dst_x - src_x) / 2, NA))
-                }
+                tdiff <- c(tdiff, servers[servers$sync_host_id==src, paste0("server_", dst)])
+                
+                dst_x <- servers[servers$sync_host_id==dst, 'longitude']
+                lon <- c(lon, c(src_x, (src_x + (dst_x - src_x) / 2), NA))
+                
+                dst_y <- servers[servers$sync_host_id==dst, 'latitude']
+                lat <- c(lat, c(src_y, (src_y + (dst_y - src_y) / 2), NA))
             }
         }
     }
     
     # need to have at least one polyline, will draw a line from server 1 to server 1
-    if (length(result) == 0) {
-        if (what == "color") {
-            result <- c("black")
-        } else {
-            result <- c(servers[1, what], servers[1, what], NA)
-        }
+    if (length(tdiff) == 0) {
+        src_x <- servers[1, 'longitude']
+        src_y <- servers[1, 'latitude']
+        return(list(latitude=c(src_y, src_y, NA), longitude=c(src_x, src_x, NA), value=c(0)))
+    } else {
+        return(list(latitude=lat, longitude=lon, value=tdiff))
     }
-    return(result)
 }
 
 # Define UI for application that draws a histogram
@@ -189,19 +235,19 @@ ui <- fluidPage(
 
     # Refresh button
     actionButton("refresh_servers", "Update Servers"),
-    actionButton("refresh_sync", "Update Sync"),
-    
-    # footer
-    hr(),
-    div(HTML('This site or product includes IP2Location LITE data available from <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.'))
+    actionButton("refresh_sync", "Update Sync")
 )
 
 # Define server logic required to draw map
 server <- function(input, output, session) {
-
-    # servers is what is changed, start with just data from database
-    values <- reactiveValues(servers=get_servers())
+    # red -> green color spectrum
+    colors <- leaflet::colorBin("RdYlGn", domain = c(0, maxtime), bins = maxbins, na.color = "purple", reverse = TRUE)
     
+    # servers is what is changed, start with just data from database
+    servers <- get_servers()
+    values <- reactiveValues(servers=servers,
+                             sync=check_sync(servers))
+
     # update server list (quick)
     observeEvent(input$refresh_servers, {
         session$sendCustomMessage("disableUI", "")
@@ -214,6 +260,7 @@ server <- function(input, output, session) {
         session$sendCustomMessage("disableUI", "")
         progress <- Progress$new(session, min=0, max=2*nrow(values$servers))
         values$servers <- check_servers(values$servers, progress)
+        values$sync <- check_sync(values$servers)
         progress$close()
         session$sendCustomMessage("enableUI", "")
     })
@@ -224,17 +271,18 @@ server <- function(input, output, session) {
             addProviderTiles(providers$Stamen.TonerLite,
                              options = providerTileOptions(noWrap = TRUE)
             ) %>%
-            addMarkers(~long, ~lat,
+            addMarkers(~longitude, ~latitude,
                        label = ~htmltools::htmlEscape(hostname),
                        clusterOptions = markerClusterOptions(maxClusterRadius = 1)) %>%
-            addPolylines(lng = ~check_sync(values$servers, "long"),
-                         lat = ~check_sync(values$servers, "lat"),
-                         color = ~check_sync(values$servers, "color"))
+            addPolylines(~longitude, ~latitude,
+                         color = colors(values$sync$value), data=values$sync) %>%
+            addLegend("bottomright", colors, values$sync$value,
+                      title = "since last sync", labFormat = labelFormat(suffix =" hours"))
     })
 
     # create a table of all servers that have a sync_host_id and sync_url
     output$table <- DT::renderDataTable({
-        DT::datatable(values$servers %>% dplyr::select("sync_host_id", "hostname", "city", "lastdump", "version"))
+        DT::datatable(values$servers %>% dplyr::select("sync_host_id", "hostname", "city", "country", "lastdump", "migrations"))
     })
 }
 
