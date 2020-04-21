@@ -157,6 +157,14 @@ for x in models executor data thredds monitor rstudio-nginx check; do
         docker/$x
 done
 
+# shiny apps
+for x in dbsync; do
+    ${DEBUG} docker build \
+        --tag pecan/shiny-$x:${IMAGE_VERSION} \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        shiny/$x
+done
+
 # --------------------------------------------------------------------------------
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------

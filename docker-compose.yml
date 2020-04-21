@@ -311,6 +311,23 @@ services:
       - pecan:/data
 
 # ----------------------------------------------------------------------
+# Shiny Apps
+# ----------------------------------------------------------------------
+  # PEcAn DB Sync visualization
+  dbsync:
+    image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    depends_on:
+       - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=dbsync"
+      - "traefik.port=3838"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
+
+# ----------------------------------------------------------------------
 # Name of network to be used by all containers
 # ----------------------------------------------------------------------
 networks:
