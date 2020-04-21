@@ -30,7 +30,7 @@ jobs:
       # Assuming debian stretch because newer images have git >= 2.20 already
       if: steps.gitversion.outputs.isold == 'TRUE'
       run: |
-        echo 'deb http://deb.debian.org/debian stretch-backports main contrib' >> /etc/apt/sources.list
+        echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
         apt-get update
         apt-get -t stretch-backports upgrade -y git
     - uses: actions/checkout@v2
