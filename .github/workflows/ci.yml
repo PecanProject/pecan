@@ -35,6 +35,7 @@ jobs:
         apt-get -t stretch-backports upgrade -y git
     - uses: actions/checkout@v2
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+      shell: bash
     - name: cache R packages
       uses: actions/cache@v1
       with:
