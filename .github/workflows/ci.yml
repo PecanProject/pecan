@@ -76,9 +76,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install utils
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openssh-client postgresql-client curl
+      run: apt-get update && apt-get install -y openssh-client postgresql-client curl
     - name: db setup
       run: scripts/setup_testing_db.sh
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
@@ -112,9 +110,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install ssh
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openssh-client qpdf
+      run: apt-get update && apt-get install -y openssh-client qpdf
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
     - name: cache R packages
       uses: actions/cache@v1
@@ -151,7 +147,7 @@ jobs:
       PGHOST: postgres
     steps:
     - uses: actions/checkout@v2
-    - run: sudo apt-get update && sudo apt-get install -y curl postgresql-client
+    - run: apt-get update && apt-get install -y curl postgresql-client
     - name: install sipnet
       run: |
         cd ${HOME}
