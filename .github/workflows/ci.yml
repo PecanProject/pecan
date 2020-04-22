@@ -7,11 +7,6 @@ env:
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
   R_LIBS: ~/R/library
-  _R_CHECK_LENGTH_1_CONDITION_: true
-  _R_CHECK_LENGTH_1_LOGIC2_: true
-  # Avoid compilation check warnings that come from the system Makevars, not us
-  # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-  _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
 
 jobs:
 
@@ -107,6 +102,11 @@ jobs:
     env:
       NCPUS: 2
       CI: true
+      _R_CHECK_LENGTH_1_CONDITION_: true
+      _R_CHECK_LENGTH_1_LOGIC2_: true
+      # Avoid compilation check warnings that come from the system Makevars
+      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
+      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
     steps:
     - uses: actions/checkout@v2
     - name: install ssh
