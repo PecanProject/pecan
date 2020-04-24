@@ -1,5 +1,12 @@
 #!/usr/bin/env RScript
 
+# force sorting
+# if(capabilities("ICU")) {
+#   icuSetCollate(locale = "en_US.UTF-8")
+# } else {
+#   print("Can not force sorting, this could result in unpredicted results.")
+# }
+
 # following modules will be ignored
 ignore <- c("modules/data.mining")
 
