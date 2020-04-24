@@ -34,6 +34,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 
 ### Added
+- Dockerize BASGRA_N model.
 - Basic coupling for models BASGRA_N and STICS.
 - PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
 - Models monitoring container for Docker now shows a webpage with models it has seen
