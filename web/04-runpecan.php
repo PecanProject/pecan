@@ -260,11 +260,7 @@ if (isset($db_bety_port)) {
         fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
 }
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
-if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
-} else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
-}
+fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
 
