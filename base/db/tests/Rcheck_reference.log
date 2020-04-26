@@ -56,7 +56,6 @@ get_users: no visible binding for global variable ‘id’
 get_workflow_ids: no visible binding for global variable ‘workflow_id’
 get.trait.data.pft: no visible binding for global variable ‘pft_id’
 get.trait.data.pft: no visible binding for global variable ‘created_at’
-get.trait.data.pft: no visible global function definition for ‘head’
 get.trait.data.pft: no visible binding for global variable ‘stat’
 get.trait.data.pft: no visible binding for global variable ‘trait’
 insert.format.vars: no visible binding for global variable ‘id’
