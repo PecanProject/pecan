@@ -157,11 +157,13 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   ###-------------------------------------------------------------------### 
   if (!is.null(con)) {
     # write ensemble first
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, 
-                   "', 'EnKF', ", workflow.id, ")", sep = ""), con)
-    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep = ""), 
-                            con)[["id"]]
+    result <- db.query(
+      paste(
+        "INSERT INTO ensembles (runtype, workflow_id) ",
+        "values ('EnKF', ", workflow.id, ") returning id",
+        sep = ""),
+      con)
+    ensemble.id <- result[['id']]
   } else {
     ensemble.id <- -1
   }
@@ -246,12 +248,19 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     
     ## set RUN.ID
     if (!is.null(con)) {
-      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("EnKF:", i)
-      run.id[[i]] <- db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,", 
-                                     " parameter_list) values ('", settings$model$id, "', '", settings$run$site$id, "', '", 
-                                     settings$run$start.date, "', '", settings$run$end.date, "', '", settings$outdir, "', '", 
-                                     now, "', ", ensemble.id, ", '", paramlist, "') RETURNING id"), con)
+      run.id[[i]] <- db.query(
+        paste0(
+          "INSERT INTO runs (",
+            "model_id, site_id, ",
+            "start_time, finish_time, ",
+            "outdir, ensemble_id, parameter_list) ",
+          "VALUES ('",
+            settings$model$id, "', '", settings$run$site$id, "', '",
+            settings$run$start.date, "', '", settings$run$end.date, "', '",
+            settings$outdir, "', '", ensemble.id, ", '", paramlist, "') ",
+          "RETURNING id"),
+        con)
     } else {
       run.id[[i]] <- paste("EnKF", i, sep = ".")
     }
