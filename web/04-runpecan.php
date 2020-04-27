@@ -536,7 +536,7 @@ if ($pecan_edit) {
   if ($model_edit) {
     $message .= ', "modeledit": true';
   }
-  $message .= '}'
+  $message .= '}';
   send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done
