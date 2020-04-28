@@ -20,10 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - 3.4
+          # 3.4 does not work
           - 3.5
           - 3.6
-          #- 4.0
+          # 4.0 not released yet
 
     steps:
       - uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
 
       - name: Push docker image ${{ matrix.R }}
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends:${{ matrix.R }}-develop
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
           docker tag image $IMAGE_ID:${{ matrix.R }}-develop
