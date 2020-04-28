@@ -11,7 +11,7 @@ on:
     - cron: '0 0 * * *'
 
 jobs:
-  sync:
+  depends:
     #if: github.repository == 'PecanProject/pecan'
 
     runs-on: ubuntu-latest
