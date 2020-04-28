@@ -14,7 +14,7 @@ RUN if [ $(lsb_release -s -c) == "stretch" ]; then \
       echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list \
       && apt-get update \
       && apt-get -t stretch-backports upgrade -y git \
-    fi
+    ; fi
 
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES
