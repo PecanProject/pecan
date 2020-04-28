@@ -1,0 +1,56 @@
+name: Docker Depends Image
+
+on:
+  push:
+    branches:
+      - '*'
+      - develop
+
+  # this runs on the develop branch
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  sync:
+    #if: github.repository == 'PecanProject/pecan'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        R:
+          - 3.4
+          - 3.5
+          - 3.6
+          #- 4.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build for R version ${{ matrix.R }}
+        run: |
+          docker build --pull \
+            --build-arg R_VERSION=${{ matrix.R }} \
+            --tag image \
+            docker/depends
+
+      - name: Login into registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          fi
+
+      - name: Push docker image ${{ matrix.R }}
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends:${{ matrix.R }}-develop
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          docker tag image $IMAGE_ID:${{ matrix.R }}-develop
+          docker push $IMAGE_ID:${{ matrix.R }}-develop
+
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
+            docker tag image pecan/depends:${{ matrix.R }}-develop
+            docker push pecan/depends:${{ matrix.R }}-develop
+          fi
