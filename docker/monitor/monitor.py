@@ -165,7 +165,7 @@ def insert_model(model_info):
             logging.debug("Adding host")
             cur = conn.cursor()
             cur.execute('INSERT INTO machines (hostname) '
-                        'VALUES (%s) RETURNING id', (pecan_fqdn))
+                        'VALUES (%s) RETURNING id', (pecan_fqdn, ))
             result = cur.fetchone()
             cur.close()
             if not result:
