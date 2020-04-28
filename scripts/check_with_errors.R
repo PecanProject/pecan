@@ -1,5 +1,9 @@
 #!/usr/bin/env Rscript
 
+# Avoid some spurious failures from platform-dependent sorting
+invisible(Sys.setlocale("LC_ALL", "en_US.UTF-8")) # sets sorting in this script
+Sys.setenv(LC_ALL = "en_US.UTF-8") # sets sorting in rcmdcheck processes
+
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
 

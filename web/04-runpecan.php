@@ -163,9 +163,9 @@ $stmt->closeCursor();
 // create the workflow execution
 $userid=get_userid();
 if ($userid != -1) {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW(), :userid)");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), :userid)");
 } else {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW())");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW())");
 }
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
@@ -260,11 +260,7 @@ if (isset($db_bety_port)) {
         fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
 }
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
-if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
-} else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
-}
+fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
 
