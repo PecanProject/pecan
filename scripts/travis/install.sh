@@ -3,13 +3,21 @@
 set -e
 . $( dirname $0 )/func.sh
 
-# FIXING R BINARIES
+# install R package dependencies
 (
     travis_time_start "pkg_version_check" "Checking R package binaries"
-
     Rscript scripts/travis/rebuild_pkg_binaries.R
-
     travis_time_end
+
+    travis_time_start "r_pkgs" "installing R packages"
+    # Seems like a lot of fiddling to set up littler and only use it once
+    # inside pecan.depends, but still easier than duplicating the script
+    Rscript -e 'if (!requireNamespace("littler", quietly = TRUE)) { install.packages(c("littler", "remotes", "docopt"), repos = "https://cloud.r-project.org") }'
+    LRPATHS=`Rscript -e 'cat(system.file(c("examples", "bin"), package = "littler"), sep = ":")'`
+    echo 'options(repos="https://cloud.r-project.org")' > ~/.littler.r
+    PATH=$LRPATHS:$PATH bash docker/depends/pecan.depends
+    travis_time_end
+
 )
 
 # ROLL A FEW R PACKAGES BACK TO SPECIFIED VERSIONS
