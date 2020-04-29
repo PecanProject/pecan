@@ -110,8 +110,7 @@ get_servers <- function() {
 # fetch information from the actual servers
 check_servers <- function(servers, progress) {
     check_servers <- servers$sync_url[! servers$sync_host_id %in% ignored_servers]
-    print(check_servers)
-    
+
     # generic failure message to increment progress
     failure <- function(res) {
         print(res)
