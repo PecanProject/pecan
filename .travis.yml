@@ -48,9 +48,11 @@ jobs:
     - r: release
     - r: devel
     - r: oldrel
+    - r: 3.5
   allow_failures:
     - r: devel
     - r: oldrel
+    - r: 3.5
 
 cache:
   - directories:
