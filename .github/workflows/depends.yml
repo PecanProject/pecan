@@ -24,6 +24,8 @@ jobs:
           - 3.5
           - 3.6
           # 4.0 not released yet
+          # unstable version
+          - devel
 
     steps:
       - uses: actions/checkout@v2
