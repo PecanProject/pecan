@@ -22,7 +22,8 @@ jobs:
         R:
           # 3.4 does not work
           - 3.5
-          - 3.6
+          # 3.6 != latest in 3.6 series
+          - 3.6.3
           # 4.0 not released yet
           # unstable version
           - devel
@@ -49,10 +50,15 @@ jobs:
           IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          docker tag image $IMAGE_ID:${{ matrix.R }}-develop
-          docker push $IMAGE_ID:${{ matrix.R }}-develop
+          TAG=${{ matrix.R }}
+          if [ "$TAG" == "3.6.3" ]; then
+            TAG=3.6
+          fi
+
+          docker tag image $IMAGE_ID:${TAG}-develop
+          docker push $IMAGE_ID:${TAG}-develop
 
           if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
-            docker tag image pecan/depends:${{ matrix.R }}-develop
-            docker push pecan/depends:${{ matrix.R }}-develop
+            docker tag image pecan/depends:${TAG}-develop
+            docker push pecan/depends:${TAG}-develop
           fi
