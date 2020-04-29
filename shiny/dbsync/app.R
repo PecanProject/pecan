@@ -302,7 +302,7 @@ server <- function(input, output, session) {
         DT::datatable(values$servers %>% 
                           dplyr::select("sync_host_id", "hostname", "city", "country", "lastdump", "migrations"),
                       rownames = FALSE) %>%
-        formatStyle('sync_host_id',  target = "row", color = styleEqual(c(ignored_servers, "-1"), ignored))
+        DT::formatStyle('sync_host_id',  target = "row", color = DT::styleEqual(c(ignored_servers, "-1"), ignored))
     })
 }
 
