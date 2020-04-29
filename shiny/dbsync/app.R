@@ -112,7 +112,7 @@ check_servers <- function(servers, progress) {
     # version information  
     server_version <- function(res) {
         progress$inc(amount = 0, message = paste("Processing", progress$getValue(), "of", progress$getMax()))
-        if (res$status == 200) {
+        if (res$status == 200 || res$status == 226) {
             url <- sub("version.txt", "bety.tar.gz", res$url)
             version <- strsplit(rawToChar(res$content), '\t', fixed = TRUE)[[1]]
             if (!is.na(as.numeric(version[1]))) {
@@ -128,12 +128,13 @@ check_servers <- function(servers, progress) {
         progress$inc(amount = 1)
     }
     urls <- sapply(servers[,'sync_url'], function(x) { sub("bety.tar.gz", "version.txt", x) })
+    print(urls)
     lapply(urls, function(x) { curl::curl_fetch_multi(x, done = server_version, fail = failure, handle = curl::new_handle(connecttimeout=1)) })
     
     # log information  
     server_log  <- function(res) {
         progress$inc(amount = 0, message = paste("Processing", progress$getValue(), "of", progress$getMax()))
-        if (res$status == 200) {
+        if (res$status == 200 || res$status == 226) {
             url <- sub("sync.log", "bety.tar.gz", res$url)
             lines <- strsplit(rawToChar(res$content), '\n', fixed = TRUE)[[1]]
             now <- as.POSIXlt(Sys.time(), tz="UTC")
