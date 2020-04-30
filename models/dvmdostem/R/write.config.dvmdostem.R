@@ -66,7 +66,16 @@ setup.outputs.dvmdostem <- function(pecan_requested_outputs,
     pecan_outvars <- pecan_requested_outputs
     outspec_path <- dvmdostem_output_spec
   }
+    
+  # 4) user specified calibration, outvars and custom path
+  # NOT IMPLENTED YET
 
+    # 5) user specified calibration, custom path, but no vars
+  # NOT IMPLENTED YET
+
+    # 6) user specified calibration, outvars, but no custom path
+  # NOT IMPLENTED YET
+  
   # Verify that the base output_spec file exists.
   if (! file.exists(outspec_path) ) {
     PEcAn.logger::logger.error("ERROR! The specified output spec file does not exist on this system!")
@@ -293,7 +302,6 @@ enforce.runmask.cmt.vegmap.harmony <- function(siteDataPath, rundir, cmtnum){
 ##' @importFrom rjson fromJSON toJSON
 ##'
 write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.id) {
-
   ## site information
   ## (Currently unused)
   site <- settings$run$site
@@ -377,6 +385,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
   envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
   bgcveg_params <- paste(appbinary_path, "parameters", 'cmt_bgcvegetation.txt', sep="/")
+  calparbgc_params <- paste(appbinary_path, "parameters", "cmt_calparbgc.txt", sep="/")
   
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
@@ -401,11 +410,18 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", bgcveg_params, cmtnum)),
           stdout=bgcveg_jsonfile, wait=TRUE)
-
+  
+  calparbgc_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-calparbgc.json')
+  PEcAn.logger::logger.info(paste0("calparbgc_jsonfile: ", calparbgc_jsonfile))
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--dump-block-to-json", calparbgc_params, cmtnum)),
+          stdout=calparbgc_jsonfile, wait=TRUE)
+  
   # Read the json file into memory
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
   bgcveg_jsondata <- fromJSON(paste(readLines(bgcveg_jsonfile), collapse=""))
+  calparbgc_jsondata <- fromJSON(paste(readLines(calparbgc_jsonfile), collapse=""))
   
   # (2)
   # Overwrite parameter values with (ma-posterior) trait data from pecan
@@ -441,8 +457,32 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             # name to make sure we are updating the correct spot in the json
             # data structure.
             pft_common_name <- unlist(strsplit(singlepft$name, "-"))[2]
+            # In addition, there can be variants, i.e. for calibration, where the name
+            # in betydb might be like this: CMT06-Decid.cal, and we need to strip off
+            # the variant.
+            pft_common_name <- unlist(strsplit(pft_common_name, ".", fixed = TRUE))[1]
+
             #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
             if (identical(jd[[i]]$name, pft_common_name)) {
+              if (curr_trait == "cfall_leaf") { calparbgc_jsondata[[i]]$`cfall(0)` = traits[[curr_trait]] }
+              if (curr_trait == "cfall_stem") { calparbgc_jsondata[[i]]$`cfall(1)` = traits[[curr_trait]] }
+              if (curr_trait == "cfall_root") { calparbgc_jsondata[[i]]$`cfall(2)` = traits[[curr_trait]] }
+              if (curr_trait == "nfall_leaf") { calparbgc_jsondata[[i]]$`nfall(0)` = traits[[curr_trait]] }
+              if (curr_trait == "nfall_stem") { calparbgc_jsondata[[i]]$`nfall(1)` = traits[[curr_trait]] }
+              if (curr_trait == "nfall_root") { calparbgc_jsondata[[i]]$`nfall(2)` = traits[[curr_trait]] }
+              if (curr_trait == "krb_leaf") { calparbgc_jsondata[[i]]$`krb(0)` = traits[[curr_trait]] }
+              if (curr_trait == "krb_stem") { calparbgc_jsondata[[i]]$`krb(1)` = traits[[curr_trait]] }
+              if (curr_trait == "krb_root") { calparbgc_jsondata[[i]]$`krb(2)` = traits[[curr_trait]] }
+              if (curr_trait == "kra") { calparbgc_jsondata[[i]]$kra = traits[[curr_trait]] }
+              if (curr_trait == "frg") { calparbgc_jsondata[[i]]$frg = traits[[curr_trait]] }
+              if (curr_trait == "nmax") { calparbgc_jsondata[[i]]$nmax = traits[[curr_trait]] }
+              if (curr_trait == "cmax") { calparbgc_jsondata[[i]]$cmax = traits[[curr_trait]] }
+              if (curr_trait == "micbnup") { calparbgc_jsondata[[i]]$micbnup = traits[[curr_trait]] }
+              if (curr_trait == "kdcrawc") { calparbgc_jsondata[[i]]$kdcrawc = traits[[curr_trait]] }
+              if (curr_trait == "kdcsoma") { calparbgc_jsondata[[i]]$kdcsoma = traits[[curr_trait]] }
+              if (curr_trait == "kdcsompr") { calparbgc_jsondata[[i]]$kdcsompr = traits[[curr_trait]] }
+              if (curr_trait == "kdcsomcr") { calparbgc_jsondata[[i]]$kdcsomcr = traits[[curr_trait]] }
+
               if (curr_trait == "SLA") {
                 dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
               }
@@ -520,7 +560,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   bgcveg_exportJson <- toJSON(bgcveg_jsondata)
   write(bgcveg_exportJson, file.path(local_rundir, "tmp","bgcveg_newfile.json"))
   
-  
+  calparbgc_exportJson <- toJSON(calparbgc_jsondata)
+  write(calparbgc_exportJson, file.path(local_rundir, "tmp", "calparbgc_newfile.json"))
+
   # (3)
   # Format a new dvmdostem parameter file using the new json file as a source.
 
@@ -547,6 +589,12 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_bgcvegetation.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","bgcveg_newfile.json"), ref_file)),
+          stdout=new_param_file, wait=TRUE)
+
+  ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_calparbgc.txt')
+  new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_calparbgc.txt")
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","calparbgc_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
   
   ## Cleanup rundir temp directory - comment out for debugging
