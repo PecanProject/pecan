@@ -13,7 +13,7 @@ set -e
     # Seems like a lot of fiddling to set up littler and only use it once
     # inside pecan.depends, but still easier than duplicating the script
     Rscript -e 'if (!requireNamespace("littler", quietly = TRUE)) { install.packages(c("littler", "remotes", "docopt"), repos = "https://cloud.r-project.org") }'
-    LRPATHS=`Rscript -e 'cat(system.file(c("examples", "bin"), package = "littler"), sep = ":")'`
+    LRPATHS=$(Rscript -e 'cat(system.file(c("examples", "bin"), package = "littler"), sep = ":")')
     echo 'options(repos="https://cloud.r-project.org")' > ~/.littler.r
     PATH=$LRPATHS:$PATH bash docker/depends/pecan.depends
     travis_time_end
