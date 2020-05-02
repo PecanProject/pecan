@@ -13,7 +13,6 @@ env:
     - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
     - _R_CHECK_LENGTH_1_CONDITION_=true
     - _R_CHECK_LENGTH_1_LOGIC2_=true
-    - _R_CHECK_EXCESSIVE_IMPORTS_=100 # TODO consider reducing (CRAN uses 20)
 
 addons:
   apt:
