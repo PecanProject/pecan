@@ -277,12 +277,6 @@ Documented arguments not in \usage in documentation object 'plot_sensitivities':
 Undocumented arguments in documentation object 'plot_sensitivity'
   ‘linesize’ ‘dotsize’
 
-Undocumented arguments in documentation object 'plot_variance_decomposition'
-  ‘plot.inputs’
-Documented arguments not in \usage in documentation object 'plot_variance_decomposition':
-  ‘all.plot.inputs’ ‘exclude’ ‘convert.var’ ‘var.label’
-  ‘order.plot.input’ ‘ticks.plot.input’ ‘col’ ‘pch’ ‘main’
-
 Undocumented arguments in documentation object 'read.ameriflux.L2'
   ‘file.name’ ‘year’
 
