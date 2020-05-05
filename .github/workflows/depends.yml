@@ -1,0 +1,63 @@
+name: Docker Depends Image
+
+on:
+  push:
+    branches:
+      - develop
+
+  # this runs on the develop branch
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  depends:
+    #if: github.repository == 'PecanProject/pecan'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        R:
+          # 3.4 does not work
+          - 3.5
+          # 3.6 != latest in 3.6 series
+          - 3.6.3
+          # 4.0 not released yet
+          # unstable version
+          - devel
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build for R version ${{ matrix.R }}
+        run: |
+          docker build --pull \
+            --build-arg R_VERSION=${{ matrix.R }} \
+            --tag image \
+            docker/depends
+
+      - name: Login into registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          fi
+
+      - name: Push docker image ${{ matrix.R }}
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          TAG=${{ matrix.R }}
+          if [ "$TAG" == "3.6.3" ]; then
+            TAG=3.6
+          fi
+
+          docker tag image $IMAGE_ID:${TAG}-develop
+          docker push $IMAGE_ID:${TAG}-develop
+
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
+            docker tag image pecan/depends:${TAG}-develop
+            docker push pecan/depends:${TAG}-develop
+          fi
