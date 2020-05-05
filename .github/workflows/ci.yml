@@ -1,6 +1,15 @@
 name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+    tags:
+      - '*'
+
+  pull_request:
 
 env:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
