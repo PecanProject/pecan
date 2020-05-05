@@ -84,8 +84,8 @@ jobs:
           for i in $(cat uniq.txt); do make .doc/${i}; done
       - name: commit
         run: |
-          git config --global user.email "rahulagrawal799110@gmail.com"
-          git config --global user.name "Rahul Agrawal"
+          git config --global user.email "pecan_bot@example.com"
+          git config --global user.name "PEcAn stylebot"
           git add \*.Rd
           git commit -m 'make'
       - uses: r-lib/actions/pr-push@master
