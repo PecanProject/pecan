@@ -54,7 +54,7 @@
 $ED_NL
 
    !----- Simulation title (64 characters). -----------------------------------------------!
-   NL%EXPNME = 'ED version 2.2 PEcAn @ENSNAME@'
+   NL%EXPNME = 'ED2 vGITHUB PEcAn @ENSNAME@'
    !---------------------------------------------------------------------------------------!
 
 
@@ -84,8 +84,8 @@ $ED_NL
    !     Start of simulation. Information must be given in UTC time.                       !
    !---------------------------------------------------------------------------------------!
    NL%IMONTHA  = @START_MONTH@    ! Month
-   NL%IDATEA   = @START_DAY@    ! Day
-   NL%IYEARA   = @START_YEAR@  ! Year
+   NL%IDATEA   = @START_DAY@      ! Day
+   NL%IYEARA   = @START_YEAR@     ! Year
    NL%ITIMEA   = 0000  ! UTC
    !---------------------------------------------------------------------------------------!
 
@@ -95,8 +95,8 @@ $ED_NL
    !     End of simulation. Information must be given in UTC time.                         !
    !---------------------------------------------------------------------------------------!
    NL%IMONTHZ  = @END_MONTH@    ! Month
-   NL%IDATEZ   = @END_DAY@    ! Day
-   NL%IYEARZ   = @END_YEAR@  ! Year
+   NL%IDATEZ   = @END_DAY@      ! Day
+   NL%IYEARZ   = @END_YEAR@     ! Year
    NL%ITIMEZ   = 0000  ! UTC
    !---------------------------------------------------------------------------------------!
 
@@ -219,8 +219,8 @@ $ED_NL
    !            soil types                                                                 !
    !---------------------------------------------------------------------------------------!
     NL%N_POI    =       1
-    NL%POI_LAT  =   @SITE_LAT@
-    NL%POI_LON  = @SITE_LON@ 
+    NL%POI_LAT  = @SITE_LAT@
+    NL%POI_LON  = @SITE_LON@
     NL%POI_RES  =    1.00
    !---------------------------------------------------------------------------------------!
 
@@ -366,8 +366,8 @@ $ED_NL
    ! FFILOUT -- Path and prefix for analysis files (all but history/restart).              !
    ! SFILOUT -- Path and prefix for history files.                                         !
    !---------------------------------------------------------------------------------------!
-   NL%FFILOUT = '/mypath/generic-prefix'
-   NL%SFILOUT = '/mypath/generic-prefix'
+   NL%FFILOUT = '@FFILOUT@'
+   NL%SFILOUT = '@SFILOUT@'
    !---------------------------------------------------------------------------------------!
 
 
@@ -417,7 +417,7 @@ $ED_NL
    !        ED2.1 state file.  It allows for different layering, and assigns via nearest   !
    !        neighbor.                                                                      !
    !---------------------------------------------------------------------------------------!
-   NL%IED_INIT_MODE   = 6
+   NL%IED_INIT_MODE   = @INIT_MODEL@
    !---------------------------------------------------------------------------------------!
 
 
@@ -444,7 +444,7 @@ $ED_NL
    !              path+prefix will be used, as the history for every grid must have come   !
    !              from the same simulation.                                                !
    !---------------------------------------------------------------------------------------!
-   NL%SFILIN   = '/mypath/myprefix.'
+   NL%SFILIN   = '@SITE_PSSCSS@'
    !---------------------------------------------------------------------------------------!
 
 
@@ -614,12 +614,12 @@ $ED_NL
    !  SOILDEPTH_DB     -- If ISOILDEPTHFLG=1, this variable specifies the full path of the !
    !                      file that contains soil moisture and temperature information.    !
    !---------------------------------------------------------------------------------------!
-   NL%VEG_DATABASE      = '/mypath/veget_data/oge2/OGE2_'
-   NL%SOIL_DATABASE     = '/mypath/soil_data/texture/Hengl/Hengl_'
-   NL%LU_DATABASE       = '/mypath/glu-3.3.1+sa1.bau/glu-3.3.1+sa1.bau-'
+   NL%VEG_DATABASE      = '@ED_VEG@'
+   NL%SOIL_DATABASE     = '@ED_SOIL@'
+   NL%LU_DATABASE       = '@ED_LU@'
    NL%PLANTATION_FILE   = ''
-   NL%THSUMS_DATABASE   = '/mypath/thermal_sums/'
-   NL%ED_MET_DRIVER_DB  = '/mypath/ED_MET_DRIVER_HEADER'
+   NL%THSUMS_DATABASE   = '@ED_THSUM@'
+   NL%ED_MET_DRIVER_DB  = '@SITE_MET@'
    NL%OBSTIME_DB        = '' !Reference file: /ED/run/obstime_template.time
    NL%SOILSTATE_DB      = '/mypath/soil_data/temp+moist/STW1996OCT.dat'
    NL%SOILDEPTH_DB      = '/mypath/soil_data/depth/H250mBRD/H250mBRD_'
@@ -899,7 +899,7 @@ $ED_NL
    !  New scheme: plants shed their leaves once a 10-day running average of available      !
    !              water becomes less than a critical value.                                !
    !---------------------------------------------------------------------------------------!
-   NL%IPHEN_SCHEME    = 2
+   NL%IPHEN_SCHEME    = @PHENOL_SCHEME@
    !---------------------------------------------------------------------------------------!
 
 
@@ -1845,9 +1845,9 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IMETTYPE    = 1
    NL%ISHUFFLE    = 0
-   NL%METCYC1     = 2004
-   NL%METCYCF     = 2014
-   NL%IMETAVG     = 1
+   NL%METCYC1     = @MET_START@
+   NL%METCYCF     = @MET_END@
+   NL%IMETAVG     = @MET_SOURCE@
    NL%IMETRAD     = 5
    NL%INITIAL_CO2 = 410.
    !---------------------------------------------------------------------------------------!
@@ -1865,11 +1865,11 @@ $ED_NL
    !                                                                                       !
    ! If the years don't cover the entire simulation period, they will be recycled.         !
    !---------------------------------------------------------------------------------------!
-   NL%IPHENYS1 = 1992
-   NL%IPHENYSF = 2003
-   NL%IPHENYF1 = 1992
-   NL%IPHENYFF = 2003
-   NL%PHENPATH   = '/mypath/phenology'
+   NL%IPHENYS1 = @PHENOL_START@
+   NL%IPHENYSF = @PHENOL_END@
+   NL%IPHENYF1 = @PHENOL_START@
+   NL%IPHENYFF = @PHENOL_END@
+   NL%PHENPATH   = '@PHENOL@'
    !---------------------------------------------------------------------------------------!
 
 
@@ -1882,7 +1882,7 @@ $ED_NL
    !               simulation.                                                             !
    ! PHENPATH   -- path and prefix of the prescribed phenology data.                       !
    !---------------------------------------------------------------------------------------!
-   NL%IEDCNFGF   = '/mypath/config.xml'
+   NL%IEDCNFGF   = '@CONFIGFILE@'
    NL%EVENT_FILE = '/mypath/event.xml'
    !---------------------------------------------------------------------------------------!
 
