@@ -11,7 +11,7 @@ on:
 
 jobs:
   depends:
-    #if: github.repository == 'PecanProject/pecan'
+    if: github.repository == 'PecanProject/pecan'
 
     runs-on: ubuntu-latest
 
