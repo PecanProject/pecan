@@ -11,7 +11,7 @@ on:
 
 jobs:
   depends:
-    #if: github.repository == 'PecanProject/pecan'
+    if: github.repository == 'PecanProject/pecan'
 
     runs-on: ubuntu-latest
 
@@ -19,6 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          # develop is special since it will build the default depends for develop
+          # this is not a real R version.
+          - develop
           # 3.4 does not work
           - 3.5
           # 3.6 != latest in 3.6 series
@@ -26,16 +29,31 @@ jobs:
           # 4.0 not released yet
           # unstable version
           - devel
+        include:
+          - R: develop
+            TAG: develop
+          - R: 3.5
+            TAG: 3.5-develop
+          - R: 3.6.3
+            TAG: 3.6-develop
+          - R: devel
+            TAG: unstable-develop
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Build for R version ${{ matrix.R }}
         run: |
-          docker build --pull \
-            --build-arg R_VERSION=${{ matrix.R }} \
-            --tag image \
-            docker/depends
+          if [ "${{ matrix.R }}" == "develop" ]; then
+            docker build --pull \
+              --tag image \
+              docker/depends
+          else
+            docker build --pull \
+              --build-arg R_VERSION=${{ matrix.R }} \
+              --tag image \
+              docker/depends
+          fi
 
       - name: Login into registry
         run: |
@@ -49,15 +67,10 @@ jobs:
           IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          TAG=${{ matrix.R }}
-          if [ "$TAG" == "3.6.3" ]; then
-            TAG=3.6
-          fi
-
-          docker tag image $IMAGE_ID:${TAG}-develop
-          docker push $IMAGE_ID:${TAG}-develop
+          docker tag image $IMAGE_ID:${{ matrix.TAG }}
+          docker push $IMAGE_ID:${{ matrix.TAG }}
 
           if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
-            docker tag image pecan/depends:${TAG}-develop
-            docker push pecan/depends:${TAG}-develop
+            docker tag image pecan/depends:${{ matrix.TAG }}
+            docker push pecan/depends:${{ matrix.TAG }}
           fi
