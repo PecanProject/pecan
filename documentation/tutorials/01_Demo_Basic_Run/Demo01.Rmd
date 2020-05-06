@@ -147,7 +147,7 @@ If enabled post-process output for these analyses
 If at any point a Stage Name has the **Status “ERROR”** please notify the PEcAn team member that is administering the demo or feel free to do any of the following:
 
 * Refer to the PEcAn Documentation for documentation
-* Post the end of your workflow log on our Gitter chat
+* Post the end of your workflow log on our Slack Channel chat
 * Post an issue on Github. 
 
 The entire PEcAn team welcomes any questions you may have!
