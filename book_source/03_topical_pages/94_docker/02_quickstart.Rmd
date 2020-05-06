@@ -1,4 +1,37 @@
-## The PEcAn docker install process in detail {#docker-quickstart}
+## Quick-start docker install {#docker-quickstart}
+
+```bash
+git clone git@github.com/pecanproject/pecan
+cd pecan
+
+# start database
+docker-compose -p pecan up -d postgres
+
+# add example data (first time only)
+docker-compose run --rm bety initialize
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+
+# start PEcAn
+docker-compose -p pecan up -d
+
+# run a model
+curl -v -X POST \
+    -F 'hostname=docker' \
+    -F 'modelid=5000000002' \
+    -F 'sitegroupid=1' \
+    -F 'siteid=772' \
+    -F 'sitename=Niwot Ridge Forest/LTER NWT1 (US-NR1)' \
+    -F 'pft[]=temperate.coniferous' \
+    -F 'start=2004/01/01' \
+    -F 'end=2004/12/31' \
+    -F 'input_met=5000000005' \
+    -F 'email=' \
+    -F 'notes=' \
+    'http://localhost:8000/pecan/04-runpecan.php'
+```    
+
+
+## The PEcAn docker install process in detail 
 
 ### Configure docker-compose {#pecan-setup-compose-configure}
 
@@ -65,7 +98,7 @@ As a side effect, the above command will also create blank data ["volumes"](http
 Because our project is called `pecan` and `docker-compose.yml` describes a network called `pecan`, the resulting network is called `pecan_pecan`. 
 This is relevant to the following commands, which will actually initialize and populate the BETY database.
 
-Assuming the above ran successfully, next run the following:
+Assuming the above has run successfully, next run the following:
 
 ```bash
 docker-compose run --rm bety initialize
