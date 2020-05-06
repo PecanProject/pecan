@@ -21,6 +21,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - When building sipnet model would not set correct model version
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 - Update ED docker build, will now build version 2.2.0 and git
+- Remove ED2IN.git and add new versioned ED2IN template: ED2INv2.2.0 (#2143)
 
 ### Changed
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
