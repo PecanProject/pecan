@@ -20,7 +20,7 @@ WORKDIR /work
 # variables to store in docker image
 ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
     RABBITMQ_QUEUE="pecan" \
-    APPLICATION="R CMD BATCH workflow.R"
+    APPLICATION="workflow"
 
 # actual application that will be executed
 COPY executor.py sender.py /work/
