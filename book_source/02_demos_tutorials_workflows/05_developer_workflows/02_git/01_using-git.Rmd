@@ -31,6 +31,10 @@ it. The git protocol is read-only.
 This document describes the steps required to download PEcAn, make changes to code, and submit your changes.
 
 
+If during above process you want to work on something else, commit all
+your code, create a new branch, and work on new branch. 
+
+
 #### PEcAn Project and Github
 * Organization Repository: https://github.com/organizations/PecanProject
 * PEcAn source code: https://github.com/PecanProject/pecan.git
@@ -69,10 +73,19 @@ The **easiest** approach is to use GitHub's browser based workflow. This is usef
 
 #### Recommended Git Workflow
 
+Summary:
+
+* Branch "early and often"
+* First pull from develop
+* Branch before working on feature
+* One branch per feature
+* You can switch easily between branches
+* Merge feature into main line when branch done
+
 
 **Each feature should be in its own branch** (for example each issue is a branch, names of branches are often the issue in a bug tracking system).
 
-**Commit and Push Frequency** On your branch, commit **_at minimum once a day before you push changes:_** even better: every time you reach a stopping point and move to a new issue. best: any time that you have done work that you do not want to re-do. Remember, pushing changes to your branch is like saving a draft. Submit a pull request when you are done.
+**Commit and Push Frequency** On your branch, commit any time that you have done work that you do not want to re-do. Remember, pushing changes to your branch is like saving a draft. Submit a pull request when you are done.
 
 #### Before any work is done
 
@@ -106,41 +119,9 @@ cd pecan
 git remote add upstream git@github.com:PecanProject/pecan.git
 ```
 
-#### During development:
-
-* commit often; 
-* each commit can address 0 or 1 issue; many commits can reference an issue
-* ensure that all tests are passing before anything is pushed into develop.
-
-#### Basic Workflow
-
-This workflow is for educational purposes only. Please use the Recommended Workflow if you plan on contributing to PEcAn. This workflow does not include creating branches, a feature we would like you to use.
-1. Get the latest code from the main repository
-
-`git pull upstream develop`
-
-2. Do some coding
-
-3. Commit after each chunk of code (multiple times a day)
-
-`git commit -m "<some descriptive information about what was done; references/fixes gh-X>"`
-
-4. Push to YOUR Github (when a feature is working, a set of bugs are fixed, or you need to share progress with others)
-
-`git push origin develop`
-
-5. Before submitting code back to the main repository, make sure that code compiles from the main directory.
-
-`make`
-
-
-6. submit pull request with a reference to related issue; 
-* also see [github documentation](https://help.github.com/articles/using-pull-requests)
-
-
 #### Recommended Workflow: A new branch for each change
 
-1. Make sure you start in develop 
+1. Make sure you start in the develop branch 
 
 `git checkout develop`
 
@@ -152,7 +133,7 @@ This workflow is for educational purposes only. Please use the Recommended Workf
 
 `make`
 
-4. Create a branch and switch to it
+4. Create a new branch and switch to it
 
 `git checkout -b <branchname>`
 
@@ -172,7 +153,7 @@ This workflow is for educational purposes only. Please use the Recommended Workf
 `git push origin <branchname>`
 
 8. submit pull request with [[link commits to issues|Using-Git#link-commits-to-issuess]]; 
-* also see [explanation in this PecanProject/bety issue](https://github.com/PecanProject/bety/issues/57) and [github documentation](https://help.github.com/articles/using-pull-requests)
+* also see [github documentation](https://help.github.com/articles/using-pull-requests)
 
 #### After pull request is merged
 
@@ -232,16 +213,6 @@ There are two ways to do this. One easy way is to include the following text in 
 
 #### Other Useful Git Commands:
 
-* GIT encourages branching "early and often"
-* First pull from develop
-* Branch before working on feature
-* One branch per feature
-* You can switch easily between branches
-* Merge feature into main line when branch done
-
-If during above process you want to work on something else, commit all
-your code, create a new branch, and work on new branch. 
-
 
 * Delete a branch: `git branch -d <name of branch>`
 * To push a branch git: `push -u origin `<name of branch>`
@@ -294,19 +265,7 @@ The Rstudio documentation includes useful overviews of [version control](http://
 
 Once you have git installed on your computer (see the [Rstudio version control](http://www.rstudio.com/ide/docs/version_control/overview) documentation for instructions), you can use the following steps to install the PEcAn source code in Rstudio.
 
-#### Creating a Read-only version:
-
-This is a fast way to clone the repository that does not support contributing new changes (this can be done with further modification). 
-
-1.  install Rstudio (www.rstudio.com)
-2.  click (upper right) project
-*   create project
-*   version control
-*   Git - clone a project from a Git Repository
-*   paste https://www.github.com/PecanProject/pecan
-*   choose working dir. for repo
-
-#### For development:
+##### Changes without requiring a username and password:
 
 1.  create account on github
 2.  create a fork of the PEcAn repository to your own account https://www.github.com/pecanproject/pecan
