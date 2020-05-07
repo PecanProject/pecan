@@ -61,7 +61,7 @@ IMAGE_VERSION or the option -i.
 To run the script in debug mode without actually building any images you
 can use the environment variable DEBUG or option -d.
 
-By default the docker.sh process will try and use a prebuild dependency
+By default the docker.sh process will try and use a prebuilt dependency
 image since this image takes a long time to build. To force this image
 to be build use the DEPEND="build" environment flag, or use option -f.
 
@@ -103,8 +103,8 @@ echo "# test this build you can use:"
 echo "# PECAN_VERSION='${IMAGE_VERSION}' docker-compose up"
 echo "#"
 echo "# The docker image for dependencies takes a long time to build. You"
-echo "# can use a prebuild version (default) or force a new versin to be"
-echo "# build locally using: DEPEND=build $0"
+echo "# can use a prebuilt version (default) or force a new version to be"
+echo "# built locally using: DEPEND=build $0"
 echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
