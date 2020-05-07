@@ -1,7 +1,26 @@
 #!/bin/bash
 
 while ! pg_isready -U ${PGUSER} -h ${PGHOST} -p ${PGPORT}; do
-   echo "Waiting for database"
-   sleep 2
+    echo "Waiting for database system"
+    sleep 2
 done
+
+# if given use BETY credentials, check for BETY database
+if [ -n "$BETYUSER" ]; then
+	# set PGPASSWORD so we are not prompted for password
+	PGPASSWORD="${BETYPASSWORD}"
+
+	# wait for bety user / database to be active
+	while ! pg_isready -U ${BETYUSER} -h ${PGHOST} -p ${PGPORT} -d ${BETYDATABASE}; do
+   		echo "Waiting for bety database"
+   		sleep 2
+	done
+
+	# wait for list of users to be active
+	while ! psql -U ${BETYUSER} -h ${PGHOST} -p ${PGPORT} -d ${BETYDATABASE} -tAc "SELECT count(id) FROM users;"; do
+		echo "Waiting for user table to be populated"
+		sleep 2
+	done
+fi
+
 echo "Database is ready"

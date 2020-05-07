@@ -23,7 +23,7 @@ BODY='{
     "branch":"'${BRANCH}'",
     "config": {
       "install":"echo skipping",
-      "before-script":"echo skipping",
+      "before_script":"echo skipping",
       "script":"scripts/travis/cache_buildup.sh 30m"}
 }}'
 
