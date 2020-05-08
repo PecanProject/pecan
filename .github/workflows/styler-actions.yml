@@ -68,7 +68,7 @@ jobs:
       - name : make
         shell: bash
         run: |
-          cut -d / -f 1-2 artifacts/new2.txt | tr -d '"' > changed_dirs.txt
+          cut -d / -f 1-2 artifacts/files_to_style.txt | tr -d '"' > changed_dirs.txt
           cat changed_dirs.txt
           sort changed_dirs.txt | uniq > needs_documenting.txt
           cat needs_documenting.txt      
