@@ -68,11 +68,11 @@ jobs:
       - name : make
         shell: bash
         run: |
-          cut -d / -f 1-2 artifacts/new2.txt | tr -d '"' > new.txt
-          cat new.txt
-          sort new.txt | uniq > uniq.txt
-          cat uniq.txt      
-          for i in $(cat uniq.txt); do make .doc/${i}; done
+          cut -d / -f 1-2 artifacts/new2.txt | tr -d '"' > changed_dirs.txt
+          cat changed_dirs.txt
+          sort changed_dirs.txt | uniq > needs_documenting.txt
+          cat needs_documenting.txt      
+          for i in $(cat needs_documenting.txt); do make .doc/${i}; done
       - name: commit
         run: |
           git config --global user.email "pecan_bot@example.com"
