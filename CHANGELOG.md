@@ -34,7 +34,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 - The pecan/data container has no longer hardcoded path for postgres
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
-- data.remote: Arguments to the function `call_MODIS()` have been changed (#2338).  
+- data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519).  
 
 ### Added
 - model_info.json and Dockerfile to template (#2567)
