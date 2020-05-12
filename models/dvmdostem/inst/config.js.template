@@ -21,7 +21,8 @@
     "output_dir":         "@MODEL_OUTPUT_DIR@/",
     "output_spec_file":   "@CUSTOM_OUTSPEC@",
     "output_monthly":     0, //JSON specific
-    "output_nc_eq":       0,
+    "nc_output_last_n_eq":@NC_OUTPUT_LAST_N_EQ@,
+    "output_nc_eq":       @EQ_NC_OUTPUT@,
     "output_nc_sp":       0,
     "output_nc_tr":       1,
     "output_nc_sc":       1 
