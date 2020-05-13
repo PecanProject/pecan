@@ -6,9 +6,11 @@ ENV PGHOST=postgres \
     PGPASSWORD=bety \
     GEOCACHE=/srv/shiny-server/geoip.json
 
-RUN apt-get -y install libpq-dev libssl-dev \
+RUN apt-get update \
+    && apt-get -y install libpq-dev libssl-dev \
     && install2.r -e -s -n -1 curl dbplyr DT leaflet RPostgreSQL \
-    && rm -rf /srv/shiny-server/*
+    && rm -rf /srv/shiny-server/* \
+    && rm -rf /var/lib/apt/lists/*
 ADD . /srv/shiny-server/
 
 # special script to start shiny server and preserve env variable
