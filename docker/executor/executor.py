@@ -55,6 +55,14 @@ class Worker:
             application = "R CMD BATCH workflow.R"
         elif custom_application is not None:
             application = custom_application
+        elif default_application == "workflow":
+            application = "R CMD BATCH"
+            if jbody.get("continue") == True:
+                application = application + " --continue workflow.R workflow2.Rout";
+            else:
+                if jbody.get("modeledit") == True:
+                    application = application + " --advanced"
+                application = application + " workflow.R workflow.Rout";
         else:
             logging.info("Running default command: %s" % default_application)
             application = default_application

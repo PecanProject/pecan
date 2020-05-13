@@ -28,22 +28,22 @@ Host pecan-vm
 
 This will allow you to SSH into the VM with the simplified command, `ssh pecan-vm`.
 
-## Connecting to bety on the VM via SSh {#ssh-vm-bety}
+## Connecting to BETYdb on the VM via SSH {#ssh-vm-bety}
 
-Sometimes, you may want to develop code locally but connect to an instance of Bety on the VM.
-To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting XXXX to any available port (more or less any 4 digit number -- a reasonable choice is 3333).
+Sometimes, you may want to develop code locally but connect to an instance of BETYdb on the VM.
+To do this, first open a new terminal and connect to the VM while enabling port forwarding (with the `-L` flag) and setting the port number. Using 5433 does not conflict with the postgres default port of 5432, the forwarded port will not conflict with a postgres database server running locally.
 
 ```
-ssh -L XXXX:localhost:5432 carya@localhost:6422
+ssh -L 5433:localhost:5432 carya@localhost:6422
 ```
 
-This makes port XXXX on the local machine match port 5432 on the VM.
-This means that connecting to `localhost:XXXX` will give you access to Bety on the VM.
+This makes port 5433 on the local machine match port 5432 on the VM.
+This means that connecting to `localhost:5433` will give you access to BETYdb on the VM.
 
 To test this on the command line, try the following command, which, if successful, will drop you into the `psql` console.
 
 ```
-psql -d bety -U bety -h localhost -p XXXX
+psql -d bety -U bety -h localhost -p 5433
 ```
 
 To test this in R, open a Postgres using the analogous parameters:
@@ -56,12 +56,12 @@ con <- dbConnect(
   password = "bety",
   dbname = "bety",
   host = "localhost",
-  port = XXXX
+  port = 5433
   )
 dbListTables(con)   # This should return a vector of bety tables
 ```
 
-Note that the same general approach will work on any Bety server where port forwarding is enabled.
+Note that the same general approach will work on any BETYdb server where port forwarding is enabled, but it requires ssh access.
 
 
 ### Using Amazon Web Services for a VM (AWS) {#awsvm}
@@ -230,36 +230,4 @@ sudo update-grub
 Once all done, stop the virtual machine
 ```bash
 history -c && ${HOME}/cleanvm.sh
-```
-
-### VM Desktop Conversion {#vm-dektop-conversion}
-
-```bash
-sudo apt-get update
-sudo apt-get install xfce4 xorg
-```
-
-For a more refined desktop environment, try 
-
-```bash
-sudo apt-get install --no-install-recommends xubuntu-desktop 
-```
-* replace `xubuntu-` with `ubuntu-`, `lubuntu-`, or other preferred desktop enviornment
-* the `--no-install-recommends` eliminates additional applications, removing it will add a word processor, a browser, and lots of other applications included in the default operating system.
-
-Reinstall Virtual Box additions for better integration adding X/mouse support
-
-```bash
-sudo mount /dev/cdrom /mnt
-sudo /mnt/VBoxLinuxAdditions.run
-sudo umount /mnt
-```
-
-### Install RStudio Desktop {#install-rstudio}
-
-```bash
-wget http://download1.rstudio.org/rstudio-0.97.551-amd64.deb
-apt-get install libjpeg621
-dpkg -i rstudio-*
-rm rstudio-*
 ```

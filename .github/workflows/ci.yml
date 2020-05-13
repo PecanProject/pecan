@@ -23,20 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     container: pecan/depends:develop
     steps:
-    - name: check git version
-      id: gitversion
-      run: |
-        v=$(git --version | grep -oE '[0-9\.]+')
-        v='cat(numeric_version("'${v}'") < "2.18")'
-        echo "##[set-output name=isold;]$(Rscript -e "${v}")"
-    - name: upgrade git if needed
-      # Hack: actions/checkout wants git >= 2.18, rocker 3.5 images have 2.11
-      # Assuming debian stretch because newer images have git >= 2.20 already
-      if: steps.gitversion.outputs.isold == 'TRUE'
-      run: |
-        echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
-        apt-get update
-        apt-get -t stretch-backports upgrade -y git
     - uses: actions/checkout@v2
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
       shell: bash
