@@ -10,6 +10,8 @@ The recommended workflow is gitflow which is described in the PEcAn documentatio
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
+You can copy the `docker-compose.dev.yaml` to `docker-compose.override.yml`. Once that is done the `docker-compose` program will automatically use the `docker-compose.yml` and `docker-compose.override.yml` files, and you don't have to explicitly load them in the commands below.
+
 ### First time setup
 
 You can copy the [`env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
