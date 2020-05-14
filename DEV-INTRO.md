@@ -53,7 +53,7 @@ Each subfolder contains the required pieces to run the model in PEcAn
 
 ### modules (R packages)
 
-Contains packages that eitehr do analysis, or download and convert different data products.
+Contains packages that either do analysis, or download and convert different data products.
 
 ### web (PHP + javascript)
 
