@@ -72,49 +72,32 @@ get_site_info <- function(xmlfile) {
 ##' run_parallel <- optional. Can be used to speed up download process if there are more than 2 cores available on computer
 ##' 
 
-##' results <- download_thredds(site_info = site_info, dates = c("19950201", "19961215"), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = FALSE, outdir = NULL)
+##' results <- download_thredds(site_info = site_info, years = c("2000", "2003"), months = c(6,7,8), varid = "LAI", dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files", data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files", run_parallel = FALSE, outdir = NULL)
 ##' }        
 ##' @importFrom foreach %do% %dopar%           
 ##' @export
 ##' @author Bailey Morrison
 ##'
-download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_parallel = FALSE, outdir = NULL) {
+download_thredds <- function(site_info, years, months, varid, dir_url, data_url,run_parallel = FALSE, outdir = NULL) {
   
   #until the issues with parallel runs are fixed.
   run_parallel = FALSE
-  #require("foreach")
+
   
-  
-  #### check that dates are within the date range of the dataset
-  
-  #first make sure dates are in date format. Correct if not.
-  if (!(lubridate::is.Date(dates))){
-    if (!(is.character(dates))) {
-      dates = as.character(dates)
-    }
-    if (length(grep(dates, pattern = "-")) > 0) {
-      dates <- c(as.Date(dates[1], "%Y-%m-%d"), as.Date(dates[2], "%Y-%m-%d"))
-    } else {
-      dates <- c(as.Date(dates[1], "%Y%m%d"), as.Date(dates[2], "%Y%m%d"))
-    }
-    # Julien Date
-    if (any(nchar(dates) == 7)) {
-      dates <- c(as.Date(dates[1], "%Y%j"), as.Date(dates[2], "%Y%j"))
-    }
-  }
-  
-  date_range = unique(lubridate::year(seq(dates[1], dates[2], by = '1 year')))
-  
-  output = data.frame()
+  #assumes there is a max of 31 possible days in a month. This covers leap years!
+  years_range = sort(rep(seq(years[1], years[2]), 31))
+
   if (!(is.null(dir_url)))
   {
-    for (i in seq_along(date_range))
+    output = data.frame()
+    
+    for (i in seq_along(unique(years_range)))
     {
-      result <- RCurl::getURL(paste(dir_url, date_range[i], "/catalog.html", sep = "/"), 
+      result <- RCurl::getURL(paste(dir_url, unique(years_range)[i], "/catalog.html", sep = "/"), 
                               verbose=FALSE ,ftp.use.epsv = TRUE, dirlistonly = TRUE)
       files <- XML::getHTMLLinks(result)
       
-      index_dates <- regexpr(pattern = "_[0-9]{8}_", files)
+      index_dates <- regexpr(pattern = paste0("_[0-9]{4}0[", months[1], "-", months[length(months)], "]{1}[0-9]{2}_"), files)
       files <- files[-(which(index_dates < 0))]
       index_dates <- index_dates[which(index_dates > 0)]
       
@@ -148,19 +131,35 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
         } else {
           out <- foreach::foreach(i = urls, .combine = rbind) %do% 
             extract_thredds_nc(site_info, url_info = i)
-        }
-        output = rbind(output, out)
-        
-        if (!(is.null(outdir)))
-        {
-          # this will need to be changed in the future if users want to be able to save data they haven't already extracted at different sites/dates.
-          write.csv(out, file = paste(outdir, "/THREDDS_", varid, "_", dates[1], "-", dates[2], ".csv", sep = ""))
-        } 
+          
+          # get max LAI for each site instead of all days with missing NA fillers
+          test = foreach::foreach(i = unique(out$site_id), .combine = rbind) %do%
+            max_lai(x = out, site = i)
+          test$date = lubridate::year(test$date)
+          
+          output = rbind(output, test)
+          
+          }
       }
-      
     }
+    
+    # if (!(is.null(outdir)))
+    #           {
+    #             # this will need to be changed in the future if users want to be able to save data they haven't already extracted at different sites/dates.
+    #             write.csv(output, file = paste(outdir, "/THREDDS_", varid, "_", years[1], "-", years[2], "_",months[1], "-", months[length(months)], ".csv", sep = ""))
+    #           }
+    return(output)
   }
-  return(output)
+}   
+    
+    
+
+
+max_lai = function(x, site)
+{
+  site_info_max = as.data.frame(x[x$site_id == site,][1,1:4], stringsAsFactors = FALSE)
+  site_info_max$max = as.numeric(max(x[x$site_id == site,]$value, na.rm = TRUE))
+  return(site_info_max)
 }
 
 
@@ -186,9 +185,6 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
 ##'
 extract_thredds_nc <- function(site_info, url_info)
 {
-  #print(url)
-  #require("foreach")
-  #require("ncdf4")
   index = regexpr(pattern = "_[0-9]{8}_", url_info)
   date<- as.Date(substr(url_info, index+1, index+8), "%Y%m%d")
   
