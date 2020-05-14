@@ -4,7 +4,7 @@ This is a minimal guide to getting started with PEcAn development.
 
 ## Git Repository and Workflow
 
-The recommended workflow is gitflow which is described in the PEcAn documentation. For the repository we recommend using a [fork of the PEcAn repsitory](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). In the scripts folder there is a script called [syngit.sh](scripts/syncgit.sh) that will help with synchronizing your fork with the official repository.
+The recommended workflow is gitflow which is described in the PEcAn documentation. For the repository we recommend using a [fork of the PEcAn repsitory](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). In the `/scripts` folder there is a script called [syncgit.sh](scripts/syncgit.sh) that will help with synchronizing your fork with the official repository.
 
 ## Developing in Docker
 
