@@ -244,7 +244,7 @@ call_MODIS <- function(var, product,
       output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
     }
     good <- which(output$qc %in% c("000", "001"))
-    if (length(good) > 0 || !(is.null(good)))
+    if (length(good) > 0)
     {
       output <- output[good, ]
     } else {
