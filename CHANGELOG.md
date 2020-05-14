@@ -39,6 +39,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
 - New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
 - model_info.json and Dockerfile to template (#2567)
 - Dockerize BASGRA_N model.
