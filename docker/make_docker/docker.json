@@ -1,0 +1,16 @@
+{
+  "builds": [
+    {
+      "directory": "models/basgra",
+      "imageVersion": "testing",
+      "modelVersion": "BASGRA_N_v1.0",
+      "tag": "pecan/model-basgra-basgra_n_v1.0:testing"
+    },
+    {
+      "directory": "models/biocro",
+      "imageVersion": "testing",
+      "modelVersion": "BASGRA_N_v1.0",
+      "tag": "pecan/model-biocro-0.95:testing"
+    }
+  ]
+}
