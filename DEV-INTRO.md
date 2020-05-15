@@ -24,7 +24,7 @@ You can copy the [`env.example`](docker/env.example) file as .env in your pecan 
 
 Next we will create the folders that will hold all the data for the docker containers using: `mkdir -p volumes/{lib,pecan,portainer,postgres,rabbitmq,traefik}`. The `volumes` folder will be ignored by git. You can create these at any location, however you will need to update the `docker-compose.dev.yml` file. The subfolders are used for the following:
 
-- **lib** holds all the R packages for the specific version of PEcAn and R. More information is below
+- **lib** holds all the R packages for the specific version of PEcAn and R. This folder will be shared amongst all other containers, and will contain the compiled PEcAn code.
 - **pecan** this holds all the data, such as workflows and any downloaded data.
 - **portainer** if you enabled the portainer service this folder is used to hold persistent data for this service
 - **postgres** holds the actual database data. If you want to backup the database, you can stop the postgres container, zip up the folder.
@@ -47,7 +47,11 @@ docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example
 
 #### copy R packages
 
-During the time it takes for the database to start we will copy the R packages from a container to our `volumes/lib` folder. This folder contain the compiled R packages. Later we will put our newly compiled code here as well. You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -r /usr/local/lib/R/site-library/* /rlib/`. This will copy all compiled packages to your local machine. This only needs to be done once (or if the PEcAn base image changes drastically, for example a new version of R).
+The final step is to copy the R packages from a container to your local machine as the `volumes/lib` folder. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. 
+
+You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -r /usr/local/lib/R/site-library/* /rlib/`. This will copy all compiled packages to your local machine.
+
+This only needs to be done once (or if the PEcAn base image changes drastically, for example a new version of R). You can also always delete all files in the `volumes/lib` folder, and recompile PEcAn from scratch.
 
 ### PEcAn Development
 
