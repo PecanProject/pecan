@@ -72,7 +72,7 @@ To make it easier to start the containers and not having to remember to use `doc
 You can submit your workflow either in the executor container or in rstudio container. For example to run the `docker.sipnet.xml` workflow located in the tests folder you can use: 
 
 ```
-docker-compose exec executor baseh
+docker-compose exec executor bash
 # inside the container
 cd /pecan/tests
 R CMD ../web/workflow.R docker.sipnet.xml
