@@ -8,6 +8,8 @@ The recommended workflow is gitflow which is described in the PEcAn documentatio
 
 ## Developing in Docker
 
+If running on a linux system it is recommended to add your user to the docker group. This will prevent you from having to use `sudo` to star the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using `sudo adduser ${USER} docker`.
+
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
 ### First time setup
@@ -30,6 +32,8 @@ Next we will create the folders that will hold all the data for the docker conta
 - **postgres** holds the actual database data. If you want to backup the database, you can stop the postgres container, zip up the folder.
 - **rabbitmq** holds persistent information of the message broker (rabbitmq). 
 - **traefik** holds persisent data for the web proxy, that directs incoming traffic to the correct container.
+
+These folders will hold all the persistent data for each of the respective containers and can grow. For example the postgres database is multiple GB. The pecan folder will hold all data produced by the workflows, including any downloaded data, and can grow to many giga bytes.
 
 #### postgresql database
 
