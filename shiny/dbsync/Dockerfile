@@ -13,5 +13,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ADD . /srv/shiny-server/
 
+ADD https://raw.githubusercontent.com/rocker-org/shiny/master/shiny-server.sh /usr/bin/
+
+RUN chmod +x /usr/bin/shiny-server.sh
+
 # special script to start shiny server and preserve env variable
 CMD /srv/shiny-server/save-env-shiny.sh
