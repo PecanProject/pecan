@@ -23,6 +23,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Update ED docker build, will now build version 2.2.0 and git
 
 ### Changed
+
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
 - `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
@@ -34,8 +35,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 - The pecan/data container has no longer hardcoded path for postgres
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
+- data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519).  
 
 ### Added
+
+- New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
 - model_info.json and Dockerfile to template (#2567)
 - Dockerize BASGRA_N model.
 - Basic coupling for models BASGRA_N and STICS.
@@ -47,9 +51,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - New shiny application to show database synchronization status (shiny/dbsync)
 
 ### Removed
+
+- Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
 - Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).
 - Old dependency management scripts `check.dependencies.sh`, `update.dependencies.sh`, and `install_deps.R` have been deleted. Use `generate_dependencies.R` and the automatic dependency handling built into `make install` instead (#2563).
+
 
 ## [1.7.1] - 2018-09-12
 
