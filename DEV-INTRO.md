@@ -8,7 +8,7 @@ The recommended workflow is gitflow which is described in the PEcAn documentatio
 
 ## Developing in Docker
 
-If running on a linux system it is recommended to add your user to the docker group. This will prevent you from having to use `sudo` to star the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using `sudo adduser ${USER} docker`.
+If running on a linux system it is recommended to add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using `sudo adduser ${USER} docker`.
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
