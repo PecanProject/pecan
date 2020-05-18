@@ -49,9 +49,13 @@ docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@exa
 docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
+#### copy web config file
+
+The `docker-compose.dev.yaml` file has a section that will eanble editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
+
 #### copy R packages
 
-The final step is to copy the R packages from a container to your local machine as the `volumes/lib` folder. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. 
+Next copy the R packages from a container to your local machine as the `volumes/lib` folder. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. 
 
 You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -r /usr/local/lib/R/site-library/* /rlib/`. This will copy all compiled packages to your local machine.
 
@@ -68,8 +72,6 @@ You can now modify the code on your local machine, or you can use [rstudio](http
 The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/lib` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
 
 To compile the PEcAn code you can use the make command in either the rstudio container, or in the executor container. The script [`compile.sh`](sripts/compile.sh) will run make inside the executor container.
-
-To make it easier to start the containers and not having to remember to use `docker-compose -f docker-compose.yml -f docker-compose.dev.yml` when you want to use the docker-compose comannd, you can rename `docker-compose.dev.yml` to `docker-compose.override.yml`. The docker-compose command will automatically use the `docker-compose.yml`, `docker-compose.override.yml` and the `.env` files to start the right containers with the correct parameters.
 
 ### Workflow Submission
 
@@ -119,3 +121,46 @@ Some of the docker build files. The Dockerfiles for each model are placed in the
 ### scripts
 
 Small scripts that are used as part of the development and installation of PEcAn.
+
+# Advanced Development Options
+
+## docker-compose
+
+To make it easier to start the containers and not having to remember to use `docker-compose -f docker-compose.yml -f docker-compose.dev.yml` when you want to use the docker-compose comannd, you can rename `docker-compose.dev.yml` to `docker-compose.override.yml`. The docker-compose command will automatically use the `docker-compose.yml`, `docker-compose.override.yml` and the `.env` files to start the right containers with the correct parameters.
+
+## Linux and User permissions
+
+(On Mac OSX and Windows files should automatically be owned by the user running the docker-compose commands)
+
+This will leverage of NFS to mount the file system in your local docker image, changing the files to owned by the user specified in the export file. Try to limit this to only your PEcAn folder since this will allow anybody on this system to get access to the exported folder as you!
+
+First install nfs server:
+
+```
+apt-get install nfs-kernel-server
+```
+
+Next export your home directory:
+
+```
+echo -e "$PWD\t127.0.0.1(rw,no_subtree_check,all_squash,anonuid=$(id -u),anongid=$(id -g))" | sudo tee -a /etc/exports
+```
+
+And export the filesystem.
+
+```
+sudo exportfs -va
+```
+
+At this point you have exported your home directory, only to your local machine. All files written to that exported filesystem will be owned by you (`id -u`) and your primary group (`id -g`).
+
+Finally we can modify the docker-compose.dev.yaml file to allow for writing files to your PEcAn folder as you:
+
+```
+volumes:
+  pecan_home:
+    driver_opts:
+      type: "nfs"
+      device: ":${PWD}"
+      o: "addr=127.0.0.1"
+```
