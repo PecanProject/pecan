@@ -57,7 +57,7 @@ The `docker-compose.dev.yaml` file has a section that will eanble editing the we
 
 Next copy the R packages from a container to your local machine as the `volumes/lib` folder. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. 
 
-You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -r /usr/local/lib/R/site-library/* /rlib/`. This will copy all compiled packages to your local machine.
+You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/`. This will copy all compiled packages to your local machine.
 
 This only needs to be done once (or if the PEcAn base image changes drastically, for example a new version of R). You can also always delete all files in the `volumes/lib` folder, and recompile PEcAn from scratch.
 
