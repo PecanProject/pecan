@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>pecan</outdir>
+  <outdir>/data/tests/sipnet</outdir>
 
   <database>
     <bety>
@@ -40,7 +40,7 @@
 
   <model>
     <type>SIPNET</type>
-    <rev>r136</rev>
+    <revision>r136</revision>
   </model>
 
   <run>
@@ -48,7 +48,9 @@
       <id>772</id>
     </site>
     <inputs>
-      <met>/home/carya/sites/niwot/niwot.clim</met>
+      <met>
+        <id>5000000005</id>
+      </met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>
@@ -59,7 +61,7 @@
     <name>localhost</name>
     <rabbitmq>
       <uri>amqp://guest:guest@rabbitmq/%2F</uri>
-      <queue>SIPNET_136</queue>
+      <queue>SIPNET_r136</queue>
     </rabbitmq>
   </host>
 </pecan>
