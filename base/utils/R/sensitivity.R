@@ -261,7 +261,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                             settings$run$site$id, "', '", 
                             settings$run$start.date, "', '",
                             settings$run$end.date, "', '", 
-                            settings$run$outdir, "', '", 
+                            settings$run$outdir, "', ", 
                             ensemble.id, ", '", 
                             paramlist, "') RETURNING id"), con = con)
             run.id <- insert_result[["id"]]
