@@ -87,7 +87,17 @@ Tree2Tree.incored.plots <- Tree2Tree[paste0(Tree2Tree$COUNTYCD, Tree2Tree$PLOT) 
 jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
 saveRDS(jags.stuff, "FIA_inc_data/jags.data.basic.rds")
 
+AZ.tree<- read.csv("FIA_inc_data/AZ_TREE-2.csv")
+AZ.plot <- read.csv("FIA_inc_data/AZ_PLOT.csv")
 
+AZ.plot$PREV_PLT_CN %in% AZ.tree$PLT_CN
+
+unique.trees <- AZ.tree %>% group_by(PLT_CN, CN, MEAS) %>% summarise(n.years =  
+
+Plot.tree <- merge(AZ.plot[, c("CN", "MEASYEAR")], AZ.tree, by.x = "CN", by.y = "PLT_CN")
+PLOT.tree
+unique.trees <- Plot.tree %>% group_by(CN.y) %>% summarise(n.years = n()) 
+                                                                       
 
 # jags.stuff <- buildJAGSdataobject(temp2,  rnd.subset = 100, trunc.yr = 1966)
 
@@ -142,7 +152,21 @@ jags.stuff.stage2 <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree
 saveRDS(jags.stuff.stage2, "FIA_inc_data/jags.data.100.stage2.rds")
 
 # 2. Read in posterior estimates of the inventory growth fusion model parameters
-posterior.ests <- readRDS("IGF_outputs/posterior_stage1/IGFPPT.noX2.tau.norm.106.8.5..rds")
+posterior.ests <- readRDS("IGF_outputs/posterior_stage1/IGFPPT.Tmax.fs.noX2.stage2.40000.rds")
+
+test.cov <- cov(posterior.ests[[1]][, c("tau_inc", "tau_dbh", "tau_add")])
+means.tau <- colMeans()
+dmvnorm(x, mean, sigma, log=FALSE)
+test.mvt <- mvtnorm::rmvnorm(100, mean = colMeans(posterior.ests[[1]][, c("tau_inc", "tau_dbh", "tau_add")]), sigma = test.cov)
+
+summary(test.mvt)
+summary(posterior.ests[[1]][, c("tau_inc", "tau_dbh", "tau_add")])
+apply(posterior.ests[[1]][, c("tau_inc", "tau_dbh", "tau_add")], 2, sd)
+apply(test.mvt, 2, sd)
+
+test.cov.full <- cov(posterior.ests[[1]])
+
+test.cov.full[345:365,345:365]
 
 means <- apply(as.matrix(posterior.ests), 2, mean)
 vars <- apply(as.matrix(posterior.ests), 2, var)
@@ -153,6 +177,11 @@ posterior.summary <- data.frame(means = apply(as.matrix(posterior.ests), 2, mean
                                 vars = apply(as.matrix(posterior.ests), 2, var),
                                 SD = apply(as.matrix(posterior.ests), 2, sd))
 posterior.summary$parameter <- rownames(posterior.summary)
+
+posterior.cov.matrix <- cov(posterior.ests[[1]]) # should use all the chains....
+posterior.prec.matrix <- 1/posterior.cov.matrix 
+
+posterior.mean.matrix <- colMeans(posterior.ests[[1]])
 
 # 3. Run InventoryGrowthFusion_stage_2.R 
 source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/InventoryGrowthFusion_stage_2.R") 

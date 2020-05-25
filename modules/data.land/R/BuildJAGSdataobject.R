@@ -182,6 +182,9 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   # Assign the climate variable names to the list (named list)
   names(time_data) <- names.clim.var
   
+  
+  # and if forecast == TRUE, then get th additnoan time data for PPT and TMAX
+  
   # calculate winter precip and add to the list time_data (rows are trees, columns are years)
   wintP.NovAug <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
   wintP.wateryr <- (time_data$PPTSep + time_data$PPTOct + time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
