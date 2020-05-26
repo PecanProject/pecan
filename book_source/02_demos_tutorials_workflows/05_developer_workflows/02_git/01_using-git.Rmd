@@ -66,22 +66,20 @@ The Milestones, issues, and tasks can be used to organize specific features or r
 ----------------------------------
 
 
-#### Quick and Easy
+#### Editing files on GitHub
 
 The **easiest** approach is to use GitHub's browser based workflow. This is useful when your change is a few lines, if you are editing a wiki, or if the edit is trivial (and won't break the code). The [GitHub documentation is here](https://help.github.com/articles/github-flow-in-the-browser) but it is simple: finding the page or file you want to edit, click "edit" and then the GitHub web application will automatically forking and branch, then allow you to submit a pull request. However, it should be noted that unless you are a member of the PEcAn project that the "edit" button will not be active and you'll want to follow the workflow described below for forking and then submitting a pull request.
 
 
-#### Recommended Git Workflow
+### Recommended Git Workflow
 
 Summary:
 
-* Branch "early and often"
-* First pull from develop
-* Branch before working on feature
-* One branch per feature
-* You can switch easily between branches
-* Merge feature into main line when branch done
-
+1. Fork
+2. Create Branch
+3. Develop
+4. Push changes to your fork
+5. Create pull request from branch on your fork to develop branch on pecanproject/pecan 
 
 **Each feature should be in its own branch** (for example each issue is a branch, names of branches are often the issue in a bug tracking system).
 
@@ -89,13 +87,15 @@ Summary:
 
 #### Before any work is done
 
-The first step below only needs to be done once when you first start working on the PEcAn code. The steps below that need to be done to set up PEcAn on your computer, and would need to be repeated if you move to a new computer. If you are working from the PEcAn VM, you can skip the "git clone" since the PEcAn code is already installed. 
+The first step below only needs to be done once when you first start working on the PEcAn code. The steps below that need to be done to set up PEcAn on your computer, and would need to be repeated if you move to a new computer. 
 
-Most people will not be able to work in the PEcAn repository directly and will need to create a fork of the PEcAn source code in their own folder. To fork PEcAn into your own github space ([github help: "fork a repo"](https://help.github.com/articles/fork-a-repo)). This forked repository will allow you to create branches and commit changes back to GitHub and create pull requests to the develop branch of PEcAn.
+All contributors should create a fork of the PEcAn source code in their own folder see [github help: "fork a repo"](https://help.github.com/articles/fork-a-repo)). This forked repository will allow you to create branches and submit these changes back to GitHub using pull requests to the develop branch of PEcAn.
 
-The forked repository is the only way for external people to commit code back to PEcAn and BETY. The pull request will start a review process that will eventually result in the code being merged into the main copy of the codebase. See https://help.github.com/articles/fork-a-repo for more information,  especially on how to keep your fork up to date with respect to the original. (Rstudio users should also see [Git + Rstudio](Using-Git.md#git--rstudio), below)
+The pull request will start a review process that will eventually result in the code being merged into the main copy of the codebase. See https://help.github.com/articles/fork-a-repo for more information,  especially on how to keep your fork up to date with respect to the original. (Rstudio users should also see [Git + Rstudio](Using-Git.md#git--rstudio), below).
 
 You can setup SSH keys to make it easier to commit cod back to GitHub. This might especially be true if you are working from a cluster, see [set up ssh keys](https://help.github.com/articles/generating-ssh-keys)
+
+There is a script in the scripts folder called `scripts/syncgit.sh` that will keep your fork in sync with the main pecanproject repository.
 
 1. Introduce yourself to GIT
 
@@ -108,18 +108,14 @@ You can setup SSH keys to make it easier to commit cod back to GitHub. This migh
 
 `git clone git@github.com:<username>/pecan.git`
 
-If this does not work, try the https method
-
-`git clone https://github.com/PecanProject/pecan.git`
-
-4. Define upstream repository
+4. Define `PEcAnProject/pecan` as upstream repository
 
 ```
 cd pecan
 git remote add upstream git@github.com:PecanProject/pecan.git
 ```
 
-#### Recommended Workflow: A new branch for each change
+#### A new branch for each feature or bug fix
 
 1. Make sure you start in the develop branch 
 
@@ -139,14 +135,17 @@ git remote add upstream git@github.com:PecanProject/pecan.git
 
 5. Work/commit/etc 
 
-`git add <file_that_was_changed.R>`
-
-`git commit -m "<some descriptive information about what was done>"`
+```sh
+git add <file_that_was_changed.R>
+git commit -m "<some descriptive information about what was done>"
+```
 
 6. Make sure that code compiles and documentation updated. The make document command will run roxygenise. 
 
-`make document`
-`make`
+```sh
+make document
+make
+```
 
 7. Push this branch to your github space 
 
@@ -168,6 +167,39 @@ git remote add upstream git@github.com:PecanProject/pecan.git
 3. delete branch locally 
 
 `git branch -D <branchname>`
+
+
+#### Link commits to issues
+
+You can reference and close issues from comments, pull requests, and commit messages. This should be done when you commit code that is related to or will close/fix an existing issue. 
+
+There are two ways to do this. One easy way is to include the following text in your commit message:
+  
+* [**Github**](https://github.com/blog/1386-closing-issues-via-commit-messages)
+* to close: "closes gh-xxx" (or syn. close, closed, fixes, fix, fixed)  
+* to reference: just the issue number (e.g. "gh-xxx") 
+
+### Useful Git tools
+
+#### GitHub Desktop
+
+The easiest way to get working with GitHub is by installing the GitHub
+client. For instructions for your specific OS and download of the
+GitHub client, see https://help.github.com/articles/set-up-git.
+This will help you set up an SSH key to push code back to GitHub. To
+check out a project you do not need to have an ssh key and you can use
+the https or git url to check out the code.
+
+#### Git + Rstudio
+
+Rstudio is nicely integrated with many development tools, including git and GitHub. 
+It is quite easy to check out source code from within the Rstudio program or browser.
+The Rstudio documentation includes useful overviews of [version control](http://www.rstudio.com/ide/docs/version_control/overview) 
+and [R package development](http://www.rstudio.com/ide/docs/packages/overview). 
+
+Once you have git installed on your computer (see the [Rstudio version control](http://www.rstudio.com/ide/docs/version_control/overview) documentation for instructions), you can use the following steps to install the PEcAn source code in Rstudio.
+
+### Advanced
 
 
 #### Fixing a release Branch
@@ -200,32 +232,6 @@ If you would like to make changes to a release branch, you must follow a differe
 8. Make a pull request. It is essential that you compare your pull request to the remote release branch, NOT the develop branch.
 
 
-#### Link commits to issues
-
-You can reference and close issues from comments, pull requests, and commit messages. This should be done when you commit code that is related to or will close/fix an existing issue. 
-
-There are two ways to do this. One easy way is to include the following text in your commit message:
-  
-* [**Github**](https://github.com/blog/1386-closing-issues-via-commit-messages)
-* to close: "closes gh-xxx" (or syn. close, closed, fixes, fix, fixed)  
-* to reference: just the issue number (e.g. "gh-xxx") 
-
-
-#### Other Useful Git Commands:
-
-
-* Delete a branch: `git branch -d <name of branch>`
-* To push a branch git: `push -u origin `<name of branch>`
-* To check out a branch: 
-
-```
-git fetch origin
-git checkout --track origin/<name of branch>
-```
-
-* Show graph of commits:
-  
-`git log --graph --oneline --all`
 
 #### Tags
 
@@ -249,40 +255,7 @@ To tag an earlier commit, just append the commit SHA to the command, e.g.
 
 `git tag -a v0.99 -m "last version before 1.0" 9fceb02`
 
-**Using GitHub** The easiest way to get working with GitHub is by installing the GitHub
-client. For instructions for your specific OS and download of the
-GitHub client, see https://help.github.com/articles/set-up-git.
-This will help you set up an SSH key to push code back to GitHub. To
-check out a project you do not need to have an ssh key and you can use
-the https or git url to check out the code.
-
-#### Git + Rstudio
-
-
-Rstudio is nicely integrated with many development tools, including git and GitHub. 
-It is quite easy to check out source code from within the Rstudio program or browser.
-The Rstudio documentation includes useful overviews of [version control](http://www.rstudio.com/ide/docs/version_control/overview) and [R package development](http://www.rstudio.com/ide/docs/packages/overview). 
-
-Once you have git installed on your computer (see the [Rstudio version control](http://www.rstudio.com/ide/docs/version_control/overview) documentation for instructions), you can use the following steps to install the PEcAn source code in Rstudio.
-
-##### Changes without requiring a username and password:
-
-1.  create account on github
-2.  create a fork of the PEcAn repository to your own account https://www.github.com/pecanproject/pecan
-3.  install Rstudio (www.rstudio.com)
-4. generate an ssh key 
-* in Rstudio: 
-  * `Tools -> Options -> Git/SVN -> "create RSA key"`
-* `View public key -> ctrl+C to copy`
-* in GitHub
-* go to [ssh settings](https://github.com/settings/ssh)
-* `-> 'add ssh key' -> ctrl+V to paste -> 'add key'` 
-2. Create project in Rstudio
-*  `project (upper right) -> create project -> version control -> Git - clone a project from a Git Repository`
-* paste repository url `git@github.com:<username>/pecan.git>`
-* choose working dir. for repository
-
-#### References
+### References
 
 #### Git Documentation
   
