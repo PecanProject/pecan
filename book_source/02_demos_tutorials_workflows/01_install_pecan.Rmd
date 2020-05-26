@@ -103,10 +103,7 @@ This will not go into much detail about about how to use Docker -- for more deta
         ```
         
         This should produce a lot of output describing the database operations happening under the hood.
-<<<<<<< HEAD
         Some of these will look like errors, but _this is normal_.
-=======
->>>>>>> bd12ad9d29a759ea0e68a11fcf20d59d5ed2e165
         This command succeeded if the output ends with the following (the syntax for creating a new user for accessing BetyDB): 
         
         ```
