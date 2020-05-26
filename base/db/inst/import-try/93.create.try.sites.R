@@ -49,7 +49,7 @@ bety.site.index <- which(names(try.sites) == "bety.site.id")
 
 # f. Loop over rows... 
 radius.query.string <- 'SELECT id, sitename, ST_Y(ST_Centroid(geometry)) AS lat, ST_X(ST_Centroid(geometry)) AS lon, ST_Distance(ST_Centroid(geometry), ST_SetSRID(ST_MakePoint(%2$f, %1$f), 4326)) as distance FROM sites WHERE ST_Distance(ST_Centroid(geometry), ST_SetSRID(ST_MakePoint(%2$f, %1$f), 4326)) <= %3$f'
-insert.query.string <- "INSERT INTO sites(sitename,notes,geometry,user_id,created_at,updated_at) VALUES('%s','%s',ST_Force3D(ST_SetSRID(ST_MakePoint(%f, %f), 4326)),'%s', NOW(), NOW() ) RETURNING id;"
+insert.query.string <- "INSERT INTO sites(sitename,notes,geometry,user_id) VALUES('%s','%s',ST_Force3D(ST_SetSRID(ST_MakePoint(%f, %f), 4326)),'%s' ) RETURNING id;"
 
 message("Looping over sites and adding to BETY")
 pb <- txtProgressBar(0, nrow(try.sites), style=3)

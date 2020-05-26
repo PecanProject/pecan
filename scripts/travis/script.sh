@@ -11,6 +11,18 @@ set -e
     check_git_clean
 )
 
+# DUMP PACKAGE VERSIONS
+(
+    travis_time_start "installed_packages" \
+        "Version info of all installed R packages, for debugging"
+    Rscript -e 'op <- options(width = 1000)' \
+        -e 'pkgs <- as.data.frame(installed.packages())' \
+        -e 'cols <- c("Package", "Version", "MD5sum", "Built", "LibPath")' \
+        -e 'print(pkgs[order(pkgs$Package), cols], row.names = FALSE)' \
+        -e 'options(op)'
+    travis_time_end
+)
+
 # COMPILE PECAN
 (
     travis_time_start "pecan_make_all" "Compiling PEcAn"

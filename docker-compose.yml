@@ -258,6 +258,19 @@ services:
   # PEcAn models, list each model you want to run below
   # ----------------------------------------------------------------------
 
+  # PEcAn basgra model runner
+  basgra:
+    image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
   # PEcAn sipnet model runner
   sipnet:
     image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
@@ -296,6 +309,23 @@ services:
        - rabbitmq
     volumes:
       - pecan:/data
+
+# ----------------------------------------------------------------------
+# Shiny Apps
+# ----------------------------------------------------------------------
+  # PEcAn DB Sync visualization
+  dbsync:
+    image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    depends_on:
+       - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=dbsync"
+      - "traefik.port=3838"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
 
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers

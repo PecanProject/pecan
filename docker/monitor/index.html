@@ -1,27 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>PEcAn Model Monitor</title>
 
-    <link rel="icon" href="favicon.jpg">
+    <link rel="icon" href="favicon.jpg" />
 
     <!-- Bootstrap core CSS -->
-    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap.min.css" rel="stylesheet" />
 
     <!-- Bootstrap table style -->
-    <lnkk href="bootstrap-table.min.css" rel="stylesheet">
-    
+    <link href="bootstrap-table.min.css" rel="stylesheet" />
+
     <!-- glyphs -->
-    <link href="fontawesome.min.css" rel="stylesheet">
-    <link href="solid.min.css" rel="stylesheet">
+    <link href="fontawesome.min.css" rel="stylesheet" />
+    <link href="solid.min.css" rel="stylesheet" />
 
     <!-- Custom styles for this template -->
-    <link href="sticky-footer-navbar.css" rel="stylesheet">
-    
+    <link href="sticky-footer-navbar.css" rel="stylesheet" />
   </head>
 
   <body>
-<!-- 
+    <!-- 
     <header>
       <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <a class="navbar-brand" href="#">Fixed navbar</a>
@@ -52,33 +51,48 @@
     <main role="main" class="container">
       <h1 class="mt-5">PEcAn Models Monitor</h1>
 
-      <table class="table table-striped" id="monitor"
-             data-toggle="table"
-             data-sortable="true"
-             data-search="true"
-             data-show-refresh="true"
-             data-url="models.json"
-             data-response-handler="responseHandler"
-             data-row-attributes="rowAttributes">
+      <table
+        class="table table-striped"
+        id="monitor"
+        data-toggle="table"
+        data-sortable="true"
+        data-search="true"
+        data-show-refresh="true"
+        data-url="models.json"
+        data-response-handler="responseHandler"
+        data-row-attributes="rowAttributes"
+      >
         <thead>
           <tr>
             <th data-field="name" data-sortable="true" scope="col">Name</th>
-            <th data-field="version" data-sortable="true" scope="col">Version</th>
-            <th data-field="consumers" data-sortable="true" scope="col">Consumers</th>
-            <th data-field="messages" data-sortable="true" scope="col">Messages</th>
+            <th data-field="version" data-sortable="true" scope="col">
+              Version
+            </th>
+            <th data-field="consumers" data-sortable="true" scope="col">
+              Consumers
+            </th>
+            <th data-field="messages" data-sortable="true" scope="col">
+              Messages
+            </th>
             <th data-field="queue" data-sortable="true" scope="col">Queue</th>
           </tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
       </table>
-
     </main>
 
     <footer class="footer">
       <div class="container">
-        <span class="text-muted"><small>The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-        </small></span>
+        <span class="text-muted"
+          ><small
+            >The <a href="http://pecanproject.org">PEcAn project</a> is
+            supported by the National Science Foundation (ABI #1062547, ABI
+            #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF
+            #1241891), NASA Terrestrial Ecosystems, Department of Energy (ARPA-E
+            #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute,
+            and an Amazon AWS in Education Grant.
+          </small></span
+        >
       </div>
     </footer>
 
@@ -89,30 +103,30 @@
     <script src="popper.min.js"></script>
     <script src="bootstrap.min.js"></script>
     <script src="bootstrap-table.min.js"></script>
- 
+
     <script type="text/javascript">
       function rowAttributes(row, index) {
         console.log(row);
         return {
-          'data-toggle': 'popover',
-          'data-placement': 'bottom',
-          'data-trigger': 'hover',
-          'data-content': row['description']
-        }
+          "data-toggle": "popover",
+          "data-placement": "bottom",
+          "data-trigger": "hover",
+          "data-content": row["description"]
+        };
       }
 
       function responseHandler(data) {
-        $('[data-toggle="popover"]').popover('dispose');
+        $('[data-toggle="popover"]').popover("dispose");
         var rows = [];
         $.each(data, function(model, versions) {
           $.each(versions, function(version, info) {
             rows.push({
               name: model,
               version: version,
-              consumers: Object.keys(info['consumers']).length,
-              messages: info['messages'],
-              queue: info['queue'],
-              description: info['model_info']['description']
+              consumers: Object.keys(info["consumers"]).length,
+              messages: info["messages"],
+              queue: info["queue"],
+              description: info["model_info"]["description"]
             });
           });
         });
@@ -120,10 +134,10 @@
       }
 
       $(function() {
-        $('#monitor').on('post-body.bs.table', function (e) {
+        $("#monitor").on("post-body.bs.table", function(e) {
           $('[data-toggle="popover"]').popover();
-        })
-      })
+        });
+      });
     </script>
   </body>
 </html>
