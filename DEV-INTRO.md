@@ -12,15 +12,36 @@ If running on a linux system it is recommended to add your user to the docker gr
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
+By default docker-compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. To do this we simply rename the `docker-compose.dev.yml` file to `docker-compose.override.yml`. You can now use the command `docker-compose` to launch all the containers setup for develoopment.
+
+If you in the past had loaded some of the data, but would like to start from scratch you can simply remove the `volumes` folder (and all the subfolders) and start with the "First time setup" section again.
+
 ### First time setup
 
 The steps in this section only need to be done the fist time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
 
+Before doing anything it is recommended to make sure you have the lastest docker images ready. You can do a `docker-compose pull` to get the latest images.
+
+* setup .env file
+* create folders to hold the data
+* load the postgresql database
+* load some test data
+* copy all R packages (optional but recommended) 
+* setup for web folder development (optional)
+
 #### .env file
+
 You can copy the [`env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
 * `PECAN_VERSION` set this to develop, the docker image we start with
+
+At the end you should see the following if you run the following command `egrep -v '^(#|$)' .env`
+
+```
+COMPOSE_PROJECT_NAME=pecan
+PECAN_VERSION=develop
+```
 
 #### folders
 
@@ -39,7 +60,7 @@ These folders will hold all the persistent data for each of the respective conta
 
 First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start): `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres rabbitmq`. This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker-compose logs postgres`) to see if it is ready.
 
-Once the database has finished starting up we will initialize the database using: `docker run --rm --network pecan_pecan pecan/db`. Once that is done we create two users for BETY:
+Once the database has finished starting up we will initialize the database. Before we run the container we want to make sure we have the latest database infomration, you can do this with `docker pull pecan/db`, which will make sure you have the latest version of the database ready. Now you can load the database using: `docker run --rm --network pecan_pecan pecan/db` (in this case we use the latest image instead of develop since it refers to the actual database data, and not the actual code). Once that is done we create two users for BETY:
 
 ```
 # guest user
@@ -49,17 +70,21 @@ docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@exa
 docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
-#### copy web config file
+#### load example data
 
-The `docker-compose.dev.yaml` file has a section that will eanble editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
+Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. To do this we first again make sure we have the latest code ready using `docker pull pecan/data:develop` and run this image using `docker run --rm --network pecan_pecan pecan/data:develop`. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers (which is mounted from `volumes/pecan` in your current folder.
 
-#### copy R packages
+#### copy R packages (optional but recommended)
 
 Next copy the R packages from a container to your local machine as the `volumes/lib` folder. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. 
 
 You can copy all the data using `docker run -ti --rm -v ${PWD}/volumes/lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/`. This will copy all compiled packages to your local machine.
 
 This only needs to be done once (or if the PEcAn base image changes drastically, for example a new version of R). You can also always delete all files in the `volumes/lib` folder, and recompile PEcAn from scratch.
+
+#### copy web config file (optional)
+
+The `docker-compose.dev.yaml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
 
 ### PEcAn Development
 
@@ -123,10 +148,6 @@ Some of the docker build files. The Dockerfiles for each model are placed in the
 Small scripts that are used as part of the development and installation of PEcAn.
 
 # Advanced Development Options
-
-## docker-compose
-
-To make it easier to start the containers and not having to remember to use `docker-compose -f docker-compose.yml -f docker-compose.dev.yml` when you want to use the docker-compose comannd, you can rename `docker-compose.dev.yml` to `docker-compose.override.yml`. The docker-compose command will automatically use the `docker-compose.yml`, `docker-compose.override.yml` and the `.env` files to start the right containers with the correct parameters.
 
 ## Linux and User permissions
 
