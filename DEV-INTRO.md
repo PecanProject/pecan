@@ -60,7 +60,7 @@ These folders will hold all the persistent data for each of the respective conta
 
 First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start): `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres rabbitmq`. This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker-compose logs postgres`) to see if it is ready.
 
-Once the database has finished starting up we will initialize the database. Before we run the container we want to make sure we have the latest database infomration, you can do this with `docker pull pecan/db`, which will make sure you have the latest version of the database ready. Now you can load the database using: `docker run --rm --network pecan_pecan pecan/db` (in this case we use the latest image instead of develop since it refers to the actual database data, and not the actual code). Once that is done we create two users for BETY:
+Once the database has finished starting up we will initialize the database. Before we run the container we want to make sure we have the latest database information, you can do this with `docker pull pecan/db`, which will make sure you have the latest version of the database ready. Now you can load the database using: `docker run --rm --network pecan_pecan pecan/db` (in this case we use the latest image instead of develop since it refers to the actual database data, and not the actual code). Once that is done we create two users for BETY:
 
 ```
 # guest user
