@@ -35,7 +35,7 @@ You can copy the [`env.example`](docker/env.example) file as .env in your pecan 
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
 * `PECAN_VERSION` set this to develop, the docker image we start with
-
+Both of these variables should also be uncommented by removing the # preceding them. 
 At the end you should see the following if you run the following command `egrep -v '^(#|$)' .env`
 
 ```
