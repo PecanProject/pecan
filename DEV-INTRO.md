@@ -84,7 +84,7 @@ This only needs to be done once (or if the PEcAn base image changes drastically,
 
 #### copy web config file (optional)
 
-The `docker-compose.dev.yaml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
+The `docker-compose.override.yml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
 
 ### PEcAn Development
 
