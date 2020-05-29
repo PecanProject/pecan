@@ -72,7 +72,7 @@ docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example
 
 #### load example data
 
-Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. To do this we first again make sure we have the latest code ready using `docker pull pecan/data:develop` and run this image using `docker run --rm --network pecan_pecan pecan/data:develop`. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers (which is mounted from `volumes/pecan` in your current folder.
+Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. To do this we first again make sure we have the latest code ready using `docker pull pecan/data:develop` and run this image using `docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop`. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers (which is mounted from `volumes/pecan` in your current folder.
 
 #### copy R packages (optional but recommended)
 
