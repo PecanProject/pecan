@@ -24,7 +24,7 @@ rabbitmq_password = None
 
 # parameters to connect to BETY database
 postgres_host = os.getenv('PGHOST', 'postgres')
-postgres_port = os.getenv('PGPORT', 'postgres')
+postgres_port = os.getenv('PGPORT', '5432')
 postgres_user = os.getenv('BETYUSER', 'bety')
 postgres_password = os.getenv('BETYPASSWORD', 'bety')
 postgres_database = os.getenv('BETYDATABASE', 'bety')
@@ -148,6 +148,8 @@ def insert_model(model_info):
             postgres_host, postgres_port, postgres_database, postgres_user, postgres_password
         )
 
+    conn = None
+
     try:
         # connect to the PostgreSQL database
         conn = psycopg2.connect(postgres_uri)
@@ -162,8 +164,8 @@ def insert_model(model_info):
         else:
             logging.debug("Adding host")
             cur = conn.cursor()
-            cur.execute('INSERT INTO machines (hostname, created_at, updated_at) '
-                        'VALUES (%s,  now(), now()) RETURNING id', (pecan_fqdn,))
+            cur.execute('INSERT INTO machines (hostname) '
+                        'VALUES (%s) RETURNING id', (pecan_fqdn, ))
             result = cur.fetchone()
             cur.close()
             if not result:
@@ -182,8 +184,8 @@ def insert_model(model_info):
         else:
             logging.debug("Adding modeltype")
             cur = conn.cursor()
-            cur.execute('INSERT INTO modeltypes (name, created_at, updated_at) '
-                        'VALUES (%s,  now(), now()) RETURNING id', (model_info['type'],))
+            cur.execute('INSERT INTO modeltypes (name) '
+                        'VALUES (%s) RETURNING id', (model_info['type']))
             result = cur.fetchone()
             cur.close()
             if not result:
@@ -203,8 +205,8 @@ def insert_model(model_info):
         else:
             logging.debug("Adding model")
             cur = conn.cursor()
-            cur.execute('INSERT INTO models (model_name, modeltype_id, revision, created_at, updated_at) '
-                        'VALUES (%s, %s, %s, now(), now()) RETURNING id',
+            cur.execute('INSERT INTO models (model_name, modeltype_id, revision) '
+                        'VALUES (%s, %s, %s) RETURNING id',
                         (model_info['name'], model_type_id, model_info['version']))
             result = cur.fetchone()
             cur.close()
@@ -229,8 +231,8 @@ def insert_model(model_info):
             logging.debug("Adding model binary")
             cur = conn.cursor()
             cur.execute("INSERT INTO dbfiles (container_type, container_id, file_name, file_path,"
-                        " machine_id, created_at, updated_at)"
-                        " VALUES ('Model', %s, %s, %s, %s, now(), now()) RETURNING id",
+                        " machine_id)"
+                        " VALUES ('Model', %s, %s, %s, %s) RETURNING id",
                         (model_id, os.path.basename(model_info['binary']),
                          os.path.dirname(model_info['binary']), host_id))
             result = cur.fetchone()

@@ -3,7 +3,7 @@
 ##' @name call_MODIS
 ##' @title call_MODIS
 ##' @export
-##' @param outdir where the output file will be stored. Default is NULL
+##' @param outdir where the output file will be stored. Default is NULL and in this case only values are returned. When path is provided values are returned and written to disk.  
 ##' @param var the simple name of the modis dataset variable (e.g. lai)
 ##' @param site_info Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
 ##' lon, time_zone)
@@ -35,14 +35,14 @@
 ##'   lon = 90,
 ##'   time_zone = "UTC")
 ##' test_modistools <- call_MODIS(
-##'   outdir = NULL,
 ##'   var = "lai",
-##'   site_info = site_info,
-##'   product_dates = c("2001150", "2001365"),
-##'   run_parallel = TRUE,
-##'   ncores = NULL,
 ##'   product = "MOD15A2H",
 ##'   band = "Lai_500m",
+##'   site_info = site_info,
+##'   product_dates = c("2001150", "2001365"),
+##'   outdir = NULL,
+##'   run_parallel = TRUE,
+##'   ncores = NULL,
 ##'   package_method = "MODISTools",
 ##'   QC_filter = TRUE,
 ##'   progress = FALSE)
@@ -50,12 +50,12 @@
 ##' @importFrom foreach %do% %dopar%
 ##' @author Bailey Morrison
 ##'
-call_MODIS <- function(outdir = NULL,  
-                       var, site_info, 
-                       product_dates, 
+call_MODIS <- function(var, product, 
+                       band, site_info, 
+                       product_dates,
+                       outdir = NULL, 
                        run_parallel = FALSE, 
-                       ncores = NULL, 
-                       product, band,  
+                       ncores = NULL,
                        package_method = "MODISTools", 
                        QC_filter = FALSE, 
                        progress = FALSE) {
@@ -244,7 +244,7 @@ call_MODIS <- function(outdir = NULL,
       output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
     }
     good <- which(output$qc %in% c("000", "001"))
-    if (length(good) > 0 || !(is.null(good)))
+    if (length(good) > 0)
     {
       output <- output[good, ]
     } else {

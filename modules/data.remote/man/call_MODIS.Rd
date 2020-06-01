@@ -5,38 +5,38 @@
 \title{call_MODIS}
 \usage{
 call_MODIS(
-  outdir = NULL,
   var,
-  site_info,
-  product_dates,
-  run_parallel = FALSE,
-  ncores = NULL,
   product,
   band,
+  site_info,
+  product_dates,
+  outdir = NULL,
+  run_parallel = FALSE,
+  ncores = NULL,
   package_method = "MODISTools",
   QC_filter = FALSE,
   progress = FALSE
 )
 }
 \arguments{
-\item{outdir}{where the output file will be stored. Default is NULL}
-
 \item{var}{the simple name of the modis dataset variable (e.g. lai)}
+
+\item{product}{string value for MODIS product number}
+
+\item{band}{string value for which measurement to extract}
 
 \item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
 lon, time_zone)}
 
 \item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 
+\item{outdir}{where the output file will be stored. Default is NULL and in this case only values are returned. When path is provided values are returned and written to disk.}
+
 \item{run_parallel}{optional method to download data paralleize. Only works if more than 1 
 site is needed and there are >1 CPUs available.}
 
 \item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
 number of CPU's available, enter NULL.}
-
-\item{product}{string value for MODIS product number}
-
-\item{band}{string value for which measurement to extract}
 
 \item{package_method}{string value to inform function of which package method to use to download 
 modis data. Either "MODISTools" or "reticulate" (optional)}
@@ -64,14 +64,14 @@ site_info <- list(
   lon = 90,
   time_zone = "UTC")
 test_modistools <- call_MODIS(
-  outdir = NULL,
   var = "lai",
-  site_info = site_info,
-  product_dates = c("2001150", "2001365"),
-  run_parallel = TRUE,
-  ncores = NULL,
   product = "MOD15A2H",
   band = "Lai_500m",
+  site_info = site_info,
+  product_dates = c("2001150", "2001365"),
+  outdir = NULL,
+  run_parallel = TRUE,
+  ncores = NULL,
   package_method = "MODISTools",
   QC_filter = TRUE,
   progress = FALSE)

@@ -2,7 +2,6 @@
 
 export(add_icon)
 export(ciEnvelope)
-export(create_status_page)
 export(map.output)
 export(plot_netcdf)
 export(vwReg)

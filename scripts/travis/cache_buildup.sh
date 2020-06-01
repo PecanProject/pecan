@@ -34,7 +34,7 @@ MAX_TIME=${1:-30m}
 CMDS=${2:-'scripts/travis/install.sh && make install'}
 
 # Spends up to $MAX_TIME installing packages, then sends HUP
-timeout ${MAX_TIME} bash -c ${CMDS}
+timeout ${MAX_TIME} bash -c "${CMDS}"
 
 if [[ $? -ne 0 ]]; then
 	# Clean up any lock files left from killing install.packages
