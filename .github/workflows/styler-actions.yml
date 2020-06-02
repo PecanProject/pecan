@@ -19,23 +19,22 @@ jobs:
       - uses: r-lib/actions/setup-r@master
       - name: Install dependencies
         run: |
-          Rscript -e 'install.packages("styler")'
-          Rscript -e 'install.packages("devtools")'
+          Rscript -e 'install.packages(c("styler", "devtools"), repos = "cloud.r-project.org")'
           Rscript -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "http://cran.us.r-project.org")'
       - name: string operations
         run: |
           echo '${{ steps.file_changes.outputs.files_modified}}' > names.txt
-          cat names.txt | tr -d '[]' > new.txt
-          text=$(cat new.txt)
+          cat names.txt | tr -d '[]' > changed_files.txt
+          text=$(cat changed_files.txt)
           IFS=',' read -ra ids <<< "$text"
-          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> new2.txt; fi; done
+          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> files_to_style.txt; fi; done
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
           name: artifacts
-          path: new2.txt
+          path: files_to_style.txt
       - name: Style
-        run: for i in $(cat new2.txt); do Rscript -e "styler::style_file("$i")"; done
+        run: for i in $(cat files_to_style.txt); do Rscript -e "styler::style_file("$i")"; done
       - name: commit
         run: |
           git add \*.R
@@ -63,11 +62,11 @@ jobs:
       - name : make
         shell: bash
         run: |
-          cut -d / -f 1-2 artifacts/new2.txt | tr -d '"' > new.txt
-          cat new.txt
-          sort new.txt | uniq > uniq.txt
-          cat uniq.txt      
-          for i in $(cat uniq.txt); do make .doc/${i}; done
+          cut -d / -f 1-2 artifacts/files_to_style.txt | tr -d '"' > changed_dirs.txt
+          cat changed_dirs.txt
+          sort changed_dirs.txt | uniq > needs_documenting.txt
+          cat needs_documenting.txt      
+          for i in $(cat needs_documenting.txt); do make .doc/${i}; done
       - name: commit
         run: |
           git config --global user.email "pecan_bot@example.com"
