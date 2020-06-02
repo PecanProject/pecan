@@ -1,4 +1,4 @@
-### ED2 {#models-ed}
+## ED2 {#models-ed}
 
 | Model Information |                                      |
 | --                | --                                   |
@@ -8,11 +8,11 @@
 | Authors           | Paul Moorcroft, ...                  |
 | PEcAn Integration | Michael Dietze, Rob Kooper           |
 
-#### Introduction
+### Introduction
 
 Introduction about ED model
 
-#### PEcAn configuration file additions
+### PEcAn configuration file additions
 
 The following sections of the PEcAn XML are relevant to the ED model:
 
@@ -70,7 +70,7 @@ The following sections of the PEcAn XML are relevant to the ED model:
 	- `veg`: [required] location of vegetation data
 	- `soil`: [required] location of soil data
     
-#### PFT configuration in ED2 {#models-ed-pft-configuration}
+### PFT configuration in ED2 {#models-ed-pft-configuration}
 
 ED2 has more detailed PFTs than many models, and a more complex system for configuring these PFTs.
 ED2 has 17 PFTs, based roughly on growth form (e.g. tree vs. grass), biome (tropical vs. temperate), leaf morphology (broad vs. needleleaf), leaf phenology (evergreen vs. deciduous), and successional status (e.g. early, mid, or late).
@@ -160,11 +160,11 @@ However, if you would like ED2 to run with all 17 PFTs (NOTE: using ED2's intern
 [convert-samples-ed]: https://pecanproject.github.io/models/ed/docs/reference/convert.samples.ED.html 
 
 
-#### Model specific input files
+### Model specific input files
 
 List of inputs required by model, such as met, etc.
 
-#### Model configuration files
+### Model configuration files
 
 ED2 is configured using 2 files which are placed in the run folder.
 
@@ -209,7 +209,7 @@ The ED2IN template can contain the following variables. These will be replaced w
 * **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
 * **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run\$scratch, should not be used right now since it only works on ebi-cluster  
 
-#### Installation notes
+### Installation notes
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 

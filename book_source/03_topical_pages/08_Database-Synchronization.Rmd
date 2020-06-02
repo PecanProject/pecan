@@ -4,13 +4,13 @@ The database synchronization consists of 2 parts:
 - Getting the data from the remote servers to your server
 - Sharing your data with everybody else
 
-### How does it work?
+## How does it work?
 
 Each server that runs the BETY database will have a unique machine_id and a sequence of ID's associated. Whenever the user creates a new row in BETY it will receive an ID in the sequence. This allows us to uniquely identify where a row came from. This is information is crucial for the code that works with the synchronization since we can now copy those rows that have an ID in the sequence specified. If you have not asked for a unique ID your ID will be 99.
 
 The synchronization code itself is split into two parts, loading data with the `load.bety.sh` script and exporting data using `dump.bety.sh`. If you do not plan to share data, you only need to use `load.bety.sh` to update your database.
 
-### Set up
+## Set up
 
 Requests for new machine ID's is currently handled manually. To request a machine ID contact Rob Kooper <kooper@illinois.edu>. In the examples below this ID is referred to as 'my siteid'.
 
@@ -21,7 +21,7 @@ sudo -u postgres {$PECAN}/scripts/load.bety.sh -c -u -m <my siteid>
 ```
 WARNING: At the moment running CREATE deletes all current records in the database. If you are running from the VM this includes both all runs you have done and all information that the database is prepopulated with (e.g. input and model records). Remote records can be fetched (see below), but local records will be lost (we're working on improving this!)
 
-### Fetch latest data
+## Fetch latest data
 
 When logged into the machine you can fetch the latest data using the load.bety.sh script. The script will check what site you want to get the data for and will remove all data in the database associated with that id. It will then reinsert all the data from the remote database.
 
@@ -62,7 +62,7 @@ dump.bety.sh -h
  -u should unchecked data be dumped, default is NO
 ```
 
-### Sharing data
+## Sharing data
 
 Sharing your data requires a few steps. First, before entering any data, you will need to request an ID from the PEcAn developers. Simply open an issue at github and we will generate an ID for you.  If possible, add the URL of your data host.
 
@@ -92,7 +92,7 @@ NOTE: If you want your dumps to be accessible to other PEcAn servers you need to
 
 Plans to simplify this process are in the works
 
-### Automation
+## Automation
 
 Below is an example of a script to synchronize PEcAn database instances across the network.
 
@@ -120,11 +120,11 @@ MAILTO=user@yourUniversity.edu
 12 * * * * /home/dietze/db.sync.sh
 ```
 
-### Database maintentance
+## Database maintentance
 
 All databases need maintenance performed on them. Depending upon the database type this can happen automatically, or it needs to be run through a scheduler or manually. The BETYdb database is Postgresql and it needs to be reindexed and vacuumed on a regular basis. Reindexing introduces efficiencies back into the database by reorganizing the indexes. Vacuuming the database frees up resources to the database by rearranging and compacting the database. Both of these operations are necessary and safe. As always if there's a concern, a backup of the database should be made ahead of time. While running the reindexing and vacuuming commands, users will notice a slowdown at times. Therefore it's better to run these maintenance tasks during off hours.
 
-#### Reindexing the database
+### Reindexing the database
 
 As mentioned above, reindexing allows the database to become more efficient. Over time as data gets updated and deleted, the indexes become less efficient. This has a negative inpact on executed statements. Reindexing makes the indexes efficient again (at least for a while) allowing faster statement execution and reducing the overall load on the database.
 
@@ -167,7 +167,7 @@ Splitting up the indexing commands over time allows the database to operate effi
 
 Please refere to the Automation section above for information on using cron to schedule reindexing commands.
 
-#### Vacuuming the database
+### Vacuuming the database
 
 Vacuuming the BETYdb Postgresql database reduces the amount of resources it uses and introduces its own efficiencies.
 
@@ -223,17 +223,17 @@ psql -U bety -c "VACUUM yields; VACUUM FULL yields; VACUUM ANALYZE yields;"
 
 Give its impact, it's typically not desireable to perform a VACUUM FULL after every normal vacuum; it should be done on an "as needed" basis or infrequently.
 
-### Troubleshooting
+## Troubleshooting
 
 There are several possibilities if a scheduled cron job apepars to be running but isn't producing the expected results. The following are suggestions on what to try to resolve the issue. 
 
-##### Username and password
+### Username and password
 
 The user that scheduled a cron job may not have access permissions to the database. This can be easily confirmed by running the command line from the cron job while logged in as the user that scheduled the job. An error message will be shown if the user doesn't have permissions.
 
 To resolve this, be sure to include a valid database user (not a BETYdb user) with their credentials on the command in crontab.
 
-##### db_hba.conf file
+### db_hba.conf file
 
 Iit's possible that the machine hosting the docker image of the database doesn't have permissions to access the database. This may due to the cron job running on a machine that is not the docker instance of the database.
 
@@ -249,7 +249,7 @@ This command should return a series of text lines. For each row except those beg
 
 Ensure that the host machine is listed under the fourth column (machine addresse range, or 'all'), is also included in the IP mask if one was specified, and finally that any authentication option are not set to 'reject'. If the host machine is not included the db_hba.conf file will need to be updated to allow access.
 
-### Network Status Map
+## Network Status Map
 
 https://pecan2.bu.edu/pecan/status.php
 
@@ -258,7 +258,7 @@ Nodes: red = down, yellow = out-of-date schema, green = good
 Edges: red = fail, yellow = out-of-date sync, green = good
 
 
-### Tasks
+## Tasks
 
 Following is a list of tasks we plan on working on to improve these scripts:
 - [pecanproject/bety#368](https://github.com/PecanProject/bety/issues/368) allow site-specific customization of information and UI elements including title, contacts, logo, color scheme.

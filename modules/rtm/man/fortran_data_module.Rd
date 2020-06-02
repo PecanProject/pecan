@@ -36,14 +36,16 @@ Currently, only numeric data are supported (i.e. no characters).
       z <- seq(exp(1), pi, length.out=42)
       l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
       l.types <- c('real','integer', 'real*4', 'real*8')
-      fortran_data_module(l, l.types, 'testmod')
- 
+      fortran_data_module(l, l.types, 'testmod',
+        file.path(tempdir(), "testmod.f90"))
+
       x <- runif(10)
       y <- rnorm(10)
       z <- rgamma(10, 3)
       d <- data.frame(x,y,z) ## NOTE that data.frames are just named lists
       d.types <- rep('real*8', ncol(d))
-      fortran_data_module(d, d.types, 'random') 
+      fortran_data_module(d, d.types, 'random',
+        file.path(tempdir(), "random.f90"))
 }
 \author{
 Alexey Shiklomanov

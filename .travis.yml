@@ -14,85 +14,45 @@ env:
     - _R_CHECK_LENGTH_1_CONDITION_=true
     - _R_CHECK_LENGTH_1_LOGIC2_=true
 
-_apt: &apt-base
-  - bc
-  - curl
-  - gdal-bin
-  - jags
-  - libgdal-dev
-  - libgl1-mesa-dev
-  - libglu1-mesa-dev
-  - libgmp-dev
-  - libhdf5-dev
-  - liblapack-dev
-  - libnetcdf-dev
-  - libproj-dev
-  - librdf0-dev
-  - libudunits2-dev
-  - netcdf-bin
-  - pandoc
-  - python-dev
-  - qpdf
-  - tcl
-  - tcl-dev
-  - udunits-bin
-
-_c2d4u: &apt-r-binaries
-  - r-bioc-biocinstaller
-  - r-cran-ape
-  - r-cran-curl
-  - r-cran-data.table
-  - r-cran-devtools
-  - r-cran-dplyr
-  - r-cran-gap
-  - r-cran-ggplot2
-  - r-cran-httr
-  - r-cran-igraph
-  - r-cran-lme4
-  - r-cran-matrixstats
-  - r-cran-mcmcpack
-  - r-cran-raster
-  - r-cran-rcpp
-  - r-cran-rcurl
-  - r-cran-redland
-  - r-cran-rjags
-  - r-cran-rncl
-  - r-cran-roxygen2
-  - r-cran-rsqlite
-  # - r-cran-sf
-  - r-cran-shiny
-  - r-cran-sirt
-  - r-cran-testthat
-  - r-cran-tidyverse
-  - r-cran-xml
-  - r-cran-xml2
-  - r-cran-xts
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+    packages:
+      - bc
+      - curl
+      - gdal-bin
+      - jags
+      - libgdal-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
+      - libglpk-dev # indirectly needed by BayesianTools
+      - libgmp-dev
+      - libhdf5-dev
+      - liblapack-dev
+      - libnetcdf-dev
+      - libproj-dev
+      - librdf0-dev
+      - libudunits2-dev
+      - netcdf-bin
+      - pandoc
+      - python-dev
+      - qpdf
+      - tcl
+      - tcl-dev
+      - udunits-bin
 
 jobs:
   fast_finish: true
   include:
     - r: release
-      addons: &addons-c2d4u
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-          packages:
-            - *apt-base
-            - *apt-r-binaries
     - r: devel
-      addons: &addons-base
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-          packages:
-            - *apt-base
     - r: oldrel
-      addons: *addons-base
+    - r: 3.5
   allow_failures:
     - r: devel
-      addons: *addons-base
     - r: oldrel
-      addons: *addons-base
+    - r: 3.5
 
 cache:
   - directories:

@@ -111,12 +111,13 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     # allow.conflicting.dates==TRUE. So, insert new input record.
     if (parent == "") {
       cmd <- paste0("INSERT INTO inputs ",
-                    "(site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "') RETURNING id")
+                    "(site_id, format_id, start_date, end_date, name) VALUES (",
+                    siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name,
+                    "') RETURNING id")
     } else {
       cmd <- paste0("INSERT INTO inputs ",
-                    "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
+                    "(site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
+                    siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
     }
     # This is the id that we just registered
     inserted.id <-db.query(query = cmd, con = con)
@@ -372,8 +373,8 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
     # insert input
     db.query(
       query = paste0(
-        "INSERT INTO posteriors (pft_id, format_id, created_at, updated_at) VALUES (",
-        pftid, ", ", formatid, ", NOW(), NOW())"
+        "INSERT INTO posteriors (pft_id, format_id)",
+        " VALUES (", pftid, ", ", formatid, ")"
       ),
       con = con
     )
@@ -480,26 +481,17 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
     con = con))
   
   if (nrow(dbfile) == 0) {
-    # If no exsting record, insert one
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    
-    db.query(
+    # If no existing record, insert one
+
+    insert_result <- db.query(
       query = paste0("INSERT INTO dbfiles ",
-                     "(container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
+                     "(container_type, container_id, file_name, file_path, machine_id) VALUES (",
                      "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid,
-                     ", '", now, "', '", now, "')"),
+                     ") RETURNING id"),
       con = con
     )
     
-    file.id <- invisible(db.query(
-      query = paste0(
-        "SELECT * FROM dbfiles WHERE container_type='", type,
-        "' AND container_id=", id,
-        " AND created_at='", now,
-        "' ORDER BY id DESC LIMIT 1"
-      ),
-      con = con
-    )[['id']])
+    file.id <- insert_result[['id']]
   } else if (!reuse) {
     # If there is an existing record but reuse==FALSE, return NA.
     file.id <- NA
