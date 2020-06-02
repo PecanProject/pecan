@@ -146,8 +146,11 @@ download_thredds <- function(site_info, dates, varid, dir_url, data_url,run_para
           #   extract_thredds_nc(site_info = site_info, url_info = i)
           # parallel::stopCluster(cl)
         } else {
-          out <- foreach::foreach(i = urls, .combine = rbind) %do% 
-            extract_thredds_nc(site_info, url_info = i)
+          #start_time <- Sys.time()
+          out <- foreach::foreach(j = urls, .combine = rbind) %do% 
+            extract_thredds_nc(site_info, url_info = j)
+          # end_time <- Sys.time()
+          # end_time - start_time
         }
         output = rbind(output, out)
         
