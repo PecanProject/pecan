@@ -30,8 +30,8 @@ library(pryr)
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "test.stage2.xscaled.1000."
-output.base.name <- "test.stage2.xscaled.1000"
+file.base.name <- "stage2.xscaled.reslope.forecast.1000.2."
+output.base.name <- "stage2.xscaled.reslope.forecast.1000.2."
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
@@ -129,7 +129,8 @@ dev.off()
 # if the model run was stage2  then lets plot the posteriors and priors together:
 if(stage2 ==TRUE){
   #priors <- readRDS("/home/rstudio/INV_FIA_DATA/data/IGFPPT.Tmax.fs.only.climint.40000.rds")
-  priors <- readRDS(gzcon(url("https://de.cyverse.org/dl/d/1FF350EA-4CE4-4561-9BDA-7E90C062DBB4/IGFX_X2_scaled.rds")))
+  #priors <- readRDS(gzcon(url("https://de.cyverse.org/dl/d/1FF350EA-4CE4-4561-9BDA-7E90C062DBB4/IGFX_X2_scaled.rds")))
+  priors <- readRDS("/home/rstudio/INV_FIA_DATA/data/IGFX2_Xscaled_forecasted_2018.rds")
   
   
   
@@ -172,7 +173,6 @@ if(stage2 ==TRUE){
   dev.off()
   
 }
-
 
 png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.base.name,"_ACFplots.png")
     
@@ -573,7 +573,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     clim.data <- readRDS("PRISM_non_scaled.rds")
     hist(time_data$wintP.wateryr)
     wintPseq.real <- 0:800
-    wintPseq <- (wintPseq.real-mean(clim.data$wintP.wateryr))/sd(clim.data$wintP.wateryr)
+    wintPseq <- (wintPseq.real-mean(as.matrix(clim.data$wintP.wateryr)))/sd(as.matrix(clim.data$wintP.wateryr))
     incP <- matrix(NA,ns,length(wintPseq))
     
     for(k in seq_along(i)){
@@ -809,7 +809,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     hist(time_data$tmax.fallspr)
     range(clim.data$tmax.fallspr)
     tmaxseq.real <- 17:31
-    tmaxseq <- (tmaxseq.real-mean(clim.data$tmax.fallspr))/sd(clim.data$tmax.fallspr)
+    tmaxseq <- (tmaxseq.real-mean(as.matrix(clim.data$tmax.fallspr)))/sd(as.matrix(clim.data$tmax.fallspr))
     incT <- matrix(NA,ns,length(tmaxseq))
     
     for(k in seq_along(i)){
@@ -1097,3 +1097,60 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     dev.off()
     
     
+    # plot out the taus:
+    out.taus <- out[,c("tau_inc", "tau_PLOT", "tau_dbh", "tau_add")]
+    out.taus.m <- reshape2::melt(out.taus)
+    tau.summary<- out.taus.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
+                                                              ci.low = quantile(value, 0.025, na.rm=TRUE),
+                                                              ci.high = quantile(value, 0.975, na.rm=TRUE),)
+    
+    
+    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_precision_plots.png"))
+    ggplot()+geom_errorbar(data = tau.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
+      geom_point(data = tau.summary, aes(x = Var2, y = median))+ylab("Posterior Precision")+xlab("")+theme_bw()
+    dev.off()
+    
+    out.taus.m$sigma <- 1/sqrt(out.taus.m$value)
+    sigma.summary<- out.taus.m %>% group_by(Var2) %>% summarise(median = quantile(sigma, 0.5, na.rm=TRUE), 
+                                                                ci.low = quantile(sigma, 0.025, na.rm=TRUE),
+                                                                ci.high = quantile(sigma, 0.975, na.rm=TRUE),)
+    
+    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_sigma_plots.png"))
+    ggplot()+geom_errorbar(data = sigma.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
+      geom_point(data = sigma.summary, aes(x = Var2, y = median))+ylab("Posterior Sigma")+xlab("")+theme_bw()
+    dev.off()
+    
+    # plot up all the betas
+    betas.m <- reshape2::melt(betas)
+    beta.summary<- betas.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
+                                                            ci.low = quantile(value, 0.025, na.rm=TRUE),
+                                                            ci.high = quantile(value, 0.975, na.rm=TRUE),)
+    
+    
+    
+    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_beta_plots.png"))
+    ggplot()+geom_errorbar(data = beta.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
+      geom_point(data = beta.summary, aes(x = Var2, y = median))+ylab("Posterior Fixed Effects")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    dev.off()
+    
+    stage1.ests <-as.matrix(posterior.ests) 
+    # get the priors for the stage2 model--ie the posteriors for stage 1:
+    s1.taus <- stage1.ests[,c("tau_inc", "tau_PLOT", "tau_dbh", "tau_add")]
+    s1.taus.m <- reshape2::melt(s1.taus)
+    prior.tau.summary<- s1.taus.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
+                                                                   ci.low = quantile(value, 0.025, na.rm=TRUE),
+                                                                   ci.high = quantile(value, 0.975, na.rm=TRUE),)
+    
+    prior.tau.summary$model <- "Stage 1"
+    tau.summary$model <- "Stage 2"
+    
+    both.taus <- rbind(prior.tau.summary, tau.summary)
+    
+    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_taus_stage1_stage2_plots.png"))
+    ggplot()+geom_errorbar(data = both.taus, aes(x = Var2, ymin = ci.low, ymax = ci.high, color = model), width = 0.1)+
+      geom_point(data =both.taus, aes(x = Var2, y = median, color = model))+ylab("Posterior Precisions")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    dev.off()
+    
+    
+    
+    prior.tau.summary <- posterior.summary[]
