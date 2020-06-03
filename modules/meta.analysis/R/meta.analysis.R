@@ -109,7 +109,7 @@ pecan.ma <- function(trait.data, prior.distns,
     ## check for excess missing data
 
     if (all(is.na(data[["obs.prec"]]))) {
-      logger.warn("NO ERROR STATS PROVIDED\n Check meta-analysis Model Convergence", 
+      PEcAn.logger::logger.warn("NO ERROR STATS PROVIDED\n Check meta-analysis Model Convergence", 
                   "and consider turning off Random Effects by", 
                   "setting <random.effects>FALSE</random.effects>",
                   "in your pecan.xml settings file ")
