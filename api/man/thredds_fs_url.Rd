@@ -4,9 +4,11 @@
 \alias{thredds_fs_url}
 \title{Create a THREDDS fileServer URL prefix}
 \usage{
-thredds_fs_url(hostname = getOption("pecanapi.docker_hostname"),
+thredds_fs_url(
+  hostname = getOption("pecanapi.docker_hostname"),
   port = getOption("pecanapi.docker_port"),
-  https = getOption("pecanapi.docker_https"))
+  https = getOption("pecanapi.docker_https")
+)
 }
 \arguments{
 \item{hostname}{THREDDS server hostname (default = "localhost")}

@@ -4,13 +4,17 @@
 \alias{add_rabbitmq}
 \title{Add RabbitMQ configuration}
 \usage{
-add_rabbitmq(settings, model_queue = NULL, con = NULL,
+add_rabbitmq(
+  settings,
+  model_queue = NULL,
+  con = NULL,
   rabbitmq_user = getOption("pecanapi.rabbitmq_user"),
   rabbitmq_password = getOption("pecanapi.rabbitmq_password"),
   rabbitmq_service = getOption("pecanapi.rabbitmq_service"),
   rabbitmq_service_port = getOption("pecanapi.rabbitmq_service_port"),
   rabbitmq_vhost = getOption("pecanapi.rabbitmq_vhost"),
-  overwrite = FALSE)
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{settings}{Partially completed PEcAn \code{settings} list.}

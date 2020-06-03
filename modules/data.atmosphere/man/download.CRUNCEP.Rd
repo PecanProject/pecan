@@ -4,17 +4,25 @@
 \alias{download.CRUNCEP}
 \title{Download CRUNCEP data}
 \usage{
-download.CRUNCEP(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-  overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
-  method = "ncss", ...)
+download.CRUNCEP(
+  outfolder,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  overwrite = FALSE,
+  verbose = FALSE,
+  maxErrors = 10,
+  sleep = 2,
+  method = "ncss",
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
 \item{start_date, end_date}{Range of years to retrieve. Format is YYYY-MM-DD,
 but only the year portion is used and the resulting files always contain a full year of data.}
-
-\item{site_id}{numeric. Currently ignored}
 
 \item{lat.in}{site latitude in decimal degrees}
 

@@ -46,7 +46,7 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")) {
 ##' @param outdir the directory that the model's output was sent to
 ##' @param start.year 
 ##' @param end.year
-##' @param output.type type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL\%I[DMYT]OUTPUT
+##' @param output.type type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT
 ##' @return vector of output variable for all runs within ensemble
 ##' @export
 ##' @author David LeBauer, Carl Davidson

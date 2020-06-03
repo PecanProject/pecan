@@ -4,19 +4,25 @@
 \alias{query.data}
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-query.data(trait, spstr,
-  extra.columns = "ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ",
-  con = NULL, store.unconverted = FALSE, ids_are_cultivars = FALSE,
-  ...)
+query.data(
+  trait,
+  spstr,
+  con,
+  extra.columns = paste("ST_X(ST_CENTROID(sites.geometry)) AS lon,",
+    "ST_Y(ST_CENTROID(sites.geometry)) AS lat, "),
+  store.unconverted = FALSE,
+  ids_are_cultivars = FALSE,
+  ...
+)
 }
 \arguments{
 \item{trait}{trait to query from the database}
 
 \item{spstr}{IDs of species to query from, as a single comma-separated string}
 
-\item{extra.columns}{other query terms to pass in. If unspecified, retrieves latitude and longitude}
-
 \item{con}{database connection}
+
+\item{extra.columns}{other query terms to pass in. If unspecified, retrieves latitude and longitude}
 
 \item{ids_are_cultivars}{if TRUE, ids is a vector of cultivar IDs, otherwise they are species IDs}
 

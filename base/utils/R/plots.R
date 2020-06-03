@@ -23,7 +23,7 @@
 ##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.
 ##' @param xlab is label for the x axis 
 ##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
-##' @param lab.spikes = TRUE labels the \% of data in the spikes
+##' @param lab.spikes = TRUE labels the % of data in the spikes
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.

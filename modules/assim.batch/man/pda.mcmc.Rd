@@ -4,16 +4,46 @@
 \alias{pda.mcmc}
 \title{Paramater Data Assimilation using MCMC}
 \usage{
-pda.mcmc(settings, params.id = NULL, param.names = NULL,
-  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
+pda.mcmc(
+  settings,
+  params.id = NULL,
+  param.names = NULL,
+  prior.id = NULL,
+  chain = NULL,
+  iter = NULL,
+  adapt = NULL,
+  adj.min = NULL,
+  ar.target = NULL,
+  jvar = NULL,
+  n.knot = NULL
+)
 }
 \arguments{
 \item{settings}{= a pecan settings list}
+
+\item{params.id}{id of pars}
+
+\item{param.names}{names of pars}
+
+\item{prior.id}{ids of priors}
+
+\item{chain}{how many chains}
+
+\item{iter}{how many iterations}
+
+\item{adapt}{adaptation intervals}
+
+\item{adj.min}{to be used in adjustment}
+
+\item{ar.target}{acceptance rate target}
+
+\item{jvar}{jump variance}
+
+\item{n.knot}{number of knots requested}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
- are saved as files and db records.
+are saved as files and db records.
 }
 \description{
 Paramater Data Assimilation using MCMC

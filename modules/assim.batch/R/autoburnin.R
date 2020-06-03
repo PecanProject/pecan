@@ -7,6 +7,7 @@
 #' "moving.window" (default) or "gelman.plot".
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence 
 #' interval for Gelman Diagnostic. If FALSE, use the point estimate.
+#' @param plotfile path
 #' @param ... Other parameters to methods
 #' 
 #' @details 
@@ -33,7 +34,7 @@ getBurnin <- function(jags_out,
   } else {
     stop("Unknown method: ", method)
   }
-  if (class(GBR) == "try-error") {
+  if (inherits(GBR, "try-error")) {
     message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
     return(1)
   }
@@ -46,7 +47,7 @@ getBurnin <- function(jags_out,
   } else {
     index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
-              class(index) %in% c("numeric", "integer"))
+               inherits(index, c("numeric", "integer")))
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {
@@ -68,6 +69,7 @@ getBurnin <- function(jags_out,
 #' @title Automatically calculate and apply burnin value
 #'
 #' @author Michael Dietze, Alexey Shiklomanov
+#' @param jags_out JAGS output
 #' @param return.burnin Logical. If `TRUE`, return burnin value in addition to 
 #' samples (as list). Default = FALSE.
 #' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 

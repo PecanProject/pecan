@@ -36,7 +36,13 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
 #' @return Complete URL, as a string
 #' @author Alexey Shiklomanov
 #' @export
-build_cf_variables_table_url <- function(version,
-                                         url_format_string = "http://cfconventions.org/Data/cf-standard-names/%d/src/src-cf-standard-name-table.xml") {
+build_cf_variables_table_url <- function(
+    version,
+    url_format_string = paste0(
+      # this paste0 is solely to hush R package checks,
+      # which complain if any usage line is wider than 90 chars
+      "http://cfconventions.org/",
+      "Data/cf-standard-names/%d/src/",
+      "src-cf-standard-name-table.xml")) {
   sprintf(url_format_string, version)
 }

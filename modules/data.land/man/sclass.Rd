@@ -11,6 +11,11 @@ sclass(sandfrac, clayfrac)
 
 \item{clayfrac}{}
 }
+\value{
+vector of integers identifying textural class of each input layer.
+ Possible values are 1 through 17; NB these are NOT the same class
+ boundaries as the 12 USDA soil texture classes.
+}
 \description{
 This function determines the soil class number based on the fraction of sand, clay, and silt
 }

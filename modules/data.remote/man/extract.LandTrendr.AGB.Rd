@@ -4,9 +4,16 @@
 \alias{extract.LandTrendr.AGB}
 \title{extract.LandTrendr.AGB}
 \usage{
-extract.LandTrendr.AGB(site_info, dataset = "median", buffer = NULL,
-  fun = "mean", data_dir = NULL, product_dates = NULL,
-  output_file = NULL, ...)
+extract.LandTrendr.AGB(
+  site_info,
+  dataset = "median",
+  buffer = NULL,
+  fun = "mean",
+  data_dir = NULL,
+  product_dates = NULL,
+  output_file = NULL,
+  ...
+)
 }
 \arguments{
 \item{site_info}{list of site info for parsing AGB data: list(site_id, site_name, lat, lon, time_zone)}
@@ -28,8 +35,11 @@ output extraction list (see return)}
 \value{
 list of two containing the median AGB values per pixel and the corresponding 
 standard deviation values (uncertainties)
-
-##' @examples
+}
+\description{
+extract.LandTrendr.AGB
+}
+\examples{
 \dontrun{
 
 # Example 1 - using BETYdb site IDs to extract data
@@ -53,9 +63,7 @@ results <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mea
 data_dir, product_dates, output_file)
 
 }
-}
-\description{
-extract.LandTrendr.AGB
+
 }
 \author{
 Shawn Serbin, Alexey Shiklomanov

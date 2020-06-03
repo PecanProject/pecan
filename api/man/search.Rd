@@ -6,13 +6,25 @@
 \alias{search_pfts}
 \title{Search for sites or models}
 \usage{
-search_models(con, name = "", revision = "", modeltype = "",
-  auto_pct = TRUE, ignore.case = TRUE)
+search_models(
+  con,
+  name = "",
+  revision = "",
+  modeltype = "",
+  auto_pct = TRUE,
+  ignore.case = TRUE
+)
 
 search_sites(con, sitename = "", auto_pct = TRUE, ignore.case = TRUE)
 
-search_pfts(con, name = "", definition = "", modeltype = "",
-  auto_pct = TRUE, ignore.case = TRUE)
+search_pfts(
+  con,
+  name = "",
+  definition = "",
+  modeltype = "",
+  auto_pct = TRUE,
+  ignore.case = TRUE
+)
 }
 \arguments{
 \item{con}{Database connection, as created by \link[RPostgres:dbConnect]{RPostgres::dbConnect}}
@@ -24,7 +36,7 @@ search_pfts(con, name = "", definition = "", modeltype = "",
 \item{modeltype}{Model type search string (character)}
 
 \item{auto_pct}{Logical. If \code{TRUE} (default), automatically
-surround search strings in \code{\%}. If this is \code{FALSE}, you should
+surround search strings in \verb{\%}. If this is \code{FALSE}, you should
 explicitly specify \code{"\%\%"} for one or both other arguments.}
 
 \item{ignore.case}{Logical. If \code{TRUE} (default) use

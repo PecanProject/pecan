@@ -4,7 +4,7 @@
 \alias{get.id}
 \title{get.id}
 \usage{
-get.id(table, colnames, values, con, create = FALSE, dates = FALSE)
+get.id(table, colnames, values, con, create = FALSE, dates = TRUE)
 }
 \arguments{
 \item{table}{name of table}
@@ -17,7 +17,9 @@ get.id(table, colnames, values, con, create = FALSE, dates = FALSE)
 
 \item{create}{logical: make a record if none found?}
 
-\item{dates}{logical: update created_at and updated_at timestamps? Used only if `create` is TRUE}
+\item{dates}{Ignored.
+Formerly indicated whether to set created_at and updated_at timestamps
+when `create` was TRUE, but the database now always sets them automatically}
 }
 \value{
 will numeric

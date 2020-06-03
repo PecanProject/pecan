@@ -29,7 +29,7 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
     {m <- BioCro::BioGro(
       WetDat = matrix(c(0,10,0,0,0,0,0,0), nrow = 1),
       day1 = 10, dayn = 10, timestep = 24);
-    class(m) == "BioGro"},
+    inherits(m, "BioGro") },
     error = function(e){FALSE})
   if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
     if (!is.null(day1)){

@@ -253,7 +253,7 @@ invert.custom <- function(observed, invert.options,
     if (samp) {
       if (catch_error) {
         TrySpec <- try(model(tvec, runID))
-          if (class(TrySpec) == "try-error") {
+          if (inherits(TrySpec, "try-error")) {
               warning("Model hit an error. Skipping to next iteration")
                 samp <- FALSE
             }

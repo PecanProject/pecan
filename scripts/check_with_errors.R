@@ -104,7 +104,15 @@ msg_lines <- function(msg) {
     msg <- lapply(msg, function(x)x[x != ""])
 
     # prepend message title (e.g. "checking Rd files ... NOTE") to each line
-    unlist(lapply(msg, function(x)paste(x[[1]], x[-1], sep = ": ")))
+    unlist(lapply(
+        msg,
+        function(x) {
+            if (length(x) > 1) {
+                paste(x[[1]], x[-1], sep = ": ")
+            } else {
+                x
+            }
+        }))
 }
 
 if (cmp$status != "+") {
@@ -151,6 +159,33 @@ if (cmp$status != "+") {
     cur_msgs <- cur_msgs[!grepl("NOTE: Consider adding importFrom", cur_msgs)]
 
     lines_changed <- setdiff(cur_msgs, prev_msgs)
+
+    # Crude hack:
+    # Some messages are locale-dependent in complex ways,
+    # e.g. the note about undocumented datasets concatenates CSV names
+    # (ordered in the current locale) and objects in RData files (always
+    # ordered in C locale), and so on.
+    # As a last effort, we look for pre-existing lines that contain the same
+    # words in a different order
+    if (length(lines_changed) > 0) {
+        prev_words <- strsplit(prev_msgs, " ")
+        changed_words <- strsplit(lines_changed, " ")
+        is_reordered <- function(v1, v2) {
+            length(v1[v1 != ""]) == length(v2[v2 != ""]) && setequal(v1, v2)
+        }
+        is_in_prev <- function(line) {
+            any(vapply(
+                X = prev_words,
+                FUN = is_reordered,
+                FUN.VALUE = logical(1),
+                line))
+        }
+        in_prev <- vapply(
+            X = changed_words,
+            FUN = is_in_prev,
+            FUN.VALUE = logical(1))
+        lines_changed <- lines_changed[!in_prev]
+    }
     if (length(lines_changed) > 0) {
         cat("R check of", pkg, "returned new problems:\n")
         cat(lines_changed, sep = "\n")

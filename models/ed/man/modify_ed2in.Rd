@@ -4,12 +4,27 @@
 \alias{modify_ed2in}
 \title{Modify an ED2IN object}
 \usage{
-modify_ed2in(ed2in, ..., veg_prefix = NULL, latitude = NULL,
-  longitude = NULL, met_driver = NULL, start_date = NULL,
-  end_date = NULL, EDI_path = NULL, output_types = NULL,
-  output_dir = NULL, run_dir = NULL, runtype = NULL,
-  run_name = NULL, include_these_pft = NULL, pecan_defaults = FALSE,
-  add_if_missing = FALSE, check_paths = TRUE, .dots = list())
+modify_ed2in(
+  ed2in,
+  ...,
+  veg_prefix = NULL,
+  latitude = NULL,
+  longitude = NULL,
+  met_driver = NULL,
+  start_date = NULL,
+  end_date = NULL,
+  EDI_path = NULL,
+  output_types = NULL,
+  output_dir = NULL,
+  run_dir = NULL,
+  runtype = NULL,
+  run_name = NULL,
+  include_these_pft = NULL,
+  pecan_defaults = FALSE,
+  add_if_missing = FALSE,
+  check_paths = TRUE,
+  .dots = list()
+)
 }
 \arguments{
 \item{...}{Namelist arguments (see Description and Details)}
@@ -84,7 +99,7 @@ arguments set by special case arguments.
 
 Namelist arguments can be stored in a list and passed in via the \code{.dots}
 argument (e.g. \code{.dots = list(SFILIN = "/path/prefix_", ...)}), or using the
-\code{rlang::!!!} splicing operator. If both are provided, they will be spliced
+\verb{rlang::!!!} splicing operator. If both are provided, they will be spliced
 together, with the \code{...} taking precedence.
 
 For \code{output_types}, select one or more of the following:

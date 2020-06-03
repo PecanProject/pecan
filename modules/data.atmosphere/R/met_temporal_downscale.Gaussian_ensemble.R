@@ -10,7 +10,7 @@ substrRight <- function(x, n) {
 ##' @export
 ##' @param in.path 
 ##' @param in.prefix 
-##' @param outfolder
+##' @param outfolder path to directory in which to store output. Will be created if it does not exist
 ##' @param input_met - the source dataset that will temporally downscaled by the train_met dataset
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
@@ -22,11 +22,12 @@ substrRight <- function(x, n) {
 ##' @param n_ens - numeric value with the number of ensembles to run
 ##' @param w_len - numeric value that is the window length in days  
 ##' @param utc_diff - numeric value in HOURS that is local standard time difference from UTC time. CST is -6
+##' @param ... further arguments, currently ignored
 ##' @author James Simkins
 
 
 met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfolder, 
-                                                     input_met, train_met, site_id, overwrite = FALSE, verbose = FALSE, 
+                                                     input_met, train_met, overwrite = FALSE, verbose = FALSE, 
                                                      swdn_method = "sine", n_ens = 10, w_len = 20, utc_diff = -6, ... ) {
 
   sub_str <- substrRight(input_met, 7)

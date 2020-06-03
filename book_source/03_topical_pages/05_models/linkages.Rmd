@@ -1,4 +1,4 @@
-### LINKAGES {#models-linkages}
+## LINKAGES {#models-linkages}
 
 | Model Information ||
 | -- | -- |

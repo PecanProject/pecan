@@ -4,8 +4,14 @@
 \alias{download.PalEON_ENS}
 \title{Download PalEON met ensemble files}
 \usage{
-download.PalEON_ENS(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, ...)
+download.PalEON_ENS(
+  sitename,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{end_date}{}

@@ -82,8 +82,7 @@ Undefined global functions or variables:
 Consider adding
   importFrom("utils", "download.file", "write.csv")
 to your NAMESPACE file.
-* checking Rd files ... WARNING
-checkRd: (7) extract.LandTrendr.AGB.Rd:33-55: Tag \dontrun not recognized
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
 Rd file 'call_MODIS.Rd':
@@ -111,4 +110,4 @@ Extensions’ manual.
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
 * DONE
-Status: 3 WARNINGs, 3 NOTEs
+Status: 2 WARNINGs, 3 NOTEs

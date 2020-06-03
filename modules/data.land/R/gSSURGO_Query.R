@@ -14,15 +14,17 @@
 #' Fields need to be defined with their associate tables. For example, sandtotal is a field in chorizon table which needs to be defined as chorizon.sandotal_(r/l/h), where 
 #' r stands for the representative value, l stand for low and h stands for high. At the momeent fields from mapunit, component, muaggatt, and chorizon tables can be extracted. 
 #'
-#'#' @examples
+#' @examples
 #' \dontrun{
-#'    PEcAn.data.land::gSSURGO.Query(fields = c("chorizon.cec7_r", "chorizon.sandtotal_r",
-#'                                                "chorizon.silttotal_r","chorizon.claytotal_r",
-#'                                                "chorizon.om_r","chorizon.hzdept_r","chorizon.frag3to10_r",
-#'                                                "chorizon.dbovendry_r","chorizon.ph1to1h2o_r",
-#'                                                "chorizon.cokey","chorizon.chkey"))
+#'  PEcAn.data.land::gSSURGO.Query(
+#'    fields = c(
+#'      "chorizon.cec7_r", "chorizon.sandtotal_r",
+#'      "chorizon.silttotal_r","chorizon.claytotal_r",
+#'      "chorizon.om_r","chorizon.hzdept_r","chorizon.frag3to10_r",
+#'      "chorizon.dbovendry_r","chorizon.ph1to1h2o_r",
+#'      "chorizon.cokey","chorizon.chkey"))
 #' }
-gSSURGO.Query<-function(mukeys=2747727,
+gSSURGO.Query <- function(mukeys=2747727,
                         fields=c("chorizon.sandtotal_r",
                                  "chorizon.silttotal_r",
                                  "chorizon.claytotal_r")){
