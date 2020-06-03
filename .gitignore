@@ -99,7 +99,3 @@ contrib/modellauncher/modellauncher
 
 # don't checkin renv
 /renv/
-
-# folder with the data folders for the docker stack
-/volumes
-

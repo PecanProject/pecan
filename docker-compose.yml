@@ -145,6 +145,8 @@ services:
     image: pecan/rstudio-nginx:${PECAN_VERSION:-latest}
     networks:
       - pecan
+    depends_on:
+      - rstudio
     labels:
       - "traefik.enable=true"
       - "traefik.backend=rstudio"

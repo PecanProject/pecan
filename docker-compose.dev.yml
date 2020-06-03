@@ -54,44 +54,52 @@ services:
   #    - /var/run/docker.sock:/var/run/docker.sock
   #    - portainer:/data
 
+# -----------------------------------------------------------------------
+# Theser are the volumes mounted into the containers. For speed reasons
+# it is best to use docker native containers (less important on Linux).
+# The pecan_home and pecan_web are important since this allows us to
+# share the PEcAn source code from local machine to docker containers.
+# Volumes are placed outside of the PEcAn source tree to allow for
+# optimized caching of the changed files.
+# -----------------------------------------------------------------------
 volumes:
   pecan_home:
     driver_opts:
       type: none
       device: '${PWD}'
       o: bind
-  pecan_lib:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/lib'
-      o: bind
   pecan_web:
     driver_opts:
       type: none
       device: '${PWD}/web/'
       o: bind
-  traefik:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/traefik'
-      o: bind
-  postgres:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/postgres'
-      o: bind
-  rabbitmq:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/rabbitmq'
-      o: bind
-  pecan:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/pecan'
-      o: bind
+  pecan_lib:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/lib'
+  #    o: bind
+  #pecan:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/pecan'
+  #    o: bind
+  #traefik:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/traefik'
+  #    o: bind
+  #postgres:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/postgres'
+  #    o: bind
+  #rabbitmq:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/rabbitmq'
+  #    o: bind
   portainer:
-    driver_opts:
-      type: none
-      device: '${PWD}/volumes/portainer'
-      o: bind
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/portainer'
+  #    o: bind
