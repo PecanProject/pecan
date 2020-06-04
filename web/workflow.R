@@ -19,7 +19,7 @@ suppressMessages(library("optparse"))
 # --------------------------------------------------
 get_args <- function () {
     option_list = list(
-      make_option(
+      optparse::make_option(
         c("-s", "--settings"),
         default = ifelse(Sys.getenv("PECAN_SETTINGS") != "", 
                          Sys.getenv("PECAN_SETTINGS"), "pecan.xml"),
