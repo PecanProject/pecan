@@ -11,6 +11,7 @@
 write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings, new.state,
                                  RENAME = TRUE, new.params = FALSE, inputs) {
   
+  
   rundir    <- settings$host$rundir
   variables <- colnames(new.state)
   
@@ -26,9 +27,9 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("TotSoilCarb" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$TotSoilCarb, "kg m-2", "g m-2")  
+    analysis.save[[length(analysis.save) + 1]] <- new.state$TotSoilCarb
     if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("SOC")
+    names(analysis.save[[length(analysis.save)]]) <- c("TotSoilCarb")
   }
   
   if (!is.null(analysis.save) && length(analysis.save) > 0){
@@ -48,11 +49,6 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
                                            inputs = inputs,
                                            IC = analysis.save.mat))
   
-  # write.config.BASGRA (defaults, trait.values, settings, run.id) 
-  
-  
-
-    
     
   return(TRUE)
 } # write_restart.BASGRA

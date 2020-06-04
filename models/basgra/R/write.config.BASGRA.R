@@ -257,9 +257,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     ic.names <- names(IC)
     
-    # Initial value of leaf area index m2 m-2 - logged)
-    if ("ilai" %in% ic.names) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log(IC$lai)
+    if ("LAI"  %in% ic.names) {
+      run_params[which(names(run_params) == "LOG10LAII")] <- log(IC$LAI)
+    }
+    
+    if ("TotSoilCarb"  %in% ic.names) {
+      run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g")
     }
     
     
