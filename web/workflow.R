@@ -27,7 +27,7 @@ get_args <- function () {
         help = "Settings XML file",
         metavar = "FILE",
       ),
-      make_option(
+      optparse::make_option(
         c("-c", "--continue"),
         default = FALSE,
         action = "store_true",
