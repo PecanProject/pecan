@@ -37,7 +37,7 @@ get_args <- function () {
     )
 
     parser <- optparse::OptionParser(option_list = option_list)
-    args = parse_args(parser)
+    args <- optparse::parse_args(parser)
 
     if (!file.exists(args$settings)) {
         print_help(parser)
