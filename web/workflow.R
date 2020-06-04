@@ -48,7 +48,7 @@ get_args <- function () {
 }
 
 # --------------------------------------------------
-main <- function () {
+workflow <- function(settings_file = "pecan.xml", continue = FALSE) {
     # get command-line arguments
     args = get_args()
 
