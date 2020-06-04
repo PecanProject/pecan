@@ -20,7 +20,11 @@ jobs:
     steps:
     
     - uses: actions/checkout@v2
-      
+    - run : |
+        apt-get update \
+        && apt-get install -y --no-install-recommends pandoc \
+        && install2.r -e -s -n -1 bookdown \
+        && rm -rf /var/lib/apt/lists/*
     
     # Building book from source using makefile
     - name: Building book
