@@ -40,7 +40,7 @@ get_args <- function () {
     args <- optparse::parse_args(parser)
 
     if (!file.exists(args$settings)) {
-        print_help(parser)
+        optparse::print_help(parser)
         stop(sprintf('--settings "%s" not a valid file\n', args$settings))
     }
 
