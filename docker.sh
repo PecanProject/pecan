@@ -61,7 +61,7 @@ IMAGE_VERSION or the option -i.
 To run the script in debug mode without actually building any images you
 can use the environment variable DEBUG or option -d.
 
-By default the docker.sh process will try and use a prebuild dependency
+By default the docker.sh process will try and use a prebuilt dependency
 image since this image takes a long time to build. To force this image
 to be build use the DEPEND="build" environment flag, or use option -f.
 
@@ -103,13 +103,14 @@ echo "# test this build you can use:"
 echo "# PECAN_VERSION='${IMAGE_VERSION}' docker-compose up"
 echo "#"
 echo "# The docker image for dependencies takes a long time to build. You"
-echo "# can use a prebuild version (default) or force a new versin to be"
-echo "# build locally using: DEPEND=build $0"
+echo "# can use a prebuilt version (default) or force a new version to be"
+echo "# built locally using: DEPEND=build $0"
 echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
+        --pull \
         --build-arg R_VERSION=${R_VERSION} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
@@ -156,9 +157,26 @@ for x in models executor data thredds monitor rstudio-nginx check; do
         docker/$x
 done
 
+# shiny apps
+for x in dbsync; do
+    ${DEBUG} docker build \
+        --tag pecan/shiny-$x:${IMAGE_VERSION} \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        shiny/$x
+done
+
 # --------------------------------------------------------------------------------
 # MODEL BUILD SECTION
 # --------------------------------------------------------------------------------
+
+# build basgra
+for version in BASGRA_N_v1.0; do
+    ${DEBUG} docker build \
+        --tag pecan/model-basgra-$(echo $version | tr '[A-Z]' '[a-z]'):${IMAGE_VERSION} \
+        --build-arg MODEL_VERSION="${version}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        models/basgra
+done
 
 # build biocro
 for version in 0.95; do
@@ -170,11 +188,12 @@ for version in 0.95; do
 done
 
 # build ed2
-for version in git; do
+for version in 2.2.0; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg BINARY_VERSION="2.2" \
         models/ed
 done
 

@@ -1,10 +1,18 @@
+# ignore git folder
 .git
 
+# ignore .install, need own version in docker
 .install
 
+# ignore packrat lib/src folders, others might be needed
+*/*/packrat/lib*/
+*/*/packrat/src/
+
+# ignore tests and contrib folder
 tests
 contrib
 
+# ignore compiled files from rtm
 modules/rtm/src/RTM/*.o
 modules/rtm/src/RTM/*/*.o
 modules/rtm/src/RTM/*/*/*.o

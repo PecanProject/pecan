@@ -1,4 +1,4 @@
-#### Installing BETY {#install-bety}
+### Installing BETY {#install-bety}
 
 **************THIS PAGE IS DEPRECATED*************
 

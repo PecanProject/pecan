@@ -7,6 +7,7 @@ set -e
 
 # Don't use X11 for rgl
 RGL_USE_NULL=TRUE
+RLIB=${R_LIBS_USER:-/usr/local/lib/R/site-library}
 
 # install remotes first in case packages are references in dependencies
 installGithub.r \
@@ -17,7 +18,7 @@ installGithub.r \
     ropensci/nneo
 
 # install all packages (depends, imports, suggests)
-install2.r -e -s -n -1\
+install2.r -e -s -l "${RLIB}" -n -1\
     abind \
     BayesianTools \
     binaryLogic \
