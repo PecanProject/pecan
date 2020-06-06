@@ -1,0 +1,411 @@
+openapi: 3.0.0
+servers:
+  - description: PEcAn Tezan VM
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/b1303344
+  - description: Localhost
+    url: http://127.0.0.1:8000
+  
+info:
+  title: PEcAn Project API
+  description: >-
+    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan).
+    PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models. 
+  version: "1.0.0"
+  contact:
+    email: "pecanproj@gmail.com"
+  license:
+    name: University of Illinois/NCSA Open Source License
+    url: https://opensource.org/licenses/NCSA
+externalDocs:
+  description: Find out more about PEcAn Project
+  url: https://pecanproject.github.io/
+
+tags:
+  - name: general
+    description: Related to the overall working on the API & its details
+  - name: workflows
+    description: Everything about PEcAn workflows
+  - name: runs
+    description: Everything about PEcAn runs
+  - name: models
+    description: Everything about PEcAn models
+
+#####################################################################################################################
+##################################################### API Endpoints #################################################
+#####################################################################################################################
+security:
+  - basicAuth: []
+  
+paths:
+  /api/:
+    get:
+      summary: Root of the API tree 
+      tags:
+        - general
+        - 
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: This is the API for the PEcAn Project
+                    server:
+                      type: string
+                    status:
+                      type: string
+
+  /api/ping:
+    get:
+      summary: Ping the server to check if it is live 
+      tags:
+        - general
+        - 
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  req:
+                    type: string
+                  resp:
+                    type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Models not found
+  
+  /api/models/:
+    get:
+      tags:
+        - models
+        -
+      summary: Details of model(s)
+      parameters:
+        - in: query
+          name: model_name
+          description: Name of the model
+          required: false
+          schema:
+            type: string
+            default: all
+        - in: query
+          name: revision
+          description: Model version/revision
+          required: false
+          schema:
+            type: string
+            default: all
+      responses:
+        '200':
+          description: Available Models 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/Model'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model(s) not found
+                  
+  
+  /api/workflows:
+    get:
+      tags:
+        - workflows
+        -
+      summary: Get the list of workflows 
+      parameters:
+        - in: query
+          name: model_id
+          description: If provided, returns all workflows that use the provided model_id
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of workflow ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflows not found
+      
+    post:
+      tags:
+        - workflows
+        - 
+      summary: Submit a new PEcAn workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
+      responses:
+        '201':
+          description: Submitted workflow successfully    
+        '401':
+          description: Authentication required
+      
+
+  /api/workflows/{id}:
+    get:
+      tags:
+        - workflows
+        - 
+      summary: Get the details of a PEcAn Workflow
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found  
+
+
+  
+
+
+  /api/workflows/{id}/runs:
+    get:
+      tags:
+        - workflows
+        - runs
+      summary: Get the list of all runs for a specified PEcAn Workflow
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of all runs for the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found 
+
+
+  /api/run/{id}:
+    get:
+      tags:
+        - runs
+        - 
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details about the requested run within the requested PEcAn workflow
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Run'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found
+                  
+
+#####################################################################################################################
+###################################################### Components ###################################################
+#####################################################################################################################
+
+components:
+  schemas:
+    Model:
+      properties:
+        model_id:
+          type: string
+        model_name:
+          type: string
+        revision:
+          type: string
+        modeltype_id:
+          type: string
+        
+    Run:
+      properties:
+        run_id:
+          type: string
+        workflow_id:
+          type: string
+        runtype:
+          type: string
+        quantile:
+          type: number
+        site: 
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            lat:
+              type: number
+            lon:
+              type: number
+        pfts:
+          type: array
+          items: 
+            type: object
+            properties:
+              name: 
+                type: string
+              constants:
+                type: array
+                items:
+                  type: number
+        model:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        inputs:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              id:
+                type: string
+              source:
+                type: string
+              path:
+                type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+
+    Workflow:
+      properties:
+        id:
+          type: string
+        pfts:
+          type: array
+          items: 
+            type: string
+        model:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        meta_analysis:
+          type: object
+          properties:
+            iter:
+              type: number
+            random_effects:
+              type: object
+              properties:
+                "on":
+                  type: boolean
+                use_ghs:
+                  type: boolean
+            update:
+              type: boolean
+            threshold:
+              type: number
+        ensemble:
+          type: object
+          properties:
+            size:
+              type: number
+            variable:
+              type: string
+            sampling_space:
+              type: object
+              properties:
+                parameters.method:
+                  type: string
+                met.method:
+                  type: string
+        sensitivity_analysis:
+          type: object
+          properties:
+            quantiles_sigma:
+              type: array
+              items:
+                type: number
+            variable:
+              type: string
+            perpft:
+              type: boolean
+        runs:
+          type: array
+          items:
+            type: string
+        host:
+          type: object
+          properties:
+            name:
+              type: string
+        status:
+          type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+
+
