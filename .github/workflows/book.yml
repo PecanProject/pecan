@@ -39,7 +39,7 @@ jobs:
       run: cd book_source && make
       
     - name: looking for generated html  
-      run: cd /book_source/_book
+      run: cd /__w/pecan-sandbox/pecan-sandbox/book_source/_book && ls
       shell: bash
 
     - name: Commiting the changes to pecan documentation repo
