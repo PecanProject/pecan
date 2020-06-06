@@ -44,6 +44,8 @@ jobs:
 
     - name: Commiting the changes to pecan documentation repo
       run: |
+        git config --global user.email "pecan_bot@example.com"
+        git config --global user.name "Mukul Maheshwari"
         git init 
         git add .
         git commit -m "documentation updated by actions"
