@@ -332,7 +332,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   
   # MAKE SURE TO USE PYTHON 3 FOR dvmdostem v0.5.0 AND UP!!
   # Also on the ubuntu VM, there is a symlink from ~/bin/python to /usr/bin/python3
+  # Same sym link setup on modex.
   Sys.setenv(PATH = paste(c("/home/carya/bin", Sys.getenv("PATH")), collapse = .Platform$path.sep))
+  Sys.setenv(PATH = paste(c("/home/tcarman/bin", Sys.getenv("PATH")), collapse = .Platform$path.sep))
   #PEcAn.logger::logger.info(system2("python", args="-V"))
   
   ## site information
