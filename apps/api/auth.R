@@ -1,8 +1,3 @@
-library(digest)
-library(PEcAn.DB)
-library(DBI)
-require(RPostgreSQL)
-
 #* Obtain the encrypted password for a user
 #* @param username Username, which is also the 'salt'
 #* @param password Unencrypted password
@@ -14,10 +9,15 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
   dig <- secretkey
   salt <- username
   for (i in 1:10) {
-    dig <- digest(paste(dig, salt, password, secretkey, sep="--"), algo="sha1", serialize=FALSE)
+    dig <- digest::digest(
+      paste(dig, salt, password, secretkey, sep="--"), 
+      algo="sha1", 
+      serialize=FALSE
+    )
   }
   return(dig)
 }
+
 
 
 #* Check if the encrypted password for the user is valid
@@ -26,11 +26,17 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* @return TRUE if encrypted password is correct, else FALSE
 #* @author Tezan Sahu
 validate_crypt_pass <- function(username, crypt_pass) {
-  settings <-list(database = list(bety = list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety", host="postgres")))
-  dbcon <- db.open(settings$database$bety)
+  settings <-list(database = list(bety = list(
+    driver = "PostgreSQL", 
+    user = "bety", 
+    dbname = "bety", 
+    password = "bety", 
+    host="postgres"
+  )))
+  dbcon <- PEcAn.DB::db.open(settings$database$bety)
   
   qry_statement <- paste0("SELECT crypted_password FROM users WHERE login='", username, "'")
-  res <- db.query(qry_statement, dbcon)
+  res <- PEcAn.DB::db.query(qry_statement, dbcon)
   
   if (nrow(res) == 1 && res[1, 1] == crypt_pass) {
     return(TRUE)
@@ -51,27 +57,23 @@ authenticate_user <- function(req, res) {
     grepl("openapi.json", req$PATH_INFO, fixed = TRUE) ||
     grepl("ping", req$PATH_INFO, ignore.case = TRUE)) 
   {
-    return(forward())
+    return(plumber::forward())
   }
   
   if (!is.null(req$HTTP_AUTHORIZATION)) {
     # HTTP_AUTHORIZATION is of the form "Basic <base64-encoded-string>", 
     # where the <base64-encoded-string> is contains <username>:<password>
-    auth_details <- strsplit(rawToChar(base64_dec(strsplit(req$HTTP_AUTHORIZATION, " +")[[1]][2])), ":")[[1]]
+    auth_details <- strsplit(rawToChar(jsonlite::base64_dec(strsplit(req$HTTP_AUTHORIZATION, " +")[[1]][2])), ":")[[1]]
     username <- auth_details[1]
     password <- auth_details[2]
     crypt_pass <- get_crypt_pass(username, password)
     
     if(validate_crypt_pass(username, crypt_pass)){
-      return(forward())
+      return(plumber::forward())
     }
     
   }
-  else{
-    res$status <- 401 # Unauthorized
-    return(list(error="Authentication required"))
-  }
   
-  
-  
+  res$status <- 401 # Unauthorized
+  return(list(error="Authentication required"))
 }
