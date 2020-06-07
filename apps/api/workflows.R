@@ -49,3 +49,48 @@ getWorkflows <- function(model_id=NULL, site_id=NULL, res){
     return(list(workflows = qry_res))
   }
 }
+
+#################################################################################################
+
+#' Get the of the workflow specified by the id
+#' @param id Workflow id (character)
+#' @return Details of requested workflow
+#' @author Tezan Sahu
+#* @get /<id>
+getWorkflowDetails <- function(id, res){
+  settings <-list(database = list(bety = list(
+    driver = "PostgreSQL", 
+    user = "bety", 
+    dbname = "bety", 
+    password = "bety", 
+    host="postgres"
+  )))
+  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  qry_statement <- paste0(
+    "SELECT w.id, w.model_id, w.site_id, a.value AS properties ",
+    "FROM workflows w ",
+    "FULL OUTER JOIN attributes a ",
+    "ON (w.id = a.container_id) ",
+    "WHERE w.id='", id, "'"
+  )
+  
+  qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return(list(error="Workflow with specified ID was not found"))
+  }
+  else {
+    if(is.na(qry_res$properties)){
+      res <- list(id = id, modelid = qry_res$model_id, siteid = qry_res$site_id)
+    }
+    else{
+      res <- jsonlite::parse_json(qry_res$properties[[1]])
+      res$id <- id
+    }
+    
+    return(res)
+  }
+}

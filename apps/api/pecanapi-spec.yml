@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/626b0168
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/84e574de
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -142,14 +142,17 @@ paths:
             type: string
       responses:
         '200':
-          description: List of workflow ids
+          description: List of workflows
           content:
             application/json:
               schema:
-                type: array
-                items: 
-                  type: object
-                  $ref: '#/components/schemas/Workflow'
+                type: object
+                properties:
+                  workflows:
+                    type: array
+                    items: 
+                      type: object
+                      $ref: '#/components/schemas/Workflow'
                 
         '401':
           description: Authentication required
