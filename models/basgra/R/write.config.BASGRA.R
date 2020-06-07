@@ -419,6 +419,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
     run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
     
+    run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
+    
+    # this is probably not changing
+    run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"]/
+      (last_vals[names(last_vals) == "FRTILG1"]  + last_vals[names(last_vals) == "FRTILG2"])
+    
+    run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
   }
  
 
