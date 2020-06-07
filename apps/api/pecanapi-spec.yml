@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/baaeb5ea
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/626b0168
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -97,14 +97,12 @@ paths:
           required: false
           schema:
             type: string
-            default: all
         - in: query
           name: revision
           description: Model version/revision
           required: false
           schema:
             type: string
-            default: all
       responses:
         '200':
           description: Available Models 
@@ -123,7 +121,7 @@ paths:
           description: Model(s) not found
                   
   
-  /api/workflows:
+  /api/workflows/:
     get:
       tags:
         - workflows
@@ -136,6 +134,12 @@ paths:
           required: false
           schema:
             type: string
+        - in: query
+          name: site_id
+          description: If provided, returns all workflows that use the provided site_id
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: List of workflow ids
@@ -143,7 +147,10 @@ paths:
             application/json:
               schema:
                 type: array
-                items: string
+                items: 
+                  type: object
+                  $ref: '#/components/schemas/Workflow'
+                
         '401':
           description: Authentication required
         '403':
