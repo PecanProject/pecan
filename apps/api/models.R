@@ -31,6 +31,7 @@ getModels <- function(model_name="all", revision="all", res){
   qry_statement <- paste0(qry_statement, " ORDER BY m.id DESC")
   
   qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
+  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

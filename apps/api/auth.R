@@ -38,6 +38,8 @@ validate_crypt_pass <- function(username, crypt_pass) {
   qry_statement <- paste0("SELECT crypted_password FROM users WHERE login='", username, "'")
   res <- PEcAn.DB::db.query(qry_statement, dbcon)
   
+  PEcAn.DB::db.close(dbcon)
+  
   if (nrow(res) == 1 && res[1, 1] == crypt_pass) {
     return(TRUE)
   }
