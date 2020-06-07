@@ -3,7 +3,7 @@ Subroutine set_params(pa)
 use parameters_site
 use parameters_plant
 implicit none
-real :: pa(120) ! The length of pa() should be at least as high as the number of parameters
+real :: pa(130) ! The length of pa() should be at least as high as the number of parameters
 
 ! Initial constants
 LOG10CLVI  = pa(1)
@@ -133,6 +133,19 @@ F_WALL_LV_FMIN     = pa(110)
 F_WALL_LV_MAX      = pa(111)
 F_WALL_ST_FMIN     = pa(112)
 F_WALL_ST_MAX      = pa(113)
+
+CLVDI       = pa(114)
+YIELDI      = pa(115)
+CSTUBI      = pa(116)
+
+DRYSTORI   = pa(117)
+FdepthI    = pa(118)
+SDEPTHI    = pa(119)
+TANAERI    = pa(120)
+WAPLI      = pa(121)
+WAPSI      = pa(122)
+WASI       = pa(123)
+WETSTORI   = pa(124)
 
 ! Parameter transformations 
 CLVI  = 10**LOG10CLVI

@@ -34,14 +34,14 @@ real :: TCLITT, TCSOMF, TCSOMS, TMAXF, TSIGMAF, RFN2O
 real :: WFPS50N2O
 
 ! Soil initial constants
-  real, parameter       :: DRYSTORI = 0.
-  real, parameter       :: FdepthI  = 0.
-  real, parameter       :: SDEPTHI  = 0.
-  real, parameter       :: TANAERI  = 0.
-  real, parameter       :: WAPLI    = 0.
-  real, parameter       :: WAPSI    = 0.
-  real, parameter       :: WASI     = 0.
-  real, parameter       :: WETSTORI = 0.
+  real  :: DRYSTORI 
+  real  :: FdepthI  
+  real  :: SDEPTHI  
+  real  :: TANAERI  
+  real  :: WAPLI    
+  real  :: WAPSI    
+  real  :: WASI     
+  real  :: WETSTORI 
   
 ! Management: harvest dates and irrigation
   integer, dimension(3) :: doyHA

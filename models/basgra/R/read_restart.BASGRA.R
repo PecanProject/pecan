@@ -13,12 +13,7 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
 
-  year <- lubridate::year(stop.time)
-
-  start_date  <- as.POSIXlt(settings$run$start.date, tz = "UTC")
-  end_date    <- as.POSIXlt(settings$run$end.date, tz = "UTC")
-  start_year  <- lubridate::year(start_date)
-  end_year    <- lubridate::year(end_date)
+  # maybe have some checks here to make sure the first run is actually ran for the period you requested
     
   # Read ensemble output
   ens <- read.output(runid = runid, 
@@ -27,17 +22,7 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   
-  if(year == start_year & year != end_year){
-    simdays <- seq(lubridate::yday(start_date), lubridate::yday(stop.time))
-  }
-  # To BE CONTINUED...
-  #else if(year != start_year & year == end_year){
-  #  simdays <- seq(1, lubridate::yday(end_date))
-  #}else{
-  #  simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
-  #}
-  
-  last <- length(simdays)
+  last <- length(ens[[1]])
   
   params$restart <- c()
   

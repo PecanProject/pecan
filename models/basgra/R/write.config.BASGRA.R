@@ -251,6 +251,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
   } #### End parameter update
 
+
   
   #### Update initial conditions
   if (!is.null(IC)) {
@@ -258,7 +259,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     ic.names <- names(IC)
     
     if ("LAI"  %in% ic.names) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log(IC$LAI)
+      run_params[which(names(run_params) == "LOG10LAII")] <- log10(IC$LAI)
     }
     
     if ("TotSoilCarb"  %in% ic.names) {
@@ -277,7 +278,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       ## laiInit m2/m2
       lai <- try(ncdf4::ncvar_get(IC.nc, "LAI"), silent = TRUE)
       if (!is.na(lai) && is.numeric(lai)) {
-        run_params[which(names(run_params) == "LOG10LAII")] <- log(lai)
+        run_params[which(names(run_params) == "LOG10LAII")] <- log10(lai)
       }
       
       # This is IC
@@ -339,6 +340,87 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       
     #}
   }
+  
+  ##################################################################
+  ######################### PREVIOUS STATE #########################
+  ##################################################################
+  
+  # developing hack: overwrite initial values with previous time steps
+  last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
+  
+  if(file.exists(last_states_file)){
+    
+    load(last_states_file)
+    
+    # LOG10CLVI  = pa(1)
+    run_params[names(run_params) == "LOG10CLVI"] <- log10(last_vals[names(last_vals) == "CLV"])
+    
+    # LOG10CRESI = pa(2)
+    run_params[names(run_params) == "LOG10CRESI"] <- log10(last_vals[names(last_vals) == "CRES"])
+    
+    # LOG10CRTI  = pa(3)
+    run_params[names(run_params) == "LOG10CRTI"] <- log10(last_vals[names(last_vals) == "CRT"])
+    
+    # CSTI	   = pa(4)
+    run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
+    
+    # LOG10LAII handled above
+    
+    # PHENI	   = pa(6) 
+    run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
+    
+    # TILTOTI	   = pa(7) 
+    run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
+    
+    # FRTILGI	   = pa(8)
+    run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
+    
+    # LT50I      = pa(9)
+    run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
+    
+    # CLITT0    = pa( 82) ! (g C m-2)    Initial C in litter
+    run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
+    
+    # CSOM0     = pa( 83) ! (g C m-2)    Initial C in OM - handled above
+    
+    # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
+    run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
+    
+    # FCSOMF0   = pa( 87) ! (-)          Initial C in fast-decomposing OM as a fraction of total OM
+    # preserve the ratio
+    run_params[which(names(run_params) == "FCSOMF0")] <- last_vals[names(last_vals) == "CSOMF"] / 
+      (last_vals[names(last_vals) == "CSOMF"] + last_vals[names(last_vals) == "CSOMS"])
+    
+    # CNSOMF0   = pa( 85) ! (g C g-1 N)  Initial C/N ratio of fast-decomposing OM
+    csomf <- run_params[which(names(run_params) == "FCSOMF0")] * run_params[which(names(run_params) == "CSOM0")]
+    run_params[names(run_params) == "CNSOMF0"] <- csomf / last_vals[names(last_vals) == "NSOMF"]
+    
+    # CNSOMS0   = pa( 86) ! (g C g-1 N)  Initial C/N ratio of slowly decomposing OM
+    csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
+    run_params[names(run_params) == "CNSOMS0"] <- csoms / last_vals[names(last_vals) == "NSOMS"]
+    
+    PHENRF <- (1 - run_params[names(run_params) == "PHENI"])/(1 - run_params[names(run_params) == "PHENCR"])
+    if (PHENRF > 1.0) PHENRF = 1.0
+    if (PHENRF < 0.0) PHENRF = 0.0
+    run_params[names(run_params) == "NELLVM"] <- last_vals[names(last_vals) == "NELLVG"] /  PHENRF 
+    
+    run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
+    run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"]
+    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
+    
+    run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
+    
+    run_params[names(run_params) == "DRYSTORI"] <- last_vals[names(last_vals) == "DRYSTOR"]
+    run_params[names(run_params) == "FdepthI"]  <- last_vals[names(last_vals) == "Fdepth"]
+    run_params[names(run_params) == "SDEPTHI"]  <- last_vals[names(last_vals) == "Sdepth"]
+    run_params[names(run_params) == "TANAERI"]  <- last_vals[names(last_vals) == "TANAER"]
+    run_params[names(run_params) == "WAPLI"]    <- last_vals[names(last_vals) == "WAPL"]
+    run_params[names(run_params) == "WAPSI"]    <- last_vals[names(last_vals) == "WAPS"]
+    run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
+    run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
+    
+  }
+ 
 
   #-----------------------------------------------------------------------
   # write job.sh

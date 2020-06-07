@@ -8,10 +8,10 @@ implicit none
   real :: PHENI, TILTOTI, FRTILGI, FRTILGG1I
 
 ! Initial constants, continued
-  real, parameter :: CLVDI  = 0.
-  real, parameter :: YIELDI = 0.
-  real, parameter :: CSTUBI = 0.
-  real            :: LT50I
+  real :: CLVDI  
+  real :: YIELDI 
+  real :: CSTUBI 
+  real :: LT50I
 
 ! Process parameters
   real :: CLAIV   , COCRESMX, CSTAVM, DAYLB   , DAYLG1G2, DAYLP  , DLMXGE, FSLAMIN

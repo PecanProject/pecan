@@ -46,7 +46,6 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
                                            trait.values = new.params,
                                            settings = settings,
                                            run.id = runid,
-                                           inputs = inputs,
                                            IC = analysis.save.mat))
   
     

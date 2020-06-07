@@ -264,6 +264,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
                      NOUT,
                      matrix(0, NDAYS, NOUT))[[8]]
   
+  # for now a hack to write other states out
+  last_vals <- output[nrow(output),]
+  names(last_vals) <- outputNames
+  save(last_vals, file = file.path(outdir, "last_vals_basgra.Rdata"))
   
   ############################# WRITE OUTPUTS ###########################
   # writing model outputs already in standard format
@@ -291,7 +295,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
     outlist[[5]]  <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
     
-    outlist[[6]]  <- udunits2::ud.convert(clitt + csomf + csoms, "g m-2", "kg m-2") 
+    outlist[[6]]  <- udunits2::ud.convert(csomf + csoms, "g m-2", "kg m-2") 
     
     # Soil Respiration in kgC/m2/s
     rsoil         <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
