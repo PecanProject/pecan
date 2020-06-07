@@ -4,7 +4,11 @@
 #' @return List of workflows (using a particular model & site, if specified)
 #' @author Tezan Sahu
 #* @get /
-getWorkflows <- function(model_id=NULL, site_id=NULL, res){
+getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, res){
+  if (! limit %in% c(10, 20, 50, 100, 500)) {
+    res$status <- 400
+    return(list(error = "Invalid value for parameter"))
+  }
   settings <-list(database = list(bety = list(
     driver = "PostgreSQL", 
     user = "bety", 
@@ -33,7 +37,7 @@ getWorkflows <- function(model_id=NULL, site_id=NULL, res){
     qry_statement <- paste0(qry_statement, " WHERE w.model_id = '", model_id, "' and w.site_id = '", site_id, "'")
   }
   
-  qry_statement <- paste0(qry_statement, " ORDER BY id")
+  qry_statement <- paste0(qry_statement, " ORDER BY id LIMIT ", limit, " OFFSET ", offset, ";")
   
   qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
   
@@ -46,7 +50,28 @@ getWorkflows <- function(model_id=NULL, site_id=NULL, res){
   else {
     qry_res$properties[is.na(qry_res$properties)] = "{}"
     qry_res$properties <- purrr::map(qry_res$properties, jsonlite::parse_json)
-    return(list(workflows = qry_res))
+    result <- list(workflows = qry_res)
+    result$count <- nrow(qry_res)
+    if(nrow(qry_res) == limit){
+      result$next_page <- paste0(
+        req$PATH_INFO,
+        substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+        (as.numeric(limit) + as.numeric(offset)),
+        "&limit=", 
+        limit
+      )
+    }
+    if(as.numeric(offset) != 0) {
+      result$prev_page <- paste0(
+        req$PATH_INFO, 
+        substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+        max(0, (as.numeric(offset) - as.numeric(limit))),
+        "&limit=", 
+        limit
+      )
+    }
+    
+    return(result)
   }
 }
 

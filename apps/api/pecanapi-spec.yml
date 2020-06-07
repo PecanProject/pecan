@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/84e574de
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/36ce16fa
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -140,6 +140,27 @@ paths:
           required: false
           schema:
             type: string
+        - in: query
+          name: offset
+          description: The number of workflows to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of workflows to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
       responses:
         '200':
           description: List of workflows
@@ -153,6 +174,12 @@ paths:
                     items: 
                       type: object
                       $ref: '#/components/schemas/Workflow'
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
                 
         '401':
           description: Authentication required
