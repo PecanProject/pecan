@@ -50,6 +50,9 @@ jobs:
         git add --all *
         git commit -m "Update the book `date`" || true
         git push -q origin master
+    - uses: r-lib/actions/pr-push@master
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
 
         
