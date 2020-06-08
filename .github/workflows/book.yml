@@ -53,6 +53,7 @@ jobs:
         git commit -m "Update the book `date`" || true
         git remote add origin https://github.com/${{secrets.GH_USER}}/pecan-documentation.git
         git push --set-upstream origin master
+        git config --global user.name "MukulMaheshwari"
       
       
    
