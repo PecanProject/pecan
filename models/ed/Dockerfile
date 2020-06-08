@@ -7,8 +7,8 @@ ARG IMAGE_VERSION="latest"
 FROM debian:stretch as model-binary
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=git
-ARG BINARY_VERSION=2.1
+ARG MODEL_VERSION="2.2.0"
+ARG BINARY_VERSION="2.2"
 
 # specify fortran compiler
 ENV FC_TYPE=GNU
@@ -59,7 +59,7 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=git
+ARG MODEL_VERSION="2.2.0"
 
 # Setup model_info file
 COPY model_info.json /work/model.json

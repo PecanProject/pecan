@@ -261,7 +261,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                             settings$run$site$id, "', '", 
                             settings$run$start.date, "', '",
                             settings$run$end.date, "', '", 
-                            settings$run$outdir, "', '", 
+                            settings$run$outdir, "', ", 
                             ensemble.id, ", '", 
                             paramlist, "') RETURNING id"), con = con)
             run.id <- insert_result[["id"]]
@@ -270,8 +270,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
             for (pft in defaults) {
               PEcAn.DB::db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (",
                               pft$posteriorid, ", ", 
-                              ensemble.id, ", '", 
-                              "');"), con = con)
+                              ensemble.id, ");"), con = con)
             }
             
             # associate inputs with runs
