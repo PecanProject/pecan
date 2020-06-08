@@ -49,10 +49,10 @@ jobs:
         git init 
         git add --all *
         git commit -m "Update the book `date`" || true
+        git remote add origin https://github.com/${{secrets.GH_USER}}/pecan-documentation.git
+        git push origin
       
-    - uses: r-lib/actions/pr-push@master
-      with:
-        repo-token: ${{ secrets.REPO_TOKEN }}
+   
 
 
         
