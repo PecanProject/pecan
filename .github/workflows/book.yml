@@ -15,6 +15,8 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: pecan/base:latest
+    env:
+      GITHUB_PAT: ${{ secrets.REPO_TOKEN }}
 
     
     steps:
@@ -50,7 +52,8 @@ jobs:
         git add --all *
         git commit -m "Update the book `date`" || true
         git remote add origin https://github.com/${{secrets.GH_USER}}/pecan-documentation.git
-        git push origin
+        git push --set-upstream origin master
+      
       
    
 
