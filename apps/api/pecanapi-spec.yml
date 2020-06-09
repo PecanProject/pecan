@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/1623282b
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/503b5316
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -237,19 +237,40 @@ paths:
   
 
 
-  /api/workflows/{id}/runs:
+  /api/runs/:
     get:
       tags:
-        - workflows
         - runs
+        -
       summary: Get the list of all runs for a specified PEcAn Workflow
       parameters:
-        - in: path
-          name: id
+        - in: query
+          name: workflow_id
           description: ID of the PEcAn Workflow
           required: true
           schema:
             type: string
+        - in: query
+          name: offset
+          description: The number of workflows to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of workflows to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
       responses:
         '200':
           description: List of all runs for the requested PEcAn Workflow
@@ -270,7 +291,7 @@ paths:
           description: Workflow with specified ID was not found 
 
 
-  /api/run/{id}:
+  /api/runs/{id}:
     get:
       tags:
         - runs
