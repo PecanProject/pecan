@@ -1,6 +1,8 @@
 #' Get the list of workflows (using a particular model & site, if specified)
 #' @param model_id Model id (character)
 #' @param site_id Site id (character)
+#' @param offset
+#' @param limit 
 #' @return List of workflows (using a particular model & site, if specified)
 #' @author Tezan Sahu
 #* @get /
@@ -54,6 +56,9 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     result$count <- nrow(qry_res)
     if(nrow(qry_res) == limit){
       result$next_page <- paste0(
+        req$rook.url_scheme, "://",
+        req$HTTP_HOST,
+        "/api/workflows",
         req$PATH_INFO,
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         (as.numeric(limit) + as.numeric(offset)),
@@ -63,6 +68,9 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     }
     if(as.numeric(offset) != 0) {
       result$prev_page <- paste0(
+        req$rook.url_scheme, "://",
+        req$HTTP_HOST,
+        "/api/workflows",
         req$PATH_INFO, 
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         max(0, (as.numeric(offset) - as.numeric(limit))),
