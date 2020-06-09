@@ -262,8 +262,17 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "LOG10LAII")] <- log10(IC$LAI)
     }
     
-    if ("TotSoilCarb"  %in% ic.names) {
-      run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g")
+    #if ("TotSoilCarb"  %in% ic.names) {
+    #  run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g")
+    #}
+    
+    
+    if ("fast_soil_pool_carbon_content"  %in% ic.names &
+         "slow_soil_pool_carbon_content"  %in% ic.names) {
+       run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content + 
+      IC$slow_soil_pool_carbon_content, "kg", "g")
+     run_params[which(names(run_params) == "FCSOMF0")] <- IC$fast_soil_pool_carbon_content / 
+       (IC$fast_soil_pool_carbon_content + IC$slow_soil_pool_carbon_content)
     }
     
     
@@ -293,7 +302,21 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       csom0 <- try(ncdf4::ncvar_get(IC.nc, "TotSoilCarb"), silent = TRUE)
       if (!is.na(csom0) && is.numeric(csom0)) {
          run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(csom0, "kg", "g")
-       }
+      }
+      
+      # Initial mineral N
+      nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_nitrogen_content"), silent = TRUE)
+      if (!is.na(nmin0) && is.numeric(nmin0)) {
+        run_params[which(names(run_params) == "NMIN0")] <- udunits2::ud.convert(nmin0, "kg", "g")
+      }
+      
+      
+      # WCI
+      wci <- try(ncdf4::ncvar_get(IC.nc, "SoilMoistFrac"), silent = TRUE)
+      if (!is.na(wci) && is.numeric(wci)) {
+        run_params[which(names(run_params) == "WCI")] <- wci
+      }
+      
       
       # # Initial fraction of SOC that is fast (g C g-1 C)
       # if ("r_fSOC" %in% pft.names) {
@@ -321,11 +344,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       #   run_params[which(names(run_params) == "NMIN0")] <- pft.traits[which(pft.names == "NMIN")]
       # }
       # 
-      # # This is IC, change later
-      # # Initial value of soil water concentration (m3 m-3)
-      # if ("initial_volume_fraction_of_condensed_water_in_soil" %in% pft.names) {
-      #   run_params[which(names(run_params) == "WCI")] <- pft.traits[which(pft.names == "initial_volume_fraction_of_condensed_water_in_soil")]
-      # }
+
       # 
       # 
       # # Water concentration at saturation (m3 m-3)
@@ -386,10 +405,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
     run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
     
-    # FCSOMF0   = pa( 87) ! (-)          Initial C in fast-decomposing OM as a fraction of total OM
-    # preserve the ratio
-    run_params[which(names(run_params) == "FCSOMF0")] <- last_vals[names(last_vals) == "CSOMF"] / 
-      (last_vals[names(last_vals) == "CSOMF"] + last_vals[names(last_vals) == "CSOMS"])
+    # FCSOMF0   handled above
     
     # CNSOMF0   = pa( 85) ! (g C g-1 N)  Initial C/N ratio of fast-decomposing OM
     csomf <- run_params[which(names(run_params) == "FCSOMF0")] * run_params[which(names(run_params) == "CSOM0")]
@@ -402,7 +418,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     PHENRF <- (1 - run_params[names(run_params) == "PHENI"])/(1 - run_params[names(run_params) == "PHENCR"])
     if (PHENRF > 1.0) PHENRF = 1.0
     if (PHENRF < 0.0) PHENRF = 0.0
-    run_params[names(run_params) == "NELLVM"] <- last_vals[names(last_vals) == "NELLVG"] /  PHENRF 
+    run_params[names(run_params) == "NELLVM"] <- last_vals[names(last_vals) == "NELLVG"] /  PHENRF
+    if(is.nan(run_params[names(run_params) == "NELLVM"])) run_params[names(run_params) == "NELLVM"]  <- 0
+    if(run_params[names(run_params) == "NELLVM"] == Inf)  run_params[names(run_params) == "NELLVM"]  <- 0
+    
+    #run_params[names(run_params) == "PHENCR"] <- last_vals[names(last_vals) == "PHENCR"]
     
     run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
     run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"]
@@ -422,10 +442,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
     
     # this is probably not changing
-    run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"]/
-      (last_vals[names(last_vals) == "FRTILG1"]  + last_vals[names(last_vals) == "FRTILG2"])
+    run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
     
     run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
+    
+   # run_params[names(run_params) == "NCR"] <- last_vals[names(last_vals) == "NRT"] / last_vals[names(last_vals) == "CRT"]
+    
+    # Don't think this changes
+    # O2         = FGAS * ROOTDM * FO2MX * 1000./22.4
+    #run_params[names(run_params) == "FGAS"] <- last_vals[names(last_vals) == "O2"] /
+    #  (last_vals[names(last_vals) == "ROOTD"] * run_params[names(run_params) == "FO2MX"] * (1000./22.4) )
   }
  
 

@@ -169,7 +169,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     "YIELD"     , "CRES"     , "CRT"      , "CST"       , "CSTUB"    , "DRYSTOR"  ,
     "Fdepth"    , "LAI"      , "LT50"     , "O2"        , "PHEN"     , "ROOTD"    ,
     "Sdepth"    , "TANAER"   , "TILG"     , "TILV"      , "WAL"      , "WAPL"     ,
-    "WAPS"      , "WAS"      , "WETSTOR"  , "DM"        , "RES"      , "LERG"     , 
+    "WAPS"      , "WAS"      , "WETSTOR"  , "DM"        , "RES"      , "PHENCR"     , 
     "NELLVG"    , "RLEAF"    , "SLA"      , "TILTOT"    , "FRTILG"   , "FRTILG1"  ,
     "FRTILG2"   , "RDRT"     , "VERN"     ,
     "CLITT"      , "CSOMF", "CSOMS"   , "NLITT"       , "NSOMF",
@@ -265,6 +265,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
                      matrix(0, NDAYS, NOUT))[[8]]
   
   # for now a hack to write other states out
+  save(output, file = file.path(outdir, "output_basgra.Rdata"))
   last_vals <- output[nrow(output),]
   names(last_vals) <- outputNames
   save(last_vals, file = file.path(outdir, "last_vals_basgra.Rdata"))

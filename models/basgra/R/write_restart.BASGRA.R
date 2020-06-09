@@ -26,10 +26,16 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
-  if ("TotSoilCarb" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$TotSoilCarb
-    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("TotSoilCarb")
+  if ("fast_soil_pool_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$fast_soil_pool_carbon_content
+    if (new.state$fast_soil_pool_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("fast_soil_pool_carbon_content")
+  }
+  
+  if ("slow_soil_pool_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$slow_soil_pool_carbon_content
+    if (new.state$slow_soil_pool_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("slow_soil_pool_carbon_content")
   }
   
   if (!is.null(analysis.save) && length(analysis.save) > 0){

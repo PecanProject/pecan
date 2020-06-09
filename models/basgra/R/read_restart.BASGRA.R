@@ -31,9 +31,14 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("LAI")
   }
   
-  if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last] # kg C m-2
-    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
+  if ("fast_soil_pool_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$fast_soil_pool_carbon_content[last] # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("fast_soil_pool_carbon_content")
+  }
+  
+  if ("slow_soil_pool_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$slow_soil_pool_carbon_content[last] # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("slow_soil_pool_carbon_content")
   }
   
   PEcAn.logger::logger.info(runid)

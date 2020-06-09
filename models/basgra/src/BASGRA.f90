@@ -24,7 +24,7 @@ use plant
 implicit none
 
 integer, dimension(100,2) :: DAYS_HARVEST
-real                      :: PARAMS(120)
+real                      :: PARAMS(130)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
 #else
@@ -205,7 +205,7 @@ do day = 1, NDAYS
                        F_WALL_DM,F_WALL_DMSH,F_WALL_LV,F_WALL_ST, &
                        F_DIGEST_DM,F_DIGEST_DMSH,F_DIGEST_LV,F_DIGEST_ST,F_DIGEST_WALL)
 
-  !================
+    !================
   ! Outputs
   !================
   y(day, 1) = year + (doy-0.5)/366 ! "Time" = Decimal year (approximation)
@@ -239,7 +239,7 @@ do day = 1, NDAYS
   
   y(day,28) = DM                     ! "DM"      = Aboveground dry matter in g m-2
   y(day,29) = DMRES / DM             ! "RES"     = Reserves in g g-1 aboveground dry matter
-  y(day,30) = LERG                   !
+  y(day,30) = PHENCR                   !
   y(day,31) = NELLVG                 !
   y(day,32) = RLEAF                  !
   y(day,33) = LAI / DMLV             ! "SLA"     = m2 leaf area g-1 dry matter leaves
@@ -370,6 +370,8 @@ do day = 1, NDAYS
   WAPS    = WAPS - THAWPS + FREEZEPL
   WAS     = WAS  - THAWS  + FREEZEL
   WETSTOR = WETSTOR + Wremain - WETSTOR
+  
+
 
 enddo
 
