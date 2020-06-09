@@ -111,8 +111,8 @@ install2.r -e -s -l "${RLIB}" -n -1\
     tictoc \
     tidyr \
     tidyverse \
-    tmvtnorm \
     tools \
+    TruncatedNormal \
     truncnorm \
     udunits2 \
     utils \

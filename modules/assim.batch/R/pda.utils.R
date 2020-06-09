@@ -901,11 +901,11 @@ generate_hierpost <- function(mcmc.out, prior.fn.all, prior.ind.all){
     # calculate hierarchical posteriors from mu_global_samp and tau_global_samp
     hierarchical_samp <- mu_global_samp 
     for(si in seq_len(iter_size)){
-      hierarchical_samp[si,] <- tmvtnorm::rtmvnorm(1, 
-                                     mean  = mu_global_samp[si,], 
+      hierarchical_samp[si,] <- TruncatedNormal::rtmvnorm(1, 
+                                     mu    = mu_global_samp[si,], 
                                      sigma = sigma_global_samp[si,,],
-                                     lower = lower_lim,
-                                     upper = upper_lim)
+                                     lb    = lower_lim,
+                                     ub    = upper_lim)
     }
 
     mcmc.out[[i]]$hierarchical_samp  <- hierarchical_samp
