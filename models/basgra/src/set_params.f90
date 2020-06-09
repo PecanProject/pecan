@@ -147,6 +147,13 @@ WAPSI      = pa(122)
 WASI       = pa(123)
 WETSTORI   = pa(124)
 
+NRTI       = pa(125)
+NSHI       = pa(126)
+
+TILG1I     = pa(127)
+TILG2I     = pa(128)
+TILVI      = pa(129)
+
 ! Parameter transformations 
 CLVI  = 10**LOG10CLVI
 CRESI = 10**LOG10CRESI

@@ -360,6 +360,31 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     #}
   }
   
+  # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR
+  # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE
+  
+  # NRT        = NCR * CRTI
+  run_params[which(names(run_params) == "NRTI")] <- (10^run_params[names(run_params) == "LOG10CRTI"])*
+    run_params[names(run_params) == "NCR"]
+  
+  # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
+  # NSH      = NCSHI * (CLVI+CSTI)
+  lai_tmp <- (10^run_params[names(run_params) == "LOG10LAII"])
+  ncshi <- run_params[names(run_params) == "NCSHMAX"] * 
+    (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
+  run_params[which(names(run_params) == "NSHI")] <- ncshi * 
+    ((10^run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
+
+  
+  # TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
+  # TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
+  # TILV       = TILTOTI * (1. - FRTILGI)
+  tiltot_tmp <- run_params[names(run_params) == "TILTOTI"]
+  frtilg_tmp <- run_params[names(run_params) == "FRTILGI"]
+  run_params[names(run_params) == "TILG1I"] <- tiltot_tmp * frtilg_tmp * run_params[names(run_params) == "FRTILGG1I"]
+  run_params[names(run_params) == "TILG2I"] <- tiltot_tmp * frtilg_tmp * (1 - run_params[names(run_params) == "FRTILGG1I"])
+  run_params[names(run_params) == "TILVI"]  <- tiltot_tmp * (1 - frtilg_tmp)
+  
   ##################################################################
   ######################### PREVIOUS STATE #########################
   ##################################################################
@@ -444,9 +469,15 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # this is probably not changing
     run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
     
+    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "FRTILG1"]  * run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "FRTILG2"]  * run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
+    
+    
     run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
     
-   # run_params[names(run_params) == "NCR"] <- last_vals[names(last_vals) == "NRT"] / last_vals[names(last_vals) == "CRT"]
+    run_params[names(run_params) == "NRTI"]        <- last_vals[names(last_vals) == "NRT"] 
+    run_params[which(names(run_params) == "NSHI")] <- last_vals[names(last_vals) == "NSH"] 
     
     # Don't think this changes
     # O2         = FGAS * ROOTDM * FO2MX * 1000./22.4

@@ -5,7 +5,8 @@ implicit none
 ! Initial constants
   real :: LOG10CLVI, LOG10CRESI, LOG10CRTI, CSTI, LOG10LAII
   real ::      CLVI,      CRESI,      CRTI,            LAII
-  real :: PHENI, TILTOTI, FRTILGI, FRTILGG1I
+  real :: PHENI, TILTOTI, FRTILGI, FRTILGG1I, TILG1I, TILG2I, TILVI
+  real :: NSHI , NRTI
 
 ! Initial constants, continued
   real :: CLVDI  
