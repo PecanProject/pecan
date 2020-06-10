@@ -3,7 +3,7 @@ Subroutine set_params(pa)
 use parameters_site
 use parameters_plant
 implicit none
-real :: pa(130) ! The length of pa() should be at least as high as the number of parameters
+real :: pa(140) ! The length of pa() should be at least as high as the number of parameters
 
 ! Initial constants
 LOG10CLVI  = pa(1)
@@ -153,6 +153,15 @@ NSHI       = pa(126)
 TILG1I     = pa(127)
 TILG2I     = pa(128)
 TILVI      = pa(129)
+
+WALI       = pa(130)
+O2I        = pa(131)
+
+CSOMF0     = pa(132)
+CSOMS0     = pa(133)
+NLITT0     = pa(134)
+NSOMF0     = pa(135)
+NSOMS0     = pa(136)
 
 ! Parameter transformations 
 CLVI  = 10**LOG10CLVI

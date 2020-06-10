@@ -24,7 +24,7 @@ use plant
 implicit none
 
 integer, dimension(100,2) :: DAYS_HARVEST
-real                      :: PARAMS(130)
+real                      :: PARAMS(140)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
 #else
@@ -121,18 +121,18 @@ DM_MAX     = 0
 
 ! Initial constants for soil state variables
 CLITT      = CLITT0
-CSOMF      = CSOM0 * FCSOMF0
-CSOMS      = CSOM0 * (1-FCSOMF0)
+CSOMF      = CSOMF0
+CSOMS      = CSOMS0 
 DRYSTOR    = DRYSTORI
 Fdepth     = FdepthI
-NLITT      = CLITT0 / CNLITT0
-NSOMF      = (CSOM0 *    FCSOMF0)  / CNSOMF0
-NSOMS      = (CSOM0 * (1-FCSOMF0)) / CNSOMS0
+NLITT      = NLITT0
+NSOMF      = NSOMF0
+NSOMS      = NSOMS0
 NMIN       = NMIN0
-O2         = FGAS * ROOTDM * FO2MX * 1000./22.4
+O2         = O2I
 Sdepth     = SDEPTHI
 TANAER     = TANAERI
-WAL        = 1000. * ROOTDM * WCI
+WAL        = WALI
 WAPL       = WAPLI
 WAPS       = WAPSI
 WAS        = WASI
