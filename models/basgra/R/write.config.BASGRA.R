@@ -482,8 +482,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # this is probably not changing
     #run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
     
-    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"] # * run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"] # * run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "FRTILG1"]  * run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "FRTILG2"]  * run_params[names(run_params) == "TILTOTI"]
     run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
     
     
