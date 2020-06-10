@@ -125,7 +125,7 @@ input.id = tbl(bety,"inputs") %>% filter(name == input_name) %>% pull(id)
    data.path = PEcAn.DB::query.file.path(
      input.id = input.id, 
      host_name = PEcAn.remote::fqdn(), 
-     con = bety$con)
+     con = bety)
 ```
 
 6. Load the data
