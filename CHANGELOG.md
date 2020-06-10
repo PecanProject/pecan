@@ -21,9 +21,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - When building sipnet model would not set correct model version
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 - Update ED docker build, will now build version 2.2.0 and git
+- Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 
 ### Changed
 
+- Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
 - `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
