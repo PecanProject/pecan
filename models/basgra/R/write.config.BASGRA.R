@@ -259,16 +259,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     ic.names <- names(IC)
     
     if ("LAI"  %in% ic.names) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log10(IC$LAI)
+      run_params[names(run_params) == "LOG10LAII"] <- log10(IC$LAI)
     }
     
     
     if ("fast_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[which(names(run_params) == "CSOMF0")] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
     }
     
     if ("slow_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[which(names(run_params) == "CSOMS0")] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
     }
     
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
@@ -430,7 +430,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
     
     # FRTILGI	   = pa(8)
-    run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
+    #run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
     
     # LT50I      = pa(9)
     run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
@@ -441,17 +441,17 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # CSOM0     = pa( 83) ! (g C m-2)    Initial C in OM - handled above
     
     # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
-    run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
+    # run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
     
     # FCSOMF0   handled above
     
     # CNSOMF0   = pa( 85) ! (g C g-1 N)  Initial C/N ratio of fast-decomposing OM
-    csomf <- run_params[which(names(run_params) == "FCSOMF0")] * run_params[which(names(run_params) == "CSOM0")]
-    run_params[names(run_params) == "CNSOMF0"] <- csomf / last_vals[names(last_vals) == "NSOMF"]
+    # csomf <- run_params[which(names(run_params) == "FCSOMF0")] * run_params[which(names(run_params) == "CSOM0")]
+    # run_params[names(run_params) == "CNSOMF0"] <- csomf / last_vals[names(last_vals) == "NSOMF"]
     
     # CNSOMS0   = pa( 86) ! (g C g-1 N)  Initial C/N ratio of slowly decomposing OM
-    csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
-    run_params[names(run_params) == "CNSOMS0"] <- csoms / last_vals[names(last_vals) == "NSOMS"]
+    # csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
+    # run_params[names(run_params) == "CNSOMS0"] <- csoms / last_vals[names(last_vals) == "NSOMS"]
     
     # PHENRF <- (1 - run_params[names(run_params) == "PHENI"])/(1 - run_params[names(run_params) == "PHENCR"])
     # if (PHENRF > 1.0) PHENRF = 1.0
@@ -482,8 +482,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # this is probably not changing
     #run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
     
-    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "FRTILG1"]  * run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "FRTILG2"]  * run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"]  #* run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"]  #* run_params[names(run_params) == "TILTOTI"]
     run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
     
     
@@ -498,6 +498,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "NLITT0"]      <- last_vals[names(last_vals) == "NLITT"] 
     run_params[names(run_params) == "NSOMF0"]      <- last_vals[names(last_vals) == "NSOMF"] 
     run_params[names(run_params) == "NSOMS0"]      <- last_vals[names(last_vals) == "NSOMS"] 
+    
+    #ratio to be preserved
+    # NRT        = NCR * CRTI
+    run_params[which(names(run_params) == "NCR")] <- last_vals[names(last_vals) == "NCRT"] 
   }
   
   
