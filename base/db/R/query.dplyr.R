@@ -23,7 +23,7 @@ betyConnect <- function(php.config = "../../web/config.php") {
                                    user = getphp("db_bety_username", "bety"),
                                    password = getphp("db_bety_password", "bety"))
 
-  ## force driver to be postgres, needed when switching to db,open
+  ## force driver to be postgres (only value supported by db.open)
   dbparams[["driver"]] <- "Postgres"
 
   ## Database connection
