@@ -447,56 +447,6 @@ def ee_get_s2_data(AOIs, req_params, qi_threshold=0, qi_filter=s2_filter1):
         name = a.name
         a.data = s2_data[name]
 
-# Old, unused function, remove at some point.
-# def s2_data_dict_to_observation_dict(s2_data_dict):
-#     observation_dict = {}
-
-#     observation_dict = {'Date': []}
-#     observation_dict.update({
-#         prop: []
-#         for prop in s2_data_dict['features'][0]['properties'].keys()})
-
-#     for featnum in range(len(s2_data_dict['features'])):
-#         productid = (s2_data_dict['features']
-#                      [featnum]
-#                      ['properties']
-#                      ['productid'])
-#         date = datetime.datetime.strptime(productid.split('_')[2],
-#                                           '%Y%m%dT%H%M%S')
-#         observation_dict['Date'].append(date)
-#         for prop in s2_data_dict['features'][featnum]['properties'].keys():
-#             if prop != 'Date':
-#                 observation_dict[prop].append(s2_data_dict['features']
-#                                               [featnum]
-#                                               ['properties']
-#                                               [prop])
-#     return observation_dict
-
-# Old, unused function, remove at some point.
-# def observation_dict_to_dataframe(observation_dict, props):
-
-#     dataframe = pd.DataFrame({'Date': observation_dict['Date']})
-#     for prop in props:
-#         values = np.array(observation_dict[prop])
-#         nan_filter = np.isnan(values)
-#         quality_filter = (np.sum(nan_filter, axis=1)
-#                           / np.size(values, axis=1)) < 0.05
-
-#         # compute vales for all...
-#         dataframe[prop] = list(np.nanmean(values, axis=1))
-#         dataframe[prop+'_std'] = list(np.nanstd(values, axis=1))
-#         dataframe[prop+'_se'] = list(
-#             np.nanstd(values, axis=1) /
-#             np.sqrt(np.sum(~nan_filter, axis=1)))
-
-#         # then filter out bad ones...
-#         dataframe.loc[~quality_filter, prop] = np.nan
-#         dataframe.loc[~quality_filter, prop+'_std'] = np.nan
-#         dataframe.loc[~quality_filter, prop+'_se'] = np.nan
-
-#     return dataframe
-
-
 def filter_s2_qi_dataframe(s2_qi_dataframe, qi_thresh, s2_filter=s2_filter1):
     """Filter qi dataframe.
 
