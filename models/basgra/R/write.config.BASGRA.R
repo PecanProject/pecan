@@ -259,7 +259,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     ic.names <- names(IC)
     
     if ("LAI"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10LAII"] <- log10(IC$LAI)
+      run_params[names(run_params) == "LOG10LAII"] <- IC$LAI
     }
     
     
@@ -282,7 +282,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     ## laiInit m2/m2
     lai <- try(ncdf4::ncvar_get(IC.nc, "LAI"), silent = TRUE)
     if (!is.na(lai) && is.numeric(lai)) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log10(lai)
+      run_params[which(names(run_params) == "LOG10LAII")] <- lai
     }
     
     # This is IC
@@ -363,16 +363,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE
   
   # NRT        = NCR * CRTI
-  run_params[which(names(run_params) == "NRTI")] <- (10^run_params[names(run_params) == "LOG10CRTI"])*
+  run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*
     run_params[names(run_params) == "NCR"]
   
   # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
   # NSH      = NCSHI * (CLVI+CSTI)
-  lai_tmp <- (10^run_params[names(run_params) == "LOG10LAII"])
+  lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
   ncshi <- run_params[names(run_params) == "NCSHMAX"] * 
     (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
   run_params[which(names(run_params) == "NSHI")] <- ncshi * 
-    ((10^run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
+    ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
   
   
   # TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
@@ -398,6 +398,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
   run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
   
+  
+  
   ##################################################################
   ######################### PREVIOUS STATE #########################
   ##################################################################
@@ -410,13 +412,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     load(last_states_file)
     
     # LOG10CLVI  = pa(1)
-    run_params[names(run_params) == "LOG10CLVI"] <- log10(last_vals[names(last_vals) == "CLV"])
+    run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
     
     # LOG10CRESI = pa(2)
-    run_params[names(run_params) == "LOG10CRESI"] <- log10(last_vals[names(last_vals) == "CRES"])
+    run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
     
     # LOG10CRTI  = pa(3)
-    run_params[names(run_params) == "LOG10CRTI"] <- log10(last_vals[names(last_vals) == "CRT"])
+    run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
     
     # CSTI	   = pa(4)
     run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
@@ -502,6 +504,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     #ratio to be preserved
     # NRT        = NCR * CRTI
     run_params[which(names(run_params) == "NCR")] <- last_vals[names(last_vals) == "NCRT"] 
+    
+    
   }
   
   

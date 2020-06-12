@@ -141,8 +141,8 @@ WETSTOR    = WETSTORI
 do day = 1, NDAYS
 
   ! Environment
-  call DDAYL          (doy)
   call set_weather_day(day,DRYSTOR,                    year,doy)
+  call DDAYL          (doy)
   call SoilWaterContent(Fdepth,ROOTD,WAL)
   call Physics        (DAVTMP,Fdepth,ROOTD,Sdepth,WAS, Frate)
   call MicroClimate   (doy,DRYSTOR,Fdepth,Frate,LAI,Sdepth,Tsurf,WAPL,WAPS,WETSTOR, &
