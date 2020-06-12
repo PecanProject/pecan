@@ -682,7 +682,7 @@ def xr_dataset_to_timeseries(xr_dataset, variables):
     xr_dataset : xarray dataset
 
     variables : list
-        list of varbiale names as string.
+        list of variable names as string.
 
     Returns
     -------

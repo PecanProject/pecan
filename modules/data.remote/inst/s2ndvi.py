@@ -30,7 +30,7 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     
     end (str) -- ending date of the data request in the form YYYY-MM-DD
     
-    qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is 				     larger then the qi_threhold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
+    qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
  
     Returns
@@ -63,7 +63,7 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     timeseries = {}
     timeseries_variable = ["ndvi"]
 
-    # is specified output directory does not exist, create it.
+    # if specified output directory does not exist, create it.
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 
