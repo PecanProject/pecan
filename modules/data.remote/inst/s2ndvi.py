@@ -5,6 +5,8 @@
 Module to calculate NDVI from sentinel 2 data, based on Satellitetools by Olli Nevalainen.
 This will be used to create automated workflows for the remote data module.
 
+Please use Python3 for using this module.
+
 Warning: Point coordinates as input has currently not been implemented.
 
 Author: Ayush Prasad
@@ -42,7 +44,7 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     
     To test this function please run the following code, testfile is included.
     
-    s2_ndvi(geofile="./test.geojson", outdir="./out/", start="2019-01-01", end="2019-12-31", qi_threshold=1)       
+    s2_ndvi(geofile="./satellitetools/test.geojson", outdir="./out/", start="2019-01-01", end="2019-12-31", qi_threshold=1)       
             
             
             
