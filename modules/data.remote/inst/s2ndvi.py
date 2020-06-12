@@ -37,6 +37,15 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     -------
     Nothing:
             output netCDF is saved in the specified directory.
+            
+    Python dependencies required: earthengine-api, geopandas, pandas, netCDF4, xarray
+    
+    To test this function please run the following code, testfile is included.
+    
+    s2_ndvi(geofile="./test.geojson", outdir="./out/", start="2019-01-01", end="2019-12-31", qi_threshold=1)       
+            
+            
+            
     
     """
 
