@@ -92,28 +92,8 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
             args=c(rs_outspec_path, "--enable-cal-vars"))
 
     # Now enable anything in pecan_outvars that is not already enabled.
-
-    # Look up the "depends_on" in the output variable mapping, 
-    # accumulate list of dvmdostem variables to turn on to support
-    # the requested variables in the pecan.xml tag
-    req_v_str <- ""
-    for (pov in unlist(lapply(unlist(strsplit(pecan_outvars, ",")), trimws))) {
-      #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
-      req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = ","))
-    }
-    # # Ugly, but basically jsut takes care of stripping out empty strings and 
-    # making sure the final result is a 1D list, not nested.
-    req_v_str <- trimws(req_v_str)
-    req_v_list <- unlist(lapply(unlist(strsplit(req_v_str, ",")), function(x){x[!x== ""]}))
+    requested_vars <- requested_vars_str2list(pecan_outvars, outspec_path = rs_outspec_path)
     
-    # Check that all variables specified in list exist in the base output spec file.
-    a <- read.csv(rs_outspec_path)
-    for (j in req_v_list) {
-      if (! j %in% a[["Name"]]) {
-        PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", rs_outspec_path))
-        stop()
-      }
-    }
 
     # Fill the run specific output spec file according to list
     for (j in req_v_list) {
@@ -145,27 +125,7 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
       stop()
     }
     
-    # Look up the "depends_on" in the output variable mapping, 
-    # accumulate list of dvmdostem variables to turn on to support
-    # the requested variables in the pecan.xml tag
-    req_v_str <- ""
-    for (pov in unlist(lapply(unlist(strsplit(pecan_outvars, ",")), trimws))) {
-      #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
-      req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = ","))
-    }
-    # Ugly, but basically jsut takes care of stripping out empty strings and 
-    # making sure the final result is a 1D list, not nested.
-    req_v_str <- trimws(req_v_str)
-    req_v_list <- unlist(lapply(unlist(strsplit(req_v_str, ",")), function(x){x[!x== ""]}))
-    
-    # Check that all variables specified in list exist in the base output spec file.
-    a <- read.csv(outspec_path)
-    for (j in req_v_list) {
-      if (! j %in% a[["Name"]]) {
-        PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", outspec_path))
-        stop()
-      }
-    }
+    req_var_list <- requested_vars_string2list()
     
     # Copy the base file to a run-specific output spec file
     if (! file.exists(file.path(run_directory, "config")) ) {
@@ -195,6 +155,33 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
   return(c(rs_outspec_path, req_v_str))
 }
 
+requested_vars_string2list <- function(req_v_str, outspec_path){
+
+  # Look up the "depends_on" in the output variable mapping, 
+  # accumulate list of dvmdostem variables to turn on to support
+  # the requested variables in the pecan.xml tag
+
+  req_v_str <- ""
+  for (pov in unlist(lapply(unlist(strsplit(pecan_outvars, ",")), trimws))) {
+    #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
+    req_v_str <- trimws(paste(req_v_str, vmap_reverse[[pov]][["depends_on"]], sep = ","))
+  }
+  # # Ugly, but basically jsut takes care of stripping out empty strings and 
+  # making sure the final result is a 1D list, not nested.
+  req_v_str <- trimws(req_v_str)
+  req_v_list <- unlist(lapply(unlist(strsplit(req_v_str, ",")), function(x){x[!x== ""]}))
+
+  # Check that all variables specified in list exist in the base output spec file.
+  a <- read.csv(rs_outspec_path)
+  for (j in req_v_list) {
+    if (! j %in% a[["Name"]]) {
+      PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", rs_outspec_path))
+      stop()
+    }
+  }
+
+  return(req_v_list)
+}
 ##------------------------------------------------------------------------------------------------#
 ##' convert parameters, do unit conversions and update parameter names from PEcAn database default
 ##' to units/names within dvmdostem
