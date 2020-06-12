@@ -74,7 +74,6 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
     PEcAn.logger::logger.warn("Calibration run requested! Ignoring requested ",
                               "output variables and using pre-set dvmdostem ",
                               "calibration outputs list")
-    #pecan_outvars <- ""
 
     # Copy the base file to a run-specific output spec file
     if (! file.exists(file.path(run_directory, "config")) ) {
@@ -94,11 +93,22 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
     # Now enable anything in pecan_outvars that is not already enabled.
     requested_vars <- requested_vars_str2list(pecan_outvars, outspec_path = rs_outspec_path)
     
+    # Figure out which variables are already 'ON' in order to support the calibration
+    # run. These will be at yearly resolution. We don't want to modify the output spec 
+    # setting for any of the calibration variables, not to mention the redundant work
+    # (extra system call) to turn the variable on again.
+    a <- system2(file.path(appbinary_path, "scripts/outspec_utils.py"), 
+                 args=c(rs_outspec_path, "-s", "--csv"), stdout=TRUE)
+    con <- textConnection(a)
+    already_on <- read.csv(con, header = TRUE)
 
-    # Fill the run specific output spec file according to list
     for (j in req_v_list) {
-      system2(file.path(appbinary_path, "scripts/outspec_utils.py"),
-              args=c(rs_outspec_path, "--on", j, "y", "m"))
+      if (j %in% already_on$Name) {
+        PEcAn.logger::logger.info(paste0("Passing on ",j,"; it is already enabled..." ))
+      } else {
+        system2(file.path(appbinary_path, "scripts/outspec_utils.py"),
+                args=c(rs_outspec_path, "--on", j, "y", "m"))
+      }
     }
 
     ret <- system2(file.path(appbinary_path, "scripts/outspec_utils.py"), 
