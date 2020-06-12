@@ -138,7 +138,7 @@ server <- function(input, output, session) {
       formatid <- tbl(bety, "inputs") %>% filter(id == inputid) %>% pull(format_id)
       siteid <- tbl(bety, "inputs") %>% filter(id == inputid) %>% pull(site_id)
       
-      site = query.site(con = bety$con, siteid)
+      site = query.site(con = bety, siteid)
       
       current_nc <- ncdf4::nc_open(rv$load.paths[i])
       vars_in_file <- names(current_nc[["var"]])
