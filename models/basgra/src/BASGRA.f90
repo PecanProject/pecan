@@ -229,6 +229,8 @@ do day = 1, NDAYS
   
   NRT       = NRT   + GNRT - DNRT
   NSH       = NSH   + GNSH - DNSH - HARVNSH - NSHmob
+  
+  NCR       = NRT / CRT
 
   Nfert_TOT = Nfert_TOT + Nfert
   DM_MAX    = max( DM, DM_MAX )
