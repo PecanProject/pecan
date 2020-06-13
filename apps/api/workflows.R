@@ -11,14 +11,8 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  
+  dbcon <- PEcAn.DB::betyConnect()
   qry_statement <- paste(
     "SELECT w.id, a.value AS properties",
     "FROM workflows w",
@@ -91,14 +85,7 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
 #' @author Tezan Sahu
 #* @get /<id>
 getWorkflowDetails <- function(id, res){
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  dbcon <- PEcAn.DB::betyConnect()
   qry_statement <- paste0(
     "SELECT w.id, w.model_id, w.site_id, a.value AS properties ",
     "FROM workflows w ",

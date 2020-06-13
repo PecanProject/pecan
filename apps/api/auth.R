@@ -26,14 +26,8 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* @return TRUE if encrypted password is correct, else FALSE
 #* @author Tezan Sahu
 validate_crypt_pass <- function(username, crypt_pass) {
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+
+  dbcon <- PEcAn.DB::betyConnect()
   
   qry_statement <- paste0("SELECT crypted_password FROM users WHERE login='", username, "'")
   res <- PEcAn.DB::db.query(qry_statement, dbcon)

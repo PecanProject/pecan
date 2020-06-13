@@ -5,14 +5,8 @@
 #' @author Tezan Sahu
 #* @get /
 getModels <- function(model_name="all", revision="all", res){
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  
+  dbcon <- PEcAn.DB::betyConnect()
 
   qry_statement <- "SELECT m.id AS model_id, m.model_name, m.revision, m.modeltype_id, t.name AS model_type FROM models m, modeltypes t WHERE m.modeltype_id = t.id"
   if (model_name == "all" & revision == "all"){

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/503b5316
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/a024c7b8
   - description: Localhost
     url: http://127.0.0.1:8000
   

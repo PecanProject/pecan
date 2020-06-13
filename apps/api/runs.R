@@ -10,14 +10,8 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+
+  dbcon <- PEcAn.DB::betyConnect()
   qry_statement <- paste0(
     "SELECT r.id, e.runtype, r.model_id, r.site_id, r.parameter_list, r.ensemble_id, ", 
     "e.workflow_id, r.start_time, r.finish_time ", 
