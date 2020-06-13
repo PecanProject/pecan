@@ -1,60 +1,55 @@
-# This is a basic workflow to help you get started with Actions
-
-name: book
-
 on:
   push:
-    branches: master
-  pull_request:
-    branches: master 
+     branches:
+       - master
 
+
+name: renderbook
 
 jobs:
-  
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+  bookdown:
+    name: Render-Book
+    runs-on: macOS-latest
     container: pecan/base:latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-    
     steps:
-    
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Install rmarkdown
+        run: Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
+      - name: Render Book
+        run: Rscript -e 'bookdown::render_book("index.Rmd")'
+      - uses: actions/upload-artifact@v1
+        with:
+          name: _book
+          path: _book/
+  
+# Need to first create an empty gh-pages branch
+# see https://pkgdown.r-lib.org/reference/deploy_site_github.html
+# and also add secrets for a GITHUB_PAT and EMAIL to the repository
+# gh-action from Cecilapp/GitHub-Pages-deploy
+  checkout-and-deploy:
+   runs-on: ubuntu-latest
+   needs: bookdown
+   steps:
+     - name: Checkout
+       uses: actions/checkout@master
+     - name: Download artifact
+       uses: actions/download-artifact@v1.0.0
+       with:
+         # Artifact name
+         name: _book # optional
+         # Destination path
+         path: _book # optional
+     - name: Deploy to GitHub Pages
+       uses: Cecilapp/GitHub-Pages-deploy@master
+       env:
+          EMAIL: ${{ secrets.EMAIL }}               # must be a verified email
+          GH_TOKEN: ${{ secrets.GITHUB_PA }} # https://github.com/settings/tokens
+          BUILD_DIR: _book/                     # "_site/" by default
         
-    - run : | 
-         apt-get update \
-         && apt-get -y --no-install-recommends install \
-         jags \
-         time \
-         libgdal-dev \
-         libglpk-dev \
-         librdf0-dev \
-         libnetcdf-dev \
-         libudunits2-dev \
-         libgl1-mesa-dev \
-         libglu1-mesa-dev
-    
-    # Building book from source using makefile
-    - name: Building book
-      run: cd book_source && make
-      
-    - name: looking for generated html  
-      run: cd /__w/pecan-sandbox/pecan-sandbox/book_source/_book
-      shell: bash
+        
 
-    - name: Commiting the changes to pecan documentation repo
-      run: |
-        git config --global user.email "mukulmaheshwari12@gmail.com"
-        git config --global user.name "MukulMaheshwari"
-        git init 
-        git add --all *
-        git commit -m "Update the book `date`" || true
-        git remote add origin git@github.com:MukulMaheshwari/pecan-documentation.git
-        git config master.remote origin
-        git config master.merge refs/heads/master
-        git push -aq origin master
         
     
         
