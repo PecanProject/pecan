@@ -54,7 +54,7 @@ jobs:
         git remote add origin git@github.com:MukulMaheshwari/pecan-documentation.git
         git config master.remote origin
         git config master.merge refs/heads/master
-        git push origin master
+        git push -aq origin master
         
     
         
