@@ -50,6 +50,7 @@ jobs:
         git init 
         git add --all *
         git commit -m "Update the book `date`" || true
+        git remote -v
     - uses: r-lib/actions/pr-push@master
       with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
