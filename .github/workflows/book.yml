@@ -9,7 +9,8 @@ name: renderbook
 jobs:
   bookdown:
     name: Render-Book
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
+    container: pecan/base:latest
     steps:
       - uses: actions/checkout@v1
       - uses: r-lib/actions/setup-r@v1
