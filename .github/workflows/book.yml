@@ -46,7 +46,7 @@ jobs:
        env:
           EMAIL: ${{ secrets.EMAIL }}               # must be a verified email
           GH_TOKEN: ${{ secrets.GITHUB_PA }} # https://github.com/settings/tokens
-          BUILD_DIR: book_source/_book/                    # "_site/" by default
+          BUILD_DIR: _book/                    # "_site/" by default
         
         
 
