@@ -12,29 +12,38 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
   }
 
   dbcon <- PEcAn.DB::betyConnect()
-  qry_statement <- paste0(
-    "SELECT r.id, e.runtype, r.model_id, r.site_id, r.parameter_list, r.ensemble_id, ", 
-    "e.workflow_id, r.start_time, r.finish_time ", 
-    "FROM runs r FULL OUTER JOIN ensembles e ", 
-    "ON (r.ensemble_id = e.id) ", 
-    "WHERE e.workflow_id = '", workflow_id,
-    "' ORDER BY r.id DESC ",
-    "LIMIT ", limit, 
-    " OFFSET ", offset, ";"
-  )
   
-  PEcAn.DB::db.query(qry_statement, dbcon)
+  Runs <- tbl(dbcon, "runs") %>%
+    select(id, model_id, site_id, parameter_list, ensemble_id, start_time, finish_time)
+  
+  Runs <- tbl(dbcon, "ensembles") %>%
+    select(runtype, ensemble_id=id, workflow_id) %>%
+    full_join(Runs, by="ensemble_id") %>%
+    filter(workflow_id == !!workflow_id)
+  
+  qry_res <- Runs %>% 
+    arrange(id) %>%
+    collect()
   
   PEcAn.DB::db.close(dbcon)
   
-  if (nrow(qry_res) == 0) {
+  if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
     return(list(error="Run(s) not found"))
   }
   else {
+    has_next <- FALSE
+    has_prev <- FALSE
+    if (nrow(qry_res) > (as.numeric(offset) + as.numeric(limit))) {
+      has_next <- TRUE
+    }
+    if (as.numeric(offset) != 0) {
+      has_prev <- TRUE
+    }
+    qry_res <- qry_res[(as.numeric(offset) + 1):min((as.numeric(offset) + as.numeric(limit)), nrow(qry_res)), ]
     result <- list(runs = qry_res)
     result$count <- nrow(qry_res)
-    if(nrow(qry_res) == limit){
+    if(has_next){
       result$next_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
@@ -46,7 +55,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
         limit
       )
     }
-    if(as.numeric(offset) != 0) {
+    if(has_prev) {
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
@@ -71,23 +80,18 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
 #' @author Tezan Sahu
 #* @get /<id>
 getWorkflowDetails <- function(id, res){
-  settings <-list(database = list(bety = list(
-    driver = "PostgreSQL", 
-    user = "bety", 
-    dbname = "bety", 
-    password = "bety", 
-    host="postgres"
-  )))
-  dbcon <- PEcAn.DB::db.open(settings$database$bety)
-  qry_statement <- paste0(
-    "SELECT r.id, e.runtype, r.model_id, r.site_id, r.parameter_list, r.ensemble_id, e.workflow_id, ", 
-    "r.start_time, r.finish_time, r.created_at, r.updated_at, r.started_at, r.finished_at ", 
-    "FROM runs r FULL OUTER JOIN ensembles e ", 
-    "ON (r.ensemble_id = e.id) ", 
-    "WHERE r.id = '", id, "';"
-  )
   
-  qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Runs <- tbl(dbcon, "runs") %>%
+    select(-outdir, -outprefix, -setting)
+  
+  Runs <- tbl(dbcon, "ensembles") %>%
+    select(runtype, ensemble_id=id, workflow_id) %>%
+    full_join(Runs, by="ensemble_id") %>%
+    filter(id == !!id)
+  
+  qry_res <- Runs %>% collect()
   
   PEcAn.DB::db.close(dbcon)
   

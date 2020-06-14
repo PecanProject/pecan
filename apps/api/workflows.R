@@ -1,3 +1,5 @@
+library(dplyr)
+
 #' Get the list of workflows (using a particular model & site, if specified)
 #' @param model_id Model id (character)
 #' @param site_id Site id (character)
@@ -13,42 +15,51 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   }
   
   dbcon <- PEcAn.DB::betyConnect()
-  qry_statement <- paste(
-    "SELECT w.id, a.value AS properties",
-    "FROM workflows w",
-    "FULL OUTER JOIN attributes a",
-    "ON (w.id = a.container_id)"
-  )
   
-  if (is.null(model_id) & is.null(site_id)){
-    # Leave as it is
-  }
-  else if (!is.null(model_id) & is.null(site_id)){
-    qry_statement <- paste0(qry_statement, " WHERE w.model_id = '", model_id, "'")
-  }
-  else if (is.null(model_id) & !is.null(site_id)){
-    qry_statement <- paste0(qry_statement, " WHERE w.site_id = '", site_id, "'")
-  }
-  else{
-    qry_statement <- paste0(qry_statement, " WHERE w.model_id = '", model_id, "' and w.site_id = '", site_id, "'")
+  Workflow <- tbl(dbcon, "workflows") %>%
+    select(id, model_id, site_id)
+  
+  Workflow <- tbl(dbcon, "attributes") %>%
+    select(id = container_id, properties = value) %>%
+    full_join(Workflow, by = "id")
+  
+  if (!is.null(model_id)) {
+    Workflow <- Workflow %>%
+      filter(model_id == !!model_id)
   }
   
-  qry_statement <- paste0(qry_statement, " ORDER BY id LIMIT ", limit, " OFFSET ", offset, ";")
+  if (!is.null(site_id)) {
+    Workflow <- Workflow %>%
+      filter(site_id == !!site_id)
+  }
   
-  qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
-  
+  qry_res <- Workflow %>% 
+    arrange(id) %>%
+    collect()
+
   PEcAn.DB::db.close(dbcon)
   
-  if (nrow(qry_res) == 0) {
+  if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
     return(list(error="Workflows not found"))
   }
   else {
+    has_next <- FALSE
+    has_prev <- FALSE
+    if (nrow(qry_res) > (as.numeric(offset) + as.numeric(limit))) {
+      has_next <- TRUE
+    }
+    if (as.numeric(offset) != 0) {
+      has_prev <- TRUE
+    }
+    
+    qry_res <- qry_res[(as.numeric(offset) + 1):min((as.numeric(offset) + as.numeric(limit)), nrow(qry_res)), ]
+    
     qry_res$properties[is.na(qry_res$properties)] = "{}"
     qry_res$properties <- purrr::map(qry_res$properties, jsonlite::parse_json)
     result <- list(workflows = qry_res)
     result$count <- nrow(qry_res)
-    if(nrow(qry_res) == limit){
+    if(has_next){
       result$next_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
@@ -60,7 +71,7 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
         limit
       )
     }
-    if(as.numeric(offset) != 0) {
+    if(has_prev) {
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
@@ -86,15 +97,16 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
 #* @get /<id>
 getWorkflowDetails <- function(id, res){
   dbcon <- PEcAn.DB::betyConnect()
-  qry_statement <- paste0(
-    "SELECT w.id, w.model_id, w.site_id, a.value AS properties ",
-    "FROM workflows w ",
-    "FULL OUTER JOIN attributes a ",
-    "ON (w.id = a.container_id) ",
-    "WHERE w.id='", id, "'"
-  )
   
-  qry_res <- PEcAn.DB::db.query(qry_statement, dbcon)
+  Workflow <- tbl(dbcon, "workflows") %>%
+    select(id, model_id, site_id)
+  
+  Workflow <- tbl(dbcon, "attributes") %>%
+    select(id = container_id, properties = value) %>%
+    full_join(Workflow, by = "id") %>%
+    filter(id == !!id)
+  
+  qry_res <- Workflow %>% collect()
   
   PEcAn.DB::db.close(dbcon)
   

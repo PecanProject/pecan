@@ -1,3 +1,5 @@
+library(dplyr)
+
 #* Obtain the encrypted password for a user
 #* @param username Username, which is also the 'salt'
 #* @param password Unencrypted password
@@ -29,12 +31,15 @@ validate_crypt_pass <- function(username, crypt_pass) {
 
   dbcon <- PEcAn.DB::betyConnect()
   
-  qry_statement <- paste0("SELECT crypted_password FROM users WHERE login='", username, "'")
-  res <- PEcAn.DB::db.query(qry_statement, dbcon)
-  
+  res <- tbl(bety, "users") %>%
+    filter(login == username,
+           crypted_password == crypt_pass) %>%
+    count() %>%
+    collect()
+
   PEcAn.DB::db.close(dbcon)
   
-  if (nrow(res) == 1 && res[1, 1] == crypt_pass) {
+  if (res == 1) {
     return(TRUE)
   }
   
