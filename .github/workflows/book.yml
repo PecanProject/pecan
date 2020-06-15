@@ -42,12 +42,15 @@ jobs:
          # Destination path
          path: _book/ # optional
      - name: Commit changes
+       env:
+          EMAIL: ${{ secrets.EMAIL }}               
+          GH_TOKEN: ${{ secrets.GITHUB_PA}} 
        run: |
             git clone https://${GITHUB_PA}@github.com/${GH_USER}/pecan-documentation.git book_hosted
             cd book_hosted 
-            rsync -a --delete ../_book/ $VERSION/
+            rsync -a --delete ../_book/ VERSION/
             git add --all *
             git commit -m "Update the book `date`" || true
             git push -q origin master
-   
+           
         
