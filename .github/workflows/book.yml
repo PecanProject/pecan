@@ -28,6 +28,9 @@ jobs:
   checkout-and-deploy:
    runs-on: ubuntu-latest
    needs: bookdown
+   env:
+          EMAIL: ${{ secrets.EMAIL }}               
+          GH_TOKEN: ${{ secrets.GITHUB_PA}} 
    steps:
      - name: Checkout documentation repo
        uses: actions/checkout@v2
@@ -42,9 +45,6 @@ jobs:
          # Destination path
          path: _book/ # optional
      - name: Commit changes
-       env:
-          EMAIL: ${{ secrets.EMAIL }}               
-          GH_TOKEN: ${{ secrets.GITHUB_PA}} 
        run: |
             git clone https://${GITHUB_PA}@github.com/${GH_USER}/pecan-documentation.git book_hosted
             cd book_hosted 
