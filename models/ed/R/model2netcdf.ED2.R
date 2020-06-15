@@ -282,18 +282,21 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
   CheckED2Variables <- function(nc) {
     vars_detected <- NULL
+    name_convention <- NULL
   
     if ("FMEAN_BDEAD_PY" %in% names(nc$var)) {
       vars_detected <- c(vars_detected,"FMEAN_BDEAD_PY")
-      return("Contains_FMEAN")
+      name_convention <- "Contains_FMEAN"
     }
     if ("FMEAN_SOIL_TEMP_PY" %in% names(nc$var)) {
       vars_detected <- c(vars_detected, "FMEAN_SOIL_TEMP_PY")
-      return("Contains_FMEAN")
+      name_convention <- "Contains_FMEAN"
     }
     if(!is.null(vars_detected)){
       PEcAn.logger::logger.warn(paste("Found variable(s): ", paste(vars_detected, collapse = " "), ", now processing FMEAN* named variables. Note that varible naming conventions may change with ED2 version."))
     }
+    
+    return(name_convention)
   }
 
   # note that there is always one Tower file per year
