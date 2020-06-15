@@ -43,8 +43,6 @@ jobs:
          name: _book # optional
          # Destination path
          path: _book/ # optional
-     - name: authentication
-       with:
          repo-token: ${{ secrets.GITHUB_TOKEN }}
      - name: commit changes
        run: |
