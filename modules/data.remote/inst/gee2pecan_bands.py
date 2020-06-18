@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-Module to calculate NDVI from sentinel 2 data, based on Satellitetools by Olli Nevalainen.
-This will be used to create automated workflows for the remote data module.
-
-Please use Python3 for using this module.
+Downloads ESA Sentinel 2, Level-2A Bottom of Atmosphere data and saves it in a netCDF file.
+Bands retrieved: B3, B4, B5, B6, B7, B8A, B11 and B12
+More information about the bands and the process followed to get the data can be found out at /satellitetools/geeapi.py
 
 Warning: Point coordinates as input has currently not been implemented.
+
+Requires Python3
+
+Uses satellitetools created by Olli Nevalainen.
 
 Author: Ayush Prasad
 """
@@ -17,14 +20,13 @@ import geopandas as gpd
 import os
 
 
-def s2_ndvi(geofile, outdir, start, end, qi_threshold):
+def gee2pecan_bands(geofile, outdir, start, end, qi_threshold):
     """ 
-    Downloads sentinel 2 data, calculates NDVI and saves it in a netCDF file at the specified location.
+    Downloads Sentinel 2 data from gee and saves it in a netCDF file at the specified location.
     
     Parameters
     ----------
-    
-    geofile (str) -- path to the file containing the coordinates of AOI, currently tested with geojson. 
+    geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
   
@@ -34,21 +36,15 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     
     qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
- 
     Returns
     -------
     Nothing:
             output netCDF is saved in the specified directory.
             
     Python dependencies required: earthengine-api, geopandas, pandas, netCDF4, xarray
-    
-    To test this function please run the following code, testfile is included.
-    
-    s2_ndvi(geofile="./satellitetools/test.geojson", outdir="./out/", start="2019-01-01", end="2019-12-31", qi_threshold=1)       
-            
-            
-            
-    
+    To test this function please run the following code inside a python shell after importing this module, testfile is included.
+
+    gee2pecan_bands(geofile="./satellitetools/test.geojson", outdir="./out/", start="2019-01-01", end="2019-12-31", qi_threshold=1)       
     """
 
     # read in the input file containing coordinates
@@ -68,16 +64,9 @@ def s2_ndvi(geofile, outdir, start, end, qi_threshold):
     # convert dataframe to an xarray dataset, used later for converting to netCDF
     gee.s2_data_to_xarray(area, request)
 
-    # calculate NDVI for the selected area
-    area.data = gee.compute_ndvi(area.data)
-
-    timeseries = {}
-    timeseries_variable = ["ndvi"]
-
-    # if specified output directory does not exist, create it.
+    # if specified output directory does not exist, create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 
-    # creating a timerseries and saving the netCDF file
-    area.data.to_netcdf(os.path.join(outdir, area.name + ".nc"))
-    timeseries[area.name] = gee.xr_dataset_to_timeseries(area.data, timeseries_variable)
+    # create a timerseries and save the netCDF file
+    area.data.to_netcdf(os.path.join(outdir, area.name + "_bands.nc"))
