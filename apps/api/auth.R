@@ -31,7 +31,7 @@ validate_crypt_pass <- function(username, crypt_pass) {
 
   dbcon <- PEcAn.DB::betyConnect()
   
-  res <- tbl(bety, "users") %>%
+  res <- tbl(dbcon, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
     count() %>%
@@ -52,11 +52,12 @@ validate_crypt_pass <- function(username, crypt_pass) {
 #* @return Appropriate response
 #* @author Tezan Sahu
 authenticate_user <- function(req, res) {
-  # If the API endpoint called does not requires authentication, allow it to pass through as is
+  # If the API endpoint that do not require authentication
   if (
     grepl("swagger", req$PATH_INFO, ignore.case = TRUE) || 
     grepl("openapi.json", req$PATH_INFO, fixed = TRUE) ||
-    grepl("ping", req$PATH_INFO, ignore.case = TRUE)) 
+    grepl("ping", req$PATH_INFO, ignore.case = TRUE) ||
+    grepl("status", req$PATH_INFO, ignore.case = TRUE))
   {
     return(plumber::forward())
   }

@@ -34,6 +34,7 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   }
   
   qry_res <- Workflow %>% 
+    select(-model_id, -site_id) %>%
     arrange(id) %>%
     collect()
 

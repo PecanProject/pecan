@@ -40,4 +40,3 @@ getModels <- function(model_name="all", revision="all", res){
     return(list(models=qry_res))
   }
 }
-    
