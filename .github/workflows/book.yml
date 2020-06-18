@@ -28,14 +28,7 @@ jobs:
   checkout-and-deploy:
    runs-on: ubuntu-latest
    needs: bookdown
-   env:
-          EMAIL: ${{ secrets.EMAIL }}             
    steps:
-     - name: Checkout documentation repo
-       uses: actions/checkout@v2
-       with:
-         repository: MukulMaheshwari/pecan-documentation
-         path: pecan-documentation
      - name: Download artifact
        uses: actions/download-artifact@v2
        with:
@@ -44,14 +37,20 @@ jobs:
          # Destination path
          path: _book/ # optional
          repo-token: ${{ secrets.GITHUB_TOKEN }}
-     - name: commit changes
-       run: |
-            git clone https://${GITHUB_PA}@github.com/${GH_USER}/pecan-documentation.git book_hosted
-            cd book_hosted 
-            rsync -a --delete ../_book/ VERSION/
-            git add --all *
-            git commit -m "Update the book `date`" || true
-            git push -q origin master
-       
-      
-        
+     - name: Checkout documentation repo
+       uses: actions/checkout@v2
+       with:
+        repository: ${{ github.repository_owner }}/pecan-documentation
+        path: pecan-documentation
+        token: ${{ secrets.GITHUB_PA }}
+     - run: |
+        export VERSION=${GITHUB_REF##*/}_test
+        cd pecan-documentation && mkdir -p $VERSION
+        git config --global user.email "pecanproj@gmail.com"
+        git config --global user.name "GitHub Documentation Robot"
+        rsync -a --delete ../_book/ $VERSION
+        git add --all *
+        git commit -m "Build book from pecan revision $GITHUB_SHA" || true
+        git push -q origin master
+   
+ 
