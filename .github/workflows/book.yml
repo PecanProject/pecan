@@ -36,13 +36,13 @@ jobs:
          name: _book # optional
          # Destination path
          path: _book/ # optional
-         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        # repo-token: ${{ secrets.GITHUB_TOKEN }}
      - name: Checkout documentation repo
        uses: actions/checkout@v2
        with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
-        token: ${{ secrets.GITHUB_PA }}
+        token: ${{ secrets.GH_PAT }}
      - run: |
         export VERSION=${GITHUB_REF##*/}_test
         cd pecan-documentation && mkdir -p $VERSION
