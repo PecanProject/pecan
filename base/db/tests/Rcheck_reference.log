@@ -56,7 +56,6 @@ get_users: no visible binding for global variable ‘id’
 get_workflow_ids: no visible binding for global variable ‘workflow_id’
 get.trait.data.pft: no visible binding for global variable ‘pft_id’
 get.trait.data.pft: no visible binding for global variable ‘created_at’
-get.trait.data.pft: no visible global function definition for ‘head’
 get.trait.data.pft: no visible binding for global variable ‘stat’
 get.trait.data.pft: no visible binding for global variable ‘trait’
 insert.format.vars: no visible binding for global variable ‘id’
@@ -125,16 +124,7 @@ to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'dbfile.input.insert.Rd':
-  \examples lines wider than 100 characters:
-       dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
-
-Rd file 'insert.format.vars.Rd':
-  \examples lines wider than 100 characters:
-       insert.format.vars(con = bety$con, format_name = "LTER-HFR-103", mimetype_id = 1090, notes = "NPP from Harvard Forest.", header = FAL ... [TRUNCATED]
-
-These lines will be truncated in the PDF manual.
+* checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
@@ -174,10 +164,7 @@ entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'query_pfts':
-  ‘modeltype’
-
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking files in ‘vignettes’ ... WARNING
 Files in the 'vignettes' directory but no files in 'inst/doc':
@@ -187,4 +174,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 3 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTE

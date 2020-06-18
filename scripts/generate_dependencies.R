@@ -1,4 +1,11 @@
-#!/usr/bin/env RScript
+#!/usr/bin/env Rscript
+
+# force sorting
+if (capabilities("ICU")) {
+  icuSetCollate(locale = "en_US.UTF-8")
+} else {
+  print("Can not force sorting, this could result in unpredicted results.")
+}
 
 # following modules will be ignored
 ignore <- c("modules/data.mining")
@@ -90,6 +97,7 @@ cat("#!/bin/bash",
     "",
     "# Don\'t use X11 for rgl",
     "RGL_USE_NULL=TRUE",
+    "RLIB=${R_LIBS_USER:-/usr/local/lib/R/site-library}",
     "",
     "# install remotes first in case packages are references in dependencies",
     paste0(
@@ -98,6 +106,6 @@ cat("#!/bin/bash",
     "",
     "# install all packages (depends, imports, suggests)",
     paste0(
-      "install2.r -e -s -n -1\\\n    ",
+      "install2.r -e -s -l \"${RLIB}\" -n -1\\\n    ",
       paste(sort(docker), sep = "", collapse = " \\\n    ")),
     file = "docker/depends/pecan.depends", sep = "\n", append = FALSE)

@@ -93,7 +93,7 @@ left.pad.zeros <- function(num, digits = 5) {
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 ##' @export
-##' @author <unknown>
+##' @author unknown
 zero.truncate <- function(y) {
   y[y < 0 | is.na(y)] <- 0
   return(y)

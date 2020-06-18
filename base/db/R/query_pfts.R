@@ -1,10 +1,12 @@
 #' Retrieve PFT ID, name, and type from BETY
 #'
 #' @param dbcon Database connection object
-#' @param pft_names Character vector of PFT names
-#' @param modeltype 
+#' @param pft_names character vector of PFT names
+#' @param modeltype character.
+#'   If specified, only returns PFTs matching this modeltype.
+#'   If NULL, considers all modeltypes.
 #' @return `data.frame` containing PFT ID (`id`), type (`pft_type`),
-#'   and name (`name`). 
+#'   and name (`name`).
 #' @author Alexey Shiklomanov, Chris Black
 #' @export
 query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {

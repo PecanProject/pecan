@@ -271,7 +271,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       
       ## propose new parameters
-      xnew <- tmvtnorm::rtmvnorm(1, mean =  c(xcurr), sigma = jcov, lower = rng[,1], upper = rng[,2])
+      xnew <- TruncatedNormal::rtmvnorm(1, mu =  c(xcurr), sigma = jcov, lb = rng[,1], ub = rng[,2])
       # if(bounded(xnew,rng)){
       
       # re-predict SS
@@ -282,16 +282,16 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       # don't update the currllp ( = llik.par, e.g. tau) yet
       # calculate posterior with xcurr | currllp
       ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
-      HRcurr <- tmvtnorm::dtmvnorm(c(xnew), c(xcurr), jcov,
-                         lower = rng[,1], upper = rng[,2], log = TRUE)
+      HRcurr <- TruncatedNormal::dtmvnorm(c(xnew), c(xcurr), jcov,
+                                          lb = rng[,1], ub = rng[,2], log = TRUE, B = 1e2)
       
       newSS  <- get_ss(gp, xnew, pos.check)
       if(all(newSS != -Inf)){
         
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
-        HRnew <- tmvtnorm::dtmvnorm(c(xcurr), c(xnew), jcov,
-                                     lower = rng[,1], upper = rng[,2], log = TRUE)
+        HRnew <- TruncatedNormal::dtmvnorm(c(xcurr), c(xnew), jcov,
+                                           lb = rng[,1], ub = rng[,2], log = TRUE, B = 1e2)
         
         if (is.accepted(ycurr+HRcurr, ynew+HRnew)) {
           xcurr  <- xnew

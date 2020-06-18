@@ -1,4 +1,4 @@
-#### Install Models
+### Install Models
 
 This page contains instructions on how to download and install ecosystem models that have been or are being coupled to PEcAn.
 These instructions have been tested on the PEcAn unbuntu VM. Commands may vary on other operating systems.
