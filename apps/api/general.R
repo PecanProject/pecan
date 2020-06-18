@@ -11,10 +11,20 @@ ping <- function(req){
 #* @return Details about the database host
 #* @author Tezan Sahu
 status <- function() {
+  
+  ## helper function to obtain environment variables
+  get_env_var = function (item, default = "unknown") {
+    value = Sys.getenv(item)
+    if (value == "") default else value
+  }
+  
   dbcon <- PEcAn.DB::betyConnect()
   res <- list(host_details = PEcAn.DB::dbHostInfo(dbcon))
   
-  # Needs to be completed using env var
-  res$pecan_details <- list(version="1.7.0", branch="api_1", gitsha1="unknown")
+  res$pecan_details <- list(
+    version = get_env_var("PECAN_VERSION"), 
+    branch = get_env_var("PECAN_GIT_BRANCH"), 
+    gitsha1 = get_env_var("PECAN_GIT_CHECKSUM")
+  )
   return(res)
 }

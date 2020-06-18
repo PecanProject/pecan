@@ -17,15 +17,15 @@ root$filter("require-auth", authenticate_user)
 root$handle("GET", "/api/ping", ping)
 root$handle("GET", "/api/status", status)
 
-# The endpoints defined here are related to details of PEcAn models
+# The endpoints mounted here are related to details of PEcAn models
 models_pr <- plumber::plumber$new("models.R")
 root$mount("/api/models", models_pr)
 
-# The endpoints defined here are related to details of PEcAn workflows
+# The endpoints mounted here are related to details of PEcAn workflows
 workflows_pr <- plumber::plumber$new("workflows.R")
 root$mount("/api/workflows", workflows_pr)
 
-# The endpoints defined here are related to details of PEcAn runs
+# The endpoints mounted here are related to details of PEcAn runs
 runs_pr <- plumber::plumber$new("runs.R")
 root$mount("/api/runs", runs_pr)
 
