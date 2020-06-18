@@ -89,11 +89,11 @@ dbHostInfo <- function(bety) {
                 sync_contact = ""))
   } else {
     return(list(hostid = hostid,
-                hostname = machnie$hostname,
+                hostname = machine$hostname,
                 start = machine$sync_start,
                 end = machine$sync_end,
-                sync_url = machines$sync_url,
-                sync_contact = machines$sync_contact))
+                sync_url = machine$sync_url,
+                sync_contact = machine$sync_contact))
   }
 }  # dbHostInfo
 
