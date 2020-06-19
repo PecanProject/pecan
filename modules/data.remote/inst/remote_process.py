@@ -14,7 +14,6 @@ from bands2ndvi import bands2ndvi
 from bands2lai_snap import bands2lai_snap
 from satellitetools import gee
 import geopandas as gpd
-import os
 
 
 def remote_process(
