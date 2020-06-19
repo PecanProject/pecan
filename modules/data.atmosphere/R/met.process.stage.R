@@ -4,6 +4,7 @@
 ##'
 ##' @param input.id
 ##' @param raw.id
+##' @param con database connection
 ##'
 ##' @author Elizabeth Cowdery
 met.process.stage <- function(input.id, raw.id, con) {
