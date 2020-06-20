@@ -87,11 +87,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # set up connection and host information
-  con <- dplyr::src_postgres(
-    dbname   = dbparms$dbname,
-    host     = dbparms$host,
-    user     = dbparms$user,
-    password = dbparms$password)$con
+  con <- PEcAn.DB::db.open(dbparms)
 
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
