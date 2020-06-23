@@ -1,0 +1,44 @@
+# PEcAn Project API
+
+## Introduction
+
+##### Welcome to the PEcAn Project API Documentation.
+
+The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models.
+
+Our API allows users to remotely interact with the PEcAn servers and leverage the functionalities provided by the PEcAn Project. It has been designed to follow common RESTful API conventions. Most operations are performed using the HTTP methods: `GET` (retrieve) & `POST` (create).
+
+_Please note that the PEcAn Project API is currently under active development and is possible that any information in this document is subject to change._
+
+## Authentication
+
+Authentication to the PEcAn API occurs via [Basic HTTP Auth](https://en.wikipedia.org/wiki/Basic_access_authentication). The credentials for using the API are the same as those used to log into PEcAn & BetyDB. Here is how you use basic HTTP auth with `curl`:
+```
+$ curl --user '<username>:<password>' <api-endpoint>
+```
+
+Authentication also depends on the PEcAn server that the user interacts with. Some servers, at the time of deployment have the `AUTH_REQ = FALSE`, meaning that such servers do not require user autertication for the usage of the PEcAn APIs. Regardless of the type of server, the endpoints defind under General section can be accessed without any authentication.
+
+## RESTful API Endpoints
+
+This page contains the high-level overviews & the functionalities offered by the different RESTful endpoints of the PEcAn API. For more detailed information including the request & response structure along with relevant schemas, you can visit the [OpenAPI 3 Documentation for the PEcAn API](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/PecanProject/pecan/299c240277d616463979cdbe09ef57731b8167fc/apps/api/pecanapi-spec.yml).
+
+The currently implemented functionalities include:
+
+* __General:__
+  * `GET /api/ping`: Ping the server to check if it is live
+  * `GET /api/status`: Obtain general information about PEcAn & the details of the database host
+
+* __Models:__
+  * `GET /api/models/`: Retrieve the details of environmental model(s) used by PEcAn (can be filtered based on `model_name` & `revision`)
+
+* __Workflows:__
+  * `GET /api/workflows/`: Retrieve a list of PEcAn workflows (can be filtered based on `model_id` & `site_id`)
+  * `POST /api/workflows/` *: Submit a new PEcAn workflow
+  * `GET /api/workflows/{id}`: Obtain the details of a particular PEcAn workflow by supplying its ID
+
+* __Runs:__
+  * `GET /api/runs`:  Get the list of all the runs for a specified PEcAn Workflow
+  * `GET /api/runs/{id}`: Fetch the details of a specified PEcAn run
+
+_* indicates that the particular API is under development & may not be ready for use_
