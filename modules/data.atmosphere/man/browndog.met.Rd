@@ -2,7 +2,7 @@
 % Please edit documentation in R/met.process.R
 \name{browndog.met}
 \alias{browndog.met}
-\title{get met data from browndog}
+\title{Use browndog to get the met data for a specific model}
 \usage{
 browndog.met(
   browndog,
@@ -17,23 +17,23 @@ browndog.met(
 )
 }
 \arguments{
-\item{browndog, }{list with url, username and password to connect to browndog}
+\item{browndog}{list with url, username and password to connect to browndog}
 
-\item{source, }{the source of the met data, currently only NARR an Ameriflux is supported}
+\item{source}{the source of the met data, currently only NARR an Ameriflux is supported}
 
-\item{site, }{site information should have id, lat, lon and name (ameriflux id)}
+\item{site}{site information should have id, lat, lon and name (ameriflux id)}
 
-\item{start_date, }{start date for result}
+\item{start_date}{start date for result}
 
-\item{end_date, }{end date for result}
+\item{end_date}{end date for result}
 
-\item{model, }{model to convert the met data to}
+\item{model}{model to convert the met data to}
 
-\item{dir, }{folder where results are stored (in subfolder)}
+\item{dir}{folder where results are stored (in subfolder)}
 
-\item{username, }{used when downloading data from Ameriflux like sites}
+\item{username}{used when downloading data from Ameriflux like sites}
 
-\item{con, }{database connection}
+\item{con}{database connection}
 }
 \description{
 Use browndog to get the met data for a specific model

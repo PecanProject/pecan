@@ -23,6 +23,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 - Update ED docker build, will now build version 2.2.0 and git
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
+- model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 
 ### Changed
 
