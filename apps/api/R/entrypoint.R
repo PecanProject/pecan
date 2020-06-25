@@ -32,6 +32,6 @@ root$mount("/api/runs", runs_pr)
 # The API server is bound to 0.0.0.0 on port 8000
 # The Swagger UI for the API draws its source from the pecanapi-spec.yml file
 root$run(host="0.0.0.0", port=8000, debug=TRUE, swagger = function(pr, spec, ...) {
-  spec <- yaml::read_yaml("pecanapi-spec.yml")
+  spec <- yaml::read_yaml("../pecanapi-spec.yml")
   spec
 })

@@ -11,7 +11,7 @@ LABEL maintainer="Tezan Sahu <tezansahu@gmail.com>"
 
 COPY ./ /api
 
-WORKDIR /api
+WORKDIR /api/R
 
 # --------------------------------------------------------------------------
 # Variables to store in docker image (most of them come from the base image)
