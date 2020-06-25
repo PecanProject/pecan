@@ -6,9 +6,23 @@ This is a minimal guide to getting started with PEcAn development under Docker. 
 
 We recommend following the the [gitflow](https://nvie.com/posts/a-successful-git-branching-model/) workflow and working in your own [fork of the PEcAn repsitory](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). See the [PEcAn developer guide](book_source/02_demos_tutorials_workflows/05_developer_workflows/02_git/01_using-git.Rmd) for further details. In the `/scripts` folder there is a script called [syncgit.sh](scripts/syncgit.sh) that will help with synchronizing your fork with the official repository.
 
+To clone the PEcAn repository:
+
+```sh
+git clone git@github.com:pecanproject/pecan
+
+# alternatively, if you haven't set up ssh keys with GitHub
+# git clone https://github.com/PecanProject/pecan
+```
+
 ## Developing in Docker
 
-If running on a linux system it is recommended to add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using `sudo adduser ${USER} docker`.
+_Note for Linux users:_ add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using 
+```sh
+# for linux users
+sudo adduser ${USER} docker`.
+```
+
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
