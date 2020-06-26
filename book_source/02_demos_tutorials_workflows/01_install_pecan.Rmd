@@ -80,7 +80,7 @@ This will not go into much detail about about how to use Docker -- for more deta
 
     This should print the current version of docker-compose. We have tested the instruction below with versions of docker-compose 1.22 and above.
    
-3. **Download the PEcAn docker-compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
+3. **Download the PEcAn docker-compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
 
 4. **Initialize the PEcAn database and data images**. The following `docker-compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
 
@@ -99,22 +99,25 @@ This will not go into much detail about about how to use Docker -- for more deta
     b. "Initialize" the data for the PEcAn database.
 
         ```bash
-        docker-compose run --rm bety initialize
+        docker run --rm --network pecan_pecan pecan/db
         ```
         
         This should produce a lot of output describing the database operations happening under the hood.
-        Some of these will look like errors (including starting with `ERROR`), but _this is normal_.
-        This command succeeded if the output ends with the following:
+        Some of these will look like errors, but _this is normal_.
+        This command succeeded if the output ends with the following (the syntax for creating a new user for accessing BetyDB): 
         
         ```
-        Added carya41 with access_level=4 and page_access_level=1 with id=323
-        Added carya42 with access_level=4 and page_access_level=2 with id=325
-        Added carya43 with access_level=4 and page_access_level=3 with id=327
-        Added carya44 with access_level=4 and page_access_level=4 with id=329
-        Added guestuser with access_level=4 and page_access_level=4 with id=331
+        docker-compose run bety user 'login' 'password' 'full name' 'email' 1 1
         ```
-
-    c. Download and configure the core PEcAn database files.
+    c. Add a user to BetyDB using the example syntax provided as the last line of the output of the previous step:
+       ```bash
+       # guest user
+       docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+       
+       # example user
+       docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
+       ```
+    d. Download and configure the core PEcAn database files.
     
         ```bash
         docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
@@ -128,7 +131,15 @@ This will not go into much detail about about how to use Docker -- for more deta
         Done!
         ###################################################################### 
         ```
-
+    e. Download the [`pecan/docker/env.example`](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker/env.example) & save it as `.env` file.
+       Now, open the `.env` file & uncomment the lines mentioned below:
+       ```{r, echo=FALSE, fig.align='center'}
+       knitr::include_graphics(rep("figures/env-file.PNG"))
+       ```
+       
+       Setting `PECAN_VERSION=develop` indicates that you want to run the bleeding-edge `develop` branch, meaning it may have bugs. To go ahead with the stable version you may set `PECAN_VERSION=latest` or `PECAN_VERSION=<release-number>` (For example `1.7.0`). You can look at the list of all the [releases](https://github.com/pecanproject/pecan/releases) of PEcAn to see what options are availble.
+    
+    
 5. **Start the PEcAn stack**. Assuming all of the steps above completed successfully, start the full stack by running the following shell command:
 
     ```bash

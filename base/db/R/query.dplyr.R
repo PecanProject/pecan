@@ -4,18 +4,31 @@
 #' 
 betyConnect <- function(php.config = "../../web/config.php") {
   ## Read PHP config file for webserver
+  if (file.exists(php.config)) {
+    php_params <- PEcAn.utils::read_web_config(php.config)
+  } else {
+    php_params <- list()
+  }
 
-  config.list <- PEcAn.utils::read_web_config(php.config)
+  ## helper function
+  getphp = function (item, default = "") {
+    value = php_params[[item]]
+    if (is.null(value)) default else value
+  }
+
+  ## fill in all data from environment variables
+  dbparams <- get_postgres_envvars(host = getphp("db_bety_hostname", "localhost"),
+                                   port = getphp("db_bety_port", "5432"),
+                                   dbname = getphp("db_bety_database", "bety"),
+                                   user = getphp("db_bety_username", "bety"),
+                                   password = getphp("db_bety_password", "bety"))
+
+  ## force driver to be postgres (only value supported by db.open)
+  dbparams[["driver"]] <- "Postgres"
 
   ## Database connection
-  # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
-  # objects, so we should replace this with a standard `db.open` call.
-  dplyr::src_postgres(dbname = config.list$db_bety_database,
-               host = config.list$db_bety_hostname,
-               user = config.list$db_bety_username,
-               password = config.list$db_bety_password)
+  db.open(dbparams)
 }  # betyConnect
-
 
 #' Convert number to scientific notation pretty expression
 #' @param l Number to convert to scientific notation
@@ -59,7 +72,7 @@ ncdays2date <- function(time, unit) {
 #' @export
 dbHostInfo <- function(bety) {
   # get host id
-  result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety$con)
+  result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety)
   hostid <- result[["floor"]]
 
   # get machine start and end based on hostid
