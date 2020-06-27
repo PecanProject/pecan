@@ -22,12 +22,13 @@ jobs:
           Rscript -e 'install.packages(c("styler", "devtools"), repos = "cloud.r-project.org")'
           Rscript -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "http://cran.us.r-project.org")'
       - name: string operations
+        shell: bash
         run: |
           echo '${{ steps.file_changes.outputs.files_modified}}' > names.txt
           cat names.txt | tr -d '[]' > changed_files.txt
           text=$(cat changed_files.txt)
           IFS=',' read -ra ids <<< "$text"
-          for i in "${ids[@]}"; do if [ "$i" == *.R\" || "$i" == *.Rmd\" ]; then echo "$i" >> files_to_style.txt; fi; done
+          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> files_to_style.txt; fi; done
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
