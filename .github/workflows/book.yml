@@ -2,10 +2,6 @@ on:
   push:
      branches:
        - master
-       - develop
-       - release/*
-     tags: 
-       - v1.*
 
 
 name: renderbook
