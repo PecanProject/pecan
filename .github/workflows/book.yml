@@ -2,6 +2,11 @@ on:
   push:
      branches:
        - master
+       - develop
+       - release/* 
+     tags:
+       - v1
+       - v1*
 
 # render book
 name: renderbook
@@ -19,6 +24,7 @@ jobs:
         run: Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
       - name: Render Book
         run: cd book_source && Rscript -e 'bookdown::render_book("index.Rmd")'
+        
       - uses: actions/upload-artifact@v2
         with:
           name: _book
