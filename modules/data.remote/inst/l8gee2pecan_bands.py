@@ -204,7 +204,7 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
 if __name__ == "__main__":
     l8gee2pecan_bands(
         "./satellitetools/test.geojson",
-        "./outing",
+        "./out/",
         "2018-01-01",
         "2018-12-31",
         "LANDSAT/LC08/C01/T1_SR",
