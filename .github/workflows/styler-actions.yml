@@ -27,7 +27,7 @@ jobs:
           cat names.txt | tr -d '[]' > changed_files.txt
           text=$(cat changed_files.txt)
           IFS=',' read -ra ids <<< "$text"
-          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> files_to_style.txt; fi; done
+          for i in "${ids[@]}"; do if [ "$i" == *.R\" || "$i" == *.Rmd\" ]; then echo "$i" >> files_to_style.txt; fi; done
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
