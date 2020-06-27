@@ -24,8 +24,6 @@ jobs:
         run: Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
       - name: Render Book
         run: cd book_source && Rscript -e 'bookdown::render_book("index.Rmd")'
-        working-directory: /documentation/
-        
       - uses: actions/upload-artifact@v2
         with:
           name: _book
