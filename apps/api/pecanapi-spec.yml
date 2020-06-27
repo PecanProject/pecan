@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/eb9c2d61
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/912db446
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -130,10 +130,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  $ref: '#/components/schemas/Model'
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items: 
+                      type: object
+                      $ref: '#/components/schemas/Model'
         '401':
           description: Authentication required
         '403':
@@ -391,38 +394,45 @@ components:
       properties:
         id:
           type: string
-        pfts:
-          type: array
-          items: 
-            type: string
-        input_met:
-          type: string
-        modelid:
-          type: string
-        siteid:
-          type: string
-        sitename:
-          type: string
-        sitegroupid:
-          type: string
-        start:
-          type: string
-        end:
-          type: string
-        variables:
-          type: string
-        sensitivity:
-          type: string
-        email:
-          type: string
-        notes:
-          type: string
-        runs:
-          type: string
-        pecan_edit:
-          type: string
-        status:
-          type: string
+        "properties":
+          type: object
+          properties:
+            pfts:
+              type: array
+              items: 
+                type: string
+            input_met:
+              type: string
+            modelid:
+              type: string
+            siteid:
+              type: string
+            sitename:
+              type: string
+            sitegroupid:
+              type: string
+            start:
+              type: string
+            end:
+              type: string
+            variables:
+              type: string
+            sensitivity:
+              type: string
+            email:
+              type: string
+            notes:
+              type: string
+            runs:
+              type: string
+            pecan_edit:
+              type: string
+            status:
+              type: string
+            fluxusername:
+              type: string
+            input_poolinitcond:
+              type: string
   securitySchemes:
     basicAuth:
       type: http

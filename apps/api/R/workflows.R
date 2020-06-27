@@ -117,11 +117,10 @@ getWorkflowDetails <- function(id, res){
   }
   else {
     if(is.na(qry_res$properties)){
-      res <- list(id = id, modelid = qry_res$model_id, siteid = qry_res$site_id)
+      res <- list(id = id, properties = list(modelid = qry_res$model_id, siteid = qry_res$site_id))
     }
     else{
-      res <- jsonlite::parse_json(qry_res$properties[[1]])
-      res$id <- id
+      res <- list(id = id, properties = jsonlite::parse_json(qry_res$properties[[1]]))
     }
     
     return(res)
