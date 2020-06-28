@@ -100,10 +100,12 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
 
         # map NDVI to the image collection and select the NDVI band
         landsat = landsat.map(calcNDVI).select("NDVI")
+        file_name = "_l8ndvi"
 
     # select the user specified bands if NDVI is not be calculated
     else:
         landsat = landsat.select(bands)
+        file_name = "_l8bands"
 
     # if ROI is a point
     if (df.geometry.type == "Point").bool():
@@ -197,7 +199,6 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
         os.makedirs(outdir, exist_ok=True)
 
     # convert the dataset to a netCDF file and save it
-    file_name = "l8ndvi" if vi == True else "l8bands"
     tosave.to_netcdf(os.path.join(outdir, site_name + file_name + ".nc"))
 
 
