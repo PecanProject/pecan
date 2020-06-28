@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 
+- Use initial biomass pools for Sorghum and Setaria #2495, #2496
 - PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
 - PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
 - fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
