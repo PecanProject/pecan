@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Fixed
 
 - Use initial biomass pools for Sorghum and Setaria #2495, #2496
+- PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
 - PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
 - fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
 - Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
@@ -22,9 +23,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - When building sipnet model would not set correct model version
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 - Update ED docker build, will now build version 2.2.0 and git
+- Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
+- model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 
 ### Changed
 
+- Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
 - `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
@@ -40,6 +44,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- PEcAn API that can be used to talk to PEcAn servers. Endpoints to GET the details about the server that user is talking to, PEcAn models, workflows & runs. Authetication enabled. (#2631)
 - New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
 - model_info.json and Dockerfile to template (#2567)
 - Dockerize BASGRA_N model.
