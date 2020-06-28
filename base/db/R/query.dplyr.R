@@ -77,17 +77,23 @@ dbHostInfo <- function(bety) {
 
   # get machine start and end based on hostid
   machine <- dplyr::tbl(bety, "machines") %>%
-    dplyr::filter(sync_host_id == !!hostid) %>%
-    dplyr::select(sync_start, sync_end)
+    dplyr::filter(sync_host_id == !!hostid)
+  
 
   if (is.na(nrow(machine)) || nrow(machine) == 0) {
     return(list(hostid = hostid,
+                hostname = "",
                 start = 1e+09 * hostid,
-                end = 1e+09 * (hostid + 1) - 1))
+                end = 1e+09 * (hostid + 1) - 1,
+                sync_url = "",
+                sync_contact = ""))
   } else {
     return(list(hostid = hostid,
+                hostname = machine$hostname,
                 start = machine$sync_start,
-                end = machine$sync_end))
+                end = machine$sync_end,
+                sync_url = machine$sync_url,
+                sync_contact = machine$sync_contact))
   }
 }  # dbHostInfo
 

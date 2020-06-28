@@ -138,6 +138,7 @@ This will not go into much detail about about how to use Docker -- for more deta
        ```
        
        Setting `PECAN_VERSION=develop` indicates that you want to run the bleeding-edge `develop` branch, meaning it may have bugs. To go ahead with the stable version you may set `PECAN_VERSION=latest` or `PECAN_VERSION=<release-number>` (For example `1.7.0`). You can look at the list of all the [releases](https://github.com/pecanproject/pecan/releases) of PEcAn to see what options are availble.
+
     
     
 5. **Start the PEcAn stack**. Assuming all of the steps above completed successfully, start the full stack by running the following shell command:

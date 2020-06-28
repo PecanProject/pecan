@@ -1,0 +1,442 @@
+openapi: 3.0.0
+servers:
+  - description: PEcAn Tezan VM
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/912db446
+  - description: Localhost
+    url: http://127.0.0.1:8000
+  
+info:
+  title: PEcAn Project API
+  description: >-
+    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan).
+    PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models. 
+  version: "1.0.0"
+  contact:
+    email: "pecanproj@gmail.com"
+  license:
+    name: University of Illinois/NCSA Open Source License
+    url: https://opensource.org/licenses/NCSA
+externalDocs:
+  description: Find out more about PEcAn Project
+  url: https://pecanproject.github.io/
+
+tags:
+  - name: general
+    description: Related to the overall working on the API, details of PEcAn & the server
+  - name: workflows
+    description: Everything about PEcAn workflows
+  - name: runs
+    description: Everything about PEcAn runs
+  - name: models
+    description: Everything about PEcAn models
+
+#####################################################################################################################
+##################################################### API Endpoints #################################################
+#####################################################################################################################
+security:
+  - basicAuth: []
+  
+paths:
+
+  /api/ping:
+    get:
+      summary: Ping the server to check if it is live 
+      tags:
+        - general
+        - 
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  req:
+                    type: string
+                  resp:
+                    type: string
+        '403':
+          description: Access forbidden
+        '404':
+          description: Models not found
+  
+  /api/status:
+    get:
+      summary: Obtain general information about PEcAn & the details of the database host
+      tags:
+        - general
+        - 
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pecan_details:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      branch:
+                        type: string
+                      gitsha1:
+                        type: string
+                  host_details:
+                    type: object
+                    properties:
+                      hostid:
+                        type: string
+                      hostname:
+                        type: string
+                      start:
+                        type: string
+                      end:
+                        type: string
+                      sync_url:
+                        type: string
+                      sync_contact:
+                        type: string
+                  
+        '403':
+          description: Access forbidden
+        '404':
+          description: Models not found
+  
+  /api/models/:
+    get:
+      tags:
+        - models
+        -
+      summary: Details of model(s)
+      parameters:
+        - in: query
+          name: model_name
+          description: Name of the model
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: revision
+          description: Model version/revision
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Available Models 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items: 
+                      type: object
+                      $ref: '#/components/schemas/Model'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model(s) not found
+                  
+  
+  /api/workflows/:
+    get:
+      tags:
+        - workflows
+        -
+      summary: Get the list of workflows 
+      parameters:
+        - in: query
+          name: model_id
+          description: If provided, returns all workflows that use the provided model_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: site_id
+          description: If provided, returns all workflows that use the provided site_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: offset
+          description: The number of workflows to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of workflows to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflows:
+                    type: array
+                    items: 
+                      type: object
+                      $ref: '#/components/schemas/Workflow'
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflows not found
+      
+    post:
+      tags:
+        - workflows
+        - 
+      summary: Submit a new PEcAn workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
+      responses:
+        '201':
+          description: Submitted workflow successfully    
+        '401':
+          description: Authentication required
+      
+
+  /api/workflows/{id}:
+    get:
+      tags:
+        - workflows
+        - 
+      summary: Get the details of a PEcAn Workflow
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found  
+
+
+  
+
+
+  /api/runs/:
+    get:
+      tags:
+        - runs
+        -
+      summary: Get the list of all runs for a specified PEcAn Workflow
+      parameters:
+        - in: query
+          name: workflow_id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: offset
+          description: The number of workflows to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of workflows to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
+      responses:
+        '200':
+          description: List of all runs for the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  runs:
+                    type: array
+                    items: 
+                      type: object
+                      $ref: '#/components/schemas/Run'
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found 
+
+
+  /api/runs/{id}:
+    get:
+      tags:
+        - runs
+        - 
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details about the requested run within the requested PEcAn workflow
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Run'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found
+                  
+
+#####################################################################################################################
+###################################################### Components ###################################################
+#####################################################################################################################
+
+components:
+  schemas:
+    Model:
+      properties:
+        model_id:
+          type: string
+        model_name:
+          type: string
+        revision:
+          type: string
+        modeltype_id:
+          type: string
+        model_type:
+          type: string
+        
+    Run:
+      properties:
+        id:
+          type: string
+        workflow_id:
+          type: string
+        runtype:
+          type: string
+        ensemble_id:
+          type: string
+        model_id:
+          type: string
+        site_id:
+          type: string
+        parameter_list:
+          type: string
+        start_time:
+          type: string
+        finish_time:
+          type: string
+
+    Workflow:
+      properties:
+        id:
+          type: string
+        "properties":
+          type: object
+          properties:
+            pfts:
+              type: array
+              items: 
+                type: string
+            input_met:
+              type: string
+            modelid:
+              type: string
+            siteid:
+              type: string
+            sitename:
+              type: string
+            sitegroupid:
+              type: string
+            start:
+              type: string
+            end:
+              type: string
+            variables:
+              type: string
+            sensitivity:
+              type: string
+            email:
+              type: string
+            notes:
+              type: string
+            runs:
+              type: string
+            pecan_edit:
+              type: string
+            status:
+              type: string
+            fluxusername:
+              type: string
+            input_poolinitcond:
+              type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+
+
