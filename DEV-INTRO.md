@@ -26,15 +26,25 @@ sudo adduser ${USER} docker`.
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
-By default docker-compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. `cp docker-compose.dev.yml docker-compose.override.yml`. You can now use the command `docker-compose` to launch all the containers setup for development. **The rest of this document assumes you have done this step.**
+By default docker-compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. :
 
-If you want to start from scratch and remove all old data, but keep your pecan checked out folder, you can remove the folders where you have written the data (see `folders` below). You will also need to remove any of the docker managed volumes. To see all volumes you can do `docker volume ls -q -f name=pecan`. If you are sure, you can either remove them one by one, or use `docker volume rm $(docker volume ls -q -f name=pecan)` to remove them all. **THIS DESTROYS ALL DATA IN DOCKER MANAGED VOLUMES.**. If you changed the path in `docker-compose.override.yml` you will need to remove that volume as well. This will however not destroy the data since it is already on your local machine.
+For Linux/MacOSX
+
+```
+cp docker-compose.dev.yml docker-compose.override.yml
+```
+
+For Windows
+
+```
+copy docker-compose.dev.yml docker-compose.override.yml
+```
+
+You can now use the command `docker-compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
 
 ### First time setup
 
 The steps in this section only need to be done the fist time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
-
-Before doing anything it is recommended to make sure you have the lastest docker images ready. You can do a `docker-compose pull` to get the latest images.
 
 * setup .env file
 * create folders to hold the data
@@ -48,20 +58,52 @@ Before doing anything it is recommended to make sure you have the lastest docker
 You can copy the [`env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
-* `PECAN_VERSION` set this to develop, the docker image we start with
-Both of these variables should also be uncommented by removing the # preceding them. 
-At the end you should see the following if you run the following command `egrep -v '^(#|$)' .env`
+* PECAN_VERSION` set this to develop, the docker image we start with
+
+Both of these variables should also be uncommented by removing the # preceding them.  At the end you should see the following if you run the following command  `egrep -v '^(#|$)' .env`. If you have a windows system, you will need to set the variable PWD as well, and for linux you will need to set UID and GID (for rstudio).
+
+For Linux
 
 ```
-COMPOSE_PROJECT_NAME=pecan
-PECAN_VERSION=develop
+echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+echo "PECAN_VERSION=develop" >> .env
+echo "UID=$(id -u)" >> .env
+echo "GID=$(id -g)" >> .env
 ```
 
-#### folders
+For MacOSX
+
+```
+echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+echo "PECAN_VERSION=develop" >> .env
+```
+
+For windows:
+
+```
+echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+echo "PECAN_VERSION=develop" >> .env
+echo "PWD=%CD%" >> .env
+```
+
+Once you have setup `docker-compose.override.yml` and the `.env` files, it is time to pull all docker images that will be used. Doing this will make sure you have the latest version of those images on your local system.
+
+```
+docker-compose pull
+```
+
+#### folders (optional)
 
 The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on a presentation done during [DockerCon 2020](https://docker.events.cube365.net/docker/dockercon/content/Videos/92BAM7vob5uQ2spZf). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, you will need to comment out the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
 
-If you have commented out the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with: `mkdir -p $HOME/volumes/pecan/{lib,pecan,portainer,postgres,rabbitmq,traefik}`. The following volumes are specified:
+If you have commented out the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with: 
+
+```
+mkdir -p $HOME/volumes/pecan/{lib,pecan,portainer,postgres,rabbitmq,traefik}
+```
+
+
+The following volumes are specified:
 
 - **pecan_home** : is the checked out folder of PEcAn. This is shared with the executor and rstudio container allowing you to share and compile PEcAn. (defaults to current folder)
 - **pecan_web** : is the checked out web folder of PEcAn. This is shared with the web container allowing you to share and modify the PEcAn web app. (defaults to web folder in the current folder)
@@ -76,35 +118,73 @@ These folders will hold all the persistent data for each of the respective conta
 
 #### postgresql database
 
-First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start): `docker-compose up -d postgres rabbitmq`. This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker-compose logs postgres`) to see if it is ready.
-
-Once the database has finished starting up we will initialize the database. Before we run the container we want to make sure we have the latest database information, you can do this with `docker pull pecan/db`, which will make sure you have the latest version of the database ready. Now you can load the database using: `docker run --rm --network pecan_pecan pecan/db` (in this case we use the latest image instead of develop since it refers to the actual database data, and not the actual code). Once that is done we create two users for BETY:
+First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start): 
 
 ```
-# guest user
-docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+docker-compose up -d postgres rabbitmq
+```
 
-# example user
+This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker-compose logs postgres`) to see if it is ready.
+
+Once the database has finished starting up we will initialize the database. Now you can load the database using the following commands. The first command will make sure we have the latest version of the image, the second command will actually load the information into the database.
+
+```
+docker pull pecan/db
+docker run --rm --network pecan_pecan pecan/db
+```
+
+
+Once that is done we create two users for BETY,  first user is the guest user that you can use to login in the BETY interface. The second user is a user with admin rights.
+
+```
+docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
 docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
 #### load example data
 
-Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. To do this we first again make sure we have the latest code ready using `docker pull pecan/data:develop` and run this image using `docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop`. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers.
+Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers. As with the database we first pull the latest version of the image, and then execute the image to copy all the data:
+
+```
+docker pull pecan/data:develop
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+```
 
 #### copy R packages (optional but recommended)
 
 Next copy the R packages from a container to volume `pecan_lib`. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. This folder is shared with all PEcAn containers, allowing you to compile the code in one place, and have the compiled code available in all other containers. For example modify the code for a model, allows you to compile the code in rstudio container, and see the results in the model container.
 
-You can copy all the data using `docker run -ti --rm -v pecan_lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/`. This will copy all compiled packages to your local machine.
+You can copy all the data using the following command. This will copy all compiled packages to your local machine.
+
+```
+docker run -ti --rm -v pecan_lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/
+```
 
 #### copy web config file (optional)
 
-The `docker-compose.override.yml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using `cp docker/web/config.docker.php web/config.php`.
+The `docker-compose.override.yml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using 
+
+For Linux/MacOSX
+
+```
+cp docker/web/config.docker.php web/config.php
+```
+
+For Windows
+
+```
+copy docker\web\config.docker.php web\config.php
+```
+
+
 
 ### PEcAn Development
 
-To begin development we first have to bring up the full PEcAn stack. This assumes you have done once the steps above. You don't need to stop any running containers, you can use the following command to start all containers: `docker-compose up -d`. At this point you have PEcAn running in docker.
+To begin development we first have to bring up the full PEcAn stack. This assumes you have done once the steps above. You don't need to stop any running containers, you can use the following command to start all containers. At this point you have PEcAn running in docker.
+
+```
+docker-compose up -d
+```
 
 The current folder (most likely your clone of the git repository) is mounted in some containers as `/pecan`, and in the case of rstudio also in your home folder as `pecan`. You can see which containers exactly in `docker-compose.override.yml`.
 
@@ -167,11 +247,22 @@ Small scripts that are used as part of the development and installation of PEcAn
 
 ## Reset all containers/database
 
-At some point you might want to reset your database. 
+If you want to start from scratch and remove all old data, but keep your pecan checked out folder, you can remove the folders where you have written the data (see `folders` below). You will also need to remove any of the docker managed volumes. To see all volumes you can do `docker volume ls -q -f name=pecan`. If you are sure, you can either remove them one by one, or remove them all at once using the command below. **THIS DESTROYS ALL DATA IN DOCKER MANAGED VOLUMES.**.
 
-## New version of R
+```
+docker volume rm $(docker volume ls -q -f name=pecan)
+```
 
-This only needs to be done once (or if the PEcAn base image changes drastically, for example a new version of R). Firs stop the full stack (using `docker-compose down`). You can delete the volume using `docker rm pecan_lib` (also remvove the folder on your local disk), copy the R packages, and start the full stack.
+If you changed the docker-compose.override.yml file to point to a location on disk for some of the containers (instead of having them managed by docker) you will need to actually delete the data on your local disk, docker will NOT do this.
+
+## Reset the lib folder
+
+If you want to reset the pecan lib folder that is mounted across all machines, for example when there is a new version of PEcAn or a a new version of R, you will need to delete the volume pecan_lib, and repopulate it. To delete the volume use the following command, and then look at "copy R packages" to copy the data again.
+
+```
+docker-compose down
+docker rm pecan_lib
+```
 
 ## Linux and User permissions
 
