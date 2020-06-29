@@ -58,7 +58,7 @@ The steps in this section only need to be done the fist time you start working w
 You can copy the [`env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
-* PECAN_VERSION` set this to develop, the docker image we start with
+* `PECAN_VERSION` set this to develop, the docker image we start with
 
 Both of these variables should also be uncommented by removing the # preceding them.  At the end you should see the following if you run the following command  `egrep -v '^(#|$)' .env`. If you have a windows system, you will need to set the variable PWD as well, and for linux you will need to set UID and GID (for rstudio).
 
