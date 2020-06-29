@@ -835,7 +835,7 @@ check.model.settings <- function(settings, dbcon = NULL) {
           con = dbcon)
         if (nrow(model) > 1) {
           PEcAn.logger::logger.warn(
-            "multiple records for", settings$model$name,
+            "multiple records for", settings$model$type,
             "returned; using the latest")
           row <- which.max(model$updated_at)
           if (length(row) == 0) row <- nrow(model)
