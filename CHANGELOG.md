@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 
+- Use initial biomass pools for Sorghum and Setaria #2495, #2496
 - PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
 - PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
 - fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
@@ -23,6 +24,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Update pecan/depends docker image to have latest Roxygen and devtools.
 - Update ED docker build, will now build version 2.2.0 and git
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
+- model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 
 ### Changed
 
@@ -43,6 +45,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 
 - Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
+- PEcAn API that can be used to talk to PEcAn servers. Endpoints to GET the details about the server that user is talking to, PEcAn models, workflows & runs. Authetication enabled. (#2631)
 - New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
 - model_info.json and Dockerfile to template (#2567)
 - Dockerize BASGRA_N model.

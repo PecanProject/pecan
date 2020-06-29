@@ -297,9 +297,9 @@ services:
     volumes:
       - pecan:/data
 
-# ----------------------------------------------------------------------
-# Shiny Apps
-# ----------------------------------------------------------------------
+  # ----------------------------------------------------------------------
+  # Shiny Apps
+  # ----------------------------------------------------------------------
   # PEcAn DB Sync visualization
   dbsync:
     image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
@@ -313,6 +313,27 @@ services:
       - "traefik.backend=dbsync"
       - "traefik.port=3838"
       - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
+
+
+  # ----------------------------------------------------------------------
+  # PEcAn API
+  # ----------------------------------------------------------------------
+  api:
+    image: pecan/api:${PECAN_VERSION:-latest}
+    networks:
+      - pecan
+    environment:
+      - PECAN_VERSION=${PECAN_VERSION:-1.7.0}
+      - PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH:-develop}
+      - PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM:-unknown}
+      - PECAN_GIT_DATE=${PECAN_GIT_DATE:-unknown}
+      - PGHOST=${PGHOST:-postgres}
+      - HOST_ONLY=${HOST_ONLY:-FALSE}
+      - AUTH_REQ=${AUTH_REQ:-TRUE}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
+      - "traefik.backend=api"
 
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers

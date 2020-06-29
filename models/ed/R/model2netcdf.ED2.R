@@ -280,10 +280,23 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     }
   }
   
-  CheckED2Version <- function(nc) {
+  CheckED2Variables <- function(nc) {
+    vars_detected <- NULL
+    name_convention <- NULL
+  
     if ("FMEAN_BDEAD_PY" %in% names(nc$var)) {
-      return("Git")
+      vars_detected <- c(vars_detected,"FMEAN_BDEAD_PY")
+      name_convention <- "Contains_FMEAN"
     }
+    if ("FMEAN_SOIL_TEMP_PY" %in% names(nc$var)) {
+      vars_detected <- c(vars_detected, "FMEAN_SOIL_TEMP_PY")
+      name_convention <- "Contains_FMEAN"
+    }
+    if(!is.null(vars_detected)){
+      PEcAn.logger::logger.warn(paste("Found variable(s): ", paste(vars_detected, collapse = " "), ", now processing FMEAN* named variables. Note that varible naming conventions may change with ED2 version."))
+    }
+    
+    return(name_convention)
   }
 
   # note that there is always one Tower file per year
@@ -324,8 +337,8 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     slzdata <- array(c(-2, -1.5, -1, -0.8, -0.6, -0.4, -0.2, -0.1, -0.05))
   }
   
-  ## Check for which version of ED2 we are using.
-  ED2vc <- CheckED2Version(ncT)
+  ## Check for what naming convention of ED2 vars we are using. May change with ED2 version. 
+  ED2vc <- CheckED2Variables(ncT)
   
   ## store for later use, will only use last data
   dz <- diff(slzdata)
