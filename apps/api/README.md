@@ -10,7 +10,7 @@ Follow the following steps to spin up the PEcAn API server locally:
 
 ```bash
 $ cd R
-$ Rscript entrypoint.R
+$ ./entrypoint.R
 ```
 
 ## Running the tests:
