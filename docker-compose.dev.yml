@@ -1,0 +1,105 @@
+# mkdir -p volumes/{lib,pecan,portainer,postgres,rabbitmq,traefik}
+# 
+# docker-compose -f docker-compose.yml -f docker-compose.dev.yml
+
+version: '3.2'
+
+services:
+
+  # web application. This expects the config.php to be copied from docker/web
+  # cp docker/web/config.docker.php web/config.php
+  #web:
+  #  volumes:
+  #    - 'pecan_web:/var/www/html/pecan'
+
+  # executor can compile the code
+  executor:
+    volumes:
+      - 'pecan_home:/pecan/'
+      - 'pecan_lib:/usr/local/lib/R/site-library/'
+
+  # use same for R development in rstudio
+  rstudio:
+    volumes:
+      - 'pecan_home:/pecan/'
+      - 'pecan_home:/home/carya/pecan/'
+      - 'pecan_lib:/usr/local/lib/R/site-library/'
+
+  # use following as template for other models
+  # this can be used if you are changng the code for a model in PEcAN
+  sipnet:
+    volumes:
+      - 'pecan_lib:/usr/local/lib/R/site-library/'    
+
+  # this will open postgres to the hostcompute
+  #postgres:
+  #  ports:
+  #    - '5432:5432'
+
+  # Allow to see all docker containers running, restart and see log files.
+  #portainer:
+  #  image: portainer/portainer:latest
+  #  command:
+  #    - --admin-password=${PORTAINER_PASSWORD:-}
+  #    - --host=unix:///var/run/docker.sock
+  #  restart: unless-stopped
+  #  networks:
+  #    - pecan
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.backend=portainer"
+  #    - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /portainer"
+  #    - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+  #  volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock
+  #    - portainer:/data
+
+# -----------------------------------------------------------------------
+# Theser are the volumes mounted into the containers. For speed reasons
+# it is best to use docker native containers (less important on Linux).
+# The pecan_home and pecan_web are important since this allows us to
+# share the PEcAn source code from local machine to docker containers.
+# Volumes are placed outside of the PEcAn source tree to allow for
+# optimized caching of the changed files.
+# -----------------------------------------------------------------------
+volumes:
+  pecan_home:
+    driver_opts:
+      type: none
+      device: '${PWD}'
+      o: bind
+  pecan_web:
+    driver_opts:
+      type: none
+      device: '${PWD}/web/'
+      o: bind
+  pecan_lib:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/lib'
+  #    o: bind
+  #pecan:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/pecan'
+  #    o: bind
+  #traefik:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/traefik'
+  #    o: bind
+  #postgres:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/postgres'
+  #    o: bind
+  #rabbitmq:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/rabbitmq'
+  #    o: bind
+  portainer:
+  #  driver_opts:
+  #    type: none
+  #    device: '${HOME}/volumes/pecan/portainer'
+  #    o: bind
