@@ -164,7 +164,7 @@ print(json.dumps(response.json(), indent=2))
 # Get model(s) with `model_name` = SIPNET & `revision` = ssr
 res <- httr::GET(
          "http://localhost:8000/api/models/?model_name=SIPNET&revision=ssr",
-         authenticate("carya", "illinois")
+         httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
@@ -210,7 +210,7 @@ print(json.dumps(response.json(), indent=2))
 # Get workflow(s) that use `model_id` = 1000000022 [SIPNET] & `site_id` = 676 [Willow Creek (US-WCr)]
 res <- httr::GET(
          "http://localhost:8000/api/workflows/?model_id=1000000022&site_id=676",
-         authenticate("carya", "illinois")
+         httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
@@ -276,7 +276,7 @@ print(json.dumps(response.json(), indent=2))
 # Get details of workflow with `id` = '1000009172'
 res <- httr::GET(
          "http://localhost:8000/api/workflows/1000009172",
-         authenticate("carya", "illinois")
+         httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
@@ -378,7 +378,7 @@ print(json.dumps(response.json(), indent=2))
 # Get list of run belonging to the workflow with `workflow_id` = '1000009172'
 res <- httr::GET(
          "http://localhost:8000/api/runs/?workflow_id=1000009172",
-         authenticate("carya", "illinois")
+         httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
@@ -435,7 +435,7 @@ print(json.dumps(response.json(), indent=2))
 # Get details of run belonging with `id` = '1002042201'
 res <- httr::GET(
          "http://localhost:8000/api/runs/1002042201",
-         authenticate("carya", "illinois")
+         httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
