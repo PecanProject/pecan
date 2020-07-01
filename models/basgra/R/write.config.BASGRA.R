@@ -543,6 +543,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   jobsh <- gsub("@SITE_MET@",     settings$run$inputs$met$path,     jobsh)
   jobsh <- gsub("@SITE_HARVEST@", settings$run$inputs$harvest$path, jobsh)
+  jobsh <- gsub("@SITE_FERTILIZE@", settings$run$inputs$fertilize$path, jobsh)
+  if(!is.null(settings$run$inputs$co2_file$path)){
+    jobsh <- gsub("@SITE_CO2FILE@", settings$run$inputs$co2_file$path, jobsh)
+  }else{
+    jobsh <- gsub("@SITE_CO2FILE@", 'NULL', jobsh)
+  }
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
