@@ -23,7 +23,7 @@ Authentication also depends on the PEcAn server that the user interacts with. So
 
 This page contains the high-level overviews & the functionalities offered by the different RESTful endpoints of the PEcAn API. 
 
-__For the most up-to-date documentation, you can visit the [PEcAn API Documentation](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/tezansahu/pecan/api_1/apps/api/pecanapi-spec.yml).__
+__For the most up-to-date documentation, you can visit the [PEcAn API Documentation](http://pecan-dev.ncsa.illinois.edu/swagger/).__
 
 The currently implemented functionalities include:
 
