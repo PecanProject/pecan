@@ -292,22 +292,37 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "LOG10LAII")] <- lai
     }
     
-    # This is IC
     # Initial value of litter C (g C m-2)
     clitt0 <- try(ncdf4::ncvar_get(IC.nc, "litter_carbon_content"), silent = TRUE)
     if (!is.na(clitt0) && is.numeric(clitt0)) {
       run_params[which(names(run_params) == "CLITT0")] <- udunits2::ud.convert(clitt0, "kg", "g")
     }
     
-    # This is IC
-    # Initial value of SOM (g C m-2)
-    csom0 <- try(ncdf4::ncvar_get(IC.nc, "TotSoilCarb"), silent = TRUE)
-    if (!is.na(csom0) && is.numeric(csom0)) {
-      run_params[which(names(run_params) == "CSOM0")] <- udunits2::ud.convert(csom0, "kg", "g")
-      # CSOMF      = CSOM0 * FCSOMF0
-      run_params[names(run_params) == "CSOMF0"]  <- udunits2::ud.convert(csom0 * run_params[names(run_params) == "FCSOMF0"], "kg", "g")
-      # CSOMS      = CSOM0 * (1-FCSOMF0)
-      run_params[names(run_params) == "CSOMS0"]  <- udunits2::ud.convert(csom0 * (1 - run_params[names(run_params) == "FCSOMF0"]), "kg", "g")
+ 
+    # Initial value of slow SOM (g C m-2)
+    csoms0 <- try(ncdf4::ncvar_get(IC.nc, "slow_soil_pool_carbon_content"), silent = TRUE)
+    if (!is.na(csoms0) && is.numeric(csoms0)) {
+      run_params[which(names(run_params) == "CSOMS0")] <- udunits2::ud.convert(csoms0, "kg", "g")
+    }
+    
+    # Initial value of fast SOM (g C m-2)
+    csomf0 <- try(ncdf4::ncvar_get(IC.nc, "fast_soil_pool_carbon_content"), silent = TRUE)
+    if (!is.na(csomf0) && is.numeric(csomf0)) {
+      run_params[which(names(run_params) == "CSOMF0")] <- udunits2::ud.convert(csomf0, "kg", "g")
+    }
+    
+    # Initial value of root C (g C m-2)
+    crti <- try(ncdf4::ncvar_get(IC.nc, "root_carbon_content"), silent = TRUE)
+    if (!is.na(crti) && is.numeric(crti)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CRTI")] <- udunits2::ud.convert(crti, "kg", "g")
+    }
+    
+    # Initial value of leaf C (g C m-2)
+    clvi <- try(ncdf4::ncvar_get(IC.nc, "leaf_carbon_content"), silent = TRUE)
+    if (!is.na(clvi) && is.numeric(clvi)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CLVI")] <- udunits2::ud.convert(clvi, "kg", "g")
     }
     
     # Initial mineral N
@@ -316,6 +331,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "NMIN0")] <- udunits2::ud.convert(nmin0, "kg", "g")
     }
     
+    # Rooting depth (m)
+    rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
+    if (!is.na(rootd) && is.numeric(rootd)) {
+      run_params[which(names(run_params) == "ROOTDM")] <- rootd
+    }
     
     # WCI
     wci <- try(ncdf4::ncvar_get(IC.nc, "SoilMoistFrac"), silent = TRUE)
@@ -323,38 +343,43 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "WCI")] <- wci
     }
     
-
-    # 
-    # # This is IC, change later
-    # # Initial C-N ratio of litter (g C g-1 N)
-    # if ("c2n_litter" %in% pft.names) {
-    #   run_params[which(names(run_params) == "CNLITT0")] <- 100*pft.traits[which(pft.names == "c2n_litter")]
-    # }
-    # 
-    # # Initial C-N ratio of fast SOM (g C g-1 N)
-    # if ("c2n_fSOM" %in% pft.names) {
-    #   run_params[which(names(run_params) == "CNSOMF0")] <- pft.traits[which(pft.names == "c2n_fSOM")]
-    # }
-    # 
-    # # Initial C-N ratio of slow SOM (g C g-1 N)
-    # if ("c2n_sSOM" %in% pft.names) {
-    #   run_params[which(names(run_params) == "CNSOMS0")] <- pft.traits[which(pft.names == "c2n_sSOM")]
-    # }
-    # 
+    # Tiller density (m-2)
+    tiltoti <- try(ncdf4::ncvar_get(IC.nc, "tiller_density"), silent = TRUE)
+    if (!is.na(tiltoti) && is.numeric(tiltoti)) {
+      run_params[which(names(run_params) == "TILTOTI")] <- tiltoti
+    }
     
-    # 
-    # 
-    # # Water concentration at saturation (m3 m-3)
-    # if ("volume_fraction_of_water_in_soil_at_saturation" %in% pft.names) {
-    #   run_params[which(names(run_params) == "WCST")] <- pft.traits[which(pft.names == "volume_fraction_of_water_in_soil_at_saturation")]
-    # }
+    # Phenological stage
+    pheni <- try(ncdf4::ncvar_get(IC.nc, "phenological_stage"), silent = TRUE)
+    if (!is.na(pheni) && is.numeric(pheni)) {
+      run_params[which(names(run_params) == "PHENI")] <- pheni
+    }
     
-    # # Temperature that kills half the plants in a day (degrees Celcius)
-    # if ("plant_min_temp" %in% pft.names) {
-    #   run_params[which(names(run_params) == "LT50I")] <- pft.traits[which(pft.names == "plant_min_temp")]
-    # }
+    # Initial C in reserves (g C m-2)
+    cresi <- try(ncdf4::ncvar_get(IC.nc, "reserve_carbon_content"), silent = TRUE)
+    if (!is.na(cresi) && is.numeric(cresi)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CRESI")] <- udunits2::ud.convert(cresi, "kg", "g")
+    }
     
-    #}
+    # N-C ratio of roots
+    n2c <- try(ncdf4::ncvar_get(IC.nc, "n2c_roots"), silent = TRUE)
+    if (!is.na(n2c) && is.numeric(n2c)) {
+      run_params[which(names(run_params) == "NCR")] <- n2c
+    }
+    
+    # Initial C-N ratio of fast SOM
+    c2n <- try(ncdf4::ncvar_get(IC.nc, "c2n_fast_pool"), silent = TRUE)
+    if (!is.na(c2n) && is.numeric(c2n)) {
+      run_params[which(names(run_params) == "CNSOMF0")] <- c2n
+    }
+    
+    # Water concentration at saturation (m3 m-3)
+    wcst <- try(ncdf4::ncvar_get(IC.nc, "water_concentration_at_saturation"), silent = TRUE)
+    if (!is.na(wcst) && is.numeric(wcst)) {
+      run_params[which(names(run_params) == "WCST")] <- wcst
+    }
+    
   }
   
   # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR
@@ -402,7 +427,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   ######################### PREVIOUS STATE #########################
   ##################################################################
   
-  # developing hack: overwrite initial values with previous time steps
+  # overwrite initial values with previous time steps
+  # as model2netcdf is developed, some or all of these can be dropped?
   last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
   
   if(file.exists(last_states_file)){
@@ -442,12 +468,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
     # run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
-    
-    # FCSOMF0   handled above
-    
-    # CNSOMF0   = pa( 85) ! (g C g-1 N)  Initial C/N ratio of fast-decomposing OM
-    # csomf <- run_params[which(names(run_params) == "FCSOMF0")] * run_params[which(names(run_params) == "CSOM0")]
-    # run_params[names(run_params) == "CNSOMF0"] <- csomf / last_vals[names(last_vals) == "NSOMF"]
     
     # CNSOMS0   = pa( 86) ! (g C g-1 N)  Initial C/N ratio of slowly decomposing OM
     # csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
