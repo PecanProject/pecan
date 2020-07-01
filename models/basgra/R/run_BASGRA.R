@@ -13,18 +13,21 @@
 ##' @param run_met path to CF met
 ##' @param run_params parameter vector
 ##' @param site_harvest path to harvest file
+##' @param site_fertilize path to fertilizer application file
 ##' @param start_date start time of the simulation
 ##' @param end_date end time of the simulation
 ##' @param outdir where to write BASGRA output
 ##' @param sitelat latitude of the site
 ##' @param sitelon longitude of the site
+##' @param co2_file path to daily atmospheric CO2 concentration file, optional, defaults to 350 ppm when missing
 ##' 
 ##' @export
 ##' @useDynLib PEcAn.BASGRA, .registration = TRUE
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 
-run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, outdir, sitelat, sitelon){
+run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_date, end_date, outdir, 
+                       sitelat, sitelon, co2_file = NULL){
   
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
   end_date    <- as.POSIXlt(end_date, tz = "UTC")
@@ -50,7 +53,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
       }else if(year != start_year & year == end_year){
         simdays <- seq(1, lubridate::yday(end_date))
       }else{
-        simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
+        if(year == start_year & year == end_year){
+          simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
+        }else{
+          simdays <- 1:365 #seq_len(PEcAn.utils::days_in_year(year))
+        }
+        
       }
       
       
@@ -146,7 +154,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
     matrix_weather <- do.call("rbind", out.list)
     
     #BASGRA wants the matrix_weather to be of 10000 x 8 matrix
-    NMAXDAYS <- as.integer(10000)
+    NMAXDAYS <- as.integer(365000)
     nmw      <- nrow(matrix_weather)
     if(nmw > NMAXDAYS){
       matrix_weather <- matrix_weather[seq_len(NMAXDAYS), ]
@@ -234,15 +242,27 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   
   NDAYS <- as.integer(sum(matrix_weather[,1] != 0))
   
-  calendar_fert     <- matrix( 0, nrow=100, ncol=3 )
-  calendar_Ndep     <- matrix( 0, nrow=100, ncol=3 )
+  matrix_weather <- cbind( matrix_weather, matrix_weather[,8]) #add a col
+  if(!is.null(co2_file)){
+    co2val <- utils::read.table(co2_file, header=TRUE, sep = ",")
+    matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[,1], matrix_weather[,2]),3]
+  }else{
+    PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 350 ppm.")
+    matrix_weather[1:NDAYS,9] <- 350
+  }
+
+  
+  calendar_fert     <- matrix( 0, nrow=300, ncol=3 )
+  
+  # read in harvest days
+  f_days <- as.matrix(utils::read.table(site_fertilize, header = TRUE, sep = ","))
+  calendar_fert[1:nrow(f_days),] <- f_days
+  
+  calendar_Ndep     <- matrix( 0, nrow=300, ncol=3 )
   #calendar_Ndep[1,] <- c(1900,  1,0)
   #calendar_Ndep[2,] <- c(2100, 366, 0)
-  days_harvest      <- matrix( as.integer(-1), nrow=100, ncol=2 )
   
   # hardcoding these for now, should be able to modify later on
-  calendar_fert[1,] <- c( 2018, 202, 65*1000/ 10000      ) # 140 kg N ha-1 applied on day 115
-  calendar_fert[2,] <- c( 2018, 233, 40*1000/ 10000      ) #  80 kg N ha-1 applied on day 150
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
   calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
   calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
@@ -250,8 +270,21 @@ run_BASGRA <- function(run_met, run_params, site_harvest, start_date, end_date, 
   
   # read in harvest days
   h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
-  days_harvest[1:nrow(h_days),] <- h_days
+  days_harvest[1:nrow(h_days),] <- h_days[,1:2]
+
   days_harvest <- as.integer(days_harvest)
+  
+  # This is a management specific parameter
+  # I'll pass it via harvest file as the 3rd column
+  # even though it won't change from harvest to harvest, it may change from run to run
+  # but just in case users forgot to add the third column to the harvest file:
+  if(nrow(h_days) == 3){
+    run_params[names(run_params) == "CLAIV"] <- h_days[1,3]
+  }else{
+    PEcAn.logger::logger.info("Maximum LAI remaining after harvest is not provided via harvest file. Assuming CLAIV=1.")
+    run_params[names(run_params) == "CLAIV"] <- 1
+  }
+  
   
   # run  model
   output <- .Fortran('BASGRA',

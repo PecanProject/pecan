@@ -47,6 +47,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[ind] <- pft.traits[mi]
     }
     
+    
+      
     # Maximum SLA of new leaves
     if ("SLAMAX" %in% pft.names) {
       run_params[which(names(run_params) == "SLAMAX")] <- udunits2::ud.convert(pft.traits[which(pft.names == "SLAMAX")], "kg-1","g-1")
@@ -219,6 +221,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "DAYLP")] <- pft.traits[which(pft.names == "min_daylength_slow")]
     }
     
+    # Day length below which DAYLGE becomes less than 1
+    if ("daylength_effect" %in% pft.names) {
+      run_params[which(names(run_params) == "DLMXGE")] <- pft.traits[which(pft.names == "daylength_effect")]
+    }
+    
     # LAI above which shading induces leaf senescence
     if ("lai_senescence" %in% pft.names) {
       run_params[which(names(run_params) == "LAICR")] <- pft.traits[which(pft.names == "lai_senescence")]
@@ -316,11 +323,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "WCI")] <- wci
     }
     
-    
-    # # Initial fraction of SOC that is fast (g C g-1 C)
-    # if ("r_fSOC" %in% pft.names) {
-    #   run_params[which(names(run_params) == "FCSOMF0")] <- pft.traits[which(pft.names == "r_fSOC")]
-    # }
+
     # 
     # # This is IC, change later
     # # Initial C-N ratio of litter (g C g-1 N)
@@ -336,11 +339,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # # Initial C-N ratio of slow SOM (g C g-1 N)
     # if ("c2n_sSOM" %in% pft.names) {
     #   run_params[which(names(run_params) == "CNSOMS0")] <- pft.traits[which(pft.names == "c2n_sSOM")]
-    # }
-    # 
-    # # Initial value of soil mineral N (g N m-2)
-    # if ("NMIN" %in% pft.names) {
-    #   run_params[which(names(run_params) == "NMIN0")] <- pft.traits[which(pft.names == "NMIN")]
     # }
     # 
     

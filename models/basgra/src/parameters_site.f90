@@ -7,7 +7,7 @@ real, parameter       :: DELT   =   1.0
 real                  :: LAT
 
 ! Atmospheric conditions
-real, parameter       :: CO2A   = 350   
+! real, parameter       :: CO2A   = 350   
 
 ! Soil
 real, parameter       :: DRATE  =  50

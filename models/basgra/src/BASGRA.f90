@@ -23,17 +23,17 @@ use soil
 use plant
 implicit none
 
-integer, dimension(100,2) :: DAYS_HARVEST
+integer, dimension(300,2) :: DAYS_HARVEST
 real                      :: PARAMS(140)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
 #else
-  integer, parameter      :: NWEATHER =  8
+  integer, parameter      :: NWEATHER =  9
 #endif
 real                      :: MATRIX_WEATHER(NMAXDAYS,NWEATHER)
-real   , dimension(100,3) :: CALENDAR_FERT, CALENDAR_NDEP
-integer, dimension(100,2) :: DAYS_FERT    , DAYS_NDEP
-real   , dimension(100)   :: NFERTV       , NDEPV
+real   , dimension(300,3) :: CALENDAR_FERT, CALENDAR_NDEP
+integer, dimension(300,2) :: DAYS_FERT    , DAYS_NDEP
+real   , dimension(300)   :: NFERTV       , NDEPV
 
 integer                   :: day, doy, i, NDAYS, NOUT, year
 real                      :: y(NDAYS,NOUT)
@@ -86,6 +86,7 @@ TMMXI  = MATRIX_WEATHER(:,5)
   VPI   = MATRIX_WEATHER(:,6)
   RAINI = MATRIX_WEATHER(:,7)
   WNI   = MATRIX_WEATHER(:,8)
+  CO2   = MATRIX_WEATHER(:,9)
 #endif
 
 ! Calendars
@@ -164,6 +165,16 @@ do day = 1, NDAYS
   ! Plant
   call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
                                                        GSTUB,HARVLA,HARVLV,HARVPH,HARVRE,HARVST,HARVTILG2)
+                                                       
+      
+  CLV     = CLV     - HARVLV
+  CRES    = CRES    - HARVRE
+  CST     = CST     - HARVST
+  LAI     = LAI     - HARVLA
+  PHEN    = min(1., PHEN - HARVPH)
+  TILG2   = TILG2   - HARVTILG2
+  NSH       = NSH   - HARVNSH 
+  
   call Biomass        (CLV,CRES,CST)
   call Phenology      (DAYL,PHEN,                      DPHEN,GPHEN)
   call Foliage1
@@ -206,18 +217,18 @@ do day = 1, NDAYS
                        F_DIGEST_DM,F_DIGEST_DMSH,F_DIGEST_LV,F_DIGEST_ST,F_DIGEST_WALL)
 
 ! State equations plants
-  CLV     = CLV     + GLV   - DLV    - HARVLV
+  CLV     = CLV     + GLV   - DLV    
   CLVD    = CLVD            + DLV
-  CRES    = CRES    + GRES  - RESMOB - HARVRE
+  CRES    = CRES    + GRES  - RESMOB 
   CRT     = CRT     + GRT   - DRT
-  CST     = CST     + GST           - HARVST
+  CST     = CST     + GST          
   CSTUB   = CSTUB   + GSTUB - DSTUB
-  LAI     = LAI     + GLAI - DLAI   - HARVLA
+  LAI     = LAI     + GLAI - DLAI   
   LT50    = LT50    + DeHardRate - HardRate
-  PHEN    = min(1., PHEN + GPHEN - DPHEN - HARVPH)
+  PHEN    = min(1., PHEN + GPHEN - DPHEN)
   ROOTD   = ROOTD   + RROOTD
   TILG1   = TILG1           + TILVG1 - TILG1G2
-  TILG2   = TILG2                    + TILG1G2 - HARVTILG2
+  TILG2   = TILG2                    + TILG1G2 
   TILV    = TILV    + GTILV - TILVG1           - DTILV
   TILTOT  = TILG1 + TILG2 + TILV
   if((LAT>0).AND.(doy==305)) VERN = 0  
@@ -228,7 +239,7 @@ do day = 1, NDAYS
   YIELD_TOT = YIELD_TOT + YIELD
   
   NRT       = NRT   + GNRT - DNRT
-  NSH       = NSH   + GNSH - DNSH - HARVNSH - NSHmob
+  NSH       = NSH   + GNSH - DNSH - NSHmob
   
   NCR       = NRT / CRT
 
