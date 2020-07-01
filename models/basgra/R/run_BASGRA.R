@@ -197,7 +197,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "NSOURCE"    , "NSINK"            ,                                    # 96:97
     "NRT"        , "NCRT"             ,                                    # 98:99
     "rNLITT"     , "rNSOMF"           ,                                    # 100:101
-    "DAYL"                                                                 # 102
+    "DAYL"       , "EVAP"             , "TRAN"                             # 102:104
   )
   
   outputUnits <- c(
@@ -226,7 +226,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "(g N m-2 d-1)", "(g N m-2 d-1)",                                                # 96:97
     "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 98:99
     "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 100:101
-    "(d d-1)"                                                                        # 102
+    "(d d-1)"      , "(mm d-1)"     , "(mm d-1)"                                     # 102:104
   )
   
   NOUT <- as.integer( length(outputNames) )

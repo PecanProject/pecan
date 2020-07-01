@@ -385,6 +385,8 @@ do day = 1, NDAYS
   y(day,101) = rNSOMF
   
   y(day,102) = DAYL
+  y(day,103) = EVAP
+  y(day,104) = TRAN
 
 enddo
 
