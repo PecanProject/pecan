@@ -63,8 +63,8 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
 library(rjags)
 #library(PEcAn.data.land)
 jags.comb <- NULL
-file.base.name <- "X2_Xscaled_forecasted_2018_reg."
-output.base.name <- "X2_Xscaled_forecasted_2018_reg"
+file.base.name <- "X2_Xscaled_forecasted_2018_rand_slope."
+output.base.name <- "X2_Xscaled_forecasted_2018_rand_slope"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 #workingdir <- "/Users/kah/Documents/docker_pecan/pecan"
@@ -74,8 +74,8 @@ cov.data = cov.data
 
 jags.comb <- NULL
 
-for(i in 190:200){ # note this model stopped early b/c convergence
-  load(paste0(workingdir,"/IGF_PIPO_AZ_mcmc/", file.base.name,i,".RData"))
+for(i in 318:326){ # note this model stopped early b/c convergence
+  load(paste0(workingdir,"/IGF_PIPO_AZ_mcmc/cyverse_runs/", file.base.name,i,".RData"))
   new.out <- jags.out 
   
   if(is.null(jags.comb)){
@@ -114,6 +114,23 @@ jags.comb <- as.mcmc.list(jags.comb)
 
 # read in the held out DBH measurement dataframe
 df.validation <- readRDS("INV_FIA_DATA/data/post2010.core.validation.rds")
+df.validation <- readRDS("FIA_inc_data/post2010.core.validation.rds")
+
+jags.data <- readRDS("jags.data.basic.rds")
+cov.data <- jags.data$cov.data
+data <- jags.data$data
+data$time <- 1966:2018
+data$y <- cbind(data$y, matrix(NA, nrow = nrow(data$y), ncol = 8))
+colnames(data$y)<- 1966:2018
+data$z <- cbind(data$z, matrix(NA, nrow = nrow(data$y), ncol = 8))
+colnames(data$z)<- 1966:2018
+data$nt <- length(1966:2018)
+data$nt2 <- rep(length(1966:2018), 515)
+data$endyr <- rep(length(1966:2018), 515)
+
+yvals <- data$y
+ndex.dups <- duplicated(yvals)
+yvals.new <- yvals[!ndex.dups,]
 #colnames(df.validation)[10] <- "T2_FIADB_PLOT"
 # df.validation contains the PLOT, SUBP, TREE, COUNTYCD to match with the temp2 or cov.data dataframes
 cov.data[cov.data$T2_FIADB %in% df.validation$PLOT,]
@@ -121,9 +138,9 @@ cov.data[cov.data$T2_FIADB %in% df.validation$PLOT,]
 cored <- newtemp2[, c("PlotNo", "SubplotNo", "TreeNo", "CountyNo", "DBH", "T1_DIA", "T2_DIA", "T1_MEASYR", "T2_MEASYR", "T2_FIADB_PLOT" )] 
 colnames(cored)[1:4] <- c("PlotNo", "SUBP", "TREE", "COUNTYCD")
 colnames(cored)[10] <- "PLOT"
-#cored <- cored[!duplicated(cored),]
+cored <- cored[!duplicated(cored),]
 
-cored$id <- 1:515 # set an id to preserve tree order in the output
+cored$id <- 1:length(cored$PlotNo) # set an id to preserve tree order in the output
 cov.data.joined <- merge(cored, df.validation[, c("PLOT", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PLOT"), all.x = TRUE, sort = F)
 cored[1:3,]
 
@@ -158,10 +175,10 @@ x.cols   <- which(substr(colnames(out), 1, 1) == "x") # grab the state variable 
 
 ci      <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
 ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
-total.index <- 1:515
+total.index <- 1:544
 index.smp <- cov.data.ordered[!is.na(cov.data.ordered$max.invyr),]$id # get the row index of all trees with additional measurements
 #smp <- sample.int(data$ni, min(8, data$ni)) # select a random sample of 8 trees to plot
-smp <- index.smp
+smp <- index.smp[1:181]
 
 in.sample.obs <- out.sample.obs<- list()
 

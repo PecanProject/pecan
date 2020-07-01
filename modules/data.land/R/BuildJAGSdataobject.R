@@ -1,7 +1,7 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDISTURBED = FALSE,trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
+buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, forecast =FALSE, YEARDISTURBED = FALSE,trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
   
   # helper function
   # for standardizing covariates (from K. Holsinger)
@@ -130,14 +130,14 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
   ### just gonna do 24 climate variables (Tmax and Ppt)
   
-  PRISM.years <- seq(from=1895, to=2015) #length = 121
+  PRISM.years <- seq(from=1895, to=2010) #length = 121
   index.start.climate <- which(PRISM.years == trunc.yr)
   index.end.climate <- index.start.climate+(last.meas.yr-trunc.yr)
   PRISM.ncol <- (last.meas.yr-trunc.yr)+1 
   
   # first, build an object that has the PRISM strings for both trees with and without cores
   climate.names <- c("PPTJan", "PPTFeb", "PPTMar", "PPTApr", "PPTMay", "PPTJun", "PPTJul", "PPTAug", "PPTSep", "PPTOct", "PPTNov", "PPTDec",
-                     #                   "TMINJan", "TMINFeb", "TMINMar", "TMINApr", "TMINMay", "TMINJun", "TMINJul", "TMINAug", "TMINSep", "TMINOct", "TMINNov", "TMINDec",
+                     #                   "TMINJan", "TMINFeb", "TMINMar", "TMINApr", "TMINMay", "TMINJun", "TMINJul", "TMINAug", "TMINSep", "TMINOct", "TMINNov", "TMINJan",
                      "TMAXJan", "TMAXFeb", "TMAXMar", "TMAXApr", "TMAXMay", "TMAXJun", "TMAXJul", "TMAXAug", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
   PRISM.strings <- temp2[climate.names]
   if(!is.null(Tree2Tree)){
@@ -159,7 +159,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   for (i in yrt.clim.var) { ## this loop deals with the climate variables taken from year t, i.e., current Jan-Aug
     tmp.matrix <- matrix(nrow = nrow(PRISM.strings), ncol = PRISM.ncol) # should have 544 + 14,155 rows
     for (j in 1:nrow(PRISM.strings)) {
-      tmp <- as.numeric(unlist(strsplit(PRISM.strings[j,i], split = ",")))
+      tmp <- as.numeric(unlist(strsplit(as.character(as.character(PRISM.strings[j,i])), split = ",")))
       tmp <- tmp[index.start.climate:index.end.climate]# subset tmp to only contain years of interest (trunc.yr-2015)
       tmp.matrix[j,] <- tmp
     }
@@ -168,10 +168,10 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
     counter <- counter + 1
   }
   
-  for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken from year t-1, i.e., previous Sept-Dec
+  for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken from year t-1, i.e., previous Sept-Jan
     tmp.matrix <- matrix(nrow = nrow(PRISM.strings), ncol = PRISM.ncol)
     for (j in 1:nrow(PRISM.strings)) {
-      tmp <- as.numeric(unlist(strsplit(PRISM.strings[j,i], split = ",")))
+      tmp <- as.numeric(unlist(strsplit(as.character(PRISM.strings[j,i]), split = ",")))
       tmp <- tmp[(index.start.climate-1):(index.end.climate-1)]# subset tmp to only contain years of interest (1971-2009)
       tmp.matrix[j,] <- tmp
     }
@@ -179,15 +179,315 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
     counter <- counter + 1
   }
   
+  
+  
+  
+  
   # Assign the climate variable names to the list (named list)
   names(time_data) <- names.clim.var
   
+  time_data$PPT
+  # if we are forecasting to validate the dbh measurments years 2010 - 2018, we need to add the new climate data:
+  if(forecast == TRUE){
+    # need to read in the additional data
+    if(stage.2 == FALSE){
+      new.ppt <- readRDS("INV_FIA_DATA/data/ppt_for_validation_2010_2018.rds")
+      new.tmax <- readRDS("INV_FIA_DATA/data/tmax_for_validation_2010_2018.rds")
+      
+      
+      new.ppt <- new.ppt[!duplicated(new.ppt),]
+      
+      
+      # reorder to have columns of PPTJAN with columns from 2010:2018:
+      
+      ppt.red <- new.ppt %>% filter (month %in% 1)   %>% select(keynew, year, month, value)
+      PPTJan.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      PPTJan.n <- PPTJan.n[PPTJan.n$keynew %in% temp2$keynew, ]
+      
+      
+      ppt.red <- new.ppt %>% filter (month %in% 2)   %>% select(keynew, year, month, value)
+      PPTFeb.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 3)   %>% select(keynew, year, month, value)
+      PPTMar.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 4)   %>% select(keynew, year, month, value)
+      PPTApr.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 5)   %>% select(keynew, year, month, value)
+      PPTMay.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 6)   %>% select(keynew, year, month, value)
+      PPTJun.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 7)   %>% select(keynew, year, month, value)
+      PPTJul.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 8)   %>% select(keynew, year, month, value)
+      PPTAug.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 9)   %>% select(keynew, year, month, value)
+      PPTSep.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 10)   %>% select(keynew, year, month, value)
+      PPTOct.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 11)   %>% select(keynew, year, month, value)
+      PPTNov.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 12)   %>% select(keynew, year, month, value)
+      PPTDec.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      time_data2<- list()
+      
+      time_data2$PPTJan<- PPTJan.n[match(temp2$keynew, PPTJan.n$keynew),]
+      time_data2$PPTFeb<- PPTFeb.n[match(temp2$keynew, PPTFeb.n$keynew),]
+      time_data2$PPTMar<- PPTMar.n[match(temp2$keynew, PPTMar.n$keynew),]
+      time_data2$PPTApr<- PPTApr.n[match(temp2$keynew, PPTApr.n$keynew),]
+      time_data2$PPTMay<- PPTMay.n[match(temp2$keynew, PPTMay.n$keynew),]
+      time_data2$PPTJun<- PPTJun.n[match(temp2$keynew, PPTJun.n$keynew),]
+      time_data2$PPTJul<- PPTJul.n[match(temp2$keynew, PPTJul.n$keynew),]
+      time_data2$PPTAug<- PPTAug.n[match(temp2$keynew, PPTAug.n$keynew),]
+      time_data2$PPTSep<- PPTSep.n[match(temp2$keynew, PPTSep.n$keynew),]
+      time_data2$PPTOct<- PPTOct.n[match(temp2$keynew, PPTOct.n$keynew),]
+      time_data2$PPTNov<- PPTNov.n[match(temp2$keynew, PPTNov.n$keynew),]
+      time_data2$PPTDec<- PPTDec.n[match(temp2$keynew, PPTDec.n$keynew),]
+      
+      
+      #-------------for Tmax --------
+      
+      new.tmax <- new.tmax[!duplicated(new.tmax),]
+      
+      
+      # reorder to have columns of TMAXJAN with columns from 2010:2018:
+      tmax.red <- new.tmax %>% filter (month %in% 1)   %>% select(keynew, year, month, value)
+      TMAXJan.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      TMAXJan.n <- TMAXJan.n[TMAXJan.n$keynew %in% temp2$keynew, ]
+      
+      
+      tmax.red <- new.tmax %>% filter (month %in% 2)   %>% select(keynew, year, month, value)
+      TMAXFeb.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 3)   %>% select(keynew, year, month, value)
+      TMAXMar.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 4)   %>% select(keynew, year, month, value)
+      TMAXApr.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 5)   %>% select(keynew, year, month, value)
+      TMAXMay.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 6)   %>% select(keynew, year, month, value)
+      TMAXJun.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 7)   %>% select(keynew, year, month, value)
+      TMAXJul.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 8)   %>% select(keynew, year, month, value)
+      TMAXAug.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 9)   %>% select(keynew, year, month, value)
+      TMAXSep.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 10)   %>% select(keynew, year, month, value)
+      TMAXOct.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 11)   %>% select(keynew, year, month, value)
+      TMAXNov.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 12)   %>% select(keynew, year, month, value)
+      TMAXDec.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      # need to reorder the dataframe by the keynew in 
+      
+      
+      
+      time_data2$TMAXJan<- TMAXJan.n[match(temp2$keynew, TMAXJan.n$keynew),]
+      time_data2$TMAXFeb<- TMAXFeb.n[match(temp2$keynew, TMAXFeb.n$keynew),]
+      time_data2$TMAXMar<- TMAXMar.n[match(temp2$keynew, TMAXMar.n$keynew),]
+      time_data2$TMAXApr<- TMAXApr.n[match(temp2$keynew, TMAXApr.n$keynew),]
+      time_data2$TMAXMay<- TMAXMay.n[match(temp2$keynew, TMAXMay.n$keynew),]
+      time_data2$TMAXJun<- TMAXJun.n[match(temp2$keynew, TMAXJun.n$keynew),]
+      time_data2$TMAXJul<- TMAXJul.n[match(temp2$keynew, TMAXJul.n$keynew),]
+      time_data2$TMAXAug<- TMAXAug.n[match(temp2$keynew, TMAXAug.n$keynew),]
+      time_data2$TMAXSep<- TMAXSep.n[match(temp2$keynew, TMAXSep.n$keynew),]
+      time_data2$TMAXOct<- TMAXOct.n[match(temp2$keynew, TMAXOct.n$keynew),]
+      time_data2$TMAXNov<- TMAXNov.n[match(temp2$keynew, TMAXNov.n$keynew),]
+      time_data2$TMAXDec<- TMAXDec.n[match(temp2$keynew, TMAXDec.n$keynew),]
+      
+    }else{
+      # need to do a separate climate matching for tree2tree dataset because it does not have a keynew
+      new.ppt <- readRDS("INV_FIA_DATA/data/ppt_tree2tree_for_validation_2010_2018.rds")
+      new.tmax <- readRDS("INV_FIA_DATA/data/tmax_tree2tree_for_validation_2010_2018.rds")
+      #myppt <- getURL('https://de.cyverse.org/dl/d/9E59BCB7-98C2-44F0-9E25-C162BD106465/ppt_tree2tree_for_validation_2010_2018.rds', ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)
+      
+      #newppt <- readRDS(textConnection(myppt))
+      
+      #mytmax <- getURL('http://de.cyverse.org/dl/d/9BB18028-0BE2-4591-8CC5-47CC40D36649/tmax_tree2tree_for_validation_2010_2018.rds', ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)
+      
+      #new.tmax <- readRDS(textConnection(mytmax))
+      
+      new.ppt <- new.ppt[!duplicated(new.ppt),]
+      
+      # create a keynew:
+      new.ppt$keynew <- paste0(new.ppt$T1_PLOT, "_", new.ppt$T1_SUBP, "_" , new.ppt$T1_TREE, "_", new.ppt$T1_COUNTY)
+      Tree2Tree$keynew <- paste0(Tree2Tree$T1_PLOT, "_", Tree2Tree$T1_SUBP, "_" , Tree2Tree$T1_TREE, "_", Tree2Tree$COUNTYCD)
+      
+      #Tree2Tree$keynew %in% new.ppt$keynew
+      # reorder to have columns of PPTJAN with columns from 2010:2018:
+      
+      ppt.red <- new.ppt %>% filter (month %in% 1)   %>% select(keynew, year, month, value)
+      PPTJan.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      PPTJan.n <- PPTJan.n[PPTJan.n$keynew %in% Tree2Tree$keynew, ]
+      
+      
+      ppt.red <- new.ppt %>% filter (month %in% 2)   %>% select(keynew, year, month, value)
+      PPTFeb.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 3)   %>% select(keynew, year, month, value)
+      PPTMar.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 4)   %>% select(keynew, year, month, value)
+      PPTApr.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 5)   %>% select(keynew, year, month, value)
+      PPTMay.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 6)   %>% select(keynew, year, month, value)
+      PPTJun.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 7)   %>% select(keynew, year, month, value)
+      PPTJul.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 8)   %>% select(keynew, year, month, value)
+      PPTAug.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 9)   %>% select(keynew, year, month, value)
+      PPTSep.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 10)   %>% select(keynew, year, month, value)
+      PPTOct.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 11)   %>% select(keynew, year, month, value)
+      PPTNov.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      ppt.red <- new.ppt %>% filter (month %in% 12)   %>% select(keynew, year, month, value)
+      PPTDec.n <- reshape2::dcast(ppt.red, formula = keynew ~ year, mean )
+      
+      time_data2<- list()
+      
+      time_data2$PPTJan<- PPTJan.n[match(Tree2Tree$keynew, PPTJan.n$keynew),]
+      time_data2$PPTFeb<- PPTFeb.n[match(Tree2Tree$keynew, PPTFeb.n$keynew),]
+      time_data2$PPTMar<- PPTMar.n[match(Tree2Tree$keynew, PPTMar.n$keynew),]
+      time_data2$PPTApr<- PPTApr.n[match(Tree2Tree$keynew, PPTApr.n$keynew),]
+      time_data2$PPTMay<- PPTMay.n[match(Tree2Tree$keynew, PPTMay.n$keynew),]
+      time_data2$PPTJun<- PPTJun.n[match(Tree2Tree$keynew, PPTJun.n$keynew),]
+      time_data2$PPTJul<- PPTJul.n[match(Tree2Tree$keynew, PPTJul.n$keynew),]
+      time_data2$PPTAug<- PPTAug.n[match(Tree2Tree$keynew, PPTAug.n$keynew),]
+      time_data2$PPTSep<- PPTSep.n[match(Tree2Tree$keynew, PPTSep.n$keynew),]
+      time_data2$PPTOct<- PPTOct.n[match(Tree2Tree$keynew, PPTOct.n$keynew),]
+      time_data2$PPTNov<- PPTNov.n[match(Tree2Tree$keynew, PPTNov.n$keynew),]
+      time_data2$PPTDec<- PPTDec.n[match(Tree2Tree$keynew, PPTDec.n$keynew),]
+      
+      #-------------for Tmax --------
+      
+      new.tmax <- new.tmax[!duplicated(new.tmax),]
+      new.tmax$keynew <- paste0(new.tmax$T1_PLOT, "_", new.tmax$T1_SUBP, "_" , new.tmax$T1_TREE, "_", new.tmax$T1_COUNTY)
+      
+      
+      # reorder to have columns of TMAXJAN with columns from 2010:2018:
+      tmax.red <- new.tmax %>% filter (month %in% 1)   %>% select(keynew, year, month, value)
+      TMAXJan.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      TMAXJan.n <- TMAXJan.n[TMAXJan.n$keynew %in% Tree2Tree$keynew, ]
+      
+      
+      tmax.red <- new.tmax %>% filter (month %in% 2)   %>% select(keynew, year, month, value)
+      TMAXFeb.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 3)   %>% select(keynew, year, month, value)
+      TMAXMar.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 4)   %>% select(keynew, year, month, value)
+      TMAXApr.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 5)   %>% select(keynew, year, month, value)
+      TMAXMay.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 6)   %>% select(keynew, year, month, value)
+      TMAXJun.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 7)   %>% select(keynew, year, month, value)
+      TMAXJul.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 8)   %>% select(keynew, year, month, value)
+      TMAXAug.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 9)   %>% select(keynew, year, month, value)
+      TMAXSep.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 10)   %>% select(keynew, year, month, value)
+      TMAXOct.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 11)   %>% select(keynew, year, month, value)
+      TMAXNov.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      tmax.red <- new.tmax %>% filter (month %in% 12)   %>% select(keynew, year, month, value)
+      TMAXDec.n <- reshape2::dcast(tmax.red, formula = keynew ~ year, mean )
+      
+      # need to reorder the dataframe by the keynew in 
+      
+      
+      
+      time_data2$TMAXJan<- TMAXJan.n[match(Tree2Tree$keynew, TMAXJan.n$keynew),]
+      time_data2$TMAXFeb<- TMAXFeb.n[match(Tree2Tree$keynew, TMAXFeb.n$keynew),]
+      time_data2$TMAXMar<- TMAXMar.n[match(Tree2Tree$keynew, TMAXMar.n$keynew),]
+      time_data2$TMAXApr<- TMAXApr.n[match(Tree2Tree$keynew, TMAXApr.n$keynew),]
+      time_data2$TMAXMay<- TMAXMay.n[match(Tree2Tree$keynew, TMAXMay.n$keynew),]
+      time_data2$TMAXJun<- TMAXJun.n[match(Tree2Tree$keynew, TMAXJun.n$keynew),]
+      time_data2$TMAXJul<- TMAXJul.n[match(Tree2Tree$keynew, TMAXJul.n$keynew),]
+      time_data2$TMAXAug<- TMAXAug.n[match(Tree2Tree$keynew, TMAXAug.n$keynew),]
+      time_data2$TMAXSep<- TMAXSep.n[match(Tree2Tree$keynew, TMAXSep.n$keynew),]
+      time_data2$TMAXOct<- TMAXOct.n[match(Tree2Tree$keynew, TMAXOct.n$keynew),]
+      time_data2$TMAXNov<- TMAXNov.n[match(Tree2Tree$keynew, TMAXNov.n$keynew),]
+      time_data2$TMAXDec<- TMAXDec.n[match(Tree2Tree$keynew, TMAXDec.n$keynew),]
+      
+      
+    }
+    
+    # now need to add the time_data2 to the time_data dataframe
+    
+    time_data$PPTJan <- cbind(time_data$PPTJan, time_data2$PPTJan[,3:10])
+    time_data$PPTFeb <- cbind(time_data$PPTFeb, time_data2$PPTFeb[,3:10])
+    time_data$PPTMar <- cbind(time_data$PPTMar, time_data2$PPTMar[,3:10])
+    time_data$PPTApr <- cbind(time_data$PPTApr, time_data2$PPTApr[,3:10])
+    time_data$PPTMay <- cbind(time_data$PPTMay, time_data2$PPTMay[,3:10])
+    time_data$PPTJun <- cbind(time_data$PPTJun, time_data2$PPTJun[,3:10])
+    time_data$PPTJul <- cbind(time_data$PPTJul, time_data2$PPTJul[,3:10])
+    time_data$PPTAug <- cbind(time_data$PPTAug, time_data2$PPTAug[,3:10])
+    time_data$PPTSep <- cbind(time_data$PPTSep, time_data2$PPTSep[,3:10])
+    time_data$PPTOct <- cbind(time_data$PPTOct, time_data2$PPTOct[,3:10])
+    time_data$PPTNov <- cbind(time_data$PPTNov, time_data2$PPTNov[,3:10])
+    time_data$PPTDec <- cbind(time_data$PPTDec, time_data2$PPTDec[,3:10])
+    
+    # for Tmax:
+    time_data$TMAXJan <- cbind(time_data$TMAXJan, time_data2$TMAXJan[,3:10])
+    time_data$TMAXFeb <- cbind(time_data$TMAXFeb, time_data2$TMAXFeb[,3:10])
+    time_data$TMAXMar <- cbind(time_data$TMAXMar, time_data2$TMAXMar[,3:10])
+    time_data$TMAXApr <- cbind(time_data$TMAXApr, time_data2$TMAXApr[,3:10])
+    time_data$TMAXMay <- cbind(time_data$TMAXMay, time_data2$TMAXMay[,3:10])
+    time_data$TMAXJun <- cbind(time_data$TMAXJun, time_data2$TMAXJun[,3:10])
+    time_data$TMAXJul <- cbind(time_data$TMAXJul, time_data2$TMAXJul[,3:10])
+    time_data$TMAXAug <- cbind(time_data$TMAXAug, time_data2$TMAXAug[,3:10])
+    time_data$TMAXSep <- cbind(time_data$TMAXSep, time_data2$TMAXSep[,3:10])
+    time_data$TMAXOct <- cbind(time_data$TMAXOct, time_data2$TMAXOct[,3:10])
+    time_data$TMAXNov <- cbind(time_data$TMAXNov, time_data2$TMAXNov[,3:10])
+    time_data$TMAXDec <- cbind(time_data$TMAXDec, time_data2$TMAXDec[,3:10])
+  }
   
-  # and if forecast == TRUE, then get th additnoan time data for PPT and TMAX
   
   # calculate winter precip and add to the list time_data (rows are trees, columns are years)
   wintP.NovAug <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
-  wintP.wateryr <- (time_data$PPTSep + time_data$PPTOct + time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
+  wintP.wateryr <- (time_data$PPTSep + time_data$PPTOct + time_data$PPTNov + time_data$PPTJan + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
   wintP.NM <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar)
   wintP.JJ <- (time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul)
   time_data$wintP.NovAug <- wintP.NovAug
@@ -217,7 +517,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   # standardize climate data
   if(standardize.cov == TRUE){
     for(c in 1:length(time_data)){
-      time_data[[c]] <- standardize.vector(time_data[[c]])
+      time_data[[c]] <- standardize.vector(as.matrix(time_data[[c]]))
     } 
   }
   
@@ -231,7 +531,18 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
     if(stage.2 ==TRUE){
       PLOT <- PLOT2
     }
-      
+    
+  }
+  
+  ### get the FIA DB plot id, if applicable
+  T2_FIADB <- temp2$T2_FIADB_PLOT # should maybe use an underscore to avoid mistakes...but would jags choke?
+  if(!is.null(Tree2Tree)){
+    T2_FIADB2 <- Tree2Tree$T2_FIADB_PLOT
+    T2_FIADB  <- c(T2_FIADB, T2_FIADB )
+    if(stage.2 ==TRUE){
+      T2_FIADB <- T2_FIADB2
+    }
+    
   }
   
   TREE <- temp2$T1_TRE_CN # should maybe use an underscore to avoid mistakes...but would jags choke?
@@ -443,15 +754,16 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   
   
   ### BA ## SDI and BA are tightly correlated, can't use both
-  if(is.null(Tree2Tree) & YEARDISTURBED == FALSE){
+  if(is.null(Tree2Tree)){
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT)
+                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT, T2_FIADB = T2_FIADB )
     
-   
+    
     
   }else{
     cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
-                           STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, DSTRBCD2 = DSTRBCD2, DSTRBYR2 =DSTRBYR2, DSTRBCD3 = DSTRBCD3, DSTRBYR3 =DSTRBYR3,MAP =MAP, MAT =MAT)
+                           STDAGE = STDAGE, #TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1, DSTRBYR1 =DSTRBYR1, DSTRBCD2 = DSTRBCD2, DSTRBYR2 =DSTRBYR2, DSTRBCD3 = DSTRBCD3, DSTRBYR3 =DSTRBYR3,
+                           MAP =MAP, MAT =MAT)
   }
   #cov.data <- cbind(cov.data, SICOND, SDI)
   
@@ -475,66 +787,66 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, YEARDIST
   z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
   
   if(stage.2 == FALSE){
-  # first deal with the trees with cores
-  DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
-  ave.ring <- vector(mode="numeric", length=nrow(temp2))
-  for (t in 1:nrow(temp2)) {
-    ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
-    ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-    # extract tree-ring data from trunc.yr:end series
-    end.col <- which(years==temp2$DateEnd[t])
-    temp.growth <- y.matrix[t,(index.last.start+1):end.col] # which(years==1966) # returns 248
-    # add rep(ave.ring) to any NA's at the beginning of the tree-ring time series
-    ave.ring[t] <- mean(temp.growth, na.rm=T)
-    temp.growth[is.na(temp.growth)]<-ave.ring[t]
-    temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
-    z0[t,1:length(temp.growth2)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
+    # first deal with the trees with cores
+    DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
+    ave.ring <- vector(mode="numeric", length=nrow(temp2))
+    for (t in 1:nrow(temp2)) {
+      ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
+      ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
+      # extract tree-ring data from trunc.yr:end series
+      end.col <- which(years==temp2$DateEnd[t])
+      temp.growth <- y.matrix[t,(index.last.start+1):end.col] # which(years==1966) # returns 248
+      # add rep(ave.ring) to any NA's at the beginning of the tree-ring time series
+      ave.ring[t] <- mean(temp.growth, na.rm=T)
+      temp.growth[is.na(temp.growth)]<-ave.ring[t]
+      temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+      z0[t,1:length(temp.growth2)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
+      
+      ### grow tree forward: find short-term average ring-width per tree and add cumulative from DIA to year 2010
+      ave.growth <- rep(ave.ring[t], times=(last.meas.yr-temp2$DateEnd[t]))
+      z0[t, (length(temp.growth2)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
+      
+      ### note that some of these values (z0) are negative,
+      ### some trees were small at their final size, and pith dates are as late as 1972
+      ### replace negative values by the growth series implied by growing from zero to DIA
+      #  ifelse(z0[t,1]<0, 
+      #         z0[t,1:length(temp.growth)] <- cumsum(rep(DIA.T1[t]/length(temp.growth), length(temp.growth))), 
+      #         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
+    }
     
-    ### grow tree forward: find short-term average ring-width per tree and add cumulative from DIA to year 2010
-    ave.growth <- rep(ave.ring[t], times=(last.meas.yr-temp2$DateEnd[t]))
-    z0[t, (length(temp.growth2)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
-    
-    ### note that some of these values (z0) are negative,
-    ### some trees were small at their final size, and pith dates are as late as 1972
-    ### replace negative values by the growth series implied by growing from zero to DIA
-    #  ifelse(z0[t,1]<0, 
-    #         z0[t,1:length(temp.growth)] <- cumsum(rep(DIA.T1[t]/length(temp.growth), length(temp.growth))), 
-    #         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
-  }
-  
   }
   # now deal with trees without cores
   if(!is.null(Tree2Tree)){
     if(stage.2 == FALSE){
-    global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
-    for (t in 1:nrow(Tree2Tree)) {
-      # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
-      first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
-      temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
-      temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
-      z0[(nrow(temp2)+t),1:length(temp.growth2)] <- first.DBH + temp.growth2
+      global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
+      for (t in 1:nrow(Tree2Tree)) {
+        # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
+        first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
+        temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
+        temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+        z0[(nrow(temp2)+t),1:length(temp.growth2)] <- first.DBH + temp.growth2
+        
+        ### grow tree forward from T1_DIA to year 2015
+        temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
+        z0[(nrow(temp2)+t), (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
+      }
       
-      ### grow tree forward from T1_DIA to year 2015
-      temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
-      z0[(nrow(temp2)+t), (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
+    }else{
+      DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
+      ave.ring <- vector(mode="numeric", length=nrow(temp2))
+      global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
+      for (t in 1:nrow(Tree2Tree)) {
+        # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
+        first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
+        temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
+        temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+        z0[t,1:length(temp.growth2)] <- first.DBH + temp.growth2
+        
+        ### grow tree forward from T1_DIA to year 2015
+        temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
+        z0[t, (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
+      }
     }
-    
-  }else{
-    DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
-    ave.ring <- vector(mode="numeric", length=nrow(temp2))
-    global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
-    for (t in 1:nrow(Tree2Tree)) {
-      # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
-      first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
-      temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
-      temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
-      z0[t,1:length(temp.growth2)] <- first.DBH + temp.growth2
-      
-      ### grow tree forward from T1_DIA to year 2015
-      temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
-      z0[t, (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
-    }
-  }
   }
   
   colnames(z0) <- years.small
