@@ -17,9 +17,11 @@ cd pecan
 
 ## Developing in Docker
 
+The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html). This is intended as a quick start.
+
 ### Installing Docker 
 
-To install Docker and docker-compose, see the docker documentation for installing 
+To install Docker and docker-compose, see the docker documentation: 
 - Docker Desktop in [Mac OSX](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
 - Docker (e.g. [Ubuntu](https://docs.docker.com/compose/install/)) and [docker-compose](https://docs.docker.com/compose/install/) on your linux operating system.
 
@@ -64,8 +66,16 @@ The steps in this section only need to be done the fist time you start working w
 
 You can copy the [`docker/env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
 
+For Linux/MacOSX
+
 ```sh
 cp docker/env.example ./env
+```
+
+For Windows
+
+```
+copy docker/env.example ./env
 ```
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
@@ -89,7 +99,7 @@ echo "COMPOSE_PROJECT_NAME=pecan" >> .env
 echo "PECAN_VERSION=develop" >> .env
 ```
 
-For windows:
+For Windows:
 
 ```
 echo "COMPOSE_PROJECT_NAME=pecan" >> .env
