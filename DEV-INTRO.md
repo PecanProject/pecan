@@ -10,12 +10,18 @@ To clone the PEcAn repository:
 
 ```sh
 git clone git@github.com:pecanproject/pecan
-
+cd pecan
 # alternatively, if you haven't set up ssh keys with GitHub
 # git clone https://github.com/PecanProject/pecan
 ```
 
 ## Developing in Docker
+
+### Installing Docker 
+
+To install Docker and docker-compose, see the docker documentation for installing 
+- Docker Desktop in [Mac OSX](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
+- Docker (e.g. [Ubuntu](https://docs.docker.com/compose/install/)) and [docker-compose](https://docs.docker.com/compose/install/) on your linux operating system.
 
 _Note for Linux users:_ add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using 
 ```sh
@@ -23,6 +29,7 @@ _Note for Linux users:_ add your user to the docker group. This will prevent you
 sudo adduser ${USER} docker`.
 ```
 
+### Deploying PEcAn in Docker 
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
@@ -55,7 +62,11 @@ The steps in this section only need to be done the fist time you start working w
 
 #### .env file
 
-You can copy the [`env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
+You can copy the [`docker/env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
+
+```sh
+cp docker/env.example ./env
+```
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
 * `PECAN_VERSION` set this to develop, the docker image we start with
