@@ -532,7 +532,11 @@ if ($pecan_edit) {
   }
 
   # create the message
-  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"';
+  if ($model_edit) {
+    $message .= ', "modeledit": true';
+  }
+  $message .= '}';
   send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done

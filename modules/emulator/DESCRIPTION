@@ -13,7 +13,7 @@ Imports:
     mlegp,
     coda (>= 0.18),
     MASS,
-    tmvtnorm,
+    TruncatedNormal (>= 2.2),
     lqmm,
     MCMCpack
 Description: Implementation of a Gaussian Process model (both likelihood and
@@ -21,4 +21,4 @@ Description: Implementation of a Gaussian Process model (both likelihood and
     for sampling design and prediction.
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
