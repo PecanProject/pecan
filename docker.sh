@@ -188,7 +188,7 @@ for version in 0.95; do
 done
 
 # build ed2
-for version in git 2.2.0; do
+for version in 2.2.0; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
@@ -214,3 +214,19 @@ for version in git r136; do
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
         models/sipnet
 done
+
+# --------------------------------------------------------------------------------
+# PEcAn Apps
+# --------------------------------------------------------------------------------
+
+# build API
+for x in api; do
+    ${DEBUG} docker build \
+        --tag pecan/$x:${IMAGE_VERSION} \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg PECAN_VERSION="${VERSION}" \
+        --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
+        --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
+        --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
+        apps/$x/
+done        

@@ -13,7 +13,7 @@ Imports:
     mlegp,
     coda (>= 0.18),
     MASS,
-    tmvtnorm,
+    TruncatedNormal (>= 2.2),
     lqmm,
     MCMCpack
 Description: Implementation of a Gaussian Process model (both likelihood and

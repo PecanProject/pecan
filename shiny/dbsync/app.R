@@ -28,6 +28,9 @@ host_mapping <- list(
     "paleon-pecan.virtual.crc.nd.edu"="crc.nd.edu"
 )
 
+# ignored servers, is reset on refresh
+ignored_servers <- c()
+
 # given a IP address lookup geo spatital info
 # uses a cache to prevent to many requests (1000 per day)
 get_geoip <- function(ip) {
@@ -55,6 +58,8 @@ get_geoip <- function(ip) {
 
 # get a list of all servers in BETY and their geospatial location
 get_servers <- function() {
+    ignored_servers <<- c()
+    
     # connect to BETYdb
     bety <- DBI::dbConnect(
         DBI::dbDriver("PostgreSQL"), 
@@ -104,16 +109,21 @@ get_servers <- function() {
 
 # fetch information from the actual servers
 check_servers <- function(servers, progress) {
+    check_servers <- servers$sync_url[! servers$sync_host_id %in% ignored_servers]
+
     # generic failure message to increment progress
     failure <- function(res) {
+        print(res)
         progress$inc(amount = 1)
     }
     
     # version information  
     server_version <- function(res) {
+        url <- sub("version.txt", "bety.tar.gz", res$url)
         progress$inc(amount = 0, message = paste("Processing", progress$getValue(), "of", progress$getMax()))
-        if (res$status == 200) {
-            url <- sub("version.txt", "bety.tar.gz", res$url)
+        print(paste(res$status, url))
+        if (res$status == 200 || res$status == 226) {
+            check_servers <<- check_servers[check_servers != url]
             version <- strsplit(rawToChar(res$content), '\t', fixed = TRUE)[[1]]
             if (!is.na(as.numeric(version[1]))) {
                 servers[servers$sync_url == url,'version'] <<- version[2]
@@ -127,14 +137,15 @@ check_servers <- function(servers, progress) {
         }
         progress$inc(amount = 1)
     }
-    urls <- sapply(servers[,'sync_url'], function(x) { sub("bety.tar.gz", "version.txt", x) })
-    lapply(urls, function(x) { curl::curl_fetch_multi(x, done = server_version, fail = failure, handle = curl::new_handle(connecttimeout=1)) })
+    urls <- sapply(check_servers, function(x) { sub("bety.tar.gz", "version.txt", x) })
+    lapply(urls, function(x) { curl::curl_fetch_multi(x, done = server_version, fail = failure) } )
     
     # log information  
     server_log  <- function(res) {
+        url <- sub("sync.log", "bety.tar.gz", res$url)
         progress$inc(amount = 0, message = paste("Processing", progress$getValue(), "of", progress$getMax()))
-        if (res$status == 200) {
-            url <- sub("sync.log", "bety.tar.gz", res$url)
+        print(paste(res$status, url))
+        if (res$status == 200 || res$status == 226) {
             lines <- strsplit(rawToChar(res$content), '\n', fixed = TRUE)[[1]]
             now <- as.POSIXlt(Sys.time(), tz="UTC")
             for (line in tail(lines, maxlines)) {
@@ -152,12 +163,13 @@ check_servers <- function(servers, progress) {
         }
         progress$inc(amount = 1)
     }
-    urls <- sapply(servers[,'sync_url'], function(x) { sub("bety.tar.gz", "sync.log", x) })
-    lapply(urls, function(x) { curl::curl_fetch_multi(x, done = server_log, fail = failure, handle = curl::new_handle(connecttimeout=1)) })
+    urls <- sapply(check_servers, function(x) { sub("bety.tar.gz", "sync.log", x) })
+    lapply(urls, function(x) { curl::curl_fetch_multi(x, done = server_log, fail = failure) } )
     
     # run queries in parallel
     curl::multi_run()
-    myservers <<- servers
+    ignored_servers <<- c(ignored_servers, servers[servers$sync_url %in% check_servers, "sync_host_id"])
+
     return(servers)
 }
 
@@ -257,12 +269,15 @@ server <- function(input, output, session) {
     
     # update sync list (slow)
     observeEvent(input$refresh_sync, {
+        servers <- values$servers
         session$sendCustomMessage("disableUI", "")
-        progress <- Progress$new(session, min=0, max=2*nrow(values$servers))
-        values$servers <- check_servers(values$servers, progress)
-        values$sync <- check_sync(values$servers)
+        progress <- Progress$new(session, min=0, max=2*(nrow(servers)-length(ignored_servers)))
+        servers <- check_servers(servers, progress)
+        sync <- check_sync(servers)
         progress$close()
         session$sendCustomMessage("enableUI", "")
+        values$servers <- servers
+        values$sync <- sync
     })
     
     # create a map of all servers that have a sync_host_id and sync_url
@@ -282,7 +297,11 @@ server <- function(input, output, session) {
 
     # create a table of all servers that have a sync_host_id and sync_url
     output$table <- DT::renderDataTable({
-        DT::datatable(values$servers %>% dplyr::select("sync_host_id", "hostname", "city", "country", "lastdump", "migrations"))
+        ignored <- rep("gray", length(ignored_servers) + 1)
+        DT::datatable(values$servers %>% 
+                          dplyr::select("sync_host_id", "hostname", "city", "country", "lastdump", "migrations"),
+                      rownames = FALSE) %>%
+        DT::formatStyle('sync_host_id',  target = "row", color = DT::styleEqual(c(ignored_servers, "-1"), ignored))
     })
 }
 

@@ -99,6 +99,3 @@ contrib/modellauncher/modellauncher
 
 # don't checkin renv
 /renv/
-
-# ignore IP mapping to lat/lon (is about 65MB)
-shiny/dbsync/IP2LOCATION-LITE-DB5.BIN
