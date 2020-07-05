@@ -351,6 +351,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # again this is not technically GPP
     outlist[[10]]  <- udunits2::ud.convert(phot, "g m-2", "kg m-2") / sec_in_day
     
+    # Qle W/m2
+    outlist[[11]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
+                          PEcAn.data.atmosphere::get.lv()) / sec_in_day  
+    
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                           units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -365,16 +369,17 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     dims <- list(lon = lon, lat = lat, time = t)
     
     nc_var <- list()
-    nc_var[[1]]  <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[2]]  <- PEcAn.utils::to_ncvar("CropYield", dims)
-    nc_var[[3]]  <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[4]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
-    nc_var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    nc_var[[6]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    nc_var[[7]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
-    nc_var[[8]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    nc_var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[1]]   <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[2]]   <- PEcAn.utils::to_ncvar("CropYield", dims)
+    nc_var[[3]]   <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    nc_var[[4]]   <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    nc_var[[5]]   <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[6]]   <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[7]]   <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    nc_var[[8]]   <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[9]]   <- PEcAn.utils::to_ncvar("NEE", dims)
     nc_var[[10]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[11]]  <- PEcAn.utils::to_ncvar("Qle", dims)
     
     # ******************** Declare netCDF variables ********************#
     
