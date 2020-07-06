@@ -835,7 +835,7 @@ check.model.settings <- function(settings, dbcon = NULL) {
           con = dbcon)
         if (nrow(model) > 1) {
           PEcAn.logger::logger.warn(
-            "multiple records for", settings$model$name,
+            "multiple records for", settings$model$type,
             "returned; using the latest")
           row <- which.max(model$updated_at)
           if (length(row) == 0) row <- nrow(model)
@@ -940,23 +940,22 @@ check.workflow.settings <- function(settings, dbcon = NULL) {
     if (!"workflow" %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       if (is.MultiSettings(settings)) {
-        PEcAn.DB::db.query(
+        insert_result <- PEcAn.DB::db.query(
           paste0(
             "INSERT INTO workflows (",
-              "folder, model_id, hostname, started_at, created_at) ",
+              "folder, model_id, hostname, started_at) ",
             "values ('",
               settings$outdir, "','",
               settings$model$id, "', '",
               settings$host$name, "', '",
-              now, "', '",
-              now, "')"),
+              now, "') RETURNING id"),
           con = dbcon)
       } else {
-        PEcAn.DB::db.query(
+        insert_result <- PEcAn.DB::db.query(
           paste0(
             "INSERT INTO workflows (",
               "folder, site_id, model_id, hostname, start_date, end_date, ",
-              "started_at, created_at) ",
+              "started_at) ",
             "values ('",
               settings$outdir, "','",
               settings$run$site$id, "','",
@@ -964,15 +963,10 @@ check.workflow.settings <- function(settings, dbcon = NULL) {
               settings$host$name, "', '",
               settings$run$start.date, "', '",
               settings$run$end.date, "', '",
-              now, "', '",
-              now, "')"),
+              now, "') RETURNING id"),
           con = dbcon)
       }
-      settings$workflow$id <- PEcAn.DB::db.query(
-        paste0(
-          "SELECT id FROM workflows WHERE created_at='", now,
-          "' ORDER BY id DESC LIMIT 1;"),
-        con = dbcon)[["id"]]
+      settings$workflow$id <- insert_result[["id"]]
       fixoutdir <- TRUE
     }
   } else {

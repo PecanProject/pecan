@@ -1,4 +1,4 @@
-### LPJ-GUESS {#models-lpjguess}
+## LPJ-GUESS {#models-lpjguess}
 
 | Model Information ||
 | -- | -- |

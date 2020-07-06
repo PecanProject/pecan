@@ -1,0 +1,475 @@
+# PEcAn Project API
+
+## Introduction
+
+##### Welcome to the PEcAn Project API Documentation.
+
+The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models.
+
+Our API allows users to remotely interact with the PEcAn servers and leverage the functionalities provided by the PEcAn Project. It has been designed to follow common RESTful API conventions. Most operations are performed using the HTTP methods: `GET` (retrieve) & `POST` (create).
+
+_Please note that the PEcAn Project API is currently under active development and is possible that any information in this document is subject to change._
+
+## Authentication
+
+Authentication to the PEcAn API occurs via [Basic HTTP Auth](https://en.wikipedia.org/wiki/Basic_access_authentication). The credentials for using the API are the same as those used to log into PEcAn & BetyDB. Here is how you use basic HTTP auth with `curl`:
+```
+$ curl --user '<username>:<password>' <api-endpoint>
+```
+
+Authentication also depends on the PEcAn server that the user interacts with. Some servers, at the time of deployment have the `AUTH_REQ = FALSE`, meaning that such servers do not require user autertication for the usage of the PEcAn APIs. Regardless of the type of server, the endpoints defind under General section can be accessed without any authentication.
+
+## RESTful API Endpoints
+
+This page contains the high-level overviews & the functionalities offered by the different RESTful endpoints of the PEcAn API. 
+
+__For the most up-to-date documentation, you can visit the [PEcAn API Documentation](http://pecan-dev.ncsa.illinois.edu/swagger/).__
+
+The currently implemented functionalities include:
+
+* __General:__
+  * `GET /api/ping`: Ping the server to check if it is live
+  * `GET /api/status`: Obtain general information about PEcAn & the details of the database host
+
+* __Models:__
+  * `GET /api/models/`: Retrieve the details of model(s) used by PEcAn
+
+* __Workflows:__
+  * `GET /api/workflows/`: Retrieve a list of PEcAn workflows
+  * `POST /api/workflows/` *: Submit a new PEcAn workflow
+  * `GET /api/workflows/{id}`: Obtain the details of a particular PEcAn workflow by supplying its ID
+
+* __Runs:__
+  * `GET /api/runs`:  Get the list of all the runs for a specified PEcAn Workflow
+  * `GET /api/runs/{id}`: Fetch the details of a specified PEcAn run
+
+_* indicates that the particular API is under development & may not be ready for use_
+
+
+## Examples:
+
+#### Prerequisites to interact with the PEcAn API Server {.tabset .tabset-pills}
+
+##### R Packages
+* [httr](https://cran.r-project.org/web/packages/httr/index.html)
+* [jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html)
+
+##### Python Packages
+* [requests](https://requests.readthedocs.io/en/master/)
+* [json](https://docs.python.org/3/library/json.html)
+
+#### {-}
+
+
+Following are some example snippets to call the PEcAn API endpoints:
+
+### `GET /api/ping` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+res <- httr::GET("http://localhost:8000/api/ping")
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $request
+## [1] "ping"
+
+## $response
+## [1] "pong"
+```
+#### Python Snippet
+
+```python
+response = requests.get("http://localhost:8000/api/ping")
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##  "request": "ping",
+##  "response": "pong"
+## }
+```
+### {-}
+
+
+### `GET /api/status` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+res <- httr::GET("http://localhost:8000/api/status")
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $pecan_details$version
+## [1] "1.7.0"
+
+## $pecan_details$branch
+## [1] "develop"
+
+## $pecan_details$gitsha1
+## [1] "unknown"
+
+## $host_details$hostid
+## [1] 99
+
+## $host_details$hostname
+## [1] ""
+
+## $host_details$start
+## [1] 99000000000
+
+## $host_details$end
+## [1] 99999999999
+
+## $host_details$sync_url
+## [1] ""
+
+## $host_details$sync_contact
+## [1] ""
+```
+
+#### Python Snippet
+
+```python
+response = requests.get("http://localhost:8000/api/status")
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "pecan_details": {
+##     "version": "1.7.0",
+##     "branch": "develop",
+##     "gitsha1": "unknown"
+##   },
+##   "host_details": {
+##     "hostid": 99,
+##     "hostname": "",
+##     "start": 99000000000,
+##     "end": 99999999999,
+##     "sync_url": "",
+##     "sync_contact": ""
+##   }
+## }
+```
+
+### {-}
+
+### `GET /api/models/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get model(s) with `model_name` = SIPNET & `revision` = ssr
+res <- httr::GET(
+         "http://localhost:8000/api/models/?model_name=SIPNET&revision=ssr",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $models
+##     model_id model_name revision modeltype_id model_type
+## 1 1000000022     SIPNET      ssr            3     SIPNET
+## ...
+```
+
+#### Python Snippet
+
+```python
+# Get model(s) with `model_name` = SIPNET & `revision` = ssr
+response = requests.get(
+             "http://localhost:8000/api/models/?model_name=SIPNET&revision=ssr",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "models": [
+##     {
+##       "model_id": "1000000022",
+##       "model_name": "SIPNET",
+##       "revision": "ssr",
+##       "modeltype_id": 3,
+##       "model_type": "SIPNET"
+##     },
+##     ...
+##   ]
+## }
+```
+
+### {-}
+
+### `GET /api/workflows/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get workflow(s) that use `model_id` = 1000000022 [SIPNET] & `site_id` = 676 [Willow Creek (US-WCr)]
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/?model_id=1000000022&site_id=676",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $workflows
+##   id              properties 
+##   <S3: integer64> <list>     
+## 1 1000009172      <list [14]>
+## ...
+
+## $count
+## [1] 5
+```
+
+#### Python Snippet
+
+```python
+# Get workflow(s) that use `model_id` = 1000000022 [SIPNET] & `site_id` = 676 [Willow Creek (US-WCr)]
+response = requests.get(
+             "http://localhost:8000/api/workflows/?model_id=1000000022&site_id=676",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "workflows": [
+##     {
+##       "id": 1000009172,
+##       "properties": {
+##         "end": "2004/12/31",
+##         "pft": [
+##           "soil.IF",
+##           "temperate.deciduous.IF"
+##         ],
+##        "email": "",
+##        "notes": "",
+##        "start": "2004/01/01",
+##        "siteid": "676",
+##        "modelid": "1000000022",
+##        "hostname": "test-pecan.bu.edu",
+##        "sitename": "WillowCreek(US-WCr)",
+##        "input_met": "AmerifluxLBL.SIPNET",
+##        "pecan_edit": "on",
+##        "sitegroupid": "1000000022",
+##        "fluxusername": "pecan",
+##        "input_poolinitcond": "-1"
+##        }
+##     },
+##     ...
+##   ],
+##   "count": 5
+## }
+```
+
+### {-}
+
+### `GET /api/workflows/{id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get details of workflow with `id` = '1000009172'
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/1000009172",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $id
+## [1] "1000009172"
+
+## $properties
+## $properties$end
+## [1] "2004/12/31"
+
+## $properties$pft
+## $properties$pft[[1]]
+## [1] "soil.IF"
+
+## $properties$pft[[2]]
+## [1] "temperate.deciduous.IF"
+
+
+## $properties$email
+## [1] ""
+
+## $properties$notes
+## [1] ""
+
+## $properties$start
+## [1] "2004/01/01"
+
+## $properties$siteid
+## [1] "676"
+
+## $properties$modelid
+## [1] "1000000022"
+
+## $properties$hostname
+## [1] "test-pecan.bu.edu"
+
+## $properties$sitename
+## [1] "WillowCreek(US-WCr)"
+
+## $properties$input_met
+## [1] "AmerifluxLBL.SIPNET"
+
+## $properties$pecan_edit
+## [1] "on"
+
+## $properties$sitegroupid
+## [1] "1000000022"
+
+## $properties$fluxusername
+## [1] "pecan"
+
+## $properties$input_poolinitcond
+## [1] "-1"
+```
+
+#### Python Snippet
+
+```python
+# Get details of workflow with `id` = '1000009172'
+response = requests.get(
+             "http://localhost:8000/api/workflows/1000009172",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "id": "1000009172",
+##   "properties": {
+##     "end": "2004/12/31",
+##     "pft": [
+##       "soil.IF",
+##       "temperate.deciduous.IF"
+##     ],
+##     "email": "",
+##     "notes": "",
+##     "start": "2004/01/01",
+##     "siteid": "676",
+##     "modelid": "1000000022",
+##     "hostname": "test-pecan.bu.edu",
+##     "sitename": "WillowCreek(US-WCr)",
+##     "input_met": "AmerifluxLBL.SIPNET",
+##     "pecan_edit": "on",
+##     "sitegroupid": "1000000022",
+##     "fluxusername": "pecan",
+##     "input_poolinitcond": "-1"
+##   }
+## }
+```
+
+### {-}
+
+### `GET /api/runs/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get list of run belonging to the workflow with `workflow_id` = '1000009172'
+res <- httr::GET(
+         "http://localhost:8000/api/runs/?workflow_id=1000009172",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $runs
+##    runtype  ensemble_id    workflow_id    id            model_id     site_id      parameter_list start_time        
+## finish_time    
+##  1 ensemble 1000017624     1000009172     1002042201    1000000022   796          ensemble=1     2005-01-01 
+## 00:00:00 2011-12-31 00:00:00
+##  ...
+
+## $count
+## [1] 50
+```
+
+#### Python Snippet
+
+```python
+# Get list of run belonging to the workflow with `workflow_id` = '1000009172'
+response = requests.get(
+             "http://localhost:8000/api/runs/?workflow_id=1000009172",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "runs": [
+##     {
+##       "runtype": "ensemble",
+##       "ensemble_id": 1000017624,
+##       "workflow_id": 1000009172,
+##       "id": 1002042201,
+##       "model_id": 1000000022,
+##       "site_id": 796,
+##       "parameter_list": "ensemble=1",
+##       "start_time": "2005-01-01",
+##       "finish_time": "2011-12-31"
+##     },
+##     ...
+##   ]
+##   "count": 50,
+##   "next_page": "http://localhost:8000/api/workflows/?workflow_id=1000009172&offset=50&limit=50"
+## }
+```
+
+### {-}
+
+### `GET /api/runs/{id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get details of run belonging with `id` = '1002042201'
+res <- httr::GET(
+         "http://localhost:8000/api/runs/1002042201",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+##    runtype ensemble_id workflow_id         id   model_id site_id start_time finish_time parameter_list          
+## 1 ensemble  1000017624  1000009172 1002042201 1000000022     796 2005-01-01  2011-12-31     ensemble=1 
+##            created_at          updated_at          started_at         finished_at
+## 1 2018-04-11 22:20:31 2018-04-11 22:22:08 2018-04-11 18:21:57 2018-04-11 18:22:08
+```
+
+#### Python Snippet
+
+```python
+# Get details of run with `id` = '1002042201'
+response = requests.get(
+             "http://localhost:8000/api/runs/1002042201",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## [
+##   {
+##     "runtype": "ensemble",
+##     "ensemble_id": 1000017624,
+##     "workflow_id": 1000009172,
+##     "id": 1002042201,
+##     "model_id": 1000000022,
+##     "site_id": 796,
+##     "parameter_list": "ensemble=1",
+##     "start_time": "2005-01-01",
+##     "finish_time": "2011-12-31"
+##   }
+## ]
+```
+
+### {-}

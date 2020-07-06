@@ -446,7 +446,9 @@ db.getShowQueries <- function() {
 ##' @param values values to be queried in fields corresponding to colnames
 ##' @param con database connection object,
 ##' @param create logical: make a record if none found?
-##' @param dates logical: update created_at and updated_at timestamps? Used only if `create` is TRUE
+##' @param dates Ignored.
+##'   Formerly indicated whether to set created_at and updated_at timestamps
+##'   when `create` was TRUE, but the database now always sets them automatically
 ##' @return will numeric
 ##' @export
 ##' @author David LeBauer
@@ -455,16 +457,14 @@ db.getShowQueries <- function() {
 ##' pftid <- get.id("pfts", "name", "salix", con)
 ##' pftid <- get.id("pfts", c("name", "modeltype_id"), c("ebifarm.salix", 1), con)
 ##' }
-get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
+get.id <- function(table, colnames, values, con, create=FALSE, dates=TRUE){
   values <- lapply(values, function(x) ifelse(is.character(x), shQuote(x), x))
   where_clause <- paste(colnames, values , sep = " = ", collapse = " and ")
   query <- paste("select id from", table, "where", where_clause, ";")
   id <- db.query(query = query, con = con)[["id"]]
   if (is.null(id) && create) {
     colinsert <- paste0(colnames, collapse=", ")
-    if (dates) colinsert <- paste0(colinsert, ", created_at, updated_at")
     valinsert <- paste0(values, collapse=", ")
-    if (dates) valinsert <- paste0(valinsert, ", NOW(), NOW()")
     PEcAn.logger::logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
     db.query(query = paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con = con)
     id <- db.query(query, con)[["id"]]
