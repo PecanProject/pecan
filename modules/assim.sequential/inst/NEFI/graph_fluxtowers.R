@@ -6,7 +6,7 @@ library("gganimate")
 library("tidyverse")
 library('PEcAn.all')
 library("RCurl")
-source("/fs/data3/kzarada/NEFI/Willow_Creek/wcr.graphs.R")
+source("/fs/data3/kzarada/NEFI/Willow_Creek/forecast.graphs.R")
 #source("/fs/data3/kzarada/NEFI/Willow_Creek/download_WCr_met.R")
 
 #WLEF
@@ -64,7 +64,7 @@ for(j in 1:length(vars)){
     
     args = c(as.character(ctime[i]), vars[j], site.num, outdir)
     
-    assign(paste0(ctime[i], "_", vars[j]), wcr.graphs(args))
+    assign(paste0(ctime[i], "_", vars[j]), forecast.graphs(args))
     
   }
 }
