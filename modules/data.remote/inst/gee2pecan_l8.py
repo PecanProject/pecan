@@ -3,15 +3,17 @@ Extracts Landsat 8 surface reflactance band data from Google Earth Engine and sa
 
 Requires Python3
 
+Bands retrieved: B1, B2, B3, B4, B5, B6, B7, B10, B11 along with computed NDVI
+
 If ROI is a Point, this function can be used for getting SR data from Landsat 7, 5 and 4 as well.
 
 Author: Ayush Prasad
 """
-
+from gee_utils import create_geo, get_siteaoi, get_sitename
 import ee
 import pandas as pd
-import datetime
 import geopandas as gpd
+import datetime
 import os
 import xarray as xr
 import numpy as np
@@ -20,7 +22,7 @@ import re
 ee.Initialize()
 
 
-def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"]):
+def gee2pecan_l8(geofile, outdir, start, end, qc=1):
     """
     Extracts Landsat 8 SR band data from GEE
 
@@ -49,11 +51,10 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
  
     """
 
-    # read in the geojson file
-    df = gpd.read_file(geofile)
-
     # scale (int) Default: 30
     scale = 30
+    # bands retrieved
+    bands = ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11"]
 
     def reduce_region(image):
         """
@@ -75,7 +76,7 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
     # create image collection depending upon the qc choice
     if qc == True:
         landsat = (
-            ee.ImageCollection(ic)
+            ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")
             .filterDate(start, end)
             .map(mask)
             .sort("system:time_start", True)
@@ -83,37 +84,28 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
 
     else:
         landsat = (
-            ee.ImageCollection(ic)
+            ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")
             .filterDate(start, end)
             .sort("system:time_start", True)
         )
 
-    # If NDVI is to be calculated select the appropriate bands and create the image collection
-    if vi == True:
+    def calcNDVI(image):
+        """
+        Calculates NDVI and adds the band to the image.
+        """
+        ndvi = image.normalizedDifference(["B5", "B4"]).rename("NDVI")
+        return image.addBands(ndvi)
 
-        def calcNDVI(image):
-            """
-            Calculates NDVI and adds the band to the image.
-            """
-            ndvi = image.normalizedDifference(["B5", "B4"]).rename("NDVI")
-            return image.addBands(ndvi)
-
-        # map NDVI to the image collection and select the NDVI band
-        landsat = landsat.map(calcNDVI).select("NDVI")
-        file_name = "_l8ndvi"
-
-    # select the user specified bands if NDVI is not be calculated
-    else:
-        landsat = landsat.select(bands)
-        file_name = "_l8bands"
+    # map NDVI to the image collection and select the bands
+    landsat = landsat.map(calcNDVI).select(
+        ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11", "NDVI"]
+    )
 
     # if ROI is a point
+    df = gpd.read_file(geofile)
     if (df.geometry.type == "Point").bool():
-        # extract the coordinates
-        lon = float(df.geometry.x)
-        lat = float(df.geometry.y)
-        # create geometry
-        geo = ee.Geometry.Point(lon, lat)
+
+        geo = create_geo(geofile)
 
         # get the data
         l_data = landsat.filterBounds(geo).getRegion(geo, scale).getInfo()
@@ -145,11 +137,8 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
 
     # if ROI is a polygon
     elif (df.geometry.type == "Polygon").bool():
-        # extract coordinates
-        area = [
-            list(df.geometry.exterior[row_id].coords) for row_id in range(df.shape[0])
-        ]
-        geo = ee.Geometry.Polygon(area)
+
+        geo = create_geo(geofile)
 
         # get the data
         l_data = landsat.filterBounds(geo).map(reduce_region).getInfo()
@@ -180,8 +169,8 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
     else:
         raise ValueError("geometry choice not supported")
 
-    site_name = df[df.columns[0]].iloc[0]
-    AOI = str(df[df.columns[1]].iloc[0])
+    site_name = get_sitename(geofile)
+    AOI = get_siteaoi(geofile)
     # convert the dataframe to an xarray dataset
     tosave = xr.Dataset(
         datadf,
@@ -190,7 +179,7 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
             "start_date": start,
             "end_date": end,
             "AOI": AOI,
-            "sensor": ic,
+            "sensor": "LANDSAT/LC08/C01/T1_SR",
         },
     )
 
@@ -199,16 +188,4 @@ def l8gee2pecan_bands(geofile, outdir, start, end, ic, vi, qc, bands=["B5", "B4"
         os.makedirs(outdir, exist_ok=True)
 
     # convert the dataset to a netCDF file and save it
-    tosave.to_netcdf(os.path.join(outdir, site_name + file_name + ".nc"))
-
-
-if __name__ == "__main__":
-    l8gee2pecan_bands(
-        "./satellitetools/test.geojson",
-        "./out/",
-        "2018-01-01",
-        "2018-12-31",
-        "LANDSAT/LC08/C01/T1_SR",
-        True,
-        True,
-    )
+    tosave.to_netcdf(os.path.join(outdir, site_name + "_bands.nc"))
