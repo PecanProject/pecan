@@ -1,4 +1,4 @@
-version: "3"
+version: "3.2"
 
 services:
 
@@ -42,24 +42,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik:/config
-
-  # Allow to see all docker containers running, restart and see log files.
-  portainer:
-    image: portainer/portainer:latest
-    command:
-      - --admin-password=${PORTAINER_PASSWORD:-}
-      - --host=unix:///var/run/docker.sock
-    restart: unless-stopped
-    networks:
-      - pecan
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=portainer"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /portainer"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer:/data
 
   # ----------------------------------------------------------------------
   # Access to the files generated and used by PEcAn, both through a
@@ -163,6 +145,8 @@ services:
     image: pecan/rstudio-nginx:${PECAN_VERSION:-latest}
     networks:
       - pecan
+    depends_on:
+      - rstudio
     labels:
       - "traefik.enable=true"
       - "traefik.backend=rstudio"
@@ -176,6 +160,9 @@ services:
     networks:
       - pecan
     environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
+      - NAME=${PECAN_NAME:-docker}
       - USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
     entrypoint: /init
