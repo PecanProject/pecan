@@ -7,7 +7,7 @@ Calculates LAI using SNAP.
 Author: Ayush Prasad
 """
 
-from satellitetools import gee
+import gee2pecan_s2 as gee
 import satellitetools.biophys_xarray as bio
 import geopandas as gpd
 import xarray as xr
@@ -34,6 +34,7 @@ def bands2lai_snap(inputfile, outdir):
     ds_disk = xr.open_dataset(inputfile)
     # calculate LAI using SNAP
     area = bio.run_snap_biophys(ds_disk, "LAI")
+    area = area[["lai"]]
 
     timeseries = {}
     timeseries_variable = ["lai"]
