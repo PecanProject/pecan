@@ -47,7 +47,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
       result$next_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
-        "/api/workflows",
+        "/api/runs",
         req$PATH_INFO,
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         (as.numeric(limit) + as.numeric(offset)),
@@ -59,7 +59,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
-        "/api/workflows",
+        "/api/runs",
         req$PATH_INFO, 
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         max(0, (as.numeric(offset) - as.numeric(limit))),
