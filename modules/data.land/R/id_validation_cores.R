@@ -168,3 +168,27 @@ potential.validation.cores <- pipo.cores %>% filter(STATUS %in% "CQC")
 pipo.cores %>% filter(STATUS %in% "CQC") %>% select(FILE)
 write.csv(potential.validation.cores, "FIA_inc_data/potential.validation.PIPO.cores.csv")
 
+
+#-----------------------------------------------
+# merge with stand/tree level data:
+
+head(potential.validation.cores)
+head(TREE)
+pipo.trees <- TREE %>% filter(SPCD == 122)
+
+
+head(pipo.trees)
+unique(TREE[, c("PLOT", "SUBP", "TREE", "COUNTYCD")])
+unique(potential.validation.cores[, c("PLOT", "SUBP", "TREE", "COUNTYCD")])
+
+joined.df <- merge(potential.validation.cores, TREE, by =  c("STATECD", "PLOT", "SUBP", "TREE", "COUNTYCD"))
+
+# but we are missing SDI--maybe we can pick cores that fall in plots where we have SDI
+head(cov.data)
+colnames(cov.data)[1] <- "CC_PLOT"
+joined.df$CC_PLOT <- paste0(joined.df$COUNTYCD, joined.df$PLOT)
+
+cov.join <- merge (cov.data, joined.df, by = c("CC_PLOT"))
+
+write.csv(cov.join, "FIA_inc_data/validation_cores_SDI_plot.csv")
+
