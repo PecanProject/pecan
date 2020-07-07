@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 #* This is the entry point to the PEcAn API. 
 #* All API endpoints (& filters) are mounted here
 #* @author Tezan Sahu
