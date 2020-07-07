@@ -12,7 +12,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE,scale.state = 0, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
@@ -153,6 +153,7 @@ model{
   ###        FIXED EFFECTS
   ###
   ########################################################################
+  ## adding an toggle so that if scalestate == 0 you dont scale, but scalestate == 30, means you -30 from the state variable
   if(FALSE){
     ## DEV TESTING FOR X, polynomial X, and X interactions
     fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
@@ -226,17 +227,34 @@ model{
           } ## end fixed or time varying
           
           myBeta <- paste0("betaX_",covX)
-          Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
+          if(scale.state == 0){ # if statement to scale x by a default value if scale.state is not 0
+            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
+          }else{
+            Xformula <- paste0(myBeta,"*(x[i,t-1]-",scale.state,")*",covX,myIndex)
+            
+          }
+          
           
         } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
           powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
           powX <- powX[-which(toupper(powX)=="X")] ## remove X from terms
           myBeta <- paste0("betaX",powX)
-          Xformula <- paste0(myBeta,"*x[i,t-1]^",powX)
+          
+          if(scale.state == 0){ # if statement to scale x by a default value if scale.state is not 0
+            Xformula <- paste0(myBeta,"*x[i,t-1]^",powX)
+          }else{
+            Xformula <- paste0(myBeta,"*(x[i,t-1]-",scale.state,")^",powX)
+            
+          }
+          
           
         } else {  ## JUST X
           myBeta <- "betaX"
-          Xformula <- paste0(myBeta,"*x[i,t-1]")
+          if(scale.state == 0){
+            Xformula <- paste0(myBeta,"*x[i,t-1]")
+          }else{
+            Xformula <- paste0(myBeta,"*(x[i,t-1]-", scale.state, ")")
+          }
         }
         
         ## add variables to Pformula
