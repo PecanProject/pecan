@@ -53,7 +53,6 @@ $folder = $workflow['folder'];
 $stmt->closeCursor();
 close_database();
 
-$exec = "R_LIBS_USER=\"$R_library_path\" $Rbinary CMD BATCH";
 $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
 if ($pecan_edit) {
   $path .= "&pecan_edit=pecan_edit";
@@ -74,13 +73,6 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
   $fh = fopen($folder . DIRECTORY_SEPARATOR . "STATUS", 'a') or die("can't open file");
   fwrite($fh, "\t" . date("Y-m-d H:i:s") . "\tDONE\t\n");
   fclose($fh);
-
-  $exec .= " --continue workflow.R workflow2.Rout";
-} else {
-  if ($model_edit) {
-    $exec .= " --advanced";
-  }
-  $exec .= " workflow.R";
 }
 
 # start the workflow again
@@ -91,11 +83,28 @@ if (array_key_exists("rabbitmq_uri", $hostoptions)) {
   } else {
     $rabbitmq_queue = "pecan";
   }
-  $msg_exec = str_replace("\"", "'", $exec);
-  $message = '{"folder": "' . $folder . '", "custom_application": "' . $msg_exec . '"}';
+
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"';
+  if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+    $message .= ', "continue": true';
+  } else if ($model_edit) {
+    $message .= ', "modeledit": true';
+  }
+  $message .= '}';
   send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 } else {
   chdir($folder);
+
+  $exec = "R_LIBS_USER=\"$R_library_path\" $Rbinary CMD BATCH";
+  if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
+    $exec .= " --continue workflow.R workflow2.Rout";
+  } else {
+    if ($model_edit) {
+      $exec .= " --advanced";
+    }
+    $exec .= " workflow.R";
+  }
+  
   pclose(popen("$exec &", 'r'));
 }
 

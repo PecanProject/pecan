@@ -1,8 +1,8 @@
-#### Installing data for PEcAn {#install-data}
+### Installing data for PEcAn {#install-data}
 
 PEcAn assumes some of the data to be installed on the machine. This page will describe how to install this data.
 
-##### Site Information
+#### Site Information
 
 These are large-ish files that contain data used with ED2 and SIPNET
 
@@ -19,7 +19,7 @@ tar zxf inputs.tgz
 rm inputs.tgz
 ```
 
-##### FIA database
+#### FIA database
 
 FIA database is large and will add an extra 10GB to the installation.
 
@@ -33,7 +33,7 @@ psql -U bety -d fia5data < fia5data.psql
 rm fia5data.psql
 ```
 
-##### Flux Camp
+#### Flux Camp
 
 Following will install the data for flux camp (as well as the demo script for PEcAn).
 
@@ -44,7 +44,7 @@ tar zxf plot.tgz
 rm plot.tgz
 ```
 
-##### Harvard for ED tutorial
+#### Harvard for ED tutorial
 
 Add datasets and runs
 

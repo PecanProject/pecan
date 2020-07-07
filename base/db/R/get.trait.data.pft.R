@@ -91,7 +91,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
         pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
           dplyr::filter(pft_id == !!pftid) %>%
           dplyr::arrange(dplyr::desc(created_at)) %>%
-          head(1) %>%
+          utils::head(1) %>%
           dplyr::pull(id)
       } else {
         PEcAn.logger::logger.info("No previous posterior found. Forcing update")
@@ -289,13 +289,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   old.files <- list.files(path = pft$outdir)
   
   # create a new posterior
-  now <- format(x = Sys.time(), format = "%Y-%m-%d %H:%M:%S")
-  db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) ",
-                  "VALUES (", pftid, ", '", now, "', '", now, "')"),
-           con = dbcon)
-  pft$posteriorid <- dplyr::tbl(dbcon, "posteriors") %>%
-    dplyr::filter(pft_id == !!pftid, created_at == !!now) %>%
-    dplyr::pull(id)
+  insert_result <- db.query(
+    paste0("INSERT INTO posteriors (pft_id) VALUES (", pftid, ") RETURNING id"),
+    con = dbcon)
+  pft$posteriorid <- insert_result[["id"]]
   
   # create path where to store files
   pathname <- file.path(dbfiles, "posterior", pft$posteriorid)

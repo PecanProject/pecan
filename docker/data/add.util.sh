@@ -33,7 +33,7 @@ addFormat() {
     fi
     FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mimetype_id=${MIME_ID} AND name='$2' LIMIT 1;" )
     if [ "$FORMAT_ID" == "" ]; then
-        ${PSQL} "INSERT INTO formats (mimetype_id, name, created_at, updated_at) VALUES (${MIME_ID}, '$2', NOW(), NOW());"
+        ${PSQL} "INSERT INTO formats (mimetype_id, name) VALUES (${MIME_ID}, '$2');"
         FORMAT_ID=$( ${PSQL} "SELECT id FROM formats WHERE mimetype_id=${MIME_ID} AND name='$2' LIMIT 1;" )
         echo "Added new format with ID=${FORMAT_ID} for mimetype_id=${MIME_ID}, name=$2"
     fi
@@ -62,7 +62,7 @@ addInput() {
     fi
     INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date${START_Q} AND end_date${END_Q} LIMIT 1;" )
     if [ "$INPUT_ID" == "" ]; then
-        ${PSQL} "INSERT INTO inputs (site_id, format_id, name, start_date, end_date, created_at, updated_at) VALUES ($1, $2, '', ${START_I}, ${END_I}, NOW(), NOW());"
+        ${PSQL} "INSERT INTO inputs (site_id, format_id, name, start_date, end_date) VALUES ($1, $2, '', ${START_I}, ${END_I});"
         INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date${START_Q} AND end_date${END_Q} LIMIT 1;" )
         echo "Added new input with ID=${INPUT_ID} for site=$1, format_id=$2, start=$3, end=$4"
     else
@@ -93,8 +93,8 @@ addInputFile() {
     fi
 
     # Make sure host exists
-    ${PSQL} "INSERT INTO machines (hostname, created_at, updated_at)
-        SELECT *, now(), now() FROM (SELECT '${1}') AS tmp WHERE NOT EXISTS ${HOSTID};"
+    ${PSQL} "INSERT INTO machines (hostname)
+        SELECT * FROM (SELECT '${1}') AS tmp WHERE NOT EXISTS ${HOSTID};"
 
     # Add file
     ${PSQL} "INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id) VALUES
@@ -116,16 +116,16 @@ addModelFile() {
   MODELID="(SELECT models.id FROM models, modeltypes WHERE model_name='${2}' AND modeltypes.name='${3}' AND modeltypes.id=models.modeltype_id AND revision='${4}')"
 
 	# Make sure host exists
-	${PSQL} "INSERT INTO machines (hostname, created_at, updated_at)
-		SELECT *, now(), now() FROM (SELECT '${1}') AS tmp WHERE NOT EXISTS ${HOSTID};"
+	${PSQL} "INSERT INTO machines (hostname)
+		SELECT * FROM (SELECT '${1}') AS tmp WHERE NOT EXISTS ${HOSTID};"
 
 	# Make sure modeltype exists
-  ${PSQL}  "INSERT INTO modeltypes (name, created_at, updated_at)
-    SELECT *, now(), now() FROM (SELECT '${3}') AS tmp WHERE NOT EXISTS ${MODELTYPEID};"
+  ${PSQL}  "INSERT INTO modeltypes (name)
+    SELECT * FROM (SELECT '${3}') AS tmp WHERE NOT EXISTS ${MODELTYPEID};"
 
   # Make sure model exists
-	${PSQL}  "INSERT INTO models (model_name, modeltype_id, revision, created_at, updated_at)
-		SELECT *, now(), now() FROM (SELECT '${2}', ${MODELTYPEID}, '${4}') AS tmp WHERE NOT EXISTS ${MODELID};"
+	${PSQL}  "INSERT INTO models (model_name, modeltype_id, revision)
+		SELECT * FROM (SELECT '${2}', ${MODELTYPEID}, '${4}') AS tmp WHERE NOT EXISTS ${MODELID};"
 
   # check if binary already added
   COUNT=$( ${PSQL} "SELECT COUNT(id) FROM dbfiles WHERE container_type='Model' AND container_id=${MODELID} AND file_name='${5}' AND file_path='${6}' and machine_id=${HOSTID};" )

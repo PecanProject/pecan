@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+    tags:
+      - '*'
+
+  pull_request:
+
+env:
+  # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
+  # ...and it's always present here, because the rocker/tidyverse base image
+  # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
+  R_LIBS: ~/R/library
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    container: pecan/depends:develop
+    steps:
+    - uses: actions/checkout@v2
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+      shell: bash
+    - name: cache R packages
+      uses: actions/cache@v1
+      with:
+        key: pkgcache-${{ github.sha }}
+        path: ${{ env.R_LIBS }}
+        restore-keys: |
+          pkgcache-
+    - name: cache .doc
+      uses: actions/cache@v1
+      with:
+        key: doc-${{ github.sha }}
+        path: .doc
+    - name: cache .install
+      uses: actions/cache@v1
+      with:
+        key: install-${{ github.sha }}
+        path: .install
+    - name: build
+      run: make -j1
+      env:
+        NCPUS: 2
+        CI: true
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    container: pecan/depends:develop
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      NCPUS: 2
+      PGHOST: postgres
+      CI: true
+    steps:
+    - uses: actions/checkout@v2
+    - name: install utils
+      run: apt-get update && apt-get install -y openssh-client postgresql-client curl
+    - name: db setup
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+    - name: cache R packages
+      uses: actions/cache@v1
+      with:
+        key: pkgcache-${{ github.sha }}
+        path: ${{ env.R_LIBS }}
+        restore-keys: |
+          pkgcache-
+    - name: cache .doc
+      uses: actions/cache@v1
+      with:
+        key: doc-${{ github.sha }}
+        path: .doc
+    - name: cache .install
+      uses: actions/cache@v1
+      with:
+        key: install-${{ github.sha }}
+        path: .install
+    - name: test
+      run: make test
+
+  check:
+    needs: build
+    runs-on: ubuntu-latest
+    container: pecan/depends:develop
+    env:
+      NCPUS: 2
+      CI: true
+      _R_CHECK_LENGTH_1_CONDITION_: true
+      _R_CHECK_LENGTH_1_LOGIC2_: true
+      # Avoid compilation check warnings that come from the system Makevars
+      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
+      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
+    steps:
+    - uses: actions/checkout@v2
+    - name: install ssh
+      run: apt-get update && apt-get install -y openssh-client qpdf
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+    - name: cache R packages
+      uses: actions/cache@v1
+      with:
+        key: pkgcache-${{ github.sha }}
+        path: ${{ env.R_LIBS }}
+        restore-keys: |
+          pkgcache-
+    - name: cache .doc
+      uses: actions/cache@v1
+      with:
+        key: doc-${{ github.sha }}
+        path: .doc
+    - name: cache .install
+      uses: actions/cache@v1
+      with:
+        key: install-${{ github.sha }}
+        path: .install
+    - name: check
+      run: make check
+      env:
+        REBUILD_DOCS: "FALSE"
+        RUN_TESTS: "FALSE"
+
+  sipnet:
+    needs: build
+    runs-on: ubuntu-latest
+    container: pecan/depends:develop
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      PGHOST: postgres
+    steps:
+    - uses: actions/checkout@v2
+    - run: apt-get update && apt-get install -y curl postgresql-client
+    - name: install sipnet
+      run: |
+        cd ${HOME}
+        curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
+        tar zxf sipnet_unk.tar.gz
+        cd sipnet_unk
+        make
+    - name: db setup
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+    - name: cache R packages
+      uses: actions/cache@v1
+      with:
+        key: pkgcache-${{ github.sha }}
+        path: ${{ env.R_LIBS }}
+        restore-keys: |
+          pkgcache-
+    - name: integration test
+      run: ./tests/integration.sh ghaction

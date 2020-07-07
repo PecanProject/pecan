@@ -1,14 +1,14 @@
 # Troubleshooting and Debugging PEcAn
 
-### Cookies and pecan web pages
+## Cookies and pecan web pages
 
 You may need to disable cookies specifically for the pecan webserver in your browser. This shouldn't be a problem running from the virtual machine, but your installation of php can include a 'PHPSESSID' that is quite long, and this can overflow the params field of the workflows table, depending on how long your hostname, model name, site name, etc are. 
 
-### `Warning: mkdir() [function.mkdir]: No such file or directory`
+## `Warning: mkdir() [function.mkdir]: No such file or directory`
 
 If you are seeing: `Warning: mkdir() [function.mkdir]: No such file or directory in /path/to/pecan/web/runpecan.php at line 169` it is because you have used a relative path for \$output_folder in system.php.
 
-### After creating a new PFT the <num> tag for PFT not passed to config.xml in ED
+## After creating a new PFT the <num> tag for PFT not passed to config.xml in ED
 
 This is a result of the rather clunky way we currently have adding PFTs to PEcAn. This is happening because you need to edit the ./pecan/models/ed/data/pftmapping.csv file to include your new PFTs.
 
@@ -40,7 +40,7 @@ See [tests README](https://github.com/PecanProject/pecan/blob/master/tests/READM
 
 
 
-### Useful scripts 
+## Useful scripts
 
 The following scripts (in `qaqc/vignettes` identify, respectively:
 
