@@ -6,7 +6,7 @@ remote_process controls the individual functions to create an automatic workflow
 
 Requires Python3
 
-Author: Ayush Prasad
+Author(s): Ayush Prasad, Istem Fer
 """
 
 from get_remote_data import get_remote_data
@@ -22,7 +22,7 @@ def remote_process(
     source,
     collection,
     qc=None,
-    algorithm="snap",
+    algorithm=None,
     output={"get_data": "bands", "process_data": "lai"},
     stage={"get_data": True, "process_data": True},
 ):
