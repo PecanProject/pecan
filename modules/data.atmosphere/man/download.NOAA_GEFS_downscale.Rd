@@ -9,8 +9,8 @@ download.NOAA_GEFS_downscale(
   lat.in,
   lon.in,
   sitename,
-  start_date = Sys.time(),
-  end_date = (as.POSIXct(start_date, tz = "UTC") + lubridate::days(16)),
+  start_date,
+  end_date,
   overwrite = FALSE,
   verbose = FALSE,
   ...
