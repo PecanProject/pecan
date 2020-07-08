@@ -341,10 +341,10 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       update_frequency = dt,
       flag = 1
     )
-    if (!useCO2) {
-      metvar_table[metvar_table$variable == "co2",
-                   c("update_frequency", "flag")] <- list(380, 4)
-    }
+    #if (!useCO2) {
+    #  metvar_table[metvar_table$variable == "co2",
+    #               c("update_frequency", "flag")] <- list(380, 4)
+    #}
 
     ed_metheader <- list(list(
       path_prefix = met_folder,
