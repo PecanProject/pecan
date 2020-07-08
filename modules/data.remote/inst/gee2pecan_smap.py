@@ -7,7 +7,7 @@ Requires Python3
 
 Author: Ayush Prasad
 """
-from gee_utils import create_geo, get_siteaoi, get_sitename
+from gee_utils import create_geo, get_sitecoord, get_sitename
 import ee
 import pandas as pd
 import os
@@ -137,7 +137,7 @@ def gee2pecan_smap(geofile, outdir, start, end):
 
     datadf = fc2dataframe(fc)
 
-    site_name = get_sitename(geofile)
+    site_name = get_sitecoord(geofile)
     AOI = get_siteaoi(geofile)
 
     # convert the dataframe to an xarray dataset, used for converting it to a netCDF file
