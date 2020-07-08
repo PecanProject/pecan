@@ -9,7 +9,7 @@ If ROI is a Point, this function can be used for getting SR data from Landsat 7,
 
 Author: Ayush Prasad
 """
-from gee_utils import create_geo, get_siteaoi, get_sitename
+from gee_utils import create_geo, get_sitecoord, get_sitename, calc_ndvi
 import ee
 import pandas as pd
 import geopandas as gpd
@@ -36,10 +36,6 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
     
     end (str) -- ending date areaof the data request in the form YYYY-MM-DD
 
-    ic (str) -- image collection id of the Landsat SR product from Google Earth Engine
-
-    vi (bool) -- set to True if NDVI needs to be calculated
-
     qc (bool) -- uses the cloud masking function if set to True
 
     bands (list of str) -- bands to be retrieved. Default: B5, B4
@@ -53,8 +49,7 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
 
     # scale (int) Default: 30
     scale = 30
-    # bands retrieved
-    bands = ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11"]
+    # bands retrieved ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11"]
 
     def reduce_region(image):
         """
@@ -89,15 +84,9 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
             .sort("system:time_start", True)
         )
 
-    def calcNDVI(image):
-        """
-        Calculates NDVI and adds the band to the image.
-        """
-        ndvi = image.normalizedDifference(["B5", "B4"]).rename("NDVI")
-        return image.addBands(ndvi)
 
     # map NDVI to the image collection and select the bands
-    landsat = landsat.map(calcNDVI).select(
+    landsat = landsat.map(calc_ndvi(nir="B5", red="B4")).select(
         ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11", "NDVI"]
     )
 
@@ -170,7 +159,7 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
         raise ValueError("geometry choice not supported")
 
     site_name = get_sitename(geofile)
-    AOI = get_siteaoi(geofile)
+    AOI = get_sitecoord(geofile)
     # convert the dataframe to an xarray dataset
     tosave = xr.Dataset(
         datadf,
