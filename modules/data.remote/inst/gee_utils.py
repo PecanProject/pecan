@@ -65,7 +65,7 @@ def get_sitename(geofile):
     return site_name
 
 
-def get_siteaoi(geofile):
+def get_sitecoord(geofile):
     """
     extracts AOI coordinates from the input file
 
@@ -80,3 +80,23 @@ def get_siteaoi(geofile):
     df = gpd.read_file(geofile)
     site_aoi = str(df[df.columns[1]].iloc[0])
     return site_aoi
+
+def calc_ndvi(nir, red):
+    """
+    calculates NDVI on GEE
+
+    Parameters
+    ----------
+    nir (str) -- NIR band of the image collection
+
+    red (str) -- RED band of the image collection
+
+    Returns
+    -------
+    image -- with added NDVI band
+
+    """
+    def add_ndvi(image):
+        ndvi = image.normalizedDifference([nir, red]).rename("NDVI")
+        return image.addBands(ndvi)
+    return add_ndvi
