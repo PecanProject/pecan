@@ -12,7 +12,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE,scale.state = 0, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, rand.X =NULL n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, scale.state = 0, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
@@ -131,17 +131,36 @@ model{
       Pformula <- paste(Pformula,
                         paste0("+ alpha_", r_var,"[",counter,index,"]"))
       ## create random effect
-      for(j in seq_along(nr)){
-        Reffects <- paste(Reffects,
-                          paste0("for(k in 1:",nr[j],"){\n"),
-                          paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
-      }
-      ## create priors
-      Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
-      ## track
-      burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
-      out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var))
       
+      # if we have a random slope on betaX, add it here manually
+      if(rand.X == TRUE){
+        for(j in seq_along(nr)){
+          Reffects <- paste(Reffects,
+                            paste0("for(k in 1:",nr[j],"){\n"),
+                            paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n
+                                     betaX_",r_var[j],"[k] ~ dnorm(betaX,tau_betaX_",r_var[j],")\n}\n"))
+        }
+      }else{
+        for(j in seq_along(nr)){
+          Reffects <- paste(Reffects,
+                            paste0("for(k in 1:",nr[j],"){\n"),
+                            paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
+        }
+      }
+      ## create priors if we have random effect on X
+      if(rand.X ==TRUE){
+        Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n
+                                          tau_betaX_", r_var, " ~ dgamma(1,0.1)\n",collapse = " "))
+        ## track
+        burnin.variables <- c(burnin.variables, paste0("tau_", r_var), paste0("tau_betaX_", r_var))
+        out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var),  paste0("tau_betaX_", r_var),  paste0("betaX_", r_var))
+      }else{
+        ## create priors
+        Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
+        ## track
+        burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
+        out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var))
+      }
     }
     ## Substitute into code
     TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
@@ -249,7 +268,11 @@ model{
           
           
         } else {  ## JUST X
-          myBeta <- "betaX"
+          if(rand.X == TRUE){ # only works for plot random effect this way
+            myBeta <- paste0("betaX_", r_var, "[", r_var, "[i]]") 
+          }else{
+            myBeta <- "betaX"
+          }
           if(scale.state == 0){
             Xformula <- paste0(myBeta,"*x[i,t-1]")
           }else{
