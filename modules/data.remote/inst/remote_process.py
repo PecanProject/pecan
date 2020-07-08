@@ -40,15 +40,15 @@ def remote_process(
     
     end (str) -- ending date area of the data request in the form YYYY-MM-DD
 
-    source (str) -- source from where data is to be downloaded
+    source (str) -- source from where data is to be downloaded, e.g. "gee" or "appEEARS" etc. Currently only "gee" implemented
 
-    collection (str) -- dataset ID
+    collection (str) -- dataset or product name as it is provided on the source, e.g.  "LANDSAT/LC08/C01/T1_SR",  "COPERNICUS/S2_SR" for gee
 
-    qc (float) -- quality control parameter
+    qc (float) -- quality control parameter, only required for gee queries, None by default
 
-    algorithm (str) -- algorithm used for processing data in process_data()
+    algorithm (str) -- algorithm used for processing data in process_data(), currently only SNAP is implemented to estimate LAI from Sentinel-2 bands, None by default
 
-    output (dict) -- "get_data" - the type of raw data, "process_data" - final proccesed data
+    output (dict) -- "get_data" - the type of output variable requested from get_data module, "process_data" - the type of output variable requested from process_data module
 
     stage (dict) -- temporary argument to imitate database checks
   
