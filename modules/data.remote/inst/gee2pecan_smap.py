@@ -137,8 +137,8 @@ def gee2pecan_smap(geofile, outdir, start, end):
 
     datadf = fc2dataframe(fc)
 
-    site_name = get_sitecoord(geofile)
-    AOI = get_siteaoi(geofile)
+    site_name = get_sitename(geofile)
+    AOI = get_sitecoord(geofile)
 
     # convert the dataframe to an xarray dataset, used for converting it to a netCDF file
     tosave = xr.Dataset(

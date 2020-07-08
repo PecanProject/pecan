@@ -6,7 +6,7 @@ get_remote_data controls GEE and AppEEARS functions to download data.
 
 Requires Python3
 
-Author: Ayush Prasad
+Author(s): Ayush Prasad, Istem Fer
 """
 
 from importlib import import_module
@@ -50,7 +50,12 @@ def get_remote_data(geofile, outdir, start, end, source, collection, qc=None):
             # get collection id from the dictionary
             collection = collection_dict[collection]
         except KeyError:
-            print("Requested image collection is not available")
+            print(
+                "Please check if the collection name you requested is one of these and spelled correctly. If not, you need to implement a corresponding gee2pecan_{} function and add it to the collection dictionary.".format(
+                    collection
+                )
+            )
+            print(collection_dict.keys())
         # construct the function name
         func_name = "".join([source, "2pecan", "_", collection])
         # import the module
