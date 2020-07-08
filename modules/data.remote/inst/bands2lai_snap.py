@@ -32,6 +32,8 @@ def bands2lai_snap(inputfile, outdir):
     """
     # load the input file
     ds_disk = xr.open_dataset(inputfile)
+    # select the required bands
+    ds_disk = ds_disk.sel(band=["B3", "B4", "B5", "B6", "B7", "B8A", "B11", "B12"])
     # calculate LAI using SNAP
     area = bio.run_snap_biophys(ds_disk, "LAI")
     area = area[["lai"]]
