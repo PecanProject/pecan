@@ -22,7 +22,7 @@ import re
 ee.Initialize()
 
 
-def gee2pecan_l8(geofile, outdir, start, end, qc=1):
+def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
     """
     Extracts Landsat 8 SR band data from GEE
 
@@ -36,9 +36,9 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
     
     end (str) -- ending date areaof the data request in the form YYYY-MM-DD
 
-    qc (bool) -- uses the cloud masking function if set to True
+    scale (int) -- spatial resolution
 
-    bands (list of str) -- bands to be retrieved. Default: B5, B4
+    qc (bool) -- uses the cloud masking function if set to True
 
     Returns
     -------
@@ -46,10 +46,6 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
             output netCDF is saved in the specified directory. 
  
     """
-
-    # scale (int) Default: 30
-    scale = 30
-    # bands retrieved ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "B11"]
 
     def reduce_region(image):
         """
@@ -83,7 +79,6 @@ def gee2pecan_l8(geofile, outdir, start, end, qc=1):
             .filterDate(start, end)
             .sort("system:time_start", True)
         )
-
 
     # map NDVI to the image collection and select the bands
     landsat = landsat.map(calc_ndvi(nir="B5", red="B4")).select(

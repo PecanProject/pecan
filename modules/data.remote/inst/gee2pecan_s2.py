@@ -4,9 +4,6 @@
 Created on Thu Feb  6 15:24:12 2020
 
 Module to retrieve Sentinel-2 data from Google Earth Engine (GEE).
-Warning: the data is currently retrieved with 10m resolution (scale=10), so
-the 20m resolution bands are resampled.
-TODO: Add option for specifying the request spatial resolution.
 
 @author: Olli Nevalainen (olli.nevalainen@fmi.fi),
  Finnish Meteorological Institute)
@@ -66,13 +63,15 @@ class S2RequestParams:
         Starting date for data request in form "2019-01-01".
     dateend : str
         Starting date for data request in form "2019-12-31".
+    scale : int
+        Spatial resolution
     bands : list, optional
         List of strings with band name.
         the default is ['B3', 'B4', 'B5',
         'B6', 'B7', 'B8A', 'B11', 'B12'].
     """
 
-    def __init__(self, datestart, dateend, bands=None):
+    def __init__(self, datestart, dateend, scale, bands=None):
         """.
 
         Parameters
@@ -81,6 +80,8 @@ class S2RequestParams:
             Starting date for data request in form "2019-01-01".
         dateend : str
             Starting date for data request in form "2019-12-31".
+        scale : int
+            Spatial resolution
         bands : list, optional
             List of strings with band name.
 
@@ -106,6 +107,7 @@ class S2RequestParams:
 
         self.datestart = datestart
         self.dateend = dateend
+        self.scale = scale
         self.bands = bands if bands else default_bands
 
 
@@ -230,7 +232,10 @@ def ee_get_s2_quality_info(AOIs, req_params):
 
             # apply reducer to list
             img = img.reduceRegion(
-                reducer=ee.Reducer.toList(), geometry=area, maxPixels=1e8, scale=10
+                reducer=ee.Reducer.toList(),
+                geometry=area,
+                maxPixels=1e8,
+                scale=req_params.scale,
             )
 
             # get data into arrays
@@ -291,10 +296,6 @@ def ee_get_s2_quality_info(AOIs, req_params):
 
 def ee_get_s2_data(AOIs, req_params, qi_threshold=0, qi_filter=s2_filter1):
     """Get S2 data (level L2A, bottom of atmosphere data) from GEE.
-
-    Warning: the data is currently retrieved with 10m resolution (scale=10), so
-    the 20m resolution bands are resampled.
-    TODO: Add option for specifying the request spatial resolution.
 
     Parameters
     ----------
@@ -400,7 +401,7 @@ def ee_get_s2_data(AOIs, req_params, qi_threshold=0, qi_filter=s2_filter1):
                 .get([0])
             )
 
-            img = img.resample("bilinear").reproject(crs=crs, scale=10)
+            img = img.resample("bilinear").reproject(crs=crs, scale=req_params.scale)
 
             # get the lat lon and add the ndvi
             image_grid = ee.Image.pixelCoordinates(ee.Projection(crs)).addBands(
@@ -409,7 +410,10 @@ def ee_get_s2_data(AOIs, req_params, qi_threshold=0, qi_filter=s2_filter1):
 
             # apply reducer to list
             image_grid = image_grid.reduceRegion(
-                reducer=ee.Reducer.toList(), geometry=geom, maxPixels=1e8, scale=10
+                reducer=ee.Reducer.toList(),
+                geometry=geom,
+                maxPixels=1e8,
+                scale=req_params.scale,
             )
 
             # get data into arrays
@@ -753,7 +757,7 @@ def xr_dataset_to_timeseries(xr_dataset, variables):
     return df
 
 
-def gee2pecan_s2(geofile, outdir, start, end, qi_threshold):
+def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     """ 
     Downloads Sentinel 2 data from gee and saves it in a netCDF file at the specified location.
     
@@ -766,6 +770,8 @@ def gee2pecan_s2(geofile, outdir, start, end, qi_threshold):
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
     end (str) -- ending date of the data request in the form YYYY-MM-DD
+
+    scale (int) - spatial resolution, recommended value 10
     
     qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
@@ -780,7 +786,7 @@ def gee2pecan_s2(geofile, outdir, start, end, qi_threshold):
     # read in the input file containing coordinates
     df = gpd.read_file(geofile)
 
-    request = S2RequestParams(start, end)
+    request = S2RequestParams(start, end, scale)
 
     # filter area of interest from the coordinates in the input file
     area = AOI(df[df.columns[0]].iloc[0], df[df.columns[1]].iloc[0])
