@@ -135,7 +135,7 @@ input.id = tbl(bety,"inputs") %>% filter(name == input_name) %>% pull(id)
 ```
 
 ## Remote data module
-Remote data module retrieves remote sensing data from MODISTools and Google Earth Engine (with plans to support AppEEARS in near future). The downloaded data can be used for preforming further analysis in PEcAn.
+Remote data module retrieves remote sensing data from MODISTools and Google Earth Engine (with plans to support AppEEARS in near future). The downloaded data can be used for performing further analysis in PEcAn.
 
 #### Google Earth Engine 
 [Google Earth Engine](https://earthengine.google.com/) is a cloud-based platform for performing analysis on satellite data. It provides access to a [large data catalog](https://developers.google.com/earth-engine/datasets) through an online JavaScript code editor and a Python API.
@@ -150,7 +150,7 @@ Processing functions currently available are,
 
 * [SNAP](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/satellitetools/biophys_xarray.py)
 
-#### Set-Up instructions:
+#### Set-Up instructions (one time step):
 
 1. **Sign up for the Google Earth Engine**. Follow the instructions [here](https://earthengine.google.com/new_signup/) to sign up for using GEE. You need to have your own GEE account for using the GEE download functions in this module.
 
@@ -164,7 +164,7 @@ b. Use pip to install the dependencies.
 ```bash
 pip install -r requirements.txt
 ```
-3. **Authenticate GEE**. The GEE API needs to be authenticated using your credentials (one time step). The credentials will be stored locally on your system. This can be done by,
+3. **Authenticate GEE**. The GEE API needs to be authenticated using your credentials. The credentials will be stored locally on your system. This can be done by,
 ```bash
 #this will open a browser and ask you to sign in with the Google account registered for GEE
 earthengine authenticate
@@ -177,6 +177,8 @@ This module contains GEE and other processing functions which retrieve data from
 **Input data**: The input data must be the coordinates of the area of interest (point or polygon type) and the name of the site/AOI. These information must be provided in a GeoJSON file.
 
 **Output data**: The output data returned by the functions are in the form of netCDF files.
+
+**scale**: Some of the GEE functions require a pixel resolution argument. Information about how GEE handles scale can be found out [here](https://developers.google.com/earth-engine/scale)
 
 #### Example use
 This example will download Sentinel 2 bands for an area in Reykjavik(test file is included) for the time period 2018-01-01 to 2018-12-31 and then use the SNAP algorithm to compute Leaf Area Index.
