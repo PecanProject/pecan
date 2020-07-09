@@ -35,20 +35,22 @@ if (is.na(args[2])){
 #---------------------------------------------------------------
 setwd(settings$outdir)
 # This is how I delete large folders
-c('run', 'out', 'SDA') %>%
-  map(function(dir.delete) {
-    if (dir.exists(file.path(settings$outdir, dir.delete))) {
-      setwd(settings$outdir)
-      list.dirs(dir.delete, full.names = T) %>%
-        furrr::future_map(function(del.dir) {
-          setwd(file.path(settings$outdir, del.dir))
-          system(paste0("perl -e 'for(<*>){((stat)[9]<(unlink))}'"))
-        })
-      PEcAn.logger::logger.info(paste0("I just deleted ", dir.delete, " folder !"))
-    }
-  })
-
-unlink(c('run', 'out', 'SDA'), recursive = TRUE)
+# In case there is an SDA run already performed in this dir and you're planning to use the same dir for some reason
+# These next lines could be uncommented to delete the necessary dirs.
+# c('run', 'out', 'SDA') %>%
+#   map(function(dir.delete) {
+#     if (dir.exists(file.path(settings$outdir, dir.delete))) {
+#       setwd(settings$outdir)
+#       list.dirs(dir.delete, full.names = T) %>%
+#         furrr::future_map(function(del.dir) {
+#           setwd(file.path(settings$outdir, del.dir))
+#           system(paste0("perl -e 'for(<*>){((stat)[9]<(unlink))}'"))
+#         })
+#       PEcAn.logger::logger.info(paste0("I just deleted ", dir.delete, " folder !"))
+#     }
+#   })
+# 
+# unlink(c('run', 'out', 'SDA'), recursive = TRUE)
 #----------------------------------------------------------------
 # Find what sites we are running for
 #---------------------------------------------------------------

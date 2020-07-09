@@ -50,11 +50,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   con <- bety$con
   on.exit(db.close(con), add = TRUE)
   
-  
+  latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
-                         lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
+                         lat = latlon$lat, 
+                         lon = latlon$lon)
   
   new.site$name <- settings$run$site$name
   

@@ -261,7 +261,7 @@ SDA_remote_launcher <-function(settingPath,
   
   need.copy.dirs <- dirname(need.copy) %>%
     unique() %>%
-    discard(~ .x %in% c(".", "/fs/data1/pecan.data/dbfiles" ))
+    discard(~ .x %in% c("."))
   
   
   need.copy.dirs %>%
