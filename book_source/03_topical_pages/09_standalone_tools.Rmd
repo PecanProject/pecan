@@ -198,6 +198,7 @@ remote_process(
         end="2018-12-31",
         source="gee",
         collection="COPERNICUS/S2_SR",
+        scale=10,
         qc=1,
         algorithm="snap",
         output={"get_data": "bands", "process_data": "lai"},
