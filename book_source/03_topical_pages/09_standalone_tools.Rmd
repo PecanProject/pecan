@@ -150,7 +150,7 @@ Processing functions currently available are,
 
 * [SNAP](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/satellitetools/biophys_xarray.py)
 
-#### Set-Up instructions (one time step):
+#### Set-Up instructions (first time and one time only):
 
 1. **Sign up for the Google Earth Engine**. Follow the instructions [here](https://earthengine.google.com/new_signup/) to sign up for using GEE. You need to have your own GEE account for using the GEE download functions in this module.
 
