@@ -289,9 +289,6 @@ Undocumented arguments in documentation object 'closest_xy'
 Undocumented arguments in documentation object 'daygroup'
   ‘date’ ‘flx’
 
-Undocumented arguments in documentation object 'db.site.lat.lon'
-  ‘site.id’ ‘con’
-
 Undocumented arguments in documentation object 'debias_met'
   ‘outfolder’ ‘site_id’ ‘...’
 
@@ -364,7 +361,7 @@ Undocumented arguments in documentation object 'met.process'
   ‘browndog’
 
 Undocumented arguments in documentation object 'met.process.stage'
-  ‘input.id’ ‘con’
+  ‘input.id’ ‘raw.id’
 
 Undocumented arguments in documentation object 'met2CF.ALMA'
   ‘verbose’
