@@ -121,7 +121,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
   
   #Loading nimbles functions
-  PEcAn.assim.sequential::load_nimble()
+  #PEcAn.assim.sequential::load_nimble()
   
   #Forecast inputs 
   Q <- Forecast$Q # process error
@@ -142,6 +142,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
   wts <- extraArg$wts/sum(extraArg$wts)
+  
   if(any(is.na(wts))){
     logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
     wts[is.na(wts)] <- 0
@@ -157,7 +158,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   
   ###Snow no snow hack
   for(ii in 1:ncol(X)){
-    try(if( sum(X[,ii],na.rm=T)==0 ) X[sample(x = 1:nrow(X),size = .2*nrow(X)),ii] <- .00000001)
+    try(if( sum(X[,ii],na.rm=T)==0 ) X[sample(x = 1:nrow(X),size = .2*nrow(X)),ii] <- .001)
   }
   
     ####getting ready to calculate y.ind and x.ind
@@ -188,10 +189,10 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       #The purpose of this step is to impute data for mu.f 
       #where there are zero values so that 
       #mu.f is in 'tobit space' in the full model
-      constants.tobit2space <<- list(N = nrow(X),
+      constants.tobit2space <- list(N = nrow(X),
                                      J = length(mu.f))
       
-      data.tobit2space <<- list(y.ind = x.ind,
+      data.tobit2space <- list(y.ind = x.ind,
                                 y.censored = x.censored,
                                 mu_0 = rep(0,length(mu.f)),
                                 lambda_0 = diag(1000,length(mu.f)), #can try solve
@@ -205,7 +206,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                                   cholesky = chol(solve(stats::cov(X)))))
       
       #ptm <- proc.time()
-      tobit2space_pred <<- nimbleModel(tobit2space.model, data = data.tobit2space,
+      tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
                                        constants = constants.tobit2space, inits = inits.tobit2space(),
                                        name = 'space')
       
@@ -214,13 +215,13 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       if(logprob_y_tobit2space < -1000000) logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
       
       ## Adding X.mod,q,r as data for building model.
-      conf_tobit2space <<- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
+      conf_tobit2space <- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
       conf_tobit2space$addMonitors(c("pf", "muf","y.censored"))
       
       conf_tobit2space$removeSampler('pf')
       conf_tobit2space$addSampler('pf','conj_wt_wishart_sampler')
       
-      samplerNumberOffset_tobit2space <<- length(conf_tobit2space$getSamplers())
+      samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
       
       for(j in seq_along(mu.f)){
         for(n in seq_len(nrow(X))){
@@ -231,11 +232,11 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
         }
       }
       
-      Rmcmc_tobit2space <<- buildMCMC(conf_tobit2space)
+      Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
       
       #restarting at good initial conditions is somewhat important here
-      Cmodel_tobit2space <<- compileNimble(tobit2space_pred)
-      Cmcmc_tobit2space <<- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
+      Cmodel_tobit2space <- compileNimble(tobit2space_pred)
+      Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
       
       for(i in seq_along(X)) {
         ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -243,6 +244,18 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
         ## indicator variable is set to 0, which specifies *not* to sample
         valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
       }
+      
+      utils::globalVariables(
+        'constants.tobit2space',
+        'data.tobit2space',
+        'inits.tobit2space',
+        'tobit2space_pred',
+        'conf_tobit2space',
+        'samplerNumberOffset_tobit2space',
+        'Rmcmc_tobit2space',
+        'Cmodel_tobit2space',
+        'Cmcmc_tobit2space'
+      )
       
     }else{
       
