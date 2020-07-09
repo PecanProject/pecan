@@ -45,7 +45,7 @@ def remote_process(
 
     collection (str) -- dataset or product name as it is provided on the source, e.g.  "LANDSAT/LC08/C01/T1_SR",  "COPERNICUS/S2_SR" for gee
 
-    scale (int) -- spatial resolution of the image, None by default, recommended to use 10 for Sentinel 2
+    scale (int) -- pixel resolution, None by default, recommended to use 10 for Sentinel 2
 
     qc (float) -- quality control parameter, only required for gee queries, None by default
 

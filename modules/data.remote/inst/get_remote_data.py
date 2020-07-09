@@ -38,7 +38,7 @@ def get_remote_data(geofile, outdir, start, end, source, collection, scale=None,
 
     collection (str) -- dataset ID
 
-    scale (int) -- spatial resolution of the image
+    scale (int) -- pixel resolution
 
     qc (float) -- quality control parameter
 

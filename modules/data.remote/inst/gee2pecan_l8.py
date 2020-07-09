@@ -36,7 +36,7 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
     
     end (str) -- ending date areaof the data request in the form YYYY-MM-DD
 
-    scale (int) -- spatial resolution
+    scale (int) -- pixel resolution
 
     qc (bool) -- uses the cloud masking function if set to True
 

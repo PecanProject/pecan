@@ -64,7 +64,7 @@ class S2RequestParams:
     dateend : str
         Starting date for data request in form "2019-12-31".
     scale : int
-        Spatial resolution
+        pixel resolution
     bands : list, optional
         List of strings with band name.
         the default is ['B3', 'B4', 'B5',
@@ -81,7 +81,7 @@ class S2RequestParams:
         dateend : str
             Starting date for data request in form "2019-12-31".
         scale : int
-            Spatial resolution
+            pixel resolution
         bands : list, optional
             List of strings with band name.
 
@@ -771,7 +771,7 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     
     end (str) -- ending date of the data request in the form YYYY-MM-DD
 
-    scale (int) - spatial resolution, recommended value 10
+    scale (int) - pixel resolution, recommended value 10
     
     qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
