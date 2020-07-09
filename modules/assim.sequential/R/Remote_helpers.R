@@ -94,7 +94,8 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath,
                                run.bash.args){
-  plan(multiprocess)
+  
+  future::plan(future::multiprocess)
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------
