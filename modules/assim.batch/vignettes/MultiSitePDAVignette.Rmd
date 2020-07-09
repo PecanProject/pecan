@@ -1,0 +1,812 @@
+---
+title: "Multi-site hierarchical calibration vignette"
+author: "Istem Fer"
+date: "09/23/2019"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multi-site hierarchical calibration vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Multi-Site Hierarchical PDA
+
+This vignette documents the steps and settings of Hierarchical Bayesian Parameter Data Assimilation (HB-PDA) analysis on multiple sites, and accompanies the paper.
+
+
+## Initiate a new run from the web interface
+
+Follow the steps:
+```
+host : pecan
+model : SIPNET (r136) # note I'll change this, because I want to make sure SIPNET code is also version controlled (which exact settings/modules I turned on/off etc.)
+sitegroup : HB-PDA
+site : US-Bar (choose any we will modify the xml in the next step)
+
+CLICK NEXT
+
+pft : soil.ALL, temperate.deciduous.ALL
+start date : leave as it is
+end date : leave as it is
+pool_initial_condition : skip
+Sipnet.climna: Use AmerifluxLBL
+
+NOW CHECK THE EDIT XML TICK BOX AND CLICK NEXT
+(Enter pecan for user name in the following page)
+```
+## Start with multi-settings
+
+Now you should be seeing the `pecan.xml` associated with the choices you made above.
+
+Remove `<site>`, `<start.date>` and `<end.date>` tags from the `<run>` section and add the `<sitegroup>` tag in your `pecan.xml` before the `<run>` section for the group of sites you are interested in. In this vignette, we will use HB-PDA site group in BETYdb which consists of 12 temperate decidious broadleaf forest (DBF) sites ofthe  Ameriflux network.
+
+
+Overall, your `pecan.xml` for these sections will look like this:
+```
+  <sitegroup>
+    <id>1000000022</id>
+  </sitegroup>
+  <run>
+    <inputs>
+      <met>
+        <source>AmerifluxLBL</source>
+        <output>SIPNET</output>
+      <username>pecan</username>
+      </met>
+    </inputs>
+  </run>
+```
+
+Now hit save button and open RStudio. Go to the working directory for the run you just created. E.g. `setwd("/fs/data2/output/PEcAn_1000010272")`.
+
+Open `workflow.R` script and start going through the lines. Stop after:
+```
+# Write pecan.CHECKED.xml
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
+```
+
+## Fill in site-specific input information
+
+When you open `pecan.CHECKED.xml`, you'll see that  the `<run>` tag has expanded with the same tags repeated for each site. Now specify `<inputs>`, `<start.date>` and `<end.date>` information. E.g.:
+
+```
+ <run>
+  <settings.1>
+   <site>
+    <id>796</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2011/12/31</met.end>
+    <name>Bartlett Experimental Forest (US-Bar)</name>
+    <lat>44.06464</lat>
+    <lon>-71.288077</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2011/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-796/AMF_US-Bar_BASE_HH_4-1.2005-01-01.2011-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-796/IC_site_0-796.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.1>
+  <settings.2>
+   <site>
+    <id>767</id>
+    <met.start>2001/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Morgan Monroe State Forest (US-MMS)</name>
+    <lat>39.3231</lat>
+    <lon>-86.4131</lon>
+   </site>
+   <start.date>2001/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-767/AMF_US-MMS_BASE_HR_8-1.2001-01-01.2014-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-767/IC_site_0-767.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.2>
+  <settings.3>
+   <site>
+    <id>768</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Missouri Ozark Site/BREA (US-MOz)</name>
+    <lat>38.7441</lat>
+    <lon>-92.2</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-768/AMF_US-MOz_BASE_HH_7-1.2005-01-01.2015-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-768/IC_site_0-768.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.3>
+  <settings.4>
+   <site>
+    <id>776</id>
+    <met.start>2007/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Univiversity of Michigan Biological Station (US-UMB)</name>
+    <lat>45.5598</lat>
+    <lon>-84.7138</lon>
+   </site>
+   <start.date>2007/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-776/AMF_US-UMB_BASE_HH_10-1.2007-01-01.2014-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-776/IC_site_0-776.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.4>
+  <settings.5>
+   <site>
+    <id>676</id>
+    <met.start>1999/01/01</met.start>
+    <met.end>2006/12/31</met.end>
+    <name>Willow Creek (US-WCr)</name>
+    <lat>45.805925</lat>
+    <lon>-90.07961</lon>
+   </site>
+   <start.date>1999/01/01</start.date>
+   <end.date>2006/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-676/AMF_US-WCr_BASE_HH_11-1.1999-01-01.2006-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-676/IC_site_0-676.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.5>
+  <settings.6>
+   <site>
+    <id>1000000109</id>
+    <met.start>2013/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Ontario - Turkey Point Mature Deciduous (CA-TPD)</name>
+    <lat>42.6353</lat>
+    <lon>-80.5577</lon>
+   </site>
+   <start.date>2013/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-109/AMF_CA-TPD_BASE_HH_1-1.2013-01-01.2015-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_1-109/IC_site_1-109.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.6>
+  <settings.7>
+   <site>
+    <id>755</id>
+    <met.start>2002/01/01</met.start>
+    <met.end>2008/12/31</met.end>
+    <name>Duke Forest-hardwoods (US-Dk2)</name>
+    <lat>35.9736</lat>
+    <lon>-79.1004</lon>
+   </site>
+   <start.date>2002/01/01</start.date>
+   <end.date>2008/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-755/AMF_US-Dk2_BASE_HH_4-4.2002-01-01.2008-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-755/IC_site_0-755.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.7>
+  <settings.8>
+   <site>
+    <id>1000000145</id>
+    <met.start>2010/01/01</met.start>
+    <met.end>2010/12/31</met.end>
+    <name>Chestnut Ridge (US-ChR)</name>
+    <lat>35.9311</lat>
+    <lon>-84.3324</lon>
+   </site>
+   <start.date>2010/01/01</start.date>
+   <end.date>2010/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-145//AMF_US-ChR_BASE_HH_2-1.2010-01-01.2010-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_1-145/IC_site_1-145.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.8>
+  <settings.9>
+   <site>
+    <id>1000000066</id>
+    <met.start>2005/01/01</met.start>
+    <met.end>2014/12/31</met.end>
+    <name>Silas Little- New Jersey (US-Slt)</name>
+    <lat>39.9138</lat>
+    <lon>-74.596</lon>
+   </site>
+   <start.date>2005/01/01</start.date>
+   <end.date>2014/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-66/AMF_US-Slt_BASE_HH_5-1.2005-01-01.2014-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_1-66/IC_site_1-66.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.9>
+  <settings.10>
+   <site>
+    <id>1000000061</id>
+    <met.start>2004/01/01</met.start>
+    <met.end>2013/12/31</met.end>
+    <name>Oak Openings (US-Oho)</name>
+    <lat>41.5545</lat>
+    <lon>-83.8438</lon>
+   </site>
+   <start.date>2004/01/01</start.date>
+   <end.date>2013/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_1-61/AMF_US-Oho_BASE_HH_4-1.2004-01-01.2013-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_1-61/IC_site_1-61.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.10>
+  <settings.11>
+   <site>
+    <id>740</id>
+    <met.start>1997/01/01</met.start>
+    <met.end>2010/12/31</met.end>
+    <name>BOREAS SSA Old Aspen (CA-Oas)</name>
+    <lat>53.6289</lat>
+    <lon>-106.198</lon>
+   </site>
+   <start.date>1997/01/01</start.date>
+   <end.date>2010/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-740/AMF_CA-Oas_BASE_HH_1-1.1997-01-01.2010-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-740/IC_site_0-740.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.11>
+  <settings.12>
+   <site>
+    <id>758</id>
+    <met.start>2010/01/01</met.start>
+    <met.end>2015/12/31</met.end>
+    <name>Harvard Forest EMS Tower/HFR1 (US-Ha1)</name>
+    <lat>42.5378</lat>
+    <lon>-72.1715</lon>
+   </site>
+   <start.date>2010/01/01</start.date>
+   <end.date>2015/12/31</end.date>
+   <inputs>
+    <met>
+     <path>
+      <path1>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_SIPNET_site_0-758/AMF_US-Ha1_BASE_HR_10-1.2010-01-01.2015-12-31.clim</path1>
+     </path>
+    </met>
+    <poolinitcond>
+     <path>/fs/data3/istfer/HPDA/data/param.files/site_0-758/IC_site_0-758.nc</path>
+    </poolinitcond>
+   </inputs>
+  </settings.12>
+ </run>
+```
+
+
+## Modify ensemble analysis tags
+
+Now let's specify the ensemble `<size>` and the ensemble `<variable>` within the `<ensemble>` tag. In the paper we give an ensemble of runs with `250` members but you can try smaller ensembles. 
+
+
+Overall, your `pecan.xml` for the `<ensemble>` sections will look like this:
+```
+  <ensemble>
+    <size>250</size>
+    <variable>NEE</variable>
+    <samplingspace>
+     <parameters>
+      <method>uniform</method>
+     </parameters>
+     <met>
+     <method>sampling</method>
+  	 </met>
+   </samplingspace>
+  </ensemble>
+```
+
+
+Now save the file. Re-read the updated `pecan.CHECKED.xml`, make sure to re-assign random effects as logical, otherwise `meta.analysis` will throw an error:
+```
+settings <- read.settings("pecan.CHECKED.xml")
+settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+```
+
+## Global SA
+
+
+```
+globalSA_explore <- function(workflow_dir, var, ens.settings){
+  load(paste0(workflow_dir, "/ensemble.samples.", ens.settings$ensemble$ensemble.id,".Rdata"))
+  samps <- do.call("cbind", ens.samples)
+  
+  load(paste0(workflow_dir, "/ensemble.output.", ens.settings$ensemble$ensemble.id,
+              ".",var,".", ens.settings$ensemble$start.year, ".",
+              ens.settings$ensemble$end.year,".Rdata"))
+  
+  allm <- cbind(unlist(ensemble.output), samps)
+  colnames(allm) <- c(var, colnames(samps))
+  form <- as.formula(paste(var, " ~ ."))
+  var.fit <- lm(form, allm)
+  
+  alls <-summary(var.fit)$coefficients[,1]  
+  alls[summary(var.fit)$coefficients[,4] >= 0.05] <- NA  # don't consider non-significant fits
+  
+  alls <- alls[names(alls) != "(Intercept)"]
+  preds <- names(alls) 
+  
+  n <- length(preds)
+  id <- unlist(lapply(1, function(i)combn(1:n,i,simplify=FALSE)),recursive=FALSE)
+  
+  Formulas <- sapply(id, function(i)
+    paste(var,"~",paste(preds[i],collapse=":"))
+  )
+  
+  fits <- lapply(Formulas,function(i)
+    lm(as.formula(i), data=allm))
+  
+  for(tr in 1:n){
+    
+    f  <- summary(fits[[tr]])$fstatistic
+    pfval <- pf(f[1],f[2],f[3],lower.tail=F)
+    if(pfval < 0.001){
+      alls[names(alls) == preds[tr]] <- summary(fits[[tr]])$adj.r.squared
+    }else{
+      alls[names(alls) == preds[tr]] <- NA
+    }
+    
+  }
+  
+  alls <- data.frame(par=names(alls), rexp = alls, site =i)
+  alls <- alls[order( alls$rexp),]
+  
+  return(alls)
+}
+
+
+workflow_dir <- "/fs/data2/output//PEcAn_1000010172"
+
+multi.settings <- read.settings("pecan.CONFIGS.xml")
+
+Qle_list <- NEE_list <- list()
+
+for(i in seq_along(multi.settings)){
+  Qle_list[[i]] <- globalSA_explore(workflow_dir, "Qle", multi.settings[[i]])
+  NEE_list[[i]] <- globalSA_explore(workflow_dir, "NEE", multi.settings[[i]])
+}
+ 
+Qle_df  <- do.call("rbind", Qle_list)
+Qle_df$var <- "Qle"
+NEE_df  <- do.call("rbind", NEE_list)
+NEE_df$var <- "NEE"
+allm <- rbind(Qle_df, NEE_df)
+allm <- allm[!is.na(allm$rexp),]
+
+p1 <- ggplot(allm, aes(par, rexp, fill=var)) + coord_flip() + ylab("R2") + xlab("SIPNET parameters")
+p1 + geom_boxplot() + theme_bw()
+
+
+```
+
+Then continue with the rest of the workflow until `<assim.batch>` module:
+```
+# Run parameter data assimilation
+if ('assim.batch' %in% names(settings)) {
+  if (PEcAn.utils::status.check("PDA") == 0) {
+    PEcAn.utils::status.start("PDA")
+    settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
+    PEcAn.utils::status.end()
+  }
+}
+```
+
+Before running this module, we will conduct some analyses on the ensemble run outputs to identify the parameters we would like to target in PDA.
+
+
+add the PDA tags, see next section.
+
+
+## Settings for HB-PDA
+
+Similar to PDA settings, we will contain HB-PDA settings under the `<assim.batch>` section. Likewise standard PDA, if you have chosen the parameters you want to target in the calibration, we will open the `pecan.CONFIGS.xml` file, and insert the `<assim.batch>` tag. 
+
+Different from the PDA settings, this time the main function will be the `emulator.ms`. This function can be run in three modes, which will be selected under the `<mode>` tag above: individual, joint and hierarchical. If left empty, the function will go through all three modes. But note that, for both joint and hierarhical calibration, we need site-level runs. We will start with individual mode, i.e. site-level calibration. 
+
+Now open the `pecan.CONFIGS.xml` file. First, add `<assim.batch>` tag to the multisettings in the bottom of your xml among others: 
+
+```
+ <multisettings>
+  <multisettings>assim.batch</multisettings>
+  <multisettings>ensemble</multisettings>
+  <multisettings>sensitivity.analysis</multisettings>
+  <multisettings>run</multisettings>
+ </multisettings>
+```
+
+Now we can insert multi-site settings in the `<assim.batch>` section accordingly (note that `method`, `mode`, `param.names` etc. will go under each `setting.*`):
+
+```
+ <assim.batch>
+  <settings.1>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013322</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-796/AMF_US-Bar_BASE_HH_4-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.1>
+  <settings.2>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013317</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-767/AMF_US-MMS_BASE_HR_8-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.2>
+  <settings.3>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013316</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-768/AMF_US-MOz_BASE_HH_7-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.3>
+  <settings.4>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013832</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-776/AMF_US-UMB_BASE_HH_10-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.4>
+  <settings.5>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000012965</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_0-676/AMF_US-WCr_BASE_HH_11-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.5>
+  <settings.6>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013836</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-109/AMF_CA-TPD_BASE_HH_1-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.6>
+  <settings.7>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013546</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-145/AMF_US-ChR_BASE_HH_2-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.7>
+  <settings.8>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013572</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-66/AMF_US-Slt_BASE_HH_5-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.8>
+    <settings.9>
+    <method>emulator.ms</method>
+    <mode>individual</mode>
+    <n.knot>70</n.knot>
+    <iter>100000</iter>
+    <chain>3</chain>
+    <param.names>
+     <soil.IF>
+      <param>som_respiration_rate</param>
+      <param>soil_respiration_Q10</param>
+     </soil.IF>
+     <temperate.deciduous.IF>
+      <param>psnTOpt</param>
+      <param>half_saturation_PAR</param>
+      <param>dVPDSlope</param>
+      <param>leafGrowth</param>
+      <param>AmaxFrac</param>
+     </temperate.deciduous.IF>
+    </param.names>
+    <inputs>
+      <file>
+        <input.id>1000013482</input.id>
+        <path>
+         <path>/fs/data1/pecan.data/dbfiles/AmerifluxLBL_site_1-61/AMF_US-Oho_BASE_HH_4-1.csv</path>
+        </path>
+        <likelihood>Laplace</likelihood>
+        <variable.id>1000000042</variable.id>
+        <variable.name>
+          <variable.name>FC</variable.name>
+          <variable.name>UST</variable.name>
+       </variable.name>
+     </file>
+    </inputs>
+  </settings.9>
+  </assim.batch>
+```
+
+Now save this as `pecan.HBPDA.xml` and read it. 
+
+Following section briefly explains what happens after:
+```
+multi.settings <- read.settings("pecan.HBPDA.xml")
+pda.emulator.ms(multi.settings)
+```
+
+## The workflow for HB-PDA
+
+HB-PDA workflow for multiple sites starts with fitting models locally. This is done by looping over the PEcAn multi-settings list using the `pda.emulator` function. During this step, site-level runs, GP fitting and MCMC are done. Components of these runs are saved and will be used in global and hierarhical fitting. 
+
+In global calibration, we estimate posterior using all site-level GPs at once at each iteration. Proposed values are plugged-in all GPs, and accepted/rejected according to all estimated likelihoods.
+
+Hierarhical calibration, uses a similar function to `mcmc.GP` but modified for hierarchihcal fitting, called `hier.mcmc`. Within this function, both site-level and (hierarchically modeled) global parameters are fitted.

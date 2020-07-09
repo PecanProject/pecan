@@ -6,6 +6,11 @@
 \usage{
 return_hyperpars(assim.settings, inputs)
 }
+\arguments{
+\item{assim.settings}{PEcAn settings list}
+
+\item{inputs}{inputs list}
+}
 \description{
 return_hyperpars
 }

@@ -1,195 +1,206 @@
 html {
-    height: 100%;
+  height: 100%;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
 }
 
-p,h1,form,button {
-    border: 0;
-    margin: 0;
-    padding: 0;
+p,
+h1,
+form,
+button {
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
-th,td {
-    padding: 0px 5px 0px 5px;
+th,
+td {
+  padding: 0px 5px 0px 5px;
 }
 
 .spacer {
-    clear: both;
-    height: 1px;
+  clear: both;
+  height: 1px;
 }
 
 #wrap {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .myform {
-    margin: 0 auto;
-    width: 200px;
-    padding: 14px;
+  margin: 0 auto;
+  width: 200px;
+  padding: 14px;
 }
 
 #stylized {
-    border: solid 2px #b7ddf2;
-    background: #ebf4fb;
-    font-size: 14px;
-    width: 200px;
-    height: calc( 100% - 14px );
-    float: left;
-    padding: 5px;
-    overflow: auto;
+  border: solid 2px #b7ddf2;
+  background: #ebf4fb;
+  font-size: 14px;
+  width: 200px;
+  height: calc(100% - 14px);
+  float: left;
+  padding: 5px;
+  overflow: auto;
 }
 
 #stylized h1 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 #stylized p {
-    font-size: 14px;
-    color: #666666;
-    margin-bottom: 20px;
-    border-bottom: solid 1px #b7ddf2;
-    padding-bottom: 10px;
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 20px;
+  border-bottom: solid 1px #b7ddf2;
+  padding-bottom: 10px;
 }
 
 #stylized label {
-    display: block;
-    font-weight: bold;
-    text-align: left;
-    width: 180px;
-    float: left;
+  display: block;
+  font-weight: bold;
+  text-align: left;
+  width: 180px;
+  float: left;
 }
 
 #stylized .small {
-    color: #666666;
-    display: block;
-    font-size: 14px;
-    font-weight: normal;
-    text-align: left;
-    width: 180px;
+  color: #666666;
+  display: block;
+  font-size: 14px;
+  font-weight: normal;
+  text-align: left;
+  width: 180px;
 }
 
-#stylized select, input, textarea {
-    font-size: 12px;
-    border: solid 1px #aacfe4;
-    width: 190px;
+#stylized select,
+input,
+textarea {
+  font-size: 12px;
+  border: solid 1px #aacfe4;
+  width: 190px;
 }
 
-#stylized input[type=text], #stylized input[type=password], #stylized textarea {
-    text-overflow: ellipsis;
-    width: 184px;
-    padding: 4px 2px;
+#stylized input[type="text"],
+#stylized input[type="password"],
+#stylized textarea {
+  text-overflow: ellipsis;
+  width: 184px;
+  padding: 4px 2px;
 }
 
-#stylized input[type=checkbox] {
-    width: 180px;
+#stylized input[type="checkbox"] {
+  width: 180px;
 }
 
 #stylized textarea {
-    resize: none;
+  resize: none;
 }
 
 #stylized button {
-    clear: both;
-    margin-left: 35px;
-    margin-right: 35px;
-    height: 31px;
-    background: #666666 url(img/button.png) no-repeat;
-    text-align: center;
-    line-height: 31px;
-    color: #FFFFFF;
-    font-size: 11px;
-    font-weight: bold;
+  clear: both;
+  margin-left: 35px;
+  margin-right: 35px;
+  height: 31px;
+  background: #666666 url(img/button.png) no-repeat;
+  text-align: center;
+  line-height: 31px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: bold;
 }
 
 #prev {
-    width: 70px !important;
-    float: left;
+  width: 70px !important;
+  float: left;
 }
 
 #next {
-    width: 70px !important;
-    float: right;
-    margin-right: 10px;
-    position: relative;
+  width: 70px !important;
+  float: right;
+  margin-right: 10px;
+  position: relative;
 }
 
 #output {
-    overflow: auto;
-    padding: 5px;
-    margin-left: 200px;
-    height: calc( 100% - 50px );
+  overflow: auto;
+  padding: 5px;
+  margin-left: 200px;
+  height: calc(100% - 50px);
 }
 
 #output p {
-    padding-top: 10px;
+  padding-top: 10px;
 }
 
 #output label {
-    display: block;
-    font-weight: bold;
-    text-align: left;
-    width: 300px;
-    float: left;
+  display: block;
+  font-weight: bold;
+  text-align: left;
+  width: 300px;
+  float: left;
 }
 
-#output select, #output input, #output textarea {
-    font-size: 12px;
-    border: solid 1px #aacfe4;
-    width: 300px;
+#output select,
+#output input,
+#output textarea {
+  font-size: 12px;
+  border: solid 1px #aacfe4;
+  width: 300px;
 }
 
 #editor {
-    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;         /* Opera/IE 8+ */
-    width: 100%;
-    height: calc( 100% - 40px );
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box; /* Firefox, other Gecko */
+  box-sizing: border-box; /* Opera/IE 8+ */
+  width: 100%;
+  height: calc(100% - 40px);
 }
 
 .table {
-    display: table;
+  display: table;
 }
 
 .row {
-    display: table-row;
+  display: table-row;
 }
 
-.cell, .header {
-    display: table-cell;
-    padding: 0px 5px 0px 5px;
+.cell,
+.header {
+  display: table-cell;
+  padding: 0px 5px 0px 5px;
 }
 
 .header {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .logfile {
-    margin-top: 8px;
-    border-top: 1px solid #D9D9D9;
-    border-bottom: 1px solid #D9D9D9;
-    padding: 7px 10px;
-    font: 11px "Courier New", monospace;
-    background-color: #F2F2F2;
-    color: black;
+  margin-top: 8px;
+  border-top: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 7px 10px;
+  font: 11px "Courier New", monospace;
+  background-color: #f2f2f2;
+  color: black;
 }
 
 #logout {
-    float: right;
-    margin-right: 10px;    
+  float: right;
+  margin-right: 10px;
 }
 
 #footer {
-    font-size: 12px;
-    overflow: auto;
-    padding: 5px;
+  font-size: 12px;
+  overflow: auto;
+  padding: 5px;
 }

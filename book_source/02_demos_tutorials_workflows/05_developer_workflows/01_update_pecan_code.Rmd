@@ -40,7 +40,7 @@ The following are some additional `make` tricks that may be useful:
 
 * Force `make` to run, even if package has not changed -- `make -B <command>`
 
-* Run `make` commands in parallel -- `make -j<ncores>`; e.g. `make -j4 install` to install packages using four parallel processes.
+* Run `make` commands in parallel -- `make -j<ncores>`; e.g. `make -j4 install` to install packages using four parallel processes. Note that packages containing compiled code (e.g. PEcAn.RTM, PEcAn.BASGRA) might fail when `j` is greater than 1, because of limitations in the way R calls `make` internally while compiling them. See [GitHub issue 1976](https://github.com/PecanProject/pecan/issues/1976) for more details.
 
 All instructions for the `make` build system are contained in the `Makefile` in the PEcAn root directory.
 For full documentation on `make`, see the man pages by running `man make` from a terminal.

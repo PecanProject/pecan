@@ -4,8 +4,14 @@
 \alias{write.ensemble.configs}
 \title{Write ensemble configs}
 \usage{
-write.ensemble.configs(defaults, ensemble.samples, settings, model,
-  clean = FALSE, write.to.db = TRUE)
+write.ensemble.configs(
+  defaults,
+  ensemble.samples,
+  settings,
+  model,
+  clean = FALSE,
+  write.to.db = TRUE
+)
 }
 \arguments{
 \item{defaults}{pft}

@@ -48,7 +48,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   
   # setup site database number, lat, lon and name and copy for format.vars if new input

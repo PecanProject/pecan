@@ -4,14 +4,17 @@
 \alias{submit_workflow}
 \title{Post complete settings list as RabbitMQ message}
 \usage{
-submit_workflow(settings,
+submit_workflow(
+  settings,
   rabbitmq_hostname = getOption("pecanapi.docker_hostname"),
   rabbitmq_frontend = getOption("pecanapi.docker_rabbitmq_frontend"),
   rabbitmq_port = getOption("pecanapi.docker_port"),
   rabbitmq_user = getOption("pecanapi.rabbitmq_user"),
   rabbitmq_password = getOption("pecanapi.rabbitmq_password"),
-  rabbitmq_prefix = NULL, httr_auth = TRUE,
-  https = getOption("pecanapi.docker_https"))
+  rabbitmq_prefix = NULL,
+  httr_auth = TRUE,
+  https = getOption("pecanapi.docker_https")
+)
 }
 \arguments{
 \item{settings}{PEcAn settings list object}

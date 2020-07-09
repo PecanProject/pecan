@@ -4,8 +4,12 @@
 \alias{theme_border}
 \title{Theme border for plot}
 \usage{
-theme_border(type = c("left", "right", "bottom", "top", "none"),
-  colour = "black", size = 1, linetype = 1)
+theme_border(
+  type = c("left", "right", "bottom", "top", "none"),
+  colour = "black",
+  size = 1,
+  linetype = 1
+)
 }
 \arguments{
 \item{type}{}

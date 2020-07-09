@@ -338,6 +338,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("frozenSoilEff" %in% pft.names) {
       param[which(param[, 1] == "frozenSoilEff"), 2] <- pft.traits[which(pft.names == "frozenSoilEff")]
     }
+    
+    # frozenSoilFolREff
+    if ("frozenSoilFolREff" %in% pft.names) {
+      param[which(param[, 1] == "frozenSoilFolREff"), 2] <- pft.traits[which(pft.names == "frozenSoilFolREff")]
+    }
+    
     # soilWHC
     if ("soilWHC" %in% pft.names) {
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
@@ -345,7 +351,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
-    if(FALSE){
+    if(TRUE){
       # assume soil resp Q10 cold == soil resp Q10
       param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
       # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
@@ -353,6 +359,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "baseSoilRespCold"), 2] <- param[which(param[, 1] == "baseSoilResp"), 2] * 0.25
     }
     
+    if ("immedEvapFrac" %in% pft.names) {
+      param[which(param[, 1] == "immedEvapFrac"), 2] <- pft.traits[which(pft.names == "immedEvapFrac")]
+    }
+    
+    if ("leafWHC" %in% pft.names) {
+      param[which(param[, 1] == "leafPoolDepth"), 2] <- pft.traits[which(pft.names == "leafWHC")]
+    }
+    
+    if ("waterRemoveFrac" %in% pft.names) {
+      param[which(param[, 1] == "waterRemoveFrac"), 2] <- pft.traits[which(pft.names == "waterRemoveFrac")]
+    }
+    
+    if ("fastFlowFrac" %in% pft.names) {
+      param[which(param[, 1] == "fastFlowFrac"), 2] <- pft.traits[which(pft.names == "fastFlowFrac")]
+    }
+    
+    if ("rdConst" %in% pft.names) {
+      param[which(param[, 1] == "rdConst"), 2] <- pft.traits[which(pft.names == "rdConst")]
+    }
     ### ----- Phenology parameters GDD leaf on
     if ("GDD" %in% pft.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.names == "GDD")]
@@ -467,11 +492,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.na(snow) && is.numeric(snow)) {
         param[which(param[, 1] == "snowInit"), 2] <- udunits2::ud.convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
       }
-      ## microbeInit mgC/g soil
+      ## leafOnDay
+      leafOnDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_budburst"),silent = TRUE)
+      if (!is.na(leafOnDay) && is.numeric(leafOnDay)) {
+        param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+      }
+      ## leafOffDay
+      leafOffDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_senescence"),silent = TRUE)
+      if (!is.na(leafOffDay) && is.numeric(leafOffDay)) {
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
+      }
       microbe <- try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
       if (!is.na(microbe) && is.numeric(microbe)) {
         param[which(param[, 1] == "microbeInit"), 2] <- udunits2::ud.convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
       }
+      
       ncdf4::nc_close(IC.nc)
     }else{
       PEcAn.logger::logger.error("Bad initial conditions filepath; keeping defaults")

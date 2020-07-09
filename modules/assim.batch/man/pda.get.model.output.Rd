@@ -4,14 +4,22 @@
 \alias{pda.get.model.output}
 \title{Get Model Output for PDA}
 \usage{
-pda.get.model.output(settings, run.id, bety, inputs)
+pda.get.model.output(settings, run.id, bety, inputs, external.formats = NULL)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{PEcAn settings list}
+
+\item{run.id}{run ID}
+
+\item{bety}{bety list}
+
+\item{inputs}{inputs list}
+
+\item{external.formats}{format list}
 }
 \value{
 A list containing model outputs extracted to correspond to each observational
-        dataset being used for PDA.
+dataset being used for PDA.
 }
 \description{
 Get Model Output for PDA

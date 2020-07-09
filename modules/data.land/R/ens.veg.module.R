@@ -31,7 +31,7 @@ ens_veg_module <- function(getveg.id, dbparms,
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
   
   PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
   

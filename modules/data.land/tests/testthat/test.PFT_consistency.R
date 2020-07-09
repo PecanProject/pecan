@@ -8,11 +8,16 @@ library(PEcAn.settings)
 library(PEcAn.DB)
 library(RPostgreSQL)
 
-betyparms <- list(host = 'localhost', dbname = 'bety', 
-                user = 'bety', password = 'bety', driver = 'PostgreSQL', write = FALSE)
-fiaparms <- list(host = 'localhost', dbname = 'fia5data', 
-                user = 'bety', password = 'bety', driver = 'PostgreSQL')
-if(db.exists(params = betyparms) & db.exists(fiaparms)){
+betyparms <- PEcAn.DB::get_postgres_envvars(
+  host = "localhost",
+  dbname = "bety",
+  user = "bety",
+  password = "bety",
+  driver = "PostgreSQL",
+  write = FALSE)
+fiaparms <- betyparms
+fiaparms$dbname <- "fia5data"
+if (db.exists(params = betyparms) & db.exists(fiaparms)) {
 
 
   context("Testing consistency of FIA PFTs")

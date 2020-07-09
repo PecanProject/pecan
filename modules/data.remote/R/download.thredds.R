@@ -16,7 +16,7 @@
 ##' results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
 ##'            site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
 ##'            run_parallel = TRUE, ncores = 8)
-##'            
+##' }
 ##' @export
 ##' @author Bailey Morrison
 ##'

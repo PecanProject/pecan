@@ -4,13 +4,32 @@
 \alias{debias.met.regression}
 \title{debias.met.regression}
 \usage{
-debias.met.regression(train.data, source.data, n.ens, vars.debias = NULL,
-  CRUNCEP = FALSE, pair.anoms = TRUE, pair.ens = FALSE,
-  uncert.prop = "mean", resids = FALSE, seed = Sys.Date(), outfolder,
-  yrs.save = NULL, ens.name, ens.mems = NULL, force.sanity = TRUE,
-  sanity.tries = 25, lat.in, lon.in, save.diagnostics = TRUE,
-  path.diagnostics = NULL, parallel = FALSE, n.cores = NULL,
-  overwrite = TRUE, verbose = FALSE)
+debias.met.regression(
+  train.data,
+  source.data,
+  n.ens,
+  vars.debias = NULL,
+  CRUNCEP = FALSE,
+  pair.anoms = TRUE,
+  pair.ens = FALSE,
+  uncert.prop = "mean",
+  resids = FALSE,
+  seed = Sys.Date(),
+  outfolder,
+  yrs.save = NULL,
+  ens.name,
+  ens.mems = NULL,
+  force.sanity = TRUE,
+  sanity.tries = 25,
+  lat.in,
+  lon.in,
+  save.diagnostics = TRUE,
+  path.diagnostics = NULL,
+  parallel = FALSE,
+  n.cores = NULL,
+  overwrite = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{train.data}{- training data coming out of align.met}
@@ -75,7 +94,8 @@ Debias Meteorology using Multiple Linear Regression
 Statistically debias met datasets and generate ensembles based on the observed uncertainty
 }
 \seealso{
-Other debias - Debias & Align Meteorology Datasets into continuous time series: \code{\link{align.met}}
+Other debias - Debias & Align Meteorology Datasets into continuous time series: 
+\code{\link{align.met}()}
 }
 \author{
 Christy Rollinson
