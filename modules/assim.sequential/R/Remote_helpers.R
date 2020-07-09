@@ -94,7 +94,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath,
                                run.bash.args){
-
+  plan(multiprocess)
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------
@@ -133,7 +133,7 @@ SDA_remote_launcher <-function(settingPath,
     fname_p2<-""
       }
   
-
+  folder_name<-"SDA"
   folder_name <- paste0(c("SDA",fname_p1,fname_p2), collapse = "_")
   #creating a folder on remote
   out <- remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
@@ -229,7 +229,7 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Finding all the met paths in your settings
   if (is.MultiSettings(settings)){
-    input.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
+    input.paths <-settings$run %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
   } else {
     input.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
   }
@@ -263,18 +263,21 @@ SDA_remote_launcher <-function(settingPath,
     unique() %>%
     discard(~ .x %in% c(".", "/fs/data1/pecan.data/dbfiles" ))
   
-  #copy over
-  remote.copy.to(
-    my_host,
-    need.copy.dirs,
-    file.path(settings$host$folder, folder_name, "inputs"),
-    delete = FALSE,
-    stderr = FALSE
-  )
   
+  need.copy.dirs %>%
+    purrr::walk( ~   #copy over
+                   remote.copy.to(
+                     my_host,
+                     .x,
+                     file.path(settings$host$folder, folder_name, "inputs"),
+                     delete = FALSE,
+                     stderr = FALSE
+                   ))
+
   
+
   need.copy%>%
-    walk(function(missing.input){
+    furrr::future_map(function(missing.input){
 
        tryCatch({
          
