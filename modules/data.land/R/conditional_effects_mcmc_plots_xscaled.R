@@ -30,18 +30,18 @@ library(pryr)
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "X2_Xscaled_forecasted_2018_rand_slope."
-output.base.name <- "X2_Xscaled_forecasted_2018_rand_slope"
+file.base.name <- "Full.model.validation.nadapt5000."
+output.base.name <- "Full.model.validation.nadapt5000"
 stage2 <- TRUE
-workingdir <- "/Users/kah/Documents/docker_pecan/pecan/"
+workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
 cov.data = cov.data
 
 
 jags.comb <- NULL
 
-for(i in 318:326){ # note this model stopped early b/c convergence
-  load(paste0(workingdir,"IGF_PIPO_AZ_mcmc/cyverse_runs/", file.base.name,i,".RData"))
+for(i in 350:400){ # note this model stopped early b/c convergence
+  load(paste0(workingdir,"IGF_PIPO_AZ_mcmc/", file.base.name,i,".RData"))
   new.out <- jags.out 
   
   if(is.null(jags.comb)){
@@ -1152,5 +1152,3 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     dev.off()
     
     
-    
-    prior.tau.summary <- posterior.summary[]
