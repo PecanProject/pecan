@@ -21,6 +21,7 @@ def remote_process(
     end,
     source,
     collection,
+    scale=None,
     qc=None,
     algorithm=None,
     output={"get_data": "bands", "process_data": "lai"},
@@ -44,6 +45,8 @@ def remote_process(
 
     collection (str) -- dataset or product name as it is provided on the source, e.g.  "LANDSAT/LC08/C01/T1_SR",  "COPERNICUS/S2_SR" for gee
 
+    scale (int) -- spatial resolution of the image, None by default, recommended to use 10 for Sentinel 2
+
     qc (float) -- quality control parameter, only required for gee queries, None by default
 
     algorithm (str) -- algorithm used for processing data in process_data(), currently only SNAP is implemented to estimate LAI from Sentinel-2 bands, None by default
@@ -63,7 +66,7 @@ def remote_process(
     aoi_name = get_sitename(geofile)
 
     if stage["get_data"]:
-        get_remote_data(geofile, outdir, start, end, source, collection, qc)
+        get_remote_data(geofile, outdir, start, end, source, collection, scale, qc)
 
     if stage["process_data"]:
         process_remote_data(aoi_name, output, outdir, algorithm)
@@ -77,6 +80,7 @@ if __name__ == "__main__":
         end="2018-12-31",
         source="gee",
         collection="COPERNICUS/S2_SR",
+        scale=10,
         qc=1,
         algorithm="snap",
         output={"get_data": "bands", "process_data": "lai"},

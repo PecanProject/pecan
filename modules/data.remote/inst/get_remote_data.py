@@ -20,7 +20,7 @@ collection_dict = {
 }
 
 
-def get_remote_data(geofile, outdir, start, end, source, collection, qc=None):
+def get_remote_data(geofile, outdir, start, end, source, collection, scale=None, qc=None):
     """
     uses GEE and AppEEARS functions to download data
 
@@ -37,6 +37,8 @@ def get_remote_data(geofile, outdir, start, end, source, collection, qc=None):
     source (str) -- source from where data is to be downloaded
 
     collection (str) -- dataset ID
+
+    scale (int) -- spatial resolution of the image
 
     qc (float) -- quality control parameter
 
@@ -64,7 +66,7 @@ def get_remote_data(geofile, outdir, start, end, source, collection, qc=None):
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
         if qc:
-            func(geofile, outdir, start, end, qc)
+            func(geofile, outdir, start, end, scale, qc)
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
             func(geofile, outdir, start, end)
