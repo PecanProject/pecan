@@ -6,14 +6,12 @@ remote_process controls the individual functions to create an automatic workflow
 
 Requires Python3
 
-Author: Ayush Prasad
+Author(s): Ayush Prasad, Istem Fer
 """
 
-from gee2pecan_bands import gee2pecan_bands
-from bands2ndvi import bands2ndvi
-from bands2lai_snap import bands2lai_snap
-from satellitetools import gee
-import geopandas as gpd
+from get_remote_data import get_remote_data
+from process_remote_data import process_remote_data
+from gee_utils import get_sitename
 
 
 def remote_process(
@@ -21,13 +19,18 @@ def remote_process(
     outdir,
     start,
     end,
-    qi_threshold,
-    source="gee",
-    collection="COPERNICUS/S2_SR",
-    input_type="bands",
-    output=["lai", "ndvi"],
+    source,
+    collection,
+    scale=None,
+    qc=None,
+    algorithm=None,
+    output={"get_data": "bands", "process_data": "lai"},
+    stage={"get_data": True, "process_data": True},
 ):
+
     """
+    Controls get_remote_data() and process_remote_data() to download and process remote sensing data.
+
     Parameters
     ----------
     geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
@@ -36,83 +39,50 @@ def remote_process(
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
-    end (str) -- ending date areaof the data request in the form YYYY-MM-DD
-    
-    qi_threshold (float) -- Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
-        
-    source (str) -- source from where data is to be downloaded
+    end (str) -- ending date area of the data request in the form YYYY-MM-DD
 
-    collection (str) -- dataset ID
+    source (str) -- source from where data is to be downloaded, e.g. "gee" or "appEEARS" etc. Currently only "gee" implemented
 
-    input_type (str) -- type of raw intermediate data
+    collection (str) -- dataset or product name as it is provided on the source, e.g.  "LANDSAT/LC08/C01/T1_SR",  "COPERNICUS/S2_SR" for gee
 
-    output (list of str) -- type of output data requested 
+    scale (int) -- pixel resolution, None by default, recommended to use 10 for Sentinel 2
 
+    qc (float) -- quality control parameter, only required for gee queries, None by default
+
+    algorithm (str) -- algorithm used for processing data in process_data(), currently only SNAP is implemented to estimate LAI from Sentinel-2 bands, None by default
+
+    output (dict) -- "get_data" - the type of output variable requested from get_data module, "process_data" - the type of output variable requested from process_data module
+
+    stage (dict) -- temporary argument to imitate database checks
+  
     Returns
     -------
     Nothing:
-            output netCDF is saved in the specified directory.
-            
-    Python dependencies required: earthengine-api, geopandas, pandas, netCDF4, xarray
+            output files from the functions are saved in the specified directory.
 
-    To test this function run: python3 remote_process.py     
     """
 
-    # this part will be removed in the next version, after deciding whether to pass the file or the extracted data to initial functions
-    df = gpd.read_file(geofile)
-    area = gee.AOI(df[df.columns[0]].iloc[0], df[df.columns[1]].iloc[0])
+    # when db connections are made, this will be removed
+    aoi_name = get_sitename(geofile)
 
-    # selecting the initial data download function by concatenating source and input_type
-    initial_step = "".join([source, "2pecan", input_type])
-    if initial_step == "gee2pecanbands":
-        if collection == "COPERNICUS/S2_SR":
-            gee2pecan_bands(geofile, outdir, start, end, qi_threshold)
-        else:
-            print("other gee download options go here, currently WIP")
-            # This should be a function being called from an another file
-            """
-            data = ee.ImageCollection(collection)
-            filtered_data = (data.filterDate(start, end).select(bands).filterBounds(ee.Geometry(pathtofile))
-            filtered_data = filtered_data.getInfo()
-            ...
-            """
+    if stage["get_data"]:
+        get_remote_data(geofile, outdir, start, end, source, collection, scale, qc)
 
-    else:
-        print("other sources like AppEEARS  go here")
-        return
-
-    # if raw data is the requested output, process is completed  
-    if input_type == output:
-        print("process is complete")
-
-    else:
-        # locate the raw data file formed in initial step
-        input_file = "".join([outdir, area.name, "_", str(input_type), ".nc"])
-
-        # store all the requested conversions in a list 
-        conversions = []
-        for conv_type in output:
-            conversions.append("".join([input_type, "2", conv_type]))
-
-        # perform the available conversions
-        if "bands2lai" in conversions:
-            print("using SNAP to calculate LAI")
-            bands2lai_snap(input_file, outdir)
-
-        if "bands2ndvi" in conversions:
-            print("using GEE to calculate NDVI")
-            bands2ndvi(input_file, outdir)
+    if stage["process_data"]:
+        process_remote_data(aoi_name, output, outdir, algorithm)
 
 
 if __name__ == "__main__":
     remote_process(
-        "./satellitetools/test.geojson",
-        "./out/",
-        "2019-01-01",
-        "2019-12-31",
-        1,
-        "gee",
-        "COPERNICUS/S2_SR",
-        "bands",
-        ["lai", "ndvi"],
+        geofile="./satellitetools/test.geojson",
+        outdir="./out",
+        start="2018-01-01",
+        end="2018-12-31",
+        source="gee",
+        collection="COPERNICUS/S2_SR",
+        scale=10,
+        qc=1,
+        algorithm="snap",
+        output={"get_data": "bands", "process_data": "lai"},
+        stage={"get_data": True, "process_data": True},
     )
