@@ -101,44 +101,45 @@ This is relevant to the following commands, which will actually initialize and p
 Assuming the above has run successfully, next run the following:
 
 ```bash
-docker-compose run --rm bety initialize
+docker run --rm --network pecan_pecan pecan/db
 ```
 
 The breakdown of this command is as follows: {#docker-run-init}
 
-- `docker-compose run` -- This says we will be running a specific command inside the target service (bety in this case). 
+- `docker run` -- This says we will be running a container.
 - `--rm` -- This automatically removes the resulting container once the specified command exits, as well as any volumes associated with the container. This is useful as a general "clean-up" flag for one-off commands (like this one) to make sure you don't leave any "zombie" containers or volumes around at the end.
-- `bety` -- This is the name of the service in which we want to run the specified command. 
-- Everything after the service name (here, `bety`) is interpreted as an argument to the image's specified [entrypoint](https://docs.docker.com/engine/reference/builder/#entrypoint). For the `bety` service, the entrypoint is the script [`docker/entrypoint.sh`](https://github.com/PecanProject/bety/blob/master/docker/entrypoint.sh) located in the BETY repository. Here, the `initialize` argument is parsed to mean "Create a new database", which first runs `psql` commands to create the `bety` role and database and then runs the `load.bety.sh` script. 
-  - NOTE: The entrypoint script that is used is the one copied into the Docker container at the time it was built, which, depending on the indicated image version and how often images are built on Docker Hub relative to updates to the source, may be older than whatever is in the source code.
+- `--network pecan_pecan` -- Thsi will start the container in the same network space as the posgres container, allowing it to push data into the database.
+- `pecan/db` -- This is the name of the container, this holds a copy of the database used to initialize the postgresql database.
   
 Note that this command may throw a bunch of errors related to functions and/or operators already existing.
 This is normal -- it just means that the PostGIS extension to PostgreSQL is already installed.
 The important thing is that you see output near the end like:
 
 ```
-CREATED SCHEMA
-Loading  schema_migrations         : ADDED 61
-Started psql (pid=507)
-Updated  formats                   :     35 (+35)
-Fixed    formats                   : 46
-Updated  machines                  :     23 (+23)
-Fixed    machines                  : 24
-Updated  mimetypes                 :    419 (+419)
-Fixed    mimetypes                 : 1095
-...
-...
-...
-Added carya41 with access_level=4 and page_access_level=1 with id=323
-Added carya42 with access_level=4 and page_access_level=2 with id=325
-Added carya43 with access_level=4 and page_access_level=3 with id=327
-Added carya44 with access_level=4 and page_access_level=4 with id=329
-Added guestuser with access_level=4 and page_access_level=4 with id=331
+----------------------------------------------------------------------
+Safety checks
+
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+Making sure user 'bety' exists.
 ```
 
 If you do not see this output, you can look at the [troubleshooting](#docker-quickstart-troubleshooting) section at the end of this section for some troubleshooting tips, as well as some solutions to common problems.
 
 Once the command has finished successfully, proceed with the next step which will load some initial data into the database and place the data in the docker volumes.
+
+#### Add first user to PEcAn database
+
+You can add an initial user to the BETY database, for example the following commands will add the guestuser account as well as the demo `carya` account:
+
+```
+# guest user
+docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+
+# example user
+docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
+```
 
 #### Add example data (first time only) {#pecan-docker-quickstart-init-data}
 
