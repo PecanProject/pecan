@@ -648,7 +648,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   for(rr in 1:nrow(dat_save)) {
     eigen_save[rr,] <- eigen((matrix(dat_save[rr, iq],ncol(X),ncol(X))))$values
   }
-  apply(eigen_save,2,plot,typ='l')
+  apply(eigen_save,2,graphics::plot,typ='l')
   dev.off()
   
   return(list(mu.f = mu.f,
