@@ -293,14 +293,13 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   generate_colors_sda()
 
   #---
-  library(corrplot)
   pdf('SDA/process.var.plots.pdf')
   
   cor.mat <- cov2cor(aqq[t,,] / bqq[t])
   colnames(cor.mat) <- colnames(X)
   rownames(cor.mat) <- colnames(X)
   par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-  corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+  corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
   
   par(mfrow=c(1,1))   
   plot(as.Date(obs.times[t1:t]), bqq[t1:t],
