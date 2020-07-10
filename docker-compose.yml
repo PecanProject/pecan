@@ -332,8 +332,11 @@ services:
       - AUTH_REQ=${AUTH_REQ:-TRUE}
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"
       - "traefik.backend=api"
+      - "traefik.port=8000"
+    depends_on:
+      - postgres
 
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers
