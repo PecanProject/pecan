@@ -73,7 +73,7 @@ The **easiest** approach is to use GitHub's browser based workflow. This is usef
 
 ### Recommended Git Workflow
 
-Summary:
+Summary: development should occur on a fork of the main repository.
 
 1. Fork
 2. Create Branch
@@ -99,39 +99,80 @@ There is a script in the scripts folder called `scripts/syncgit.sh` that will ke
 
 1. Introduce yourself to GIT
 
-`git config --global user.name "FULLNAME"`
-`git config --global user.email you@yourdomain.example.com`
+```sh
+git config --global user.name "FULLNAME"
+git config --global user.email you@yourdomain.example.com
+```
 
 2. Fork PEcAn on GitHub. Go to the PEcAn source code and click on the Fork button in the upper right. This will create a copy of PEcAn in your personal space.
 
 3. Clone to your local machine via command line
 
-`git clone git@github.com:<username>/pecan.git`
+```sh
+git clone git@github.com:<username>/pecan.git
+```
 
 4. Define `PEcAnProject/pecan` as upstream repository
 
-```
+```sh
 cd pecan
 git remote add upstream git@github.com:PecanProject/pecan.git
 ```
 
-#### A new branch for each feature or bug fix
+##### Hint: Keeping your fork in sync
+
+If you have used the instructions above, you can use the helper script called [`scripts/syncgit.sh`](https://github.com/PecanProject/pecan/blob/master/scripts/syncgit.sh) to keep the master and develop branches of your own fork in sync with the PEcAnProject/pecan repository.
+
+After following the above, your .git/config file will include the following:
+
+```
+...
+[remote "origin"]
+        url = git@github.com:<username>/pecan.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "develop"]
+        remote = origin
+        merge = refs/heads/develop
+[remote "upstream"]
+        url = git@github.com:PecanProject/pecan.git
+        fetch = +refs/heads/*:refs/remotes/upstream/*
+```
+
+Then, you can run:
+
+```sh
+./scripts/syncgit.sh
+```
+
+Now the master and develop branches on your fork will be up to date. 
+
+#### Using Branching
+
+Ideally, a developer should create a new branch for each feature or bug fix
 
 1. Make sure you start in the develop branch 
 
-`git checkout develop`
+```sh
+git checkout develop
+```
 
 2. Make sure develop is up to date 
 
-`git pull upstream develop`
+```sh
+git pull upstream develop
+```
 
 3. Run the PEcAn MAKEFILE to compile code from the main directory.
 
-`make`
+```sh
+make
+```
 
 4. Create a new branch and switch to it
 
-`git checkout -b <branchname>`
+```sh
+git checkout -b <branchname>
+```
 
 5. Work/commit/etc 
 
@@ -149,7 +190,9 @@ make
 
 7. Push this branch to your github space 
 
-`git push origin <branchname>`
+```sh
+git push origin <branchname>
+```
 
 8. submit pull request with [[link commits to issues|Using-Git#link-commits-to-issuess]]; 
 * also see [github documentation](https://help.github.com/articles/using-pull-requests)
@@ -158,16 +201,21 @@ make
 
 1. Make sure you start in master 
 
-`git checkout develop`
+```sh
+git checkout develop`
+```
 
 2. delete branch remotely 
 
-`git push origin --delete <branchname>`
+```sh
+git push origin --delete <branchname>`
+```
 
 3. delete branch locally 
 
-`git branch -D <branchname>`
-
+```sh
+git branch -D <branchname>`
+```
 
 #### Link commits to issues
 
