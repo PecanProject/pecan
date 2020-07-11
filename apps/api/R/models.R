@@ -58,6 +58,6 @@ searchModels <- function(model_name="", revision="", ignore_case=TRUE, res){
     return(list(error="Model(s) not found"))
   }
   else {
-    return(list(models=qry_res))
+    return(list(models=qry_res, count = nrow(qry_res)))
   }
 }
