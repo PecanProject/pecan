@@ -5,7 +5,7 @@ library(dplyr)
 #' @return Site details
 #' @author Tezan Sahu
 #* @get /<site_id>
-getSite <- function(site_id){
+getSite <- function(site_id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   

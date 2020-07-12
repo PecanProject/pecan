@@ -5,7 +5,7 @@ library(dplyr)
 #' @return Model details
 #' @author Tezan Sahu
 #* @get /<model_id>
-getModel <- function(model_id){
+getModel <- function(model_id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   
