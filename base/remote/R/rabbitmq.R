@@ -9,12 +9,12 @@
 rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
   # save username/password
   if (!grepl("@", uri, fixed = TRUE)) {
-    print("rabbitmq uri is not recognized, missing username and password, assuming guest/guest")
+    PEcAn.logger::logger.info("rabbitmq uri is not recognized, missing username and password, assuming guest/guest")
     upw <- c("guest", "guest")
   } else {
     upw <- strsplit(sub(".*://([^@]*).*", "\\1", uri), ":")[[1]]
     if (length(upw) != 2) {
-      print("rabbitmq uri is not recognized, missing username or password")
+      PEcAn.logger::logger.error("rabbitmq uri is not recognized, missing username or password")
       return(NA)
     }
   }
@@ -22,7 +22,7 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
   # split uri and check scheme
   url_split <- urltools::url_parse(uri)
   if (!startsWith(url_split$scheme, "amqp")) {
-    print("rabbitmq uri is not recognized, invalid scheme (need amqp(s) or http(s))")
+    PEcAn.logger::logger.error("rabbitmq uri is not recognized, invalid scheme (need amqp(s) or http(s))")
     return(NA)
   }
   
@@ -63,7 +63,7 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
   } else if (action == "POST") {
     result <- httr::POST(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
   } else {
-    print(paste("error sending message to rabbitmq, uknown action", action))
+    PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
     return(NA)
   }
   
@@ -75,14 +75,14 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
       return(content)
     }
   } else if (result$status_code == 401) {
-    print("error sending message to rabbitmq, make sure username/password is correct")
+    PEcAn.logger::logger.error("error sending message to rabbitmq, make sure username/password is correct")
     return(NA)
   } else {
     output <<- httr::content(result)
     if ("reason" %in% names(output)) {
-      print(paste("error sending message to rabbitmq,", output$reason))
+      PEcAn.logger::logger.error(paste("error sending message to rabbitmq,", output$reason))
     } else {
-      print("error sending message to rabbitmq")
+      PEcAn.logger::logger.error("error sending message to rabbitmq")
     }
     return(NA)
   }
@@ -173,7 +173,6 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
   if (length(result) == 1 && is.na(result)) {
     return(NA)
   } else {
-    return(lapply(result, function(x) { jsonlite::fromJSON(x$payload) }))
+    return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
   }
 }
-
