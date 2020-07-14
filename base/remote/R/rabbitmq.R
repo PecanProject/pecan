@@ -1,6 +1,6 @@
 #' parse the RabbiMQ URI. This will parse the uri into smaller pieces that can
 #' be used to talk to the rest endpoint for RabbitMQ.
-#' 
+#'
 #' @param uri the amqp URI
 #' @param prefix the prefix that the RabbitMQ managmenet interface uses
 #' @param port the port for rabbitmq managment interface
@@ -18,14 +18,14 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
       return(NA)
     }
   }
-  
+
   # split uri and check scheme
   url_split <- urltools::url_parse(uri)
   if (!startsWith(url_split$scheme, "amqp")) {
     PEcAn.logger::logger.error("rabbitmq uri is not recognized, invalid scheme (need amqp(s) or http(s))")
     return(NA)
   }
-  
+
   # convert uri to rabbitmq rest/management call
   url_split["scheme"] <- sub("amqp", "http", url_split["scheme"])
   url_split["port"] <- port
@@ -38,7 +38,7 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
   } else {
     url_split["path"] <- paste0(prefix, "/")
   }
-  
+
   url <- urltools::url_compose(url_split)
 
   return(list(url=url, vhost=vhost, username=upw[[1]], password=upw[[2]]))
@@ -46,7 +46,7 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
 
 #' Send a message to RabbitMQ rest API. It will check the resulting status code
 #' and print a message in case something goes wrong.
-#' 
+#'
 #' @param url the full endpoint rest url
 #' @param auth authentication for rabbitmq in httr:auth
 #' @param body the actual body to send, this is a rabbitmq message.
@@ -66,7 +66,7 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
     PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
     return(NA)
   }
-  
+
   if (result$status_code >= 200 && result$status_code < 300) {
     content <- httr::content(result)
     if (length(content) == 0) {
@@ -78,7 +78,7 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
     PEcAn.logger::logger.error("error sending message to rabbitmq, make sure username/password is correct")
     return(NA)
   } else {
-    output <<- httr::content(result)
+    output <- httr::content(result)
     if ("reason" %in% names(output)) {
       PEcAn.logger::logger.error(paste("error sending message to rabbitmq,", output$reason))
     } else {
@@ -148,10 +148,10 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
   if (length(rabbitmq) != 4) {
     return(NA)
   }
-  
+
   # create authentication
   auth <- httr::authenticate(rabbitmq$username, rabbitmq$password)
-  
+
   # create message to be send to create the queue
   body <- list(
     auto_delete = FALSE,
@@ -161,7 +161,7 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
   if (is.na(rabbitmq_send_message(url, auth, body, "PUT"))) {
     return(NA)
   }
-  
+
   # get actual message from queue
   body <- list(
     count = count,
@@ -169,7 +169,7 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
     encoding = "auto"
   )
   url <- paste0(rabbitmq$url, "api/queues/", rabbitmq$vhost, "/", queue, "/get")
-  result <<- rabbitmq_send_message(url, auth, body, "POST")
+  result <- rabbitmq_send_message(url, auth, body, "POST")
   if (length(result) == 1 && is.na(result)) {
     return(NA)
   } else {
