@@ -15,6 +15,8 @@ rabbitmq_get(uri, queue, count = 1, prefix = "", port = 15672)
 
 \item{count}{the number of messages to retrieve from the queue.}
 
+\item{prefix}{prefix for the rabbitmq api endpoint, default is for no prefix.}
+
 \item{port}{port for the management interface, the default is 15672.}
 }
 \value{

@@ -138,6 +138,7 @@ rabbitmq_post <- function(uri, queue, message, prefix="", port=15672) {
 #' @param uri RabbitMQ URI or URL to rest endpoint
 #' @param queue the queue the message is received from.
 #' @param count the number of messages to retrieve from the queue.
+#' @param prefix prefix for the rabbitmq api endpoint, default is for no prefix.
 #' @param port port for the management interface, the default is 15672.
 #' @return NA if no message was retrieved, or a list of the messages payload.
 #' @author Alexey Shiklomanov, Rob Kooper
