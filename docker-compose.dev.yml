@@ -20,6 +20,10 @@ services:
 
   # use same for R development in rstudio
   rstudio:
+    environment:
+      - USERID=${UID:-1001}
+      - GROUPID=${GID:-1001}
+      - PGHOST="postgres"
     volumes:
       - 'pecan_home:/pecan/'
       - 'pecan_home:/home/carya/pecan/'
