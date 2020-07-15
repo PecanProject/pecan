@@ -145,6 +145,8 @@ for x in base web docs; do
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
+        --build-arg USER_ID=${UID:-1000} \
+        --build-arg GROUP_ID=${GID:-1000} \
         --file docker/$x/Dockerfile \
         .
 done
