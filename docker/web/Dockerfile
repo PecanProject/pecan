@@ -35,3 +35,18 @@ ENV PECAN_VERSION=${PECAN_VERSION} \
     PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH} \
     PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM} \
     PECAN_GIT_DATE=${PECAN_GIT_DATE}
+
+ARG USER_ID
+ARG GROUP_ID
+
+RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
+    userdel -f www-data &&\
+    if getent group www-data ; then groupdel www-data; fi && \
+    groupadd -g $GROUP_ID -r www-data && useradd -l -u $USER_ID -r -g www-data www-data && \
+    install -d -m 0777 -o www-data -g www-data /home/www-data && \
+    chown --changes --silent --no-dereference --recursive \
+          --from=33:33 ${USER_ID}:${GROUP_ID} \
+        /home/www-data \
+        /var/www \
+        /usr/sbin/nologin \
+;fi
