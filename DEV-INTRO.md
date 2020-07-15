@@ -69,7 +69,7 @@ You can copy the [`docker/env.example`](docker/env.example) file as .env in your
 For Linux/MacOSX
 
 ```sh
-cp docker/env.example ./env
+cp docker/env.example .env
 ```
 
 For Windows
