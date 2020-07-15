@@ -567,8 +567,14 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, forecast
   
   
   ### plot-level
-  ### ELEV
   
+  
+  #LAT and long
+  LAT = temp2$PLOT_LAT
+  LON = temp2$PLOT_LON
+  
+  
+  ### ELEV
   ELEV <- temp2$PLOT_ELEV
   if(!is.null(Tree2Tree)){
     ELEV2 <- Tree2Tree$ELEV
@@ -755,7 +761,7 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, forecast
   
   ### BA ## SDI and BA are tightly correlated, can't use both
   if(is.null(Tree2Tree)){
-    cov.data <- data.frame(PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
+    cov.data <- data.frame(LAT = LAT, LON = LON, PLOT=PLOT, TREE = TREE ,SICOND=SICOND, SDI=SDI, ELEV = ELEV, SLOPE = SLOPE, ASPECT = ASPECT, STAGE2 = STAGE2, STAGE3 = STAGE3, 
                            STDAGE = STDAGE, TRTCD1 = TRTCD1, DSTRBCD1 = DSTRBCD1,  MAP =MAP, MAT =MAT, T2_FIADB = T2_FIADB )
     
     

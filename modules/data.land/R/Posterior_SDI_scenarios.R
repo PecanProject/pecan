@@ -12,8 +12,10 @@
 # 5. Do the same for +10% current SDI & -10% current SDI
 
 #------------------------------------------------------------------------------------------
-# 1. Extract posterior estimates from stage 2 model
+# 1. Extract posterior estimates from stage 2 or stage 1 model
 #------------------------------------------------------------------------------------------
+stage2 = FALSE
+
 # assuming that we already ran the conditional_effects_mcmc_plots script, and that output.base.name is in our env
 jags.comb.params <- readRDS(file=paste0("IGF",output.base.name,".rds"))
 out <- as.matrix(jags.comb.params)
@@ -45,7 +47,7 @@ plot.table <- data.frame(PLOT = unique(cov.data$PLOT),
                          plotid = 1:length(unique(cov.data$PLOT)))
 
 cov.data <- left_join(plot.table, cov.data, by  = "PLOT")
-
+cov.data$id <- 1:length(cov.data$PLOT)
 
 # KH note: need to standardize SDIseq first sdece I ran the model with standardized covariates
 SDIseq.real <- seq(0,400,by=10)
@@ -64,19 +66,19 @@ for(m in 1:length(cov.data$PLOT)){#length(cov.data$PLOT)){ # loop for each indiv
   # get the last x--just use the mean for now for that individual and scale by 30:
   x <- mean(x.mat[,xname])-30
   
-    for(k in 1:ns){# loop for each mcmc iterations
-      #j <- i[k]
-      j <- k
-      decpred[k,m]  <- alphas[j, alphaplotid] + B0[j] + betas[j,"betaSDI"]*cov.data[m,]$SDI + betas[j,"betaSDI_wintP.wateryr"]*cov.data[m,]$SDI*cov.data[m,]$MAP + 
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*cov.data[m,]$SDI  + betas[j,"betaX_wintP.wateryr"]*x*cov.data[m,]$MAP +
-        betas[j,"betawintP.wateryr"]*cov.data[m,]$MAP + 
-        # temperature
-        betas[j,"betaX_tmax.fallspr"]*x*cov.data[m,]$MAT +
-        betas[j,"betatmax.fallspr"]*cov.data[m,]$MAT + betas[j,"betaSDI_tmax.fallspr"]*cov.data[m,]$SDI*cov.data[m,]$MAT +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*cov.data[m,]$MAT*cov.data[m,]$MAP # +
-      
-    }
+  for(k in 1:ns){# loop for each mcmc iterations
+    #j <- i[k]
+    j <- k
+    decpred[k,m]  <- alphas[j, alphaplotid] + B0[j] + betas[j,"betaSDI"]*cov.data[m,]$SDI + betas[j,"betaSDI_wintP.wateryr"]*cov.data[m,]$SDI*cov.data[m,]$MAP + 
+      betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
+      betas[j,"betaX_SDI"]*x*cov.data[m,]$SDI  + betas[j,"betaX_wintP.wateryr"]*x*cov.data[m,]$MAP +
+      betas[j,"betawintP.wateryr"]*cov.data[m,]$MAP + 
+      # temperature
+      betas[j,"betaX_tmax.fallspr"]*x*cov.data[m,]$MAT +
+      betas[j,"betatmax.fallspr"]*cov.data[m,]$MAT + betas[j,"betaSDI_tmax.fallspr"]*cov.data[m,]$SDI*cov.data[m,]$MAT +
+      betas[j,"betatmax.fallspr_wintP.wateryr"]*cov.data[m,]$MAT*cov.data[m,]$MAP # +
+    
+  }
   print(m)
 }
 
@@ -87,50 +89,57 @@ CIdecpred <- apply(decpred,2,quantile,c(0.025,0.5,0.975))
 decpred <- matrix(NA, ns, length(cov.data$PLOT))
 #decpred <- matrix(NA, ns, 3)
 #for(m in 1:length(cov.data$PLOT)){#length(cov.data$PLOT)){ # loop for each individual
+
+predict.dec <- function(m, SDI.scale = 1){
+  alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid,"]")
   
-  predict.dec <- function(m, SDI.scale = 1){
-    alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid,"]")
+  xname <- paste0("x[", cov.data[m,]$id,",24]")
+  # get the last x--just use the mean for now for that individual and scale by 30:
+  x <- mean(x.mat[,xname])-30
+  decpred <- matrix(NA, ns, 1)
+  SDI <- cov.data[m,]$SDI*SDI.scale # option to scale all SDI values by a given #
+  
+  # for(k in 1:ns){# loop for each mcmc iterations
+  #   #j <- i[k]
+  #   j <- k
+  #   
+  
+  
+  basic.mod <- function(j){
     
-    xname <- paste0("x[", cov.data[m,]$id,",24]")
-    # get the last x--just use the mean for now for that individual and scale by 30:
-    x <- mean(x.mat[,xname])-30
-    decpred <- matrix(NA, ns, 1)
-    SDI <- cov.data[m,]$SDI*SDI.scale # option to scale all SDI values by a given #
-    
-        # for(k in 1:ns){# loop for each mcmc iterations
-        #   #j <- i[k]
-        #   j <- k
-        #   
-          
-          
-          basic.mod <- function(j){
-           
-          decpred  <- alphas[j, alphaplotid] + B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*cov.data[m,]$MAP + 
-            betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-            betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_wintP.wateryr"]*x*cov.data[m,]$MAP +
-            betas[j,"betawintP.wateryr"]*cov.data[m,]$MAP + 
-            # temperature
-            betas[j,"betaX_tmax.fallspr"]*x*cov.data[m,]$MAT +
-            betas[j,"betatmax.fallspr"]*cov.data[m,]$MAT + betas[j,"betaSDI_tmax.fallspr"]*SDI*cov.data[m,]$MAT +
-            betas[j,"betatmax.fallspr_wintP.wateryr"]*cov.data[m,]$MAT*cov.data[m,]$MAP # +
-          decpred
-          }
-          
-          mcmc.samps<- lapply(1:500, FUN = basic.mod)
-          mcmcpred <- do.call(rbind,mcmc.samps)
-          colnames(mcmcpred) <- m
-        
-    mcmcpred
+    decpred  <- alphas[j, alphaplotid] + B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*cov.data[m,]$MAP + 
+      betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
+      betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_wintP.wateryr"]*x*cov.data[m,]$MAP +
+      betas[j,"betawintP.wateryr"]*cov.data[m,]$MAP + 
+      # temperature
+      betas[j,"betaX_tmax.fallspr"]*x*cov.data[m,]$MAT +
+      betas[j,"betatmax.fallspr"]*cov.data[m,]$MAT + betas[j,"betaSDI_tmax.fallspr"]*SDI*cov.data[m,]$MAT +
+      betas[j,"betatmax.fallspr_wintP.wateryr"]*cov.data[m,]$MAT*cov.data[m,]$MAP # +
+    decpred
   }
- # print(m)
+  
+  mcmc.samps<- lapply(1:500, FUN = basic.mod)
+  mcmcpred <- do.call(rbind,mcmc.samps)
+  colnames(mcmcpred) <- m
+  
+  mcmcpred
+}
+# print(m)
 #}
 
+# Note if plotting stage2, then sample form 1:2500
+#  if plotting stage2, then sample from 1:515
 mlist <- list()
-mlist <- sample(100, x = 1:2500, replace = FALSE) 
+if(stage2==TRUE){
+  mlist <- sample(100, x = 1:2500, replace = FALSE)
+}else{
+  mlist <- sample(100, x = 1:515, replace = FALSE) 
+}
+
 
 # the ids of individuals to scale over:
 # create a list of all the individual predictions of SDI
-# note that this still takes awaile
+# note that this still takes awhile
 system.time(all.1000 <- lapply(mlist, predict.dec, SDI.scale = 1))
 
 cis <- lapply(all.1000, quantile, c(0.025, 0.5, 0.975))
@@ -164,13 +173,18 @@ cov.data.subset <- merge(cov.data.subset, low.sdi, by = "id")
 cov.data.subset <- merge(cov.data.subset, hi.sdi, by = "id")
 cov.data.subset <- merge(cov.data.subset, nochange.sdi, by = "id")
 
+cov.data.subset
+# below only works for stage 2 data
 # get lat & long for each onee:
-
-ll <- Tree2Tree.decored.plots[,c("LAT", "LON", "PLOT", "COUNTYCD")]
-ll$PLOT.cov.data <- paste0(ll$COUNTYCD, ll$PLOT)
-ll <- ll[!duplicated(ll),]
-
-ll.cov <- merge(cov.data.subset, ll[,c("LAT", "LON", "PLOT.cov.data")], by.x = "PLOT", by.y = "PLOT.cov.data", all.x =TRUE)
+if(stage2 == TRUE){
+  ll <- Tree2Tree.decored.plots[,c("LAT", "LON", "PLOT", "COUNTYCD")]
+  ll$PLOT.cov.data <- paste0(ll$COUNTYCD, ll$PLOT)
+  ll <- ll[!duplicated(ll),]
+  
+  ll.cov <- merge(cov.data.subset, ll[,c("LAT", "LON", "PLOT.cov.data")], by.x = "PLOT", by.y = "PLOT.cov.data", all.x =TRUE)
+}else{
+  ll.cov <- cov.data.subset
+}
 # calculate change in growth decrement relative to current SDI:
 
 ll.cov$decSDI.diff <- ll.cov$lowsdi.ci.50 - ll.cov$midsdi.ci.50
@@ -249,7 +263,7 @@ dec.lo.diff<- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, 
   geom_point(data = ll.cov, aes(LON, LAT, color = decSDI.diff.hi), size = 0.75)+
   scale_color_gradientn(colors = c("red", "white", "blue"), limits = c(-0.03, 0.03))+theme_bw()+coord_equal()+theme(legend.title = element_blank())+ggtitle("Effect of 15% SDI decrease (0.025%)")
 
-png(height = 3, width = 10, units = "in", res = 300, "decreasing.SDI.15percent.change.decrement.png")
+png(height = 3, width = 10, units = "in", res = 300, paste0(output.base.name,"_decreasing.SDI.15percent.change.decrement.png"))
 cowplot::plot_grid(dec.lo.diff, dec.meandiff, dec.hi.diff, ncol = 3)
 dev.off()
 
@@ -266,7 +280,7 @@ dec.lo.diff<- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, 
   geom_point(data = ll.cov, aes(LON, LAT, color = decSDI.diff.hi), size = 0.75)+
   scale_color_gradientn(colors = c("red", "white", "blue"), limits = c(-0.03, 0.03))+theme_bw()+coord_equal()+theme(legend.title = element_blank())+ggtitle("Effect of 15% SDI decrease (0.025%)")
 
-png(height = 3, width = 10, units = "in", res = 300, "decreasing.SDI.15percent.change.decrement.png")
+png(height = 3, width = 10, units = "in", res = 300, paste0(output.base.name,"decreasing.SDI.15percent.change.decrement.png"))
 cowplot::plot_grid(dec.lo.diff, dec.meandiff, dec.hi.diff, ncol = 3)
 dev.off()
 
