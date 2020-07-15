@@ -32,6 +32,12 @@ COPY web/workflow.R /work/
 # COMMAND TO RUN
 CMD Rscript --vanilla workflow.R | tee workflow.Rout
 
+# install pika and copy sender.py
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip \
+    && pip3 install pika==1.0.0 \
+    && rm -rf /var/lib/apt/lists/*
+COPY docker/executor/sender.py /work/
 
 # variables to store in docker image
 ENV PECAN_VERSION=${PECAN_VERSION} \
