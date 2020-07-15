@@ -1,3 +1,5 @@
+library(dplyr)
+
 #' Get the list of runs (belonging to a particuar workflow)
 #' @param workflow_id Workflow id (character)
 #' @param offset
@@ -5,7 +7,7 @@
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /
-getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
+getRuns <- function(req, workflow_id, offset=0, limit=50, res){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
@@ -47,7 +49,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
       result$next_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
-        "/api/workflows",
+        "/api/runs",
         req$PATH_INFO,
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         (as.numeric(limit) + as.numeric(offset)),
@@ -59,7 +61,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
-        "/api/workflows",
+        "/api/runs",
         req$PATH_INFO, 
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         max(0, (as.numeric(offset) - as.numeric(limit))),
@@ -79,7 +81,7 @@ getWorkflows <- function(req, workflow_id, offset=0, limit=50, res){
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<id>
-getWorkflowDetails <- function(id, res){
+getRunDetails <- function(id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   
