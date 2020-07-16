@@ -25,7 +25,8 @@ def remote_process(
     projection=None,
     qc=None,
     algorithm=None,
-    process_data=None,
+    credfile=None,
+    output={"get_data": None, "process_data": None},
     stage={"get_data": True, "process_data": True},
 ):
 
@@ -54,7 +55,9 @@ def remote_process(
 
     algorithm (str) -- algorithm used for processing data in process_data(), currently only SNAP is implemented to estimate LAI from Sentinel-2 bands, None by default
 
-    process_data (str) -- the type of output variable requested from process_data module
+    credfile (str) -- path to JSON file containing Earthdata username and password, only required for AppEEARS, None by default
+
+    output (dict) -- "get_data" - the type of output variable requested from get_data module, "process_data" - the type of output variable requested from process_data module
 
     stage (dict) -- temporary argument to imitate database checks
   
@@ -70,11 +73,11 @@ def remote_process(
 
     if stage["get_data"]:
         get_remote_data(
-            geofile, outdir, start, end, source, collection, scale, projection, qc
+            geofile, outdir, start, end, source, collection, scale, projection, qc, credfile
         )
 
     if stage["process_data"]:
-        process_remote_data(aoi_name, process_data, outdir, algorithm)
+        process_remote_data(aoi_name, output, outdir, algorithm)
 
 
 if __name__ == "__main__":
@@ -88,6 +91,6 @@ if __name__ == "__main__":
         scale=10,
         qc=1,
         algorithm="snap",
-        process_data="lai",
+        output={"get_data": "bands", "process_data": "lai"},
         stage={"get_data": True, "process_data": True},
     )
