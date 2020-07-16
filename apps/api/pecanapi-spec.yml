@@ -3,7 +3,7 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-tezan.ncsa.illinois.edu/
   - description: PEcAn Test Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/9272c48c
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/027e1bde
   - description: Localhost
     url: http://127.0.0.1:8000
   
