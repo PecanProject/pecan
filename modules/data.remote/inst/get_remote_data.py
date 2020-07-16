@@ -31,6 +31,7 @@ def get_remote_data(
     scale=None,
     projection=None,
     qc=None,
+    credfile=None,
 ):
     """
     uses GEE and AppEEARS functions to download data
@@ -85,4 +86,4 @@ def get_remote_data(
             func(geofile, outdir, start, end)
 
     if source == "appeears":
-        appeears2pecan(geofile, outdir, start, end, collection, projection)
+        appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
