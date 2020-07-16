@@ -147,7 +147,7 @@ Datasets currently available for use in PEcAn via Google Earth Engine are,
 * [Landsat 8 Surface Reflectance](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR) [`gee2pecan_l8()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_l8.py)
 
 #### AppEEARS
-[AppEEARS (Application for Extracting and Exploring Analysis Ready Samples)](https://lpdaacsvc.cr.usgs.gov/appeears/) is an online tool whhich provides an easy to use interface for downloading analysis ready remote sensing data. [Products available on AppEEARS.](https://lpdaacsvc.cr.usgs.gov/appeears/products) Note: AppEEARS uses a task based system for processing the data request, it is possible for a task to run for long hours before it gets completed. The module checks the task status after every 60 seconds and saves the files when the task gets completed.
+[AppEEARS (Application for Extracting and Exploring Analysis Ready Samples)](https://lpdaacsvc.cr.usgs.gov/appeears/) is an online tool which provides an easy to use interface for downloading analysis ready remote sensing data. [Products available on AppEEARS.](https://lpdaacsvc.cr.usgs.gov/appeears/products) Note: AppEEARS uses a task based system for processing the data request, it is possible for a task to run for long hours before it gets completed. The module checks the task status after every 60 seconds and saves the files when the task gets completed.
 
 Processing functions currently available are,
 
