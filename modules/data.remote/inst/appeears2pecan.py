@@ -98,7 +98,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None):
         "SPL4CMDL.004",
         "SPL4SMGP.004",
     ]:
-        # chabge this part to select your own SMAP layers
+        # change this part to select your own SMAP layers
         prodLayer = prodLayer[0:25]
 
     site_name = get_sitename(geofile)
