@@ -69,7 +69,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
                     user = cred["username"]
                     password = cred["password"]
             except IOError:
-                print("file does not exist")
+                print("specified file does not exist, please make sure that you have specified the path correctly")
         else:
             # if user does not want to store the credentials
             user = getpass.getpass(prompt="Enter NASA Earthdata Login Username: ")
