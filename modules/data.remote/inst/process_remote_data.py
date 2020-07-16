@@ -12,15 +12,15 @@ Author: Ayush Prasad
 from importlib import import_module
 
 
-def process_remote_data(aoi_name, output, outdir, algorithm):
+def process_remote_data(aoi_name, process_data, outdir, algorithm):
     """
     uses processing functions to perform computation on input data
     
     Parameters
     ----------
-    aoi_name (str) -- name to the AOI.
+    aoi_name (str) -- name of the AOI.
 
-    output (dict) -- dictionary contatining the keys get_data and process_data
+    process_data (str) -- the type of output variable
 
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
 
@@ -31,14 +31,13 @@ def process_remote_data(aoi_name, output, outdir, algorithm):
     Nothing:
             output netCDF is saved in the specified directory.
     """
-    # get the type of the input data
-    input_type = output["get_data"]
+
     # locate the input file
-    input_file = "".join([outdir, "/", aoi_name, "_", input_type, ".nc"])
+    input_file = "".join([outdir, "/", aoi_name, "_", "bands", ".nc"])
     # extract the computation which is to be done
-    output = output["process_data"]
+    output = process_data
     # construct the function name
-    func_name = "".join([input_type, "2", output, "_", algorithm])
+    func_name = "".join(["bands", "2", output, "_", algorithm])
     # import the module
     module = import_module(func_name)
     # import the function from the module
