@@ -238,4 +238,4 @@ remote_process(
         stage={"get_data": True, "process_data": False},
     )
 ```
-The output netCDF file will be saved at `./out`
+This will approximately take 20 minutes to complete and the output netCDF file will be saved at `./out`
