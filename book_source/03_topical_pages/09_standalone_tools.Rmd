@@ -174,7 +174,7 @@ pip install -r requirements.txt
 #this will open a browser and ask you to sign in with the Google account registered for GEE
 earthengine authenticate
 ```
-5. **Save the Earthdata credentials (optional)**. If you do not wish to enter your credentials every time you use AppEEARS, you may save your username and password inside a JSON file and then add its path [here](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/appeears2pecan.py#L63)
+5. **Save the Earthdata credentials (optional)**. If you do not wish to enter your credentials every time you use AppEEARS, you may save your username and password inside a JSON file and then pass its file path as an argument in `remote_process` 
 
 #### Usage guide:
 This module contains GEE and other processing functions which retrieve data from a specific dataset and source. For example, `gee2pecan_s2()` downloads bands from Sentinel 2 using GEE and `bands2lai_snap()` uses the downloaded bands to compute LAI using the SNAP algorithm. These functions can be used independently but the recommended way is to use `remote_process()` which is a main function that controls all the individual functions to create an organized way of downloading and handling remote sensing data in PEcAn. 
@@ -207,7 +207,7 @@ remote_process(
         scale=10,
         qc=1,
         algorithm="snap",
-        process_data="lai",
+        output={"get_data": "bands", "process_data": "lai"},
         stage={"get_data": True, "process_data": True},
     )
 ```
