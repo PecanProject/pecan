@@ -20,9 +20,10 @@ import cgi
 import json
 from gee_utils import get_sitename
 from datetime import datetime
+from warnings import warn
 
 
-def appeears2pecan(geofile, outdir, start, end, product, projection=None):
+def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfile=None):
     """
     Downloads remote sensing data from AppEEARS
 
@@ -36,9 +37,11 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None):
     
     end (str) -- ending date area of the data request in the form YYYY-MM-DD
 
-    product (str) -- product name followed by " . " and the product version, e.g. "SPL3SMP_E.003"
+    product (str) -- product name followed by " . " and the product version, e.g. "SPL3SMP_E.003", as listed on AppEEARS website.
 
     projection (str) -- type of projection, only required for polygon AOI type. None by default
+
+    credfile (str) -- path to JSON file containing Earthdata username and password. None by default
 
     Returns
     -------
@@ -58,13 +61,16 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None):
         -------
         head (dict) : header contatining the authentication token 
         """
-        try:
-            # if the user does not want to enter their credentials everytime they use this function, they need to store their username and password in a JSON file, preferabbly not in a git initialized directory
-            with open("path/to/cred.json", "r") as f:
-                cred = json.load(f)
-                user = cred["username"]
-                password = cred["password"]
-        except:
+        if credfile:
+            try:
+                # if the user does not want to enter their credentials everytime they use this function, they need to store their username and password in a JSON file, preferabbly not in a git initialized directory
+                with open(credfile, "r") as f:
+                    cred = json.load(f)
+                    user = cred["username"]
+                    password = cred["password"]
+            except IOError:
+                print("file does not exist")
+        else:
             # if user does not want to store the credentials
             user = getpass.getpass(prompt="Enter NASA Earthdata Login Username: ")
             password = getpass.getpass(prompt="Enter NASA Earthdata Login Password: ")
@@ -98,6 +104,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None):
         "SPL4CMDL.004",
         "SPL4SMGP.004",
     ]:
+        warn("Since you have requested a SMAP product, all layers cannot be downloaded, selecting first 25 layers..")
         # change this part to select your own SMAP layers
         prodLayer = prodLayer[0:25]
 
