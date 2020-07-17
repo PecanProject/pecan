@@ -1,7 +1,9 @@
 openapi: 3.0.0
 servers:
-  - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/912db446
+  - description: PEcAn API Server
+    url: https://pecan-tezan.ncsa.illinois.edu/
+  - description: PEcAn Test Server
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/9272c48c
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -29,6 +31,8 @@ tags:
     description: Everything about PEcAn runs
   - name: models
     description: Everything about PEcAn models
+  - name: sites
+    description: Everything about PEcAn sites
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -105,28 +109,66 @@ paths:
         '404':
           description: Models not found
   
+  /api/models/{model_id}:
+    get:
+      tags:
+        - models
+        -
+      summary: Details of requested model
+      parameters:
+        - in: path
+          name: model_id
+          description: Model ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+                      
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model not found
+  
   /api/models/:
     get:
       tags:
         - models
         -
-      summary: Details of model(s)
+      summary: Search for model(s) using search pattern based on model name & revision
       parameters:
         - in: query
           name: model_name
-          description: Name of the model
+          description: Search string for model name
           required: false
           schema:
             type: string
         - in: query
           name: revision
-          description: Model version/revision
+          description: Search string for revision
           required: false
           schema:
             type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
       responses:
         '200':
-          description: Available Models 
+          description: List of sites matching search pattern
           content:
             application/json:
               schema:
@@ -136,14 +178,92 @@ paths:
                     type: array
                     items: 
                       type: object
-                      $ref: '#/components/schemas/Model'
+                      properties:
+                        model_id:
+                          type: string
+                        model_name:
+                          type: string
+                        revision:
+                          type: string
         '401':
           description: Authentication required
         '403':
           description: Access forbidden
         '404':
           description: Model(s) not found
-                  
+  
+  /api/sites/{site_id}:
+    get:
+      tags:
+        - sites
+        -
+      summary: Details of a site
+      parameters:
+        - in: path
+          name: site_id
+          description: PEcAn site ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Site Details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site not found
+  
+  /api/sites/:
+    get:
+      tags:
+        - sites
+        -
+      summary: Search for sites using search pattern based on site name
+      parameters:
+        - in: query
+          name: sitename
+          description: Search string for site name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of sites matching search pattern 
+          content:
+            application/json:
+              schema:
+                sites:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      sitename:
+                        type: string
+                        
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site(s) not found
   
   /api/workflows/:
     get:
@@ -221,6 +341,9 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
+          application/xml:
             schema:
               $ref: '#/components/schemas/Workflow'
       responses:
@@ -389,7 +512,37 @@ components:
           type: string
         finish_time:
           type: string
-
+    
+    Site:
+      properties:
+        id:
+          type: string
+        sitename:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        mat:
+          type: number
+        map:
+          type: number
+        soil:
+          type: string
+        som:
+          type: number
+        notes:
+          type: string
+        soilnotes:
+          type: string
+        greenhouse:
+          type: string
+        sand_pct:
+          type: number
+        time_zone:
+          type: string
     Workflow:
       properties:
         id:

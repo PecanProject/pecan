@@ -23,6 +23,10 @@ root$handle("GET", "/api/status", status)
 models_pr <- plumber::plumber$new("models.R")
 root$mount("/api/models", models_pr)
 
+# The endpoints mounted here are related to details of PEcAn sites
+sites_pr <- plumber::plumber$new("sites.R")
+root$mount("/api/sites", sites_pr)
+
 # The endpoints mounted here are related to details of PEcAn workflows
 workflows_pr <- plumber::plumber$new("workflows.R")
 root$mount("/api/workflows", workflows_pr)
