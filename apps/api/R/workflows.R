@@ -1,4 +1,5 @@
 library(dplyr)
+source("submit.workflow.R")
 
 #' Get the list of workflows (using a particular model & site, if specified)
 #' @param model_id Model id (character)
@@ -124,5 +125,18 @@ getWorkflowDetails <- function(id, res){
     }
     
     return(res)
+  }
+}
+
+#################################################################################################
+
+#' Post a workflow for execution
+#' @param req Request sent
+#' @return ID & status of the submitted workflow
+#' @author Tezan Sahu
+#* @post /
+submitWorkflow <- function(req){
+  if(req$HTTP_CONTENT_TYPE == "application/xml"){
+    return(submit.workflow.xml(req$postBody, req$user))
   }
 }
