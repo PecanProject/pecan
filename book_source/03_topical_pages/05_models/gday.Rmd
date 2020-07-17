@@ -1,4 +1,4 @@
-### GDAY {#models-gday}
+## GDAY {#models-gday}
 
 | Model Information ||
 | -- | -- |

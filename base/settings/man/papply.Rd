@@ -7,39 +7,46 @@
 papply(settings, fn, ..., stop.on.error = FALSE)
 }
 \arguments{
-\item{settings}{A \code{\link{MultiSettings}}, \code{\link{Settings}}, or \code{\link[base]{list}}
-to operate on}
+\item{settings}{A \code{\link{MultiSettings}}, \code{\link{Settings}},
+or \code{\link[base]{list}} to operate on}
 
 \item{fn}{The function to apply to \code{settings}}
 
-\item{stop.on.error}{Whether to halt execution if a single element in \code{settings} results 
-in error. See Details.}
+\item{...}{additional arguments to \code{fn}}
 
-\item{\code{...}}{additional arguments to \code{fn}}
+\item{stop.on.error}{Whether to halt execution if a single element in
+\code{settings} results in error. See Details.}
 }
 \value{
-A single \code{fn} return value, or a list of such values (coerced to \code{MultiSettings} 
-if appropriate; \emph{see Details})
+A single \code{fn} return value, or a list of such values
+  (coerced to \code{MultiSettings} if appropriate; \emph{see Details})
 }
 \description{
-Works like lapply(), but for PEcAn Settings and MultiSettings objects
+Works like lapply(),
+  but for PEcAn Settings and MultiSettings objects
 }
 \details{
-\code{papply} is mainly used to call a function on each \code{\link{Settings}} object in a 
-\code{\link{MultiSettings}} object, and returning the results in a list. It has some additional 
-features, however:
+\code{papply} is mainly used to call a function on each
+\code{\link{Settings}} object in a \code{\link{MultiSettings}} object,
+and returning the results in a list.
+It has some additional features, however:
 
 \itemize{
-  \item If the result of \code{fn} is a \code{Settings} object, then \code{papply} will coerce the 
-returned list into a new \code{MultiSettings}. 
-  \item If \code{settings} is a \code{Settings} object, then \code{papply} knows to call \code{fn} on 
-it directly.
-  \item If \code{settings} is a generic \code{list}, then \code{papply} coerces it to a
-  \code{Settings} object and then calls \code{fn} on it directly. This is meant for backwards
-  compatibility with old-fashioned PEcAn settings lists, but could have unintended consequences
-  \item By default, \code{papply} will proceed even if \code{fn} throws an error for one or more
-  of the elements in \code{settings}. Note that if this option is used, the returned results 
-  list will have entries for \emph{only} those elements that did not result in an error. 
+  \item If the result of \code{fn} is a \code{Settings} object,
+        then \code{papply} will coerce the returned list into a new
+        \code{MultiSettings}.
+  \item If \code{settings} is a \code{Settings} object,
+        then \code{papply} knows to call \code{fn} on it directly.
+  \item If \code{settings} is a generic \code{list},
+        then \code{papply} coerces it to a \code{Settings} object
+        and then calls \code{fn} on it directly.
+        This is meant for backwards compatibility with old-fashioned PEcAn
+        settings lists, but could have unintended consequences
+  \item By default, \code{papply} will proceed even if \code{fn} throws an
+        error for one or more of the elements in \code{settings}.
+        Note that if this option is used, the returned results list will
+        have entries for \emph{only} those elements that did not
+        result in an error.
 }
 }
 \examples{

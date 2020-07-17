@@ -26,7 +26,7 @@ knitr::include_graphics(rep("figures/PecanLogo.png"))
 
 [PEcAn Website](http://pecanproject.github.io/)
 
-[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE)
+[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ)
 
 [Github Repository](https://github.com/PecanProject/pecan)
 

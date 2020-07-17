@@ -7,23 +7,22 @@ ARG IMAGE_VERSION="latest"
 FROM debian:stretch as sipnet-binary
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=136
+ARG MODEL_VERSION=git
 
 # install dependencies
 RUN apt-get update \
     && apt-get install -y \
-       curl \
        gcc \
+       git \
        make \
     && rm -rf /var/lib/apt/lists/*
 
 # download, unzip and build sipnet
 WORKDIR /src
-RUN curl -o sipnet_r${MODEL_VERSION}.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r${MODEL_VERSION}.tar.gz \
-    && tar zxf sipnet_r${MODEL_VERSION}.tar.gz \
-    && cd sipnet_r${MODEL_VERSION} \
-    && make \
-    && mv sipnet /src
+RUN git clone https://github.com/PecanProject/sipnet.git \
+    && cd sipnet \
+    && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
+    && make
 
 ########################################################################
 
@@ -49,7 +48,7 @@ FROM pecan/models:${IMAGE_VERSION}
 # ----------------------------------------------------------------------
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=136
+ARG MODEL_VERSION=git
 
 # Setup model_info file
 COPY model_info.json /work/model.json
@@ -57,4 +56,4 @@ RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/sipnet.${MODEL_VERSION}#g" /work/model.json
 
 # COPY sipnet binary
-COPY --from=sipnet-binary /src/sipnet /usr/local/bin/sipnet.${MODEL_VERSION}
+COPY --from=sipnet-binary /src/sipnet/sipnet /usr/local/bin/sipnet.${MODEL_VERSION}

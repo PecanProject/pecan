@@ -135,7 +135,7 @@ invert.auto <- function(observed, invert.options,
       }
     }
     cl <- parallel::makeCluster(parallel.cores, "FORK", outfile = parallel.output)
-    on.exit(parallel::stopCluster(cl))
+    on.exit(parallel::stopCluster(cl), add = TRUE)
 
     # Initialize random seeds on cluster.
     # Otherwise, chains may start on same seed and end up identical.

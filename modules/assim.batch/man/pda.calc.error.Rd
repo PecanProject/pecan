@@ -9,7 +9,11 @@ pda.calc.error(settings, con, model_out, run.id, inputs, bias.terms)
 \arguments{
 \item{settings}{list}
 
+\item{con}{DB connection}
+
 \item{model_out}{list}
+
+\item{run.id}{run ID}
 
 \item{inputs}{list}
 

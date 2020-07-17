@@ -1,19 +1,19 @@
-##' @export
+#' @export
 listToXml <- function(x, ...) {
   UseMethod("listToXml")
 } # listToXml
 
 
-#--------------------------------------------------------------------------------------------------#
-##' Convert List to XML
-##'
-##' Can convert list or other object to an xml object using xmlNode
-##' @title List to XML
-##' @param item object to be converted. Despite the function name, need not actually be a list
-##' @param tag xml tag
-##' @return xmlNode
-##' @export
-##' @author David LeBauer, Carl Davidson, Rob Kooper
+#' Convert List to XML
+#'
+#' Can convert list or other object to an xml object using xmlNode
+#' @title List to XML
+#' @param item object to be converted.
+#'   Despite the function name, need not actually be a list
+#' @param tag xml tag
+#' @return xmlNode
+#' @export
+#' @author David LeBauer, Carl Davidson, Rob Kooper
 listToXml.default <- function(item, tag) {
 
   # just a textnode, or empty node with attributes

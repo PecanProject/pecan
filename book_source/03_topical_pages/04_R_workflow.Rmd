@@ -8,23 +8,23 @@
 
 <div style="width: 640px; height: 960px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://www.lucidchart.com/documents/embeddedchart/93dca2c6-63cb-4df4-b68c-29590d1836fc" id="uAv44V~qLSWE"></iframe></div>
 
-### Read Settings {#workflow-readsettings}
+## Read Settings {#workflow-readsettings}
 
 (TODO: Under construction...)
 
-### Input Conversions {#workflow-input}
+## Input Conversions {#workflow-input}
 
-### Input Data {#workflow-input-data}
+## Input Data {#workflow-input-data}
 
 Models require input data as drivers, parameters, and boundary conditions. In order to make a variety of data sources that have unique formats compatible with models, conversion scripts are written to convert them into a PEcAn standard format. That format is a netcdf file with variables names and specified to our standard variable table.
 
 Within the PEcAn repository, code pertaining to input conversion is in the MODULES directory under the data.atmosphere and data.land directories. 
 
-### Initial Conditions {#workflow-input-initial}
+## Initial Conditions {#workflow-input-initial}
 
 (TODO: Under construction)
 
-### Meteorological Data {#workflow-met}
+## Meteorological Data {#workflow-met}
 
 To convert meterological data into the PEcAn Standard and then into model formats we follow four main steps:
   
@@ -57,7 +57,7 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
     - Example Code to [convert Standard into Sipnet format](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/R/met2model.SIPNET.R)
     
 
-#### Downloading Raw data (Description of Process) {#workflow-met-download}
+### Downloading Raw data (Description of Process) {#workflow-met-download}
   
   Given the information passed from the pecan.xml met.process will call the `download.raw.met.module` to facilitate the execution of the necessary functions to download raw data.
 
@@ -75,26 +75,26 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 
 ### Converting from PEcAn standard to model-specific format {#workflow-met-model}
 
-### Traits {#workflow-traits}
+## Traits {#workflow-traits}
 
 (TODO: Under construction)
 
-### Meta Analysis {#workflow-metaanalysis}
+## Meta Analysis {#workflow-metaanalysis}
 
 (TODO: Under construction)
 
-### Model Configuration {#workflow-modelconfig}
+## Model Configuration {#workflow-modelconfig}
 
 (TODO: Under construction)
 
-### Run Execution {#workflow-modelrun}
+## Run Execution {#workflow-modelrun}
 
 (TODO: Under construction)
 
-### Post Run Analysis {#workflow-postrun}
+## Post Run Analysis {#workflow-postrun}
 
 (TODO: Under construction)
-### Advanced Analysis {#workflow-advanced}
+## Advanced Analysis {#workflow-advanced}
 
 (TODO: Under construction)
 

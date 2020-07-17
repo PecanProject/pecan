@@ -7,13 +7,80 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-### Fixes
+### Fixed
+
+- Use initial biomass pools for Sorghum and Setaria #2495, #2496
+- PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
+- PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
+- fixed and added tests for `get.rh` function in PEcAn.data.atmosphere 
+- Invalid .zenodo.json that broke automatic archiving on Zenodo ([b56ef53](https://github.com/PecanProject/pecan/commit/b56ef53888d73904c893b9e8c8cfaeedd7b1edbe))
+- Fixed a filehandle leak in multi-year runs of PEcAn.BIOCRO::met2model.BIOCRO: It was only closing the last input file it processed (#2485).
+- Fix issue with cruncep download: use netcdf subset (ncss) method instead of opendap (#2424).
+- The `parse` option to `PEcAn.utils::read_web_config` had no effect when `expand` was TRUE (#2421).
+- Fixed a typo that made `PEcAn.DB::symmetric_setdiff` falsely report no differences (#2428).
+- sipnet2netcdf will now only extract the data for the year requested (#2187)
+- Fixed Priors vignette (#2439).
+- When building sipnet model would not set correct model version
+- Update pecan/depends docker image to have latest Roxygen and devtools.
+- Update ED docker build, will now build version 2.2.0 and git
+- Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
+- model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
+ 
+
+### Changed
+
+- Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
+- Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
+- Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
+- `PEcAn.DB::insert_table` now uses `DBI::dbAppendTable` internally instead of manually constructed SQL (#2552).
+- Rebuilt documentation using Roxygen 7. Readers get nicer formatting of usage sections, writers get more flexible behavior when inheriting parameters and less hassle when maintaining namespaces (#2524).
+- Renamed functions that looked like S3 methods but were not:
+    * PEcAn.priors: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
+    * PEcAn.visualization: `plot.netcdf`->`plot_netcdf` (#2526).
+- Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
+- No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
+- The pecan/data container has no longer hardcoded path for postgres
+- PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
+- data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519). 
+- Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
+
+### Added
+
+- Functions to send/receive messages to/from rabbitmq.
+- Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
+- PEcAn API that can be used to talk to PEcAn servers. Endpoints to GET the details about the server that user is talking to, PEcAn models, workflows & runs. Authetication enabled. (#2631)
+- New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
+- model_info.json and Dockerfile to template (#2567)
+- Dockerize BASGRA_N model.
+- Basic coupling for models BASGRA_N and STICS.
+- PEcAn.priors now exports functions `priorfig` and `plot_densities` (#2439).
+- Models monitoring container for Docker now shows a webpage with models it has seen
+- Added small container to check if certain services are up, used as initi container for kubernetes
+- Documentation how to run ED using singularity
+- PEcAn.DB gains new function `get_postgres_envvars`, which tries to look up connection parameters from Postgres environment variables (if they are set) and return them as a list ready to be passed to `db.open`. It should be especially useful when writing tests that need to run on systems with many different database configurations (#2541).
+- New shiny application to show database synchronization status (shiny/dbsync)
+
+### Removed
+
+- Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
+- Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
+- Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).
+- Old dependency management scripts `check.dependencies.sh`, `update.dependencies.sh`, and `install_deps.R` have been deleted. Use `generate_dependencies.R` and the automatic dependency handling built into `make install` instead (#2563).
+
+
+## [1.7.1] - 2018-09-12
+
+### Fixed
+- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
+- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 - Fixed issue that prevented modellauncher from working properly #2262
 - Use explicit namespacing (`package::function`) throughout `PEcAn.meta.analysis`. Otherwise, many of these functions would fail when trying to run a meta-analysis outside of the PEcAn workflow (i.e. without having loaded the packages first) (#2351).
 - Standardize how `PEcAn.DB` tests create database connections, and make sure tests work with both the newer `Postgres` and older `PostgreSQL` drivers (#2351).
 - Meta-analysis = "AUTO" now correctly skips the meta analysis if the PFT definition has not changed (#1217).
 - Replace deprecated `rlang::UQ` syntax with the recommended `!!`
 - Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
+- History page would not pass the hostname parameter when showing a running workflow, this would result in the running page showing an error.
 
 ### Changed
 - Updated modules/rtm PROSPECT docs
@@ -34,10 +101,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - In `PEcAn.DB::get.trait.data`, if `trait.names` is `NULL` or missing, use the traits for which at least one prior is available among the input list of PFTs. (Previously, we were getting this from the `PEcAn.utils::trait.dictionary`, which we are trying to deprecate #1747). (#2351)
 - Cleanup and improve logging and code readability in parts of `PEcAn.DB` related to getting trait data, including replacing many manual database queries with `dplyr` calls.
 - Reorganization of PEcAn documentation in accordance with isue #2253.
-
+- SIPNET now is installed from the source code managed in git
 
 ### Added
-
+- Meta analysis functionality to not use greenhouse data.
 - Dockerize the BioCro model.
 - Added PRO4SAIL-D model, using existing 4SAIL src and coupling with PROSPECT-D Fortran code
 - Models will not advertise themselvs, so no need to register them a-priori with the database #2158
@@ -55,11 +122,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed unused function `PEcAn.visualization::points2county`, thus removing many indirect dependencies by no longer importing the `earth` package.
 - Removed package `PEcAn.data.mining` from the Make build. It can still be installed directly from R if desired, but is skipped by default because it is in early development, does not yet export any functions, and creates a dependency on the (large, often annoying to install) ImageMagick library.
 - Fully deprecate support for `MySQL` database driver. Now, only `PostgreSQL` (and, experimentally, `RPostgres`) are supported. With this, remove `RMySQL` dependency in several places.
-
-### Fixed
-- Replace deprecated `rlang::UQ` syntax with the recommended `!!`
-- Explicitly use `PEcAn.uncertainty::read.ensemble.output` in `PEcAn.utils::get.results`. Otherwise, it would sometimes use the deprecated `PEcAn.utils::read.ensemble.output` version.
-- `PEcAn.ED2::met2model.ED2` now skips processing of years for which all output files are already present (unless `overwrite = TRUE`). This prevents a lot of unnecessary work when extending an existing ED met record.
 
 ## [1.7.0] - 2018-12-09
 

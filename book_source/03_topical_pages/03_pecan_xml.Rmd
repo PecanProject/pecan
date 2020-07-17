@@ -55,7 +55,10 @@ A basic example looks like this:
   </pfts>
   <meta.analysis>
     <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
+    <random.effects>
+     <on>FALSE</on>
+     <use_ghs>TRUE</use_ghs>
+    </random.effects>
   </meta.analysis>
   <ensemble>
    <size>1</size>
@@ -102,9 +105,9 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-### Core configuration {#xml-core-config}
+## Core configuration {#xml-core-config}
 
-#### Top-level structure {#xml-structure}
+### Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -120,7 +123,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-#### `info`: Run metadata {#xml-info}
+### `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -129,7 +132,7 @@ This information is not essential to a successful model run, but is useful for t
   <info>
     <notes>Example run</notes>
     <userid>-1</userid>
-	<username>guestuser</username>
+    <username>guestuser</username>
     <date>2018/09/18 19:12:28 +0000</date>
   </info>
 ```
@@ -246,6 +249,7 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
       <constants>
         <num>1</num>
       </constants>
+      <posterior.files>Path to a post.distns.*.Rdata or prior.distns.Rdata</posterior.files>
     </pft>
   </pfts>
 ```
@@ -253,6 +257,9 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
 * `name` : (required) the name of the PFT, which must *exactly* match the name in the PEcAn database.
 * `outdir`: (optional) Directory path in which PFT-specific output will be stored during meta-analysis and sensitivity analysis. If not specified (recommended), it will be written into `<outdir>/<pftname>`.
 * `contants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
+* `posterior.files` (Optional) this tag helps to signal write.config functions to use specific posterior/prior files (such as HPDA or MA analysis) for generating samples without needing to access to the bety database.
+
+``
 
 This information is currently used by the following PEcAn workflow function:
 
@@ -266,14 +273,20 @@ Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to 
 ```xml
   <meta.analysis>
     <iter>3000</iter>
-    <random.effects>FALSE</random.effects>
+    <random.effects>
+      <on>FALSE</on>
+      <use_ghs>TRUE</use_ghs>
+    </random.effects>
   </meta.analysis>
+
 ```
 
 Some of the tags that can go in this section are:
 
 * `iter`: [MCMC](http:/en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) (Markov Chain Monte Carlo) chain length, i.e. the total number of posterior samples in the meta-analysis, default is 3000. Smaller numbers will run faster but produce larger errors.
-* `random.effects`: Whether to include random effects (site, treatment) in meta-analysis model. Can be set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). The default value is TRUE.
+* `random.effects`: Settings related to whether to include random effects (site, treatment) in meta-analysis model. 
+- `on`: Default is set to FALSE to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). Can be turned to TRUE for including hierarchical random effects.
+- `use_ghs`: Default is set to TRUE to include greenhouse measurements. Can be set to FALSE to exclude cases where all data is from greenhouse.
 * `update`: Should previous results of meta.analysis and get.traits be re-used. If set to TRUE the meta-analysis and get.trait.data will always be executed. Setting this to FALSE will try and reuse existing results. Future versions will allow for AUTO as well which will try and reuse if the PFT/traits have not changed. The default value is FALSE.
 * `threshold`: threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2.
 
@@ -494,7 +507,7 @@ The `modellauncher` has 2 arguements:
 * `binary` : [required] The full path to the binary modellauncher. Source code for this file can be found in `pecan/contrib/modellauncher`](https://github.com/PecanProject/pecan/tree/develop/contrib/modellauncher).
 * `qsub.extra` : [optional] Additional flags to pass to qsub besides those specified in the `qsub` tag in host. This option can be used to specify that the MPI environment needs to be used and the number of nodes that should be used.
 
-### Advanced features {#xml-advanced}
+## Advanced features {#xml-advanced}
 
 ### `ensemble`: Ensemble Runs {#xml-ensemble}
 

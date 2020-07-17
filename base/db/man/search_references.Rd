@@ -9,12 +9,13 @@ search_references(queries, ...)
 \arguments{
 \item{queries}{Character vector of queries}
 
-\item{...}{Arguments passed on to \code{search_reference_single}
-\describe{
-  \item{query}{Citation string (length 1) to search for DOI}
-  \item{min_score}{Minimum match score. Default (85) is fairly strict.}
-  \item{limit}{Number of results to return}
-}}
+\item{...}{
+  Arguments passed on to \code{\link[=search_reference_single]{search_reference_single}}
+  \describe{
+    \item{\code{query}}{Citation string (length 1) to search for DOI}
+    \item{\code{min_score}}{Minimum match score. Default (85) is fairly strict.}
+    \item{\code{limit}}{Number of results to return}
+  }}
 }
 \value{
 `data.frame` containing crossref information converted to match bety citations table.

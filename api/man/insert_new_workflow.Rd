@@ -5,11 +5,18 @@
 \title{Insert a new workflow into PEcAn database, returning the workflow
 as a \code{data.frame}}
 \usage{
-insert_new_workflow(con, site_id, model_id, start_date, end_date,
+insert_new_workflow(
+  con,
+  site_id,
+  model_id,
+  start_date,
+  end_date,
   user_id = getOption("pecanapi.user_id"),
   hostname = getOption("pecanapi.workflow_hostname"),
-  folder_prefix = getOption("pecanapi.workflow_prefix"), params = NULL,
-  notes = NULL)
+  folder_prefix = getOption("pecanapi.workflow_prefix"),
+  params = NULL,
+  notes = NULL
+)
 }
 \arguments{
 \item{con}{Database connection, as created by \link[RPostgres:dbConnect]{RPostgres::dbConnect}}

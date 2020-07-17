@@ -29,7 +29,7 @@ Docker service. You can check that these values work by browsing to
 \code{docker_hostname:docker_port} (by default, \code{localhost:8000}) in a
 web browser.
 \item \code{docker_rabbitmq_frontend} -- The "frontend rule" for RabbitMQ.
-By default, this is \code{/rabbitmq}, meaning that the RabbitMQ console
+By default, this is \verb{/rabbitmq}, meaning that the RabbitMQ console
 is accessible at \code{localhost:8000/rabbitmq} (adjusted for whatever
 combination of \code{docker_hostname} and \code{docker_port} you are using).
 }
@@ -57,7 +57,7 @@ should be the same on most machines).
 of the \code{pecan.xml}. By default, this is "docker".
 \item \code{workflow_prefix} -- The location and directory prefix for
 storing workflow outputs. By default, this is
-\code{/data/workflows/PEcAn_}. The workflow ID will be appended directly
+\verb{/data/workflows/PEcAn_}. The workflow ID will be appended directly
 to this value.
 }
 }

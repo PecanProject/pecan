@@ -44,7 +44,7 @@
 ##' 
 
 
-download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
+download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, start_date, end_date,
                                          overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
@@ -63,7 +63,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
     PEcAn.logger::logger.severe("Invalid dates: end date occurs before start date")
   } else if (as.numeric(end_date - start_date, units="hours") < 6) { #Done separately to produce a more helpful error message.
     PEcAn.logger::logger.severe("Times not far enough appart for a forecast to fall between them.  Forecasts occur every six hours; make sure start 
-                                and end dates are at least 6 hours appart.")
+                                and end dates are at least 6 hours apart.")
   }
   
   #Set the end forecast date (default is the full 16 days)
@@ -74,7 +74,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   #Round the starting date/time down to the previous block of 6 hours.  Adjust the time frame to match.
   forecast_hour = (lubridate::hour(start_date) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
-  increments = as.integer(as.numeric(end_date - start_date, units = "hours") / 6) #Calculating the number of forecasts between start and end dates.
+  increments = as.integer(as.numeric(end_date - start_date, units = "hours") / 6) #Calculating the number of forecasts between start and end dates 
   increments = increments + ((lubridate::hour(end_date) - lubridate::hour(start_date)) %/% 6) #These calculations are required to use the rnoaa package.
   
   end_hour = sprintf("%04d", ((forecast_hour + (increments * 6)) %% 24) * 100)  #Calculating the starting hour as a string, which is required type to access the 
@@ -87,7 +87,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   end_date = start_date + lubridate::hours(increments * 6)
   
-
+  
   #Bounds date checking
   #NOAA's GEFS database maintains a rolling 12 days of forecast data for access through this function.
   #We do want Sys.Date() here - NOAA makes data unavaliable days at a time, not forecasts at a time.
@@ -136,12 +136,12 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   noaa_data = list()
   
   #Downloading the data here.  It is stored in a matrix, where columns represent time in intervals of 6 hours, and rows represent
-  #each ensemble member.  Each variable getxs its own matrix, which is stored in the list noaa_data.
- 
+  #each ensemble member.  Each variable gets its own matrix, which is stored in the list noaa_data.
   
-   for (i in 1:length(noaa_var_names)) {
-     noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
-   }
+  
+  for (i in 1:length(noaa_var_names)) {
+    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
+  }
   
   #Fills in data with NaNs if there happens to be missing columns.
   for (i in 1:length(noaa_var_names)) {
@@ -207,17 +207,17 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   forecasts = matrix(ncol = length(noaa_data)+ 2, nrow = 0)
   colnames(forecasts) <- c(cf_var_names, "timestamp", "NOAA.member")
   
-  index = matrix(ncol = length(noaa_data), nrow = 64)
+  index = matrix(ncol = length(noaa_data), nrow = length(time))
   for(i in 1:21){
     rm(index)
-    index = matrix(ncol = length(noaa_data), nrow = 64)
+    index = matrix(ncol = length(noaa_data), nrow = length(time))
     for(j in 1:length(noaa_data)){
       index[,j] <- noaa_data[[j]][i,]
       colnames(index) <- c(cf_var_names) 
       index <- as.data.frame(index)
     }
     index$timestamp <- as.POSIXct(time)
-    index$NOAA.member <- rep(i, times = 64)
+    index$NOAA.member <- rep(i, times = length(time))
     forecasts <- rbind(forecasts, index)
   }
   
@@ -226,7 +226,8 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   forecasts$wind_speed <- sqrt(forecasts$eastward_wind^ 2 + forecasts$northward_wind^ 2)
   
   ### Downscale state variables 
-  gefs_hour <- PEcAn.data.atmosphere::downscale_spline_to_hourly(df = forecasts, VarNamesStates = c("air_temperature", "wind_speed", "specific_humidity", "precipitation_flux", "air_pressure"))
+  gefs_hour <- PEcAn.data.atmosphere::downscale_spline_to_hourly(df = forecasts, VarNamesStates = c("air_temperature", "wind_speed", "specific_humidity", "air_pressure"))
+  
   
   ## convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
   nonSW.flux.hrly <- forecasts %>%
@@ -241,8 +242,16 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
     dplyr::group_by_at(c("NOAA.member", "timestamp")) %>% 
     dplyr::summarize(surface_downwelling_shortwave_flux_in_air = mean(surface_downwelling_shortwave_flux_in_air))
   
+  ## Downscale Precipitation Flux 
+    #fills in the hours between the 6hr GEFS with zeros using the timestamp from downscaled Flux
+  precip.hrly <- forecasts %>% 
+    dplyr::select(timestamp, NOAA.member, precipitation_flux) %>% 
+    tidyr::complete(timestamp = nonSW.flux.hrly$timestamp, tidyr::nesting(NOAA.member), fill = list(precipitation_flux = 0)) 
   
-  joined<-  dplyr::inner_join(gefs_hour, nonSW.flux.hrly, by = c("NOAA.member", "timestamp"))
+#join together the 4 different downscaled data frames
+  #checks for errors in downscaled data; removes NA times; replaces erroneous values with 0's or NA's 
+  joined<-  dplyr::inner_join(gefs_hour, nonSW.flux.hrly, by = c("NOAA.member", "timestamp")) 
+  joined<-  dplyr::inner_join(joined, precip.hrly, by = c("NOAA.member", "timestamp"))
   
   joined <- dplyr::inner_join(joined, ShortWave.ds, by = c("NOAA.member", "timestamp")) %>% 
     dplyr::distinct() %>% 

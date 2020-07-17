@@ -1,8 +1,8 @@
 Package: PEcAn.CABLE
 Type: Package
 Title: PEcAn package for integration of the CABLE model
-Version: 1.7.0
-Date: 2018-12-03
+Version: 1.7.1
+Date: 2019-09-05
 Authors@R: c(person("Kaitlin","Ragosta"),
              person("Tony", "Gardella"))
 Author: Kaitlin Ragosta
@@ -15,7 +15,7 @@ Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: CABLE
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

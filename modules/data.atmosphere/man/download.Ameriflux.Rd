@@ -4,8 +4,15 @@
 \alias{download.Ameriflux}
 \title{download.Ameriflux}
 \usage{
-download.Ameriflux(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+download.Ameriflux(
+  sitename,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 

@@ -4,8 +4,7 @@
 \alias{plot_photo}
 \title{plot_photo}
 \usage{
-plot_photo(data, out, curve = c("ACi", "AQ"), tol = 0.05,
-  byLeaf = TRUE)
+plot_photo(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE)
 }
 \description{
 plot_photo
