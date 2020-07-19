@@ -146,7 +146,7 @@ rabbitmq_post_message <- function(uri, queue, message, prefix="", port=15672) {
   auth <- httr::authenticate(rabbitmq$username, rabbitmq$password)
 
   # make sure the queue exists
-  if (!rabbitmq_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
+  if (!rabbitmq_create_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
     return(NA)
   }
 
@@ -184,7 +184,7 @@ rabbitmq_get_message <- function(uri, queue, count=1, prefix="", port=15672) {
   auth <- httr::authenticate(rabbitmq$username, rabbitmq$password)
 
   # make sure the queue exists
-  if (!rabbitmq_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
+  if (!rabbitmq_create_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
     return(NA)
   }
 
