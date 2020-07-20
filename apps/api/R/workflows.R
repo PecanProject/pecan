@@ -135,8 +135,15 @@ getWorkflowDetails <- function(id, res){
 #' @return ID & status of the submitted workflow
 #' @author Tezan Sahu
 #* @post /
-submitWorkflow <- function(req){
+submitWorkflow <- function(req, res){
   if(req$HTTP_CONTENT_TYPE == "application/xml"){
-    return(submit.workflow.xml(req$postBody, req$user))
+    submission_res <- submit.workflow.xml(req$postBody, req$user)
+    if(submission_res$status == "Error"){
+      res$status <- 400
+      return(submission_res)
+    }
   }
+  
+  res$status <- 201
+  return(submission_res)
 }

@@ -65,7 +65,15 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   
   # Post workflow to RabbitMQ
   message <- list(folder = outdir, workflowid = workflow_id)
-  PEcAn.remote::rabbitmq_post(workflowList$host$rabbitmq$uri, "pecan", message)
+  res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
+  
+  if(res$routed){
+    return(list(workflow_id = workflow_id, status = "Submitted successfully"))
+  }
+  else{
+    return(list(status = "Error", message = "Could not submit to RabbitMQ"))
+  }
+  
   
 }
 
@@ -96,7 +104,7 @@ insert.workflow <- function(workflowList){
     stringsAsFactors = FALSE
   )
   
-  if(! is.na(userDetails$userid)){
+  if(! is.na(workflowList$info$userid)){
     workflow_df <- workflow_df %>% tibble::add_column("user_id" = c(bit64::as.integer64(workflowList$info$userid)))
   }
   

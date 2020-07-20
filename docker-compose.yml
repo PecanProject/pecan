@@ -159,6 +159,9 @@ services:
     restart: unless-stopped
     networks:
       - pecan
+    depends_on:
+      - rabbitmq
+      - postgres
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - FQDN=${PECAN_FQDN:-docker}
