@@ -5,7 +5,7 @@
 \title{Send a message to RabbitMQ rest API. It will check the resulting status code
 and print a message in case something goes wrong.}
 \usage{
-rabbitmq_send_message(url, auth, body, action = "POST")
+rabbitmq_send_message(url, auth, body, action = "POST", silent = FALSE)
 }
 \arguments{
 \item{url}{the full endpoint rest url}
