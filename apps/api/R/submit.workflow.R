@@ -16,8 +16,7 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
       dbname = "bety",
       user = "bety",
       password = "bety", 
-      driver = "PostgreSQL",
-      write = FALSE
+      driver = "PostgreSQL"
     )
   )
   
@@ -53,15 +52,16 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   insert.attribute(workflowList)
   
   # Fix the output directory
-  outdir <- paste0("data/workflows/PEcAn_", workflow_id)
+  outdir <- paste0("/data/workflows/PEcAn_", workflow_id)
   workflowList$outdir <- outdir
   
   # Create output diretory
-  dir.create(paste0("/", outdir), recursive=TRUE)
+  dir.create(outdir, recursive=TRUE)
   
   # Convert settings list to XML & save it into outdir
   workflowXml <- PEcAn.settings::listToXml(workflowList, "pecan")
-  XML::saveXML(workflowXml, paste0("/", outdir, "/pecan.xml"))
+  XML::saveXML(workflowXml, paste0(outdir, "/pecan.xml"))
+  res <- file.copy("/work/workflow.R", outdir)
   
   # Post workflow to RabbitMQ
   message <- list(folder = outdir, workflowid = workflow_id)
@@ -96,7 +96,7 @@ insert.workflow <- function(workflowList){
     "site_id" = c(bit64::as.integer64(workflowList$run$site$id)),
     "model_id" = c(bit64::as.integer64(model_id)),
     "folder" = "temp_dir",
-    "hostname" = c(workflowList$host$name),
+    "hostname" = c("docker"),
     "start_date" = c(as.POSIXct(workflowList$run$start.date)),
     "end_date" = c(as.POSIXct(workflowList$run$end.date)),
     "advanced_edit" = c(FALSE),

@@ -31,5 +31,3 @@ WORKDIR /api/R
 CMD Rscript entrypoint.R
 
 COPY ./ /api
-
-
