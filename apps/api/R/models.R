@@ -32,8 +32,8 @@ getModel <- function(model_id, res){
 
 #########################################################################
 
-#' Search for PEcAn sites containing wildcards for filtering
-#' @param name Model name search string (character)
+#' Search for PEcAn model(s) containing wildcards for filtering
+#' @param model_name Model name search string (character)
 #' @param revision Model version/revision search string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
 #' @return Model subset matching the model search string

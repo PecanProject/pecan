@@ -33,6 +33,8 @@ tags:
     description: Everything about PEcAn models
   - name: sites
     description: Everything about PEcAn sites
+  - name: pfts
+    description: Everything about PEcAn PFTs (Plant Functional Types)
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -261,6 +263,100 @@ paths:
         '404':
           description: Site(s) not found
   
+  /api/pfts/{pft_id}:
+    get:
+      tags:
+        - pfts
+      summary: Details of a PFT
+      parameters:
+        - in: path
+          name: pft_id
+          description: PEcAn PFT ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PFT Details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PFT'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: PFT not found
+  
+  /api/pfts/:
+    get:
+      tags:
+        - pfts
+      summary: Search for PFTs using search pattern matching
+      parameters:
+        - in: query
+          name: pft_name
+          description: Search string for PFT name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: pft_type
+          description: PFT Type
+          required: false
+          schema:
+            type: string
+            default: ""
+            enum:
+              - "plant"
+              - "cultivar"
+              - ""
+        - in: query
+          name: model_type
+          description: Search string for Model type
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of PFTs matching search pattern 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pfts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pft_id:
+                          type: string
+                        pft_name:
+                          type: string
+                        pft_type:
+                          type: string
+                        model_type:
+                          type: string
+                        
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site(s) not found
+          
   /api/workflows/:
     get:
       tags:
@@ -618,6 +714,20 @@ components:
           type: number
         time_zone:
           type: string
+    
+    PFT:
+      properties:
+        pft_id:
+          type: string
+        pft_name:
+          type: string
+        pft_type:
+          type: string
+        definition:
+          type: string
+        model_type:
+          type: string
+    
     Workflow:
       properties:
         id:
