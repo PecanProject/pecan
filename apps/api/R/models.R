@@ -19,13 +19,17 @@ getModel <- function(model_id, res){
   
   qry_res <- Model %>% collect()
   
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0) {
+    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Model not found"))
   }
   else {
+    inputs_req <- tbl(dbcon, "modeltypes_formats") %>% 
+      filter(modeltype_id == bit64::as.integer64(qry_res$modeltype_id)) %>% 
+      select(input=tag, required) %>% collect()
+    qry_res <- qry_res %>% tibble::add_column(inputs = gsub('(\")', '"', jsonlite::toJSON(inputs_req)))
+    PEcAn.DB::db.close(dbcon)
     return(qry_res)
   }
 }

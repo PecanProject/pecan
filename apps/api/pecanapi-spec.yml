@@ -567,7 +567,7 @@ paths:
         - in: query
           name: workflow_id
           description: ID of the PEcAn Workflow
-          required: true
+          required: false
           schema:
             type: string
         - in: query
@@ -662,6 +662,15 @@ components:
           type: string
         model_type:
           type: string
+        inputs:
+          type: array
+          items:
+            type: object
+            properties:
+              input:
+                type: string
+              required:
+                type: boolean
         
     Run:
       properties:
@@ -762,7 +771,8 @@ components:
             notes:
               type: string
             runs:
-              type: string
+              type: integer
+              example: 1
             pecan_edit:
               type: string
             status:

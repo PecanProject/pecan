@@ -7,7 +7,7 @@ library(dplyr)
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /
-getRuns <- function(req, workflow_id, offset=0, limit=50, res){
+getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
@@ -20,8 +20,12 @@ getRuns <- function(req, workflow_id, offset=0, limit=50, res){
   
   Runs <- tbl(dbcon, "ensembles") %>%
     select(runtype, ensemble_id=id, workflow_id) %>%
-    full_join(Runs, by="ensemble_id") %>%
-    filter(workflow_id == !!workflow_id)
+    full_join(Runs, by="ensemble_id") 
+  
+  if(! is.null(workflow_id)){
+    Runs <- Runs %>%
+      filter(workflow_id == !!workflow_id)
+  }
   
   qry_res <- Runs %>% 
     arrange(id) %>%
