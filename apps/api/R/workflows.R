@@ -136,14 +136,18 @@ getWorkflowDetails <- function(id, res){
 #' @author Tezan Sahu
 #* @post /
 submitWorkflow <- function(req, res){
+  print(req$HTTP_CONTENT_TYPE)
   if(req$HTTP_CONTENT_TYPE == "application/xml"){
     submission_res <- submit.workflow.xml(req$postBody, req$user)
     if(submission_res$status == "Error"){
       res$status <- 400
       return(submission_res)
     }
+    res$status <- 201
+    return(submission_res)
   }
-  
-  res$status <- 201
-  return(submission_res)
+  else{
+    res$status <- 415
+    return(paste("Unsupported request content type:", req$HTTP_CONTENT_TYPE))
+  }
 }

@@ -15,7 +15,8 @@ EXPOSE 8000
 # --------------------------------------------------------------------------
 ENV AUTH_REQ="yes" \
     HOST_ONLY="no" \
-    PGHOST="postgres"
+    PGHOST="postgres"\
+    RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F"
     
 # COMMAND TO RUN
 RUN   apt-get update \
