@@ -68,7 +68,7 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
   
   if(res$routed){
-    return(list(workflow_id = workflow_id, status = "Submitted successfully"))
+    return(list(workflow_id = as.character(workflow_id), status = "Submitted successfully"))
   }
   else{
     return(list(status = "Error", message = "Could not submit to RabbitMQ"))

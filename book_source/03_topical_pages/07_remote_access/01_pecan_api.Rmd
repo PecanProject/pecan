@@ -58,10 +58,12 @@ _* indicates that the particular API is under development & may not be ready for
 #### R Packages
 * [httr](https://cran.r-project.org/web/packages/httr/index.html)
 * [jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html)
+* [xml2](https://cran.r-project.org/web/packages/xml2/index.html)
 
 #### Python Packages
 * [requests](https://requests.readthedocs.io/en/master/)
 * [json](https://docs.python.org/3/library/json.html)
+* [xml](https://docs.python.org/3/library/xml.html)
 
 ### {-}
 
@@ -426,6 +428,53 @@ print(json.dumps(response.json(), indent=2))
 ##     ...
 ##   ],
 ##   "count": 5
+## }
+```
+
+### {-}
+
+### `POST /api/workflows/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Submit a workflow in XML format for execution
+xmlFile <- "pecan/tests/api.sipnet.xml"
+xml_string <- paste0(xml2::read_xml(xmlFile))
+res <- httr::POST(
+         "http://localhost:8000/api/workflows/",
+         httr::authenticate("carya", "illinois"),
+         httr::content_type("application/xml"),
+         body = xml_string
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $workflow_id
+## [1] 99000000001
+
+## $status
+## [1] "Submitted successfully"
+```
+
+#### Python Snippet
+
+```python
+# Submit a workflow in XML format for execution
+xml_file = "pecan/tests/api.sipnet.xml"
+root = xml.etree.ElementTree.parse(xml_file).getroot()
+response = requests.post(
+             "http://localhost:8000/api/workflows/",
+             auth=HTTPBasicAuth('carya', 'illinois'),
+             headers = {'Content-Type': 'application/xml'},
+             data = xml.etree.ElementTree.tostring(root, encoding='unicode', method='xml')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "workflow_id": "99000000001",
+##   "status": "Submitted successfully"
 ## }
 ```
 

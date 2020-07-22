@@ -136,7 +136,6 @@ getWorkflowDetails <- function(id, res){
 #' @author Tezan Sahu
 #* @post /
 submitWorkflow <- function(req, res){
-  print(req$HTTP_CONTENT_TYPE)
   if(req$HTTP_CONTENT_TYPE == "application/xml"){
     submission_res <- submit.workflow.xml(req$postBody, req$user)
     if(submission_res$status == "Error"){
