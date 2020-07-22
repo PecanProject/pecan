@@ -15,6 +15,8 @@ rabbitmq_send_message(url, auth, body, action = "POST", silent = FALSE)
 \item{body}{the actual body to send, this is a rabbitmq message.}
 
 \item{action}{the rest action to perform}
+
+\item{silent}{boolean to indicate if logging should be performed.}
 }
 \value{
 will return NA if message failed, otherwise it will either

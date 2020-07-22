@@ -51,6 +51,7 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
 #' @param auth authentication for rabbitmq in httr:auth
 #' @param body the actual body to send, this is a rabbitmq message.
 #' @param action the rest action to perform
+#' @param silent boolean to indicate if logging should be performed.
 #' @return will return NA if message failed, otherwise it will either
 #'    return the resulting message, or if not availble an empty string "".
 rabbitmq_send_message <- function(url, auth, body, action = "POST", silent = FALSE) {
