@@ -39,6 +39,10 @@ The currently implemented functionalities include:
   * `GET /api/sites/`: Search for site(s) using search pattern based on site name
   * `GET /api/sites/{site_id}`: Fetch the details of specific site
 
+* __PFTs:__
+  * `GET /api/pfts/`: Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
+  * `GET /api/pfts/{pft_id}`: Fetch the details of specific PFT
+
 * __Workflows:__
   * `GET /api/workflows/`: Retrieve a list of PEcAn workflows
   * `POST /api/workflows/` *: Submit a new PEcAn workflow
@@ -361,6 +365,103 @@ print(json.dumps(response.json(), indent=2))
 ##     "sand_pct": 42.52,
 ##     "clay_pct": 20.17,
 ##     "time_zone": "America/Chicago"
+##   }
+## ]
+```
+
+### {-}
+
+### `GET /api/pfts/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
+res <- httr::GET(
+         "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $pfts
+##   model_type  pft_id          pft_name                       pft_type
+##   <chr>       <S3: integer64> <chr>                          <chr>   
+## 1 SIPNET              41      temperate.deciduous            plant   
+## 2 SIPNET      1000000105      temperate.deciduous.IF         plant   
+## 3 SIPNET      1000000107      temperate.deciduous_SDA        plant   
+## 4 SIPNET      1000000115      temperate.deciduous.ALL        plant   
+## 5 SIPNET      1000000118      temperate.deciduous.ALL.NORMAL plant   
+## 6 SIPNET      2000000017      tundra.deciduous.NGEE_Arctic   plant   
+## 7 SIPNET      2000000045      temperate.broadleaf.deciduous  plant
+
+## $count
+## [1] 7
+```
+
+#### Python Snippet
+
+```python
+# Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
+response = requests.get(
+             "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "pfts": [
+##     {
+##       "model_type": "SIPNET",
+##       "pft_id": 41,
+##       "pft_name": "temperate.deciduous",
+##       "pft_type": "plant"
+##     },
+##     ...
+##   ],
+##   "count": 7
+## }
+```
+
+### {-}
+
+### `GET /api/pfts/{pft_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Fetch the details of PEcAn PFT with id = 2000000045
+res <- httr::GET(
+         "http://localhost:8000/api/pfts/2000000045",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+##  model_type pft_id          pft_name                      definition                                                   pft_type
+##  <chr>      <S3: integer64> <chr>                         <chr>                                                        <chr>   
+## 1 SIPNET    2000000045      temperate.broadleaf.deciduous SIPNET Temperate Deciduous PFT with priors on all parameters plant   
+```
+
+#### Python Snippet
+
+```python
+# Fetch the details of PEcAn PFT with id = 2000000045
+response = requests.get(
+             "http://localhost:8000/api/pfts/2000000045",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## [
+##   {
+##     "model_type": "SIPNET",
+##     "pft_id": 2000000045,
+##     "pft_name": "temperate.broadleaf.deciduous",
+##     "definition": "SIPNET Temperate Deciduous PFT with priors on all parameters",
+##     "pft_type": "plant"
 ##   }
 ## ]
 ```
