@@ -80,7 +80,7 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 
 #################################################################################################
 
-#' Get the of the run specified by the id
+#' Get the details of the run specified by the id
 #' @param id Run id (character)
 #' @return Details of requested run
 #' @author Tezan Sahu
@@ -111,6 +111,53 @@ getRunDetails <- function(id, res){
     for(colname in colnames(qry_res)){
       response[colname] <- qry_res[colname]
     }
+    
+    # If outputs exist on the host, add them to the response
+    outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/out/", id)
+    if(dir.exists(outdir)){
+      response$outputs <- getRunOutputs(outdir)
+    }
+    
     return(response)
   }
+}
+
+#################################################################################################
+
+#' Get the outputs of a run (if the files exist on the host)
+#' @param outdir Run output directory (character)
+#' @return Output details of the run
+#' @author Tezan Sahu
+
+getRunOutputs <- function(outdir){
+  outputs <- list()
+  if(file.exists(paste0(outdir, "/logfile.txt"))){
+    outputs$logfile <- "logfile.txt"
+  }
+  
+  if(file.exists(paste0(outdir, "/README.txt"))){
+    outputs$info <- "README.txt"
+  }
+  
+  year_files <- list.files(outdir, pattern="*.nc$")
+  years <- stringr::str_replace_all(year_files, ".nc", "")
+  years_data <- c()
+  outputs$years <- list()
+  for(year in years){
+    var_lines <- readLines(paste0(outdir, "/", year, ".nc.var"))
+    keys <- stringr::word(var_lines, 1)
+    values <- stringr::word(var_lines, 2, -1)
+    vars <- list()
+    for(i in 1:length(keys)){
+      vars[keys[i]] <- values[i]
+    }
+    years_data <- c(years_data, list(list(
+      data = paste0(year, ".nc"),
+      variables = vars
+    )))
+  }
+  for(i in 1:length(years)){
+    outputs$years[years[i]] <- years_data[i]
+  }
+  return(outputs)
 }
