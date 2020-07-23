@@ -90,7 +90,7 @@ getRunDetails <- function(id, res){
   dbcon <- PEcAn.DB::betyConnect()
   
   Runs <- tbl(dbcon, "runs") %>%
-    select(-outdir, -outprefix, -setting)
+    select(-outdir, -outprefix, -setting, -created_at, -updated_at)
   
   Runs <- tbl(dbcon, "ensembles") %>%
     select(runtype, ensemble_id=id, workflow_id) %>%
@@ -106,6 +106,11 @@ getRunDetails <- function(id, res){
     return(list(error="Run with specified ID was not found"))
   }
   else {
-    return(qry_res)
+    # Convert the response from tibble to list
+    response <- list()
+    for(colname in colnames(qry_res)){
+      response[colname] <- qry_res[colname]
+    }
+    return(response)
   }
 }

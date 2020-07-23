@@ -25,12 +25,18 @@ getModel <- function(model_id, res){
     return(list(error="Model not found"))
   }
   else {
+    # Convert the response from tibble to list
+    response <- list()
+    for(colname in colnames(qry_res)){
+      response[colname] <- qry_res[colname]
+    }
+    
     inputs_req <- tbl(dbcon, "modeltypes_formats") %>% 
       filter(modeltype_id == bit64::as.integer64(qry_res$modeltype_id)) %>% 
       select(input=tag, required) %>% collect()
-    qry_res <- qry_res %>% tibble::add_column(inputs = gsub('(\")', '"', jsonlite::toJSON(inputs_req)))
+    response$inputs <- jsonlite::fromJSON(gsub('(\")', '"', jsonlite::toJSON(inputs_req)))
     PEcAn.DB::db.close(dbcon)
-    return(qry_res)
+    return(response)
   }
 }
 

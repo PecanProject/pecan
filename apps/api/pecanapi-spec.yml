@@ -692,6 +692,10 @@ components:
           type: string
         finish_time:
           type: string
+        started_at:
+          type: string
+        finished_at:
+          type: string
     
     Site:
       properties:
