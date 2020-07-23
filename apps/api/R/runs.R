@@ -81,11 +81,11 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 #################################################################################################
 
 #' Get the details of the run specified by the id
-#' @param id Run id (character)
+#' @param run_id Run id (character)
 #' @return Details of requested run
 #' @author Tezan Sahu
-#* @get /<id>
-getRunDetails <- function(id, res){
+#* @get /<run_id>
+getRunDetails <- function(run_id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   
@@ -95,7 +95,7 @@ getRunDetails <- function(id, res){
   Runs <- tbl(dbcon, "ensembles") %>%
     select(runtype, ensemble_id=id, workflow_id) %>%
     full_join(Runs, by="ensemble_id") %>%
-    filter(id == !!id)
+    filter(id == !!run_id)
   
   qry_res <- Runs %>% collect()
   
@@ -113,13 +113,52 @@ getRunDetails <- function(id, res){
     }
     
     # If outputs exist on the host, add them to the response
-    outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/out/", id)
+    outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/out/", run_id)
     if(dir.exists(outdir)){
       response$outputs <- getRunOutputs(outdir)
     }
     
     return(response)
   }
+}
+
+#################################################################################################
+
+#' Plot the results obtained from a run
+#' @param run_id Run id (character)
+#' @param year the year this data is for
+#' @param yvar the variable to plot along the y-axis.
+#' @param xvar the variable to plot along the x-axis, by default time is used.
+#' @param width the width of the image generated, default is 800 pixels.
+#' @param height the height of the image generated, default is 600 pixels.
+#' @return List of runs (belonging to a particuar workflow)
+#' @author Tezan Sahu
+#* @get /<run_id>/graph/<year>/<y_var>
+#* @png
+plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600, res){
+  # Get workflow_id for the run
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Run <- tbl(dbcon, "runs") %>%
+    filter(id == !!run_id)
+  
+  workflow_id <- tbl(dbcon, "ensembles") %>%
+    select(ensemble_id=id, workflow_id) %>%
+    full_join(Run, by="ensemble_id")  %>%
+    filter(id == !!run_id) %>%
+    pull(workflow_id)
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  # Check if the data file exists on the host
+  datafile <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", year, ".nc")
+  if(! file.exists(datafile)){
+    res$status <- 404
+    return()
+  }
+  
+  # Plot & return
+  return(PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, width, height, year=year))
 }
 
 #################################################################################################

@@ -534,21 +534,21 @@ paths:
           description: Workflow with specified ID was not found 
 
 
-  /api/runs/{id}:
+  /api/runs/{run_id}:
     get:
       tags:
         - runs
       summary: Get the details of a specified PEcAn run
       parameters:
         - in: path
-          name: id
+          name: run_id
           description: ID of the PEcAn run
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Details about the requested run within the requested PEcAn workflow
+          description: Details about the requested run 
           content:
             application/json:
               schema:
@@ -560,7 +560,65 @@ paths:
         '404':
           description: Workflow with specified ID was not found
                   
-
+  /api/runs/{run_id}/graph/{year}/{y_var}:
+    get:
+      tags:
+        - runs
+      summary: Plot the desired variables for a run output
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: year
+          description: Year the plot is for
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: y_var
+          description: Variable to plot along the Y-axis
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: x_var
+          description: Variable to plot along the X-axis
+          required: true
+          schema:
+            type: string
+            default: time
+        - in: query
+          name: width
+          description: Width of the image generated
+          required: true
+          schema:
+            type: string
+            default: 800
+        - in: query
+          name: height
+          description: Height of the image generated
+          required: true
+          schema:
+            type: string
+            default: 600
+      responses:
+        '200':
+          description: Plot of the desired output variables obtained from a run 
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Run data not found
 #####################################################################################################################
 ###################################################### Components ###################################################
 #####################################################################################################################

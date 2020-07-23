@@ -45,12 +45,13 @@ The currently implemented functionalities include:
 
 * __Workflows:__
   * `GET /api/workflows/`: Retrieve a list of PEcAn workflows
-  * `POST /api/workflows/` *: Submit a new PEcAn workflow
+  * `POST /api/workflows/`: Submit a new PEcAn workflow
   * `GET /api/workflows/{id}`: Obtain the details of a particular PEcAn workflow by supplying its ID
 
 * __Runs:__
-  * `GET /api/runs`:  Get the list of all the runs for a specified PEcAn Workflow
-  * `GET /api/runs/{id}`: Fetch the details of a specified PEcAn run
+  * `GET /api/runs`:  Get the list of all the runs
+  * `GET /api/runs/{run_id}`: Fetch the details of a specified PEcAn run
+  * `GET /api/runs/{run_id}/graph/{year}/{y_var}`: Plot the graph of desired output variables for a run
 
 _* indicates that the particular API is under development & may not be ready for use_
 
@@ -812,7 +813,7 @@ print(json.dumps(response.json(), indent=2))
 
 ### {-}
 
-### `GET /api/runs/{id}` {.tabset .tabset-pills}
+### `GET /api/runs/{run_id}` {.tabset .tabset-pills}
 
 #### R Snippet
 
@@ -917,5 +918,39 @@ print(json.dumps(response.json(), indent=2))
 ##   }
 ## }
 ```
+
+### {-}
+
+### `GET /api/runs/{run_id}/graph/{year}/{y_var}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.png")
+```
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics(rep("figures/run_output_plot.png"))
+```
+
+#### Python Snippet
+
+```python
+# Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.png", "wb") as file:
+  file.write(response.content)
+```
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics(rep("figures/run_output_plot.png"))
+```
+
 
 ### {-}
