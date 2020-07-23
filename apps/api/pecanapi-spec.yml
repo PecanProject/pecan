@@ -407,7 +407,7 @@ paths:
                   workflows:
                     type: array
                     items: 
-                      $ref: '#/components/schemas/Workflow'
+                      $ref: '#/components/schemas/Workflow_GET'
                   count:
                     type: integer
                   next_page:
@@ -429,96 +429,13 @@ paths:
       requestBody:
         required: true
         content:
-          # application/json:
-          #   schema:
-          #     $ref: '#/components/schemas/Workflow'
           application/xml:
             schema:
-              xml:
-                name: pecan
+              $ref: '#/components/schemas/Workflow_POST'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow_POST'
               
-              type: object
-              properties:
-                pfts:
-                  type: object
-                  properties:
-                    pft:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                          example: temperate.coniferous
-                meta.analysis:
-                  type: object
-                  properties:
-                    iter:
-                      type: integer
-                      example: 100
-                    random.effects:
-                      type: boolean
-                      example: "FALSE"
-                    threshold:
-                      type: number
-                      example: 1.2
-                    update:
-                      type: string
-                      example: AUTO
-                ensemble:
-                  type: object
-                  properties:
-                    variable:
-                      type: string
-                      example: NPP
-                sensitivity.analysis:
-                  type: object
-                  properties:
-                    quantiles:
-                      type: object
-                      properties:
-                        sigma:
-                          type: array
-                          items:
-                            type: integer
-                          example: [-1, 1]
-                    variable:
-                      type: string
-                      example: NPP
-                model:
-                  type: object
-                  properties:
-                    "type":
-                      type: string
-                      example: SIPNET
-                    revision:
-                      type: string
-                      example: r136
-                run:
-                  type: object
-                  properties:
-                    site:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          example: 772
-                    inputs:
-                      type: object
-                      properties:
-                        met:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                              example: "99000000003"
-                    start.date:
-                      type: string
-                      example: "2002-01-01 00:00:00"
-                    end.date:
-                      type: string
-                      example: "2002-12-31 00:00:00"
-                    dbfiles:
-                      type: string
-                      example: pecan/dbfiles
       responses:
         '201':
           description: Submitted workflow successfully    
@@ -546,7 +463,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Workflow'
+                $ref: '#/components/schemas/Workflow_GET'
         '401':
           description: Authentication required
         '403':
@@ -696,6 +613,27 @@ components:
           type: string
         finished_at:
           type: string
+        outputs:
+          type: object
+          properties:
+            logfile:
+              type: string
+            info:
+              type: string
+            years:
+              type: object
+              properties:
+                "<year>":
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                    variables:
+                      type: object
+                      properties:
+                        "<var_name>":
+                          type: string
+                  
     
     Site:
       properties:
@@ -741,7 +679,7 @@ components:
         model_type:
           type: string
     
-    Workflow:
+    Workflow_GET:
       properties:
         id:
           type: string
@@ -785,6 +723,92 @@ components:
               type: string
             input_poolinitcond:
               type: string
+    
+    Workflow_POST:
+      type: object
+      xml:
+        name: pecan
+      properties:
+        pfts:
+          type: object
+          properties:
+            pft:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: temperate.coniferous
+        meta.analysis:
+          type: object
+          properties:
+            iter:
+              type: integer
+              example: 100
+            random.effects:
+              type: boolean
+              example: "FALSE"
+            threshold:
+              type: number
+              example: 1.2
+            update:
+              type: string
+              example: AUTO
+        ensemble:
+          type: object
+          properties:
+            variable:
+              type: string
+              example: NPP
+        sensitivity.analysis:
+          type: object
+          properties:
+            quantiles:
+              type: object
+              properties:
+                sigma:
+                  type: array
+                  items:
+                    type: integer
+                  example: [-1, 1]
+            variable:
+              type: string
+              example: NPP
+        model:
+          type: object
+          properties:
+            "type":
+              type: string
+              example: SIPNET
+            revision:
+              type: string
+              example: r136
+        run:
+          type: object
+          properties:
+            site:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 772
+            inputs:
+              type: object
+              properties:
+                met:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "99000000003"
+            start.date:
+              type: string
+              example: "2002-01-01 00:00:00"
+            end.date:
+              type: string
+              example: "2002-12-31 00:00:00"
+            dbfiles:
+              type: string
+              example: pecan/dbfiles
   securitySchemes:
     basicAuth:
       type: http
