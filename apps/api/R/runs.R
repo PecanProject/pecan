@@ -134,7 +134,8 @@ getRunDetails <- function(run_id, res){
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /<run_id>/graph/<year>/<y_var>
-#* @png
+#* @serializer contentType list(type='image/png')
+
 plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600, res){
   # Get workflow_id for the run
   dbcon <- PEcAn.DB::betyConnect()
@@ -158,7 +159,11 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
   }
   
   # Plot & return
-  return(PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, width, height, year=year))
+  filename <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/temp", stringi::stri_rand_strings(1, 10), ".png")
+  PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), year=year, filename=filename)
+  img_bin <- readBin(filename,'raw',n = file.info(filename)$size)
+  file.remove(filename)
+  return(img_bin)
 }
 
 #################################################################################################
