@@ -12,12 +12,12 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   
   # Fix details about the database
   workflowList$database <- list(bety = PEcAn.DB::get_postgres_envvars(
-      host = "localhost",
-      dbname = "bety",
-      user = "bety",
-      password = "bety", 
-      driver = "PostgreSQL"
-    )
+    host = "localhost",
+    dbname = "bety",
+    user = "bety",
+    password = "bety", 
+    driver = "PostgreSQL"
+  )
   )
   
   # Fix RabbitMQ details
@@ -52,11 +52,17 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   insert.attribute(workflowList)
   
   # Fix the output directory
-  outdir <- paste0("/data/workflows/PEcAn_", workflow_id)
+  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
   workflowList$outdir <- outdir
   
   # Create output diretory
   dir.create(outdir, recursive=TRUE)
+  
+  # Modify the `dbfiles` path & create the directory if needed
+  workflowList$run$dbfiles <- Sys.getenv("DBFILES_DIR", "/data/dbfiles/")
+  if(! dir.exists(workflowList$run$dbfiles)){
+    dir.create(workflowList$run$dbfiles, recursive = TRUE)
+  }
   
   # Convert settings list to XML & save it into outdir
   workflowXml <- PEcAn.settings::listToXml(workflowList, "pecan")
@@ -175,6 +181,6 @@ insert.attribute <- function(workflowList){
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
   res <- DBI::dbSendStatement(dbcon, 
-                       "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
-                       list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
+                              "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
+                              list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
 }

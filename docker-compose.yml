@@ -330,6 +330,8 @@ services:
       - HOST_ONLY=${HOST_ONLY:-FALSE}
       - AUTH_REQ=${AUTH_REQ:-TRUE}
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - DATA_DIR=${DATA_DIR:-/data/}
+      - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"

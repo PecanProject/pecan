@@ -17,14 +17,6 @@
     <variable>NPP</variable>
   </ensemble>
 
-  <sensitivity.analysis>
-    <quantiles>
-      <sigma>-1</sigma>
-      <sigma>1</sigma>
-    </quantiles>
-    <variable>NPP</variable>
-  </sensitivity.analysis>
-
   <model>
     <type>SIPNET</type>
     <revision>r136</revision>
