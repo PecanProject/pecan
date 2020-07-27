@@ -51,9 +51,10 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
 #' @param auth authentication for rabbitmq in httr:auth
 #' @param body the actual body to send, this is a rabbitmq message.
 #' @param action the rest action to perform
+#' @param silent boolean to indicate if logging should be performed.
 #' @return will return NA if message failed, otherwise it will either
 #'    return the resulting message, or if not availble an empty string "".
-rabbitmq_send_message <- function(url, auth, body, action="POST") {
+rabbitmq_send_message <- function(url, auth, body, action = "POST", silent = FALSE) {
   if (action == "GET") {
     if (is.na(body)) {
       result <- httr::GET(url, auth)
@@ -67,7 +68,9 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
   } else if (action == "POST") {
     result <- httr::POST(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
   } else {
-    PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
+    if (!silent) {
+      PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
+    }
     return(NA)
   }
 
@@ -82,11 +85,13 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
     PEcAn.logger::logger.error("error sending message to rabbitmq, make sure username/password is correct")
     return(NA)
   } else {
-    output <- httr::content(result)
-    if ("reason" %in% names(output)) {
-      PEcAn.logger::logger.error(paste0("error sending message to rabbitmq [", result$status_code, "], ", output$reason))
-    } else {
-      PEcAn.logger::logger.error("error sending message to rabbitmq")
+    if (!silent) {
+      output <- httr::content(result)
+      if ("reason" %in% names(output)) {
+        PEcAn.logger::logger.error(paste0("error sending message to rabbitmq [", result$status_code, "], ", output$reason))
+      } else {
+        PEcAn.logger::logger.error("error sending message to rabbitmq")
+      }
     }
     return(NA)
   }
@@ -109,17 +114,18 @@ rabbitmq_create_queue <- function(url, auth, vhost, queue, auto_delete = FALSE, 
   resturl <- paste0(url, "api/queues/", vhost, "/", queue)
 
   # check if queue exists
-  result <- rabbitmq_send_message(resturl, auth, NA, "GET")
+  result <- rabbitmq_send_message(resturl, auth, NA, "GET", silent = TRUE)
   if (length(result) > 1 || !is.na(result)) {
     return(TRUE)
   }
 
   # create the queue
+  PEcAn.logger::logger.info("creating queue", queue, "in rabbitmq")
   body <- list(
     auto_delete = auto_delete,
     durable = durable
   )
-  result <- rabbitmq_send_message(url, auth, body, "PUT")
+  result <- rabbitmq_send_message(resturl, auth, body, "PUT")
   return(length(result) > 1 || !is.na(result))
 }
 
@@ -199,6 +205,10 @@ rabbitmq_get_message <- function(uri, queue, count=1, prefix="", port=15672) {
   if (length(result) == 1 && is.na(result)) {
     return(NA)
   } else {
-    return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
+    if (length(result) == 1 && result == "") {
+      return(c())
+    } else {
+      return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
+    }
   }
 }
