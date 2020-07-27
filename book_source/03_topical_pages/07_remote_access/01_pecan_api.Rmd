@@ -28,30 +28,30 @@ __For the most up-to-date documentation, you can visit the [PEcAn API Documentat
 The currently implemented functionalities include:
 
 * __General:__
-  * `GET /api/ping`: Ping the server to check if it is live
-  * `GET /api/status`: Obtain general information about PEcAn & the details of the database host
+  * [`GET /api/ping`](#get-apiping): Ping the server to check if it is live
+  * [`GET /api/status`](#get-apistatus): Obtain general information about PEcAn & the details of the database host
 
 * __Models:__
-  * `GET /api/models/`: Search for model(s) using search pattern based on model name & revision
-  * `GET /api/models/{model_id}`: Fetch the details of specific model
+  * [`GET /api/models/`](#get-apimodels): Search for model(s) using search pattern based on model name & revision
+  * [`GET /api/models/{model_id}`](#get-apimodelsmodel_id): Fetch the details of specific model
 
 * __Sites:__
-  * `GET /api/sites/`: Search for site(s) using search pattern based on site name
-  * `GET /api/sites/{site_id}`: Fetch the details of specific site
+  * [`GET /api/sites/`](#get-apisites): Search for site(s) using search pattern based on site name
+  * [`GET /api/sites/{site_id}`](#get-apisitessite_id): Fetch the details of specific site
 
 * __PFTs:__
-  * `GET /api/pfts/`: Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
-  * `GET /api/pfts/{pft_id}`: Fetch the details of specific PFT
+  * [`GET /api/pfts/`](#get-apipfts): Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
+  * [`GET /api/pfts/{pft_id}`](#get-apipftspft_id): Fetch the details of specific PFT
 
 * __Workflows:__
-  * `GET /api/workflows/`: Retrieve a list of PEcAn workflows
-  * `POST /api/workflows/`: Submit a new PEcAn workflow
-  * `GET /api/workflows/{id}`: Obtain the details of a particular PEcAn workflow by supplying its ID
+  * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
+  * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
+  * [`GET /api/workflows/{id}`](#get-apiworkflowsid): Obtain the details of a particular PEcAn workflow by supplying its ID
 
 * __Runs:__
-  * `GET /api/runs`:  Get the list of all the runs
-  * `GET /api/runs/{run_id}`: Fetch the details of a specified PEcAn run
-  * `GET /api/runs/{run_id}/graph/{year}/{y_var}`: Plot the graph of desired output variables for a run
+  * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
+  * [`GET /api/runs/{run_id}`](#get-apirunsrun_id): Fetch the details of a specified PEcAn run
+  * [`GET /api/runs/{run_id}/graph/{year}/{y_var}`](#get-apirunsrun_idgraphyeary_var): Plot the graph of desired output variables for a run
 
 _* indicates that the particular API is under development & may not be ready for use_
 
@@ -934,7 +934,7 @@ res <- httr::GET(
 writeBin(res$content, "test.png")
 ```
 ```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/run_output_plot.png"))
+knitr::include_graphics(rep("../../figures/run_output_plot.png"))
 ```
 
 #### Python Snippet
@@ -949,7 +949,7 @@ with open("test.png", "wb") as file:
   file.write(response.content)
 ```
 ```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/run_output_plot.png"))
+knitr::include_graphics(rep("../../figures/run_output_plot.png"))
 ```
 
 
