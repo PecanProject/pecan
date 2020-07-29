@@ -3,14 +3,14 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-tezan.ncsa.illinois.edu/
   - description: PEcAn Test Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/9272c48c
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/769e6872
   - description: Localhost
     url: http://127.0.0.1:8000
   
 info:
   title: PEcAn Project API
   description: >-
-    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan).
+    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan). <br><br>
     PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models. 
   version: "1.0.0"
   contact:
@@ -47,7 +47,6 @@ paths:
       summary: Ping the server to check if it is live 
       tags:
         - general
-        - 
       responses:
         '200':
           description: OK
@@ -70,7 +69,6 @@ paths:
       summary: Obtain general information about PEcAn & the details of the database host
       tags:
         - general
-        - 
       responses:
         '200':
           description: OK
@@ -113,7 +111,6 @@ paths:
     get:
       tags:
         - models
-        -
       summary: Details of requested model
       parameters:
         - in: path
@@ -141,7 +138,6 @@ paths:
     get:
       tags:
         - models
-        -
       summary: Search for model(s) using search pattern based on model name & revision
       parameters:
         - in: query
@@ -196,7 +192,6 @@ paths:
     get:
       tags:
         - sites
-        -
       summary: Details of a site
       parameters:
         - in: path
@@ -223,7 +218,6 @@ paths:
     get:
       tags:
         - sites
-        -
       summary: Search for sites using search pattern based on site name
       parameters:
         - in: query
@@ -248,15 +242,17 @@ paths:
           content:
             application/json:
               schema:
-                sites:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      sitename:
-                        type: string
+                type: object
+                properties:
+                  sites:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        sitename:
+                          type: string
                         
         '401':
           description: Authentication required
@@ -269,7 +265,6 @@ paths:
     get:
       tags:
         - workflows
-        -
       summary: Get the list of workflows 
       parameters:
         - in: query
@@ -316,7 +311,6 @@ paths:
                   workflows:
                     type: array
                     items: 
-                      type: object
                       $ref: '#/components/schemas/Workflow'
                   count:
                     type: integer
@@ -335,29 +329,113 @@ paths:
     post:
       tags:
         - workflows
-        - 
       summary: Submit a new PEcAn workflow
       requestBody:
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Workflow'
+          # application/json:
+          #   schema:
+          #     $ref: '#/components/schemas/Workflow'
           application/xml:
             schema:
-              $ref: '#/components/schemas/Workflow'
+              xml:
+                name: pecan
+              
+              type: object
+              properties:
+                pfts:
+                  type: object
+                  properties:
+                    pft:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: temperate.coniferous
+                meta.analysis:
+                  type: object
+                  properties:
+                    iter:
+                      type: integer
+                      example: 100
+                    random.effects:
+                      type: boolean
+                      example: "FALSE"
+                    threshold:
+                      type: number
+                      example: 1.2
+                    update:
+                      type: string
+                      example: AUTO
+                ensemble:
+                  type: object
+                  properties:
+                    variable:
+                      type: string
+                      example: NPP
+                sensitivity.analysis:
+                  type: object
+                  properties:
+                    quantiles:
+                      type: object
+                      properties:
+                        sigma:
+                          type: array
+                          items:
+                            type: integer
+                          example: [-1, 1]
+                    variable:
+                      type: string
+                      example: NPP
+                model:
+                  type: object
+                  properties:
+                    "type":
+                      type: string
+                      example: SIPNET
+                    revision:
+                      type: string
+                      example: r136
+                run:
+                  type: object
+                  properties:
+                    site:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 772
+                    inputs:
+                      type: object
+                      properties:
+                        met:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "99000000003"
+                    start.date:
+                      type: string
+                      example: "2002-01-01 00:00:00"
+                    end.date:
+                      type: string
+                      example: "2002-12-31 00:00:00"
+                    dbfiles:
+                      type: string
+                      example: pecan/dbfiles
       responses:
         '201':
           description: Submitted workflow successfully    
         '401':
           description: Authentication required
+        '415':
+          description: Unsupported request content type
       
 
   /api/workflows/{id}:
     get:
       tags:
         - workflows
-        - 
       summary: Get the details of a PEcAn Workflow
       parameters:
         - in: path
@@ -388,7 +466,6 @@ paths:
     get:
       tags:
         - runs
-        -
       summary: Get the list of all runs for a specified PEcAn Workflow
       parameters:
         - in: query
@@ -429,7 +506,6 @@ paths:
                   runs:
                     type: array
                     items: 
-                      type: object
                       $ref: '#/components/schemas/Run'
                   count:
                     type: integer
@@ -449,7 +525,6 @@ paths:
     get:
       tags:
         - runs
-        - 
       summary: Get the details of a specified PEcAn run
       parameters:
         - in: path
@@ -590,6 +665,3 @@ components:
     basicAuth:
       type: http
       scheme: basic
-
-
-

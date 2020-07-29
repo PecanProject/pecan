@@ -2,19 +2,18 @@
 ##'@description: 
 ##'Download SMAP data from GEE by date and site location
 ##'
-##'@param start  start date as YYYY-mm-dd (chr)
-##'@param end  end date YYYY-mm-dd (chr)
-##'@param site_id Bety site location id number(s)
-##'@param var  variable/band to be extracted from GEE SMAP archive (e.g "ssm" for surface soil moisture)
-##' Go to https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture#bands for options
-##'@param geoJSON_outdir  directory to store site GeoJSON, must be the location same as 'gee2pecan_smap.py'
-##'@param smap_outdir  directory to store netCDF file of SMAP data, if directory folder does not exist it will be created
-##'@return data.frame of SMAP data w/ Date, NA's filling missing data
-##'
 ##'Requires python3 and earthengine-api. 
 ##'Untill 'gee2pecan_smap' is integrated into PEcAn workflow,
 ##'follow GEE registration 'Installation Instructions' here:
 ##'https://github.com/PecanProject/pecan/pull/2645
+##'
+##'@param start  start date as YYYY-mm-dd (chr)
+##'@param end  end date YYYY-mm-dd (chr)
+##'@param site_id Bety site location id number(s)
+##'@param geoJSON_outdir  directory to store site GeoJSON, must be the location same as 'gee2pecan_smap.py'
+##'@param smap_outdir  directory to store netCDF file of SMAP data, if directory folder does not exist it will be created
+##'@return data.frame of SMAP data w/ Date, NA's filling missing data
+##'
 ##'
 ##'@authors Juliette Bateman, Ayush Prasad (gee2pecan_smap.py)
 ##'
@@ -24,26 +23,15 @@
 ##'  start = "2019-11-01",
 ##'  end = "2019-11-10",
 ##'  site_id = 676,
-##'  geoJSON_outdir = "/projectnb/dietzelab/jbateman/pecan/modules/data.remote/inst", 
-##'  smap_outdir = "/projectnb/dietzelab/jbateman/pecan/modules/data.remote/inst",
-##'  var = "ssm")
+##'  geoJSON_outdir = "/fs/data3/jbateman/pecan/modules/data.remote/inst", 
+##'  smap_outdir = "/fs/data3/jbateman/pecan/modules/data.remote/inst")
 ##'}
 
 
 download_SMAP_gee2pecan <- function(start, end,
                                     site_id, 
-                                    geoJSON_outdir, smap_outdir, var) {
+                                    geoJSON_outdir, smap_outdir) {
   
-  
-  #################### Variable Entry Parameter Check #################### 
-  
-  ## Check that there is a valid variable entered 
-  if (var %in% c("ssm", "susm", "smp", "ssma", "susma") == FALSE) {
-    
-    PEcAn.logger::logger.severe(
-      "ERROR: The variable (",var,") is not valid. Please enter a different variable. Visit https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture#bands for available variables."
-    )
-  }
   
   #################### Connect to BETY #################### 
   
@@ -73,19 +61,18 @@ download_SMAP_gee2pecan <- function(start, end,
     leafletR::toGeoJSON(name = site_info$site_name, dest = geoJSON_outdir, overwrite = TRUE)
   
   # Locate gee2pecan_smap.py function and load into R
-  script.path = file.path("/projectnb/dietzelab/jbateman/pecan/modules/data.remote/inst/gee2pecan_smap.py")
+  script.path = file.path("/fs/data3/jbateman/pecan/modules/data.remote/inst/gee2pecan_smap.py")
   reticulate::source_python(script.path)
   
   # Run gee2pecan_smap function 
   smap.out = gee2pecan_smap(geofile = site_GeoJSON, outdir = smap_outdir, start = start, end = end, var = var)
-  output = ncdf4::nc_open(paste0(site_info$site_name,"_", var, ".nc"))
-  smap.data = cbind((ncdf4::ncvar_get(output, "date")), as.numeric(ncdf4::ncvar_get(output, var))) %>%
+  output = ncdf4::nc_open(paste0(site_info$site_name,"_smap", ".nc"))
+  smap.data = cbind((ncdf4::ncvar_get(output, "date")), ncdf4::ncvar_get(output, "ssm"), ncdf4::ncvar_get(output,"susm"), ncdf4::ncvar_get(output, "smp"), ncdf4::ncvar_get(output, "ssma"), ncdf4::ncvar_get(output,"susma")) %>%
     as.data.frame(stringsAsFactors = FALSE) %>% 
-    setNames(c("Date", "var")) %>% 
-    dplyr::mutate(var = as.numeric(var)) %>%
+    setNames(c("Date", "ssm", "susm", "smp", "ssma", "susma")) %>%
     dplyr::mutate(Date = as.Date(Date)) %>% 
+    dplyr::mutate_if(is.character, as.numeric) %>%
     tidyr::complete(Date = seq.Date(as.Date(start), as.Date(end), by="day"))
-  smap.data = smap.data %>% setNames(c("Date", var))
   
   
   
@@ -111,7 +98,7 @@ download_SMAP_gee2pecan <- function(start, end,
       "There are no SMAP data observations for this date range (", start, " to ", end,
       "), Please choose another date range. (SMAP data is not available before 2015-04-01.)")
     
-  } else if (colSums(is.na(smap.data[-1])) > 1) {
+  } else if (any(is.na(smap.data)) == TRUE) {
     
     ## NOTE: SMAP collects data every ~2-3 days. Missing observations are expected. 
     PEcAn.logger::logger.warn(
