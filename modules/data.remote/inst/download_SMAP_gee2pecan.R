@@ -76,16 +76,13 @@ download_SMAP_gee2pecan <- function(start, end,
   
   
   
-  #################### Convert to % Soil Moisture (when necessary) ####################
+  #################### Convert to % Soil Moisture ####################
   
   ## If variable is ssm or susm, must convert unit from mm --> % 
   # SSM (surface soil moisture) represents top 0-5cm (50mm) of soil
-  if (var == "ssm") {
-    smap.data$ssm.vol = unlist((smap.data[,2] / 50) * 100) %>% as.numeric()
+  smap.data$ssm.vol = unlist((smap.data[,2] / 50) * 100) %>% as.numeric()
     # SUSM (subsurface soil moisture) represents top 0-100 cm (1000mm) of soil
-  } else if (var == "susm") {
-    smap.data$susm.vol = unlist((smap.data[,2] / 1000) * 100) %>% as.numeric()
-  }
+  smap.data$susm.vol = unlist((smap.data[,2] / 1000) * 100) %>% as.numeric()
   
   
   
