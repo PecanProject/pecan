@@ -115,6 +115,7 @@ install2.r -e -s -l "${RLIB}" -n -1\
     TruncatedNormal \
     truncnorm \
     udunits2 \
+    urltools \
     utils \
     XML \
     xtable \

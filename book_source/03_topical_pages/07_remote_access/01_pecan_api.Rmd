@@ -2,7 +2,7 @@
 
 ## Introduction
 
-##### Welcome to the PEcAn Project API Documentation.
+__Welcome to the PEcAn Project API Documentation.__
 
 The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models.
 
@@ -28,37 +28,49 @@ __For the most up-to-date documentation, you can visit the [PEcAn API Documentat
 The currently implemented functionalities include:
 
 * __General:__
-  * `GET /api/ping`: Ping the server to check if it is live
-  * `GET /api/status`: Obtain general information about PEcAn & the details of the database host
+  * [`GET /api/ping`](#get-apiping): Ping the server to check if it is live
+  * [`GET /api/status`](#get-apistatus): Obtain general information about PEcAn & the details of the database host
 
 * __Models:__
-  * `GET /api/models/`: Retrieve the details of model(s) used by PEcAn
+  * [`GET /api/models/`](#get-apimodels): Search for model(s) using search pattern based on model name & revision
+  * [`GET /api/models/{model_id}`](#get-apimodelsmodel_id): Fetch the details of specific model
+
+* __Sites:__
+  * [`GET /api/sites/`](#get-apisites): Search for site(s) using search pattern based on site name
+  * [`GET /api/sites/{site_id}`](#get-apisitessite_id): Fetch the details of specific site
+
+* __PFTs:__
+  * [`GET /api/pfts/`](#get-apipfts): Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
+  * [`GET /api/pfts/{pft_id}`](#get-apipftspft_id): Fetch the details of specific PFT
 
 * __Workflows:__
-  * `GET /api/workflows/`: Retrieve a list of PEcAn workflows
-  * `POST /api/workflows/` *: Submit a new PEcAn workflow
-  * `GET /api/workflows/{id}`: Obtain the details of a particular PEcAn workflow by supplying its ID
+  * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
+  * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
+  * [`GET /api/workflows/{id}`](#get-apiworkflowsid): Obtain the details of a particular PEcAn workflow by supplying its ID
 
 * __Runs:__
-  * `GET /api/runs`:  Get the list of all the runs for a specified PEcAn Workflow
-  * `GET /api/runs/{id}`: Fetch the details of a specified PEcAn run
+  * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
+  * [`GET /api/runs/{run_id}`](#get-apirunsrun_id): Fetch the details of a specified PEcAn run
+  * [`GET /api/runs/{run_id}/graph/{year}/{y_var}`](#get-apirunsrun_idgraphyeary_var): Plot the graph of desired output variables for a run
 
 _* indicates that the particular API is under development & may not be ready for use_
 
 
 ## Examples:
 
-#### Prerequisites to interact with the PEcAn API Server {.tabset .tabset-pills}
+### Prerequisites to interact with the PEcAn API Server {.tabset .tabset-pills}
 
-##### R Packages
+#### R Packages
 * [httr](https://cran.r-project.org/web/packages/httr/index.html)
 * [jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html)
+* [xml2](https://cran.r-project.org/web/packages/xml2/index.html)
 
-##### Python Packages
+#### Python Packages
 * [requests](https://requests.readthedocs.io/en/master/)
 * [json](https://docs.python.org/3/library/json.html)
+* [xml](https://docs.python.org/3/library/xml.html)
 
-#### {-}
+### {-}
 
 
 Following are some example snippets to call the PEcAn API endpoints:
@@ -161,26 +173,28 @@ print(json.dumps(response.json(), indent=2))
 #### R Snippet
 
 ```R
-# Get model(s) with `model_name` = SIPNET & `revision` = ssr
+# Search model(s) with `model_name` containing "sip" & `revision` containing "ssr"
 res <- httr::GET(
-         "http://localhost:8000/api/models/?model_name=SIPNET&revision=ssr",
+         "http://localhost:8000/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
 ## $models
-##     model_id model_name revision modeltype_id model_type
-## 1 1000000022     SIPNET      ssr            3     SIPNET
-## ...
+##     model_id model_name revision
+## 1 1000000022     SIPNET      ssr
+
+## $count
+## [1] 1
 ```
 
 #### Python Snippet
 
 ```python
-# Get model(s) with `model_name` = SIPNET & `revision` = ssr
+# Search model(s) with `model_name` containing "sip" & `revision` containing "ssr"
 response = requests.get(
-             "http://localhost:8000/api/models/?model_name=SIPNET&revision=ssr",
+             "http://localhost:8000/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -191,12 +205,337 @@ print(json.dumps(response.json(), indent=2))
 ##     {
 ##       "model_id": "1000000022",
 ##       "model_name": "SIPNET",
-##       "revision": "ssr",
-##       "modeltype_id": 3,
-##       "model_type": "SIPNET"
+##       "revision": "ssr"
+##     }
+##   ],
+##   "count": 1
+## }
+```
+
+### {-}
+
+### `GET /api/models/{model_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Fetch the details of PEcAn model with id = 1000000022
+res <- httr::GET(
+         "http://localhost:8000/api/models/1000000022",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $modeltype_id
+## [1] 3
+
+## $model_type
+## [1] "SIPNET"
+
+## $model_id
+## [1] 1000000022
+
+## $model_name
+## [1] "SIPNET"
+
+## $revision
+## [1] "ssr"
+
+## $inputs
+##          input required
+## 1          met     TRUE
+## 2 poolinitcond    FALSE
+```
+
+#### Python Snippet
+
+```python
+# Fetch the details of PEcAn model with id = 1000000022
+response = requests.get(
+             "http://localhost:8000/api/models/1000000022",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "model_id": "1000000022",
+##   "model_name": "SIPNET",
+##   "revision": "ssr",
+##   "modeltype_id": 3,
+##   "model_type": "SIPNET"
+##   "inputs": [
+##     {
+##       "input": "met",
+##       "required": TRUE
+##     },
+##     {
+##       "input": "poolinitcond",
+##       "required": FALSE
+##     }
+##   ]
+## }
+```
+
+### {-}
+
+### `GET /api/sites/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Search site(s) with `site_name` containing "willow"
+res <- httr::GET(
+         "http://localhost:8000/api/sites/?sitename=willow&ignore_case=TRUE",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $sites
+##           id                                      sitename
+## 1        676                         Willow Creek (US-WCr)
+## 2       1108 Willow Creek (WC)-Chequamegon National Forest
+## 3       1202                                  Tully_willow
+## 4       1223                   Saare SRF willow plantation
+## 5 1000005151                         Willow Creek (US-WCr)
+
+## $count
+## [1] 5
+```
+
+#### Python Snippet
+
+```python
+# Search site(s) with `site_name` containing "willow"
+response = requests.get(
+             "http://localhost:8000/api/models/?sitename=willow&ignore_case=TRUE",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "sites": [
+##     {
+##       "id": 676,
+##       "sitename": "Willow Creek (US-WCr)"
+##     },
+##     {
+##       "id": 1108,
+##       "sitename": "Willow Creek (WC)-Chequamegon National Forest"
+##     },
+##     {
+##       "id": 1202,
+##       "sitename": "Tully_willow"
+##     },
+##     {
+##       "id": 1223,
+##       "sitename": "Saare SRF willow plantation"
+##     },
+##     {
+##       "id": 1000005151,
+##       "sitename": "Willow Creek (US-WCr)"
+##     }
+##   ],
+##   "count": 5
+## }
+```
+
+### {-}
+
+### `GET /api/sites/{site_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Fetch the details of PEcAn site with id = 676
+res <- httr::GET(
+         "http://localhost:8000/api/sites/676",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $id
+## [1] 676
+
+## $city
+## [1] "Park Falls Ranger District"
+
+## $state
+## [1] "Wisconsin"
+
+## $country
+## [1] "US"
+
+## $mat
+## [1] 4
+
+## $map
+## [1] 815
+
+## $soil
+## [1] ""
+
+## $som
+## [1] "NA"
+
+## $notes
+## [1] "MF"
+
+## $soilnotes
+## [1] ""
+
+## $sitename
+## [1] "Willow Creek (US-WCr)"
+
+## $greenhouse
+[1] FALSE
+
+## $sand_pct
+## [1] 42.52
+
+## $clay_pct
+## [1] 20.17
+
+## $time_zone
+## [1] "America/Chicago"
+```
+
+#### Python Snippet
+
+```python
+# Fetch the details of PEcAn site with id = 676
+response = requests.get(
+             "http://localhost:8000/api/sites/676",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "id": 676,
+##   "city": "Park Falls Ranger District",
+##   "state": "Wisconsin",
+##   "country": "US",
+##   "mat": 4,
+##   "map": 815,
+##   "soil": "",
+##   "notes": "MF",
+##   "soilnotes": "",
+##   "sitename": "Willow Creek (US-WCr)",
+##   "greenhouse": false,
+##   "sand_pct": 42.52,
+##   "clay_pct": 20.17,
+##   "time_zone": "America/Chicago"
+##  }
+```
+
+### {-}
+
+### `GET /api/pfts/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
+res <- httr::GET(
+         "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $pfts
+##   model_type  pft_id          pft_name                       pft_type
+##   <chr>       <S3: integer64> <chr>                          <chr>   
+## 1 SIPNET              41      temperate.deciduous            plant   
+## 2 SIPNET      1000000105      temperate.deciduous.IF         plant   
+## 3 SIPNET      1000000107      temperate.deciduous_SDA        plant   
+## 4 SIPNET      1000000115      temperate.deciduous.ALL        plant   
+## 5 SIPNET      1000000118      temperate.deciduous.ALL.NORMAL plant   
+## 6 SIPNET      2000000017      tundra.deciduous.NGEE_Arctic   plant   
+## 7 SIPNET      2000000045      temperate.broadleaf.deciduous  plant
+
+## $count
+## [1] 7
+```
+
+#### Python Snippet
+
+```python
+# Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
+response = requests.get(
+             "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "pfts": [
+##     {
+##       "model_type": "SIPNET",
+##       "pft_id": 41,
+##       "pft_name": "temperate.deciduous",
+##       "pft_type": "plant"
 ##     },
 ##     ...
-##   ]
+##   ],
+##   "count": 7
+## }
+```
+
+### {-}
+
+### `GET /api/pfts/{pft_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Fetch the details of PEcAn PFT with id = 2000000045
+res <- httr::GET(
+         "http://localhost:8000/api/pfts/2000000045",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $model_type
+## [1] "SIPNET"
+
+## $pft_id
+## [1] 2000000045
+
+## $pft_name
+## [1] "temperate.broadleaf.deciduous"
+
+## $definition
+## [1] "SIPNET Temperate Deciduous PFT with priors on all parameters"
+
+## $pft_type
+## [1] "plant" 
+```
+
+#### Python Snippet
+
+```python
+# Fetch the details of PEcAn PFT with id = 2000000045
+response = requests.get(
+             "http://localhost:8000/api/pfts/2000000045",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "model_type": "SIPNET",
+##   "pft_id": 2000000045,
+##   "pft_name": "temperate.broadleaf.deciduous",
+##   "definition": "SIPNET Temperate Deciduous PFT with priors on all parameters",
+##   "pft_type": "plant"
 ## }
 ```
 
@@ -263,6 +602,53 @@ print(json.dumps(response.json(), indent=2))
 ##     ...
 ##   ],
 ##   "count": 5
+## }
+```
+
+### {-}
+
+### `POST /api/workflows/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Submit a workflow in XML format for execution
+xmlFile <- "pecan/tests/api.sipnet.xml"
+xml_string <- paste0(xml2::read_xml(xmlFile))
+res <- httr::POST(
+         "http://localhost:8000/api/workflows/",
+         httr::authenticate("carya", "illinois"),
+         httr::content_type("application/xml"),
+         body = xml_string
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $workflow_id
+## [1] 99000000001
+
+## $status
+## [1] "Submitted successfully"
+```
+
+#### Python Snippet
+
+```python
+# Submit a workflow in XML format for execution
+xml_file = "pecan/tests/api.sipnet.xml"
+root = xml.etree.ElementTree.parse(xml_file).getroot()
+response = requests.post(
+             "http://localhost:8000/api/workflows/",
+             auth=HTTPBasicAuth('carya', 'illinois'),
+             headers = {'Content-Type': 'application/xml'},
+             data = xml.etree.ElementTree.tostring(root, encoding='unicode', method='xml')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "workflow_id": "99000000001",
+##   "status": "Submitted successfully"
 ## }
 ```
 
@@ -427,23 +813,72 @@ print(json.dumps(response.json(), indent=2))
 
 ### {-}
 
-### `GET /api/runs/{id}` {.tabset .tabset-pills}
+### `GET /api/runs/{run_id}` {.tabset .tabset-pills}
 
 #### R Snippet
 
 ```R
-# Get details of run belonging with `id` = '1002042201'
+# Get details of run belonging with `id` = '99000000282'
 res <- httr::GET(
-         "http://localhost:8000/api/runs/1002042201",
+         "http://localhost:8000/api/runs/99000000282",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
-##    runtype ensemble_id workflow_id         id   model_id site_id start_time finish_time parameter_list          
-## 1 ensemble  1000017624  1000009172 1002042201 1000000022     796 2005-01-01  2011-12-31     ensemble=1 
-##            created_at          updated_at          started_at         finished_at
-## 1 2018-04-11 22:20:31 2018-04-11 22:22:08 2018-04-11 18:21:57 2018-04-11 18:22:08
+## $runtype
+## [1] "sensitivity analysis"
+
+## $ensemble_id
+## [1] 99000000016
+
+## $workflow_id
+## [1] 99000000031
+
+## $id
+## [1] 99000000282
+
+## $model_id
+## [1] 1000000014
+
+## $site_id
+## [1] 772
+
+## $start_time
+## [1] "2002-01-01"
+
+## $finish_time
+## [1] "2002-12-31"
+
+## $parameter_list
+## [1] "quantile=MEDIAN,trait=all,pft=temperate.coniferous"
+
+## $started_at
+## [1] "2020-07-22 07:02:40"
+
+## $finished_at
+## [1] "2020-07-22 07:02:57"
+
+## $outputs
+## $outputs$logfile
+## [1] "logfile.txt"
+
+## $outputs$info
+## [1] "README.txt"
+
+## $outputs$years
+## $outputs$years$`2002`
+## $outputs$years$`2002`$data
+## [1] "2002.nc"
+
+## $outputs$years$`2002`$variables
+## $outputs$years$`2002`$variables$GPP
+## [1] "Gross Primary Productivity"
+
+## $outputs$years$`2002`$variables$NPP
+## [1] "Net Primary Productivity"
+
+## ...
 ```
 
 #### Python Snippet
@@ -457,19 +892,65 @@ response = requests.get(
 print(json.dumps(response.json(), indent=2))
 ```
 ```
-## [
-##   {
-##     "runtype": "ensemble",
-##     "ensemble_id": 1000017624,
-##     "workflow_id": 1000009172,
-##     "id": 1002042201,
-##     "model_id": 1000000022,
-##     "site_id": 796,
-##     "parameter_list": "ensemble=1",
-##     "start_time": "2005-01-01",
-##     "finish_time": "2011-12-31"
+## {
+##   "runtype": "ensemble",
+##   "ensemble_id": 1000017624,
+##   "workflow_id": 1000009172,
+##   "id": 1002042201,
+##   "model_id": 1000000022,
+##   "site_id": 796,
+##   "parameter_list": "ensemble=1",
+##   "start_time": "2005-01-01",
+##   "finish_time": "2011-12-31",
+##   "outputs": {
+##     "logfile": "logfile.txt",
+##     "info": "README.txt",
+##     "years": {
+##       "2002": {
+##         "data": "2002.nc",
+##         "variables": {
+##           "GPP": "Gross Primary Productivity",
+##           "NPP": "Net Primary Productivity",
+##           ...
+##         }
+##       }
+##     }
 ##   }
-## ]
+## }
 ```
+
+### {-}
+
+### `GET /api/runs/{run_id}/graph/{year}/{y_var}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.png")
+```
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics(rep("../../figures/run_output_plot.png"))
+```
+
+#### Python Snippet
+
+```python
+# Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.png", "wb") as file:
+  file.write(response.content)
+```
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics(rep("../../figures/run_output_plot.png"))
+```
+
 
 ### {-}

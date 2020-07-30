@@ -1,0 +1,61 @@
+on:
+  push:
+     branches:
+       - master
+       - develop
+       - release/* 
+     tags:
+       - v1
+       - v1*
+
+# render book
+name: renderbook
+
+jobs:
+  bookdown:
+    name: Render-Book
+    runs-on: ubuntu-latest
+    container: pecan/base:latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Install rmarkdown
+        run: Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
+      - name: Render Book
+        run: cd book_source && Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd")'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: _book
+          path: book_source/_book/
+  
+  
+  checkout-and-deploy:
+   runs-on: ubuntu-latest
+   needs: bookdown
+   steps:
+     - name: Download artifact
+       uses: actions/download-artifact@v2
+       with:
+         # Artifact name
+         name: _book # optional
+         # Destination path
+         path: _book/ # optional
+        # repo-token: ${{ secrets.GITHUB_TOKEN }}
+     - name: Checkout documentation repo
+       uses: actions/checkout@v2
+       with:
+        repository: ${{ github.repository_owner }}/pecan-documentation
+        path: pecan-documentation
+        token: ${{ secrets.GH_PAT }}
+     - run: |
+        export VERSION=${GITHUB_REF##*/}_test
+        cd pecan-documentation && mkdir -p $VERSION
+        git config --global user.email "pecanproj@gmail.com"
+        git config --global user.name "GitHub Documentation Robot"
+        rsync -a --delete ../_book/ $VERSION
+        git add --all *
+        git commit -m "Build book from pecan revision $GITHUB_SHA" || true
+        git push -q origin master
+   
+ 
