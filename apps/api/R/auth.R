@@ -34,16 +34,15 @@ validate_crypt_pass <- function(username, crypt_pass) {
   res <- tbl(dbcon, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
-    count() %>%
     collect()
 
   PEcAn.DB::db.close(dbcon)
   
-  if (res == 1) {
-    return(TRUE)
+  if (nrow(res) == 1) {
+    return(res$id)
   }
   
-  return(FALSE)
+  return(NA)
 }
 
 #* Filter to authenticate a user calling the PEcAn API
@@ -59,6 +58,8 @@ authenticate_user <- function(req, res) {
     grepl("ping", req$PATH_INFO, ignore.case = TRUE) ||
     grepl("status", req$PATH_INFO, ignore.case = TRUE))
   {
+    req$user$userid <- NA
+    req$user$username <- ""
     return(plumber::forward())
   }
   
@@ -70,7 +71,11 @@ authenticate_user <- function(req, res) {
     password <- auth_details[2]
     crypt_pass <- get_crypt_pass(username, password)
     
-    if(validate_crypt_pass(username, crypt_pass)){
+    userid <- validate_crypt_pass(username, crypt_pass)
+    
+    if(! is.na(userid)){
+      req$user$userid <- userid
+      req$user$username <- username
       return(plumber::forward())
     }
     
