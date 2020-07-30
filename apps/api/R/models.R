@@ -19,21 +19,31 @@ getModel <- function(model_id, res){
   
   qry_res <- Model %>% collect()
   
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0) {
+    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Model not found"))
   }
   else {
-    return(qry_res)
+    # Convert the response from tibble to list
+    response <- list()
+    for(colname in colnames(qry_res)){
+      response[colname] <- qry_res[colname]
+    }
+    
+    inputs_req <- tbl(dbcon, "modeltypes_formats") %>% 
+      filter(modeltype_id == bit64::as.integer64(qry_res$modeltype_id)) %>% 
+      select(input=tag, required) %>% collect()
+    response$inputs <- jsonlite::fromJSON(gsub('(\")', '"', jsonlite::toJSON(inputs_req)))
+    PEcAn.DB::db.close(dbcon)
+    return(response)
   }
 }
 
 #########################################################################
 
-#' Search for PEcAn sites containing wildcards for filtering
-#' @param name Model name search string (character)
+#' Search for PEcAn model(s) containing wildcards for filtering
+#' @param model_name Model name search string (character)
 #' @param revision Model version/revision search string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
 #' @return Model subset matching the model search string

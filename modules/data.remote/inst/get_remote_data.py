@@ -10,17 +10,29 @@ Author(s): Ayush Prasad, Istem Fer
 """
 
 from importlib import import_module
+from appeears2pecan import appeears2pecan
 
 # dictionary used to map the GEE image collection id to PEcAn specific function name
 collection_dict = {
     "LANDSAT/LC08/C01/T1_SR": "l8",
     "COPERNICUS/S2_SR": "s2",
     "NASA_USDA/HSL/SMAP_soil_moisture": "smap",
-  # "insert GEE collection id": "insert PEcAn specific name",          
+    # "insert GEE collection id": "insert PEcAn specific name",
 }
 
 
-def get_remote_data(geofile, outdir, start, end, source, collection, scale=None, qc=None):
+def get_remote_data(
+    geofile,
+    outdir,
+    start,
+    end,
+    source,
+    collection,
+    scale=None,
+    projection=None,
+    qc=None,
+    credfile=None,
+):
     """
     uses GEE and AppEEARS functions to download data
 
@@ -36,9 +48,11 @@ def get_remote_data(geofile, outdir, start, end, source, collection, scale=None,
 
     source (str) -- source from where data is to be downloaded
 
-    collection (str) -- dataset ID
+    collection (str) -- dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
 
-    scale (int) -- pixel resolution
+    scale (int) -- pixel resolution, None by default
+
+    projection (str) -- type of projection. Only required for appeears polygon AOI type. None by default. 
 
     qc (float) -- quality control parameter
 
@@ -70,3 +84,6 @@ def get_remote_data(geofile, outdir, start, end, source, collection, scale=None,
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
             func(geofile, outdir, start, end)
+
+    if source == "appeears":
+        appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)

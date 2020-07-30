@@ -23,7 +23,12 @@ getSite <- function(site_id, res){
     return(list(error="Site not found"))
   }
   else {
-    return(qry_res)
+    # Convert the response from tibble to list
+    response <- list()
+    for(colname in colnames(qry_res)){
+      response[colname] <- qry_res[colname]
+    }
+    return(response)
   }
 }
 
