@@ -163,16 +163,17 @@ SDA_remote_launcher <-function(settingPath,
     )
     
     # change the pft folder inside the setting
-    
+
+
     settings$pfts %>%
       purrr::map('outdir') %>%
       walk(function(pft.dir) {
         settings <<-
           rapply(settings, function(x)
             ifelse(
-              x == missing.input,
+              x == pft.dir,
               file.path(settings$host$folder,
-                        folder_name, "pft", fdir, fname) ,
+                        folder_name, "pft") ,
               x
             ),
             how = "replace")
@@ -262,7 +263,7 @@ SDA_remote_launcher <-function(settingPath,
   
   need.copy.dirs <- dirname(need.copy) %>%
     unique() %>%
-    discard(~ .x %in% c("."))
+    purrr::discard(~ .x %in% c("."))
   
   
   need.copy.dirs %>%
