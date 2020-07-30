@@ -61,7 +61,7 @@ download_SMAP_gee2pecan <- function(start, end,
     leafletR::toGeoJSON(name = site_info$site_name, dest = geoJSON_outdir, overwrite = TRUE)
   
   # Locate gee2pecan_smap.py function and load into R
-  script.path = file.path("/fs/data3/jbateman/pecan/modules/data.remote/inst/gee2pecan_smap.py")
+  script.path = file.path(system.file("gee2pecan_smap.py", package = "PEcAn.data.remote"))
   reticulate::source_python(script.path)
   
   # Run gee2pecan_smap function 
