@@ -55,7 +55,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     if(length(newfile)==0){
       radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
       
-      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius=radiusL)
+      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, settings, radius = radiusL)
     }
 
     return(newfile)

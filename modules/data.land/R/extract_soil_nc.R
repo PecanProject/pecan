@@ -19,7 +19,7 @@
 #' }
 #' @author Hamze Dokoohaki
 #' 
-extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.60)){
+extract_soil_gssurgo<-function(outdir, lat, lon, settings, size=1, radius=500, depths=c(0.15,0.30,0.60)){
   # I keep all the ensembles here 
   all.soil.ens <-list()
   
@@ -236,6 +236,33 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
   
   out.ense<-out.ense%>% 
     setNames(rep("path", length(out.ense)))
+  
+  #connect to db 
+  # Extract info from settings and setup
+  site       <- settings$run$site
+  dbparms    <- settings$database
+  
+  bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
+                              host     = dbparms$bety$host, 
+                              user     = dbparms$bety$user, 
+                              password = dbparms$bety$password)
+  con <- bety$con
+  # register files in DB 
+  for(i in 1:length(out.ense)){
+    in.path = paste0(dirname(out.ense[i]$path), '/')
+    in.prefix = stringr::str_remove(basename(out.ense[i]$path), ".nc")
+    
+    
+    dbfile.input.insert (in.path,
+                         in.prefix, 
+                         site$id, 
+                         startdate = NULL, 
+                         enddate = NULL, 
+                         mimetype =  "application/x-netcdf", 
+                         formatname = "gSSURGO Soil", 
+                         con = con, 
+                         ens=TRUE) 
+  }
   
   return(out.ense)
 }
