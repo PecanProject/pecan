@@ -1,4 +1,4 @@
-##' @name download_NEON_soilmoisture
+##' @name download_NEON_soilmoist
 ##' @description: 
 ##' Download NEON Soil Water Content and Soil Salinity data by date and site name
 ##' 
@@ -92,7 +92,7 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
   for (i in 1:length(site)){
     folders = paste0(dir, "/", site[1:i])
     dir.create(folders[i])
-    #fs::file_move(paste0(dir, "/", site[i], "_sensor_positions.csv"), folders[i])
+    fs::file_move(paste0(dir, "/", site[i], "_sensor_positions.csv"), folders[i])
     fs::file_move(paste0(dir, "/", site[i], "_SIC_data.rds"), folders[i])
     fs::file_move(paste0(dir, "/", site[i], "_SWC_data.rds"), folders[i])
   }
@@ -109,6 +109,8 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
     data.SIC = data.SIC.sites
     return(data.SIC) 
   } else if (var == "all") {
+    data.SWC <- data.SWC.sites
+    data.SIC <- data.SIC.sites
     both.var = list(data.SWC, data.SIC)
     names(both.var) = c("SWC", "SIC")
     return(both.var)
