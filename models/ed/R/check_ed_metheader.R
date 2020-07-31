@@ -22,7 +22,7 @@ check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
       testthat::expect_true(!is.null(names_required))
     }
   )
-  .z <- lapply(ed_metheader, check_ed_metheader_format, check_files = check_files)
+  .z <- lapply(names_required, check_ed_metheader_format, check_files = check_files)
   invisible(TRUE)
 }
 
