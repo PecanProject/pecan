@@ -82,8 +82,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     #see if there is already files generated there
     newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
-      as.list()%>%
-      stats::setNames(rep("path", length(.)))
+      as.list()
+    names(newfile) <- rep("path", length(newfile))
     
     if (length(newfile)==0){
       newfile <- PEcAn.data.land::BADM_IC_process(settings, dir=outfolder, overwrite=FALSE)
