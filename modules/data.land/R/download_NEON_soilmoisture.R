@@ -35,8 +35,8 @@
 
 
 download_NEON_soilmoist <- function(site, avg = "all", var = "all",
-                                   startdate = NA, enddate = NA,
-                                   outdir) {
+                                    startdate = NA, enddate = NA,
+                                    outdir) {
   
   
   #################### Data Download from NEON #################### 
@@ -61,7 +61,7 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
     select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime", "VSWCMean", "VSWCMinimum", "VSWCMaximum", "VSWCVariance", "VSWCNumPts", "VSWCExpUncert", "VSWCStdErMean"))
   data.raw.SIC = (split(data.raw, data.raw$VSICFinalQF))$'0' %>%
     select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime","VSICMean", "VSICMinimum", "VSICMaximum", "VSICVariance", "VSICNumPts", "VSICExpUncert", "VSICStdErMean"))
- 
+  
   data.raw.both = list(data.raw.SWC, data.raw.SIC)
   names(data.raw.both) <- c("SWC", "SIC")
   data.split.both = lapply(data.raw.both, function(x) split(x, x$siteID))
@@ -75,24 +75,30 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
   for (i in 1:length(data.SIC.sites)){
     data.SIC.sites[i]=lapply(data.SIC.sites[i], function(x) split(x, list(x$horizontalPosition, x$verticalPosition)))
   }
-
+  
   #################### Save data into folders ####################
   
-  # Saving metadata 
-  write.csv(soil.raw$readme_00094, file = (paste0(dir,"/readme.csv")))
-  write.csv(soil.raw$variables_00094, file = paste0(dir, "/variable_description.csv"))
+  # Saving metadata and site data lists as .rds files to outdir, organize into site specific folders 
   sensor.pos = split(soil.raw$sensor_positions_00094, soil.raw$sensor_positions_00094$siteID) 
   for (i in names(sensor.pos)){
     write.csv(sensor.pos[[i]], file = paste0(dir, "/", i, "_sensor_positions.csv"))
   }
-  
-  # Save site data lists as .rds files to outdir 
   for (i in names(data.SIC.sites)) {
-      saveRDS(data.SIC.sites[[i]], file = paste0(dir, "/", i, "_SIC_data.rds"))
+    saveRDS(data.SIC.sites[[i]], file = paste0(dir, "/", i, "_SIC_data.rds"))
   }
   for (i in names(data.SWC.sites)) {
     saveRDS(data.SWC.sites[[i]], file = paste0(dir, "/", i, "_SWC_data.rds"))
   }
+  for (i in 1:length(site)){
+    folders = paste0(dir, "/", site[1:i])
+    dir.create(folders[i])
+    #fs::file_move(paste0(dir, "/", site[i], "_sensor_positions.csv"), folders[i])
+    fs::file_move(paste0(dir, "/", site[i], "_SIC_data.rds"), folders[i])
+    fs::file_move(paste0(dir, "/", site[i], "_SWC_data.rds"), folders[i])
+  }
+  
+  write.csv(soil.raw$readme_00094, file = (paste0(dir,"/readme.csv")))
+  write.csv(soil.raw$variables_00094, file = paste0(dir, "/variable_description.csv"))
   
   # Return file path to data and print lists of 
   PEcAn.logger::logger.info("Done! NEON soil data has been downloaded and stored in ", paste0(dir), ".")
