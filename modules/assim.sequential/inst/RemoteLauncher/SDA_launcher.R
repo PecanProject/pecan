@@ -7,8 +7,12 @@ library(PEcAn.uncertainty)
 library(lubridate)
 library(purrr)
 library(dplyr)
-library(reshape2)
 library(furrr)
+library(nimble)
+library(reshape2)
+library(tictoc)
+
+plan(multiprocess)
 #----------------------------------------------------------------
 # Reading settings and paths
 #---------------------------------------------------------------
@@ -31,7 +35,23 @@ if (is.na(args[2])){
 # Setup
 #---------------------------------------------------------------
 setwd(settings$outdir)
-unlink(c('run', 'out', 'SDA'), recursive = TRUE)
+# This is how I delete large folders
+# In case there is an SDA run already performed in this dir and you're planning to use the same dir for some reason
+# These next lines could be uncommented to delete the necessary dirs.
+# c('run', 'out', 'SDA') %>%
+#   map(function(dir.delete) {
+#     if (dir.exists(file.path(settings$outdir, dir.delete))) {
+#       setwd(settings$outdir)
+#       list.dirs(dir.delete, full.names = T) %>%
+#         furrr::future_map(function(del.dir) {
+#           setwd(file.path(settings$outdir, del.dir))
+#           system(paste0("perl -e 'for(<*>){((stat)[9]<(unlink))}'"))
+#         })
+#       PEcAn.logger::logger.info(paste0("I just deleted ", dir.delete, " folder !"))
+#     }
+#   })
+# 
+# unlink(c('run', 'out', 'SDA'), recursive = TRUE)
 #----------------------------------------------------------------
 # Find what sites we are running for
 #---------------------------------------------------------------
@@ -39,8 +59,20 @@ if (inherits(settings, "MultiSettings")) site.ids <- settings %>% map(~.x[['run'
 #----------------------------------------------------------------
 # samples should be ready if not lets make it
 #---------------------------------------------------------------
-if (!("samples.Rdata" %in% list.files())) get.parameter.samples(settings,
-                                                                ens.sample.method = settings$ensemble$samplingspace$parameters$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+if (!("samples.Rdata" %in% list.files())) {
+  #check to see if there are posterior.files tags under pft
+  
+  posterior.files.vec<-settings$pfts %>%
+    purrr::map(purrr::possibly('posterior.files', NA_character_)) %>%
+    purrr::modify_depth(1, function(x) {
+      ifelse(is.null(x), NA_character_, x)
+    }) %>%
+    unlist()
+  
+  get.parameter.samples(settings,
+                        ens.sample.method = settings$ensemble$samplingspace$parameters$method,
+                        posterior.files=posterior.files.vec)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+}
 #----------------------------------------------------------------
 # OBS data preparation
 #---------------------------------------------------------------
