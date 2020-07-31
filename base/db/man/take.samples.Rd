@@ -20,7 +20,7 @@ sample from normal distribution, given summary stats
 \examples{
 ## return the mean when stat = NA
 take.samples(summary = data.frame(mean = 10, stat = NA))
-## return vector of length \code{sample.size} from N(mean,stat)
+## return vector of length \\code{sample.size} from N(mean,stat)
 take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 
 }

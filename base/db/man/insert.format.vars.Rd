@@ -55,7 +55,7 @@ formats_variables_tibble <- tibble::tibble(
   variable_id = c(411, 135, 382),
   name = c("NPP", NA, "YEAR"),
   unit = c("g C m-2 yr-1", NA, NA),
-  storage_type = c(NA, NA, "\%Y"),
+  storage_type = c(NA, NA, "%Y"),
   column_number = c(2, NA, 4))
 
 insert.format.vars(

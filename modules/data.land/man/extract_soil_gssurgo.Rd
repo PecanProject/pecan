@@ -8,6 +8,7 @@ extract_soil_gssurgo(
   outdir,
   lat,
   lon,
+  settings,
   size = 1,
   radius = 500,
   depths = c(0.15, 0.3, 0.6)
