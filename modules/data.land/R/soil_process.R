@@ -49,8 +49,8 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     
     #see if there is already files generated there
     newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
-      as.list()%>%
-      stats::setNames(rep("path", length(.)))
+      as.list()
+    names(newfile) <- rep("path", length(newfile))
     
     if(length(newfile)==0){
       radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
