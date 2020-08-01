@@ -43,6 +43,17 @@ Suggests:
     rgdal,
     RPostgreSQL,
     testthat (>= 1.0.2),
+    coda,
+    fs,
+    lubridate,
+    neonUtilities,
+    PEcAn.benchmark,
+    PEcAn.data.atmosphere,
+    PEcAn.visualization,
+    raster,
+    RCurl,
+    traits,
+    udunits2
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
