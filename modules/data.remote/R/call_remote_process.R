@@ -120,30 +120,67 @@ call_remote_process <- function(siteid, sitename, raw_mimetype, raw_formatname, 
         existing_pro_file_path = NULL
         flag <- 1
       } 
-      
-      
+    }else if(nrow(raw_check <- PEcAn.DB::db.query(sprintf("select inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path from inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%'", raw_file_name), dbcon)) == 1){
+      # if only raw data is requested
+      print(raw_check)
+      datalist <- set_date_stage(raw_check, req_start, req_end, stage_get_data)
+      start <- as.character(datalist[[1]])
+      end <- as.character(datalist[[2]])
+      stage_get_data <- datalist[[3]]
+      raw_merge <- datalist[[4]]
+      write_raw_start <- datalist[[5]]
+      write_raw_end <- datalist[[6]]
+      stage_process_data <- FALSE
+      if(raw_merge == TRUE){
+        existing_raw_file_path <- raw_check$file_path
+      }else{
+        existing_raw_file_path <- NULL 
+      }
+      existing_pro_file_path <- NULL
+    }else{
+      # nothing of requested type exists
+      flag <- 1
+      start <- req_start
+      end <- req_end
+      if(!is.null(out_get_data)){
+        stage_get_data <- TRUE
+        write_raw_start <- req_start
+        write_raw_end <- req_end
+        raw_merge <- FALSE
+        existing_raw_file_path = NULL
+      }
+      if(!is.null(out_process_data)){
+        stage_process_data <- TRUE
+        write_pro_start <- req_start
+        write_pro_end <- req_end
+        pro_merge <- FALSE
+        process_file_name <- NULL
+        existing_pro_file_path <- NULL
+      }
     }
+      
+    
     
     
   }else{
     # db is completely empty for the given siteid
+    flag <- 1
     print("i am here")
     start <- req_start
     end <- req_end
-    write_raw_start <- req_start
-    write_raw_end <- req_end
-    stage_get_data <- TRUE
-    raw_merge <- FALSE
-    existing_raw_file_path = NULL
-    pro_merge <- FALSE
-    existing_pro_file_path <- NULL
+    if(!is.null(out_get_data)){
+      stage_get_data <- TRUE
+      write_raw_start <- req_start
+      write_raw_end <- req_end
+      raw_merge <- FALSE
+      existing_raw_file_path = NULL
+    }
     if(!is.null(out_process_data)){
       stage_process_data <- TRUE
       write_pro_start <- req_start
       write_pro_end <- req_end
-      flag <- 1
-    }else{
-      stage_process_data <- FALSE
+      pro_merge <- FALSE
+      existing_pro_file_path <- NULL
     }
   }
     
@@ -201,6 +238,17 @@ call_remote_process <- function(siteid, sitename, raw_mimetype, raw_formatname, 
       db.query(sprintf("UPDATE inputs set start_date='%s', end_date='%s', name='%s' where id=%f", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
       db.query(sprintf("UPDATE dbfiles set file_path='%s', file_name='%s' where container_id=%f", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
     }
+  }else{
+    if(flag == 1){
+      PEcAn.logger::logger.info(("inserting raw for the first time"))
+      PEcAn.DB::dbfile.input.insert(in.path = output$raw_data_path, in.prefix = output$raw_data_name, siteid = siteid, startdate = write_raw_start, enddate = write_raw_end, mimetype = raw_mimetype, formatname = raw_formatname, con = dbcon)
+    }else{
+      PEcAn.logger::logger.info("updating raw data")
+      raw_id = raw_check$id
+      db.query(sprintf("UPDATE inputs set start_date='%s', end_date='%s', name='%s' where id=%f", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
+      db.query(sprintf("UPDATE dbfiles set file_path='%s', file_name='%s' where container_id=%f", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
+    }
+    
   }
   
   
