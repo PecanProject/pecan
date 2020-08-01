@@ -8,10 +8,11 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-
+from merge_files import nc_merge, csv_merge
 from get_remote_data import get_remote_data
 from process_remote_data import process_remote_data
 from gee_utils import get_sitename
+import os
 
 
 def remote_process(
@@ -80,25 +81,30 @@ def remote_process(
 
     # when db connections are made, this will be removed
     aoi_name = get_sitename(geofile)
-    
+    get_datareturn_path = 78
+
+
     if stage_get_data:
         get_datareturn_path = get_remote_data(
                 geofile, outdir, start, end, source, collection, scale, projection, qc, credfile, raw_merge, existing_raw_file_path
             )
+        get_datareturn_name = os.path.split(get_datareturn_path)
 
     if stage_process_data:
         if input_file is None:
             input_file = get_datareturn_path
         process_datareturn_path = process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge, existing_pro_file_path)
+        process_datareturn_name = os.path.split(process_datareturn_path)
 
-
-    output = {"raw_data": None, "process_data": None}
+    output = {"raw_data_name": None, "raw_data_path": None, "process_data_name": None, "process_data_path": None}
 
     if stage_get_data:
-        output['raw_data'] = get_datareturn_path
+        output['raw_data_name'] = get_datareturn_name[1]
+        output['raw_data_path'] = get_datareturn_path
 
     if stage_process_data:
-        output['process_data'] = process_datareturn_path
+        output['process_data_name'] = process_datareturn_name[1]
+        output['process_data_path'] = process_datareturn_path
 
     return output
 

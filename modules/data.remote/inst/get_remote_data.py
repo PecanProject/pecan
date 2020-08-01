@@ -8,18 +8,10 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-from nc_merge import nc_merge
+from merge_files import nc_merge
 from importlib import import_module
 from appeears2pecan import appeears2pecan
 import os
-
-# dictionary used to map the GEE image collection id to PEcAn specific function name
-collection_dict = {
-    "LANDSAT/LC08/C01/T1_SR": "l8",
-    "COPERNICUS/S2_SR": "s2",
-    "NASA_USDA/HSL/SMAP_soil_moisture": "smap",
-    # "insert GEE collection id": "insert PEcAn specific name",
-}
 
 
 def get_remote_data(
@@ -66,20 +58,7 @@ def get_remote_data(
     """
 
 
-
-
-
     if source == "gee":
-        try:
-            # get collection id from the dictionary
-            collection = collection_dict[collection]
-        except KeyError:
-            print(
-                "Please check if the collection name you requested is one of these and spelled correctly. If not, you need to implement a corresponding gee2pecan_{} function and add it to the collection dictionary.".format(
-                    collection
-                )
-            )
-            print(collection_dict.keys())
         # construct the function name
         func_name = "".join([source, "2pecan", "_", collection])
         # import the module
@@ -96,8 +75,7 @@ def get_remote_data(
    # if source == "appeears":
    #     get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
 
-    if raw_merge == "TRUE":
-
+    if raw_merge == True and raw_merge != "replace":
         get_datareturn_path = nc_merge(existing_raw_file_path, get_datareturn_path, outdir)
 
     return get_datareturn_path

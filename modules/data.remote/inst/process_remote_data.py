@@ -6,7 +6,7 @@ process_remote_data controls functions which perform further computation on the 
 Requires Python3
 Author: Ayush Prasad
 """
-from nc_merge import nc_merge
+from merge_files import nc_merge
 from importlib import import_module
 import os
 import time
@@ -43,7 +43,10 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     # call the function
     process_datareturn_path = func(input_file, outdir)
 
-    if pro_merge == "TRUE":
+    if pro_merge == True and pro_merge != "replace":
+        try:
             process_datareturn_path = nc_merge(existing_pro_file_path, process_datareturn_path, outdir)
-
+        except:
+            print(existing_pro_file_path)
+            print(process_datareturn_path)
     return process_datareturn_path
