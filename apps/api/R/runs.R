@@ -1,4 +1,5 @@
 library(dplyr)
+source("get.file.R")
 
 #' Get the list of runs (belonging to a particuar workflow)
 #' @param workflow_id Workflow id (character)
@@ -130,6 +131,100 @@ getRunDetails <- function(run_id, res){
 
 #################################################################################################
 
+#' Get the input file specified by user for a run
+#' @param run_id Run id (character)
+#' @param filename Name of the input file (character)
+#' @return Input file specified by user for the run
+#' @author Tezan Sahu
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<run_id>/input/<filename>
+getRunInputFile <- function(req, run_id, filename, res){
+  
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Run <- tbl(dbcon, "runs") %>%
+    filter(id == !!run_id)
+  
+  workflow_id <- tbl(dbcon, "ensembles") %>%
+    select(ensemble_id=id, workflow_id) %>%
+    full_join(Run, by="ensemble_id")  %>%
+    filter(id == !!run_id) %>%
+    pull(workflow_id)
+  
+  user_id <- tbl(dbcon, "workflows") %>%
+    select(id, user_id) %>%
+    filter(id == !!workflow_id) %>%
+    pull(user_id)
+  
+  # Obtain the absolute path of the requested file
+  inputpath <- normalizePath(
+    paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
+  )
+  
+  if(! file.exists(inputpath)){
+    res$status <- 404
+    return()
+  }
+  
+  result <- get.file(inputpath, req$user$userid)
+  if(is.null(result$file_contents)){
+    if(result$status == "Error" && result$message == "Access forbidden") {
+      res$status <- 403
+      return()
+    }
+  }
+  return(result$file_contents)
+}
+
+#################################################################################################
+
+#' Get the output file specified by user for a run
+#' @param run_id Run id (character)
+#' @param filename Name of the output file (character)
+#' @return Output file specified by user for the run
+#' @author Tezan Sahu
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<run_id>/output/<filename>
+getRunOutputFile <- function(req, run_id, filename, res){
+  
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Run <- tbl(dbcon, "runs") %>%
+    filter(id == !!run_id)
+  
+  workflow_id <- tbl(dbcon, "ensembles") %>%
+    select(ensemble_id=id, workflow_id) %>%
+    full_join(Run, by="ensemble_id")  %>%
+    filter(id == !!run_id) %>%
+    pull(workflow_id)
+  
+  user_id <- tbl(dbcon, "workflows") %>%
+    select(id, user_id) %>%
+    filter(id == !!workflow_id) %>%
+    pull(user_id)
+  
+  # Obtain the absolute path of the requested file
+  outputpath <- normalizePath(
+    paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
+  )
+  
+  if(! file.exists(outputpath)){
+    res$status <- 404
+    return()
+  }
+  
+  result <- get.file(outputpath, req$user$userid)
+  if(is.null(result$file_contents)){
+    if(result$status == "Error" && result$message == "Access forbidden") {
+      res$status <- 403
+      return()
+    }
+  }
+  return(result$file_contents)
+}
+
+#################################################################################################
+
 #' Plot the results obtained from a run
 #' @param run_id Run id (character)
 #' @param year the year this data is for
@@ -171,6 +266,7 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
   file.remove(filename)
   return(img_bin)
 }
+
 
 #################################################################################################
 

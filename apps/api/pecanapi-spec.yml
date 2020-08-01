@@ -560,7 +560,7 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflow with specified ID was not found 
+          description: Run(s) not found 
 
 
   /api/runs/{run_id}:
@@ -587,7 +587,73 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflow with specified ID was not found
+          description: Run with specified ID was not found
+          
+  /api/runs/{run_id}/input/{filename}:
+    get:
+      tags:
+        - runs
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of input file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the input file 
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Input file not found on host
+  
+  /api/runs/{run_id}/output/{filename}:
+    get:
+      tags:
+        - runs
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of output file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the output file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Output file not found on host
                   
   /api/runs/{run_id}/graph/{year}/{y_var}:
     get:
