@@ -451,7 +451,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
-      purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
+      purrr::map2_df(sqrt(one.day.data$covs %>% purrr::map( ~ diag(.x)) %>% unlist), one.day.data$means,
                      function(sd,mean){
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        

@@ -116,10 +116,10 @@ def gee2pecan_smap(geofile, outdir, start, end):
             ssma_datalist.append(fc["features"][0]["properties"]["ssma"][i][0])
             susma_datalist.append(fc["features"][0]["properties"]["susma"][i][0])
             date_list.append(
-                datetime.datetime.strptime(
+                str(datetime.datetime.strptime(
                     (fc["features"][0]["properties"]["dateinfo"][i]).split(".")[0],
                     "%Y-%m-%d",
-                )
+                ))
             )
         fc_dict = {
             "date": date_list,

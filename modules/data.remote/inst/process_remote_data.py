@@ -3,9 +3,7 @@
 
 """
 process_remote_data controls functions which perform further computation on the data.
-
 Requires Python3
-
 Author: Ayush Prasad
 """
 
@@ -19,13 +17,9 @@ def process_remote_data(aoi_name, output, outdir, algorithm):
     Parameters
     ----------
     aoi_name (str) -- name to the AOI.
-
     output (dict) -- dictionary contatining the keys get_data and process_data
-
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
-
     algorithm (str) -- name of the algorithm used to perform computation.
-
     Returns
     -------
     Nothing:
