@@ -92,12 +92,35 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
 
 #################################################################################################
 
+#' Post a workflow for execution
+#' @param req Request sent
+#' @return ID & status of the submitted workflow
+#' @author Tezan Sahu
+#* @post /
+submitWorkflow <- function(req, res){
+  if(req$HTTP_CONTENT_TYPE == "application/xml"){
+    submission_res <- submit.workflow.xml(req$postBody, req$user)
+    if(submission_res$status == "Error"){
+      res$status <- 400
+      return(submission_res)
+    }
+    res$status <- 201
+    return(submission_res)
+  }
+  else{
+    res$status <- 415
+    return(paste("Unsupported request content type:", req$HTTP_CONTENT_TYPE))
+  }
+}
+
+#################################################################################################
+
 #' Get the of the workflow specified by the id
 #' @param id Workflow id (character)
 #' @return Details of requested workflow
 #' @author Tezan Sahu
 #* @get /<id>
-getWorkflowDetails <- function(id, res){
+getWorkflowDetails <- function(id, req, res){
   dbcon <- PEcAn.DB::betyConnect()
   
   Workflow <- tbl(dbcon, "workflows") %>%
@@ -130,23 +153,37 @@ getWorkflowDetails <- function(id, res){
 
 #################################################################################################
 
-#' Post a workflow for execution
-#' @param req Request sent
-#' @return ID & status of the submitted workflow
+#' Get the of the workflow specified by the id
+#' @param id Workflow id (character)
+#' @return Details of requested workflow
 #' @author Tezan Sahu
-#* @post /
-submitWorkflow <- function(req, res){
-  if(req$HTTP_CONTENT_TYPE == "application/xml"){
-    submission_res <- submit.workflow.xml(req$postBody, req$user)
-    if(submission_res$status == "Error"){
-      res$status <- 400
-      return(submission_res)
-    }
-    res$status <- 201
-    return(submission_res)
+#* @get /<id>/status
+getWorkflowDetails <- function(req, id, res){
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Workflow <- tbl(dbcon, "workflows") %>%
+    select(id, user_id) %>%
+    filter(id == !!id)
+
+  
+  qry_res <- Workflow %>% collect()
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return(list(error="Workflow with specified ID was not found on this host"))
   }
-  else{
-    res$status <- 415
-    return(paste("Unsupported request content type:", req$HTTP_CONTENT_TYPE))
+  else {
+    # Check if the STATUS file exists on the host
+    statusfile <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", qry_res$id, "/STATUS")
+    if(! file.exists(datafile)){
+      res$status <- 404
+      return(list(error="Workflow with specified ID was not found on this host"))
+    }
+    
+    wf_status <- readLines(statusfile)
+    wf_status <- stringr::str_replace_all(wf_status, "\t", "  ")
+    return(list(workflow_id=id, status=wf_status))
   }
 }
