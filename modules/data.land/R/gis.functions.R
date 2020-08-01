@@ -36,8 +36,6 @@
 ##' @author Shawn P. Serbin
 shp2kml <- function(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL, NameField = NULL, out.dir = NULL) {
   
-  require(rgdal)
-  
   # TODO: Enable compression of KML files using zip/gzip utility.  Not quite figured this out yet
   # TODO: Allow assignment of output projection info by entering proj4 string
   # TODO: Allow for customization of output fill colors and line size
