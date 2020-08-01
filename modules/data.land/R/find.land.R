@@ -11,6 +11,7 @@
 ##' @export
 ##' @author David LeBauer
 find.land <- function(lat, lon, plot = FALSE) {
+  requireNamespace("maptools")
   data("wrld_simpl",package="maptools")
   
   ## Create a SpatialPoints object
