@@ -113,7 +113,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
     lines(yrvec, upA)
     lines(yrvec, lowA)
   }
-  dev.off()
+  grDevices::dev.off()
   
   save(AGB, NPP, mNPP, sNPP, mAGB, sAGB, yrvec, 
        mbiomass_tsca, sbiomass_tsca, mbiomass_acsa3, sbiomass_acsa3, 

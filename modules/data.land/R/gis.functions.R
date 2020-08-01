@@ -134,7 +134,7 @@ get.attributes <- function(file, coords) {
   #library(fields)
   #require(rgdal)
   
-  # print('NOT IMPLEMENTED YET') subset.layer(file,coords)
+  # print('NOT IMPLEMENTED YET') subset_layer(file,coords)
 } # get.attributes
 
 
@@ -157,16 +157,16 @@ get.attributes <- function(file, coords) {
 ##' file <- Sys.glob(file.path(R.home(), 'library', 'PEcAn.data.land','data','*.shp'))
 ##' out.dir <- path.expand('~/temp')
 ##' # with clipping enabled
-##' subset.layer(file=file,coords=c(-95,42,-84,47),clip=TRUE,out.dir=out.dir)
+##' subset_layer(file=file,coords=c(-95,42,-84,47),clip=TRUE,out.dir=out.dir)
 ##' # without clipping enables
-##' subset.layer(file=file,coords=c(-95,42,-84,47),out.dir=out.dir)
+##' subset_layer(file=file,coords=c(-95,42,-84,47),out.dir=out.dir)
 ##' system(paste('rm -r',out.dir,sep=''))
 ##' }
 ##' 
-##' @export subset.layer
+##' @export subset_layer
 ##' 
 ##' @author Shawn P. Serbin
-subset.layer <- function(file, coords = NULL, sub.layer = NULL, clip = FALSE, out.dir = NULL, out.name = NULL) {
+subset_layer <- function(file, coords = NULL, sub.layer = NULL, clip = FALSE, out.dir = NULL, out.name = NULL) {
   
 #  if (!require(rgdal)) {
 #    print("install rgdal")
@@ -211,4 +211,4 @@ subset.layer <- function(file, coords = NULL, sub.layer = NULL, clip = FALSE, ou
   
   # Run subset command
   system(OGRstring)
-} # subset.layer
+} # subset_layer

@@ -11,7 +11,7 @@
 ##' @export
 ##' @author David LeBauer
 find.land <- function(lat, lon, plot = FALSE) {
-  data(wrld_simpl,package="maptools")
+  data("wrld_simpl",package="maptools")
   
   ## Create a SpatialPoints object
   points <- expand.grid(lon, lat)
