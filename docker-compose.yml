@@ -50,6 +50,7 @@ services:
 
   # webserver to handle access to data
   minio:
+    user: "${UID:-1001}:${GID:-1001}"
     image: minio/minio:latest
     command: server /data
     restart: unless-stopped
@@ -68,6 +69,7 @@ services:
 
   # THREDDS data server
   thredds:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/thredds:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -168,6 +170,8 @@ services:
       - NAME=${PECAN_NAME:-docker}
       - USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
+      - USERID=${UID:-1001}
+      - GROUPID=${GID:-1001}
     entrypoint: /init
     volumes:
       - pecan:/data
@@ -190,6 +194,7 @@ services:
 
   # PEcAn web front end, this is just the PHP code
   web:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -211,6 +216,7 @@ services:
 
   # PEcAn model monitor
   monitor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -231,6 +237,7 @@ services:
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -250,6 +257,7 @@ services:
 
   # PEcAn basgra model runner
   basgra:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -263,6 +271,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -276,6 +285,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -289,6 +299,7 @@ services:
 
   # PEcAn MAESPA model runner
   maespa:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -323,6 +334,7 @@ services:
   # ----------------------------------------------------------------------
   api:
     image: pecan/api:${PECAN_VERSION:-latest}
+    user: "${UID:-1001}:${GID:-1001}"
     networks:
       - pecan
     environment:
