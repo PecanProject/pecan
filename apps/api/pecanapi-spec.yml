@@ -3,7 +3,7 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-tezan.ncsa.illinois.edu/
   - description: PEcAn Test Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/0ac36769
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/446c2044
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -471,7 +471,36 @@ paths:
         '404':
           description: Workflow with specified ID was not found  
 
-
+  /api/workflows/{id}/status:
+    get:
+      tags:
+        - workflows
+      summary: Get the status of a PEcAn Workflow execution
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status of the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found
   
 
 

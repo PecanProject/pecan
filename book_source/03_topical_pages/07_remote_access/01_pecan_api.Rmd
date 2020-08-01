@@ -47,6 +47,7 @@ The currently implemented functionalities include:
   * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
   * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
   * [`GET /api/workflows/{id}`](#get-apiworkflowsid): Obtain the details of a particular PEcAn workflow by supplying its ID
+  * [`GET /api/workflows/{id}/status`](#get-apiworkflowsidstatus): Obtain the status of a particular PEcAn workflow
 
 * __Runs:__
   * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
@@ -754,6 +755,60 @@ print(json.dumps(response.json(), indent=2))
 ## }
 ```
 
+### {-}
+
+### `GET /api/workflows/{id}/status` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get list of run belonging to the workflow with `workflow_id` = '99000000001'
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/99000000001/status",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $workflow_id
+## [1] "99000000001"
+
+## $status
+## [1] "TRAIT  2020-07-22 07:02:33  2020-07-22 07:02:35  DONE  "      
+## [2] "META  2020-07-22 07:02:35  2020-07-22 07:02:38  DONE  "       
+## [3] "CONFIG  2020-07-22 07:02:38  2020-07-22 07:02:40  DONE  "     
+## [4] "MODEL  2020-07-22 07:02:40  2020-07-22 07:04:07  DONE  "      
+## [5] "OUTPUT  2020-07-22 07:04:07  2020-07-22 07:04:08  DONE  "     
+## [6] "ENSEMBLE  2020-07-22 07:04:08  2020-07-22 07:04:09  DONE  "   
+## [7] "SENSITIVITY  2020-07-22 07:04:09  2020-07-22 07:04:16  DONE  "
+## [8] "FINISHED  2020-07-22 07:04:16  2020-07-22 07:04:16  DONE  "
+```
+
+#### Python Snippet
+
+```python
+# Get list of run belonging to the workflow with `workflow_id` = '99000000001'
+response = requests.get(
+             "http://localhost:8000/api/workflows/99000000001/status",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "workflow_id": "99000000001",
+##   "status": [
+##     "TRAIT  2020-07-22 07:02:33  2020-07-22 07:02:35  DONE  ",
+##     "META  2020-07-22 07:02:35  2020-07-22 07:02:38  DONE  ",
+##     "CONFIG  2020-07-22 07:02:38  2020-07-22 07:02:40  DONE  ",
+##     "MODEL  2020-07-22 07:02:40  2020-07-22 07:04:07  DONE  ",
+##     "OUTPUT  2020-07-22 07:04:07  2020-07-22 07:04:08  DONE  ",
+##     "ENSEMBLE  2020-07-22 07:04:08  2020-07-22 07:04:09  DONE  ",
+##     "SENSITIVITY  2020-07-22 07:04:09  2020-07-22 07:04:16  DONE  ",
+##     "FINISHED  2020-07-22 07:04:16  2020-07-22 07:04:16  DONE  "
+##   ]
+## }
+```
 ### {-}
 
 ### `GET /api/runs/` {.tabset .tabset-pills}

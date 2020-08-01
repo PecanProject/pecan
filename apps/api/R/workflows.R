@@ -177,7 +177,7 @@ getWorkflowDetails <- function(req, id, res){
   else {
     # Check if the STATUS file exists on the host
     statusfile <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", qry_res$id, "/STATUS")
-    if(! file.exists(datafile)){
+    if(! file.exists(statusfile)){
       res$status <- 404
       return(list(error="Workflow with specified ID was not found on this host"))
     }
