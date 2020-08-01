@@ -10,6 +10,7 @@ Module to retrieve Sentinel-2 data from Google Earth Engine (GEE).
 
 
 """
+import time
 import sys
 import os
 import ee
@@ -584,11 +585,8 @@ def s2_data_to_xarray(aoi, request_params, convert_to_reflectance=True):
 
     #  1D data
     list_vars = [
-        "assetid",
-        "productid",
         "sun_azimuth",
         "sun_zenith",
-        "system_index",
         "view_azimuth",
         "view_zenith",
     ]
@@ -804,4 +802,9 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 
-    area.data.to_netcdf(os.path.join(outdir, area.name + "_bands.nc"))
+    timestamp = time.strftime("%y%m%d%H%M%S")
+    save_path = os.path.join(outdir, "gee_" + "s2_" + area.name + "_"+ timestamp + ".nc")
+
+    area.data.to_netcdf(save_path)
+    
+    return os.path.abspath(save_path)

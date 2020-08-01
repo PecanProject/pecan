@@ -6,11 +6,12 @@ process_remote_data controls functions which perform further computation on the 
 Requires Python3
 Author: Ayush Prasad
 """
-
+from nc_merge import nc_merge
 from importlib import import_module
+import os
+import time
 
-
-def process_remote_data(aoi_name, output, outdir, algorithm):
+def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge=None, existing_pro_file_path=None):
     """
     uses processing functions to perform computation on input data
     
@@ -25,12 +26,14 @@ def process_remote_data(aoi_name, output, outdir, algorithm):
     Nothing:
             output netCDF is saved in the specified directory.
     """
+    
+
     # get the type of the input data
-    input_type = output["get_data"]
+    input_type = out_get_data
     # locate the input file
-    input_file = "".join([outdir, "/", aoi_name, "_", input_type, ".nc"])
+    # input_file = os.path.join(outdir, aoi_name, "_", input_type, ".nc")
     # extract the computation which is to be done
-    output = output["process_data"]
+    output = out_process_data
     # construct the function name
     func_name = "".join([input_type, "2", output, "_", algorithm])
     # import the module
@@ -38,4 +41,9 @@ def process_remote_data(aoi_name, output, outdir, algorithm):
     # import the function from the module
     func = getattr(module, func_name)
     # call the function
-    func(input_file, outdir)
+    process_datareturn_path = func(input_file, outdir)
+
+    if pro_merge == "TRUE":
+            process_datareturn_path = nc_merge(existing_pro_file_path, process_datareturn_path, outdir)
+
+    return process_datareturn_path

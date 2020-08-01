@@ -25,9 +25,19 @@ def remote_process(
     projection=None,
     qc=None,
     algorithm=None,
+    input_file=None,
     credfile=None,
-    output={"get_data": None, "process_data": None},
-    stage={"get_data": True, "process_data": True},
+    out_get_data=None,
+    out_process_data=None,
+    stage_get_data=None,
+    stage_process_data=None,
+    raw_merge=None,
+    pro_merge=None,
+    existing_raw_file_path=None,
+    existing_pro_file_path=None,
+    
+  #  output={"get_data": "bands", "process_data": "lai"},
+  #  stage={"get_data": True, "process_data": True},
 ):
 
     """
@@ -70,27 +80,41 @@ def remote_process(
 
     # when db connections are made, this will be removed
     aoi_name = get_sitename(geofile)
+    
+    if stage_get_data:
+        get_datareturn_path = get_remote_data(
+                geofile, outdir, start, end, source, collection, scale, projection, qc, credfile, raw_merge, existing_raw_file_path
+            )
 
-    if stage["get_data"]:
-        get_remote_data(
-            geofile, outdir, start, end, source, collection, scale, projection, qc, credfile
-        )
-
-    if stage["process_data"]:
-        process_remote_data(aoi_name, output, outdir, algorithm)
+    if stage_process_data:
+        if input_file is None:
+            input_file = get_datareturn_path
+        process_datareturn_path = process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge, existing_pro_file_path)
 
 
+    output = {"raw_data": None, "process_data": None}
+
+    if stage_get_data:
+        output['raw_data'] = get_datareturn_path
+
+    if stage_process_data:
+        output['process_data'] = process_datareturn_path
+
+    return output
+
+
+"""
 if __name__ == "__main__":
     remote_process(
-        geofile="./satellitetools/test.geojson",
-        outdir="./out",
+        geofile="/home/carya/pecan/modules/data.remote/inst/satellitetools/test.geojson",
+        outdir="/home/carya/pecan/modules/data.remote/inst/out",
         start="2018-01-01",
         end="2018-12-31",
         source="gee",
-        collection="COPERNICUS/S2_SR",
-        scale=10,
-        qc=1,
-        algorithm="snap",
+        collection="LANDSAT/LC08/C01/T1_SR",
+        scale=30,
         output={"get_data": "bands", "process_data": "lai"},
         stage={"get_data": True, "process_data": True},
     )
+"""
+    

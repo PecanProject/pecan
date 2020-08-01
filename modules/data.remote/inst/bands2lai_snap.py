@@ -12,7 +12,7 @@ import satellitetools.biophys_xarray as bio
 import geopandas as gpd
 import xarray as xr
 import os
-
+import time
 
 def bands2lai_snap(inputfile, outdir):
     """
@@ -45,6 +45,11 @@ def bands2lai_snap(inputfile, outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 
+    timestamp = time.strftime("%y%m%d%H%M%S")
+
+    save_path = os.path.join(outdir, area.name + "_lai_snap_" + timestamp + ".nc")
     # creating a timerseries and saving the netCDF file
-    area.to_netcdf(os.path.join(outdir, area.name + "_lai.nc"))
+    area.to_netcdf(save_path)
     timeseries[area.name] = gee.xr_dataset_to_timeseries(area, timeseries_variable)
+    
+    return os.path.abspath(save_path)

@@ -8,9 +8,10 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-
+from nc_merge import nc_merge
 from importlib import import_module
 from appeears2pecan import appeears2pecan
+import os
 
 # dictionary used to map the GEE image collection id to PEcAn specific function name
 collection_dict = {
@@ -32,6 +33,8 @@ def get_remote_data(
     projection=None,
     qc=None,
     credfile=None,
+    raw_merge=None,
+    existing_raw_file_path=None,
 ):
     """
     uses GEE and AppEEARS functions to download data
@@ -61,6 +64,11 @@ def get_remote_data(
     Nothing:
             output netCDF is saved in the specified directory.
     """
+
+
+
+
+
     if source == "gee":
         try:
             # get collection id from the dictionary
@@ -80,10 +88,17 @@ def get_remote_data(
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
         if qc:
-            func(geofile, outdir, start, end, scale, qc)
+            get_datareturn_path = func(geofile, outdir, start, end, scale, qc)
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
-            func(geofile, outdir, start, end)
+            get_datareturn_path = func(geofile, outdir, start, end)
 
-    if source == "appeears":
-        appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
+   # if source == "appeears":
+   #     get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
+
+    if raw_merge == "TRUE":
+
+        get_datareturn_path = nc_merge(existing_raw_file_path, get_datareturn_path, outdir)
+
+    return get_datareturn_path
+
