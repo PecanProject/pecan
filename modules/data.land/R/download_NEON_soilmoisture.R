@@ -49,18 +49,18 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
   #################### Clean-up Data Observations ####################
   # Only select data from list and remove flagged observations 
   if (avg == 30) {
-    data.raw = soil.raw$SWS_30_minute %>% na.omit()
+    data.raw = soil.raw$SWS_30_minute %>% stats::na.omit()
   } else if (avg == 1) {
-    data.raw = soil.raw$SWS_1_minute %>% na.omit()
+    data.raw = soil.raw$SWS_1_minute %>% stats::na.omit()
   } else {
-    data.raw = list(soil.raw$SWS_1_minute, soil.raw$SWS_30_minute) %>% na.omit()
+    data.raw = list(soil.raw$SWS_1_minute, soil.raw$SWS_30_minute) %>% stats::na.omit()
   }
   
   # Separate variables, omit flagged data obs
   data.raw.SWC = (split(data.raw, data.raw$VSWCFinalQF))$'0' %>%
-    select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime", "VSWCMean", "VSWCMinimum", "VSWCMaximum", "VSWCVariance", "VSWCNumPts", "VSWCExpUncert", "VSWCStdErMean"))
+    dplyr::select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime", "VSWCMean", "VSWCMinimum", "VSWCMaximum", "VSWCVariance", "VSWCNumPts", "VSWCExpUncert", "VSWCStdErMean"))
   data.raw.SIC = (split(data.raw, data.raw$VSICFinalQF))$'0' %>%
-    select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime","VSICMean", "VSICMinimum", "VSICMaximum", "VSICVariance", "VSICNumPts", "VSICExpUncert", "VSICStdErMean"))
+    dplyr::select(c("domainID", "siteID", "horizontalPosition", "verticalPosition", "startDateTime", "endDateTime","VSICMean", "VSICMinimum", "VSICMaximum", "VSICVariance", "VSICNumPts", "VSICExpUncert", "VSICStdErMean"))
   
   data.raw.both = list(data.raw.SWC, data.raw.SIC)
   names(data.raw.both) <- c("SWC", "SIC")
@@ -81,7 +81,7 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
   # Saving metadata and site data lists as .rds files to outdir, organize into site specific folders 
   sensor.pos = split(soil.raw$sensor_positions_00094, soil.raw$sensor_positions_00094$siteID) 
   for (i in names(sensor.pos)){
-    write.csv(sensor.pos[[i]], file = paste0(dir, "/", i, "_sensor_positions.csv"))
+    utils::write.csv(sensor.pos[[i]], file = paste0(dir, "/", i, "_sensor_positions.csv"))
   }
   for (i in names(data.SIC.sites)) {
     saveRDS(data.SIC.sites[[i]], file = paste0(dir, "/", i, "_SIC_data.rds"))
@@ -97,8 +97,8 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
     fs::file_move(paste0(dir, "/", site[i], "_SWC_data.rds"), folders[i])
   }
   
-  write.csv(soil.raw$readme_00094, file = (paste0(dir,"/readme.csv")))
-  write.csv(soil.raw$variables_00094, file = paste0(dir, "/variable_description.csv"))
+  utils::write.csv(soil.raw$readme_00094, file = (paste0(dir,"/readme.csv")))
+  utils::write.csv(soil.raw$variables_00094, file = paste0(dir, "/variable_description.csv"))
   
   # Return file path to data and print lists of 
   PEcAn.logger::logger.info("Done! NEON soil data has been downloaded and stored in ", paste0(dir), ".")
