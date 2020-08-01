@@ -914,6 +914,13 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ## $finished_at
 ## [1] "2020-07-22 07:02:57"
 
+## $inputs
+## $inputs$info
+## [1] "README.txt"
+
+## $inputs$others
+## [1] "sipnet.clim"          "sipnet.in"            "sipnet.param"         "sipnet.param-spatial"
+
 ## $outputs
 ## $outputs$logfile
 ## [1] "logfile.txt"
@@ -957,6 +964,15 @@ print(json.dumps(response.json(), indent=2))
 ##   "parameter_list": "ensemble=1",
 ##   "start_time": "2005-01-01",
 ##   "finish_time": "2011-12-31",
+##   "inputs": {
+##     "info": "README.txt",
+##     "others": [
+##       "sipnet.clim",
+##       "sipnet.in",
+##       "sipnet.param",
+##       "sipnet.param-spatial"
+##     ]
+##   }
 ##   "outputs": {
 ##     "logfile": "logfile.txt",
 ##     "info": "README.txt",

@@ -112,6 +112,12 @@ getRunDetails <- function(run_id, res){
       response[colname] <- qry_res[colname]
     }
     
+    # If inputs exist on the host, add them to the response
+    indir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/run/", run_id)
+    if(dir.exists(indir)){
+      response$inputs <- getRunInputs(indir)
+    }
+    
     # If outputs exist on the host, add them to the response
     outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/out/", run_id)
     if(dir.exists(outdir)){
@@ -164,6 +170,23 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
   img_bin <- readBin(filename,'raw',n = file.info(filename)$size)
   file.remove(filename)
   return(img_bin)
+}
+
+#################################################################################################
+
+#' Get the inputs of a run (if the files exist on the host)
+#' @param indir Run input directory (character)
+#' @return Input details of the run
+#' @author Tezan Sahu
+
+getRunInputs <- function(indir){
+  inputs <- list()
+  if(file.exists(paste0(indir, "/README.txt"))){
+    inputs$info <- "README.txt"
+  }
+  all_files <- list.files(indir)
+  inputs$others <- all_files[!all_files %in% c("job.sh", "rabbitmq.out", "README.txt")]
+  return(inputs)
 }
 
 #################################################################################################

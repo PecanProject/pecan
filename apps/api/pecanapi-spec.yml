@@ -700,6 +700,15 @@ components:
           type: string
         finished_at:
           type: string
+        inputs:
+          type: object
+          properties:
+            info:
+              type: string
+            others:
+              type: array
+              items:
+                type: string
         outputs:
           type: object
           properties:
