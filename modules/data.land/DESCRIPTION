@@ -3,7 +3,7 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze",email=dietze@bu.edu,"cre"),
+Authors@R: c(person("Mike","Dietze",email="dietze@bu.edu",role="cre"),
              person("David","LeBauer",role="aut"),
              person("Xiaohui", "Feng",role="ctb"),
              person("Dan"," Wang",role="ctb"),
