@@ -26,7 +26,6 @@ Depends:
 Imports:
     coda,
     dplyr,
-    fields,
     fs,
     lubridate,
     magrittr,
