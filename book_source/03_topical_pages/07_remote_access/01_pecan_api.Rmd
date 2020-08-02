@@ -52,6 +52,8 @@ The currently implemented functionalities include:
 * __Runs:__
   * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
   * [`GET /api/runs/{run_id}`](#get-apirunsrun_id): Fetch the details of a specified PEcAn run
+  * [`GET /api/runs/{run_id}/input/{filename}`](#get-apirunsrun_idinputfilename): Download the desired input file for a run
+  * [`GET /api/runs/{run_id}/output/{filename}`](#get-apirunsrun_idoutputfilename): Download the desired output file for a run
   * [`GET /api/runs/{run_id}/graph/{year}/{y_var}`](#get-apirunsrun_idgraphyeary_var): Plot the graph of desired output variables for a run
 
 _* indicates that the particular API is under development & may not be ready for use_
@@ -988,6 +990,60 @@ print(json.dumps(response.json(), indent=2))
 ##     }
 ##   }
 ## }
+```
+
+### {-}
+
+### `GET /api/runs/{run_id}/input/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the 'sipnet.in' input file for the run with id = 99000000282
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.sipnet.in")
+```
+
+#### Python Snippet
+
+```python
+# Download the 'sipnet.in' input file for the run with id = 99000000282
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.sipnet.in", "wb") as file:
+  file.write(response.content)
+```
+
+### {-}
+
+### `GET /api/runs/{run_id}/output/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the '2002.nc' output file for the run with id = 99000000282
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.2002.nc")
+```
+
+#### Python Snippet
+
+```python
+# Download the '2002.nc' output file for the run with id = 99000000282
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
 ```
 
 ### {-}
