@@ -13,6 +13,7 @@ import pandas as pd
 import os
 import xarray as xr
 import datetime
+import time
 
 ee.Initialize()
 
@@ -33,8 +34,8 @@ def gee2pecan_smap(geofile, outdir, start, end):
 
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory
+    Absolute path to the output file
+    output netCDF is saved in the specified directory
     """
 
     geo = create_geo(geofile)
@@ -116,10 +117,12 @@ def gee2pecan_smap(geofile, outdir, start, end):
             ssma_datalist.append(fc["features"][0]["properties"]["ssma"][i][0])
             susma_datalist.append(fc["features"][0]["properties"]["susma"][i][0])
             date_list.append(
-                str(datetime.datetime.strptime(
-                    (fc["features"][0]["properties"]["dateinfo"][i]).split(".")[0],
-                    "%Y-%m-%d",
-                ))
+                str(
+                    datetime.datetime.strptime(
+                        (fc["features"][0]["properties"]["dateinfo"][i]).split(".")[0],
+                        "%Y-%m-%d",
+                    )
+                )
             )
         fc_dict = {
             "date": date_list,
@@ -140,21 +143,25 @@ def gee2pecan_smap(geofile, outdir, start, end):
     site_name = get_sitename(geofile)
     AOI = get_sitecoord(geofile)
 
+    coords = {
+        "time": datadf["date"].values,
+    }
     # convert the dataframe to an xarray dataset, used for converting it to a netCDF file
     tosave = xr.Dataset(
-        datadf,
-        attrs={
-            "site_name": site_name,
-            "start_date": start,
-            "end_date": end,
-            "AOI": AOI,
-        },
+        datadf, coords=coords, attrs={"site_name": site_name, "AOI": AOI,},
     )
 
     # # if specified output path does not exist create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 
-    # convert to netCDF and save the file
-    tosave.to_netcdf(os.path.join(outdir, site_name + "_smap.nc"))
+    timestamp = time.strftime("%y%m%d%H%M%S")
 
+    filepath = os.path.join(
+        outdir, site_name + "_gee_smap_" + "NA_NA_NA_" + timestamp + ".nc"
+    )
+
+    # convert to netCDF and save the file
+    tosave.to_netcdf(filepath)
+
+    return os.path.abspath(filepath)
