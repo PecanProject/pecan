@@ -151,25 +151,18 @@ getRunInputFile <- function(req, run_id, filename, res){
     filter(id == !!run_id) %>%
     pull(workflow_id)
   
-  user_id <- tbl(dbcon, "workflows") %>%
-    select(id, user_id) %>%
-    filter(id == !!workflow_id) %>%
-    pull(user_id)
+  PEcAn.DB::db.close(dbcon)
   
-  # Obtain the absolute path of the requested file
-  inputpath <- normalizePath(
-    paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
-  )
-  
-  if(! file.exists(inputpath)){
-    res$status <- 404
-    return()
-  }
-  
+  inputpath <- paste0( Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
+
   result <- get.file(inputpath, req$user$userid)
   if(is.null(result$file_contents)){
     if(result$status == "Error" && result$message == "Access forbidden") {
       res$status <- 403
+      return()
+    }
+    if(result$status == "Error" && result$message == "File not found") {
+      res$status <- 404
       return()
     }
   }
@@ -198,25 +191,18 @@ getRunOutputFile <- function(req, run_id, filename, res){
     filter(id == !!run_id) %>%
     pull(workflow_id)
   
-  user_id <- tbl(dbcon, "workflows") %>%
-    select(id, user_id) %>%
-    filter(id == !!workflow_id) %>%
-    pull(user_id)
+  PEcAn.DB::db.close(dbcon)
   
-  # Obtain the absolute path of the requested file
-  outputpath <- normalizePath(
-    paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
-  )
-  
-  if(! file.exists(outputpath)){
-    res$status <- 404
-    return()
-  }
+  outputpath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
   
   result <- get.file(outputpath, req$user$userid)
   if(is.null(result$file_contents)){
     if(result$status == "Error" && result$message == "Access forbidden") {
       res$status <- 403
+      return()
+    }
+    if(result$status == "Error" && result$message == "File not found") {
+      res$status <- 404
       return()
     }
   }

@@ -1,10 +1,15 @@
 library(dplyr)
 
 get.file <- function(filepath, userid) {
-  # Check if the workflow for run after obtaining absolute path is owned by the user or not
-  parent_dir <- dirname(filepath)
-  run_id <- substr(parent_dir, stringi::stri_locate_last(parent_dir, regex="/")[1] + 1, stringr::str_length(parent_dir))
+  # Check if the file path is valid
+  if(! file.exists(filepath)){
+    return(list(status = "Error", message = "File not found"))
+  }
   
+  # Check if the workflow for run after obtaining absolute path is owned by the user or not
+  parent_dir <- normalizePath(dirname(filepath))
+
+  run_id <- substr(parent_dir, stringi::stri_locate_last(parent_dir, regex="/")[1] + 1, stringr::str_length(parent_dir))
   dbcon <- PEcAn.DB::betyConnect()
   
   Run <- tbl(dbcon, "runs") %>%
