@@ -801,10 +801,19 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     # if specified output directory does not exist, create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
-
     timestamp = time.strftime("%y%m%d%H%M%S")
-    save_path = os.path.join(outdir, "gee_" + "s2_" + area.name + "_"+ timestamp + ".nc")
+    save_path = os.path.join(
+        outdir,
+        area.name
+        + "_gee_s2_"
+        + str(scale)
+        + "_NA_"
+        + str(qi_threshold)
+        + "_"
+        + timestamp
+        + ".nc",
+    )
 
     area.data.to_netcdf(save_path)
-    
+
     return os.path.abspath(save_path)
