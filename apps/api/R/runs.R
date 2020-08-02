@@ -86,7 +86,7 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<run_id>
-getRunDetails <- function(run_id, res){
+getRunDetails <- function(req, run_id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   
@@ -100,6 +100,13 @@ getRunDetails <- function(run_id, res){
   
   qry_res <- Runs %>% collect()
   
+  if(Sys.getenv("AUTH_REQ") == TRUE){
+    user_id <- tbl(dbcon, "workflows") %>%
+      select(workflow_id=id, user_id) %>% full_join(Runs, by="workflow_id")  %>%
+      filter(id == !!run_id) %>%
+      pull(user_id)
+  }
+  
   PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
@@ -107,6 +114,15 @@ getRunDetails <- function(run_id, res){
     return(list(error="Run with specified ID was not found"))
   }
   else {
+    
+    if(Sys.getenv("AUTH_REQ") == TRUE) {
+      # If user id of requested run does not match the caller of the API, return 403 Access forbidden
+      if(is.na(user_id) || user_id != req$user$userid){
+        res$status <- 403
+        return(list(error="Access forbidden"))
+      }
+    }
+    
     # Convert the response from tibble to list
     response <- list()
     for(colname in colnames(qry_res)){
@@ -223,7 +239,7 @@ getRunOutputFile <- function(req, run_id, filename, res){
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
 
-plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600, res){
+plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res){
   # Get workflow_id for the run
   dbcon <- PEcAn.DB::betyConnect()
   
@@ -236,6 +252,14 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
     filter(id == !!run_id) %>%
     pull(workflow_id)
   
+  if(Sys.getenv("AUTH_REQ") == TRUE){
+    user_id <- tbl(dbcon, "workflows") %>%
+      select(id, user_id) %>%
+      filter(id == !!workflow_id) %>%
+      pull(user_id)
+  }
+  
+  
   PEcAn.DB::db.close(dbcon)
   
   # Check if the data file exists on the host
@@ -243,6 +267,14 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
   if(! file.exists(datafile)){
     res$status <- 404
     return()
+  }
+  
+  if(Sys.getenv("AUTH_REQ") == TRUE) {
+    # If user id of requested run does not match the caller of the API, return 403 Access forbidden
+    if(is.na(user_id) || user_id != req$user$userid){
+      res$status <- 403
+      return(list(error="Access forbidden"))
+    }
   }
   
   # Plot & return

@@ -158,7 +158,7 @@ getWorkflowDetails <- function(id, req, res){
 #' @return Details of requested workflow
 #' @author Tezan Sahu
 #* @get /<id>/status
-getWorkflowDetails <- function(req, id, res){
+getWorkflowStatus <- function(req, id, res){
   dbcon <- PEcAn.DB::betyConnect()
   
   Workflow <- tbl(dbcon, "workflows") %>%
