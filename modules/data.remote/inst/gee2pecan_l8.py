@@ -18,6 +18,7 @@ import os
 import xarray as xr
 import numpy as np
 import re
+import time
 
 ee.Initialize()
 
@@ -42,8 +43,8 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
 
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory. 
+    Absolute path to the output file
+    output netCDF is saved in the specified directory. 
  
     """
 
@@ -118,7 +119,7 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
         datadf = pd.DataFrame(l_data_dict)
         # converting date to the numpy date format
         datadf["time"] = datadf["time"].apply(lambda x: np.datetime64(x))
-
+        datadf.rename(columns={"time": "sensing_time"}, inplace=True)
     # if ROI is a polygon
     elif (df.geometry.type == "Polygon").bool():
 
@@ -155,15 +156,19 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
 
     site_name = get_sitename(geofile)
     AOI = get_sitecoord(geofile)
+    coords = {
+        "time": datadf["sensing_time"].values,
+    }
     # convert the dataframe to an xarray dataset
     tosave = xr.Dataset(
         datadf,
+        coords=coords,
         attrs={
             "site_name": site_name,
-            "start_date": start,
-            "end_date": end,
             "AOI": AOI,
             "sensor": "LANDSAT/LC08/C01/T1_SR",
+            "scale": scale,
+            "qc parameter": qc,
         },
     )
 
@@ -172,4 +177,19 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
         os.makedirs(outdir, exist_ok=True)
 
     # convert the dataset to a netCDF file and save it
-    tosave.to_netcdf(os.path.join(outdir, site_name + "_bands.nc"))
+    timestamp = time.strftime("%y%m%d%H%M%S")
+    filepath = os.path.join(
+        outdir,
+        site_name
+        + "_gee_l8_"
+        + str(scale)
+        + "_NA_"
+        + str(qc)
+        + "_"
+        + timestamp
+        + ".nc",
+    )
+
+    tosave.to_netcdf(filepath)
+
+    return os.path.abspath(filepath)
