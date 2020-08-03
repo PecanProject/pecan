@@ -48,5 +48,4 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
             process_datareturn_path = nc_merge(existing_pro_file_path, process_datareturn_path, outdir)
         except:
             print(existing_pro_file_path)
-            print(process_datareturn_path)
     return process_datareturn_path
