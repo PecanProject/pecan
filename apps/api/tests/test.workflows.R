@@ -36,8 +36,6 @@ test_that("Calling /api/workflows/{id} with invalid workflow id returns Status 4
   expect_equal(res$status, 404)
 })
 
-submitted_workflow_id <- NULL;
-
 test_that("Submitting XML workflow to /api/workflows/ returns Status 201", {
   xml_string <- paste0(xml2::read_xml("test_workflows/api.sipnet.xml"))
   res <- httr::POST(
@@ -46,15 +44,24 @@ test_that("Submitting XML workflow to /api/workflows/ returns Status 201", {
     httr::content_type("application/xml"),
     body = xml_string
   )
-  
-  submitted_workflow_id <<- jsonlite::fromJSON(rawToChar(res$content))$workflow_id
   expect_equal(res$status, 201)
 })
 
+test_that("Submitting JSON workflow to /api/workflows/ returns Status 201", {
+  json_workflow <- jsonlite::read_json("test_workflows/api.sipnet.json")
+  res <- httr::POST(
+    "http://localhost:8000/api/workflows/",
+    httr::authenticate("carya", "illinois"),
+    body = json_workflow,
+    encode='json'
+  )
+  expect_equal(res$status, 201)
+})
+
+
 test_that("Calling /api/workflows/{id}/status with valid workflow id returns Status 200", {
-  Sys.sleep(5)
   res <- httr::GET(
-    paste0("http://localhost:8000/api/workflows/", submitted_workflow_id, "/status"),
+    paste0("http://localhost:8000/api/workflows/", 99000000031, "/status"),
     httr::authenticate("carya", "illinois")
   )
   expect_equal(res$status, 200)

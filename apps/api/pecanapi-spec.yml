@@ -918,6 +918,9 @@ components:
         ensemble:
           type: object
           properties:
+            size:
+              type: number
+              example: 10
             variable:
               type: string
               example: NPP

@@ -1,6 +1,6 @@
 library(dplyr)
 
-#* Submit a workflow submitted as XML
+#* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
 #* @return ID & status of the submitted workflow
@@ -10,6 +10,31 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   workflowXml <- XML::xmlParseString(stringr::str_replace(workflowXmlString, "<?.*?>\n", ""))
   workflowList <- XML::xmlToList(workflowXml)
   
+  return(submit.workflow.list(workflowList, userDetails))
+}
+
+#################################################################################################
+
+#* Submit a workflow sent as JSON
+#* @param workflowJsonString String containing the JSON workflow from request body
+#* @param userDetails List containing userid & username
+#* @return ID & status of the submitted workflow
+#* @author Tezan Sahu
+submit.workflow.json <- function(workflowJsonString, userDetails){
+  
+  workflowList <- jsonlite::fromJSON(workflowJsonString)
+  
+  return(submit.workflow.list(workflowList, userDetails))
+}
+
+#################################################################################################
+
+#* Submit a workflow (converted to list)
+#* @param workflowList Workflow parameters expressed as a list
+#* @param userDetails List containing userid & username
+#* @return ID & status of the submitted workflow
+#* @author Tezan Sahu
+submit.workflow.list <- function(workflowList, userDetails) {
   # Fix details about the database
   workflowList$database <- list(bety = PEcAn.DB::get_postgres_envvars(
     host = "localhost",
@@ -83,6 +108,7 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   
 }
 
+#################################################################################################
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
@@ -130,6 +156,7 @@ insert.workflow <- function(workflowList){
   return(workflow_id)
 }
 
+#################################################################################################
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
