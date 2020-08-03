@@ -16,13 +16,10 @@ check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
   testthat::test_that(
     "ED met header object is a nested list",
     {
-      names_required <- names(ed_metheader[[1]])
-      names_required <-  names_required[ names_required != "co2"] ## "co2" provided optionally for ED2
-      
-      testthat::expect_true(!is.null(names_required))
+      testthat::expect_true(!is.null(names(ed_metheader[[1]])))
     }
   )
-  .z <- lapply(names_required, check_ed_metheader_format, check_files = check_files)
+  .z <- lapply(ed_metheader, check_ed_metheader_format, check_files = check_files)
   invisible(TRUE)
 }
 
