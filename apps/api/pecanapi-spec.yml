@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn API Server
-    url: https://pecan-tezan.ncsa.illinois.edu/
+    url: https://pecan-dev.ncsa.illinois.edu/
   - description: PEcAn Test Server
     url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/3df13f71
   - description: Localhost
