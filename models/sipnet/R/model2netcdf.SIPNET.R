@@ -171,7 +171,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                             "sipnet.param"), stringsAsFactors = FALSE)
     id <- which(param[, 1] == "leafCSpWt")
     leafC <- 0.48
-    SLA <- 1000 * leafC / param[id, 2] #SLA, m2/kgC
+    SLA <- 1000 / param[id, 2] #SLA, m2/kgC
     output[[18]] <- output[[9]] * SLA # LAI
 
     output[[19]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
