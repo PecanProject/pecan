@@ -8,10 +8,11 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-from merge_files import nc_merge
+from merge_files import nc_merge, csv_merge
 from importlib import import_module
 from appeears2pecan import appeears2pecan
 import os
+import os.path
 
 
 def get_remote_data(
@@ -72,11 +73,16 @@ def get_remote_data(
         else:
             get_datareturn_path = func(geofile, outdir, start, end)
 
-   # if source == "appeears":
-   #     get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
+    if source == "appeears":
+        get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
 
     if raw_merge == True and raw_merge != "replace":
-        get_datareturn_path = nc_merge(existing_raw_file_path, get_datareturn_path, outdir)
+        # if output file is of csv type use csv_merge, example AppEEARS point AOI type 
+        if os.path.splitext(existing_raw_file_path)[1][1:] == "csv":
+            get_datareturn_path = csv_merge(existing_raw_file_path, get_datareturn_path, outdir)
+        # else it must be of netCDF type, use nc_merge
+        else:
+            get_datareturn_path = nc_merge(existing_raw_file_path, get_datareturn_path, outdir)
 
     return get_datareturn_path
 
