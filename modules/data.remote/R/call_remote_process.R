@@ -60,7 +60,7 @@ call_remote_process <- function(settings){
   out_process_data <- settings$remotedata$out_process_data
   
   
-  dbcon <- db.open(settings$database$bety)
+  dbcon <- PEcAn.DB::db.open(settings$database$bety)
   flag <- 0
 
   # collection dataframe used to map Google Earth Engine collection names to their PEcAn specific names
@@ -258,23 +258,23 @@ call_remote_process <- function(settings){
       # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
       PEcAn.DB::dbfile.input.insert(in.path = output$process_data_path, in.prefix = output$process_data_name, siteid = siteid, startdate = write_pro_start, enddate = write_pro_end, mimetype = pro_mimetype, formatname = pro_formatname, con = dbcon)
       raw_id = raw_check$id
-      db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
       db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)      
     }else if(flag == 4){
       # requested processed and raw files are present and have to be updated
       pro_id = pro_check$id
       raw_id = raw_check$id
       PEcAn.logger::logger.info("updating processed and raw files")
-      db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
-      db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
-      db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
-      db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
     }else if(flag == 5){
       # raw file required for creating the processed file exists and the processed file needs to be updated
       pro_id = pro_check$id
       PEcAn.logger::logger.info("Updating the existing processed file")
-      db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
-      db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
     }
     }
   }
@@ -289,13 +289,13 @@ call_remote_process <- function(settings){
     }else{
       PEcAn.logger::logger.info("Updating raw file")
       raw_id = raw_check$id
-      db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
-      db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
     }
     }
   }
   
-  PEcAn.DB::db.close(dbcon)
+  PEcAn.DB::db.close(con=dbcon)
   
 }
 
