@@ -51,6 +51,9 @@ validate_crypt_pass <- function(username, crypt_pass) {
 #* @return Appropriate response
 #* @author Tezan Sahu
 authenticate_user <- function(req, res) {
+  # Fix CORS issues
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  
   # If the API endpoint that do not require authentication
   if (
     Sys.getenv("AUTH_REQ") == FALSE ||
