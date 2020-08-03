@@ -259,7 +259,7 @@ call_remote_process <- function(settings){
       PEcAn.DB::dbfile.input.insert(in.path = output$process_data_path, in.prefix = output$process_data_name, siteid = siteid, startdate = write_pro_start, enddate = write_pro_end, mimetype = pro_mimetype, formatname = pro_formatname, con = dbcon)
       raw_id = raw_check$id
       PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
-      db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)      
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)      
     }else if(flag == 4){
       # requested processed and raw files are present and have to be updated
       pro_id = pro_check$id
@@ -268,7 +268,7 @@ call_remote_process <- function(settings){
       PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
       PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
       PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f", write_raw_start, write_raw_end, output$raw_data_name, raw_id), dbcon)
-      PEcAn.DB::.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$raw_data_path, output$raw_data_name, raw_id), dbcon)
     }else if(flag == 5){
       # raw file required for creating the processed file exists and the processed file needs to be updated
       pro_id = pro_check$id
