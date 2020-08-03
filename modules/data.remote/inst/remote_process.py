@@ -36,7 +36,6 @@ def remote_process(
     pro_merge=None,
     existing_raw_file_path=None,
     existing_pro_file_path=None,
-    
 ):
 
     """
@@ -80,44 +79,51 @@ def remote_process(
     aoi_name = get_sitename(geofile)
     get_datareturn_path = 78
 
-
     if stage_get_data:
         get_datareturn_path = get_remote_data(
-                geofile, outdir, start, end, source, collection, scale, projection, qc, credfile, raw_merge, existing_raw_file_path
-            )
+            geofile,
+            outdir,
+            start,
+            end,
+            source,
+            collection,
+            scale,
+            projection,
+            qc,
+            credfile,
+            raw_merge,
+            existing_raw_file_path,
+        )
         get_datareturn_name = os.path.split(get_datareturn_path)
 
     if stage_process_data:
         if input_file is None:
             input_file = get_datareturn_path
-        process_datareturn_path = process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge, existing_pro_file_path)
+        process_datareturn_path = process_remote_data(
+            aoi_name,
+            out_get_data,
+            out_process_data,
+            outdir,
+            algorithm,
+            input_file,
+            pro_merge,
+            existing_pro_file_path,
+        )
         process_datareturn_name = os.path.split(process_datareturn_path)
 
-    output = {"raw_data_name": None, "raw_data_path": None, "process_data_name": None, "process_data_path": None}
+    output = {
+        "raw_data_name": None,
+        "raw_data_path": None,
+        "process_data_name": None,
+        "process_data_path": None,
+    }
 
     if stage_get_data:
-        output['raw_data_name'] = get_datareturn_name[1]
-        output['raw_data_path'] = get_datareturn_path
+        output["raw_data_name"] = get_datareturn_name[1]
+        output["raw_data_path"] = get_datareturn_path
 
     if stage_process_data:
-        output['process_data_name'] = process_datareturn_name[1]
-        output['process_data_path'] = process_datareturn_path
+        output["process_data_name"] = process_datareturn_name[1]
+        output["process_data_path"] = process_datareturn_path
 
     return output
-
-
-"""
-if __name__ == "__main__":
-    remote_process(
-        geofile="/home/carya/pecan/modules/data.remote/inst/satellitetools/test.geojson",
-        outdir="/home/carya/pecan/modules/data.remote/inst/out",
-        start="2018-01-01",
-        end="2018-12-31",
-        source="gee",
-        collection="LANDSAT/LC08/C01/T1_SR",
-        scale=30,
-        output={"get_data": "bands", "process_data": "lai"},
-        stage={"get_data": True, "process_data": True},
-    )
-"""
-    
