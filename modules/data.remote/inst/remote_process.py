@@ -37,8 +37,6 @@ def remote_process(
     existing_raw_file_path=None,
     existing_pro_file_path=None,
     
-  #  output={"get_data": "bands", "process_data": "lai"},
-  #  stage={"get_data": True, "process_data": True},
 ):
 
     """
@@ -79,7 +77,6 @@ def remote_process(
 
     """
 
-    # when db connections are made, this will be removed
     aoi_name = get_sitename(geofile)
     get_datareturn_path = 78
 
