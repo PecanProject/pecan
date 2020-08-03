@@ -14,8 +14,8 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   ##
   ##
   
-  plotend   <- function(fname) { dev.off() }
-  plotstart <- function(fname) { pdf(fname) }
+  plotend   <- function(fname) { grDevices::dev.off() }
+  plotstart <- function(fname) { grDevices::pdf(fname) }
   
   ##################################################################################### 
   tnorm <- function(n, lo, hi, mu, sig) { # normal truncated lo and hi
@@ -27,8 +27,8 @@ diametergrow <- function(diameters, increment, survival = NULL) {
       hi <- rep(hi, length(mu))
     }
     
-    z <- runif(n, pnorm(lo, mu, sig), pnorm(hi, mu, sig))
-    z <- qnorm(z, mu, sig)
+    z <- stats::runif(n, stats::pnorm(lo, mu, sig), stats::pnorm(hi, mu, sig))
+    z <- stats::qnorm(z, mu, sig)
     z[z == Inf] <- lo[z == Inf]
     z[z == -Inf] <- hi[z == -Inf]
     z
@@ -53,7 +53,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
       wi <- which(is.finite(dcens[i, ]), arr.ind = TRUE)
       xi <- time[wi] - wf + 1  # recenter to first year
       yi <- dcens[i, wi]
-      intercept <- mean(yi) - mean(xi) * (cov(xi, yi) / var(xi))
+      intercept <- mean(yi) - mean(xi) * (stats::cov(xi, yi) / stats::var(xi))
       
       ## modification: if only one census, assume mean increment
       if (length(xi) == 1) {
@@ -99,13 +99,13 @@ diametergrow <- function(diameters, increment, survival = NULL) {
       
       v <- crossprod(X, (dgrow[aincr] - teffect[aincr])) / allvars + prior.IVm %*% prior.mu
       V <- solve(crossprod(X) / allvars + prior.IVm)
-      alpha <- matrix(rmvnorm(1, V %*% v, V), (ncovars + 1), 1)
+      alpha <- matrix(mvtnorm::rmvnorm(1, V %*% v, V), (ncovars + 1), 1)
       
       mumat[aincr] <- X %*% alpha
       
       v      <- apply((dgrow - mumat), 2, sum, na.rm = TRUE) / allvars
       V      <- 1 / (ntt / allvars + 1 / prior.Vmu)
-      beta   <- rnorm(length(v), (V * v), sqrt(V))
+      beta   <- stats::rnorm(length(v), (V * v), sqrt(V))
       mb     <- mean(beta[ntt > 0])  #extract mean
       beta.t <- beta - mb
       beta.t[ntt == 0] <- 0
@@ -234,12 +234,12 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     # errors:
     
     ss <- sum((dcens[dobs] - diam.t[dobs]) ^ 2, na.rm = TRUE)  #diameter error
-    sw <- 1 / (rgamma(1, (w1 + ndobs / 2), (w2 + 0.5 * ss)))
+    sw <- 1 / (stats::rgamma(1, (w1 + ndobs / 2), (w2 + 0.5 * ss)))
     
     sv <- 0
     if (length(iobs) > 0) {
       ss <- sum((dgrow[iobs] - dincr[iobs]) ^ 2, na.rm = TRUE)  #growth error
-      sv <- 1 / (rgamma(1, (v11 + 0.5 * niobs), (v22 + 0.5 * ss)))
+      sv <- 1 / (stats::rgamma(1, (v11 + 0.5 * niobs), (v22 + 0.5 * ss)))
     }
     
     list(diam.t = diam.t, sw = sw, sv = sv, ad = ad, aa = aa)
@@ -272,17 +272,17 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     pnew <- pnow
     
     # diameter data
-    pnow[dobs] <- pnow[dobs] + dnorm(dcens[dobs], diam.t[dobs], sqrt(w.error), log = TRUE)
-    pnew[dobs] <- pnew[dobs] + dnorm(dcens[dobs], diamnew[dobs], sqrt(w.error), log = TRUE)
+    pnow[dobs] <- pnow[dobs] + stats::dnorm(dcens[dobs], diam.t[dobs], sqrt(w.error), log = TRUE)
+    pnew[dobs] <- pnew[dobs] + stats::dnorm(dcens[dobs], diamnew[dobs], sqrt(w.error), log = TRUE)
     
     # regression
-    pnow[, -1] <- pnow[, -1] + dnorm(dgrow, lreg, sqrt(sig), log = TRUE)
-    pnew[, -1] <- pnew[, -1] + dnorm(dnew, lreg, sqrt(sig), log = TRUE)
+    pnow[, -1] <- pnow[, -1] + stats::dnorm(dgrow, lreg, sqrt(sig), log = TRUE)
+    pnew[, -1] <- pnew[, -1] + stats::dnorm(dnew, lreg, sqrt(sig), log = TRUE)
     
     # increment data
     if (length(iobs) > 0) {
-      pnow[iobs] <- pnow[iobs] + dnorm(dincr[iobs], dgrow[iobs], sqrt(v.error), log = TRUE)
-      pnew[iobs] <- pnew[iobs] + dnorm(dincr[iobs], dnew[iobs], sqrt(v.error), log = TRUE)
+      pnow[iobs] <- pnow[iobs] + stats::dnorm(dincr[iobs], dgrow[iobs], sqrt(v.error), log = TRUE)
+      pnew[iobs] <- pnew[iobs] + stats::dnorm(dincr[iobs], dnew[iobs], sqrt(v.error), log = TRUE)
     }
     
     pnow <- apply(pnow, 1, sum, na.rm = TRUE)
@@ -299,10 +299,10 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     # errors:
     
     ss <- sum((dcens[dobs] - diam.t[dobs]) ^ 2, na.rm = TRUE)  #diameter error
-    sw <- 1 / (rgamma(1, (w1 + ndobs / 2), (w2 + 0.5 * ss)))
+    sw <- 1 / (stats::rgamma(1, (w1 + ndobs / 2), (w2 + 0.5 * ss)))
     
     ss <- sum((dgrow[iobs] - dincr[iobs])^2, na.rm = TRUE)  #growth error
-    sv <- 1 / (rgamma(1, (v11 + 0.5 * niobs), (v22 + 0.5 * ss)))
+    sv <- 1 / (stats::rgamma(1, (v11 + 0.5 * niobs), (v22 + 0.5 * ss)))
     if (length(iobs) == 0) {
       sv <- 0
     }
@@ -312,18 +312,18 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   
   sd.update <- function() {
     # variance on random effects
-    1 / rgamma(1, (vi1 + n/2), (vi2 + 0.5 * sum(beta.i ^ 2)))
+    1 / stats::rgamma(1, (vi1 + n/2), (vi2 + 0.5 * sum(beta.i ^ 2)))
   } # sd.update
   
   sp.update <- function() {
     # variance on random plot effects
-    1 / rgamma(1, (pi1 + mplot / 2), (pi2 + 0.5 * sum(beta.p ^ 2)))
+    1 / stats::rgamma(1, (pi1 + mplot / 2), (pi2 + 0.5 * sum(beta.p ^ 2)))
   } # sp.update
   
   se.update <- function() {
     # process error
     ss <- sum((dgrow - mumat - ieffect - teffect - peffect) ^ 2, na.rm = TRUE)
-    1 / (rgamma(1, (s1 + 0.5 * sum(nti)), (s2 + 0.5 * ss)))
+    1 / (stats::rgamma(1, (s1 + 0.5 * sum(nti)), (s2 + 0.5 * ss)))
   } # se.update
   
   
@@ -462,7 +462,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     ncovars    <- 1  #number of covariates
     X          <- matrix(1, nrow(aincr), (ncovars + 1))
     nx         <- nrow(X)
-    X[, 2]     <- rnorm(nx, (dgrow[aincr] * 0.5 + 1), 0.1)  #simulated data
+    X[, 2]     <- stats::rnorm(nx, (dgrow[aincr] * 0.5 + 1), 0.1)  #simulated data
     prior.mu   <- rep(0, (1 + ncovars))
     prior.Vmu  <- rep(10, (1 + ncovars))
     prior.IVm  <- solve(diag(prior.Vmu))
@@ -505,11 +505,11 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   
   ############# initial values ################
   mu   <- tnorm(1, 0, 1, prior.mu, 1)
-  sig  <- 1 / rgamma(1, s1, s2)
-  sigd <- 1 / rgamma(1, vi1, vi2)
-  sigp <- 1 / rgamma(1, pi1, pi2)
-  w.error <- 1 / rgamma(1, w1, w2)
-  v.error <- 1 / rgamma(1, vi1, vi2)
+  sig  <- 1 / stats::rgamma(1, s1, s2)
+  sigd <- 1 / stats::rgamma(1, vi1, vi2)
+  sigp <- 1 / stats::rgamma(1, pi1, pi2)
+  w.error <- 1 / stats::rgamma(1, w1, w2)
+  v.error <- 1 / stats::rgamma(1, vi1, vi2)
   beta.i  <- rep(0, n)  #individual random effects
   beta.p  <- rep(0, mplot)  #plot random effects
   beta.t  <- rep(0, (nt - 1))  #fixed year effects
@@ -678,7 +678,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   
   estimate <- c(apply(cbind(mgibbs, sgibbs, tgibbs)[keep, ], 2, mean), peff)
   std_err  <- c(apply(cbind(mgibbs, sgibbs, tgibbs)[keep, ], 2, sd), sdp)
-  p3 <- t(apply(cbind(mgibbs, sgibbs, tgibbs)[keep, ], 2, quantile, c(0.025, 0.975)))
+  p3 <- t(apply(cbind(mgibbs, sgibbs, tgibbs)[keep, ], 2, stats::quantile, c(0.025, 0.975)))
   p3 <- rbind(p3, pci)
   nn <- c(rep(nall, (ncovars + 2)), n, mplot, ndobs, niobs, ntt, ntp)
   p3 <- cbind(nn, estimate, std_err, p3)
@@ -693,7 +693,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   colnames(diampars) <- c(colnames(p3), "par1", "par2", "prior mean")
   
   outfile <- file.path(outfolder, "diampars.txt")
-  write.table(signif(diampars, 3), outfile, row.names = TRUE, col.names = TRUE, quote = FALSE)
+  utils::write.table(signif(diampars, 3), outfile, row.names = TRUE, col.names = TRUE, quote = FALSE)
   
   # determine posterior means and sd's for diameter, growth, and other columns in treemat
   
@@ -769,8 +769,8 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     yjvec <- c(1:nyr[j])
     
     for (w in wna) {
-      lfit <- lm(md[w, ] ~ yjvec)
-      newvals <- predict.lm(lfit, newdata = data.frame(yjvec))
+      lfit <- stats::lm(md[w, ] ~ yjvec)
+      newvals <- stats::predict.lm(lfit, newdata = data.frame(yjvec))
       md[w, is.na(md[w, ])] <- newvals[is.na(md[w, ])]
       
       check <- diff(md[w, ])
@@ -812,7 +812,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     plotfile <- file.path(outfolder, "incrementdata.ps")
     plotstart(plotfile)
     
-    par(mfrow = c(6, 2), mar = c(1, 1, 2, 1), bty = "n")
+    graphics::par(mfrow = c(6, 2), mar = c(1, 1, 2, 1), bty = "n")
     for (j in seq_len(mplot)) {
       
       if (mtree[j] == 0) {
@@ -869,7 +869,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   prior.mu  <- 0.3  #prior mean variance for mean growth rate
   prior.Vmu <- 10
   
-  par(mfrow = c(3, 2))
+  graphics::par(mfrow = c(3, 2))
   for (j in 1:5) {
     mj <- vp[j, 2] / (vp[j, 1] - 1)
     if (max(sgibbs[keep, j], na.rm = TRUE) == 0) {
@@ -884,7 +884,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     title(colnames(sgibbs)[j])
   }
   vt <- seq(-0.3, 0.3, length = 100)
-  plot(vt, dnorm(vt, 0, sqrt(prior.Vmu)), 
+  plot(vt, stats::dnorm(vt, 0, sqrt(prior.Vmu)), 
        col = "darkgreen", type = "l", lwd = 2, ylim = c(0, 60), 
        xlab = "Parameter value", ylab = "Density")
   title("yr effects")
@@ -901,7 +901,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   # var comparison
   sdi <- apply(tgibbs, 1, sd)
   
-  par(mfrow = c(2, 1))
+  graphics::par(mfrow = c(2, 1))
   meanyr <- apply(tgibbs[keep, ], 2, mean)
   
   plot(yrvec[-nt], log10(mgrow[1, ]), ylim = c(-2, 0.5), type = "l", xlab = "Year", ylab = "Diameter increment (log cm)")
@@ -967,7 +967,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     plotfile <- file.path(outfolder, "diam_ind.ps")
     plotstart(plotfile)
     
-    par(mfrow = c(2, 2))
+    graphics::par(mfrow = c(2, 2))
     for (j in seq_along(mgibbs)) {
       plot(mgibbs[keep, j], type = "l")
       # title(ins[j])
@@ -983,7 +983,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
   # diameters and growth rates
   
   ## par(mfrow=c(2,2))
-  par(mfrow = c(1, 1))
+  graphics::par(mfrow = c(1, 1))
   
   if (length(iobs) > 0) {
     lo <- mgrow[iobs] - 1.96 * sgrow[iobs]
@@ -1018,8 +1018,8 @@ diametergrow <- function(diameters, increment, survival = NULL) {
     
     jj <- jj + 1
     iplot <- sort(sample(seq_len(n), 5))
-    par(mfrow = c(5, 2))
-    par(mar = c(3, 2, 2, 1))
+    graphics::par(mfrow = c(5, 2))
+    graphics::par(mar = c(3, 2, 2, 1))
     
     for (j in 1:5) {
       md  <- exp(mldiam[iplot[j], ])
