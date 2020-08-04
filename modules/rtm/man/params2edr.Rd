@@ -33,7 +33,7 @@ The regular expression defining the separation is greedy, i.e.
 and \code{SLA} (assuming the default \code{sep = "."}). Therefore, it is crucial that
 trait names not contain any \code{sep} characters (neither ED nor PROSPECT
 parameters should anyway). If this is a problem, use an alternate separator
-(e.g. \verb{|}).
+(e.g. \code{|}).
 
 Note that using \code{sep = "."} allows this function to directly invert the
 default behavior of \code{unlist}. That is, calling

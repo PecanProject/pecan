@@ -34,7 +34,7 @@ specified by the user; see Details).
 This is most common for the initial number of iterations, which is the
 minimum expected for convergence.
 \item \code{loop} -- BayesianTools settings for iterations inside the convergence
-checking \verb{while} loop. This is most commonly for setting a smaller
+checking \code{while} loop. This is most commonly for setting a smaller
 iteration count than in \code{init}.
 \item \code{other} -- Miscellaneous (non-BayesianTools) settings, including:
 \itemize{
