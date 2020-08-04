@@ -122,7 +122,11 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
                     "(site_id, format_id, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name,
                     "') RETURNING id")
-    } else {
+    }else if(is.null(startdate)){
+      cmd <- paste0("INSERT INTO inputs ",
+                    "(site_id, format_id, name, parent_id) VALUES (",
+                    siteid, ", ", formatid, ", '", name, "',", parentid, ") RETURNING id")
+    }else {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
