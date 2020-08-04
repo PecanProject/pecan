@@ -235,6 +235,13 @@ getWorkflowFile <- function(req, id, filename, res){
       return()
     }
     
+    if(Sys.getenv("AUTH_REQ") == TRUE){
+      if(qry_res$user_id != req$user$userid) {
+        res$status <- 403
+        return()
+      } 
+    }
+    
     # Read the data in binary form & return it
     bin <- readBin(filepath,'raw', n = file.info(filepath)$size)
     return(bin)

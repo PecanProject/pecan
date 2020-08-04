@@ -48,6 +48,7 @@ The currently implemented functionalities include:
   * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
   * [`GET /api/workflows/{id}`](#get-apiworkflowsid): Obtain the details of a particular PEcAn workflow by supplying its ID
   * [`GET /api/workflows/{id}/status`](#get-apiworkflowsidstatus): Obtain the status of a particular PEcAn workflow
+  * [`GET /api/workflows/{id}/file/{filename}`](#get-apiworkflowsidfilefilename): Download the desired file from a PEcAn workflow
 
 * __Runs:__
   * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
@@ -558,9 +559,9 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
 ## $workflows
-##   id              properties 
-##   <S3: integer64> <list>     
-## 1 1000009172      <list [14]>
+##           id                             folder          started_at site_id   model_id          hostname start_date   end_date
+## 1 1000009900 /fs/data2/output//PEcAn_1000009900 2018-11-09 08:56:37     676 1000000022        geo.bu.edu 2004-01-01 2004-12-31
+## 2 1000009172 /fs/data2/output//PEcAn_1000009172 2018-04-11 18:14:52     676 1000000022 test-pecan.bu.edu 2004-01-01 2004-12-31
 ## ...
 
 ## $count
@@ -582,25 +583,13 @@ print(json.dumps(response.json(), indent=2))
 ##   "workflows": [
 ##     {
 ##       "id": 1000009172,
-##       "properties": {
-##         "end": "2004/12/31",
-##         "pft": [
-##           "soil.IF",
-##           "temperate.deciduous.IF"
-##         ],
-##        "email": "",
-##        "notes": "",
-##        "start": "2004/01/01",
-##        "siteid": "676",
-##        "modelid": "1000000022",
-##        "hostname": "test-pecan.bu.edu",
-##        "sitename": "WillowCreek(US-WCr)",
-##        "input_met": "AmerifluxLBL.SIPNET",
-##        "pecan_edit": "on",
-##        "sitegroupid": "1000000022",
-##        "fluxusername": "pecan",
-##        "input_poolinitcond": "-1"
-##        }
+##       "folder": "/fs/data2/output//PEcAn_1000009900",
+##       "started_at": "2018-11-09 08:56:37",
+##       "site_id": 676,
+##       "model_id": 1000000022,
+##       "hostname": "geo.bu.edu",
+##       "start_date": "2004-01-01",
+##       "end_date": "2004-12-31"
 ##     },
 ##     ...
 ##   ],
@@ -673,6 +662,15 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ## $id
 ## [1] "1000009172"
 
+## $folder
+## [1] "/fs/data2/output//PEcAn_1000009172"
+
+## $hostname
+## [1] "test-pecan.bu.edu"
+
+## $user_id
+## [1] "NA"
+
 ## $properties
 ## $properties$end
 ## [1] "2004/12/31"
@@ -735,6 +733,9 @@ print(json.dumps(response.json(), indent=2))
 ```
 ## {
 ##   "id": "1000009172",
+##   "folder": "/fs/data2/output//PEcAn_1000009172",
+##   "hostname": "test-pecan.bu.edu",
+##   "user_id": "NA",
 ##   "properties": {
 ##     "end": "2004/12/31",
 ##     "pft": [
@@ -811,6 +812,33 @@ print(json.dumps(response.json(), indent=2))
 ##   ]
 ## }
 ```
+### {-}
+
+### `GET /api/workflows/{id}/file/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.ensemble.ts.99000000017.NPP.2002.2002.Rdata")
+```
+
+#### Python Snippet
+
+```python
+# Download the '2002.nc' output file for the run with id = 99000000282
+response = requests.get(
+             "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.ensemble.ts.99000000017.NPP.2002.2002.Rdata", "wb") as file:
+  file.write(response.content)
+```
+
 ### {-}
 
 ### `GET /api/runs/` {.tabset .tabset-pills}
