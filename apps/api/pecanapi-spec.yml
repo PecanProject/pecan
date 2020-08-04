@@ -3,7 +3,7 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-dev.ncsa.illinois.edu
   - description: PEcAn Development Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/3df13f71
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/3a3fd41c
   - description: PEcAn API Test Server
     url: https://pecan-tezan.ncsa.illinois.edu
   - description: Localhost
@@ -409,7 +409,28 @@ paths:
                   workflows:
                     type: array
                     items: 
-                      $ref: '#/components/schemas/Workflow_GET'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        folder:
+                          type: string
+                        started_at:
+                          type: string
+                        finished_at:
+                          type: string
+                        site_id:
+                          type: integer
+                        model_id:
+                          type: integer
+                        hostname:
+                          type: string
+                        start_date:
+                          type: string
+                        end_date:
+                          type: string
+                        user_id:
+                          type: integer
                   count:
                     type: integer
                   next_page:
@@ -504,7 +525,36 @@ paths:
         '404':
           description: Workflow with specified ID was not found
   
-
+  /api/workflows/{id}/file/{filename}:
+    get:
+      tags:
+        - workflows
+      summary: Download a file from a specified PEcAn workflow
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the output file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
 
   /api/runs/:
     get:
@@ -847,6 +897,12 @@ components:
       properties:
         id:
           type: string
+        folder:
+          type: string
+        hostname:
+          type: string
+        user_id:
+          type: string
         "properties":
           type: object
           properties:
@@ -887,6 +943,10 @@ components:
               type: string
             input_poolinitcond:
               type: string
+        files:
+          type: array
+          items:
+            type: string
     
     Workflow_POST:
       type: object
