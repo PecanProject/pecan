@@ -177,12 +177,25 @@ earthengine authenticate
 5. **Save the Earthdata credentials (optional)**. If you do not wish to enter your credentials every time you use AppEEARS, you may save your username and password inside a JSON file and then pass its file path as an argument in `remote_process` 
 
 #### Usage guide:
-This module contains GEE and other processing functions which retrieve data from a specific dataset and source. For example, `gee2pecan_s2()` downloads bands from Sentinel 2 using GEE and `bands2lai_snap()` uses the downloaded bands to compute LAI using the SNAP algorithm. These functions can be used independently but the recommended way is to use `remote_process()` which is a main function that controls all the individual functions to create an organized way of downloading and handling remote sensing data in PEcAn. 
+This module contains GEE and other processing functions which retrieve data from a specific dataset and source. For example, `gee2pecan_s2()` downloads bands from Sentinel 2 using GEE and `bands2lai_snap()` uses the downloaded bands to compute LAI using the SNAP algorithm. These functions can be used independently but the recommended way is to use `call_remote_process()`which is a main function that controls all the individual functions to create an organized way of downloading and handling remote sensing data in PEcAn. 
 
+Whenever a data product is requested the output files are stored in the inputs table of BETYdb. Subsequently when the same product is requested again with a different date range but with the same qc, scale, projection the previous file in the db would be extended. The DB would always contain only one file of the same type.
+As an example, if a file `Reykajvik_gee_s2_10.0_NA_1.0_200802174519.nc` containing Sentinel 2 bands for start date: 2018-01-01, end date: 2018-06-30 exists in the DB and the same product is requested again for a different date range one of the following cases would happen,
+
+1. New dates are ahead of the existing file: For example, if the requested dates are start: 2018-10-01, end: 2018-12-31 in this case the previous file will be extended forward meaning the effective start date of the file to be downloaded would be the day after the end date of the previous file record, i.e. 2018-07-01. The new and the previous file would be merged and the DB would now be having data for 2018-01-01 to 2018-12-31.
+
+2. New dates are preceding of the existing file: For example, if the requested dates are start: 2017-01-01, end: 2017-06-30 in this case the effective end date of the new download would be the day before the start date of the existing file, i.e., 2017-12-31. The new and the previous file would be merged and the file in the DB would now be having data for 2017-01-01 to 2018-06-30. 
+
+3. New dates contain the date range of the existing file: For example, if the requested dates are start: 2016-01-01, end: 2019-06-30 here the existing file would be replaced entirely with the new file. A more efficient way of doing this could be to divide your request into two parts, i.e, first request for 2016-01-01 to 2018-01-01 and then for 2018-06-30 to 2019-06-30.
+
+When a processed data product such as SNAP-LAI is requested, the raw product (here Sentinel 2 bands) used to create it would also be stored in the DB. If the raw product required for creating the processed product already exists for the requested time period, the processed product would be created for the entire time period of the raw file. For example, if Sentinel 2 bands are present in the DB for 2017-01-01 to 2017-12-31 and SNAP-LAI is requested for 2017-03-01 to 2017-07-31, the output file would be containing LAI for 2017-01-01 to 2017-12-31.
 
 **Input data**: The input data must be the coordinates of the area of interest (point or polygon type) and the name of the site/AOI. These information must be provided in a GeoJSON file.
 
 **Output data**: The output data returned by the GEE are in the form of netCDF files. When using AppEEARS, output is in the form of netCDF files if the AOI type is a polygon and in the form of csv files if the AOI type is a point.
+
+The output files are created with the following naming convention: sitename_source_collection_scale_projection_qc_TimeStampOfFileCreation
+If scale, projection or qc is not applicable for the requested product "NA" would be put.
 
 **scale**: Some of the GEE functions require a pixel resolution argument. Information about how GEE handles scale can be found out [here](https://developers.google.com/earth-engine/scale)
 
