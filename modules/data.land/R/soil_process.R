@@ -62,7 +62,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
         in.path = paste0(dirname(newfile[i]$path), '/')
         in.prefix = stringr::str_remove(basename(newfile[i]$path), ".nc")
         
-        dbfile.input.insert (in.path,
+        PEcAn.DB::dbfile.input.insert (in.path,
                              in.prefix, 
                              new.site$id, 
                              startdate = NULL, 
