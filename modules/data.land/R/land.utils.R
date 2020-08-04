@@ -1,13 +1,12 @@
 get.elevation <- function(lat, lon) {
   # http://stackoverflow.com/a/8974308/199217
-  library(RCurl)
-  
+
   url  <- paste("http://www.earthtools.org/height", lat, lon, sep = "/")
   
-  page <- getURL(url)
-  ans  <- xmlTreeParse(page, useInternalNodes = TRUE)
-  heightNode <- xpathApply(ans, "//meters")[[1]]
-  return(as.numeric(xmlValue(heightNode)))
+  page <- RCurl::getURL(url)
+  ans  <- XML::xmlTreeParse(page, useInternalNodes = TRUE)
+  heightNode <- XML::xpathApply(ans, "//meters")[[1]]
+  return(as.numeric(XML::xmlValue(heightNode)))
 } # get.elevation
 
 
