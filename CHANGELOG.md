@@ -65,6 +65,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Removed
 
+- Removed the sugarcane and db folders from web, this removes the simple DB editor in the web folder. (#2532)
 - Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
 - Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).

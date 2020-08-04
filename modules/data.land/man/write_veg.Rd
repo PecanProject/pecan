@@ -6,6 +6,15 @@
 \usage{
 write_veg(outfolder, start_date, veg_info, source)
 }
+\arguments{
+\item{outfolder}{output folder}
+
+\item{start_date}{start date}
+
+\item{veg_info}{vegetation data to be saved}
+
+\item{source}{name of data source (used in file naming)}
+}
 \description{
 Function to save intermediate rds file
 }

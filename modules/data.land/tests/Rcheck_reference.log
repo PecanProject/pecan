@@ -379,7 +379,7 @@ Found the following calls to data() loading into the global environment:
 File ‘PEcAn.data.land/R/fia2ED.R’:
   data(pftmapping)
 File ‘PEcAn.data.land/R/find.land.R’:
-  data(wrld_simpl)
+  data("wrld_simpl", package = "maptools")
 See section ‘Good practice’ in ‘?data’.
 * checking Rd files ... WARNING
 checkRd: (7) gSSURGO.Query.Rd:29-35: Tag \dontrun not recognized
