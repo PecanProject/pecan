@@ -60,6 +60,8 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: artifacts
+      - name: update dependency lists
+        run: Rscript scripts/generate_dependencies.R
       - name : make
         shell: bash
         run: |
