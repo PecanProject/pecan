@@ -19,8 +19,8 @@ call_remote_process <- function(settings){
   # write_raw_start, write_raw_end : start, end dates which are used while inserting and updating the DB
   # the "pro" version of these variables have the same meaning and are used to refer to the processed file
 
-  reticulate::import_from_path("remote_process", file.path("..", "inst"))
-  reticulate::source_python(file.path("..", "inst", "remote_process.py"))
+  remote_process <- reticulate::import_from_path("remote_process", file.path("..", "inst"))
+  remote_process <- reticulate::source_python(file.path("..", "inst", "remote_process.py"))
   
   input_file <- NULL
   stage_get_data <- NULL
