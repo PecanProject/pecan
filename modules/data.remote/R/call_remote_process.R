@@ -106,6 +106,7 @@ call_remote_process <- function(settings){
         if(stage_process_data == TRUE){
           # check about the status of raw file
           raw_check <- PEcAn.DB::db.query(sprintf("SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';", raw_file_name), dbcon)
+          if(!is.null(raw_check$start_date) && !is.null(raw_check$end_date)){
           raw_datalist <- set_stage(raw_check, pro_start, pro_end, stage_get_data)
           start <- as.character(raw_datalist[[1]])
           end <- as.character(raw_datalist[[2]])
@@ -126,6 +127,20 @@ call_remote_process <- function(settings){
             write_pro_end <- raw_check$end_date
             existing_pro_file_path <- NULL
             pro_merge <- FALSE
+          }
+          }else{
+            # this case happens when the processed file has to be extended but the raw file used to create the existing processed file has been deleted
+            flag <- 6
+            write_raw_start <- req_start
+            write_raw_end <- req_end
+            start <- req_start
+            end <- req_end
+            stage_get_data <- TRUE
+            existing_raw_file_path <- NULL
+            write_pro_start <- write_raw_start
+            write_pro_end <- write_raw_end
+            pro_merge <- "replace"
+            existing_pro_file_path <- NULL
           }
         }
         }
@@ -190,7 +205,7 @@ call_remote_process <- function(settings){
       existing_pro_file_path <- NULL
     }else{
       # no data of requested type exists
-      PEcAn.logger::logger.info("nothing of requested type exists")
+      PEcAn.logger::logger.info("no data of requested type exists")
       flag <- 1
       start <- req_start
       end <- req_end
@@ -214,7 +229,7 @@ call_remote_process <- function(settings){
     
   }else{
     # db is completely empty for the given siteid
-    PEcAn.logger::logger.info("DB is completely empt for this site")
+    PEcAn.logger::logger.info("DB is completely empty for this site")
     flag <- 1
     start <- req_start
     end <- req_end
@@ -245,14 +260,14 @@ call_remote_process <- function(settings){
     }else{
     if(flag == 1){
       # no processed and rawfile are present
-      PEcAn.logger::logger.info("inserting rawfile and processed files for the first time")
+      PEcAn.logger::logger.info("inserting raw and processed files for the first time")
       # insert processed data
       PEcAn.DB::dbfile.input.insert(in.path = output$process_data_path, in.prefix = output$process_data_name, siteid = siteid, startdate = write_pro_start, enddate = write_pro_end, mimetype = pro_mimetype, formatname = pro_formatname, con = dbcon)
       # insert raw file
       PEcAn.DB::dbfile.input.insert(in.path = output$raw_data_path, in.prefix = output$raw_data_name, siteid = siteid, startdate = write_raw_start, enddate = write_raw_end, mimetype = raw_mimetype, formatname = raw_formatname, con = dbcon)
     }else if(flag == 2){
       # requested processed file does not exist but the raw file used to create it exists within the required timeline
-      PEcAn.logger::logger.info("inserting proc file for the first time")
+      PEcAn.logger::logger.info("inserting processed file for the first time")
       PEcAn.DB::dbfile.input.insert(in.path = output$process_data_path, in.prefix = output$process_data_name, siteid = siteid, startdate = write_pro_start, enddate = write_pro_end, mimetype = pro_mimetype, formatname = pro_formatname, con = dbcon)
     }else if(flag == 3){
       # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
@@ -272,9 +287,16 @@ call_remote_process <- function(settings){
     }else if(flag == 5){
       # raw file required for creating the processed file exists and the processed file needs to be updated
       pro_id = pro_check$id
-      PEcAn.logger::logger.info("Updating the existing processed file")
+      PEcAn.logger::logger.info("updating the existing processed file")
       PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
       PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
+    }else if(flag == 6){
+      # there is some existing processed file but the raw file used to create it is now deleted, replace the processed file entirely with the one created from new raw file
+      pro_id = pro_check$id
+      PEcAn.logger::logger.info("replacing the existing processed file and creating a new raw file")
+      PEcAn.DB::db.query(sprintf("UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;", write_pro_start, write_pro_end, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::db.query(sprintf("UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;", output$process_data_path, output$process_data_name, pro_id), dbcon)
+      PEcAn.DB::dbfile.input.insert(in.path = output$raw_data_path, in.prefix = output$raw_data_name, siteid = siteid, startdate = write_raw_start, enddate = write_raw_end, mimetype = raw_mimetype, formatname = raw_formatname, con = dbcon)
     }
     }
   }
