@@ -35,6 +35,8 @@ tags:
     description: Everything about PEcAn models
   - name: sites
     description: Everything about PEcAn sites
+  - name: formats
+    description: Everything about PEcAn formats
   - name: pfts
     description: Everything about PEcAn PFTs (Plant Functional Types)
   - name: inputs
@@ -360,6 +362,88 @@ paths:
           description: Access forbidden
         '404':
           description: Site(s) not found
+  
+  /api/formats/{format_id}:
+    get:
+      tags:
+        - formats
+      summary: Details of requested format
+      parameters:
+        - in: path
+          name: format_id
+          description: Format ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Format Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Format'
+                      
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model not found
+  
+  /api/formats/:
+    get:
+      tags:
+        - formats
+      summary: Search for format(s) using search pattern based on format name & mime type
+      parameters:
+        - in: query
+          name: format_name
+          description: Search string for format name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: mimetype
+          description: Search string for mime type
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of formats matching search pattern
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        format_id:
+                          type: string
+                        format_name:
+                          type: string
+                        mimetype:
+                          type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model(s) not found
+  
   
   /api/inputs/:
     get:
@@ -987,6 +1071,19 @@ components:
         model_type:
           type: string
     
+    Format:
+      properties:
+        format_id:
+          type: string
+        name:
+          type: string
+        notes:
+          type: string
+        header:
+          type: string
+        mimetype:
+          type: string
+      
     Workflow_GET:
       properties:
         id:
