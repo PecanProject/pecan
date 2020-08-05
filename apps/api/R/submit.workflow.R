@@ -45,18 +45,17 @@ submit.workflow.list <- function(workflowList, userDetails) {
       driver = "PostgreSQL"
     )
   )
-  
   if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
     dbcon <- PEcAn.DB::betyConnect()
     res <- dplyr::tbl(dbcon, "models") %>% 
-      filter(id == workflowList$model$id) %>%
+      select(id, model_name, revision) %>%
+      filter(id == !!workflowList$model$id) %>%
       collect()
     PEcAn.DB::db.close(dbcon)
     
     workflowList$model$type <- res$model_name
     workflowList$model$revision <- res$revision
   }
-  
   # Fix RabbitMQ details
   dbcon <- PEcAn.DB::betyConnect()
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
@@ -68,7 +67,6 @@ submit.workflow.list <- function(workflowList, userDetails) {
     )
   )
   workflowList$host$name <- if(hostInfo$hostname == "") "localhost" else hostInfo$hostname
-  
   # Fix the info
   workflowList$info$notes <- workflowList$info$notes
   if(is.null(workflowList$info$userid)){
@@ -80,21 +78,21 @@ submit.workflow.list <- function(workflowList, userDetails) {
   if(is.null(workflowList$info$date)){
     workflowList$info$date <- Sys.time()
   }
-  
+
   # Add entry to workflows table in database
   workflow_id <- insert.workflow(workflowList)
   workflowList$workflow$id <- workflow_id
-  
+
   # Add entry to attributes table in database
   insert.attribute(workflowList)
-  
+
   # Fix the output directory
   outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
   workflowList$outdir <- outdir
   
   # Create output diretory
   dir.create(outdir, recursive=TRUE)
-  
+
   # Modify the `dbfiles` path & create the directory if needed
   workflowList$run$dbfiles <- Sys.getenv("DBFILES_DIR", "/data/dbfiles/")
   if(! dir.exists(workflowList$run$dbfiles)){
@@ -127,6 +125,7 @@ submit.workflow.list <- function(workflowList, userDetails) {
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
 insert.workflow <- function(workflowList){
+  
   dbcon <- PEcAn.DB::betyConnect()
   
   model_id <- workflowList$model$id
@@ -153,6 +152,7 @@ insert.workflow <- function(workflowList){
   }
   
   insert <- PEcAn.DB::insert_table(workflow_df, "workflows", dbcon)
+  
   workflow_id <- dplyr::tbl(dbcon, "workflows") %>% 
     filter(started_at == start_time 
            && site_id == bit64::as.integer64(workflowList$run$site$id)
@@ -174,6 +174,7 @@ insert.workflow <- function(workflowList){
 #* @param workflowList List containing the workflow details
 #* @author Tezan Sahu
 insert.attribute <- function(workflowList){
+  
   dbcon <- PEcAn.DB::betyConnect()
   
   # Create an array of PFTs
@@ -222,4 +223,6 @@ insert.attribute <- function(workflowList){
   res <- DBI::dbSendStatement(dbcon, 
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
+
+  
 }
