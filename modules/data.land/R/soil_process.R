@@ -55,8 +55,26 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     if(length(newfile)==0){
       radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
       
-      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius=radiusL)
-    }
+      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius = radiusL)
+      
+      # register files in DB 
+      for(i in 1:length(newfile)){
+        in.path = paste0(dirname(newfile[i]$path), '/')
+        in.prefix = stringr::str_remove(basename(newfile[i]$path), ".nc")
+        
+        PEcAn.DB::dbfile.input.insert (in.path,
+                             in.prefix, 
+                             new.site$id, 
+                             startdate = NULL, 
+                             enddate = NULL, 
+                             mimetype =  "application/x-netcdf", 
+                             formatname = "gSSURGO Soil", 
+                             con = con, 
+                             ens=TRUE) 
+      }
+      
+      
+      }
 
     return(newfile)
   }
