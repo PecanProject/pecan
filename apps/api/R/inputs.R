@@ -37,9 +37,14 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     select(-input)
   
   inputs <- tbl(dbcon, "formats") %>%
-    select(format_id = id) %>%
+    select(format_id = id, format_name = name, mimetype_id) %>%
     inner_join(inputs, by='format_id') %>%
     select(-format_id)
+  
+  inputs <- tbl(dbcon, "mimetypes") %>%
+    select(mimetype_id = id, mimetype = type_string) %>%
+    inner_join(inputs, by='mimetype_id') %>%
+    select(-mimetype_id)
   
   inputs <- tbl(dbcon, "models") %>%
     select(model_id = id, modeltype_id, model_name, revision) %>%

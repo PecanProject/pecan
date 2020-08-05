@@ -421,6 +421,10 @@ paths:
                           type: string
                         input_name:
                           type: string
+                        mimetype:
+                          type: string
+                        format_name:
+                          type: string
                         model_name:
                           type: string
                         revision:

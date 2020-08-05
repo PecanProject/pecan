@@ -562,9 +562,9 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
 ## $inputs
-##                sitename model_name revision tag                      hostname file_name
-## 1 Willow Creek (US-WCr)     SIPNET      ssr met ebi-forecast.igb.illinois.edu  wcr.clim
-## 2 Willow Creek (US-WCr)     SIPNET      ssr met                        docker  wcr.clim
+##                sitename model_name revision tag                      hostname file_name   format_name mimetype
+## 1 Willow Creek (US-WCr)     SIPNET      ssr met ebi-forecast.igb.illinois.edu  wcr.clim Sipnet.climna text/csv
+## 2 Willow Creek (US-WCr)     SIPNET      ssr met                        docker  wcr.clim Sipnet.climna text/csv
 ##                   file_path         id input_name          start_date            end_date
 ## 1 /home/share/data/dbfiles/        235            2000-01-01 06:00:00 2007-01-01 05:59:00
 ## 2        /data/sites/willow 2000000001            1998-01-01 00:00:00 2006-12-31 00:00:00
@@ -593,6 +593,8 @@ print(json.dumps(response.json(), indent=2))
 ##       "tag": "met",
 ##       "hostname": "ebi-forecast.igb.illinois.edu",
 ##       "file_name": "wcr.clim",
+##       "format_name": "Sipnet.climna",
+##       "mimetype": "text/csv",
 ##       "file_path": "/home/share/data/dbfiles/",
 ##       "id": 235,
 ##       "input_name": "",

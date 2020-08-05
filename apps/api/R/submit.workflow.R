@@ -36,19 +36,20 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* @author Tezan Sahu
 submit.workflow.list <- function(workflowList, userDetails) {
   # Fix details about the database
-  workflowList$database <- list(bety = PEcAn.DB::get_postgres_envvars(
-    host = "localhost",
-    dbname = "bety",
-    user = "bety",
-    password = "bety", 
-    driver = "PostgreSQL"
-  )
+  workflowList$database <- list(
+    bety = PEcAn.DB::get_postgres_envvars(
+      host = "localhost",
+      dbname = "bety",
+      user = "bety",
+      password = "bety", 
+      driver = "PostgreSQL"
+    )
   )
   
-  if(is.null(workflowList$model$id)) {
+  if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
     dbcon <- PEcAn.DB::betyConnect()
     res <- dplyr::tbl(dbcon, "models") %>% 
-      filter(model_name == workflowList$model$type && revision == workflowList$model$revision) %>%
+      filter(id == workflowList$model$id) %>%
       collect()
     PEcAn.DB::db.close(dbcon)
     
