@@ -3,7 +3,7 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-dev.ncsa.illinois.edu
   - description: PEcAn Development Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/3a3fd41c
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/58af05f9
   - description: PEcAn API Test Server
     url: https://pecan-tezan.ncsa.illinois.edu
   - description: Localhost
@@ -37,6 +37,8 @@ tags:
     description: Everything about PEcAn sites
   - name: pfts
     description: Everything about PEcAn PFTs (Plant Functional Types)
+  - name: inputs
+    description: Everything about inputs for a PEcAn workflow
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -358,6 +360,94 @@ paths:
           description: Access forbidden
         '404':
           description: Site(s) not found
+  
+  /api/inputs/:
+    get:
+      tags:
+        - inputs
+      summary: Search for the inputs
+      parameters:
+        - in: query
+          name: model_id
+          description: If provided, returns all inputs for the provided model_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: site_id
+          description: If provided, returns all inputs for the provided site_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: offset
+          description: The number of inputs to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of inputs to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
+      responses:
+        '200':
+          description: List of inputs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inputs:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        filename:
+                          type: string
+                        file_path:
+                          type: string
+                        input_name:
+                          type: string
+                        model_name:
+                          type: string
+                        revision:
+                          type: string
+                        sitename:
+                          type: string
+                        tag:
+                          type: string
+                        hostname:
+                          type: string
+                        start_date:
+                          type: string
+                        end_date:
+                          type: string
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflows not found
           
   /api/workflows/:
     get:

@@ -43,6 +43,9 @@ The currently implemented functionalities include:
   * [`GET /api/pfts/`](#get-apipfts): Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
   * [`GET /api/pfts/{pft_id}`](#get-apipftspft_id): Fetch the details of specific PFT
 
+* __Inputs:__
+  * [`GET /api/inputs/`](#get-apiinputs): Search for inputs needed for a PEcAn workflow based on `model_id` & `site_id`
+  * [`GET /api/inputs/{input_id}`](#get-apiinputsinput_id) *: Download the desired input file
 * __Workflows:__
   * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
   * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
@@ -541,6 +544,92 @@ print(json.dumps(response.json(), indent=2))
 ##   "definition": "SIPNET Temperate Deciduous PFT with priors on all parameters",
 ##   "pft_type": "plant"
 ## }
+```
+
+### {-}
+
+### `GET /api/inputs/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $inputs
+##                sitename model_name revision tag                      hostname file_name
+## 1 Willow Creek (US-WCr)     SIPNET      ssr met ebi-forecast.igb.illinois.edu  wcr.clim
+## 2 Willow Creek (US-WCr)     SIPNET      ssr met                        docker  wcr.clim
+##                   file_path         id input_name          start_date            end_date
+## 1 /home/share/data/dbfiles/        235            2000-01-01 06:00:00 2007-01-01 05:59:00
+## 2        /data/sites/willow 2000000001            1998-01-01 00:00:00 2006-12-31 00:00:00
+
+## $count
+## [1] 2
+```
+
+#### Python Snippet
+
+```python
+# Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
+response = requests.get(
+             "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "inputs": [
+##     {
+##       "sitename": "Willow Creek (US-WCr)",
+##       "model_name": "SIPNET",
+##       "revision": "ssr",
+##       "tag": "met",
+##       "hostname": "ebi-forecast.igb.illinois.edu",
+##       "file_name": "wcr.clim",
+##       "file_path": "/home/share/data/dbfiles/",
+##       "id": 235,
+##       "input_name": "",
+##       "start_date": "2000-01-01 06:00:00",
+##       "end_date": "2007-01-01 05:59:00"
+##     },
+##     ...
+##   ],
+##   "count: 2
+## }
+```
+
+### {-}
+
+### `GET /api/inputs/{input_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the input file with id = 99000000003
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/99000000003",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.2002.nc")
+```
+
+#### Python Snippet
+
+```python
+# Download the input file for with id = 99000000003
+response = requests.get(
+             "http://localhost:8000/api/inputs/99000000003",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
 ```
 
 ### {-}

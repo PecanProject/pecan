@@ -50,8 +50,6 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     
     qry_res <- qry_res[(as.numeric(offset) + 1):min((as.numeric(offset) + as.numeric(limit)), nrow(qry_res)), ]
     
-    # qry_res$properties[is.na(qry_res$properties)] = "{}"
-    # qry_res$properties <- purrr::map(qry_res$properties, jsonlite::parse_json)
     result <- list(workflows = qry_res)
     result$count <- nrow(qry_res)
     if(has_next){
