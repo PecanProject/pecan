@@ -7,8 +7,9 @@ Calculates LAI using SNAP.
 Author: Ayush Prasad
 """
 
-import gee2pecan_s2 as gee
-import satellitetools.biophys_xarray as bio
+import RpTools.gee2pecan_s2 as gee
+from RpTools.gee2pecan_s2 import xr_dataset_to_timeseries
+import RpTools.biophys_xarray as bio
 import geopandas as gpd
 import xarray as xr
 import os
@@ -50,6 +51,6 @@ def bands2lai_snap(inputfile, outdir):
     save_path = os.path.join(outdir, area.name + "_lai_snap_" + timestamp + ".nc")
     # creating a timerseries and saving the netCDF file
     area.to_netcdf(save_path)
-    timeseries[area.name] = gee.xr_dataset_to_timeseries(area, timeseries_variable)
+    timeseries[area.name] = xr_dataset_to_timeseries(area, timeseries_variable)
     
     return os.path.abspath(save_path)

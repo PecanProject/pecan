@@ -20,7 +20,7 @@ import geopandas as gpd
 import numpy as np
 import xarray as xr
 from functools import reduce
-from gee_utils import calc_ndvi
+from RpTools.gee_utils import calc_ndvi
 
 ee.Initialize()
 

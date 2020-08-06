@@ -8,10 +8,10 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-from merge_files import nc_merge, csv_merge
-from get_remote_data import get_remote_data
-from process_remote_data import process_remote_data
-from gee_utils import get_sitename
+from . merge_files import nc_merge, csv_merge
+from . get_remote_data import get_remote_data
+from . process_remote_data import process_remote_data
+from . gee_utils import get_sitename
 import os
 
 

@@ -8,9 +8,9 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-from merge_files import nc_merge, csv_merge
+from RpTools.merge_files import nc_merge, csv_merge
 from importlib import import_module
-from appeears2pecan import appeears2pecan
+from . appeears2pecan import appeears2pecan
 import os
 import os.path
 
@@ -63,6 +63,7 @@ def get_remote_data(
         # construct the function name
         func_name = "".join([source, "2pecan", "_", collection])
         # import the module
+        func_name = "RpTools" + "." + func_name
         module = import_module(func_name)
         # import the function from the module
         func = getattr(module, func_name)

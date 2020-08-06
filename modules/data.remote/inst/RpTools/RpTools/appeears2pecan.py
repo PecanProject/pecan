@@ -18,7 +18,7 @@ import time
 import os
 import cgi
 import json
-from gee_utils import get_sitename
+from . gee_utils import get_sitename
 from datetime import datetime
 from warnings import warn
 import os.path

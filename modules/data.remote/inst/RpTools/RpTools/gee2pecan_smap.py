@@ -7,7 +7,7 @@ Requires Python3
 
 Author: Ayush Prasad
 """
-from gee_utils import create_geo, get_sitecoord, get_sitename
+from RpTools.gee_utils import create_geo, get_sitecoord, get_sitename
 import ee
 import pandas as pd
 import os

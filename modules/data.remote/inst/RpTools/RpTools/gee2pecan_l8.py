@@ -9,7 +9,7 @@ If ROI is a Point, this function can be used for getting SR data from Landsat 7,
 
 Author: Ayush Prasad
 """
-from gee_utils import create_geo, get_sitecoord, get_sitename, calc_ndvi
+from RpTools.gee_utils import create_geo, get_sitecoord, get_sitename, calc_ndvi
 import ee
 import pandas as pd
 import geopandas as gpd

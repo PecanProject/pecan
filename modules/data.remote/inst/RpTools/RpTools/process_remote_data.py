@@ -6,7 +6,7 @@ process_remote_data controls functions which perform further computation on the 
 Requires Python3
 Author: Ayush Prasad
 """
-from merge_files import nc_merge
+from RpTools.merge_files import nc_merge
 from importlib import import_module
 import os
 import time
@@ -37,6 +37,7 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     # construct the function name
     func_name = "".join([input_type, "2", output, "_", algorithm])
     # import the module
+    func_name = "RpTools" + "." + func_name
     module = import_module(func_name)
     # import the function from the module
     func = getattr(module, func_name)
