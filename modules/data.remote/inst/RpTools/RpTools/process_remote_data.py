@@ -37,8 +37,8 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     # construct the function name
     func_name = "".join([input_type, "2", output, "_", algorithm])
     # import the module
-    func_name = "RpTools" + "." + func_name
-    module = import_module(func_name)
+    module_from_pack = "RpTools" + "." + func_name
+    module = import_module(module_from_pack)
     # import the function from the module
     func = getattr(module, func_name)
     # call the function

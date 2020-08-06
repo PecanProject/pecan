@@ -63,8 +63,8 @@ def get_remote_data(
         # construct the function name
         func_name = "".join([source, "2pecan", "_", collection])
         # import the module
-        func_name = "RpTools" + "." + func_name
-        module = import_module(func_name)
+        module_from_pack = "RpTools" + "." + func_name
+        module = import_module(module_from_pack)
         # import the function from the module
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
