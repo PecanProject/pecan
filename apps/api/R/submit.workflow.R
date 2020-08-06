@@ -174,7 +174,6 @@ insert.workflow <- function(workflowList){
 #* @param workflowList List containing the workflow details
 #* @author Tezan Sahu
 insert.attribute <- function(workflowList){
-  
   dbcon <- PEcAn.DB::betyConnect()
   
   # Create an array of PFTs
@@ -182,7 +181,7 @@ insert.attribute <- function(workflowList){
   for(i in seq(length(workflowList$pfts))){
     pfts <- c(pfts, workflowList$pfts[i]$pft$name)
   }
-  
+
   # Obtain the model_id
   model_id <- workflowList$model$id
   if(is.null(model_id)){
@@ -204,9 +203,16 @@ insert.attribute <- function(workflowList){
     email = if(is.na(workflowList$info$userid) || workflowList$info$userid == -1) "" else
       dplyr::tbl(dbcon, "users") %>% filter(id == bit64::as.integer64(workflowList$info$userid)) %>% pull(email),
     notes = if(is.null(workflowList$info$notes)) "" else workflowList$info$notes,
-    input_met = workflowList$run$inputs$met$id,
     variables = workflowList$ensemble$variable
   )
+  
+  if(! is.null(workflowList$run$inputs$met$id)) {
+    properties$input_met <- workflowList$run$inputs$met$id
+  }
+  else if(! is.null(workflowList$run$inputs$met$source)) {
+    properties$input_met <- workflowList$run$inputs$met$source
+  }
+  
   if(! is.null(workflowList$ensemble$parameters$method)) properties$parm_method <- workflowList$ensemble$parameters$method
   if(! is.null(workflowList$sensitivity.analysis$quantiles)){
     sensitivity <- c()
