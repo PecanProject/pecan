@@ -303,6 +303,7 @@ remote_process <- function(settings) {
     }
   }
   
+  outdir = file.path(outdir, paste(source, "site", siteid_short, sep = "_"))
   
   # call remote_process
   output = RpTools$rp_control(
