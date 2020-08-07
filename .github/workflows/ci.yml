@@ -43,6 +43,8 @@ jobs:
       with:
         key: install-${{ github.sha }}
         path: .install
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
     - name: build
       run: make -j1
       env:

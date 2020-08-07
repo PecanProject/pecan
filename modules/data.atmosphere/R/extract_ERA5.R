@@ -35,6 +35,7 @@ extract.nc.ERA5 <-
            overwrite = FALSE,
            ...) {
 
+    # library(xts)
     # Distributing the job between whatever core is available. 
     
     years <- seq(lubridate::year(start_date),
