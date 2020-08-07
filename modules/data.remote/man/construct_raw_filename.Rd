@@ -15,15 +15,13 @@ construct_raw_filename(
 \arguments{
 \item{collection}{collection or product requested from the source}
 
+\item{siteid}{shortform of siteid}
+
 \item{scale}{scale, NULL by default}
 
 \item{projection}{projection, NULL by default}
 
 \item{qc}{qc_parameter, NULL by default}
-
-\item{sitename}{site name}
-
-\item{source}{source of the remote data}
 }
 \value{
 raw_file_name
@@ -34,9 +32,8 @@ construct the raw file name
 \examples{
 \dontrun{
 raw_file_name <- construct_raw_filename(
-  sitename="Reykjavik",
-  source="gee",
   collection="s2",
+  siteid=721,
   scale=10.0
   projection=NULL
   qc=1.0)

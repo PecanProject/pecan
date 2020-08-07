@@ -420,6 +420,7 @@ remote_process <- function(settings) {
         )
         pro_id <- pro_ins$input.id
         pro_path <- output$pro_data_path
+        print(pro_path)
       } else if (flag == 4) {
         # requested processed and raw files are present and have to be updated
         pro_id <- pro_check$id
