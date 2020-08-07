@@ -40,7 +40,7 @@ tags:
   - name: pfts
     description: Everything about PEcAn PFTs (Plant Functional Types)
   - name: inputs
-    description: Everything about inputs for a PEcAn workflow
+    description: Everything about PEcAn inputs
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -536,6 +536,30 @@ paths:
           description: Access forbidden
         '404':
           description: Workflows not found
+  
+  /api/inputs/{input_id}:
+    get:
+      tags:
+        - inputs
+      summary: Download a desired PEcAn input file
+      parameters:
+        - in: path
+          name: input_id
+          description: ID of the PEcAn Input to be downloaded
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the desired input file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
           
   /api/workflows/:
     get:

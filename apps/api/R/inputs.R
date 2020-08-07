@@ -119,3 +119,46 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     return(result)
   }
 }
+
+#################################################################################################
+
+#' Download the input specified by the id
+#' @param id Input id (character)
+#' @return Input file specified by user
+#' @author Tezan Sahu
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<input_id>
+downloadInput <- function(input_id, req, res){
+  dbcon <- PEcAn.DB::betyConnect()
+  db_hostid <- PEcAn.DB::dbHostInfo(dbcon)$hostid
+  
+  # This is just for temporary testing due to the existing issue in dbHostInfo()
+  db_hostid <- ifelse(db_hostid == 99, 99000000001, db_hostid)
+  
+  input <- tbl(dbcon, "dbfiles") %>%
+    select(file_name, file_path, container_id, machine_id, container_type) %>%
+    filter(machine_id == !!db_hostid) %>%
+    filter(container_type == "Input") %>%
+    filter(container_id == !!input_id) %>%
+    collect()
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  if (nrow(input) == 0) {
+    res$status <- 404
+    return()
+  }
+  else{
+    # Generate the full file path using the file_path & file_name
+    filepath <- paste0(input$file_path, "/", input$file_name)
+    
+    if(! file.exists(filepath)){
+      res$status <- 404
+      return()
+    }
+    
+    # Read the data in binary form & return it
+    bin <- readBin(filepath,'raw', n = file.info(filepath)$size)
+    return(bin)
+  }
+}

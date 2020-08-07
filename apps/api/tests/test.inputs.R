@@ -15,3 +15,19 @@ test_that("Calling /api/inputs/ with invalid parameters returns Status 404", {
   )
   expect_equal(res$status, 404)
 })
+
+test_that("Calling /api/inputs/{input_id} with valid parameters returns Status 200", {
+  res <- httr::GET(
+    paste0("http://localhost:8000/api/inputs/", 99000000003),
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 200)
+})
+
+test_that("Calling /api/inputs/{input_id} with invalid parameters returns Status 404", {
+  res <- httr::GET(
+    "http://localhost:8000/api/inputs/0",
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 404)
+})
