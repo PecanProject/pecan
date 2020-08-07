@@ -8,7 +8,7 @@ library(dplyr)
 #' @return Information about Inputs based on model & site
 #' @author Tezan Sahu
 #* @get /
-searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, res){
+searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_id=NULL, offset=0, limit=50, res){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
@@ -27,8 +27,7 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   
   inputs <- tbl(dbcon, "machines") %>%
     select(hostname, machine_id=id) %>%
-    inner_join(inputs, by='machine_id') %>%
-    select(-machine_id)
+    inner_join(inputs, by='machine_id')
   
   inputs <- tbl(dbcon, "modeltypes_formats") %>%
     select(tag, modeltype_id, format_id, input) %>%
@@ -38,8 +37,7 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   
   inputs <- tbl(dbcon, "formats") %>%
     select(format_id = id, format_name = name, mimetype_id) %>%
-    inner_join(inputs, by='format_id') %>%
-    select(-format_id)
+    inner_join(inputs, by='format_id')
   
   inputs <- tbl(dbcon, "mimetypes") %>%
     select(mimetype_id = id, mimetype = type_string) %>%
@@ -48,7 +46,7 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   
   inputs <- tbl(dbcon, "models") %>%
     select(model_id = id, modeltype_id, model_name, revision) %>%
-    inner_join(inputs, by='modeltype_id') %>%
+    right_join(inputs, by='modeltype_id') %>%
     select(-modeltype_id)
   
   inputs <- tbl(dbcon, "sites") %>%
@@ -65,8 +63,18 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
       filter(site_id == !!site_id)
   }
   
+  if(! is.null(format_id)) {
+    inputs <- inputs %>%
+      filter(format_id == !!format_id)
+  }
+  
+  if(! is.null(host_id)) {
+    inputs <- inputs %>%
+      filter(machine_id == !!host_id)
+  }
+  
   qry_res <- inputs %>%
-    select(-site_id, -model_id) %>%
+    select(-site_id, -model_id, -format_id, -machine_id) %>%
     distinct() %>%
     arrange(id) %>%
     collect()

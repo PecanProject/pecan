@@ -464,6 +464,18 @@ paths:
           schema:
             type: string
         - in: query
+          name: format_id
+          description: If provided, returns all inputs for the provided format_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: host_id
+          description: If provided, returns all inputs for the provided host_id
+          required: false
+          schema:
+            type: string
+        - in: query
           name: offset
           description: The number of inputs to skip before starting to collect the result set.
           schema:
