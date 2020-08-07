@@ -129,7 +129,7 @@ shp2kml <- function(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL, NameField
 ##' @author Shawn P. Serbin
 get.attributes <- function(file, coords) {
   # ogr tools do not seem to function properly in R.  Need to figure out a work around reading in
-  # kml files drops important fie lds inside the layers.
+  # kml files drops important fields inside the layers.
   
   #library(fields)
   #require(rgdal)
@@ -167,10 +167,6 @@ get.attributes <- function(file, coords) {
 ##' 
 ##' @author Shawn P. Serbin
 subset_layer <- function(file, coords = NULL, sub.layer = NULL, clip = FALSE, out.dir = NULL, out.name = NULL) {
-  
-#  if (!require(rgdal)) {
-#    print("install rgdal")
-#  }
   
   # Setup output directory for subset layer
   if (is.null(out.dir)) {
