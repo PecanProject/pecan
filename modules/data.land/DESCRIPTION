@@ -51,6 +51,7 @@ Suggests:
     rgdal,
     RCurl,
     RPostgreSQL,
+    stringr,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
