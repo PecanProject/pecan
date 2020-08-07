@@ -420,13 +420,12 @@ remote_process <- function(settings) {
         )
         pro_id <- pro_ins$input.id
         pro_path <- output$pro_data_path
-        print(pro_path)
       } else if (flag == 4) {
         # requested processed and raw files are present and have to be updated
         pro_id <- pro_check$id
         raw_id <- raw_check$id
         raw_path <- output$raw_data_path
-        pro_path <- output$pro_data_path
+        pro_path <- output$process_data_path
         PEcAn.logger::logger.info("updating processed and raw files")
         PEcAn.DB::db.query(
           sprintf(
@@ -469,7 +468,7 @@ remote_process <- function(settings) {
       } else if (flag == 5) {
         # raw file required for creating the processed file exists and the processed file needs to be updated
         pro_id <- pro_check$id
-        pro_path <- output$pro_data_path
+        pro_path <- output$process_data_path
         raw_id <- raw_check$id
         raw_path <- raw_check$file_path
         PEcAn.logger::logger.info("updating the existing processed file")
