@@ -23,7 +23,7 @@ import time
 ee.Initialize()
 
 
-def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
+def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
     """
     Extracts Landsat 8 SR band data from GEE
 
@@ -171,6 +171,9 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
             "qc parameter": qc,
         },
     )
+    
+    if siteid is None:
+      siteid = site_name
 
     # if specified path does not exist create it
     if not os.path.exists(outdir):
@@ -180,11 +183,13 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1):
     timestamp = time.strftime("%y%m%d%H%M%S")
     filepath = os.path.join(
         outdir,
-        site_name
-        + "_gee_l8_"
+        "l8_"
         + str(scale)
         + "_NA_"
         + str(qc)
+        + "_"
+        + "site_"
+        + siteid
         + "_"
         + timestamp
         + ".nc",

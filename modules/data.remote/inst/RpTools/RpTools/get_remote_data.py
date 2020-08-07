@@ -22,6 +22,7 @@ def get_remote_data(
     end,
     source,
     collection,
+    siteid=None,
     scale=None,
     projection=None,
     qc=None,
@@ -69,10 +70,10 @@ def get_remote_data(
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
         if qc:
-            get_datareturn_path = func(geofile, outdir, start, end, scale, qc)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, scale=scale, qc=qc, siteid=siteid)
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
-            get_datareturn_path = func(geofile, outdir, start, end)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, siteid=siteid)
 
     if source == "appeears":
         get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)

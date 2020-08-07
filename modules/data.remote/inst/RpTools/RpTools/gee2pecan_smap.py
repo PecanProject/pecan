@@ -18,7 +18,7 @@ import time
 ee.Initialize()
 
 
-def gee2pecan_smap(geofile, outdir, start, end):
+def gee2pecan_smap(geofile, outdir, start, end, siteid=None):
     """
     Downloads and saves SMAP data from GEE
 
@@ -151,6 +151,9 @@ def gee2pecan_smap(geofile, outdir, start, end):
         datadf, coords=coords, attrs={"site_name": site_name, "AOI": AOI,},
     )
 
+    if siteid is None:
+        sitedid = site_name
+
     # # if specified output path does not exist create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
@@ -158,7 +161,7 @@ def gee2pecan_smap(geofile, outdir, start, end):
     timestamp = time.strftime("%y%m%d%H%M%S")
 
     filepath = os.path.join(
-        outdir, site_name + "_gee_smap_" + "NA_NA_NA_" + timestamp + ".nc"
+        outdir, "smap_" + "NA_NA_NA_" + "site_" + siteid +"_" + timestamp + ".nc"
     )
 
     # convert to netCDF and save the file

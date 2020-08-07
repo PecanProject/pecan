@@ -11,7 +11,7 @@ from importlib import import_module
 import os
 import time
 
-def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge=None, existing_pro_file_path=None):
+def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, siteid=None, pro_merge=None, existing_pro_file_path=None):
     """
     uses processing functions to perform computation on input data
     
@@ -42,7 +42,7 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     # import the function from the module
     func = getattr(module, func_name)
     # call the function
-    process_datareturn_path = func(input_file, outdir)
+    process_datareturn_path = func(input_file, outdir, siteid)
 
     if pro_merge == True and pro_merge != "replace":
         try:

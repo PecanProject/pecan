@@ -1,3 +1,3 @@
-from RpTools.remote_process import remote_process
+from RpTools.rp_control import rp_control
 from RpTools.get_remote_data import get_remote_data
 from RpTools.process_remote_data import process_remote_data

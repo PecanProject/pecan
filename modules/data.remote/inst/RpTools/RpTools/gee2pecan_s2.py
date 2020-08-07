@@ -755,7 +755,7 @@ def xr_dataset_to_timeseries(xr_dataset, variables):
     return df
 
 
-def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
+def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
     """ 
     Downloads Sentinel 2 data from gee and saves it in a netCDF file at the specified location.
     
@@ -793,22 +793,26 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     ee_get_s2_quality_info(area, request)
 
     # get the final data
-    ee_get_s2_data(area, request, qi_threshold=qi_threshold)
+    ee_get_s2_data(area, request, qi_threshold=qc)
 
     # convert dataframe to an xarray dataset, used later for converting to netCDF
     s2_data_to_xarray(area, request)
 
     # if specified output directory does not exist, create it
+    if siteid is None:
+      siteid = area.name
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
-        area.name
-        + "_gee_s2_"
+        "s2_"
         + str(scale)
         + "_NA_"
-        + str(qi_threshold)
+        + str(qc)
+        + "_"
+        + "site_"
+        + siteid
         + "_"
         + timestamp
         + ".nc",

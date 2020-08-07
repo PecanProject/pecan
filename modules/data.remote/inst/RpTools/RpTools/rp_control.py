@@ -15,13 +15,14 @@ from . gee_utils import get_sitename
 import os
 
 
-def remote_process(
+def rp_control(
     geofile,
     outdir,
     start,
     end,
     source,
     collection,
+    siteid=None,
     scale=None,
     projection=None,
     qc=None,
@@ -87,6 +88,7 @@ def remote_process(
             end,
             source,
             collection,
+            siteid,
             scale,
             projection,
             qc,
@@ -106,6 +108,7 @@ def remote_process(
             outdir,
             algorithm,
             input_file,
+            siteid,
             pro_merge,
             existing_pro_file_path,
         )

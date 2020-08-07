@@ -18,7 +18,7 @@ import time
 import os
 import cgi
 import json
-from . gee_utils import get_sitename
+from .gee_utils import get_sitename
 from datetime import datetime
 from warnings import warn
 import os.path
@@ -26,7 +26,7 @@ import time
 
 
 def appeears2pecan(
-    geofile, outdir, start, end, product, projection=None, credfile=None
+    geofile, outdir, start, end, product, projection=None, credfile=None, siteid=None
 ):
     """
     Downloads remote sensing data from AppEEARS
@@ -224,17 +224,21 @@ def appeears2pecan(
             if os.path.splitext(filename)[1][1:] == outformat:
                 break
 
+    if siteid is None:
+        siteid = site_name
+
     if projection is None:
         projection = "NA"
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
-        site_name
-        + "_appeears_"
-        + product
-        + "_NA_"
+        product,
+        +"_NA_"
         + projection
         + "_NA_"
+        + "site_"
+        + siteid
+        + "_"
         + timestamp
         + "."
         + outformat,
