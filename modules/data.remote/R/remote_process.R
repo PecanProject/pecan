@@ -329,8 +329,6 @@ remote_process <- function(settings) {
     existing_pro_file_path = existing_pro_file_path
   )
   
-  print("hi")
-  print(raw_check)
   
   # inserting data in the DB
   if (!is.null(out_process_data)) {
@@ -528,7 +526,6 @@ remote_process <- function(settings) {
       PEcAn.logger::logger.info("Requested raw file already exists")
       raw_id = raw_check$id
       raw_path = raw_check$file_path
-      print(raw_path)
     } else{
       if (flag == 1) {
         PEcAn.logger::logger.info(("Inserting raw file for the first time"))
