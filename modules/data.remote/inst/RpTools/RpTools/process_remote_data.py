@@ -21,10 +21,16 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     output (dict) -- dictionary contatining the keys get_data and process_data
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
     algorithm (str) -- name of the algorithm used to perform computation.
+    inputfile (str) -- path to raw file
+    siteid (str) -- shortform of the siteid
+    pro_merge (str) -- if the pro file has to be merged
+    existing_pro_file_path -- path to existing pro file if pro_merge is TRUE
+    
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the output file
+
+    output netCDF is saved in the specified directory.
     """
     
 

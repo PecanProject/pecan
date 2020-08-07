@@ -773,10 +773,12 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
     
     qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
+    siteid (str) -- shortform of siteid, None by default
+  
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
             
     Python dependencies required: earthengine-api, geopandas, pandas, netCDF4, xarray      
     """

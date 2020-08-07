@@ -32,10 +32,12 @@ def gee2pecan_smap(geofile, outdir, start, end, siteid=None):
 
     end (str) -- ending date areaof the data request in the form YYYY-MM-dd
 
+    siteid (str) -- shortform of siteid, None by default
+  
     Returns
     -------
-    Absolute path to the output file
-    output netCDF is saved in the specified directory
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
     """
 
     geo = create_geo(geofile)

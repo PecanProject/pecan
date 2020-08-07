@@ -47,16 +47,24 @@ def get_remote_data(
 
     collection (str) -- dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
 
+    siteid (str) -- shortform of the siteid
+    
     scale (int) -- pixel resolution, None by default
 
     projection (str) -- type of projection. Only required for appeears polygon AOI type. None by default. 
 
-    qc (float) -- quality control parameter
+    qc (float) -- quality control parameter, None by default
+    
+    credfile (str) -- path to credentials file only requried for AppEEARS, None by default
 
+    raw_merge (str) -- if the existing raw file has to be merged, None by default
+    
+    existing_raw_file_path (str) -- path to exisiting raw file if raw_merge is TRUE., None by default
+  
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the created file.
+    output netCDF is saved in the specified directory.
     """
 
 

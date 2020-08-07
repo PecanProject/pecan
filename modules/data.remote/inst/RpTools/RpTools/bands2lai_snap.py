@@ -24,11 +24,13 @@ def bands2lai_snap(inputfile, outdir, siteid):
     input (str) -- path to the input netCDF file containing bands.
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+    
+    siteid (str) -- shortform of the siteid
          
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the output file
+    output netCDF is saved in the specified directory.
 
     """
     # load the input file

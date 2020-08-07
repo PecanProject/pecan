@@ -41,10 +41,12 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
 
     qc (bool) -- uses the cloud masking function if set to True
 
+    siteid (str) -- shortform of siteid, None by default
+  
     Returns
     -------
-    Absolute path to the output file
-    output netCDF is saved in the specified directory. 
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
  
     """
 

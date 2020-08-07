@@ -47,11 +47,12 @@ def appeears2pecan(
 
     credfile (str) -- path to JSON file containing Earthdata username and password. None by default
 
+    siteid (str) -- shortform of siteid, None by default
+  
     Returns
     -------
-    Nothing:
-            Output files are saved in the specified directory.
-            Output file is of netCDF type when AOI is a Polygon and csv type when AOI is a Point.
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
     """
 
     # API url
