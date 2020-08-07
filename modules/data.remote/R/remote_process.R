@@ -366,6 +366,8 @@ remote_process <- function(settings) {
           )
         pro_id <- pro_ins$input.id
         raw_id <- raw_ins$input.id
+        pro_path <- output$process_data_path
+        raw_path <- output$raw_data_path
       } else if (flag == 2) {
         # requested processed file does not exist but the raw file used to create it exists within the required timeline
         PEcAn.logger::logger.info("inserting processed file for the first time")
@@ -381,10 +383,12 @@ remote_process <- function(settings) {
             con = dbcon
           )
         raw_id <- raw_check$id
-        pro_id <- pro$input.id
+        raw_path <- raw_check$file_path
+        pro_id <- pro_ins$input.id
+        pro_path <- output$pro_data_path
       } else if (flag == 3) {
         # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
-        PEcAn.DB::dbfile.input.insert(
+        pro_ins <- PEcAn.DB::dbfile.input.insert(
           in.path = output$process_data_path,
           in.prefix = output$process_data_name,
           siteid = siteid,
@@ -414,11 +418,14 @@ remote_process <- function(settings) {
           ),
           dbcon
         )
+        pro_id <- pro_ins$input.id
+        pro_path <- output$pro_data_path
       } else if (flag == 4) {
         # requested processed and raw files are present and have to be updated
         pro_id <- pro_check$id
         raw_id <- raw_check$id
         raw_path <- output$raw_data_path
+        pro_path <- output$pro_data_path
         PEcAn.logger::logger.info("updating processed and raw files")
         PEcAn.DB::db.query(
           sprintf(
@@ -460,7 +467,10 @@ remote_process <- function(settings) {
         )
       } else if (flag == 5) {
         # raw file required for creating the processed file exists and the processed file needs to be updated
-        pro_id = pro_check$id
+        pro_id <- pro_check$id
+        pro_path <- output$pro_data_path
+        raw_id <- raw_check$id
+        raw_path <- raw_check$file_path
         PEcAn.logger::logger.info("updating the existing processed file")
         PEcAn.DB::db.query(
           sprintf(
@@ -483,7 +493,9 @@ remote_process <- function(settings) {
         )
       } else if (flag == 6) {
         # there is some existing processed file but the raw file used to create it is now deleted, replace the processed file entirely with the one created from new raw file
-        pro_id = pro_check$id
+        pro_id <- pro_check$id
+        pro_path <- output$pro_data_path
+        raw_path <-output$raw_data_path
         PEcAn.logger::logger.info("replacing the existing processed file and creating a new raw file")
         PEcAn.DB::db.query(
           sprintf(
@@ -589,9 +601,8 @@ remote_process <- function(settings) {
 ##'
 ##' @name construct_raw_filename
 ##' @title construct_raw_filename
-##' @param sitename site name
-##' @param source source of the remote data
 ##' @param collection collection or product requested from the source
+##' @param siteid shortform of siteid
 ##' @param scale scale, NULL by default
 ##' @param projection projection, NULL by default
 ##' @param qc qc_parameter, NULL by default
@@ -599,9 +610,8 @@ remote_process <- function(settings) {
 ##' @examples
 ##' \dontrun{
 ##' raw_file_name <- construct_raw_filename(
-##'   sitename="Reykjavik",
-##'   source="gee",
 ##'   collection="s2",
+##'   siteid=721,
 ##'   scale=10.0
 ##'   projection=NULL
 ##'   qc=1.0)
