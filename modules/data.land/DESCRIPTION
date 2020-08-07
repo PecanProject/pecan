@@ -3,46 +3,56 @@ Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Xiaohui", "Feng"),
-             person("Dan"," Wang"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Alexey", "Shiklomanov"))
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
-    Carl Davidson, Rob Kooper, Alexey Shiklomanov
-Maintainer: Mike Dietze <dietze@bu.edu>, David LeBauer <dlebauer@illinois.edu>
+Authors@R: c(person("Mike","Dietze",email="dietze@bu.edu",role="cre"),
+             person("David","LeBauer",role="aut"),
+             person("Xiaohui", "Feng",role="ctb"),
+             person("Dan"," Wang",role="ctb"),
+             person("Carl", "Davidson",role="ctb"),
+             person("Rob","Kooper",role="ctb"),
+             person("Alexey", "Shiklomanov",role="ctb"))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends:
-    datapack,
-    dataone,
-    PEcAn.DB,
-    PEcAn.utils,
-    redland,
-    sirt,
-    sf
 Imports:
+    coda,
     dplyr,
+    fs,
+    lubridate,
     magrittr,
     ncdf4 (>= 1.15),
+    neonUtilities,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     purrr,
+    rjags,
     rlang,
     sp,
     sf,
-    XML (>= 3.98-1.4)
+    traits,
+    udunits2,
+    XML (>= 3.98-1.4)      
 Suggests:
-    fields,
+    datapack,
+    dataone,
+    redland,
+    sirt,
+    dplR,
+    maptools,
+    mvtnorm,
+    PEcAn.benchmark,
+    PEcAn.data.atmosphere,
     PEcAn.settings,
+    PEcAn.visualization,
+    raster,
     rgdal,
+    RCurl,
     RPostgreSQL,
-    testthat (>= 1.0.2),
+    stringr,
+    testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

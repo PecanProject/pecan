@@ -341,11 +341,17 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       update_frequency = dt,
       flag = 1
     )
-    if (!useCO2) {
-      metvar_table[metvar_table$variable == "co2",
-                   c("update_frequency", "flag")] <- list(380, 4)
-    }
+    # if (!useCO2) {
+    #   metvar_table[metvar_table$variable == "co2",
+    #                c("update_frequency", "flag")] <- list(380, 4)
+    # }
 
+    if (!useCO2) {
+      metvar_table_vars <- metvar_table[metvar_table$variable !=  "co2",]  ## CO2 optional in ED2
+    }else{
+      metvar_table_vars <- metvar_table
+    }
+    
     ed_metheader <- list(list(
       path_prefix = met_folder,
       nlon = 1,
@@ -354,9 +360,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       dy = 1,
       xmin = lon,
       ymin = lat,
-      variables = metvar_table
+      variables = metvar_table_vars
     ))
-
+    
     check_ed_metheader(ed_metheader)
     write_ed_metheader(ed_metheader, met_header_file,
                        header_line = shQuote("Made_by_PEcAn_met2model.ED2"))

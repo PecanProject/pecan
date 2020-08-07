@@ -1,14 +1,16 @@
 openapi: 3.0.0
 servers:
-  - description: PEcAn Tezan VM
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/912db446
+  - description: PEcAn API Server
+    url: https://pecan-tezan.ncsa.illinois.edu/
+  - description: PEcAn Test Server
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/0ac36769
   - description: Localhost
     url: http://127.0.0.1:8000
   
 info:
   title: PEcAn Project API
   description: >-
-    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan).
+    This is the API for interacting with server(s) of the __PEcAn Project__. The Predictive Ecosystem Analyser (PEcAn) Project is an open source framework initiated to meet the demands for more accessible, transparent & repeatable modeling of ecosystems. Here's the link to [PEcAn's Github Repository](https://github.com/PecanProject/pecan). <br><br>
     PEcAn can be considered as an ecoinformatics toolbox combined with a set of workflows that wrap around ecosystem models that allow users to effectively perform data synthesis, propagation of uncertainty through a model & ecological predictions in an integrated fashion using a diverse repository of data & models. 
   version: "1.0.0"
   contact:
@@ -29,6 +31,10 @@ tags:
     description: Everything about PEcAn runs
   - name: models
     description: Everything about PEcAn models
+  - name: sites
+    description: Everything about PEcAn sites
+  - name: pfts
+    description: Everything about PEcAn PFTs (Plant Functional Types)
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -43,7 +49,6 @@ paths:
       summary: Ping the server to check if it is live 
       tags:
         - general
-        - 
       responses:
         '200':
           description: OK
@@ -66,7 +71,6 @@ paths:
       summary: Obtain general information about PEcAn & the details of the database host
       tags:
         - general
-        - 
       responses:
         '200':
           description: OK
@@ -105,28 +109,64 @@ paths:
         '404':
           description: Models not found
   
+  /api/models/{model_id}:
+    get:
+      tags:
+        - models
+      summary: Details of requested model
+      parameters:
+        - in: path
+          name: model_id
+          description: Model ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+                      
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model not found
+  
   /api/models/:
     get:
       tags:
         - models
-        -
-      summary: Details of model(s)
+      summary: Search for model(s) using search pattern based on model name & revision
       parameters:
         - in: query
           name: model_name
-          description: Name of the model
+          description: Search string for model name
           required: false
           schema:
             type: string
         - in: query
           name: revision
-          description: Model version/revision
+          description: Search string for revision
           required: false
           schema:
             type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
       responses:
         '200':
-          description: Available Models 
+          description: List of sites matching search pattern
           content:
             application/json:
               schema:
@@ -136,20 +176,191 @@ paths:
                     type: array
                     items: 
                       type: object
-                      $ref: '#/components/schemas/Model'
+                      properties:
+                        model_id:
+                          type: string
+                        model_name:
+                          type: string
+                        revision:
+                          type: string
         '401':
           description: Authentication required
         '403':
           description: Access forbidden
         '404':
           description: Model(s) not found
-                  
   
+  /api/sites/{site_id}:
+    get:
+      tags:
+        - sites
+      summary: Details of a site
+      parameters:
+        - in: path
+          name: site_id
+          description: PEcAn site ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Site Details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site not found
+  
+  /api/sites/:
+    get:
+      tags:
+        - sites
+      summary: Search for sites using search pattern based on site name
+      parameters:
+        - in: query
+          name: sitename
+          description: Search string for site name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of sites matching search pattern 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sites:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        sitename:
+                          type: string
+                        
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site(s) not found
+  
+  /api/pfts/{pft_id}:
+    get:
+      tags:
+        - pfts
+      summary: Details of a PFT
+      parameters:
+        - in: path
+          name: pft_id
+          description: PEcAn PFT ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PFT Details 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PFT'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: PFT not found
+  
+  /api/pfts/:
+    get:
+      tags:
+        - pfts
+      summary: Search for PFTs using search pattern matching
+      parameters:
+        - in: query
+          name: pft_name
+          description: Search string for PFT name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: pft_type
+          description: PFT Type
+          required: false
+          schema:
+            type: string
+            default: ""
+            enum:
+              - "plant"
+              - "cultivar"
+              - ""
+        - in: query
+          name: model_type
+          description: Search string for Model type
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of PFTs matching search pattern 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pfts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pft_id:
+                          type: string
+                        pft_name:
+                          type: string
+                        pft_type:
+                          type: string
+                        model_type:
+                          type: string
+                        
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Site(s) not found
+          
   /api/workflows/:
     get:
       tags:
         - workflows
-        -
       summary: Get the list of workflows 
       parameters:
         - in: query
@@ -196,8 +407,7 @@ paths:
                   workflows:
                     type: array
                     items: 
-                      type: object
-                      $ref: '#/components/schemas/Workflow'
+                      $ref: '#/components/schemas/Workflow_GET'
                   count:
                     type: integer
                   next_page:
@@ -215,26 +425,30 @@ paths:
     post:
       tags:
         - workflows
-        - 
       summary: Submit a new PEcAn workflow
       requestBody:
         required: true
         content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Workflow_POST'
           application/json:
             schema:
-              $ref: '#/components/schemas/Workflow'
+              $ref: '#/components/schemas/Workflow_POST'
+              
       responses:
         '201':
           description: Submitted workflow successfully    
         '401':
           description: Authentication required
+        '415':
+          description: Unsupported request content type
       
 
   /api/workflows/{id}:
     get:
       tags:
         - workflows
-        - 
       summary: Get the details of a PEcAn Workflow
       parameters:
         - in: path
@@ -249,7 +463,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Workflow'
+                $ref: '#/components/schemas/Workflow_GET'
         '401':
           description: Authentication required
         '403':
@@ -265,13 +479,12 @@ paths:
     get:
       tags:
         - runs
-        -
       summary: Get the list of all runs for a specified PEcAn Workflow
       parameters:
         - in: query
           name: workflow_id
           description: ID of the PEcAn Workflow
-          required: true
+          required: false
           schema:
             type: string
         - in: query
@@ -306,7 +519,6 @@ paths:
                   runs:
                     type: array
                     items: 
-                      type: object
                       $ref: '#/components/schemas/Run'
                   count:
                     type: integer
@@ -322,22 +534,21 @@ paths:
           description: Workflow with specified ID was not found 
 
 
-  /api/runs/{id}:
+  /api/runs/{run_id}:
     get:
       tags:
         - runs
-        - 
       summary: Get the details of a specified PEcAn run
       parameters:
         - in: path
-          name: id
+          name: run_id
           description: ID of the PEcAn run
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Details about the requested run within the requested PEcAn workflow
+          description: Details about the requested run 
           content:
             application/json:
               schema:
@@ -349,7 +560,65 @@ paths:
         '404':
           description: Workflow with specified ID was not found
                   
-
+  /api/runs/{run_id}/graph/{year}/{y_var}:
+    get:
+      tags:
+        - runs
+      summary: Plot the desired variables for a run output
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: year
+          description: Year the plot is for
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: y_var
+          description: Variable to plot along the Y-axis
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: x_var
+          description: Variable to plot along the X-axis
+          required: true
+          schema:
+            type: string
+            default: time
+        - in: query
+          name: width
+          description: Width of the image generated
+          required: true
+          schema:
+            type: string
+            default: 800
+        - in: query
+          name: height
+          description: Height of the image generated
+          required: true
+          schema:
+            type: string
+            default: 600
+      responses:
+        '200':
+          description: Plot of the desired output variables obtained from a run 
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Run data not found
 #####################################################################################################################
 ###################################################### Components ###################################################
 #####################################################################################################################
@@ -368,6 +637,15 @@ components:
           type: string
         model_type:
           type: string
+        inputs:
+          type: array
+          items:
+            type: object
+            properties:
+              input:
+                type: string
+              required:
+                type: boolean
         
     Run:
       properties:
@@ -389,8 +667,77 @@ components:
           type: string
         finish_time:
           type: string
-
-    Workflow:
+        started_at:
+          type: string
+        finished_at:
+          type: string
+        outputs:
+          type: object
+          properties:
+            logfile:
+              type: string
+            info:
+              type: string
+            years:
+              type: object
+              properties:
+                "<year>":
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                    variables:
+                      type: object
+                      properties:
+                        "<var_name>":
+                          type: string
+                  
+    
+    Site:
+      properties:
+        id:
+          type: string
+        sitename:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        mat:
+          type: number
+        map:
+          type: number
+        soil:
+          type: string
+        som:
+          type: number
+        notes:
+          type: string
+        soilnotes:
+          type: string
+        greenhouse:
+          type: string
+        sand_pct:
+          type: number
+        time_zone:
+          type: string
+    
+    PFT:
+      properties:
+        pft_id:
+          type: string
+        pft_name:
+          type: string
+        pft_type:
+          type: string
+        definition:
+          type: string
+        model_type:
+          type: string
+    
+    Workflow_GET:
       properties:
         id:
           type: string
@@ -424,7 +771,8 @@ components:
             notes:
               type: string
             runs:
-              type: string
+              type: integer
+              example: 1
             pecan_edit:
               type: string
             status:
@@ -433,10 +781,93 @@ components:
               type: string
             input_poolinitcond:
               type: string
+    
+    Workflow_POST:
+      type: object
+      xml:
+        name: pecan
+      properties:
+        pfts:
+          type: object
+          properties:
+            pft:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: temperate.coniferous
+        meta.analysis:
+          type: object
+          properties:
+            iter:
+              type: integer
+              example: 100
+            random.effects:
+              type: boolean
+              example: "FALSE"
+            threshold:
+              type: number
+              example: 1.2
+            update:
+              type: string
+              example: AUTO
+        ensemble:
+          type: object
+          properties:
+            variable:
+              type: string
+              example: NPP
+        sensitivity.analysis:
+          type: object
+          properties:
+            quantiles:
+              type: object
+              properties:
+                sigma:
+                  type: array
+                  items:
+                    type: integer
+                  example: [-1, 1]
+            variable:
+              type: string
+              example: NPP
+        model:
+          type: object
+          properties:
+            "type":
+              type: string
+              example: SIPNET
+            revision:
+              type: string
+              example: r136
+        run:
+          type: object
+          properties:
+            site:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 772
+            inputs:
+              type: object
+              properties:
+                met:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "99000000003"
+            start.date:
+              type: string
+              example: "2002-01-01 00:00:00"
+            end.date:
+              type: string
+              example: "2002-12-31 00:00:00"
+            dbfiles:
+              type: string
+              example: pecan/dbfiles
   securitySchemes:
     basicAuth:
       type: http
       scheme: basic
-
-
-

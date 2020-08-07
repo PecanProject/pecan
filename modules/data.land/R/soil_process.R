@@ -40,13 +40,42 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
-  outfolder <- file.path(dbfiles, paste0(input$soil$source, "_site_", str_ns))
+  outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
   
   if(!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#   
   # if we are reading from gSSURGO
   if (input$source=="gSSURGO"){
-    newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon)
+    
+    #see if there is already files generated there
+    newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
+      as.list()
+    names(newfile) <- rep("path", length(newfile))
+    
+    if(length(newfile)==0){
+      radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
+      
+      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius = radiusL)
+      
+      # register files in DB 
+      for(i in 1:length(newfile)){
+        in.path = paste0(dirname(newfile[i]$path), '/')
+        in.prefix = stringr::str_remove(basename(newfile[i]$path), ".nc")
+        
+        PEcAn.DB::dbfile.input.insert (in.path,
+                             in.prefix, 
+                             new.site$id, 
+                             startdate = NULL, 
+                             enddate = NULL, 
+                             mimetype =  "application/x-netcdf", 
+                             formatname = "gSSURGO Soil", 
+                             con = con, 
+                             ens=TRUE) 
+      }
+      
+      
+      }
+
     return(newfile)
   }
   #--------------------------------------------------------------------------------------------------# 

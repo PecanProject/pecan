@@ -94,7 +94,8 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 SDA_remote_launcher <-function(settingPath, 
                                ObsPath,
                                run.bash.args){
-
+  
+  future::plan(future::multiprocess)
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------
@@ -133,7 +134,7 @@ SDA_remote_launcher <-function(settingPath,
     fname_p2<-""
       }
   
-
+  folder_name<-"SDA"
   folder_name <- paste0(c("SDA",fname_p1,fname_p2), collapse = "_")
   #creating a folder on remote
   out <- remote.execute.R(script=paste0("dir.create(\"/",settings$host$folder,"//",folder_name,"\")"),
@@ -160,9 +161,30 @@ SDA_remote_launcher <-function(settingPath,
       delete = FALSE,
       stderr = FALSE
     )
+    
+    # change the pft folder inside the setting
+
+
+    settings$pfts %>%
+      purrr::map('outdir') %>%
+      walk(function(pft.dir) {
+        settings <<-
+          rapply(settings, function(x)
+            ifelse(
+              x == pft.dir,
+              file.path(settings$host$folder,
+                        folder_name, "pft") ,
+              x
+            ),
+            how = "replace")
+      })
+    
+
+    
   } else {
     #
-    PEcAn.logger::logger.severe("You need to have either PFT folder or sample.Rdata !")
+    
+    PEcAn.logger::logger.severe("You need to have either PFT folder or samples.Rdata !")
   }
   #----------------------------------------------------------------
   # Obs
@@ -209,13 +231,14 @@ SDA_remote_launcher <-function(settingPath,
   #---------------------------------------------------------------
   # Finding all the met paths in your settings
   if (is.MultiSettings(settings)){
-    input.paths <-settings %>% map(~.x[['run']] ) %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
+    input.paths <-settings$run %>% map(~.x[['inputs']] %>% map(~.x[['path']])) %>% unlist()
   } else {
     input.paths <-settings$run$inputs %>% map(~.x[['path']]) %>% unlist()
   }
 
   # see if we can find those mets on remote
-  missing.inputs <- input.paths %>% map_lgl(function(.x) {
+  missing.inputs <- input.paths %>%
+    map_lgl(function(.x) {
     out <- remote.execute.R(
       script = paste0("file.exists(\"/", .x, "\")"),
       host = my_host,
@@ -235,29 +258,50 @@ SDA_remote_launcher <-function(settingPath,
                            scratchdir = ".")
   }
   
+  # Do the Rsync to copy all the main dir of the inputs
+  need.copy <- input.paths[!missing.inputs]
+  
+  need.copy.dirs <- dirname(need.copy) %>%
+    unique() %>%
+    purrr::discard(~ .x %in% c("."))
+  
+  
+  need.copy.dirs %>%
+    purrr::walk( ~   #copy over
+                   remote.copy.to(
+                     my_host,
+                     .x,
+                     file.path(settings$host$folder, folder_name, "inputs"),
+                     delete = FALSE,
+                     stderr = FALSE
+                   ))
 
   
-  input.paths[!missing.inputs] %>%
-    walk(function(missing.input){
-      tryCatch(
-        {
+
+  need.copy%>%
+    furrr::future_map(function(missing.input){
+
+       tryCatch({
+         
+         PEcAn.logger::logger.info(paste0("Trying modify the path to the following missing input :", missing.input))
+        
           path.break <- strsplit(missing.input, "/")[[1]]
           #since I'm keeping all the inputs in one folder, I have to combine site folder name with file name
-          fname <-paste0(path.break[length(path.break) - 1], "_", path.break[length(path.break)])
+          fdir <-path.break[length(path.break) - 1]
+          fdir <- ifelse(length(fdir)==0, "", fdir)
+          fname <-path.break[length(path.break)]
           
-          # copy the missing
-          remote.copy.to(
-            my_host,
-            missing.input,
-            paste0(settings$host$folder, "/", folder_name, "/inputs/", fname),
-            delete = FALSE,
-            stderr = FALSE
-          )
-          
+
           #replace the path
-          settings <<-rapply(settings, function(x) ifelse(x==missing.input,
-                                                          paste0(settings$host$folder,"/",folder_name,"/inputs/",fname) ,x),
-                             how = "replace")
+          settings <<-
+            rapply(settings, function(x)
+              ifelse(
+                x == missing.input,
+                file.path(settings$host$folder,
+                          folder_name, "inputs", fdir, fname) ,
+                x
+              ),
+              how = "replace")
           
           
         },
@@ -297,7 +341,7 @@ SDA_remote_launcher <-function(settingPath,
   remote.copy.to(
     my_host,
     file.path(save.setting.dir, basename(settingPath)),
-    settings$outdir,
+    file.path(settings$host$folder, folder_name),
     delete = FALSE,
     stderr = FALSE
   )
@@ -308,14 +352,14 @@ SDA_remote_launcher <-function(settingPath,
   remote.copy.to(
     my_host,
     system.file("RemoteLauncher", "SDA_launcher.R", package = "PEcAn.assim.sequential"),
-    settings$outdir,
+    file.path(settings$host$folder,folder_name),
     delete = FALSE,
     stderr = FALSE
   )
   
   cmd <- paste0("Rscript ",
-                settings$outdir,"/SDA_launcher.R ", # remote luncher
-                settings$outdir,"/",basename(settingPath), # path to settings
+                remote_settings$outdir,"/SDA_launcher.R ", # remote luncher
+                remote_settings$outdir, "/" ,basename(settingPath), # path to settings
                 " Obs//", basename(ObsPath)
   )
   

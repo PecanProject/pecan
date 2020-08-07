@@ -258,7 +258,7 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
                              ens=.x))
   
   out.ense <- out.ense %>%
-    setNames(rep("path", length(out.ense)))
+    stats::setNames(rep("path", length(out.ense)))
   
   return(out.ense)
 }

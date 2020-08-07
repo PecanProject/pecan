@@ -25,6 +25,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Update ED docker build, will now build version 2.2.0 and git
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 - model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
+-gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
  
 
 ### Changed
@@ -43,9 +44,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 - data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519). 
 - Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
+-Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
+
 
 ### Added
 
+- Functions to send/receive messages to/from rabbitmq.
 - Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
 - PEcAn API that can be used to talk to PEcAn servers. Endpoints to GET the details about the server that user is talking to, PEcAn models, workflows & runs. Authetication enabled. (#2631)
 - New versioned ED2IN template: ED2IN.2.2.0 (#2143) (replaces ED2IN.git)
@@ -61,6 +65,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Removed
 
+- Removed the sugarcane and db folders from web, this removes the simple DB editor in the web folder. (#2532)
 - Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
 - Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).
