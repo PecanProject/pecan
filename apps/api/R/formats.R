@@ -19,9 +19,9 @@ getFormat <- function(format_id, res){
     select(-mimetype_id)
   
   qry_res <- Format %>% collect()
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
+    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Format not found"))
   }
@@ -32,6 +32,19 @@ getFormat <- function(format_id, res){
       response[colname] <- qry_res[colname]
     }
     
+    format_vars <- tbl(dbcon, "formats_variables") %>%
+      select(name, unit, format_id, variable_id) %>%
+      filter(format_id == !!format_id)
+    format_vars <- tbl(dbcon, "variables") %>%
+      select(variable_id = id, description, units) %>%
+      inner_join(format_vars, by="variable_id") %>%
+      mutate(unit = ifelse(unit %in% "", units, unit)) %>%
+      select(-variable_id, -format_id, -units) %>%
+      collect()
+    
+    PEcAn.DB::db.close(dbcon)
+    
+    response$format_variables <- format_vars
     return(response)
   }
 }

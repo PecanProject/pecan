@@ -638,6 +638,15 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 
 ## $header
 ## [1] ""
+
+## $format_variables
+##                                                   description        name             unit
+## 1                                            Latent heat flux        LE_f            W m-2
+## 2                                          Sensible heat flux         H_f            W m-2
+## 3                                             air temperature        Ta_f        degrees C
+## 4                                      Vapor Pressure Deficit       VPD_f               Pa
+## 5 Cumulative ecosystem respiration over a specified time step        Reco umol C02 m-2 s-1
+## 6                                      Net ecosystem exchange NEE_st_fMDS   umol C m-2 s-1
 ```
 
 #### Python Snippet
@@ -656,7 +665,15 @@ print(json.dumps(response.json(), indent=2))
 ##   "format_id": 19,
 ##   "name": "AmeriFlux.level4.h",
 ##   "notes": "Half-hourly AmeriFlux level 4 gap filled, partitioned, and flagged flux tower data. Variables description:  ## Level 4 data are obtained from the level 3 products, data are ustar filtered, gap-filled using different methods (ANN and ## MDS) and partitioned (i.e. NEE, GPP, and Re). Flags with information regarding quality of the original and gapfilled data ## are added.  Missing values: -9999.",
-##   "header": ""
+##   "header": "",
+##   "format_variables": [
+##     {
+##       "description": "Latent heat flux",
+##       "name": "LE_f",
+##       "unit": "W m-2"
+##     },
+##     ...
+##   ]
 ## }
 ```
 
