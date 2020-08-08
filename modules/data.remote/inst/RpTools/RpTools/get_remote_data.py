@@ -84,7 +84,7 @@ def get_remote_data(
             get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, siteid=siteid)
 
     if source == "appeears":
-        get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
+        get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile, siteid=siteid)
 
     if raw_merge == True and raw_merge != "replace":
         # if output file is of csv type use csv_merge, example AppEEARS point AOI type 

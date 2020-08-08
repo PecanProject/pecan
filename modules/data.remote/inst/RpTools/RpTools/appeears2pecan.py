@@ -233,7 +233,7 @@ def appeears2pecan(
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
-        product,
+        product
         +"_NA_"
         + projection
         + "_NA_"
@@ -242,7 +242,7 @@ def appeears2pecan(
         + "_"
         + timestamp
         + "."
-        + outformat,
+        + outformat
     )
     os.rename(filepath, save_path)
 

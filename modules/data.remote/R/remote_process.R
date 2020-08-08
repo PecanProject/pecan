@@ -554,6 +554,7 @@ remote_process <- function(settings) {
             con = dbcon
           )
         raw_id <- raw_ins$input.id
+        raw_path <- output$raw_data_path
       } else{
         PEcAn.logger::logger.info("Updating raw file")
         raw_id <- raw_check$id
