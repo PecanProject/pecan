@@ -44,8 +44,6 @@ Clean_Tucson <- function(file) {
 ##' (WinDendro can sometimes create duplicate records when editing)
 Read_Tucson <- function(folder) {
   
-  library(dplR)
-  
   filenames <- dir(folder, pattern = "TXT", full.names = TRUE)
   filenames <- c(filenames, dir(folder, pattern = "rwl", full.names = TRUE))
   filenames <- c(filenames, dir(folder, pattern = "rw", full.names = TRUE))
@@ -56,7 +54,7 @@ Read_Tucson <- function(folder) {
   filedata <- list()
   for (file in filenames) {
     file <- Clean_Tucson(file)
-    filedata[[file]] <- read.tucson(file, header = FALSE)
+    filedata[[file]] <- dplR::read.tucson(file, header = FALSE)
   }
   
   return(filedata)
