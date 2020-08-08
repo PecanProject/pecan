@@ -419,7 +419,7 @@ SDA_remote_launcher <-function(settingPath,
 #' @export
 Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
   
-  settings <- read.settings(settingPath)
+  settings <- PEcAn.settings::read.settings(settingPath)
   
   system(paste0("nohup Rscript ",
                 system.file("RemoteLauncher", "Remote_sync.R", package = "PEcAn.assim.sequential")," ",
