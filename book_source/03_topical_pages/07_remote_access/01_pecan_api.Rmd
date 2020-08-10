@@ -48,7 +48,7 @@ The currently implemented functionalities include:
   * [`GET /api/formats/{format_id}`](#get-formatsformat_id): Fetch the details of specific Format
   
 * __Inputs:__
-  * [`GET /api/inputs/`](#get-apiinputs): Search for inputs needed for a PEcAn workflow based on `model_id` & `site_id`
+  * [`GET /api/inputs/`](#get-apiinputs): Search for inputs needed for a PEcAn workflow based on `model_id`, `site_id`, `format_id` & `host_id`.
   * [`GET /api/inputs/{input_id}`](#get-apiinputsinput_id) *: Download the desired input file
   
 * __Workflows:__
@@ -704,6 +704,32 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ## [1] 2
 ```
 
+```R
+# Get the inputs needed for a workflow with format_id = 24 (Sipnet.climna) & host_id = 2 (ebi-forecast.igb.illinois.edu)
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/?format_id=24&host_id=2",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $inputs
+##                                                sitename model_name revision mimetype   format_name tag                      hostname
+## 1      Howland Forest- main tower (US-Ho1) (PalEON PHO)      Model   102319 text/csv Sipnet.climna met ebi-forecast.igb.illinois.edu
+## 2      Howland Forest- main tower (US-Ho1) (PalEON PHO)     SIPNET     r136 text/csv Sipnet.climna met ebi-forecast.igb.illinois.edu
+## ...
+##      file_name                 file_path  id input_name          start_date            end_date
+## 1  US-Ho1.clim /home/share/data/dbfiles/ 232                           <NA>                <NA>
+## 2  US-Ho1.clim /home/share/data/dbfiles/ 232                           <NA>                <NA>
+## ...
+
+## $count
+## [1] 50
+
+## $next_page
+## [1] "http://localhost:8000/api/workflows/?format_id=24&host_id=2&offset=50&limit=50"
+```
+
 #### Python Snippet
 
 ```python
@@ -734,7 +760,40 @@ print(json.dumps(response.json(), indent=2))
 ##     },
 ##     ...
 ##   ],
-##   "count: 2
+##   "count": 2
+## }
+```
+
+```python
+# Get the inputs needed for a workflow with format_id = 24 (Sipnet.climna) & host_id = 2 (ebi-forecast.igb.illinois.edu)
+response = requests.get(
+             "http://localhost:8000/api/inputs/?format_id=24&host_id=2",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "inputs": [
+##     {
+##       "sitename": "Howland Forest- main tower (US-Ho1) (PalEON PHO)",
+##       "model_name": "Model",
+##       "revision": "102319",
+##       "tag": "met",
+##       "hostname": "ebi-forecast.igb.illinois.edu",
+##       "file_name": "US-Ho1.clim",
+##       "format_name": "Sipnet.climna",
+##       "mimetype": "text/csv",
+##       "file_path": "/home/share/data/dbfiles/",
+##       "id": 232,
+##       "input_name": "",
+##       "start_date": "NA",
+##       "end_date": "NA"
+##     },
+##     ...
+##   ],
+##   "count": 50,
+##   "next_page": "http://localhost:8000/api/workflows/?format_id=24&host_id=2&offset=50&limit=50"
 ## }
 ```
 
@@ -1052,7 +1111,7 @@ writeBin(res$content, "test.ensemble.ts.99000000017.NPP.2002.2002.Rdata")
 #### Python Snippet
 
 ```python
-# Download the '2002.nc' output file for the run with id = 99000000282
+# Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
 response = requests.get(
              "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
              auth=HTTPBasicAuth('carya', 'illinois')
