@@ -68,7 +68,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
                              startdate = NULL, 
                              enddate = NULL, 
                              mimetype =  "application/x-netcdf", 
-                             formatname = "gSSURGO Soil", 
+                             formatname = "pecan_soil_standard", 
                              con = con, 
                              ens=TRUE) 
       }
