@@ -33,7 +33,6 @@ remote_process <- function(settings) {
   siteid_short <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
   raw_mimetype <- settings$remotedata$raw_mimetype
   raw_formatname <- settings$remotedata$raw_formatname
-  geofile <- settings$remotedata$geofile
   outdir <- settings$outdir
   start <- as.character(as.Date(settings$run$start.date))
   end <- as.character(as.Date(settings$run$end.date))
@@ -89,6 +88,9 @@ remote_process <- function(settings) {
   existing_data <-
     PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid), dbcon)
   if (nrow(existing_data) >= 1) {
+    
+    coords = unlist(PEcAn.DB::db.query(sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid), con = dbcon), use.names=FALSE)
+    
     # if processed data is requested, example LAI
     if (!is.null(out_process_data)) {
       # construct processed file name
@@ -307,7 +309,7 @@ remote_process <- function(settings) {
   
   # call remote_process
   output = RpTools$rp_control(
-    geofile = geofile,
+    coords = coords,
     outdir = outdir,
     start = start,
     end = end,

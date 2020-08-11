@@ -12,11 +12,12 @@ from . merge_files import nc_merge, csv_merge
 from . get_remote_data import get_remote_data
 from . process_remote_data import process_remote_data
 from . gee_utils import get_sitename
+from . create_geojson import create_geojson
 import os
 
 
 def rp_control(
-    geofile,
+    coords,
     outdir,
     start,
     end,
@@ -89,6 +90,9 @@ def rp_control(
     dictionary containing raw_id, raw_path, pro_id, pro_path
 
     """
+
+    geofile = create_geojson(coords, siteid, outdir)
+
 
     aoi_name = get_sitename(geofile)
     get_datareturn_path = 78
