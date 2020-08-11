@@ -36,8 +36,6 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
 
     # get the type of the input data
     input_type = out_get_data
-    # locate the input file
-    # input_file = os.path.join(outdir, aoi_name, "_", input_type, ".nc")
     # extract the computation which is to be done
     output = out_process_data
     # construct the function name
