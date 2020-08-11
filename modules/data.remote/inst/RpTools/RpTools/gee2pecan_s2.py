@@ -173,6 +173,8 @@ class AOI:
             sys.exit("AOI has to get either geometry or coordinates as list!")
         elif geometry and not coordinate_list:
             coordinate_list = list(geometry.exterior.coords)
+            for i in range(len(coordinate_list)):
+                coordinate_list[i] = coordinate_list[i][0:2]
         elif coordinate_list and not geometry:
             geometry = None
 

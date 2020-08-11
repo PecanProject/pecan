@@ -45,7 +45,7 @@ def rp_control(
 
     Parameters
     ----------
-    geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
+    coords (str) -- geometry of the site from BETY
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
   
