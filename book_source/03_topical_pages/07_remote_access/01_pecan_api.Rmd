@@ -49,7 +49,7 @@ The currently implemented functionalities include:
   
 * __Inputs:__
   * [`GET /api/inputs/`](#get-apiinputs): Search for inputs needed for a PEcAn workflow based on `model_id`, `site_id`, `format_id` & `host_id`.
-  * [`GET /api/inputs/{input_id}`](#get-apiinputsinput_id) *: Download the desired input file
+  * [`GET /api/inputs/{input_id}`](#get-apiinputsinput_id) *: Download the desired input file (if the `input_id` corresponds to a folder, an optional `filename` argument must be provided)
   
 * __Workflows:__
   * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
@@ -810,6 +810,13 @@ res <- httr::GET(
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.2002.nc")
+
+# Download the file 'fraction.plantation' from the input directory with id = 295
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.fraction.plantation")
 ```
 
 #### Python Snippet
@@ -818,6 +825,14 @@ writeBin(res$content, "test.2002.nc")
 # Download the input file for with id = 99000000003
 response = requests.get(
              "http://localhost:8000/api/inputs/99000000003",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
+  
+# Download the file 'fraction.plantation' from the input directory with id = 295
+response = requests.get(
+             "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.2002.nc", "wb") as file:

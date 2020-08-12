@@ -3,7 +3,7 @@ servers:
   - description: PEcAn API Server
     url: https://pecan-dev.ncsa.illinois.edu
   - description: PEcAn Development Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/a433c80c
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/670121ec
   - description: PEcAn API Test Server
     url: https://pecan-tezan.ncsa.illinois.edu
   - description: Localhost
@@ -561,6 +561,12 @@ paths:
           required: true
           schema:
             type: string
+        - in: query
+          name: filename
+          description: Optional filename specified if the id points to a folder instead of file
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Contents of the desired input file  
@@ -568,6 +574,9 @@ paths:
             application/octet-stream:
               schema:
                 type: string
+                format: binary
+        '400':
+          description: Bad request. Input ID points to directory & filename is not specified
         '401':
           description: Authentication required
         '403':
@@ -764,6 +773,7 @@ paths:
             application/octet-stream:
               schema:
                 type: string
+                format: binary
                 
         '401':
           description: Authentication required
@@ -880,6 +890,7 @@ paths:
             application/octet-stream:
               schema:
                 type: string
+                format: binary
                 
         '401':
           description: Authentication required
@@ -913,6 +924,7 @@ paths:
             application/octet-stream:
               schema:
                 type: string
+                format: binary
                 
         '401':
           description: Authentication required
