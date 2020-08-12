@@ -20,6 +20,7 @@ status <- function() {
   
   dbcon <- PEcAn.DB::betyConnect()
   res <- list(host_details = PEcAn.DB::dbHostInfo(dbcon))
+  res$host_details$authentication_required = get_env_var("AUTH_REQ")
   
   res$pecan_details <- list(
     version = get_env_var("PECAN_VERSION"), 

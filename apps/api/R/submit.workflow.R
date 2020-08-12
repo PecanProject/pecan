@@ -1,6 +1,6 @@
 library(dplyr)
 
-#* Submit a workflow submitted as XML
+#* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
 #* @return ID & status of the submitted workflow
@@ -10,16 +10,52 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   workflowXml <- XML::xmlParseString(stringr::str_replace(workflowXmlString, "<?.*?>\n", ""))
   workflowList <- XML::xmlToList(workflowXml)
   
-  # Fix details about the database
-  workflowList$database <- list(bety = PEcAn.DB::get_postgres_envvars(
-    host = "localhost",
-    dbname = "bety",
-    user = "bety",
-    password = "bety", 
-    driver = "PostgreSQL"
-  )
-  )
+  return(submit.workflow.list(workflowList, userDetails))
+}
+
+#################################################################################################
+
+#* Submit a workflow sent as JSON
+#* @param workflowJsonString String containing the JSON workflow from request body
+#* @param userDetails List containing userid & username
+#* @return ID & status of the submitted workflow
+#* @author Tezan Sahu
+submit.workflow.json <- function(workflowJsonString, userDetails){
   
+  workflowList <- jsonlite::fromJSON(workflowJsonString)
+  
+  return(submit.workflow.list(workflowList, userDetails))
+}
+
+#################################################################################################
+
+#* Submit a workflow (converted to list)
+#* @param workflowList Workflow parameters expressed as a list
+#* @param userDetails List containing userid & username
+#* @return ID & status of the submitted workflow
+#* @author Tezan Sahu
+submit.workflow.list <- function(workflowList, userDetails) {
+  # Fix details about the database
+  workflowList$database <- list(
+    bety = PEcAn.DB::get_postgres_envvars(
+      host = "localhost",
+      dbname = "bety",
+      user = "bety",
+      password = "bety", 
+      driver = "PostgreSQL"
+    )
+  )
+  if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
+    dbcon <- PEcAn.DB::betyConnect()
+    res <- dplyr::tbl(dbcon, "models") %>% 
+      select(id, model_name, revision) %>%
+      filter(id == !!workflowList$model$id) %>%
+      collect()
+    PEcAn.DB::db.close(dbcon)
+    
+    workflowList$model$type <- res$model_name
+    workflowList$model$revision <- res$revision
+  }
   # Fix RabbitMQ details
   dbcon <- PEcAn.DB::betyConnect()
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
@@ -31,7 +67,6 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
     )
   )
   workflowList$host$name <- if(hostInfo$hostname == "") "localhost" else hostInfo$hostname
-  
   # Fix the info
   workflowList$info$notes <- workflowList$info$notes
   if(is.null(workflowList$info$userid)){
@@ -43,21 +78,21 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   if(is.null(workflowList$info$date)){
     workflowList$info$date <- Sys.time()
   }
-  
+
   # Add entry to workflows table in database
   workflow_id <- insert.workflow(workflowList)
   workflowList$workflow$id <- workflow_id
-  
+
   # Add entry to attributes table in database
   insert.attribute(workflowList)
-  
+
   # Fix the output directory
   outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
   workflowList$outdir <- outdir
   
   # Create output diretory
   dir.create(outdir, recursive=TRUE)
-  
+
   # Modify the `dbfiles` path & create the directory if needed
   workflowList$run$dbfiles <- Sys.getenv("DBFILES_DIR", "/data/dbfiles/")
   if(! dir.exists(workflowList$run$dbfiles)){
@@ -83,12 +118,14 @@ submit.workflow.xml <- function(workflowXmlString, userDetails){
   
 }
 
+#################################################################################################
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
 insert.workflow <- function(workflowList){
+  
   dbcon <- PEcAn.DB::betyConnect()
   
   model_id <- workflowList$model$id
@@ -115,6 +152,7 @@ insert.workflow <- function(workflowList){
   }
   
   insert <- PEcAn.DB::insert_table(workflow_df, "workflows", dbcon)
+  
   workflow_id <- dplyr::tbl(dbcon, "workflows") %>% 
     filter(started_at == start_time 
            && site_id == bit64::as.integer64(workflowList$run$site$id)
@@ -130,6 +168,7 @@ insert.workflow <- function(workflowList){
   return(workflow_id)
 }
 
+#################################################################################################
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
@@ -142,7 +181,7 @@ insert.attribute <- function(workflowList){
   for(i in seq(length(workflowList$pfts))){
     pfts <- c(pfts, workflowList$pfts[i]$pft$name)
   }
-  
+
   # Obtain the model_id
   model_id <- workflowList$model$id
   if(is.null(model_id)){
@@ -164,9 +203,16 @@ insert.attribute <- function(workflowList){
     email = if(is.na(workflowList$info$userid) || workflowList$info$userid == -1) "" else
       dplyr::tbl(dbcon, "users") %>% filter(id == bit64::as.integer64(workflowList$info$userid)) %>% pull(email),
     notes = if(is.null(workflowList$info$notes)) "" else workflowList$info$notes,
-    input_met = workflowList$run$inputs$met$id,
     variables = workflowList$ensemble$variable
   )
+  
+  if(! is.null(workflowList$run$inputs$met$id)) {
+    properties$input_met <- workflowList$run$inputs$met$id
+  }
+  else if(! is.null(workflowList$run$inputs$met$source)) {
+    properties$input_met <- workflowList$run$inputs$met$source
+  }
+  
   if(! is.null(workflowList$ensemble$parameters$method)) properties$parm_method <- workflowList$ensemble$parameters$method
   if(! is.null(workflowList$sensitivity.analysis$quantiles)){
     sensitivity <- c()
@@ -183,4 +229,6 @@ insert.attribute <- function(workflowList){
   res <- DBI::dbSendStatement(dbcon, 
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
+
+  
 }

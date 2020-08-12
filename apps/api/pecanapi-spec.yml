@@ -1,9 +1,11 @@
 openapi: 3.0.0
 servers:
   - description: PEcAn API Server
-    url: https://pecan-tezan.ncsa.illinois.edu/
-  - description: PEcAn Test Server
-    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/0ac36769
+    url: https://pecan-dev.ncsa.illinois.edu
+  - description: PEcAn Development Server
+    url: https://pecan-tezan-rstudio.ncsa.illinois.edu/p/670121ec
+  - description: PEcAn API Test Server
+    url: https://pecan-tezan.ncsa.illinois.edu
   - description: Localhost
     url: http://127.0.0.1:8000
   
@@ -33,8 +35,12 @@ tags:
     description: Everything about PEcAn models
   - name: sites
     description: Everything about PEcAn sites
+  - name: formats
+    description: Everything about PEcAn formats
   - name: pfts
     description: Everything about PEcAn PFTs (Plant Functional Types)
+  - name: inputs
+    description: Everything about PEcAn inputs
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -356,6 +362,225 @@ paths:
           description: Access forbidden
         '404':
           description: Site(s) not found
+  
+  /api/formats/{format_id}:
+    get:
+      tags:
+        - formats
+      summary: Details of requested format
+      parameters:
+        - in: path
+          name: format_id
+          description: Format ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Format Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Format'
+                      
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model not found
+  
+  /api/formats/:
+    get:
+      tags:
+        - formats
+      summary: Search for format(s) using search pattern based on format name & mime type
+      parameters:
+        - in: query
+          name: format_name
+          description: Search string for format name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: mimetype
+          description: Search string for mime type
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ignore_case
+          description: Indicator of case sensitive or case insensitive search
+          required: false
+          schema:
+            type: string
+            default: "TRUE"
+            enum:
+              - "TRUE"
+              - "FALSE"
+      responses:
+        '200':
+          description: List of formats matching search pattern
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        format_id:
+                          type: string
+                        format_name:
+                          type: string
+                        mimetype:
+                          type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Model(s) not found
+  
+  
+  /api/inputs/:
+    get:
+      tags:
+        - inputs
+      summary: Search for the inputs
+      parameters:
+        - in: query
+          name: model_id
+          description: If provided, returns all inputs for the provided model_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: site_id
+          description: If provided, returns all inputs for the provided site_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: format_id
+          description: If provided, returns all inputs for the provided format_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: host_id
+          description: If provided, returns all inputs for the provided host_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: offset
+          description: The number of inputs to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of inputs to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
+      responses:
+        '200':
+          description: List of inputs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inputs:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        filename:
+                          type: string
+                        file_path:
+                          type: string
+                        input_name:
+                          type: string
+                        mimetype:
+                          type: string
+                        format_name:
+                          type: string
+                        model_name:
+                          type: string
+                        revision:
+                          type: string
+                        sitename:
+                          type: string
+                        tag:
+                          type: string
+                        hostname:
+                          type: string
+                        start_date:
+                          type: string
+                        end_date:
+                          type: string
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflows not found
+  
+  /api/inputs/{input_id}:
+    get:
+      tags:
+        - inputs
+      summary: Download a desired PEcAn input file
+      parameters:
+        - in: path
+          name: input_id
+          description: ID of the PEcAn Input to be downloaded
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: filename
+          description: Optional filename specified if the id points to a folder instead of file
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the desired input file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. Input ID points to directory & filename is not specified
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
           
   /api/workflows/:
     get:
@@ -407,7 +632,28 @@ paths:
                   workflows:
                     type: array
                     items: 
-                      $ref: '#/components/schemas/Workflow_GET'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        folder:
+                          type: string
+                        started_at:
+                          type: string
+                        finished_at:
+                          type: string
+                        site_id:
+                          type: integer
+                        model_id:
+                          type: integer
+                        hostname:
+                          type: string
+                        start_date:
+                          type: string
+                        end_date:
+                          type: string
+                        user_id:
+                          type: integer
                   count:
                     type: integer
                   next_page:
@@ -471,9 +717,68 @@ paths:
         '404':
           description: Workflow with specified ID was not found  
 
-
+  /api/workflows/{id}/status:
+    get:
+      tags:
+        - workflows
+      summary: Get the status of a PEcAn Workflow execution
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status of the requested PEcAn Workflow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflow with specified ID was not found
   
-
+  /api/workflows/{id}/file/{filename}:
+    get:
+      tags:
+        - workflows
+      summary: Download a file from a specified PEcAn workflow
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the output file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
 
   /api/runs/:
     get:
@@ -531,7 +836,7 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflow with specified ID was not found 
+          description: Run(s) not found 
 
 
   /api/runs/{run_id}:
@@ -558,7 +863,75 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflow with specified ID was not found
+          description: Run with specified ID was not found
+          
+  /api/runs/{run_id}/input/{filename}:
+    get:
+      tags:
+        - runs
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of input file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the input file 
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Input file not found on host
+  
+  /api/runs/{run_id}/output/{filename}:
+    get:
+      tags:
+        - runs
+      summary: Get the details of a specified PEcAn run
+      parameters:
+        - in: path
+          name: run_id
+          description: ID of the PEcAn run
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: filename
+          description: Name of output file desired
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the output file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Output file not found on host
                   
   /api/runs/{run_id}/graph/{year}/{y_var}:
     get:
@@ -671,6 +1044,15 @@ components:
           type: string
         finished_at:
           type: string
+        inputs:
+          type: object
+          properties:
+            info:
+              type: string
+            others:
+              type: array
+              items:
+                type: string
         outputs:
           type: object
           properties:
@@ -737,9 +1119,28 @@ components:
         model_type:
           type: string
     
+    Format:
+      properties:
+        format_id:
+          type: string
+        name:
+          type: string
+        notes:
+          type: string
+        header:
+          type: string
+        mimetype:
+          type: string
+      
     Workflow_GET:
       properties:
         id:
+          type: string
+        folder:
+          type: string
+        hostname:
+          type: string
+        user_id:
           type: string
         "properties":
           type: object
@@ -781,6 +1182,10 @@ components:
               type: string
             input_poolinitcond:
               type: string
+        files:
+          type: array
+          items:
+            type: string
     
     Workflow_POST:
       type: object
@@ -814,6 +1219,9 @@ components:
         ensemble:
           type: object
           properties:
+            size:
+              type: number
+              example: 10
             variable:
               type: string
               example: NPP

@@ -49,6 +49,10 @@ getPfts <- function(pft_id, res){
 #' @author Tezan Sahu
 #* @get /
 searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE, res){
+  pft_name <- URLdecode(pft_name)
+  pft_type <- URLdecode(pft_type)
+  model_type <- URLdecode(model_type)
+  
   if(! pft_type %in% c("", "plant", "cultivar")){
     res$status <- 400
     return(list(error = "Invalid pft_type"))
