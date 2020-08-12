@@ -14,7 +14,7 @@ $(call depends,modules/assim.sequential): | .install/base/logger .install/base/r
 $(call depends,modules/benchmark): | .install/modules/data.land .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils
 $(call depends,modules/data.atmosphere): | .install/base/db .install/base/logger .install/base/remote .install/base/utils
 $(call depends,modules/data.hydrology): | .install/base/logger .install/base/utils
-$(call depends,modules/data.land): | .install/base/db .install/base/logger .install/base/remote .install/base/utils .install/modules/benchmark .install/modules/data.atmosphere .install/base/settings .install/base/visualization
+$(call depends,modules/data.land): | .install/modules/benchmark .install/modules/data.atmosphere .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization
 $(call depends,modules/data.remote): | .install/base/db .install/base/utils .install/base/logger .install/base/remote
 $(call depends,modules/emulator): | .install/base/logger
 $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/logger .install/base/settings

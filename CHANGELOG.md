@@ -38,6 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Renamed functions that looked like S3 methods but were not:
     * PEcAn.priors: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
     * PEcAn.visualization: `plot.netcdf`->`plot_netcdf` (#2526).
+    * PEcAn.assim.sequential: `Remote.Sync.launcher` -> `Remote_Sync_launcher` (#2652)
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
 - No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 - The pecan/data container has no longer hardcoded path for postgres
@@ -45,7 +46,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519). 
 - Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
 -Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
-
 
 ### Added
 
