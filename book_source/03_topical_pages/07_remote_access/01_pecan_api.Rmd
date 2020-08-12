@@ -705,29 +705,22 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 
 ```R
-# Get the inputs needed for a workflow with format_id = 24 (Sipnet.climna) & host_id = 2 (ebi-forecast.igb.illinois.edu)
+# Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
 res <- httr::GET(
-         "http://localhost:8000/api/inputs/?format_id=24&host_id=2",
+         "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
 ## $inputs
-##                                                sitename model_name revision mimetype   format_name tag                      hostname
-## 1      Howland Forest- main tower (US-Ho1) (PalEON PHO)      Model   102319 text/csv Sipnet.climna met ebi-forecast.igb.illinois.edu
-## 2      Howland Forest- main tower (US-Ho1) (PalEON PHO)     SIPNET     r136 text/csv Sipnet.climna met ebi-forecast.igb.illinois.edu
-## ...
-##      file_name                 file_path  id input_name          start_date            end_date
-## 1  US-Ho1.clim /home/share/data/dbfiles/ 232                           <NA>                <NA>
-## 2  US-Ho1.clim /home/share/data/dbfiles/ 232                           <NA>                <NA>
-## ...
+##                                sitename mimetype       format_name hostname               file_name
+## 1 Niwot Ridge Forest/LTER NWT1 (US-NR1) text/csv AMERIFLUX_BASE_HH   docker AMF_US-NR1_BASE_HH_15-5
+##                               file_path         id              input_name start_date   end_date
+## 1 /data/dbfiles/AmerifluxLBL_site_0-772 1000011238 AmerifluxLBL_site_0-772 1998-01-01 2016-12-31
 
 ## $count
-## [1] 50
-
-## $next_page
-## [1] "http://localhost:8000/api/workflows/?format_id=24&host_id=2&offset=50&limit=50"
+## [1] 1
 ```
 
 #### Python Snippet
@@ -765,9 +758,9 @@ print(json.dumps(response.json(), indent=2))
 ```
 
 ```python
-# Get the inputs needed for a workflow with format_id = 24 (Sipnet.climna) & host_id = 2 (ebi-forecast.igb.illinois.edu)
+# Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
 response = requests.get(
-             "http://localhost:8000/api/inputs/?format_id=24&host_id=2",
+             "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -776,24 +769,19 @@ print(json.dumps(response.json(), indent=2))
 ## {
 ##   "inputs": [
 ##     {
-##       "sitename": "Howland Forest- main tower (US-Ho1) (PalEON PHO)",
-##       "model_name": "Model",
-##       "revision": "102319",
-##       "tag": "met",
-##       "hostname": "ebi-forecast.igb.illinois.edu",
-##       "file_name": "US-Ho1.clim",
-##       "format_name": "Sipnet.climna",
+##       "sitename": "Niwot Ridge Forest/LTER NWT1 (US-NR1)",
+##       "hostname": "docker",
+##       "file_name": "AMF_US-NR1_BASE_HH_15-5",
+##       "format_name": "AMERIFLUX_BASE_HH",
 ##       "mimetype": "text/csv",
-##       "file_path": "/home/share/data/dbfiles/",
-##       "id": 232,
-##       "input_name": "",
-##       "start_date": "NA",
-##       "end_date": "NA"
-##     },
-##     ...
+##       "file_path": "/data/dbfiles/AmerifluxLBL_site_0-772",
+##       "id": 1000011238,
+##       "input_name": "AmerifluxLBL_site_0-772",
+##       "start_date": "1998-01-01",
+##       "end_date": "2016-12-31"
+##     }
 ##   ],
-##   "count": 50,
-##   "next_page": "http://localhost:8000/api/workflows/?format_id=24&host_id=2&offset=50&limit=50"
+##   "count": 1,
 ## }
 ```
 

@@ -29,12 +29,6 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
     select(hostname, machine_id=id) %>%
     inner_join(inputs, by='machine_id')
   
-  inputs <- tbl(dbcon, "modeltypes_formats") %>%
-    select(tag, modeltype_id, format_id, input) %>%
-    inner_join(inputs, by='format_id') %>%
-    filter(input) %>%
-    select(-input)
-  
   inputs <- tbl(dbcon, "formats") %>%
     select(format_id = id, format_name = name, mimetype_id) %>%
     inner_join(inputs, by='format_id')
@@ -44,18 +38,22 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
     inner_join(inputs, by='mimetype_id') %>%
     select(-mimetype_id)
   
-  inputs <- tbl(dbcon, "models") %>%
-    select(model_id = id, modeltype_id, model_name, revision) %>%
-    right_join(inputs, by='modeltype_id') %>%
-    select(-modeltype_id)
-  
   inputs <- tbl(dbcon, "sites") %>%
     select(site_id = id, sitename) %>%
     inner_join(inputs, by='site_id')
   
   if(! is.null(model_id)) {
-    inputs <- inputs %>%
-      filter(model_id == !!model_id)
+    inputs <- tbl(dbcon, "modeltypes_formats") %>%
+      select(tag, modeltype_id, format_id, input) %>%
+      inner_join(inputs, by='format_id') %>%
+      filter(input) %>%
+      select(-input)
+    
+    inputs <- tbl(dbcon, "models") %>%
+      select(model_id = id, modeltype_id, model_name, revision) %>%
+      inner_join(inputs, by='modeltype_id') %>%
+      filter(model_id == !!model_id) %>%
+      select(-modeltype_id, -model_id)
   }
   
   if(! is.null(site_id)) {
@@ -74,7 +72,7 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
   }
   
   qry_res <- inputs %>%
-    select(-site_id, -model_id, -format_id, -machine_id) %>%
+    select(-site_id, -format_id, -machine_id) %>%
     distinct() %>%
     arrange(id) %>%
     collect()
