@@ -132,11 +132,13 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
 
 #' Download the input specified by the id
 #' @param id Input id (character)
+#' @param filename Optional filename specified if the id points to a folder instead of file (character)
+#' If this is passed with an id that actually points to a file, this name will be ignored
 #' @return Input file specified by user
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<input_id>
-downloadInput <- function(input_id, req, res){
+downloadInput <- function(input_id, filename="", req, res){
   dbcon <- PEcAn.DB::betyConnect()
   db_hostid <- PEcAn.DB::dbHostInfo(dbcon)$hostid
   
@@ -156,10 +158,23 @@ downloadInput <- function(input_id, req, res){
     res$status <- 404
     return()
   }
-  else{
+  else {
     # Generate the full file path using the file_path & file_name
     filepath <- paste0(input$file_path, "/", input$file_name)
     
+    # If the id points to a directory, check if 'filename' within this directory has been specified
+    if(dir.exists(filepath)) {
+      # If no filename is provided, return 400 Bad Request error
+      if(filename == "") {
+        res$status <- 400
+        return()
+      }
+      
+      # Append the filename to the filepath
+      filepath <- paste0(filepath, filename)
+    }
+    
+    # If the file doesn't exist, return 404 error
     if(! file.exists(filepath)){
       res$status <- 404
       return()
