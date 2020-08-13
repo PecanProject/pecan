@@ -341,7 +341,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, site_id, sta
                            dplyr::filter(NOAA.member == i) %>% 
                            dplyr::select(-NOAA.member))
     
-    #Each file will go in its own folder.
+  
     if (!dir.exists(outfolder)) {
       dir.create(outfolder, recursive=TRUE, showWarnings = FALSE)
     }
