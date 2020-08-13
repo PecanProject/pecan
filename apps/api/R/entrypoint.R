@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 #* This is the entry point to the PEcAn API. 
 #* All API endpoints (& filters) are mounted here
 #* @author Tezan Sahu
@@ -20,6 +22,22 @@ root$handle("GET", "/api/status", status)
 # The endpoints mounted here are related to details of PEcAn models
 models_pr <- plumber::plumber$new("models.R")
 root$mount("/api/models", models_pr)
+
+# The endpoints mounted here are related to details of PEcAn sites
+sites_pr <- plumber::plumber$new("sites.R")
+root$mount("/api/sites", sites_pr)
+
+# The endpoints mounted here are related to details of PEcAn pfts
+pfts_pr <- plumber::plumber$new("pfts.R")
+root$mount("/api/pfts", pfts_pr)
+
+# The endpoints mounted here are related to details of PEcAn formats
+formats_pr <- plumber::plumber$new("formats.R")
+root$mount("/api/formats", formats_pr)
+
+# The endpoints mounted here are related to details of PEcAn inputs
+inputs_pr <- plumber::plumber$new("inputs.R")
+root$mount("/api/inputs", inputs_pr)
 
 # The endpoints mounted here are related to details of PEcAn workflows
 workflows_pr <- plumber::plumber$new("workflows.R")
