@@ -130,8 +130,29 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #Downloading the data here.  It is stored in a matrix, where columns represent time in intervals of 6 hours, and rows represent
   #each ensemble member.  Each variable gets its own matrix, which is stored in the list noaa_data.
   for (i in 1:length(noaa_var_names)) {
-    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1:increments, forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
+    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments + 1), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
   }
+  
+  
+  ### ERROR CHECK FOR FIRST TIME POINT ###
+  
+  #Check if first time point is present, if not, grab from previous forecast
+  
+  index <- which(lengths(noaa_data) == increments * 21) #finding which ones are missing first point
+  new_start = start_date - lubridate::hours(6) #grab previous forecast
+  new_forecast_hour = (lubridate::hour(new_start) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
+  new_forecast_hour = sprintf("%04d", new_forecast_hour * 100)  #Having the end date as a string is useful later, too.
+  
+  filled_noaa_data = list()
+  
+  for (i in index) {
+    filled_noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = new_forecast_hour, date=format(new_start, "%Y%m%d"))$data
+  }
+  
+  #add filled data into first slot of forecast 
+  for(i in index){
+    noaa_data[[i]] = cbind(filled_noaa_data[[i]], noaa_data[[i]])}
+  
   
   #Fills in data with NaNs if there happens to be missing columns.
   for (i in 1:length(noaa_var_names)) {
@@ -219,7 +240,7 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #to comply with the PEcAn standard).
   time_dim = ncdf4::ncdim_def(name="time", 
                               paste(units="hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
-                              seq(6, 6 * increments, by = 6),
+                              seq(0, 6 * increments, by = 6),
                               create_dimvar = TRUE)
   lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat.in, create_dimvar = TRUE)
   lon_dim = ncdf4::ncdim_def("longitude", "degree_east", lon.in, create_dimvar = TRUE)
