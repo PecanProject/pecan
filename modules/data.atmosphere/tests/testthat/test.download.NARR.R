@@ -19,7 +19,7 @@ ncdf4::nc_close(test_nc)
 test_that("NARR download works as expected", {
   # Download is too slow for travis
   # Please run locally to test!
-  skip_on_travis()
+  skip_on_ci()
   r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
                           progress = TRUE, parallel = TRUE, ncores = 2)
 

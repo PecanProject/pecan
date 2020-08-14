@@ -49,3 +49,35 @@ test_that("Calling /api/runs/{run_id}/graph/{year}/{yvar}/ with valid inputs ret
   )
   expect_equal(res$status, 404)
 })
+
+test_that("Calling /api/runs/{run_id}/input/{filename} with valid inputs returns Status 200", {
+  res <- httr::GET(
+    "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 200)
+})
+
+test_that("Calling /api/runs/{run_id}/input/{filename} with valid inputs returns Status 200", {
+  res <- httr::GET(
+    "http://localhost:8000/api/runs/1000000000/input/randomfile",
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 404)
+})
+
+test_that("Calling /api/runs/{run_id}/output/{filename} with valid inputs returns Status 200", {
+  res <- httr::GET(
+    "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 200)
+})
+
+test_that("Calling /api/runs/{run_id}/output/{filename} with valid inputs returns Status 200", {
+  res <- httr::GET(
+    "http://localhost:8000/api/runs/1000000000/output/randomfile",
+    httr::authenticate("carya", "illinois")
+  )
+  expect_equal(res$status, 404)
+})

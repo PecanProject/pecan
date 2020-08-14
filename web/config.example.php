@@ -104,20 +104,7 @@ $dbfiles_folder=$output_folder . "/dbfiles";
 # of BETYDB
 $betydb="/bety";
 
-# ----------------------------------------------------------------------
-# SIMPLE EDITING OF BETY DATABSE
-# ----------------------------------------------------------------------
-# Number of items to show on a page
-$pagesize = 30;
-
-# Location where logs should be written
-$logfile = "/home/carya/output/betydb.log";
-
-# uncomment the following variable to enable the simple interface
-#$simpleBETY = TRUE;
-
 # syncing details
-
 $server_url="192.168.0.5";    // local test server
 $client_sceret="";
 $server_auth_token="";

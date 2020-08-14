@@ -50,6 +50,8 @@ getModel <- function(model_id, res){
 #' @author Tezan Sahu
 #* @get /
 searchModels <- function(model_name="", revision="", ignore_case=TRUE, res){
+  model_name <- URLdecode(model_name)
+  revision <- URLdecode(revision)
   
   dbcon <- PEcAn.DB::betyConnect()
   
