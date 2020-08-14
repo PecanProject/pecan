@@ -12,7 +12,7 @@
 ##'
 
 remote_process <- function(settings) {
-  # information about the date variables used in call_remote_process -
+  # information about the date variables used in remote_process -
   # req_start, req_end : start, end dates requested by the user, the user does not have to be aware about the status of the requested file in the DB
   # start, end : effective start, end dates created after checking the DB status. These dates are sent to remote_process for downloading and processing data
   # write_raw_start, write_raw_end : start, end dates which are used while inserting and updating the DB
@@ -262,7 +262,7 @@ remote_process <- function(settings) {
       existing_pro_file_path <- NULL
     } else{
       # no data of requested type exists
-      PEcAn.logger::logger.info("no data of requested type exists")
+      PEcAn.logger::logger.info("Requested data does not exist in the DB, retrieving for the first time")
       flag <- 1
       start <- req_start
       end <- req_end
@@ -341,7 +341,7 @@ remote_process <- function(settings) {
     } else{
       if (flag == 1) {
         # no processed and rawfile are present
-        PEcAn.logger::logger.info("inserting raw and processed files for the first time")
+        PEcAn.logger::logger.info("Inserting raw and processed files for the first time")
         # insert processed data
         pro_ins <-
           PEcAn.DB::dbfile.input.insert(
@@ -372,7 +372,7 @@ remote_process <- function(settings) {
         raw_path <- output$raw_data_path
       } else if (flag == 2) {
         # requested processed file does not exist but the raw file used to create it exists within the required timeline
-        PEcAn.logger::logger.info("inserting processed file for the first time")
+        PEcAn.logger::logger.info("Inserting processed file for the first time")
         pro_ins <-
           PEcAn.DB::dbfile.input.insert(
             in.path = output$process_data_path,
@@ -428,7 +428,7 @@ remote_process <- function(settings) {
         raw_id <- raw_check$id
         raw_path <- output$raw_data_path
         pro_path <- output$process_data_path
-        PEcAn.logger::logger.info("updating processed and raw files")
+        PEcAn.logger::logger.info("Updating processed and raw files")
         PEcAn.DB::db.query(
           sprintf(
             "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
@@ -473,7 +473,7 @@ remote_process <- function(settings) {
         pro_path <- output$process_data_path
         raw_id <- raw_check$id
         raw_path <- raw_check$file_path
-        PEcAn.logger::logger.info("updating the existing processed file")
+        PEcAn.logger::logger.info("Updating the existing processed file")
         PEcAn.DB::db.query(
           sprintf(
             "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
@@ -498,7 +498,7 @@ remote_process <- function(settings) {
         pro_id <- pro_check$id
         pro_path <- output$pro_data_path
         raw_path <-output$raw_data_path
-        PEcAn.logger::logger.info("replacing the existing processed file and creating a new raw file")
+        PEcAn.logger::logger.info("Replacing the existing processed file and creating a new raw file")
         PEcAn.DB::db.query(
           sprintf(
             "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
