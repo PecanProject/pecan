@@ -82,9 +82,9 @@ remote_process <- function(settings) {
   req_start <- start
   req_end <- end
   
-  raw_file_name = construct_raw_filename(collection, siteid_short, scale, projection, qc)
+  raw_file_name <- construct_raw_filename(collection, siteid_short, scale, projection, qc)
   
-  coords = unlist(PEcAn.DB::db.query(sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid), con = dbcon), use.names=FALSE)
+  coords <- unlist(PEcAn.DB::db.query(sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid), con = dbcon), use.names=FALSE)
   
   # check if any data is already present in the inputs table
   existing_data <-
