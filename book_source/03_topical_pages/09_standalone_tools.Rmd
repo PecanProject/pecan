@@ -312,7 +312,7 @@ This example will download the layers of a SMAP product(SPL3SMP_E.003)
 PEcAn.data.remote::remote_process(settings)
 ```
 
-This will approximately take 20 minutes to complete and the output netCDF file will be saved at outdir and its record would be kept in the inputs table of BETYdb.
+The output netCDF file will be saved at outdir and its record would be kept in the inputs table of BETYdb.
 
 
 #### Adding new GEE image collections

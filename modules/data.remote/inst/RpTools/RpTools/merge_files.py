@@ -71,6 +71,6 @@ def csv_merge(old, new, outdir):
     merged_df = merged_df.sort_values(by="Date")
     merged_df.to_csv(os.path.join(outdir, tail), index=False)
     # delete the old and temproary file
-    os.remove(df_changed_new)
-    os.remove(df_old)
+    os.remove(changed_new)
+    os.remove(old)
     return os.path.abspath(os.path.join(outdir, tail))
