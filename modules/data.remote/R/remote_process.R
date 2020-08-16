@@ -8,53 +8,77 @@
 ##' \dontrun{
 ##' remote_process(settings)
 ##' }
-##' @author Ayush Prasad
+##' @author Ayush Prasad, Istem Fer 
 ##'
 
 remote_process <- function(settings) {
   # information about the date variables used in remote_process -
   # req_start, req_end : start, end dates requested by the user, the user does not have to be aware about the status of the requested file in the DB
-  # start, end : effective start, end dates created after checking the DB status. These dates are sent to remote_process for downloading and processing data
+  # start, end : effective start, end dates created after checking the DB status. These dates are sent to rp_control for downloading and processing data
   # write_raw_start, write_raw_end : start, end dates which are used while inserting and updating the DB
   # the "pro" version of these variables have the same meaning and are used to refer to the processed file
   
   RpTools <- reticulate::import("RpTools")
   
-  input_file <- NULL
-  stage_get_data <- NULL
-  stage_process_data <- NULL
-  raw_merge <- NULL
-  pro_merge <- NULL
+  input_file             <- NULL
+  stage_get_data         <- NULL
+  stage_process_data     <- NULL
+  raw_merge              <- NULL
+  pro_merge              <- NULL
   existing_raw_file_path <- NULL
   existing_pro_file_path <- NULL
   
   # extract the variables from the settings list
-  siteid <- as.numeric(settings$run$site$id)
-  siteid_short <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
-  raw_mimetype <- settings$remotedata$raw_mimetype
-  raw_formatname <- settings$remotedata$raw_formatname
-  outdir <- settings$outdir
-  start <- as.character(as.Date(settings$run$start.date))
-  end <- as.character(as.Date(settings$run$end.date))
-  source <- settings$remotedata$source
-  collection <- settings$remotedata$collection
-  scale <- settings$remotedata$scale
+  siteid           <- as.numeric(settings$run$site$id)
+  siteid_short     <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
+  raw_mimetype     <- settings$remotedata$raw_mimetype
+  raw_formatname   <- settings$remotedata$raw_formatname
+  outdir           <- settings$outdir
+  start            <- as.character(as.Date(settings$run$start.date))
+  end              <- as.character(as.Date(settings$run$end.date))
+  source           <- settings$remotedata$source
+  collection       <- settings$remotedata$collection
+  scale            <- settings$remotedata$scale
   if (!is.null(scale)) {
     scale <- as.double(settings$remotedata$scale)
     scale <- format(scale, nsmall = 1)
   }
-  projection <- settings$remotedata$projection
-  qc <- settings$remotedata$qc
+  projection       <- settings$remotedata$projection
+  qc               <- settings$remotedata$qc
   if (!is.null(qc)) {
     qc <- as.double(settings$remotedata$qc)
     qc <- format(qc, nsmall = 1)
   }
-  algorithm <- settings$remotedata$algorithm
-  credfile <- settings$remotedata$credfile
-  pro_mimetype <- settings$remotedata$pro_mimetype
-  pro_formatname <- settings$remotedata$pro_formatname
-  out_get_data <- settings$remotedata$out_get_data
+  algorithm        <- settings$remotedata$algorithm
+  credfile         <- settings$remotedata$credfile
+  pro_mimetype     <- settings$remotedata$pro_mimetype
+  pro_formatname   <- settings$remotedata$pro_formatname
+  out_get_data     <- settings$remotedata$out_get_data
   out_process_data <- settings$remotedata$out_process_data
+  overwrite        <- settings$remotedata$overwrite
+  if (is.null(overwrite)){
+    overwrite <- FALSE
+  }
+  
+  
+  PEcAn.logger::severeifnot("Check if siteid is of numeric type and is not NULL", is.numeric(siteid))
+  PEcAn.logger::severeifnot("Check if outdir is of character type and is not NULL", is.character(outdir))
+  PEcAn.logger::severeifnot("Check if source is of character type and is not NULL", is.character(source))
+  # PEcAn.logger::severeifnot("Source should be one of gee, appeears", source == "gee" || source == "appeears")
+  # collection validation to be implemented
+  if(!is.null(projection)){
+    PEcAn.logger::severeifnot("projection should be of character type", is.character(projection))
+  }
+  if(!is.null(algorithm)){
+    PEcAn.logger::severeifnot("algorithm should be of character type", is.character(algorithm))
+  }
+  if(!is.null(credfile)){
+    PEcAn.logger::severeifnot("credfile should be of character type", is.character(credfile))
+  }
+  PEcAn.logger::severeifnot("Check if out_get_data is of character type and is not NULL", is.character(out_get_data))
+  if(!is.null(out_process_data)){
+    PEcAn.logger::severeifnot("out_process_data should be of character type", is.character(out_process_data))
+  }  
   
   
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
@@ -90,8 +114,42 @@ remote_process <- function(settings) {
   existing_data <-
     PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid), dbcon)
   if (nrow(existing_data) >= 1) {
-    # if processed data is requested, example LAI
-    if (!is.null(out_process_data)) {
+    
+    if (overwrite) {
+      PEcAn.logger::logger.warn("overwrite is set to TRUE, any existing file will be entirely replaced")
+      if (!is.null(out_process_data)) {
+        pro_file_name = paste0(algorithm, "_", out_process_data, "_site_", siteid_short)
+        if (nrow(pro_check <- PEcAn.DB::db.query(sprintf("SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';", pro_file_name), dbcon)) == 1) {
+          if (nrow(raw_check <-PEcAn.DB::db.query(sprintf("SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';", raw_file_name), dbcon)) == 1) {
+            flag <- 4
+          }else{
+            flag <- 6
+          }
+        }else{
+          flag <- 1
+        }
+        stage_process_data <- TRUE
+        pro_merge <- "repace"
+        write_pro_start <- start
+        write_pro_end <- end
+      }else if(!is.null(out_get_data)){
+        if (nrow(raw_check <- PEcAn.DB::db.query(sprintf("SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';", raw_file_name), dbcon)) == 1) {
+          flag <- 0
+        }else{
+          flag <- 1
+        }
+      }
+      stage_get_data <- TRUE
+      start <- req_start
+      end <- req_end
+      write_raw_start <- start
+      write_raw_end <- end
+      raw_merge <- "replace"
+      existing_pro_file_path <- NULL
+      existing_raw_file_path <- NULL
+      }else if (!is.null(out_process_data)) {
+      # if processed data is requested, example LAI
+      
       # construct processed file name
       pro_file_name = paste0(algorithm, "_", out_process_data, "_site_", siteid_short)
       
@@ -306,31 +364,37 @@ remote_process <- function(settings) {
   
   outdir = file.path(outdir, paste(source, "site", siteid_short, sep = "_"))
   
-  # call remote_process
-  output = RpTools$rp_control(
-    coords = coords,
-    outdir = outdir,
-    start = start,
-    end = end,
-    source = source,
-    collection = collection,
-    siteid = siteid_short,
-    scale = as.double(scale),
-    projection = projection,
-    qc = as.double(qc),
-    algorithm = algorithm,
-    input_file = input_file,
-    credfile = credfile,
-    out_get_data = out_get_data,
-    out_process_data = out_process_data,
-    stage_get_data = stage_get_data,
-    stage_process_data = stage_process_data,
-    raw_merge = raw_merge,
-    pro_merge = pro_merge,
-    existing_raw_file_path = existing_raw_file_path,
-    existing_pro_file_path = existing_pro_file_path
-  )
+  fcn.args <- list()
+  fcn.args$coords                 <- coords
+  fcn.args$outdir                 <- outdir
+  fcn.args$start                  <- start
+  fcn.args$end                    <- end
+  fcn.args$source                 <- source
+  fcn.args$collection             <- collection
+  fcn.args$siteid                 <- siteid_short
+  fcn.args$scale                  <- as.double(scale)
+  fcn.args$projection             <- projection
+  fcn.args$qc                     <- as.double(qc)
+  fcn.args$algorithm              <- algorithm
+  fcn.args$input_file             <- input_file
+  fcn.args$credfile               <- credfile
+  fcn.args$out_get_data           <- out_get_data
+  fcn.args$out_process_data       <- out_process_data
+  fcn.args$stage_get_data         <- stage_get_data
+  fcn.args$stage_process_data     <- stage_process_data
+  fcn.args$raw_merge              <- raw_merge
+  fcn.args$pro_merge              <- pro_merge
+  fcn.args$existing_raw_file_path <- existing_raw_file_path
+  fcn.args$existing_pro_file_path <- existing_pro_file_path
   
+  
+  arg.string <- PEcAn.utils::listToArgString(fcn.args)
+  
+  cmdFcn <- paste0("RpTools$rp_control(", arg.string, ")")
+  PEcAn.logger::logger.debug(paste0("Remote module executing the following function:\n", cmdFcn))
+  
+  # call rp_control
+  output <- do.call(RpTools$rp_control, fcn.args)
   
   # inserting data in the DB
   if (!is.null(out_process_data)) {

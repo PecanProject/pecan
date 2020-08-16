@@ -18,5 +18,5 @@ remote_process(settings)
 }
 }
 \author{
-Ayush Prasad
+Ayush Prasad, Istem Fer
 }
