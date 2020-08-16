@@ -159,15 +159,15 @@ Datasets currently available for use in PEcAn via Google Earth Engine are,
 
 2. **Sign up for NASA Earthdata**. Using AppEEARS requires an Earthdata account visit this [page](https://urs.earthdata.nasa.gov/users/new) to create your own account.
 
-3. **Install the RpTools package**. Python codes required by this module are stored in a Python package named "RpTools" using this requires Python3 and the package manager pip to be installed in your system. 
+3. **Install the RpTools package**. Python codes required by this module are stored in a Python package named "RpTools" using this requires Python3 and the package manager pip3 to be installed in your system. 
    To install the package,
 a. Navigate to `pecan/modules/data.remote/inst/RpTools` If you are inside the pecan directory, this can be done by,
 ```bash
 cd modules/data.remote/inst/RpTools
 ```
-b. Use pip to install the package. "-e" flag is used to install the package in an editable or develop mode, so that changes made to the code get updated in the package without reinstalling.
+b. Use pip3 to install the package. "-e" flag is used to install the package in an editable or develop mode, so that changes made to the code get updated in the package without reinstalling.
 ```bash
-pip install -e .
+pip3 install -e .
 ```
 4. **Authenticate GEE**. The GEE API needs to be authenticated using your credentials. The credentials will be stored locally on your system. This can be done by,
 ```bash
