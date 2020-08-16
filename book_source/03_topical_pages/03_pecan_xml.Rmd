@@ -788,13 +788,14 @@ This section describes the tags required for configuring `remote_process`.
   <source>...</source>
   <collection>...</collection>
   <scale>...</scale>
-  <projection>...<projection/>
+  <projection>...</projection>
   <qc>...</qc>
   <algorithm>...</algorithm>
   <credfile>...</credfile>
   <pro_mimetype>...</pro_mimetype>
   <pro_formatname>...</pro_formatname>
   <out_process_data>...</out_process_data>
+  <overwrite>...</overwrite>
   </remotedata>
 ```
 
@@ -806,6 +807,7 @@ This section describes the tags required for configuring `remote_process`.
 * `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2
 * `projection`: (optional) type of projection. Only required for appeears polygon AOI type
 * `qc`: (optional) quality control parameter, required for some gee collections
+* `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 
 These tags are only required if processed data is requested:
 

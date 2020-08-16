@@ -190,7 +190,7 @@ This module contains GEE and other processing functions which retrieve data from
   <source>...</source>
   <collection>...</collection>
   <scale>...</scale>
-  <projection>...<projection/>
+  <projection>...</projection>
   <qc>...</qc>
   <algorithm>...</algorithm>
   <credfile>...</credfile>
@@ -198,6 +198,7 @@ This module contains GEE and other processing functions which retrieve data from
   <pro_formatname>...</pro_formatname>
   <out_get_data>...</out_get_data>
   <out_process_data>...</out_process_data>
+  <overwrite>...</overwrite>
   </remotedata>
 ```
 
@@ -209,6 +210,7 @@ This module contains GEE and other processing functions which retrieve data from
 * `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2 **scale** Information about how GEE handles scale can be found out [here](https://developers.google.com/earth-engine/scale)
 * `projection`: (optional) type of projection. Only required for appeears polygon AOI type
 * `qc`: (optional) quality control parameter, required for some gee collections
+* `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 
 These tags are only required if processed data is requested:
 
@@ -264,13 +266,14 @@ This example will download Sentinel 2 bands and then use the SNAP algorithm to c
   <source>gee</source>
   <collection>COPERNICUS/S2_SR</collection>
   <scale>10</scale>
-  <projection><projection/>
+  <projection></projection>
   <qc>1</qc>
   <algorithm>snap</algorithm>
   <credfile></credfile>
   <pro_mimetype>pro_mimetype</pro_mimetype>
   <pro_formatname>pro_formatname</pro_formatname>
   <out_process_data>lai</out_process_data>
+  <overwrite></overwrite>
   </remotedata>
 ```
 
@@ -296,13 +299,14 @@ This example will download the layers of a SMAP product(SPL3SMP_E.003)
   <source>appeears</source>
   <collection>SPL3SMP_E.003</collection>
   <scale></scale>
-  <projection>native<projection/>
+  <projection>native</projection>
   <qc></qc>
   <algorithm></algorithm>
   <credfile></credfile>
   <pro_mimetype></pro_mimetype>
   <pro_formatname></pro_formatname>
   <out_process_data></out_process_data>
+  <overwrite></overwrite>
   </remotedata>
 ```
 
