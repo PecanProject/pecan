@@ -8,7 +8,7 @@ download.NOAA_GEFS_downscale(
   outfolder,
   lat.in,
   lon.in,
-  sitename,
+  site_id,
   start_date,
   end_date,
   overwrite = FALSE,
@@ -19,7 +19,7 @@ download.NOAA_GEFS_downscale(
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
-\item{sitename}{The unique ID given to each site. This is used as part of the file name.}
+\item{site_id}{The unique ID given to each site. This is used as part of the file name.}
 
 \item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
 
