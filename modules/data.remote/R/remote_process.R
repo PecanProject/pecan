@@ -518,7 +518,7 @@ remote_process <- function(settings) {
           formatname = pro_formatname,
           con        = dbcon
         )
-        raw_id = raw_check$id
+        raw_id <- raw_check$id
         PEcAn.DB::db.query(
           sprintf(
             "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
@@ -656,8 +656,8 @@ remote_process <- function(settings) {
     if (as.character(write_raw_start) == "dont write" &&
         as.character(write_raw_end) == "dont write") {
       PEcAn.logger::logger.info("Requested raw file already exists")
-      raw_id   = raw_check$id
-      raw_path = raw_check$file_path
+      raw_id   <- raw_check$id
+      raw_path <- raw_check$file_path
     } else{
       if (remotefile_check_flag == 1) {
         PEcAn.logger::logger.info(("Inserting raw file for the first time"))
