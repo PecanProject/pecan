@@ -34,8 +34,12 @@ def nc_merge(old, new, outdir):
     changed_new = os.path.join(outdir, tail + "temp" + timestamp + ".nc")
     # rename the new file to prevent it from being overwritten
     os.rename(orig_nameof_newfile, changed_new)
-    ds = xarray.open_mfdataset([old, changed_new], combine="by_coords")
-    ds.to_netcdf(os.path.join(outdir, tail))
+    try:
+        ds = xarray.open_mfdataset([old, changed_new], combine="by_coords")
+        ds.to_netcdf(os.path.join(outdir, tail))
+    except:
+        os.remove(old)
+        return os.path.abspath(os.path.join(outdir, changed_new))
     # delete the old and temproary file
     os.remove(changed_new)
     os.remove(old)
