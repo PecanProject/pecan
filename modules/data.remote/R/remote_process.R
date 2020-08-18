@@ -341,7 +341,7 @@ remote_process <- function(settings) {
         stage_process_data     <- TRUE
         pro_merge              <- FALSE
         existing_pro_file_path <- NULL
-        remotefile_check_flag                   <- 1
+        remotefile_check_flag  <- 1
       }
     } else if (nrow(raw_check <-
                     PEcAn.DB::db.query(
@@ -399,7 +399,7 @@ remote_process <- function(settings) {
   } else{
     # db is completely empty for the given siteid
     PEcAn.logger::logger.info("DB is completely empty for this site")
-    remotefile_check_flag                   <- 1
+    remotefile_check_flag  <- 1
     start                  <- req_start
     end                    <- req_end
     stage_get_data         <- TRUE
@@ -505,7 +505,7 @@ remote_process <- function(settings) {
         raw_id   <- raw_check$id
         raw_path <- raw_check$file_path
         pro_id   <- pro_ins$input.id
-        pro_path <- output$pro_data_path
+        pro_path <- output$process_data_path
       } else if (remotefile_check_flag == 3) {
         # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
         pro_ins <- PEcAn.DB::dbfile.input.insert(
@@ -810,7 +810,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
     req_start   <- db_end + 1
     write_start <- db_start
     write_end   <- req_end
-  } else if ((req_start < db_start) && (req_end < db_end))     {
+  } else if ((req_start < db_start) && (req_end < db_end)) {
     # backward case
     req_end     <- db_start - 1
     write_end   <- db_end
