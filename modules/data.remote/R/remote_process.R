@@ -614,7 +614,7 @@ remote_process <- function(settings) {
       } else if (remotefile_check_flag == 6) {
         # there is some existing processed file but the raw file used to create it is now deleted, replace the processed file entirely with the one created from new raw file
         pro_id   <- pro_check$id
-        pro_path <- output$pro_data_path
+        pro_path <- output$process_data_path
         raw_path <- output$raw_data_path
         PEcAn.logger::logger.info("Replacing the existing processed file and creating a new raw file")
         PEcAn.DB::db.query(
