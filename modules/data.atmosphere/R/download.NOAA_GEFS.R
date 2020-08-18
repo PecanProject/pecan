@@ -28,7 +28,7 @@
 ##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
 ##' @param lon site longitude in decimal degrees
-##' @param sitename The unique ID given to each site. This is used as part of the file name.
+##' @param site_id The unique ID given to each site. This is used as part of the file name.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
@@ -36,12 +36,12 @@
 ##' 
 ##' @examples 
 ##' \dontrun{
-##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
+##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, site_id = 676)
 ##' }
 ##' 
 ##' @author Luke Dramko
 ##' 
-download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
+download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz="UTC") + lubridate::days(16)),
                                overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
@@ -255,17 +255,16 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, sitename, start_date =
   #For each ensemble
   for (i in 1:21) { # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
-    identifier = paste("NOAA_GEFS", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
-                       format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
+    identifier = paste("NOAA_GEFS", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
+                       format(end_date, "%Y-%m-%dT%H:%M"), sep="_")
     
-    ensemble_folder = file.path(outfolder, identifier)
-    
+
     #Each file will go in its own folder.
-    if (!dir.exists(ensemble_folder)) {
-      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
+    if (!dir.exists(outfolder)) {
+      dir.create(outfolder, recursive=TRUE, showWarnings = FALSE)
     }
     
-    flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
+    flname = file.path(outfolder, paste(identifier, "nc", sep = "."))
     
     #Each ensemble member gets its own unique data frame, which is stored in results_list
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
