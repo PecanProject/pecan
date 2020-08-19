@@ -335,6 +335,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, site_id, sta
     #Generating a unique identifier string that characterizes a particular data set.
     identifier = paste("NOAA_GEFS_downscale", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
                        format(end_date, "%Y-%m-%dT%H:%M"), sep="_")
+    ensemble_folder = file.path(outfolder, identifier)
     
     #ensemble_folder = file.path(outfolder, identifier)
     data = as.data.frame(joined %>% dplyr::select(NOAA.member, cf_var_names1) %>% 
@@ -342,11 +343,10 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, site_id, sta
                            dplyr::select(-NOAA.member))
     
   
-    if (!dir.exists(outfolder)) {
-      dir.create(outfolder, recursive=TRUE, showWarnings = FALSE)
-    }
+    if (!dir.exists(ensemble_folder)) {
+      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
     
-    flname = file.path(outfolder, paste(identifier, "nc", sep = "."))
+    flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
     
     #Each ensemble member gets its own unique data frame, which is stored in results_list
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it

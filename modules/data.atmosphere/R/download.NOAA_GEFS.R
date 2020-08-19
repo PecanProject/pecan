@@ -258,13 +258,12 @@ download.NOAA_GEFS <- function(outfolder, lat.in, lon.in, site_id, start_date = 
     identifier = paste("NOAA_GEFS", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
                        format(end_date, "%Y-%m-%dT%H:%M"), sep="_")
     
-
+    ensemble_folder = file.path(outfolder, identifier)
     #Each file will go in its own folder.
-    if (!dir.exists(outfolder)) {
-      dir.create(outfolder, recursive=TRUE, showWarnings = FALSE)
-    }
+    if (!dir.exists(ensemble_folder)) {
+      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
     
-    flname = file.path(outfolder, paste(identifier, "nc", sep = "."))
+    flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
     
     #Each ensemble member gets its own unique data frame, which is stored in results_list
     #Object references in R work differently than in other languages. When adding an item to a list, R creates a copy of it
