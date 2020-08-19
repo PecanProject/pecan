@@ -245,7 +245,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   matrix_weather <- cbind( matrix_weather, matrix_weather[,8]) #add a col
   if(!is.null(co2_file)){
     co2val <- utils::read.table(co2_file, header=TRUE, sep = ",")
-    matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[,1], matrix_weather[,2]),3]
+    
+    weird_line <- which(!paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]) %in% paste0(co2val[,1], co2val[,2]))
+    if(length(weird_line)!=0){
+      matrix_weather <- matrix_weather[-weird_line,]
+      NDAYS <- NDAYS-length(weird_line)
+    }
+    matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]),3]
   }else{
     PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 350 ppm.")
     matrix_weather[1:NDAYS,9] <- 350
@@ -279,11 +285,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   # I'll pass it via harvest file as the 3rd column
   # even though it won't change from harvest to harvest, it may change from run to run
   # but just in case users forgot to add the third column to the harvest file:
-  if(nrow(h_days) == 3){
-    run_params[names(run_params) == "CLAIV"] <- h_days[1,3]
+  if(ncol(h_days) > 2){
+    run_params[names(run_params) == "CLAIV"]     <- h_days[1,3]
+    run_params[names(run_params) == "TRANCO"]    <- h_days[1,4]
+    run_params[names(run_params) == "SLAMAX"]    <- h_days[1,5]
+    run_params[names(run_params) == "FSOMFSOMS"] <- h_days[1,6]
   }else{
-    PEcAn.logger::logger.info("Maximum LAI remaining after harvest is not provided via harvest file. Assuming CLAIV=1.")
-    run_params[names(run_params) == "CLAIV"] <- 1
+    PEcAn.logger::logger.info("CLAIV, TRANCO, SLAMAX not provided via harvest file. Using defaults.")
   }
   
   
