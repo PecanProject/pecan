@@ -344,7 +344,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, site_id, sta
     
   
     if (!dir.exists(ensemble_folder)) {
-      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
+      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)} 
     
     flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
     
