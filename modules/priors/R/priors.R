@@ -189,7 +189,16 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
 ##' @export
-get.sample <- function(prior, n) {
+get.sample <- function(prior, n, p = NULL) {
+  if(!is.null(p)){
+    if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
+      ## one parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama)))
+    } else {
+      ## two parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama, prior$paramb)))
+    }
+  }
   if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
     ## one parameter distributions
     return(do.call(paste0("r", prior$distn), list(n, prior$parama)))
