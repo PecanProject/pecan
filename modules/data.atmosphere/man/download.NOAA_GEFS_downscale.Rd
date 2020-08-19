@@ -70,7 +70,10 @@ June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 
 \examples{
 \dontrun{
- download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, site_id = 676)
+ download.NOAA_GEFS(outfolder="~/Working/results", 
+      lat.in= 45.805925, 
+      lon.in = -90.07961, 
+      site_id = 676)
 }
 
 }

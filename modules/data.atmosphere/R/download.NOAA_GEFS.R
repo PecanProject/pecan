@@ -1,13 +1,14 @@
 ##' @title Download NOAA GEFS Weather Data
 ##' 
 ##' @section Information on Units:
-##' Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
-##' in Kelvin.
+##' Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, 
+##' but is converted at the station and downlaoded in Kelvin.
 ##' @references https://www.ncdc.noaa.gov/crn/measurements.html
 ##' 
 ##' @section NOAA_GEFS General Information:
-##' This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
-##' every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
+##' This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  
+##' A 16 day forecast is avaliable every 6 hours.  Each forecast includes information on a total of 8 variables.  
+##' These are transformed from the NOAA standard to the internal PEcAn
 ##' standard.
 ##' 
 ##' @section Data Avaliability:
@@ -36,7 +37,10 @@
 ##' 
 ##' @examples 
 ##' \dontrun{
-##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, site_id = 676)
+##'  download.NOAA_GEFS(outfolder="~/Working/results", 
+##'     lat.in= 45.805925, 
+##'     lon.in = -90.07961, 
+##'     site_id = 676)
 ##' }
 ##' 
 ##' @author Luke Dramko

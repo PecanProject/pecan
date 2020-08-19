@@ -36,7 +36,10 @@
 ##' 
 ##' @examples 
 ##' \dontrun{
-##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, site_id = 676)
+##'  download.NOAA_GEFS(outfolder="~/Working/results", 
+##'       lat.in= 45.805925, 
+##'       lon.in = -90.07961, 
+##'       site_id = 676)
 ##' }
 ##' 
 ##' @author Katie Zarada - modified code from Luke Dramko and Laura Puckett
