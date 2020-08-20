@@ -294,6 +294,7 @@ saveRDS(pipo.cores.ll, "pipo.cores.with.8.5.2080s.climate.NA.rds")
 ####################################################################
 # plot future climate normals for tree ring plots:
 ####################################################################
+pipo.cores.ll <- readRDS("pipo.cores.with.8.5.2080s.climate.NA.rds")
 covs <- pipo.cores.ll$cov.data
 prism.df <- readRDS("PRISM_non_scaled.rds")
 sit.means.tmx <- rowMeans(prism.df$tmax.fallspr)
@@ -330,10 +331,10 @@ summary.clim.change.m$rcp <- ifelse(summary.clim.change.m$variable %in% c("rcp45
 
 summary.clim.change.m$climate <- ifelse(summary.clim.change.m$variable %in% c("rcp45.tmax","rcp85.tmax", "rcp45.tmax.2050","rcp85.tmax.2050","rcp45.tmax.2080","rcp85.tmax.2080","historical.tmax"), "Tmax", "Precipitation") 
 
-future.boxplot.ppt <- ggplot()+geom_boxplot(data = summary.clim.change.m[summary.clim.change.m$climate %in% "Precipitation",], aes(x = period, y = value,  fill = rcp))+ylab("Water year precipitation (mm)")+theme_bw(base_size = 14)+theme(panel.grid = element_blank())#+facet_wrap(~rcp)
-future.boxplot.tmax <-ggplot()+geom_boxplot(data = summary.clim.change.m[summary.clim.change.m$climate %in% "Tmax",], aes(x = period, y = value, fill = rcp))+ylab("Fall-spring Tmax (degC)")+theme_bw(base_size = 14)+theme(panel.grid = element_blank())#+facet_wrap(~rcp)
+future.boxplot.ppt <- ggplot()+geom_boxplot(data = summary.clim.change.m[summary.clim.change.m$climate %in% "Precipitation",], aes(x = period, y = value,  fill = rcp))+ylab("Water year precipitation (mm)")+theme_bw(base_size = 14)+theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1), axis.title.x = element_blank())#+facet_wrap(~rcp)
+future.boxplot.tmax <-ggplot()+geom_boxplot(data = summary.clim.change.m[summary.clim.change.m$climate %in% "Tmax",], aes(x = period, y = value, fill = rcp))+ylab("Fall-spring Tmax (degC)")+theme_bw(base_size = 14)+theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1), axis.title.x = element_blank())
 
-png(height = 3, width = 8, res = 300, units = "in", filename = "boxplots.of.future.climate.png")
+png(height = 3.5, width = 8, res = 300, units = "in", filename = "boxplots.of.future.climate.png")
 cowplot::plot_grid(future.boxplot.ppt, future.boxplot.tmax)
 dev.off()
 
