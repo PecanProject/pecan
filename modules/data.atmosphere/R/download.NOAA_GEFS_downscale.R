@@ -28,7 +28,7 @@
 ##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
 ##' @param lat site latitude in decimal degrees
 ##' @param lon site longitude in decimal degrees
-##' @param sitename The unique ID given to each site. This is used as part of the file name.
+##' @param site_id The unique ID given to each site. This is used as part of the file name.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
 ##' @param ... Other arguments, currently ignored
@@ -36,7 +36,10 @@
 ##' 
 ##' @examples 
 ##' \dontrun{
-##'  download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
+##'  download.NOAA_GEFS(outfolder="~/Working/results", 
+##'       lat.in= 45.805925, 
+##'       lon.in = -90.07961, 
+##'       site_id = 676)
 ##' }
 ##' 
 ##' @author Katie Zarada - modified code from Luke Dramko and Laura Puckett
@@ -44,7 +47,7 @@
 ##' 
 
 
-download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, start_date, end_date,
+download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, site_id, start_date, end_date,
                                          overwrite = FALSE, verbose = FALSE, ...) {
   
   start_date <- as.POSIXct(start_date, tz = "UTC")
@@ -140,8 +143,29 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   
   
   for (i in 1:length(noaa_var_names)) {
-    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
+    noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = seq_len(increments + 1), forecast_time = forecast_hour, date=format(start_date, "%Y%m%d"))$data
   }
+  
+  
+  ### ERROR CHECK FOR FIRST TIME POINT ###
+  
+  #Check if first time point is present, if not, grab from previous forecast
+  
+  index <- which(lengths(noaa_data) == increments * 21) #finding which ones are missing first point
+  new_start = start_date - lubridate::hours(6) #grab previous forecast
+  new_forecast_hour = (lubridate::hour(new_start) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
+  new_forecast_hour = sprintf("%04d", new_forecast_hour * 100)  #Having the end date as a string is useful later, too.
+  
+  filled_noaa_data = list()
+  
+  for (i in index) {
+    filled_noaa_data[[i]] = rnoaa::gefs(noaa_var_names[i], lat.in, lon.in, raw=TRUE, time_idx = 1, forecast_time = new_forecast_hour, date=format(new_start, "%Y%m%d"))$data
+  }
+  
+  #add filled data into first slot of forecast 
+  for(i in index){
+    noaa_data[[i]] = cbind(filled_noaa_data[[i]], noaa_data[[i]])}
+  
   
   #Fills in data with NaNs if there happens to be missing columns.
   for (i in 1:length(noaa_var_names)) {
@@ -203,7 +227,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #####################################
   #done with data processing- now want to take the list and make one df for downscaling
   
-  time = seq(from = start_date + lubridate::hours(6), to = end_date, by = "6 hour") 
+  time = seq(from = start_date, to = end_date, by = "6 hour") 
   forecasts = matrix(ncol = length(noaa_data)+ 2, nrow = 0)
   colnames(forecasts) <- c(cf_var_names, "timestamp", "NOAA.member")
   
@@ -297,7 +321,7 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #to comply with the PEcAn standard).
   time_dim = ncdf4::ncdim_def(name="time", 
                               units = paste("hours since", format(start_date, "%Y-%m-%dT%H:%M")), 
-                              seq(from = 6, length.out = length(unique(joined$timestamp))), #GEFS forecast starts 6 hours from start time 
+                              seq(from = 0, length.out = length(unique(joined$timestamp))), #GEFS forecast starts 6 hours from start time 
                               create_dimvar = TRUE)
   lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat.in, create_dimvar = TRUE)
   lon_dim = ncdf4::ncdim_def("longitude", "degree_east", lon.in, create_dimvar = TRUE)
@@ -312,18 +336,18 @@ download.NOAA_GEFS_downscale <- function(outfolder, lat.in, lon.in, sitename, st
   #For each ensemble
   for (i in 1:21) { # i is the ensemble number
     #Generating a unique identifier string that characterizes a particular data set.
-    identifier = paste("NOAA_GEFS_downscale", sitename, i, format(start_date, "%Y-%m-%dT%H:%M"), 
-                       format(end_date, "%Y-%m-%dT%H:%M"), sep=".")
-    
+    identifier = paste("NOAA_GEFS_downscale", site_id, i, format(start_date, "%Y-%m-%dT%H:%M"), 
+                       format(end_date, "%Y-%m-%dT%H:%M"), sep="_")
     ensemble_folder = file.path(outfolder, identifier)
+    
+    #ensemble_folder = file.path(outfolder, identifier)
     data = as.data.frame(joined %>% dplyr::select(NOAA.member, cf_var_names1) %>% 
                            dplyr::filter(NOAA.member == i) %>% 
                            dplyr::select(-NOAA.member))
     
-    #Each file will go in its own folder.
+  
     if (!dir.exists(ensemble_folder)) {
-      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)
-    }
+      dir.create(ensemble_folder, recursive=TRUE, showWarnings = FALSE)} 
     
     flname = file.path(ensemble_folder, paste(identifier, "nc", sep = "."))
     

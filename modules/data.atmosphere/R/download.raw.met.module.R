@@ -87,7 +87,8 @@
       username = username,
       lat.in = lat.in,
       lon.in = lon.in,
-      pattern = met
+      pattern = met, 
+      site_id = site.id
     )
     
   } else {

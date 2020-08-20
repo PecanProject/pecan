@@ -27,20 +27,20 @@ downscale_ShortWave_to_hrly <- function(debiased, time0, time_end, lat, lon, out
     rpot <- 1366 * cosz
     return(rpot)
   }
-   grouping = append("NOAA.member", "timestamp")
-    
-    surface_downwelling_shortwave_flux_in_air<- rep(debiased$surface_downwelling_shortwave_flux_in_air, each = 6)
-    time = rep(seq(from = as.POSIXct(time0 - lubridate::hours(5), tz = output_tz), to = as.POSIXct(time_end, tz = output_tz), by = 'hour'), times = 21)
-    
-    ShortWave.hours <- as.data.frame(surface_downwelling_shortwave_flux_in_air)
-    ShortWave.hours$timestamp = time
-    ShortWave.hours$NOAA.member =  rep(debiased$NOAA.member, each = 6)
-    ShortWave.hours$hour = as.numeric(format(time, "%H"))
-    ShortWave.hours$group = rep(seq(1, length(debiased$NOAA.member)/6), each= 6)
-
-
-    
- ShortWave.ds <- ShortWave.hours %>% 
+  grouping = append("NOAA.member", "timestamp")
+  
+  surface_downwelling_shortwave_flux_in_air<- rep(debiased$surface_downwelling_shortwave_flux_in_air, each = 6)
+  time = rep(seq(from = as.POSIXct(time0, tz = output_tz), to = as.POSIXct(time_end + lubridate::hours(5), tz = output_tz), by = 'hour'), times = 21)
+  
+  ShortWave.hours <- as.data.frame(surface_downwelling_shortwave_flux_in_air)
+  ShortWave.hours$timestamp = time
+  ShortWave.hours$NOAA.member =  rep(debiased$NOAA.member, each = 6)
+  ShortWave.hours$hour = as.numeric(format(time, "%H"))
+  ShortWave.hours$group = as.numeric(as.factor(format(ShortWave.hours$time, "%d")))
+  
+  
+  
+  ShortWave.ds <- ShortWave.hours %>% 
     dplyr::mutate(doy = lubridate::yday(timestamp) + hour/24) %>%
     dplyr::mutate(rpot = downscale_solar_geom(doy, lon, lat)) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by_at(c("group", "NOAA.member")) %>%
