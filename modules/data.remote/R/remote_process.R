@@ -3,7 +3,9 @@
 ##' @name remote_process
 ##' @title remote_process
 ##' @export
+##'
 ##' @param settings PEcAn settings list containing remotedata tags: raw_mimetype, raw_formatname, source, collection, scale, projection, qc, algorithm, credfile, pro_mimetype, pro_formatname, out_get_data, out_process_data, overwrite
+##'
 ##' @examples
 ##' \dontrun{
 ##' remote_process(settings)
@@ -140,281 +142,28 @@ remote_process <- function(settings) {
     ), use.names = FALSE)
   
   # check if any data is already present in the inputs table
-  existing_data <-
-    PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid), dbcon)
-  if (nrow(existing_data) >= 1) {
-    if (overwrite) {
-      PEcAn.logger::logger.warn("overwrite is set to TRUE, any existing file will be entirely replaced")
-      if (!is.null(out_process_data)) {
-        pro_file_name = paste0(algorithm,
-                               "_",
-                               out_process_data,
-                               "_site_",
-                               siteid_short)
-        if (nrow(pro_check <-
-                 PEcAn.DB::db.query(
-                   sprintf(
-                     "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                     pro_file_name
-                   ),
-                   dbcon
-                 )) == 1) {
-          if (nrow(raw_check <-
-                   PEcAn.DB::db.query(
-                     sprintf(
-                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                       raw_file_name
-                     ),
-                     dbcon
-                   )) == 1) {
-            remotefile_check_flag <- 4
-          } else{
-            remotefile_check_flag <- 6
-          }
-        } else{
-          remotefile_check_flag <- 1
-        }
-        stage_process_data <- TRUE
-        pro_merge          <- "repace"
-        write_pro_start    <- start
-        write_pro_end      <- end
-      } else if (!is.null(out_get_data)) {
-        if (nrow(raw_check <-
-                 PEcAn.DB::db.query(
-                   sprintf(
-                     "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                     raw_file_name
-                   ),
-                   dbcon
-                 )) == 1) {
-          remotefile_check_flag <- 0
-        } else{
-          remotefile_check_flag <- 1
-        }
-      }
-      stage_get_data         <- TRUE
-      start                  <- req_start
-      end                    <- req_end
-      write_raw_start        <- start
-      write_raw_end          <- end
-      raw_merge              <- "replace"
-      existing_pro_file_path <- NULL
-      existing_raw_file_path <- NULL
-    } else if (!is.null(out_process_data)) {
-      # if processed data is requested, example LAI
-      
-      # construct processed file name
-      pro_file_name = paste0(algorithm, "_", out_process_data, "_site_", siteid_short)
-      
-      # check if processed file exists
-      if (nrow(pro_check <-
-               PEcAn.DB::db.query(
-                 sprintf(
-                   "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                   pro_file_name
-                 ),
-                 dbcon
-               )) == 1) {
-        datalist <-
-          set_stage(pro_check, req_start, req_end, stage_process_data)
-        pro_start       <- as.character(datalist[[1]])
-        pro_end         <- as.character(datalist[[2]])
-        write_pro_start <- datalist[[5]]
-        write_pro_end   <- datalist[[6]]
-        if (pro_start != "dont write" || pro_end != "dont write") {
-          stage_process_data <- datalist[[3]]
-          pro_merge <- datalist[[4]]
-          if (pro_merge == TRUE) {
-            existing_pro_file_path <- pro_check$file_path
-          }
-          if (stage_process_data == TRUE) {
-            # check about the status of raw file
-            raw_check <-
-              PEcAn.DB::db.query(
-                sprintf(
-                  "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                  raw_file_name
-                ),
-                dbcon
-              )
-            if (!is.null(raw_check$start_date) &&
-                !is.null(raw_check$end_date)) {
-              raw_datalist <-
-                set_stage(raw_check, pro_start, pro_end, stage_get_data)
-              start           <- as.character(raw_datalist[[1]])
-              end             <- as.character(raw_datalist[[2]])
-              write_raw_start <- raw_datalist[[5]]
-              write_raw_end   <- raw_datalist[[6]]
-              stage_get_data  <- raw_datalist[[3]]
-              raw_merge       <- raw_datalist[[4]]
-              if (stage_get_data == FALSE) {
-                input_file <- raw_check$file_path
-              }
-              remotefile_check_flag <- 4
-              if (raw_merge == TRUE) {
-                existing_raw_file_path <- raw_check$file_path
-              }
-              if (pro_merge == TRUE && stage_get_data == FALSE) {
-                remotefile_check_flag <- 5
-                write_pro_start        <- raw_check$start_date
-                write_pro_end          <- raw_check$end_date
-                existing_pro_file_path <- NULL
-                pro_merge              <- FALSE
-              }
-            } else{
-              # this case happens when the processed file has to be extended but the raw file used to create the existing processed file has been deleted
-              remotefile_check_flag <- 6
-              write_raw_start        <- req_start
-              write_raw_end          <- req_end
-              start                  <- req_start
-              end                    <- req_end
-              stage_get_data         <- TRUE
-              existing_raw_file_path <- NULL
-              write_pro_start        <- write_raw_start
-              write_pro_end          <- write_raw_end
-              pro_merge              <- "replace"
-              existing_pro_file_path <- NULL
-            }
-          }
-        } else{
-          # requested file already exists
-          pro_id <- pro_check$id
-          pro_path <- pro_check$file_path
-          if (nrow(raw_check <-
-                   PEcAn.DB::db.query(
-                     sprintf(
-                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                       raw_file_name
-                     ),
-                     dbcon
-                   )) == 1) {
-            raw_id <- raw_check$id
-            raw_path <- raw_check$file_path
-          }
-        }
-      }
-      else if (nrow(raw_check <-
-                    PEcAn.DB::db.query(
-                      sprintf(
-                        "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                        raw_file_name
-                      ),
-                      dbcon
-                    )) == 1) {
-        # if the processed file does not exist in the DB check if the raw file required for creating it is present
-        PEcAn.logger::logger.info("Requested processed file does not exist in the DB, checking if the raw file does")
-        datalist <-
-          set_stage(raw_check, req_start, req_end, stage_get_data)
-        start           <- as.character(datalist[[1]])
-        end             <- as.character(datalist[[2]])
-        write_raw_start <- datalist[[5]]
-        write_raw_end   <- datalist[[6]]
-        write_pro_start <- req_start
-        write_pro_end   <- req_end
-        stage_get_data  <- datalist[[3]]
-        if (stage_get_data == FALSE) {
-          input_file      <- raw_check$file_path
-          write_pro_start <- raw_check$start_date
-          write_pro_end   <- raw_check$end_date
-          remotefile_check_flag <- 2
-        }
-        raw_merge <- datalist[[4]]
-        stage_process_data <- TRUE
-        pro_merge <- FALSE
-        if (raw_merge == TRUE || raw_merge == "replace") {
-          existing_raw_file_path = raw_check$file_path
-          remotefile_check_flag <- 3
-        } else{
-          existing_raw_file_path = NULL
-        }
-      } else{
-        # if no processed or raw file of requested type exists
-        start                  <- req_start
-        end                    <- req_end
-        write_raw_start        <- req_start
-        write_raw_end          <- req_end
-        write_pro_start        <- req_start
-        write_pro_end          <- req_end
-        stage_get_data         <- TRUE
-        raw_merge              <- FALSE
-        existing_raw_file_path <- NULL
-        stage_process_data     <- TRUE
-        pro_merge              <- FALSE
-        existing_pro_file_path <- NULL
-        remotefile_check_flag  <- 1
-      }
-    } else if (nrow(raw_check <-
-                    PEcAn.DB::db.query(
-                      sprintf(
-                        "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
-                        raw_file_name
-                      ),
-                      dbcon
-                    )) == 1) {
-      # if only raw data is requested
-      datalist <-
-        set_stage(raw_check, req_start, req_end, stage_get_data)
-      start              <- as.character(datalist[[1]])
-      end                <- as.character(datalist[[2]])
-      stage_get_data     <- datalist[[3]]
-      raw_merge          <- datalist[[4]]
-      write_raw_start    <- datalist[[5]]
-      write_raw_end      <- datalist[[6]]
-      stage_process_data <- FALSE
-      if (as.character(write_raw_start) == "dont write" &&
-          as.character(write_raw_end) == "dont write") {
-        raw_id   <- raw_check$id
-        raw_path <- raw_check$file_path
-      }
-      if (raw_merge == TRUE) {
-        existing_raw_file_path <- raw_check$file_path
-      } else{
-        existing_raw_file_path <- NULL
-      }
-      existing_pro_file_path <- NULL
-    } else{
-      # no data of requested type exists
-      PEcAn.logger::logger.info("Requested data does not exist in the DB, retrieving for the first time")
-      remotefile_check_flag  <- 1
-      start <- req_start
-      end   <- req_end
-      if (!is.null(out_get_data)) {
-        stage_get_data         <- TRUE
-        write_raw_start        <- req_start
-        write_raw_end          <- req_end
-        raw_merge              <- FALSE
-        existing_raw_file_path <- NULL
-      }
-      if (!is.null(out_process_data)) {
-        stage_process_data     <- TRUE
-        write_pro_start        <- req_start
-        write_pro_end          <- req_end
-        pro_merge              <- FALSE
-        process_file_name      <- NULL
-        existing_pro_file_path <- NULL
-        remotefile_check_flag  <- 1
-      }
-    }
-    
-  } else{
-    # db is completely empty for the given siteid
-    PEcAn.logger::logger.info("DB is completely empty for this site")
-    remotefile_check_flag  <- 1
-    start                  <- req_start
-    end                    <- req_end
-    stage_get_data         <- TRUE
-    write_raw_start        <- req_start
-    write_raw_end          <- req_end
-    raw_merge              <- FALSE
-    existing_raw_file_path <- NULL
-    if (!is.null(out_process_data)) {
-      stage_process_data     <- TRUE
-      write_pro_start        <- req_start
-      write_pro_end          <- req_end
-      pro_merge              <- FALSE
-      existing_pro_file_path <- NULL
-    }
-  }
+  dbstatus <- remote_data_dbcheck(raw_file_name = raw_file_name, start = start, end = end, req_start = req_start, req_end = req_end, siteid = siteid, siteid_short = siteid_short, out_get_data = out_get_data, algorithm = algorithm, out_process_data = out_process_data, overwrite, dbcon = dbcon)
+  
+
+  
+  remotefile_check_flag  <- dbstatus[[1]]
+  start                  <- dbstatus[[2]]
+  end                    <- dbstatus[[3]]
+  stage_get_data         <- dbstatus[[4]]
+  write_raw_start        <- dbstatus[[5]]
+  write_raw_end          <- dbstatus[[6]]
+  raw_merge              <- dbstatus[[7]]
+  existing_raw_file_path <- dbstatus[[8]]
+  stage_process_data     <- dbstatus[[9]]
+  write_pro_start        <- dbstatus[[10]]
+  write_pro_end          <- dbstatus[[11]]
+  pro_merge              <- dbstatus[[12]]
+  input_file             <- dbstatus[[13]]
+  existing_pro_file_path <- dbstatus[[14]]
+  raw_check              <- dbstatus[[15]]
+  pro_check              <- dbstatus[[16]]
+  
+  
   
   outdir <- file.path(outdir, paste(source, "site", siteid_short, sep = "_"))
   
@@ -456,6 +205,10 @@ remote_process <- function(settings) {
     if (as.character(write_pro_start) == "dont write" &&
         as.character(write_pro_end) == "dont write") {
       PEcAn.logger::logger.info("Requested processed file already exists")
+      pro_id   <- pro_check$id
+      pro_path <- pro_check$file_path
+      raw_id   <- raw_check$id
+      raw_path <- raw_check$file_path
     } else{
       if (remotefile_check_flag == 1) {
         # no processed and rawfile are present
@@ -819,3 +572,339 @@ set_stage   <- function(result, req_start, req_end, stage) {
   return (list(req_start, req_end, stage, merge, write_start, write_end))
   
 }
+
+
+##' set details after checking db
+##'
+##' @name  remote_data_dbcheck
+##' @title remote_data_dbcheck
+##' @param raw_file_name raw_file_name
+##' @param start start
+##' @param end end
+##' @param req_start req_start
+##' @param req_end req_end
+##' @param siteid siteid
+##' @param siteid_short siteid_short
+##' @param out_get_data out_get_data
+##' @param algorithm algorithm
+##' @param out_process_data out_process_data
+##' @param overwrite overwrite
+##' @param dbcon con
+##' @return list containing information
+##' @examples
+##' \dontrun{
+##' dbstatus <- remote_data_dbcheck(
+##'   raw_file_name,
+##'   start,
+##'   end,
+##'   req_start,
+##'   req_end,
+##'   siteid,
+##'   siteid_short,
+##'   algorithm,
+##'   out_process_data,
+##'   con)
+##' }
+##' @author Ayush Prasad
+remote_data_dbcheck <- function(raw_file_name, start, end, req_start, req_end, siteid, siteid_short, out_get_data, algorithm, out_process_data, overwrite, dbcon){
+
+  input_file             <- NULL
+  stage_get_data         <- NULL
+  stage_process_data     <- NULL
+  raw_merge              <- NULL
+  pro_merge              <- NULL
+  existing_raw_file_path <- NULL
+  existing_pro_file_path <- NULL
+  write_raw_start <- NULL
+  write_raw_end <- NULL
+  write_pro_start <- NULL
+  write_pro_end <- NULL
+  raw_check <- NULL
+  pro_check <- NULL
+  remotefile_check_flag <- NULL
+
+  existing_data <-
+    PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid), dbcon)
+  if (nrow(existing_data) >= 1) {
+    if (overwrite) {
+      PEcAn.logger::logger.warn("overwrite is set to TRUE, any existing file will be entirely replaced")
+      if (!is.null(out_process_data)) {
+        pro_file_name = paste0(algorithm,
+                               "_",
+                               out_process_data,
+                               "_site_",
+                               siteid_short)
+        if (nrow(pro_check <-
+                 PEcAn.DB::db.query(
+                   sprintf(
+                     "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                     pro_file_name
+                   ),
+                   dbcon
+                 )) == 1) {
+          if (nrow(raw_check <-
+                   PEcAn.DB::db.query(
+                     sprintf(
+                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                       raw_file_name
+                     ),
+                     dbcon
+                   )) == 1) {
+            remotefile_check_flag <- 4
+          } else{
+            remotefile_check_flag <- 6
+          }
+        } else{
+          remotefile_check_flag <- 1
+        }
+        stage_process_data <- TRUE
+        pro_merge          <- "repace"
+        write_pro_start    <- start
+        write_pro_end      <- end
+      } else if (!is.null(out_get_data)) {
+        if (nrow(raw_check <-
+                 PEcAn.DB::db.query(
+                   sprintf(
+                     "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                     raw_file_name
+                   ),
+                   dbcon
+                 )) == 1) {
+          remotefile_check_flag <- 0
+        } else{
+          remotefile_check_flag <- 1
+        }
+      }
+      stage_get_data         <- TRUE
+      start                  <- req_start
+      end                    <- req_end
+      write_raw_start        <- start
+      write_raw_end          <- end
+      raw_merge              <- "replace"
+      existing_pro_file_path <- NULL
+      existing_raw_file_path <- NULL
+    } else if (!is.null(out_process_data)) {
+      # if processed data is requested, example LAI
+      
+      # construct processed file name
+      pro_file_name = paste0(algorithm, "_", out_process_data, "_site_", siteid_short)
+      
+      # check if processed file exists
+      if (nrow(pro_check <-
+               PEcAn.DB::db.query(
+                 sprintf(
+                   "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                   pro_file_name
+                 ),
+                 dbcon
+               )) == 1) {
+        datalist <-
+          set_stage(pro_check, req_start, req_end, stage_process_data)
+        pro_start       <- as.character(datalist[[1]])
+        pro_end         <- as.character(datalist[[2]])
+        write_pro_start <- datalist[[5]]
+        write_pro_end   <- datalist[[6]]
+        if (pro_start != "dont write" || pro_end != "dont write") {
+          stage_process_data <- datalist[[3]]
+          pro_merge <- datalist[[4]]
+          if (pro_merge == TRUE) {
+            existing_pro_file_path <- pro_check$file_path
+          }
+          if (stage_process_data == TRUE) {
+            # check about the status of raw file
+            raw_check <-
+              PEcAn.DB::db.query(
+                sprintf(
+                  "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                  raw_file_name
+                ),
+                dbcon
+              )
+            if (!is.null(raw_check$start_date) &&
+                !is.null(raw_check$end_date)) {
+              raw_datalist <-
+                set_stage(raw_check, pro_start, pro_end, stage_get_data)
+              start           <- as.character(raw_datalist[[1]])
+              end             <- as.character(raw_datalist[[2]])
+              write_raw_start <- raw_datalist[[5]]
+              write_raw_end   <- raw_datalist[[6]]
+              stage_get_data  <- raw_datalist[[3]]
+              raw_merge       <- raw_datalist[[4]]
+              if (stage_get_data == FALSE) {
+                input_file <- raw_check$file_path
+              }
+              remotefile_check_flag <- 4
+              if (raw_merge == TRUE) {
+                existing_raw_file_path <- raw_check$file_path
+              }
+              if (pro_merge == TRUE && stage_get_data == FALSE) {
+                remotefile_check_flag <- 5
+                write_pro_start        <- raw_check$start_date
+                write_pro_end          <- raw_check$end_date
+                existing_pro_file_path <- NULL
+                pro_merge              <- FALSE
+              }
+            } else{
+              # this case happens when the processed file has to be extended but the raw file used to create the existing processed file has been deleted
+              remotefile_check_flag <- 6
+              write_raw_start        <- req_start
+              write_raw_end          <- req_end
+              start                  <- req_start
+              end                    <- req_end
+              stage_get_data         <- TRUE
+              existing_raw_file_path <- NULL
+              write_pro_start        <- write_raw_start
+              write_pro_end          <- write_raw_end
+              pro_merge              <- "replace"
+              existing_pro_file_path <- NULL
+            }
+          }
+        } else{
+          # requested file already exists
+          pro_id <- pro_check$id
+          pro_path <- pro_check$file_path
+          if (nrow(raw_check <-
+                   PEcAn.DB::db.query(
+                     sprintf(
+                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                       raw_file_name
+                     ),
+                     dbcon
+                   )) == 1) {
+            raw_id <- raw_check$id
+            raw_path <- raw_check$file_path
+          }
+        }
+      }
+      else if (nrow(raw_check <-
+                    PEcAn.DB::db.query(
+                      sprintf(
+                        "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                        raw_file_name
+                      ),
+                      dbcon
+                    )) == 1) {
+        # if the processed file does not exist in the DB check if the raw file required for creating it is present
+        PEcAn.logger::logger.info("Requested processed file does not exist in the DB, checking if the raw file does")
+        datalist <-
+          set_stage(raw_check, req_start, req_end, stage_get_data)
+        start           <- as.character(datalist[[1]])
+        end             <- as.character(datalist[[2]])
+        write_raw_start <- datalist[[5]]
+        write_raw_end   <- datalist[[6]]
+        write_pro_start <- req_start
+        write_pro_end   <- req_end
+        stage_get_data  <- datalist[[3]]
+        if (stage_get_data == FALSE) {
+          input_file      <- raw_check$file_path
+          write_pro_start <- raw_check$start_date
+          write_pro_end   <- raw_check$end_date
+          remotefile_check_flag <- 2
+        }
+        raw_merge <- datalist[[4]]
+        stage_process_data <- TRUE
+        pro_merge <- FALSE
+        if (raw_merge == TRUE || raw_merge == "replace") {
+          existing_raw_file_path = raw_check$file_path
+          remotefile_check_flag <- 3
+        } else{
+          existing_raw_file_path = NULL
+        }
+      } else{
+        # if no processed or raw file of requested type exists
+        start                  <- req_start
+        end                    <- req_end
+        write_raw_start        <- req_start
+        write_raw_end          <- req_end
+        write_pro_start        <- req_start
+        write_pro_end          <- req_end
+        stage_get_data         <- TRUE
+        raw_merge              <- FALSE
+        existing_raw_file_path <- NULL
+        stage_process_data     <- TRUE
+        pro_merge              <- FALSE
+        existing_pro_file_path <- NULL
+        remotefile_check_flag  <- 1
+      }
+    } else if (nrow(raw_check <-
+                    PEcAn.DB::db.query(
+                      sprintf(
+                        "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                        raw_file_name
+                      ),
+                      dbcon
+                    )) == 1) {
+      # if only raw data is requested
+      datalist <-
+        set_stage(raw_check, req_start, req_end, stage_get_data)
+      start              <- as.character(datalist[[1]])
+      end                <- as.character(datalist[[2]])
+      stage_get_data     <- datalist[[3]]
+      raw_merge          <- datalist[[4]]
+      write_raw_start    <- datalist[[5]]
+      write_raw_end      <- datalist[[6]]
+      stage_process_data <- FALSE
+      if (as.character(write_raw_start) == "dont write" &&
+          as.character(write_raw_end) == "dont write") {
+        raw_id   <- raw_check$id
+        raw_path <- raw_check$file_path
+      }
+      if (raw_merge == TRUE) {
+        existing_raw_file_path <- raw_check$file_path
+      } else{
+        existing_raw_file_path <- NULL
+      }
+      existing_pro_file_path <- NULL
+    } else{
+      # no data of requested type exists
+      PEcAn.logger::logger.info("Requested data does not exist in the DB, retrieving for the first time")
+      remotefile_check_flag  <- 1
+      start <- req_start
+      end   <- req_end
+      if (!is.null(out_get_data)) {
+        stage_get_data         <- TRUE
+        write_raw_start        <- req_start
+        write_raw_end          <- req_end
+        raw_merge              <- FALSE
+        existing_raw_file_path <- NULL
+      }
+      if (!is.null(out_process_data)) {
+        stage_process_data     <- TRUE
+        write_pro_start        <- req_start
+        write_pro_end          <- req_end
+        pro_merge              <- FALSE
+        process_file_name      <- NULL
+        existing_pro_file_path <- NULL
+        remotefile_check_flag  <- 1
+      }
+    }
+    
+  } else{
+    # db is completely empty for the given siteid
+    PEcAn.logger::logger.info("DB is completely empty for this site")
+    remotefile_check_flag  <- 1
+    start                  <- req_start
+    end                    <- req_end
+    stage_get_data         <- TRUE
+    write_raw_start        <- req_start
+    write_raw_end          <- req_end
+    raw_merge              <- FALSE
+    existing_raw_file_path <- NULL
+    if (!is.null(out_process_data)) {
+      stage_process_data     <- TRUE
+      write_pro_start        <- req_start
+      write_pro_end          <- req_end
+      pro_merge              <- FALSE
+      existing_pro_file_path <- NULL
+    }
+  }
+  
+  return(list(remotefile_check_flag, start, end, stage_get_data, write_raw_start, write_raw_end, raw_merge, existing_raw_file_path, stage_process_data, write_pro_start, write_pro_end, pro_merge, input_file, existing_pro_file_path, raw_check, pro_check))
+  
+}
+
+
+
+
+
+
