@@ -258,7 +258,7 @@ remote_process <- function(settings) {
 ##' \dontrun{
 ##' raw_file_name <- construct_raw_filename(
 ##'   collection="s2",
-##'   siteid=721,
+##'   siteid="0-721",
 ##'   scale=10.0
 ##'   projection=NULL
 ##'   qc=1.0)
