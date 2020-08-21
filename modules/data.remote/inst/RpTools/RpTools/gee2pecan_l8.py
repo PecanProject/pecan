@@ -23,7 +23,7 @@ import time
 ee.Initialize()
 
 
-def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
+def gee2pecan_l8(geofile, outdir, filename, start, end, scale, qc):
     """
     Extracts Landsat 8 SR band data from GEE
 
@@ -32,6 +32,8 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
     geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+    
+    filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -41,8 +43,7 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
 
     qc (bool) -- uses the cloud masking function if set to True
 
-    siteid (str) -- shortform of siteid, None by default
-  
+
     Returns
     -------
     Absolute path to the output file.
@@ -174,8 +175,6 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
         },
     )
     
-    if siteid is None:
-      siteid = site_name
 
     # if specified path does not exist create it
     if not os.path.exists(outdir):
@@ -185,13 +184,7 @@ def gee2pecan_l8(geofile, outdir, start, end, scale, qc=1, siteid=None):
     timestamp = time.strftime("%y%m%d%H%M%S")
     filepath = os.path.join(
         outdir,
-        "l8_"
-        + str(scale)
-        + "_NA_"
-        + str(qc)
-        + "_"
-        + "site_"
-        + siteid
+        filename
         + "_"
         + timestamp
         + ".nc",

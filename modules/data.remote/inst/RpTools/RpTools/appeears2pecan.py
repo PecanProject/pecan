@@ -26,7 +26,7 @@ import time
 
 
 def appeears2pecan(
-    geofile, outdir, start, end, product, projection=None, credfile=None, siteid=None
+    geofile, outdir, filename, start, end, product, projection=None, credfile=None
 ):
     """
     Downloads remote sensing data from AppEEARS
@@ -36,6 +36,8 @@ def appeears2pecan(
     geofile (str) -- path to the GeoJSON file containing the name and coordinates of AOI
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+  
+    filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -233,12 +235,7 @@ def appeears2pecan(
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
-        product
-        +"_NA_"
-        + projection
-        + "_NA_"
-        + "site_"
-        + siteid
+        filename
         + "_"
         + timestamp
         + "."

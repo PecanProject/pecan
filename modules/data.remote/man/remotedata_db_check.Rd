@@ -6,6 +6,7 @@
 \usage{
 remotedata_db_check(
   raw_file_name,
+  pro_file_name,
   start,
   end,
   siteid,
@@ -19,6 +20,8 @@ remotedata_db_check(
 }
 \arguments{
 \item{raw_file_name}{raw_file_name}
+
+\item{pro_file_name}{pro_file_name}
 
 \item{start}{start date requested by user}
 
@@ -48,6 +51,7 @@ check the status of the requested data in the DB
 \dontrun{
 dbstatus <- remotedata_db_check(
   raw_file_name,
+  pro_file_name,
   start,
   end,
   siteid,

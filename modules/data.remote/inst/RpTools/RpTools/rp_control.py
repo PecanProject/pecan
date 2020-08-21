@@ -38,6 +38,8 @@ def rp_control(
     pro_merge=None,
     existing_raw_file_path=None,
     existing_pro_file_path=None,
+    raw_file_name=None,
+    pro_file_name=None,
 ):
 
     """
@@ -84,6 +86,10 @@ def rp_control(
     existing_raw_file_path (str) -- path to existing raw file , None by default
     
     existing_pro_file_path (str) -- path to existing pro file path, None by default
+    
+    raw_file_name (str) -- filename of the raw file, None by default
+    
+    pro_file_name (str) -- filename of the processed file, None by default
   
     Returns
     -------
@@ -95,7 +101,6 @@ def rp_control(
 
 
     aoi_name = get_sitename(geofile)
-    get_datareturn_path = 78
 
     if stage_get_data:
         get_datareturn_path = get_remote_data(
@@ -105,13 +110,13 @@ def rp_control(
             end,
             source,
             collection,
-            siteid,
             scale,
             projection,
             qc,
             credfile,
             raw_merge,
             existing_raw_file_path,
+            raw_file_name
         )
         get_datareturn_name = os.path.split(get_datareturn_path)
 
@@ -119,15 +124,14 @@ def rp_control(
         if input_file is None:
             input_file = get_datareturn_path
         process_datareturn_path = process_remote_data(
-            aoi_name,
             out_get_data,
             out_process_data,
             outdir,
             algorithm,
             input_file,
-            siteid,
             pro_merge,
             existing_pro_file_path,
+            pro_file_name
         )
         process_datareturn_name = os.path.split(process_datareturn_path)
 

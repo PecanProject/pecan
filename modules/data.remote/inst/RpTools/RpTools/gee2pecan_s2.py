@@ -757,7 +757,7 @@ def xr_dataset_to_timeseries(xr_dataset, variables):
     return df
 
 
-def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
+def gee2pecan_s2(geofile, outdir, filename, start, end, scale, qc):
     """ 
     Downloads Sentinel 2 data from gee and saves it in a netCDF file at the specified location.
     
@@ -766,6 +766,8 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
     geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+    
+    filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -775,8 +777,6 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
     
     qi_threshold (float) -- From satellitetools: Threshold value to filter images based on used qi filter. qi filter holds labels of classes whose percentages within the AOI is summed. If the sum is larger then the qi_threshold, data will not be retrieved for that date/image. The default is 1, meaning all data is retrieved
         
-    siteid (str) -- shortform of siteid, None by default
-  
     Returns
     -------
     Absolute path to the output file.
@@ -803,20 +803,12 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qc, siteid=None):
     s2_data_to_xarray(area, request)
 
     # if specified output directory does not exist, create it
-    if siteid is None:
-      siteid = area.name
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
-        "s2_"
-        + str(scale)
-        + "_NA_"
-        + str(qc)
-        + "_"
-        + "site_"
-        + siteid
+        filename
         + "_"
         + timestamp
         + ".nc",

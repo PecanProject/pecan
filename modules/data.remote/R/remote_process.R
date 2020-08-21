@@ -121,8 +121,17 @@ remote_process <- function(settings) {
   
   # construct raw file name
   raw_file_name <-
-    construct_raw_filename(collection, siteid_short, scale, projection, qc)
+    construct_raw_filename(source, collection, siteid_short, scale, projection, qc)
   
+  if (is.null(out_process_data)){
+    pro_file_name <- NULL
+  }else{
+    pro_file_name <- paste0(algorithm,
+                           "_",
+                           out_process_data,
+                           "_site_",
+                           siteid_short)
+  }
   
   # check if any data is already present in the inputs table
   dbstatus <-
@@ -190,6 +199,10 @@ remote_process <- function(settings) {
   fcn.args$pro_merge              <- pro_merge
   fcn.args$existing_raw_file_path <- existing_raw_file_path
   fcn.args$existing_pro_file_path <- existing_pro_file_path
+  fcn.args$raw_file_name          <- raw_file_name
+  fcn.args$pro_file_name          <- pro_file_name
+  
+
   
   
   arg.string <- PEcAn.utils::listToArgString(fcn.args)
@@ -241,6 +254,7 @@ remote_process <- function(settings) {
 ##'
 ##' @name construct_raw_filename
 ##' @title construct_raw_filename
+##' @param source source
 ##' @param collection collection or product requested from the source
 ##' @param siteid shortform of siteid
 ##' @param scale scale, NULL by default
@@ -250,6 +264,7 @@ remote_process <- function(settings) {
 ##' @examples
 ##' \dontrun{
 ##' raw_file_name <- construct_raw_filename(
+##'   source="gee",
 ##'   collection="s2",
 ##'   siteid="0-721",
 ##'   scale=10.0
@@ -258,27 +273,32 @@ remote_process <- function(settings) {
 ##' }
 ##' @author Ayush Prasad
 construct_raw_filename <-
-  function(collection,
+  function(source,
+           collection,
            siteid,
            scale = NULL,
            projection = NULL,
            qc = NULL) {
     # use NA if a parameter is not applicable and is NULL
+    # skip if a parameter is not applicable and is NULL
     if (is.null(scale)) {
-      scale <- "NA"
+      scale_str <- "_"
     } else{
-      scale <- format(scale, nsmall = 1)
+      scale_str <- paste0("_", format(scale, nsmall = 1), "_")
     }
     if (is.null(projection)) {
-      projection <- "NA"
+      prj_str <- ""
+    }else{
+      prj_str <- paste0(projection, "_")
     }
     if (is.null(qc)) {
-      qc <- "NA"
+      qc_str <- ""
     } else{
-      qc <- format(qc, nsmall = 1)
+      qc_str <- paste0(format(qc, nsmall = 1), "_")
     }
-    raw_file_name <-
-      paste(collection, scale, projection, qc, "site", siteid, sep = "_")
+    
+    raw_file_name <- paste0(toupper(source), "_", collection, scale_str, prj_str, qc_str, "site_", siteid)
+    
     return(raw_file_name)
   }
 
@@ -348,6 +368,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
 ##' @name  remotedata_db_check
 ##' @title remotedata_db_check
 ##' @param raw_file_name raw_file_name
+##' @param pro_file_name pro_file_name
 ##' @param start start date requested by user
 ##' @param end end date requested by the user
 ##' @param siteid siteid of the site 
@@ -362,6 +383,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
 ##' \dontrun{
 ##' dbstatus <- remotedata_db_check(
 ##'   raw_file_name,
+##'   pro_file_name,
 ##'   start,
 ##'   end,
 ##'   siteid,
@@ -375,6 +397,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
 ##' @author Ayush Prasad
 remotedata_db_check <-
   function(raw_file_name,
+           pro_file_name,
            start,
            end,
            siteid,
@@ -414,11 +437,7 @@ remotedata_db_check <-
       if (overwrite) {
         PEcAn.logger::logger.warn("overwrite is set to TRUE, any existing file will be entirely replaced")
         if (!is.null(out_process_data)) {
-          pro_file_name = paste0(algorithm,
-                                 "_",
-                                 out_process_data,
-                                 "_site_",
-                                 siteid_short)
+
           if (nrow(pro_check <-
                    PEcAn.DB::db.query(
                      sprintf(

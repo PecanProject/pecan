@@ -22,13 +22,13 @@ def get_remote_data(
     end,
     source,
     collection,
-    siteid=None,
     scale=None,
     projection=None,
     qc=None,
     credfile=None,
     raw_merge=None,
     existing_raw_file_path=None,
+    raw_file_name=None
 ):
     """
     uses GEE and AppEEARS functions to download data
@@ -47,8 +47,6 @@ def get_remote_data(
 
     collection (str) -- dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
 
-    siteid (str) -- shortform of the siteid
-    
     scale (int) -- pixel resolution, None by default
 
     projection (str) -- type of projection. Only required for appeears polygon AOI type. None by default. 
@@ -60,6 +58,8 @@ def get_remote_data(
     raw_merge (str) -- if the existing raw file has to be merged, None by default
     
     existing_raw_file_path (str) -- path to exisiting raw file if raw_merge is TRUE., None by default
+  
+    raw_file_name (str) -- filename of the output file
   
     Returns
     -------
@@ -78,13 +78,13 @@ def get_remote_data(
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
         if qc:
-            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, scale=scale, qc=qc, siteid=siteid)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, scale=scale, qc=qc, filename=raw_file_name)
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
-            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, siteid=siteid)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, filename=raw_file_name)
 
     if source == "appeears":
-        get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile, siteid=siteid)
+        get_datareturn_path = appeears2pecan(geofile, outdir, start, end, collection, projection, credfile, filename=raw_file_name)
 
     if raw_merge == True and raw_merge != "replace":
         # if output file is of csv type use csv_merge, example AppEEARS point AOI type 

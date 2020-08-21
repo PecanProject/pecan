@@ -5,6 +5,7 @@
 \title{construct_raw_filename}
 \usage{
 construct_raw_filename(
+  source,
   collection,
   siteid,
   scale = NULL,
@@ -13,6 +14,8 @@ construct_raw_filename(
 )
 }
 \arguments{
+\item{source}{source}
+
 \item{collection}{collection or product requested from the source}
 
 \item{siteid}{shortform of siteid}
@@ -32,6 +35,7 @@ construct the raw file name
 \examples{
 \dontrun{
 raw_file_name <- construct_raw_filename(
+  source="gee",
   collection="s2",
   siteid="0-721",
   scale=10.0

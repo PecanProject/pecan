@@ -15,7 +15,7 @@ import xarray as xr
 import os
 import time
 
-def bands2lai_snap(inputfile, outdir, siteid):
+def bands2lai_snap(inputfile,  outdir, filename):
     """
     Calculates LAI for the input netCDF file and saves it in a new netCDF file.
 
@@ -25,8 +25,8 @@ def bands2lai_snap(inputfile, outdir, siteid):
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
     
-    siteid (str) -- shortform of the siteid
-         
+    filename (str) -- filename of the output file
+
     Returns
     -------
     Absolute path to the output file
@@ -50,10 +50,7 @@ def bands2lai_snap(inputfile, outdir, siteid):
 
     timestamp = time.strftime("%y%m%d%H%M%S")
     
-    if siteid is None:
-        siteid = area.name
-
-    save_path = os.path.join(outdir, "snap_lai_site_" + siteid + "_" + timestamp + ".nc")
+    save_path = os.path.join(outdir, filename + "_" + timestamp + ".nc")
     # creating a timerseries and saving the netCDF file
     area.to_netcdf(save_path)
     timeseries[area.name] = xr_dataset_to_timeseries(area, timeseries_variable)

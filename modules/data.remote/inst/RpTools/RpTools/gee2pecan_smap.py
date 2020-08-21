@@ -18,7 +18,7 @@ import time
 ee.Initialize()
 
 
-def gee2pecan_smap(geofile, outdir, start, end, siteid=None):
+def gee2pecan_smap(geofile, outdir, filename, start, end):
     """
     Downloads and saves SMAP data from GEE
 
@@ -27,6 +27,8 @@ def gee2pecan_smap(geofile, outdir, start, end, siteid=None):
     geofile (str) -- path to the geosjon file containing the name and coordinates of ROI
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+
+    filename (str) -- filename of the output file
 
     start (str) -- starting date of the data request in the form YYYY-MM-dd
 
@@ -163,7 +165,7 @@ def gee2pecan_smap(geofile, outdir, start, end, siteid=None):
     timestamp = time.strftime("%y%m%d%H%M%S")
 
     filepath = os.path.join(
-        outdir, "smap_" + "NA_NA_NA_" + "site_" + siteid +"_" + timestamp + ".nc"
+        outdir, filename + "_" + timestamp + ".nc"
     )
 
     # convert to netCDF and save the file

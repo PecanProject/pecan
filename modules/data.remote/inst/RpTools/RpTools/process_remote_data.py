@@ -11,20 +11,19 @@ from importlib import import_module
 import os
 import time
 
-def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algorithm, input_file, siteid=None, pro_merge=None, existing_pro_file_path=None):
+def process_remote_data(out_get_data, out_process_data, outdir, algorithm, input_file, pro_merge=None, existing_pro_file_path=None, pro_file_name=None):
     """
     uses processing functions to perform computation on input data
     
     Parameters
     ----------
-    aoi_name (str) -- name to the AOI.
     output (dict) -- dictionary contatining the keys get_data and process_data
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
     algorithm (str) -- name of the algorithm used to perform computation.
     inputfile (str) -- path to raw file
-    siteid (str) -- shortform of the siteid
     pro_merge (str) -- if the pro file has to be merged
-    existing_pro_file_path -- path to existing pro file if pro_merge is TRUE
+    existing_pro_file_path (str) -- path to existing pro file if pro_merge is TRUE
+    pro_file_name (str) -- name of the output file
     
     Returns
     -------
@@ -46,7 +45,7 @@ def process_remote_data(aoi_name, out_get_data, out_process_data, outdir, algori
     # import the function from the module
     func = getattr(module, func_name)
     # call the function
-    process_datareturn_path = func(input_file, outdir, siteid)
+    process_datareturn_path = func(input_file, outdir, pro_file_name)
 
     if pro_merge == True and pro_merge != "replace":
         try:
