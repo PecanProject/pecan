@@ -224,12 +224,12 @@ remote_process <- function(settings) {
   
   # return the ids and paths of the inserted data
   if (!is.null(out_get_data)) {
-    settings$remotedata$raw_id   <- db_out[[1]]
-    settings$remotedata$raw_path <- db_out[[2]]
+    settings$remotedata$raw_id   <- db_out$raw_id
+    settings$remotedata$raw_path <- db_out$raw_path
   }
   if (!is.null(out_process_data)) {
-    settings$remotedata$pro_id   <- db_out[[3]]
-    settings$remotedata$pro_path <- db_out[[4]]
+    settings$remotedata$pro_id   <- db_out$pro_id
+    settings$remotedata$pro_path <- db_out$pro_path
   }
   
   return (settings)
@@ -336,7 +336,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
     write_end   <- db_end
     write_start <- req_start
   }
-  return (list(req_start, req_end, stage, merge, write_start, write_end))
+  return (list(req_start = req_start, req_end = req_end, stage = stage, merge = merge, write_start = write_start, write_end = write_end))
   
 }
 
@@ -443,7 +443,7 @@ remotedata_db_check <-
             remotefile_check_flag <- 1
           }
           stage_process_data <- TRUE
-          pro_merge          <- "repace"
+          pro_merge          <- "replace"
           write_pro_start    <- start
           write_pro_end      <- end
         } else if (!is.null(out_get_data)) {
@@ -485,13 +485,13 @@ remotedata_db_check <-
                  )) == 1) {
           datalist <-
             set_stage(pro_check, req_start, req_end, stage_process_data)
-          pro_start       <- as.character(datalist[[1]])
-          pro_end         <- as.character(datalist[[2]])
-          write_pro_start <- datalist[[5]]
-          write_pro_end   <- datalist[[6]]
+          pro_start       <- as.character(datalist$req_start)
+          pro_end         <- as.character(datalist$req_end)
+          write_pro_start <- datalist$write_start
+          write_pro_end   <- datalist$write_end
           if (pro_start != "dont write" || pro_end != "dont write") {
-            stage_process_data <- datalist[[3]]
-            pro_merge <- datalist[[4]]
+            stage_process_data <- datalist$stage
+            pro_merge <- datalist$merge
             if (pro_merge == TRUE) {
               existing_pro_file_path <- pro_check$file_path
             }
@@ -509,12 +509,12 @@ remotedata_db_check <-
                   !is.null(raw_check$end_date)) {
                 raw_datalist <-
                   set_stage(raw_check, pro_start, pro_end, stage_get_data)
-                start           <- as.character(raw_datalist[[1]])
-                end             <- as.character(raw_datalist[[2]])
-                write_raw_start <- raw_datalist[[5]]
-                write_raw_end   <- raw_datalist[[6]]
-                stage_get_data  <- raw_datalist[[3]]
-                raw_merge       <- raw_datalist[[4]]
+                start           <- as.character(raw_datalist$req_start)
+                end             <- as.character(raw_datalist$req_end)
+                write_raw_start <- raw_datalist$write_start
+                write_raw_end   <- raw_datalist$write_end
+                stage_get_data  <- raw_datalist$stage
+                raw_merge       <- raw_datalist$merge
                 if (stage_get_data == FALSE) {
                   input_file <- raw_check$file_path
                 }
@@ -573,20 +573,20 @@ remotedata_db_check <-
           PEcAn.logger::logger.info("Requested processed file does not exist in the DB, checking if the raw file does")
           datalist <-
             set_stage(raw_check, req_start, req_end, stage_get_data)
-          start           <- as.character(datalist[[1]])
-          end             <- as.character(datalist[[2]])
-          write_raw_start <- datalist[[5]]
-          write_raw_end   <- datalist[[6]]
+          start           <- as.character(datalist$req_start)
+          end             <- as.character(datalist$req_end)
+          write_raw_start <- datalist$write_start
+          write_raw_end   <- datalist$write_end
           write_pro_start <- req_start
           write_pro_end   <- req_end
-          stage_get_data  <- datalist[[3]]
+          stage_get_data  <- datalist$stage
           if (stage_get_data == FALSE) {
             input_file      <- raw_check$file_path
             write_pro_start <- raw_check$start_date
             write_pro_end   <- raw_check$end_date
             remotefile_check_flag <- 2
           }
-          raw_merge <- datalist[[4]]
+          raw_merge <- datalist$merge
           stage_process_data <- TRUE
           pro_merge <- FALSE
           if (raw_merge == TRUE || raw_merge == "replace") {
@@ -622,12 +622,12 @@ remotedata_db_check <-
         # if only raw data is requested
         datalist <-
           set_stage(raw_check, req_start, req_end, stage_get_data)
-        start              <- as.character(datalist[[1]])
-        end                <- as.character(datalist[[2]])
-        stage_get_data     <- datalist[[3]]
-        raw_merge          <- datalist[[4]]
-        write_raw_start    <- datalist[[5]]
-        write_raw_end      <- datalist[[6]]
+        start              <- as.character(datalist$req_start)
+        end                <- as.character(datalist$req_end)
+        stage_get_data     <- datalist$stage
+        raw_merge          <- datalist$merge
+        write_raw_start    <- datalist$write_start
+        write_raw_end      <- datalist$write_end
         stage_process_data <- FALSE
         if (as.character(write_raw_start) == "dont write" &&
             as.character(write_raw_end) == "dont write") {
@@ -1044,5 +1044,5 @@ remotedata_db_insert <-
       }
     }
     
-    return(list(raw_id, raw_path, pro_id, pro_path))
+    return(list(raw_id = raw_id, raw_path = raw_path, pro_id = pro_id, pro_path = pro_path))
   }
