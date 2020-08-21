@@ -36,14 +36,6 @@ remote_process <- function(settings) {
   
   RpTools <- reticulate::import("RpTools")
   
-  input_file             <- NULL
-  stage_get_data         <- NULL
-  stage_process_data     <- NULL
-  raw_merge              <- NULL
-  pro_merge              <- NULL
-  existing_raw_file_path <- NULL
-  existing_pro_file_path <- NULL
-  
   # extract the variables from the settings list
   siteid           <- as.numeric(settings$run$site$id)
   siteid_short     <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
