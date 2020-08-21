@@ -88,6 +88,7 @@ x <- hydro.ncs[1]
   # dim 4: each climate model/ensemble member
   lat <- ncvar_get(nc,"latitude") # get lat
   lon <- ncvar_get(nc, "longitude") # get long
+  nc.time <- ncvar_get(nc, "time") # get long
   projection <- ncvar_get(nc, "projection") # cant get the dimvar, but metadata has info on projections
   
   
@@ -95,7 +96,7 @@ x <- hydro.ncs[1]
   nmonths <- dim(ppt)[3] # 3rd dimension is the number of months in the downscaled projections
   nTmax <- dim(ppt)
   nc_close(nc) # close the netcdf file when you are done extracting
-  Tmax[,,,1] 
+
   
   
   rlist <- list()
@@ -107,11 +108,11 @@ x <- hydro.ncs[1]
   # ppt = the 4 D array 
   # cov.data.ll = the spatial object to extract by
   # nmonths = # months from the 4D array
-extract.yearly.ppt  <- function(proj,ppt= ppt, cov.data.ll = cov.data.ll, nmonths = nmonths){ 
-  
+extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){ 
+     rlist <- list()
         # make a raster for each month 
-      for(i in 1:nmonths){ 
-        rlist[[i]] <- raster(as.matrix(ppt[,,i,proj]), xmn = min(lon), xmx = max(lon), 
+      for(m in 1:nmonths){ 
+        rlist[[m]] <- raster(as.matrix(ppt[,,m,proj]), xmn = min(lon), xmx = max(lon), 
                              ymn = min(lat) , ymx = max(lat), 
                              crs = CRS('+init=epsg:4269'))
       }
@@ -127,7 +128,7 @@ extract.yearly.ppt  <- function(proj,ppt= ppt, cov.data.ll = cov.data.ll, nmonth
          extracted.pts$lat <-ll.data$LAT # get the lat and long
          extracted.pts$lon <-ll.data$LON
          
-         colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", 2018:2099, "_", rep(1:12, 82) ) # note may need to change this to make more customizable
+         colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(2018:2099, each = 12), "_", rep(1:12, 82) ) # note may need to change this to make more customizable
          extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
          extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
          ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
@@ -142,7 +143,7 @@ extract.yearly.ppt  <- function(proj,ppt= ppt, cov.data.ll = cov.data.ll, nmonth
 # then apply this funcation across all 97 projections downloaded in the netcdf
 all.future.ppt <- list()
 
-#system.time(all.future.ppt <- lapply(1:2, FUN = extract.yearly.ppt)) 
+system.time(all.future.ppt <- lapply(1:2, FUN = extract.yearly.ppt)) 
 # user  system elapsed 
 # 11.062   0.749  12.938 
 
@@ -152,8 +153,8 @@ all.future.ppt <- list()
 
 # for loop is slightly faster, so we will use that, but this takes a bit
 system.time(
-  for(i in 1:97){ # extracts for all 97 projections 
-    all.future.ppt[[i]] <- extract.yearly.ppt(proj = i,  cov.data.ll = cov.data.ll, nmonths = nmonths)
+  for(j in 1:97){ # extracts for all 97 projections 
+    all.future.ppt[[i]] <- extract.yearly.ppt(proj = j, ppt= ppt,  cov.data.ll = cov.data.ll, nmonths = nmonths)
   }
   )
 
@@ -189,7 +190,7 @@ rlist <- list()
 
 
 # created a second function because I want to summarise the temp data in a different way
-extract.yearly.tmax  <- function(proj,Tmax= Tmax, cov.data.ll = cov.data.ll, nmonths = nmonths){ 
+extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){ 
   
   # make a raster for each month
   for(i in 1:984){
@@ -209,7 +210,7 @@ extract.yearly.tmax  <- function(proj,Tmax= Tmax, cov.data.ll = cov.data.ll, nmo
   ll.data <- as.data.frame(cov.data.ll)
   extracted.pts$lat <-ll.data$LAT # get the lat and long
   extracted.pts$lon <-ll.data$LON
-  colnames(extracted.pts)[1:984] <- paste0("tmax_", 2018:2099, "_", rep(1:12, 82) )
+  colnames(extracted.pts)[1:984] <- paste0("tmax_", rep(2018:2099, each = 12), "_", rep(1:12, 82) )
   extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
   extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
   ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
@@ -229,7 +230,7 @@ all.future.tmax <- list()
 
 system.time(
   for(i in 1:97){
-    all.future.tmax[[i]] <- extract.yearly.tmax(i)
+    all.future.tmax[[i]] <- extract.yearly.tmax(i, Tmax = Tmax, cov.data.ll = cov.data.ll, nmonths = nmonths )
   }
 )
 
@@ -263,7 +264,7 @@ future.climate.ts <- future.climate.ts %>% dplyr::select(-climate.x, -climate.y)
 pipo.cores.ll$cov.data
 pipo.cores.ll$future.climate.ts <- future.climate.ts
 
-saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climatev2.rds")
+saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climatev3.rds")
 
 
 
