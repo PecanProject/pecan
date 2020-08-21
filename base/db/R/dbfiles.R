@@ -668,7 +668,7 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
 ##' This function will move dbfiles - clim or nc -  from one location 
 ##' to another on the same machine and update BETY
 ##' 
-##' @name move.input.files
+##' @name dbfile.move
 ##' @title Move files to new location 
 ##' @param old.dir directory with files to be moved
 ##' @param new.dir directory where files should be moved 
