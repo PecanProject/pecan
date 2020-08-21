@@ -139,7 +139,22 @@ remote_process <- function(settings) {
       dbcon             = dbcon
     )
   
-  remotefile_check_flag  <- dbstatus[[1]]
+  remotefile_check_flag  <- dbstatus$remotefile_check_flag 
+  start                  <- dbstatus$start                 
+  end                    <- dbstatus$end                   
+  stage_get_data         <- dbstatus$stage_get_data        
+  write_raw_start        <- dbstatus$write_raw_start       
+  write_raw_end          <- dbstatus$write_raw_end         
+  raw_merge              <- dbstatus$raw_merge             
+  existing_raw_file_path <- dbstatus$existing_raw_file_path
+  stage_process_data     <- dbstatus$stage_process_data    
+  write_pro_start        <- dbstatus$write_pro_start       
+  write_pro_end          <- dbstatus$write_pro_end         
+  pro_merge              <- dbstatus$pro_merge             
+  input_file             <- dbstatus$input_file            
+  existing_pro_file_path <- dbstatus$existing_pro_file_path
+  raw_check              <- dbstatus$raw_check             
+  pro_check              <- dbstatus$pro_check  
   start                  <- dbstatus[[2]]
   end                    <- dbstatus[[3]]
   stage_get_data         <- dbstatus[[4]]
@@ -158,7 +173,7 @@ remote_process <- function(settings) {
   
   # construct outdir path
   outdir <-
-    file.path(outdir, paste(source, "site", siteid_short, sep = "_"))
+    file.path(outdir, paste(toupper(source), "site", siteid_short, sep = "_"))
 
   # extract the AOI of the site from BETYdb
   coords <-
@@ -685,7 +700,24 @@ remotedata_db_check <-
     }
     
     return(
-      list(
+            list(
+        remotefile_check_flag  = remotefile_check_flag,
+        start                  = start,
+        end                    = end,
+        stage_get_data         = stage_get_data,
+        write_raw_start        = write_raw_start,
+        write_raw_end          = write_raw_end,
+        raw_merge              = raw_merge,
+        existing_raw_file_path = existing_raw_file_path,
+        stage_process_data     = stage_process_data,
+        write_pro_start        = write_pro_start,
+        write_pro_end          = write_pro_end,
+        pro_merge              = pro_merge,
+        input_file             = input_file,
+        existing_pro_file_path = existing_pro_file_path,
+        raw_check              = raw_check,
+        pro_check              = pro_check
+      )
         remotefile_check_flag,
         start,
         end,
