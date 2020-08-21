@@ -155,21 +155,7 @@ remote_process <- function(settings) {
   existing_pro_file_path <- dbstatus$existing_pro_file_path
   raw_check              <- dbstatus$raw_check             
   pro_check              <- dbstatus$pro_check  
-  start                  <- dbstatus[[2]]
-  end                    <- dbstatus[[3]]
-  stage_get_data         <- dbstatus[[4]]
-  write_raw_start        <- dbstatus[[5]]
-  write_raw_end          <- dbstatus[[6]]
-  raw_merge              <- dbstatus[[7]]
-  existing_raw_file_path <- dbstatus[[8]]
-  stage_process_data     <- dbstatus[[9]]
-  write_pro_start        <- dbstatus[[10]]
-  write_pro_end          <- dbstatus[[11]]
-  pro_merge              <- dbstatus[[12]]
-  input_file             <- dbstatus[[13]]
-  existing_pro_file_path <- dbstatus[[14]]
-  raw_check              <- dbstatus[[15]]
-  pro_check              <- dbstatus[[16]]
+
   
   # construct outdir path
   outdir <-
@@ -718,24 +704,8 @@ remotedata_db_check <-
         raw_check              = raw_check,
         pro_check              = pro_check
       )
-        remotefile_check_flag,
-        start,
-        end,
-        stage_get_data,
-        write_raw_start,
-        write_raw_end,
-        raw_merge,
-        existing_raw_file_path,
-        stage_process_data,
-        write_pro_start,
-        write_pro_end,
-        pro_merge,
-        input_file,
-        existing_pro_file_path,
-        raw_check,
-        pro_check
       )
-    )
+    
     
   }
 
