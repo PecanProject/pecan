@@ -662,3 +662,247 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
     invisible(NA)
   }
 }
+
+
+##' 
+##' This function will move dbfiles - clim or nc -  from one location 
+##' to another on the same machine and update BETY
+##' 
+##' @name move.input.files
+##' @title Move files to new location 
+##' @param old.dir directory with files to be moved
+##' @param new.dir directory where files should be moved 
+##' @param file.type what type of files are we moving either clim or nc 
+##' @param siteid needed to register .nc files that arent already in BETY
+##' @return print statement of how many files were moved, registered, or have symbolic links
+##' @export
+##' @author kzarada
+##' @examples
+##' \dontrun{
+##'   dbfile.move(
+##'   old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676", 
+##'   new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
+##'   file.type= clim, 
+##'   siteid = 676
+##'   )
+##' }
+
+
+dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){  
+  
+  
+  #create nulls for file movement and error  info 
+  error = 0
+  files.sym = 0
+  files.changed = 0 
+  files.reg = 0 
+  files.indb = 0 
+  
+  #check for file type and update to make it *.file type 
+  if(file.type != "clim" | file.type != "nc"){ 
+    PEcAn.logger::logger.error('File type not supported by move at this time. Please enter either clim or nc')
+    error = 1
+  }
+  file.pattern = paste0("*.", file.type)
+  
+  
+  
+  #create new directory if it doesn't exist
+  if(!dir.exists(new.file.path)){ 
+    dir.create(new.file.path)}
+  
+  
+  # check to make sure both directories exist 
+  if(!dir.exists(old.file.path)){ 
+    PEcAn.logger::logger.error('Old File directory does not exist. Please enter valid file path')
+    error = 1}
+  
+  if(!dir.exists(new.file.path)){ 
+    PEcAn.logger::logger.error('New File directory does not exist. Please enter valid file path')
+    error = 1}
+  
+  if(basename(new.file.path) != basename(old.file.path)){ 
+    PEcAn.logger::logger.error('Basenames of files do not match')
+  }
+  
+  #list files in the old directory
+  old.files <- list.files(path= old.file.path, pattern = file.pattern)
+  
+  #check to make sure there are files 
+  if(length(old.files) == 0){ 
+    PEcAn.logger::logger.warn('No files found')
+    error = 1 
+  }
+  
+  #create full file path 
+  full.old.file = file.path(old.file.path, old.files)
+  
+  
+  ### Get BETY information ###
+  bety <- dplyr::src_postgres(dbname   = 'bety', 
+                              host     = 'psql-pecan.bu.edu', 
+                              user     = 'bety', 
+                              password = 'bety')
+  con <- bety$con
+  
+  #get matching dbfiles from BETY 
+  dbfile.path = dirname(full.old.file)
+  dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
+    dplyr::filter(file_name %in% basename(full.old.file)) %>% 
+    dplyr::filter(file_path %in% dbfile.path)
+  
+  
+  #if there are matching db files
+  if(dim(dbfiles)[1] > 0){
+    
+    # Check to make sure files line up 
+    if(dim(dbfiles)[1] != length(full.old.file)) { 
+      PEcAn.logger::logger.warn("Files to be moved don't match up with BETY files, only moving the files that match")
+      
+      #IF DB FILES AND FULL FILES DONT MATCH, remove those not in BETY - will take care of the rest below 
+      index = which(basename(full.old.file) %in% dbfiles$file_name)
+      index1 = seq(1, length(full.old.file))
+      check <- index1[-which(index1 %in% index)]
+      full.old.file <- full.old.file[-check]
+      
+      #record the number of files that are being moved 
+      files.changed = length(full.old.file)
+      
+    }
+    
+    #Check to make sure the files line up 
+    if(dim(dbfiles)[1] != length(full.old.file)) { 
+      PEcAn.logger::logger.error("Files to be moved don't match up with BETY files, canceling move")
+      error = 1 
+    } 
+    
+    
+    #Make sure the files line up 
+    dbfiles <- dbfiles[order(dbfiles$file_name),]
+    full.old.file <- sort(full.old.file)
+    
+    #Record number of files moved and changed in BETY
+    files.indb = dim(dbfiles)[1]
+    
+    #Move files and update BETY
+    if(error == 0) {
+      for(i in 1:length(full.old.file)){
+        fs::file_move(full.old.file[i], new.file.path)
+        db.query(paste0("UPDATE dbfiles SET file_path= '", new.file.path, "' where id=", dbfiles$id[i]), con)
+      } #end i loop 
+    } #end error if statement 
+    
+    
+    
+  } #end dbfile loop 
+  
+  #if statement for when there are no matching files in BETY or if some clim files matched but others didn't
+  #for clim files not registered, we'll create a symbolic link to where we move the files
+  if (dim(dbfiles)[1] == 0 & file.pattern == "*.clim" | files.changed > 0 & file.pattern == "*.clim" ){ 
+    
+    #Recheck what files are in the directory since others may have been moved above 
+    old.files <- list.files(path= old.file.path, pattern = file.pattern)
+    
+    #Recreate full file path 
+    full.old.file = file.path(old.file.path, old.files)
+    
+    #Record number of files that will have a symbolic link made 
+    files.sym = length(full.old.file)
+    
+    #Error check again to make sure there aren't any matching dbfiles 
+    dbfile.path = dirname(full.old.file)
+    dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
+      dplyr::filter(file_name %in% basename(full.old.file)) %>% 
+      dplyr::filter(file_path %in% dbfile.path)
+    
+    if(dim(dbfiles)[1] > 0){ 
+      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling symbolic link creation")
+      error = 1
+    }
+    
+    #Create file path for symbolic link 
+    full.new.file = file.path(new.file.path, old.files)
+    
+    #Line up files 
+    full.new.file = sort(full.new.file)
+    full.old.file <- sort(full.old.file)
+    
+    #Check to make sure the files are the same length 
+    if(length(full.new.file) != length(full.old.file)) { 
+      
+      PEcAn.logger::logger.error("Files to be moved don't match up with BETY. Canceling Move")
+      error = 1
+    }
+    
+    #Move file and create symbolic link if there are no errors 
+    
+    if(error ==0){
+      for(i in 1:length(full.old.file)){
+        fs::file_move(full.old.file[i], new.file.path)
+        R.utils::createLink(link = full.old.file[i], target = full.new.file[i])
+      }#end i loop 
+    } #end error loop 
+    
+    
+  } #end clim if statement 
+  
+  
+  #If files are .nc files and aren't in BETY for some reason, we will register them 
+  if (dim(dbfiles)[1] == 0 & file.pattern == "*.nc" | files.changed == 1 & file.pattern == "*.nc" ){ 
+    
+    #Re make full file path and find files that were not moved 
+    old.files <- list.files(path= old.file.path, pattern = file.pattern)
+    
+    full.old.file = file.path(old.file.path, old.files)
+    
+    #Record how many files are being registered to BETY 
+    files.reg= length(full.old.file)
+    
+    #Check again to make sure there aren't any matching dbfiles 
+    dbfile.path = dirname(full.old.file)
+    dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
+      dplyr::filter(file_name %in% basename(full.old.file)) %>% 
+      dplyr::filter(file_path %in% dbfile.path)
+    
+    if(dim(dbfiles)[1] > 0){ 
+      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling symbolic link creation")
+      error = 1
+    }
+    
+    if(error == 0){
+      
+      for(i in 1:length(full.old.file)){
+        
+        file_path = dirname(full.old.file[i])
+        file_name = basename(full.old.file[i])
+        
+        
+        dbfile.input.insert(in.path = file_path,
+                            in.prefix = file_name,
+                            siteid = siteid,
+                            startdate = NULL,
+                            enddate = NULL,
+                            mimetype = "application/x-netcdf",
+                            formatname = "CF Meteorology application",
+                            parentid=NA,
+                            con = con, 
+                            hostname=PEcAn.remote::fqdn(),
+                            allow.conflicting.dates=FALSE,
+                            ens=FALSE) 
+      }#end i loop 
+    } #end error loop
+  } #end nc file registration 
+  
+  
+  if(error > 0){ 
+    PEcAn.logger::logger.error("There was an error, files were not moved or linked")
+    
+  }
+  
+  if(error == 0){
+    
+    PEcAn.logger::logger.info(paste0(files.changed + files.indb, " files were moved and updated on BETY,  ", files.sym, " were moved and had a symbolic link created, and ", files.reg , " files were moved and then registered in BETY"))
+    
+  }
+  
+} #end dbfile.move()
