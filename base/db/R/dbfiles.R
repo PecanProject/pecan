@@ -708,25 +708,25 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
   
   
   #create new directory if it doesn't exist
-  if(!dir.exists(new.file.path)){ 
-    dir.create(new.file.path)}
+  if(!dir.exists(new.dir)){ 
+    dir.create(new.dir)}
   
   
   # check to make sure both directories exist 
-  if(!dir.exists(old.file.path)){ 
+  if(!dir.exists(old.dir)){ 
     PEcAn.logger::logger.error('Old File directory does not exist. Please enter valid file path')
     error = 1}
   
-  if(!dir.exists(new.file.path)){ 
+  if(!dir.exists(new.dir)){ 
     PEcAn.logger::logger.error('New File directory does not exist. Please enter valid file path')
     error = 1}
   
-  if(basename(new.file.path) != basename(old.file.path)){ 
+  if(basename(new.dir) != basename(old.dir)){ 
     PEcAn.logger::logger.error('Basenames of files do not match')
   }
   
   #list files in the old directory
-  old.files <- list.files(path= old.file.path, pattern = file.pattern)
+  old.files <- list.files(path= old.dir, pattern = file.pattern)
   
   #check to make sure there are files 
   if(length(old.files) == 0){ 
@@ -735,7 +735,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
   }
   
   #create full file path 
-  full.old.file = file.path(old.file.path, old.files)
+  full.old.file = file.path(old.dir, old.files)
   
   
   ### Get BETY information ###
@@ -787,8 +787,8 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     #Move files and update BETY
     if(error == 0) {
       for(i in 1:length(full.old.file)){
-        fs::file_move(full.old.file[i], new.file.path)
-        db.query(paste0("UPDATE dbfiles SET file_path= '", new.file.path, "' where id=", dbfiles$id[i]), con)
+        fs::file_move(full.old.file[i], new.dir)
+        db.query(paste0("UPDATE dbfiles SET file_path= '", new.dir, "' where id=", dbfiles$id[i]), con)
       } #end i loop 
     } #end error if statement 
     
@@ -801,10 +801,10 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
   if (dim(dbfiles)[1] == 0 & file.pattern == "*.clim" | files.changed > 0 & file.pattern == "*.clim" ){ 
     
     #Recheck what files are in the directory since others may have been moved above 
-    old.files <- list.files(path= old.file.path, pattern = file.pattern)
+    old.files <- list.files(path= old.dir, pattern = file.pattern)
     
     #Recreate full file path 
-    full.old.file = file.path(old.file.path, old.files)
+    full.old.file = file.path(old.dir, old.files)
     
     #Record number of files that will have a symbolic link made 
     files.sym = length(full.old.file)
@@ -821,7 +821,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     }
     
     #Create file path for symbolic link 
-    full.new.file = file.path(new.file.path, old.files)
+    full.new.file = file.path(new.dir, old.files)
     
     #Line up files 
     full.new.file = sort(full.new.file)
@@ -838,7 +838,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     
     if(error ==0){
       for(i in 1:length(full.old.file)){
-        fs::file_move(full.old.file[i], new.file.path)
+        fs::file_move(full.old.file[i], new.dir)
         R.utils::createLink(link = full.old.file[i], target = full.new.file[i])
       }#end i loop 
     } #end error loop 
@@ -851,9 +851,9 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
   if (dim(dbfiles)[1] == 0 & file.pattern == "*.nc" | files.changed == 1 & file.pattern == "*.nc" ){ 
     
     #Re make full file path and find files that were not moved 
-    old.files <- list.files(path= old.file.path, pattern = file.pattern)
+    old.files <- list.files(path= old.dir, pattern = file.pattern)
     
-    full.old.file = file.path(old.file.path, old.files)
+    full.old.file = file.path(old.dir, old.files)
     
     #Record how many files are being registered to BETY 
     files.reg= length(full.old.file)
