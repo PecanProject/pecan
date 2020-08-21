@@ -8,8 +8,6 @@ remotedata_db_check(
   raw_file_name,
   start,
   end,
-  req_start,
-  req_end,
   siteid,
   siteid_short,
   out_get_data,
@@ -22,17 +20,13 @@ remotedata_db_check(
 \arguments{
 \item{raw_file_name}{raw_file_name}
 
-\item{start}{start}
+\item{start}{start date requested by user}
 
-\item{end}{end}
+\item{end}{end date requested by the user}
 
-\item{req_start}{req_start}
+\item{siteid}{siteid of the site}
 
-\item{req_end}{req_end}
-
-\item{siteid}{siteid}
-
-\item{siteid_short}{siteid_short}
+\item{siteid_short}{short form of the siteid}
 
 \item{out_get_data}{out_get_data}
 
@@ -42,7 +36,7 @@ remotedata_db_check(
 
 \item{overwrite}{overwrite}
 
-\item{dbcon}{con}
+\item{dbcon}{BETYdb con}
 }
 \value{
 list containing remotefile_check_flag, start, end, stage_get_data, write_raw_start, write_raw_end, raw_merge, existing_raw_file_path, stage_process_data, write_pro_start, write_pro_end, pro_merge, input_file, existing_pro_file_path, raw_check, pro_check
@@ -56,8 +50,6 @@ dbstatus <- remotedata_db_check(
   raw_file_name,
   start,
   end,
-  req_start,
-  req_end,
   siteid,
   siteid_short,
   out_get_data,

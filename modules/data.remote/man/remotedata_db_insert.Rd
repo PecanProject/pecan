@@ -34,9 +34,9 @@ remotedata_db_insert(
 
 \item{out_process_data}{out_process_data}
 
-\item{write_raw_start}{write_raw_start}
+\item{write_raw_start}{write_raw_start, start date of the raw file}
 
-\item{write_raw_end}{write_raw_end}
+\item{write_raw_end}{write_raw_end, end date of the raw file}
 
 \item{write_pro_start}{write_pro_start}
 
@@ -54,7 +54,7 @@ remotedata_db_insert(
 
 \item{pro_formatname}{pro_formatname}
 
-\item{dbcon}{dbcon}
+\item{dbcon}{BETYdb con}
 }
 \value{
 list containing raw_id, raw_path, pro_id, pro_path
@@ -82,4 +82,7 @@ db_out <- remotedata_db_insert(
   pro_formatname,
   dbcon)
 }
+}
+\author{
+Ayush Prasad
 }

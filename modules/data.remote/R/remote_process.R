@@ -1,4 +1,4 @@
-##' call rp_control (from RpTools py package) from PEcAn workflow and store the output in BETY
+##' call rp_control (from RpTools Python package) and store the output in BETY
 ##'
 ##' @name remote_process
 ##' @title remote_process
@@ -14,13 +14,13 @@
 ##'
 
 remote_process <- function(settings) {
-  # Information about the date variables used in remote_process -
+  # Information about the date variables used in remote_process:
   # req_start, req_end : start, end dates requested by the user, the user does not have to be aware about the status of the requested file in the DB
   # start, end : effective start, end dates created after checking the DB status. These dates are sent to rp_control for downloading and processing data
   # write_raw_start, write_raw_end : start, end dates which are used while inserting and updating the DB
   # the "pro" version of these variables have the same meaning and are used to refer to the processed file
   
-  # The value of remotefile_check_flag denotes the following cases :
+  # The value of remotefile_check_flag denotes the following cases:
   
   # When processed file is requested,
   # 1 - There are no existing raw and processed files of the requested type in the DB
@@ -110,8 +110,6 @@ remote_process <- function(settings) {
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
   
-  remotefile_check_flag <- 0
-  
   # collection dataframe used to map Google Earth Engine collection names to their PEcAn specific names
   collection_lut <- data.frame(
     stringsAsFactors = FALSE,
@@ -129,35 +127,25 @@ remote_process <- function(settings) {
     collection = unname(getpecancode[collection])
   }
   
-  req_start <- start
-  req_end <- end
-  
+  # construct raw file name
   raw_file_name <-
     construct_raw_filename(collection, siteid_short, scale, projection, qc)
   
-  coords <-
-    unlist(PEcAn.DB::db.query(
-      sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid),
-      con = dbcon
-    ), use.names = FALSE)
   
   # check if any data is already present in the inputs table
   dbstatus <-
     remotedata_db_check(
-      raw_file_name = raw_file_name,
-      start = start,
-      end = end,
-      req_start = req_start,
-      req_end = req_end,
-      siteid = siteid,
-      siteid_short = siteid_short,
-      out_get_data = out_get_data,
-      algorithm = algorithm,
-      out_process_data = out_process_data,
-      overwrite,
-      dbcon = dbcon
+      raw_file_name     = raw_file_name,
+      start             = start,
+      end               = end,
+      siteid            = siteid,
+      siteid_short      = siteid_short,
+      out_get_data      = out_get_data,
+      algorithm         = algorithm,
+      out_process_data  = out_process_data,
+      overwrite         = overwrite,
+      dbcon             = dbcon
     )
-  
   
   remotefile_check_flag  <- dbstatus[[1]]
   start                  <- dbstatus[[2]]
@@ -176,10 +164,16 @@ remote_process <- function(settings) {
   raw_check              <- dbstatus[[15]]
   pro_check              <- dbstatus[[16]]
   
-  
-  
+  # construct outdir path
   outdir <-
     file.path(outdir, paste(source, "site", siteid_short, sep = "_"))
+
+  # extract the AOI of the site from BETYdb
+  coords <-
+    unlist(PEcAn.DB::db.query(
+      sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid),
+      con = dbcon
+    ), use.names = FALSE)
   
   fcn.args <- list()
   fcn.args$coords                 <- coords
@@ -213,36 +207,38 @@ remote_process <- function(settings) {
   # call rp_control
   output <- do.call(RpTools$rp_control, fcn.args)
 
-  # inserting data in the DB
+  # insert output data in the DB
   db_out <-
     remotedata_db_insert(
-      output = output,
+      output                = output,
       remotefile_check_flag = remotefile_check_flag,
-      siteid = siteid,
-      out_get_data = out_get_data,
-      out_process_data = out_process_data,
-      write_raw_start = write_raw_start,
-      write_raw_end = write_raw_end,
-      write_pro_start = write_pro_start,
-      write_pro_end = write_pro_end,
-      raw_check = raw_check,
-      pro_check = pro_check,
-      raw_mimetype = raw_mimetype,
-      raw_formatname = raw_formatname,
-      pro_mimetype = pro_mimetype,
-      pro_formatname = pro_formatname,
-      dbcon = dbcon
+      siteid                = siteid,
+      out_get_data          = out_get_data,
+      out_process_data      = out_process_data,
+      write_raw_start       = write_raw_start,
+      write_raw_end         = write_raw_end,
+      write_pro_start       = write_pro_start,
+      write_pro_end         = write_pro_end,
+      raw_check             = raw_check,
+      pro_check             = pro_check,
+      raw_mimetype          = raw_mimetype,
+      raw_formatname        = raw_formatname,
+      pro_mimetype          = pro_mimetype,
+      pro_formatname        = pro_formatname,
+      dbcon                 = dbcon
     )
   
+  
+  # return the ids and paths of the inserted data
   if (!is.null(out_get_data)) {
     settings$remotedata$raw_id   <- db_out[[1]]
     settings$remotedata$raw_path <- db_out[[2]]
   }
-  
   if (!is.null(out_process_data)) {
     settings$remotedata$pro_id   <- db_out[[3]]
     settings$remotedata$pro_path <- db_out[[4]]
   }
+  
   return (settings)
 }
 
@@ -292,6 +288,7 @@ construct_raw_filename <-
       paste(collection, scale, projection, qc, "site", siteid, sep = "_")
     return(raw_file_name)
   }
+
 
 
 
@@ -351,22 +348,22 @@ set_stage   <- function(result, req_start, req_end, stage) {
 }
 
 
+
+
 ##' check the status of the requested data in the DB
 ##'
 ##' @name  remotedata_db_check
 ##' @title remotedata_db_check
 ##' @param raw_file_name raw_file_name
-##' @param start start
-##' @param end end
-##' @param req_start req_start
-##' @param req_end req_end
-##' @param siteid siteid
-##' @param siteid_short siteid_short
+##' @param start start date requested by user
+##' @param end end date requested by the user
+##' @param siteid siteid of the site 
+##' @param siteid_short short form of the siteid
 ##' @param out_get_data out_get_data
 ##' @param algorithm algorithm
 ##' @param out_process_data out_process_data
 ##' @param overwrite overwrite
-##' @param dbcon con
+##' @param dbcon  BETYdb con
 ##' @return list containing remotefile_check_flag, start, end, stage_get_data, write_raw_start, write_raw_end, raw_merge, existing_raw_file_path, stage_process_data, write_pro_start, write_pro_end, pro_merge, input_file, existing_pro_file_path, raw_check, pro_check
 ##' @examples
 ##' \dontrun{
@@ -374,8 +371,6 @@ set_stage   <- function(result, req_start, req_end, stage) {
 ##'   raw_file_name,
 ##'   start,
 ##'   end,
-##'   req_start,
-##'   req_end,
 ##'   siteid,
 ##'   siteid_short,
 ##'   out_get_data,
@@ -389,8 +384,6 @@ remotedata_db_check <-
   function(raw_file_name,
            start,
            end,
-           req_start,
-           req_end,
            siteid,
            siteid_short,
            out_get_data,
@@ -398,6 +391,15 @@ remotedata_db_check <-
            out_process_data,
            overwrite,
            dbcon) {
+    
+    # Information about the date variables used:
+    # req_start, req_end : start, end dates requested by the user, the user does not have to be aware about the status of the requested file in the DB
+    # start, end : effective start, end dates created after checking the DB status. These dates are sent to rp_control for downloading and processing data
+    # write_raw_start, write_raw_end : start, end dates which are used while inserting and updating the DB
+    # the "pro" version of these variables have the same meaning and are used to refer to the processed file
+    
+    req_start              <- start
+    req_end                <- end
     input_file             <- NULL
     stage_get_data         <- NULL
     stage_process_data     <- NULL
@@ -722,12 +724,12 @@ remotedata_db_check <-
 ##' @name remotedata_db_insert
 ##' @param output output list from rp_control
 ##' @param remotefile_check_flag remotefile_check_flag
-##' @param siteid siteid
+##' @param siteid siteid 
 ##' @param out_get_data out_get_data
 ##' @param out_process_data out_process_data
-##' @param write_raw_start write_raw_start
-##' @param write_raw_end write_raw_end
-##' @param write_pro_start write_pro_start
+##' @param write_raw_start write_raw_start, start date of the raw file
+##' @param write_raw_end write_raw_end, end date of the raw file
+##' @param write_pro_start write_pro_start 
 ##' @param write_pro_end write_pro_end
 ##' @param raw_check raw_check
 ##' @param pro_check pro_check
@@ -735,10 +737,10 @@ remotedata_db_check <-
 ##' @param raw_formatname raw_formatname
 ##' @param pro_mimetype pro_mimetype
 ##' @param pro_formatname pro_formatname
-##' @param dbcon dbcon
+##' @param dbcon BETYdb con
 ##'
 ##' @return list containing raw_id, raw_path, pro_id, pro_path
-##'
+##' @author Ayush Prasad
 ##' @examples
 ##' \dontrun{
 ##' db_out <- remotedata_db_insert(
@@ -776,6 +778,21 @@ remotedata_db_insert <-
            pro_mimetype,
            pro_formatname,
            dbcon) {
+    
+    # The value of remotefile_check_flag denotes the following cases:
+    
+    # When processed file is requested,
+    # 1 - There are no existing raw and processed files of the requested type in the DB
+    # 2 - Requested processed file does not exist, the raw file used to create is it present and matches with the requested daterange
+    # 3 - Requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested daterange
+    # 4 - Both processed and raw file of the requested type exists, but they have to be updated to match with the requested daterange
+    # 5 - Raw file required for creating the processed file exists with the required daterange and the processed file needs to be updated. Here the new processed file will now contain data for the entire daterange of the existing raw file
+    # 6 - There is a existing processed file of the requested type but the raw file used to create it has been deleted. Here, the raw file will be created again and the processed file will be replaced entirely with the one created from new raw file
+    
+    # When raw file is requested,
+    # 1 - There is no existing raw the requested type in the DB
+    # 2 - existing raw file will be updated
+    
     pro_id <- NULL
     pro_path <- NULL
     
