@@ -12,7 +12,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, rand.X =NULL n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, scale.state = 0, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
+InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, rand.X =NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, scale.state = 0, output.folder= "/home/rstudio/pecan/IGF_PIPO_AZ_mcmc/", save.jags = "IGF.ragged.txt", model.name = "model",z0 = NULL, save.state=TRUE, restart = NULL, breakearly = TRUE) {
   library(rjags)
   print(paste("start of MCMC", Sys.time()))
   
@@ -39,6 +39,7 @@ InventoryGrowthFusion_norm <- function(data, cov.data=NULL, time_data = NULL, ra
   check.dup.data <- function(data,loc){
     if(any(duplicated(names(data)))){print("duplicated variable at",loc,names(data))}
   }  
+  
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
 model{
@@ -83,7 +84,7 @@ model{
   Pformula <- NULL
   ########################################################################
   ###
-  ###        RANDOM EFFECTS
+  ###        RANDOM EFFECTS 
   ###
   ########################################################################
   if (!is.null(random)) {
@@ -284,9 +285,14 @@ model{
         Pformula <- paste(Pformula,"+",Xformula)
         
         ## add priors
-        Xpriors <- paste(Xpriors,"     ",myBeta,"~dnorm(0,0.001)\n")
-        
+        if(rand.X == TRUE & myBeta == "betaX_PLOT[PLOT[i]]"){ # only works for plot random effect this way
+          Xpriors <- paste0(Xpriors,"     ", "betaX", "~dnorm(0,0.001)\n")
+        }else{
+          Xpriors <- paste(Xpriors,"     ",myBeta,"~dnorm(0,0.001)\n")
+        }
         ## add to out.variables
+        
+        
         out.variables <- c(out.variables, myBeta)
         
       }  ## END LOOP OVER X TERMS
@@ -428,6 +434,11 @@ model{
   } ## END time varying covariates
   
   
+  if("betaX_PLOT[PLOT[i]]" %in% out.variables == TRUE){
+    out.variables <- out.variables[!out.variables =="betaX_PLOT[PLOT[i]]"]
+    #out.variables <- c(out.variables, "betaX_PLOT")
+  }
+  
   ## insert process model into JAGS template
   if (!is.null(Pformula)) {
     TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
@@ -481,7 +492,8 @@ model{
   
   
   print("COMPILE JAGS MODEL")    
-  j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
+  j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3, n.adapt = 3000)
+  #j.model <- jags.model(file = "SDI_SI.nadapt.5000.txt", data = data, inits = init, n.chains = 3, n.adapt = 5000)
   
   if(n.burn > 0){
     print("BURN IN")
