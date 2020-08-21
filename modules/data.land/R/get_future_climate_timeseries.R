@@ -143,7 +143,7 @@ extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){
 # then apply this funcation across all 97 projections downloaded in the netcdf
 all.future.ppt <- list()
 
-system.time(all.future.ppt <- lapply(1:2, FUN = extract.yearly.ppt)) 
+#system.time(all.future.ppt <- lapply(1:2, FUN = extract.yearly.ppt)) 
 # user  system elapsed 
 # 11.062   0.749  12.938 
 
@@ -153,8 +153,8 @@ system.time(all.future.ppt <- lapply(1:2, FUN = extract.yearly.ppt))
 
 # for loop is slightly faster, so we will use that, but this takes a bit
 system.time(
-  for(j in 1:97){ # extracts for all 97 projections 
-    all.future.ppt[[i]] <- extract.yearly.ppt(proj = j, ppt= ppt,  cov.data.ll = cov.data.ll, nmonths = nmonths)
+  for(i in 1:97){ # extracts for all 97 projections 
+    all.future.ppt[[i]] <- extract.yearly.ppt(proj = i, ppt= ppt,  cov.data.ll = cov.data.ll, nmonths = nmonths)
   }
   )
 
@@ -244,7 +244,7 @@ proj <- read.delim("hydro5/Projections5.txt", header = FALSE)
 
 #add the projection names to the tmax and ppt data frames
 all.tmax.df$proj <- rep(proj$V1, sapply(all.future.tmax , nrow))
-all.ppt.df$proj <- rep(proj.tas$V1, sapply(all.future.ppt , nrow))
+all.ppt.df$proj <- rep(proj$V1, sapply(all.future.ppt , nrow))
 
 ppt.models <- all.ppt.df %>% tidyr::separate(proj, sep = -5, into = c("modelrun", "rcp")) #%>% 
   #tidyr::separate(modelrun, sep = "-", into = c("model", "run"))
