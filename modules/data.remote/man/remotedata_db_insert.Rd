@@ -42,9 +42,9 @@ remotedata_db_insert(
 
 \item{write_pro_end}{write_pro_end}
 
-\item{raw_check}{raw_check}
+\item{raw_check}{id, site_id, name, start_date, end_date, of the existing raw file from inputs table and file_path from dbfiles tables}
 
-\item{pro_check}{pro_check}
+\item{pro_check}{pro_check  id, site_id, name, start_date, end_date, of the existing processed file from inputs table and file_path from dbfiles tables}
 
 \item{raw_mimetype}{raw_mimetype}
 

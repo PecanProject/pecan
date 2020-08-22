@@ -823,8 +823,8 @@ remotedata_db_check <-
 ##' @param write_raw_end write_raw_end, end date of the raw file
 ##' @param write_pro_start write_pro_start 
 ##' @param write_pro_end write_pro_end
-##' @param raw_check raw_check
-##' @param pro_check pro_check
+##' @param raw_check  id, site_id, name, start_date, end_date, of the existing raw file from inputs table and file_path from dbfiles tables
+##' @param pro_check pro_check  id, site_id, name, start_date, end_date, of the existing processed file from inputs table and file_path from dbfiles tables
 ##' @param raw_mimetype raw_mimetype
 ##' @param raw_formatname raw_formatname
 ##' @param pro_mimetype pro_mimetype
