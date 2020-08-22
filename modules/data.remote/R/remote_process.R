@@ -408,7 +408,8 @@ read_remote_registry <- function(source, collection){
       PEcAn.logger::logger.severe("Requested source is not available")
     } 
   )
-
+  . <- NULL
+  
   if(!(purrr::is_empty(register %>% purrr::keep(names(.) == "collection")))){
     # this is a type of source that requires different setup for its collections, e.g. GEE
     # then read collection specific information
