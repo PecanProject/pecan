@@ -226,7 +226,17 @@ remote_process <- function(settings) {
   
   # call rp_control
   output <- do.call(RpTools$rp_control, fcn.args)
-
+  # IF: this is extremely hacky but we will need a post-processing function/sub-module here
+  # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
+  # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
+  if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
+    settings$remotedata$collapse <- TRUE
+  }
+    
+  if(!is.null(settings$remotedata$collapse)){
+    latlon <- PEcAn.data.atmosphere::db.site.lat.lon(siteid, con = dbcon)
+    collapse_remote_data(output, out_process_data, latlon)
+  }
   # insert output data in the DB
   db_out <-
     remotedata_db_insert(
