@@ -105,7 +105,8 @@ remote_process <- function(settings) {
                             is.character(outdir))
   PEcAn.logger::severeifnot("Check if source is of character type and is not NULL",
                             is.character(source))
-  # PEcAn.logger::severeifnot("Source should be one of gee, appeears", source == "gee" || source == "appeears")
+  these_sources <- gsub("^.+?\\.(.+?)\\..*$", "\\1", list.files(system.file("registration", package = "PEcAn.data.remote")))
+  PEcAn.logger::severeifnot(paste0("Source should be one of ", paste(these_sources, collapse = ' ')), toupper(source) %in% these_sources)
   # collection validation to be implemented
   if (!is.null(projection)) {
     PEcAn.logger::severeifnot("projection should be of character type",
@@ -145,7 +146,7 @@ remote_process <- function(settings) {
   
   # construct raw file name
   raw_file_name <-
-    construct_raw_filename(source, collection, siteid_short, scale, projection, qc)
+    construct_remotedata_filename(source, collection, siteid_short, scale, projection, qc, algorithm, out_process_data)
   
   if (is.null(out_process_data)){
     pro_file_name <- NULL
@@ -268,36 +269,41 @@ remote_process <- function(settings) {
 
 
 
-##' construct the raw file name
+##' construct remotedata module file names
 ##'
-##' @name construct_raw_filename
-##' @title construct_raw_filename
+##' @name construct_remotedata_filename
+##' @title construct_remotedata_filename
 ##' @param source source
 ##' @param collection collection or product requested from the source
 ##' @param siteid shortform of siteid
 ##' @param scale scale, NULL by default
 ##' @param projection projection, NULL by default
 ##' @param qc qc_parameter, NULL by default
-##' @return raw_file_name
+##' @param algorithm algorithm name to process data, NULL by default
+##' @param out_process_data variable name requested for the processed file, NULL by default
+##' @return remotedata_file_names
 ##' @examples
 ##' \dontrun{
-##' raw_file_name <- construct_raw_filename(
+##' remotedata_file_names <- construct_remotedata_filename(
 ##'   source="gee",
 ##'   collection="s2",
 ##'   siteid="0-721",
 ##'   scale=10.0
 ##'   projection=NULL
-##'   qc=1.0)
+##'   qc=1.0,
+##'   algorithm="snap",
+##'   out_process_data="lai")
 ##' }
 ##' @author Ayush Prasad
-construct_raw_filename <-
+construct_remotedata_filename <-
   function(source,
            collection,
            siteid,
            scale = NULL,
            projection = NULL,
-           qc = NULL) {
-    # use NA if a parameter is not applicable and is NULL
+           qc = NULL,
+           algorithm = NULL,
+           out_process_data = NULL) {
     # skip if a parameter is not applicable and is NULL
     if (is.null(scale)) {
       scale_str <- "_"
@@ -316,8 +322,18 @@ construct_raw_filename <-
     }
     
     raw_file_name <- paste0(toupper(source), "_", collection, scale_str, prj_str, qc_str, "site_", siteid)
+        if(!is.null(out_process_data)){
+      alg_str <- paste0(algorithm, "_")
+      var_str <- paste0(out_process_data, "_")
+      pro_file_name <- paste0(toupper(source), "_", collection, scale_str, prj_str, qc_str, alg_str, var_str, "site_", siteid)
+    }else{
+      pro_file_name <- NULL
+    }
     
-    return(raw_file_name)
+    remotedata_file_names <- list(raw_file_name = raw_file_name,
+                                  pro_file_name = pro_file_name)
+    
+    return(remotedata_file_names)
   }
 
 
