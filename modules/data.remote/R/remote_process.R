@@ -39,28 +39,58 @@ remote_process <- function(settings) {
   # extract the variables from the settings list
   siteid           <- as.numeric(settings$run$site$id)
   siteid_short     <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
-  raw_mimetype     <- settings$remotedata$raw_mimetype
-  raw_formatname   <- settings$remotedata$raw_formatname
   outdir           <- settings$database$dbfiles
   start            <- as.character(as.Date(settings$run$start.date))
   end              <- as.character(as.Date(settings$run$end.date))
   source           <- settings$remotedata$source
   collection       <- settings$remotedata$collection
-  scale            <- settings$remotedata$scale
-  if (!is.null(scale)) {
-    scale <- as.double(settings$remotedata$scale)
-    scale <- format(scale, nsmall = 1)
+  reg_info         <- read_remote_registry(source, collection)
+  collection       <- reg_info$pecan_name
+  raw_mimetype     <- reg_info$raw_mimetype
+  raw_formatname   <- reg_info$raw_formatname
+  pro_mimetype     <- reg_info$pro_mimetype
+  pro_formatname   <- reg_info$pro_formatname 
+  
+
+  if (!is.null(reg_info$scale)) {
+    if(!is.null(settings$remotedata$scale)){
+      scale <- as.double(settings$remotedata$scale)
+      scale <- format(scale, nsmall = 1)
+    }else{
+      scale <- as.double(reg_info$scale)
+      scale <- format(scale, nsmall = 1)
+      PEcAn.logger::logger.warn(paste0("scale not provided, using default scale ", scale))
+    }
+  }else{
+    scale <- NULL
   }
-  projection       <- settings$remotedata$projection
-  qc               <- settings$remotedata$qc
-  if (!is.null(qc)) {
-    qc <- as.double(settings$remotedata$qc)
-    qc <- format(qc, nsmall = 1)
+  
+  if (!is.null(reg_info$qc)) {
+    if(!is.null(settings$remotedata$qc)){
+      qc <- as.double(settings$remotedata$qc)
+      qc <- format(qc, nsmall = 1)
+    }else{
+      qc <- as.double(reg_info$qc)
+      qc <- format(qc, nsmall = 1)
+      PEcAn.logger::logger.warn(paste0("qc not provided, using default qc ", qc))
+    }
+  }else{
+    qc <- NULL
   }
+
+  if (!is.null(reg_info$projection)) {
+    if(!is.null(settings$remotedata$projection)){
+      projection <- settings$remotedata$projection
+    }else{
+      projection <- reg_info$projection
+      PEcAn.logger::logger.warn(paste0("projection not provided, using default projection ", projection))
+    }
+  }else{
+    projection <- NULL
+  }
+  
   algorithm        <- settings$remotedata$algorithm
   credfile         <- settings$remotedata$credfile
-  pro_mimetype     <- settings$remotedata$pro_mimetype
-  pro_formatname   <- settings$remotedata$pro_formatname
   out_get_data     <- settings$remotedata$out_get_data
   out_process_data <- settings$remotedata$out_process_data
   overwrite        <- settings$remotedata$overwrite
@@ -102,21 +132,15 @@ remote_process <- function(settings) {
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
   
-  # collection dataframe used to map Google Earth Engine collection names to their PEcAn specific names
-  collection_lut <- data.frame(
-    stringsAsFactors = FALSE,
-    original_name = c(
-      "LANDSAT/LC08/C01/T1_SR",
-      "COPERNICUS/S2_SR",
-      "NASA_USDA/HSL/SMAP_soil_moisture"
-    ),
-    pecan_code = c("l8", "s2", "smap")
-  )
-  getpecancode <- collection_lut$pecan_code
-  names(getpecancode) <- collection_lut$original_name
+  # extract the AOI of the site from BETYdb
+  coords <-
+    unlist(PEcAn.DB::db.query(
+      sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid),
+      con = dbcon
+    ), use.names = FALSE)
   
-  if (source == "gee") {
-    collection = unname(getpecancode[collection])
+  if(!(tolower(gsub(".*type(.+),coordinates.*", "\\1",  gsub("[^=A-Za-z,0-9{} ]+","",coords))) %in% reg_info$coordtype)){
+    PEcAn.logger::logger.severe(paste0("Coordinate type of the site is not supported by the requested source, please make sure that your site type is ", reg_info$coordtype))
   }
   
   # construct raw file name
@@ -170,12 +194,6 @@ remote_process <- function(settings) {
   outdir <-
     file.path(outdir, paste(toupper(source), "site", siteid_short, sep = "_"))
 
-  # extract the AOI of the site from BETYdb
-  coords <-
-    unlist(PEcAn.DB::db.query(
-      sprintf("select ST_AsGeoJSON(geometry) from sites where id=%f", siteid),
-      con = dbcon
-    ), use.names = FALSE)
   
   fcn.args <- list()
   fcn.args$coords                 <- coords
@@ -359,6 +377,59 @@ set_stage   <- function(result, req_start, req_end, stage) {
   return (list(req_start = req_start, req_end = req_end, stage = stage, merge = merge, write_start = write_start, write_end = write_end))
   
 }
+
+
+
+
+##' read remote module registration files
+##'
+##' @name read_remote_registry
+##' @title read_remote_registry
+##' @importFrom purrr %>%
+##' @param source remote source, e.g gee or appeears
+##' @param collection collection or product name
+##' @return list containing original_name, pecan_name, scale, qc, projection raw_mimetype, raw_formatname pro_mimetype, pro_formatname, coordtype
+##' @examples
+##' \dontrun{
+##'  read_remote_registry(
+##'   "gee",
+##'   "COPERNICUS/S2_SR")
+##' }
+##' @author Istem Fer
+read_remote_registry <- function(source, collection){
+  
+  # get registration file
+  register.xml <- system.file(paste0("registration/register.", toupper(source), ".xml"), package = "PEcAn.data.remote")
+  
+  tryCatch(expr = {
+    register <- XML::xmlToList(XML::xmlParse(register.xml))
+    }, 
+    error = function(e){
+      PEcAn.logger::logger.severe("Requested source is not available")
+    } 
+  )
+
+  if(!(purrr::is_empty(register %>% purrr::keep(names(.) == "collection")))){
+    # this is a type of source that requires different setup for its collections, e.g. GEE
+    # then read collection specific information
+    register <- register[[which(register %>% purrr::map_chr("original_name") == collection)]]
+  }
+  
+  reg_list <- list()
+  reg_list$original_name  <- ifelse(is.null(register$original_name), collection, register$original_name)
+  reg_list$pecan_name     <- ifelse(is.null(register$pecan_name), collection, register$pecan_name)
+  reg_list$scale          <- register$scale
+  reg_list$qc             <- register$qc
+  reg_list$projection     <- register$projection
+  reg_list$raw_mimetype   <- register$raw_format$mimetype
+  reg_list$raw_formatname <- register$raw_format$name
+  reg_list$pro_mimetype   <- register$pro_format$mimetype
+  reg_list$pro_formatname <- register$pro_format$name
+  reg_list$coordtype      <- unlist(register$coord)
+  
+  return(reg_list)
+}
+
 
 
 
