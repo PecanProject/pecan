@@ -897,7 +897,7 @@ remotedata_db_insert <-
           pro_ins <-
             PEcAn.DB::dbfile.input.insert(
               in.path    = output$process_data_path,
-              in.prefix  = output$process_data_name,
+              in.prefix  = basename(output$process_data_path),
               siteid     = siteid,
               startdate  = write_pro_start,
               enddate    = write_pro_end,
@@ -909,7 +909,7 @@ remotedata_db_insert <-
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
               in.path    = output$raw_data_path,
-              in.prefix  = output$raw_data_name,
+              in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
               enddate    = write_raw_end,
@@ -927,7 +927,7 @@ remotedata_db_insert <-
           pro_ins <-
             PEcAn.DB::dbfile.input.insert(
               in.path    = output$process_data_path,
-              in.prefix  = output$process_data_name,
+              in.prefix  = basename(output$process_data_path),
               siteid     = siteid,
               startdate  = write_pro_start,
               enddate    = write_pro_end,
@@ -943,7 +943,7 @@ remotedata_db_insert <-
           # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
           pro_ins <- PEcAn.DB::dbfile.input.insert(
             in.path    = output$process_data_path,
-            in.prefix  = output$process_data_name,
+            in.prefix  = basename(output$process_data_path),
             siteid     = siteid,
             startdate  = write_pro_start,
             enddate    = write_pro_end,
@@ -957,7 +957,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_raw_start,
               write_raw_end,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon
@@ -966,7 +966,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$raw_data_path,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon
@@ -985,7 +985,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -994,7 +994,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$process_data_path,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -1004,7 +1004,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f",
               write_raw_start,
               write_raw_end,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon
@@ -1013,7 +1013,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$raw_data_path,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon
@@ -1030,7 +1030,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -1039,7 +1039,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$process_data_path,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -1055,7 +1055,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -1064,7 +1064,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$process_data_path,
-              output$process_data_name,
+              basename(output$process_data_path),
               pro_id
             ),
             dbcon
@@ -1072,7 +1072,7 @@ remotedata_db_insert <-
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
               in.path    = output$raw_data_path,
-              in.prefix  = output$raw_data_name,
+              in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
               enddate    = write_raw_end,
@@ -1097,7 +1097,7 @@ remotedata_db_insert <-
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
               in.path    = output$raw_data_path,
-              in.prefix  = output$raw_data_name,
+              in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
               enddate    = write_raw_end,
@@ -1116,7 +1116,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_raw_start,
               write_raw_end,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon
@@ -1125,7 +1125,7 @@ remotedata_db_insert <-
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
               output$raw_data_path,
-              output$raw_data_name,
+              basename(output$raw_data_path),
               raw_id
             ),
             dbcon

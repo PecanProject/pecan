@@ -13,7 +13,6 @@ from . get_remote_data import get_remote_data
 from . process_remote_data import process_remote_data
 from . gee_utils import get_sitename
 from . create_geojson import create_geojson
-import os
 
 
 def rp_control(
@@ -118,7 +117,6 @@ def rp_control(
             existing_raw_file_path,
             raw_file_name
         )
-        get_datareturn_name = os.path.split(get_datareturn_path)
 
     if stage_process_data:
         if input_file is None:
@@ -133,21 +131,16 @@ def rp_control(
             existing_pro_file_path,
             pro_file_name
         )
-        process_datareturn_name = os.path.split(process_datareturn_path)
 
     output = {
-        "raw_data_name": None,
         "raw_data_path": None,
-        "process_data_name": None,
         "process_data_path": None,
     }
 
     if stage_get_data:
-        output["raw_data_name"] = get_datareturn_name[1]
         output["raw_data_path"] = get_datareturn_path
 
     if stage_process_data:
-        output["process_data_name"] = process_datareturn_name[1]
         output["process_data_path"] = process_datareturn_path
 
     return output
