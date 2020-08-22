@@ -150,9 +150,7 @@ remote_process <- function(settings) {
   raw_file_name <- remotedata_file_names$raw_file_name
   
   pro_file_name <- remotedata_file_names$pro_file_name
-  
-  print("see this")
-  print(pro_file_name)
+
   
   # check if any data is already present in the inputs table
   dbstatus <-
