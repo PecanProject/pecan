@@ -145,23 +145,20 @@ remote_process <- function(settings) {
   }
   
   # construct raw file name
-  raw_file_name <-
-    construct_remotedata_filename(source, collection, siteid_short, scale, projection, qc, algorithm, out_process_data)
+  remotedata_file_names <- construct_remotedata_filename(source, collection, siteid_short, scale, projection, qc, algorithm, out_process_data)
   
-  if (is.null(out_process_data)){
-    pro_file_name <- NULL
-  }else{
-    pro_file_name <- paste0(algorithm,
-                           "_",
-                           out_process_data,
-                           "_site_",
-                           siteid_short)
-  }
+  raw_file_name <- remotedata_file_names$raw_file_name
+  
+  pro_file_name <- remotedata_file_names$pro_file_name
+  
+  print("see this")
+  print(pro_file_name)
   
   # check if any data is already present in the inputs table
   dbstatus <-
     remotedata_db_check(
       raw_file_name     = raw_file_name,
+      pro_file_name     = pro_file_name,
       start             = start,
       end               = end,
       siteid            = siteid,
@@ -525,7 +522,6 @@ remotedata_db_check <-
       if (overwrite) {
         PEcAn.logger::logger.warn("overwrite is set to TRUE, any existing file will be entirely replaced")
         if (!is.null(out_process_data)) {
-
           if (nrow(pro_check <-
                    PEcAn.DB::db.query(
                      sprintf(
@@ -577,10 +573,7 @@ remotedata_db_check <-
         existing_raw_file_path <- NULL
       } else if (!is.null(out_process_data)) {
         # if processed data is requested, example LAI
-        
-        # construct processed file name
-        pro_file_name = paste0(algorithm, "_", out_process_data, "_site_", siteid_short)
-        
+
         # check if processed file exists
         if (nrow(pro_check <-
                  PEcAn.DB::db.query(
@@ -700,7 +693,7 @@ remotedata_db_check <-
             existing_raw_file_path = raw_check$file_path
             remotefile_check_flag <- 3
           } else{
-            existing_raw_file_path = NULL
+            existing_raw_file_path <- NULL
           }
         } else{
           # if no processed or raw file of requested type exists
