@@ -10,7 +10,8 @@ Requires Python3
 
 Author(s): Ayush Prasad
 """
-
+import xarray as xr
+import pandas as pd
 import requests as r
 import geopandas as gpd
 import getpass
@@ -26,7 +27,7 @@ import time
 
 
 def appeears2pecan(
-    geofile, outdir, filename, start, end, product, projection=None, credfile=None
+    geofile, outdir, out_filename, start, end, product, projection=None, credfile=None
 ):
     """
     Downloads remote sensing data from AppEEARS
@@ -37,7 +38,7 @@ def appeears2pecan(
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
   
-    filename (str) -- filename of the output file
+    out_filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -227,11 +228,7 @@ def appeears2pecan(
             if os.path.splitext(filename)[1][1:] == outformat:
                 break
 
-    if siteid is None:
-        siteid = site_name
 
-    if projection is None:
-        projection = "NA"
     timestamp = time.strftime("%y%m%d%H%M%S")
     save_path = os.path.join(
         outdir,
@@ -242,5 +239,25 @@ def appeears2pecan(
         + outformat
     )
     os.rename(filepath, save_path)
-
+    
+    if outformat == "csv":
+      df = pd.read_csv(save_path)
+      coords = {
+        "time": df["Date"].values,
+      }
+      
+      tosave = xr.Dataset(
+        df,
+        coords=coords,
+      )
+      
+      save_path = os.path.join(
+        outdir,
+        out_filename
+        + "_"
+        + timestamp
+        + ".nc"
+      )
+      tosave.to_netcdf(os.path.join(save_path))
+      
     return os.path.abspath(save_path)
