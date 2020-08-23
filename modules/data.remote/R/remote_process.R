@@ -226,17 +226,17 @@ remote_process <- function(settings) {
   
   # call rp_control
   output <- do.call(RpTools$rp_control, fcn.args)
-  # IF: this is extremely hacky but we will need a post-processing function/sub-module here
-  # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
-  # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
-  if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
-    settings$remotedata$collapse <- TRUE
-  }
-  
-  if(!is.null(settings$remotedata$collapse)){
-    collapse_remote_data(output, out_process_data, 
-                         list(lat = settings$run$site$lat, lon = settings$run$site$lon))
-  }
+  # # IF: this is extremely hacky but we will need a post-processing function/sub-module here
+  # # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
+  # # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
+  # if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
+  #   settings$remotedata$collapse <- TRUE
+  # }
+  # 
+  # if(!is.null(settings$remotedata$collapse)){
+  #   collapse_remote_data(output, out_process_data, 
+  #                        list(lat = settings$run$site$lat, lon = settings$run$site$lon))
+  # }
   
   # insert output data in the DB
   db_out <-
@@ -534,7 +534,7 @@ remotedata_db_check <-
           if (nrow(pro_check <-
                    PEcAn.DB::db.query(
                      sprintf(
-                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                       "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                        pro_file_name
                      ),
                      dbcon
@@ -542,7 +542,7 @@ remotedata_db_check <-
             if (nrow(raw_check <-
                      PEcAn.DB::db.query(
                        sprintf(
-                         "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                         "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id	 AND dbfiles.file_name LIKE '%s%%';",
                          raw_file_name
                        ),
                        dbcon
@@ -562,7 +562,7 @@ remotedata_db_check <-
           if (nrow(raw_check <-
                    PEcAn.DB::db.query(
                      sprintf(
-                       "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                       "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                        raw_file_name
                      ),
                      dbcon
@@ -587,7 +587,7 @@ remotedata_db_check <-
         if (nrow(pro_check <-
                  PEcAn.DB::db.query(
                    sprintf(
-                     "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                     "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                      pro_file_name
                    ),
                    dbcon
@@ -602,14 +602,14 @@ remotedata_db_check <-
             stage_process_data <- datalist$stage
             pro_merge <- datalist$merge
             if (pro_merge == TRUE) {
-              existing_pro_file_path <- pro_check$file_path
+              existing_pro_file_path <- file.path(pro_check$file_path, pro_check$name)
             }
             if (stage_process_data == TRUE) {
               # check about the status of raw file
               raw_check <-
                 PEcAn.DB::db.query(
                   sprintf(
-                    "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                    "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                     raw_file_name
                   ),
                   dbcon
@@ -629,7 +629,7 @@ remotedata_db_check <-
                 }
                 remotefile_check_flag <- 4
                 if (raw_merge == TRUE) {
-                  existing_raw_file_path <- raw_check$file_path
+                  existing_raw_file_path <- file.path(raw_check$file_path, raw_check$name)
                 }
                 if (pro_merge == TRUE && stage_get_data == FALSE) {
                   remotefile_check_flag <- 5
@@ -660,7 +660,7 @@ remotedata_db_check <-
             if (nrow(raw_check <-
                      PEcAn.DB::db.query(
                        sprintf(
-                         "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                         "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                          raw_file_name
                        ),
                        dbcon
@@ -673,7 +673,7 @@ remotedata_db_check <-
         else if (nrow(raw_check <-
                       PEcAn.DB::db.query(
                         sprintf(
-                          "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                          "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                           raw_file_name
                         ),
                         dbcon
@@ -699,7 +699,7 @@ remotedata_db_check <-
           stage_process_data <- TRUE
           pro_merge <- FALSE
           if (raw_merge == TRUE || raw_merge == "replace") {
-            existing_raw_file_path = raw_check$file_path
+            existing_raw_file_path = file.path(raw_check$file_path, raw_check$name)
             remotefile_check_flag <- 3
           } else{
             existing_raw_file_path <- NULL
@@ -723,7 +723,7 @@ remotedata_db_check <-
       } else if (nrow(raw_check <-
                       PEcAn.DB::db.query(
                         sprintf(
-                          "SELECT inputs.id, inputs.site_id, inputs.name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.name=dbfiles.file_name AND inputs.name LIKE '%s%%';",
+                          "SELECT inputs.id, inputs.site_id, dbfiles.file_name as name, inputs.start_date, inputs.end_date, dbfiles.file_path FROM inputs INNER JOIN dbfiles ON inputs.id=dbfiles.container_id AND dbfiles.file_name LIKE '%s%%';",
                           raw_file_name
                         ),
                         dbcon
@@ -744,7 +744,7 @@ remotedata_db_check <-
           raw_path <- raw_check$file_path
         }
         if (raw_merge == TRUE) {
-          existing_raw_file_path <- raw_check$file_path
+          existing_raw_file_path <- file.path(raw_check$file_path, raw_check$name)
           remotefile_check_flag <- 2
         } else{
           existing_raw_file_path <- NULL
@@ -915,7 +915,7 @@ remotedata_db_insert <-
           # insert processed data
           pro_ins <-
             PEcAn.DB::dbfile.input.insert(
-              in.path    = output$process_data_path,
+              in.path    = dirname(output$process_data_path),
               in.prefix  = basename(output$process_data_path),
               siteid     = siteid,
               startdate  = write_pro_start,
@@ -927,7 +927,7 @@ remotedata_db_insert <-
           # insert raw file
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
-              in.path    = output$raw_data_path,
+              in.path    = dirname(output$raw_data_path),
               in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
@@ -945,7 +945,7 @@ remotedata_db_insert <-
           PEcAn.logger::logger.info("Inserting processed file for the first time")
           pro_ins <-
             PEcAn.DB::dbfile.input.insert(
-              in.path    = output$process_data_path,
+              in.path    = dirname(output$process_data_path),
               in.prefix  = basename(output$process_data_path),
               siteid     = siteid,
               startdate  = write_pro_start,
@@ -961,7 +961,7 @@ remotedata_db_insert <-
         } else if (remotefile_check_flag == 3) {
           # requested processed file does not exist, raw file used to create it is present but has to be updated to match with the requested dates
           pro_ins <- PEcAn.DB::dbfile.input.insert(
-            in.path    = output$process_data_path,
+            in.path    = dirname(output$process_data_path),
             in.prefix  = basename(output$process_data_path),
             siteid     = siteid,
             startdate  = write_pro_start,
@@ -976,7 +976,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_raw_start,
               write_raw_end,
-              basename(output$raw_data_path),
+              basename(dirname(output$raw_data_path)),
               raw_id
             ),
             dbcon
@@ -984,7 +984,7 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$raw_data_path,
+              dirname(output$raw_data_path),
               basename(output$raw_data_path),
               raw_id
             ),
@@ -1004,7 +1004,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              basename(output$process_data_path),
+              basename(dirname(output$process_data_path)),
               pro_id
             ),
             dbcon
@@ -1012,7 +1012,7 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$process_data_path,
+              dirname(output$process_data_path),
               basename(output$process_data_path),
               pro_id
             ),
@@ -1023,7 +1023,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f",
               write_raw_start,
               write_raw_end,
-              basename(output$raw_data_path),
+              basename(dirname(output$raw_data_path)),
               raw_id
             ),
             dbcon
@@ -1031,7 +1031,7 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$raw_data_path,
+              dirname(output$raw_data_path),
               basename(output$raw_data_path),
               raw_id
             ),
@@ -1049,7 +1049,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              basename(output$process_data_path),
+              basename(dirname(output$process_data_path)),
               pro_id
             ),
             dbcon
@@ -1057,7 +1057,7 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$process_data_path,
+              dirname(output$process_data_path),
               basename(output$process_data_path),
               pro_id
             ),
@@ -1074,7 +1074,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_pro_start,
               write_pro_end,
-              basename(output$process_data_path),
+              basename(dirname(output$process_data_path)),
               pro_id
             ),
             dbcon
@@ -1082,7 +1082,7 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$process_data_path,
+              dirname(output$process_data_path),
               basename(output$process_data_path),
               pro_id
             ),
@@ -1090,7 +1090,7 @@ remotedata_db_insert <-
           )
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
-              in.path    = output$raw_data_path,
+              in.path    = dirname(output$raw_data_path),
               in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
@@ -1115,7 +1115,7 @@ remotedata_db_insert <-
           PEcAn.logger::logger.info(("Inserting raw file for the first time"))
           raw_ins <-
             PEcAn.DB::dbfile.input.insert(
-              in.path    = output$raw_data_path,
+              in.path    = dirname(output$raw_data_path),
               in.prefix  = basename(output$raw_data_path),
               siteid     = siteid,
               startdate  = write_raw_start,
@@ -1135,7 +1135,7 @@ remotedata_db_insert <-
               "UPDATE inputs SET start_date='%s', end_date='%s', name='%s' WHERE id=%f;",
               write_raw_start,
               write_raw_end,
-              basename(output$raw_data_path),
+              basename(dirname(output$raw_data_path)),
               raw_id
             ),
             dbcon
@@ -1143,8 +1143,8 @@ remotedata_db_insert <-
           PEcAn.DB::db.query(
             sprintf(
               "UPDATE dbfiles SET file_path='%s', file_name='%s' WHERE container_id=%f;",
-              output$raw_data_path,
-              basename(output$raw_data_path),
+              dirname(output$raw_data_path),
+              basename(dirname(output$raw_data_path)),
               raw_id
             ),
             dbcon
