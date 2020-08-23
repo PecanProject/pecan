@@ -27,7 +27,7 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    ncdf4,
+    ncdf4
 Suggests:
     testthat (>= 1.0.2),
     ggplot2,
