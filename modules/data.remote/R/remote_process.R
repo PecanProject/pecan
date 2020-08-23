@@ -1193,7 +1193,7 @@ collapse_remote_data <- function(output, out_process_data, latlon){
   
   t <- ncdf4::ncdim_def(name = "time", 
                         units = nc$var$lai$dim[[3]]$units, 
-                        nc$var$lai$dim[[3]]$vals, # allow partial years, this info is already in matrix_weather
+                        nc$var$lai$dim[[3]]$vals, 
                         calendar = "standard", 
                         unlim = TRUE)
   
