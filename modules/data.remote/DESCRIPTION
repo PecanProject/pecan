@@ -23,6 +23,7 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.data.atmosphere,
+    stringr (>= 1.1.0),
     binaryLogic,
     doParallel,
     parallel,
