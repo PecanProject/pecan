@@ -27,7 +27,8 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    ncdf4
+    ncdf4,
+    PEcAn.data.atmosphere
 Suggests:
     testthat (>= 1.0.2),
     ggplot2,
