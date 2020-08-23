@@ -234,8 +234,8 @@ remote_process <- function(settings) {
   }
   
   if(!is.null(settings$remotedata$collapse)){
-    latlon <- PEcAn.data.atmosphere::db.site.lat.lon(siteid, con = dbcon)
-    collapse_remote_data(output, out_process_data, latlon)
+    collapse_remote_data(output, out_process_data, 
+                         list(lat = settings$run$site$lat, lon = settings$run$site$lon))
   }
   
   # insert output data in the DB
