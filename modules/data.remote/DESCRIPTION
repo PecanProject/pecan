@@ -26,7 +26,8 @@ Imports:
     binaryLogic,
     doParallel,
     parallel,
-    foreach
+    foreach,
+    ncdf4
 Suggests:
     testthat (>= 1.0.2),
     ggplot2,
