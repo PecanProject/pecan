@@ -49,46 +49,43 @@ remote_process <- function(settings) {
   raw_mimetype     <- reg_info$raw_mimetype
   raw_formatname   <- reg_info$raw_formatname
   pro_mimetype     <- reg_info$pro_mimetype
-  pro_formatname   <- reg_info$pro_formatname
+  pro_formatname   <- reg_info$pro_formatname 
   
-  
+
   if (!is.null(reg_info$scale)) {
-    if (!is.null(settings$remotedata$scale)) {
+    if(!is.null(settings$remotedata$scale)){
       scale <- as.double(settings$remotedata$scale)
       scale <- format(scale, nsmall = 1)
-    } else{
+    }else{
       scale <- as.double(reg_info$scale)
       scale <- format(scale, nsmall = 1)
       PEcAn.logger::logger.warn(paste0("scale not provided, using default scale ", scale))
     }
-  } else{
+  }else{
     scale <- NULL
   }
   
   if (!is.null(reg_info$qc)) {
-    if (!is.null(settings$remotedata$qc)) {
+    if(!is.null(settings$remotedata$qc)){
       qc <- as.double(settings$remotedata$qc)
       qc <- format(qc, nsmall = 1)
-    } else{
+    }else{
       qc <- as.double(reg_info$qc)
       qc <- format(qc, nsmall = 1)
       PEcAn.logger::logger.warn(paste0("qc not provided, using default qc ", qc))
     }
-  } else{
+  }else{
     qc <- NULL
   }
-  
+
   if (!is.null(reg_info$projection)) {
-    if (!is.null(settings$remotedata$projection)) {
+    if(!is.null(settings$remotedata$projection)){
       projection <- settings$remotedata$projection
-    } else{
+    }else{
       projection <- reg_info$projection
-      PEcAn.logger::logger.warn(paste0(
-        "projection not provided, using default projection ",
-        projection
-      ))
+      PEcAn.logger::logger.warn(paste0("projection not provided, using default projection ", projection))
     }
-  } else{
+  }else{
     projection <- NULL
   }
   
@@ -108,10 +105,8 @@ remote_process <- function(settings) {
                             is.character(outdir))
   PEcAn.logger::severeifnot("Check if source is of character type and is not NULL",
                             is.character(source))
-  these_sources <-
-    gsub("^.+?\\.(.+?)\\..*$", "\\1", list.files(system.file("registration", package = "PEcAn.data.remote")))
-  PEcAn.logger::severeifnot(paste0("Source should be one of ", paste(these_sources, collapse = ' ')),
-                            toupper(source) %in% these_sources)
+  these_sources <- gsub("^.+?\\.(.+?)\\..*$", "\\1", list.files(system.file("registration", package = "PEcAn.data.remote")))
+  PEcAn.logger::severeifnot(paste0("Source should be one of ", paste(these_sources, collapse = ' ')), toupper(source) %in% these_sources)
   # collection validation to be implemented
   if (!is.null(projection)) {
     PEcAn.logger::severeifnot("projection should be of character type",
@@ -145,36 +140,17 @@ remote_process <- function(settings) {
       con = dbcon
     ), use.names = FALSE)
   
-  if (!(tolower(gsub(
-    ".*type(.+),coordinates.*",
-    "\\1",
-    gsub("[^=A-Za-z,0-9{} ]+", "", coords)
-  )) %in% reg_info$coordtype)) {
-    PEcAn.logger::logger.severe(
-      paste0(
-        "Coordinate type of the site is not supported by the requested source, please make sure that your site type is ",
-        reg_info$coordtype
-      )
-    )
+  if(!(tolower(gsub(".*type(.+),coordinates.*", "\\1",  gsub("[^=A-Za-z,0-9{} ]+","",coords))) %in% reg_info$coordtype)){
+    PEcAn.logger::logger.severe(paste0("Coordinate type of the site is not supported by the requested source, please make sure that your site type is ", reg_info$coordtype))
   }
   
   # construct raw file name
-  remotedata_file_names <-
-    construct_remotedata_filename(
-      source,
-      collection,
-      siteid_short,
-      scale,
-      projection,
-      qc,
-      algorithm,
-      out_process_data
-    )
+  remotedata_file_names <- construct_remotedata_filename(source, collection, siteid_short, scale, projection, qc, algorithm, out_process_data)
   
   raw_file_name <- remotedata_file_names$raw_file_name
   
   pro_file_name <- remotedata_file_names$pro_file_name
-  
+
   
   # check if any data is already present in the inputs table
   dbstatus <-
@@ -192,28 +168,28 @@ remote_process <- function(settings) {
       dbcon             = dbcon
     )
   
-  remotefile_check_flag  <- dbstatus$remotefile_check_flag
-  start                  <- dbstatus$start
-  end                    <- dbstatus$end
-  stage_get_data         <- dbstatus$stage_get_data
-  write_raw_start        <- dbstatus$write_raw_start
-  write_raw_end          <- dbstatus$write_raw_end
-  raw_merge              <- dbstatus$raw_merge
+  remotefile_check_flag  <- dbstatus$remotefile_check_flag 
+  start                  <- dbstatus$start                 
+  end                    <- dbstatus$end                   
+  stage_get_data         <- dbstatus$stage_get_data        
+  write_raw_start        <- dbstatus$write_raw_start       
+  write_raw_end          <- dbstatus$write_raw_end         
+  raw_merge              <- dbstatus$raw_merge             
   existing_raw_file_path <- dbstatus$existing_raw_file_path
-  stage_process_data     <- dbstatus$stage_process_data
-  write_pro_start        <- dbstatus$write_pro_start
-  write_pro_end          <- dbstatus$write_pro_end
-  pro_merge              <- dbstatus$pro_merge
-  input_file             <- dbstatus$input_file
+  stage_process_data     <- dbstatus$stage_process_data    
+  write_pro_start        <- dbstatus$write_pro_start       
+  write_pro_end          <- dbstatus$write_pro_end         
+  pro_merge              <- dbstatus$pro_merge             
+  input_file             <- dbstatus$input_file            
   existing_pro_file_path <- dbstatus$existing_pro_file_path
-  raw_check              <- dbstatus$raw_check
-  pro_check              <- dbstatus$pro_check
-  
+  raw_check              <- dbstatus$raw_check             
+  pro_check              <- dbstatus$pro_check  
+
   
   # construct outdir path
   outdir <-
     file.path(outdir, paste(toupper(source), "site", siteid_short, sep = "_"))
-  
+
   
   fcn.args <- list()
   fcn.args$coords                 <- coords
@@ -240,7 +216,7 @@ remote_process <- function(settings) {
   fcn.args$raw_file_name          <- raw_file_name
   fcn.args$pro_file_name          <- pro_file_name
   
-  
+
   
   
   arg.string <- PEcAn.utils::listToArgString(fcn.args)
@@ -253,15 +229,12 @@ remote_process <- function(settings) {
   # IF: this is extremely hacky but we will need a post-processing function/sub-module here
   # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
   # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
-  if (source == "gee" &&
-      collection == "s2" &&
-      !is.null(algorithm) && !is.null(out_process_data)) {
+  if(source == "gee" && collection == "s2" && !is.null(algorithm) && !is.null(out_process_data)){
     settings$remotedata$collapse <- TRUE
   }
-  
-  if (!is.null(settings$remotedata$collapse)) {
-    latlon <-
-      PEcAn.data.atmosphere::db.site.lat.lon(siteid, con = dbcon)
+    
+  if(!is.null(settings$remotedata$collapse)){
+    latlon <- PEcAn.data.atmosphere::db.site.lat.lon(siteid, con = dbcon)
     collapse_remote_data(output, out_process_data, latlon)
   }
   # insert output data in the DB
@@ -344,7 +317,7 @@ construct_remotedata_filename <-
     }
     if (is.null(projection)) {
       prj_str <- ""
-    } else{
+    }else{
       prj_str <- paste0(projection, "_")
     }
     if (is.null(qc)) {
@@ -353,32 +326,12 @@ construct_remotedata_filename <-
       qc_str <- paste0(format(qc, nsmall = 1), "_")
     }
     
-    raw_file_name <-
-      paste0(toupper(source),
-             "_",
-             collection,
-             scale_str,
-             prj_str,
-             qc_str,
-             "site_",
-             siteid)
-    if (!is.null(out_process_data)) {
+    raw_file_name <- paste0(toupper(source), "_", collection, scale_str, prj_str, qc_str, "site_", siteid)
+        if(!is.null(out_process_data)){
       alg_str <- paste0(algorithm, "_")
       var_str <- paste0(out_process_data, "_")
-      pro_file_name <-
-        paste0(
-          toupper(source),
-          "_",
-          collection,
-          scale_str,
-          prj_str,
-          qc_str,
-          alg_str,
-          var_str,
-          "site_",
-          siteid
-        )
-    } else{
+      pro_file_name <- paste0(toupper(source), "_", collection, scale_str, prj_str, qc_str, alg_str, var_str, "site_", siteid)
+    }else{
       pro_file_name <- NULL
     }
     
@@ -442,16 +395,7 @@ set_stage   <- function(result, req_start, req_end, stage) {
     write_end   <- db_end
     write_start <- req_start
   }
-  return (
-    list(
-      req_start = req_start,
-      req_end = req_end,
-      stage = stage,
-      merge = merge,
-      write_start = write_start,
-      write_end = write_end
-    )
-  )
+  return (list(req_start = req_start, req_end = req_end, stage = stage, merge = merge, write_start = write_start, write_end = write_end))
   
 }
 
@@ -473,38 +417,29 @@ set_stage   <- function(result, req_start, req_end, stage) {
 ##'   "COPERNICUS/S2_SR")
 ##' }
 ##' @author Istem Fer
-read_remote_registry <- function(source, collection) {
-  # get registration file
-  register.xml <-
-    system.file(paste0("registration/register.", toupper(source), ".xml"),
-                package = "PEcAn.data.remote")
+read_remote_registry <- function(source, collection){
   
-  tryCatch(
-    expr = {
-      register <- XML::xmlToList(XML::xmlParse(register.xml))
-    },
-    error = function(e) {
+  # get registration file
+  register.xml <- system.file(paste0("registration/register.", toupper(source), ".xml"), package = "PEcAn.data.remote")
+  
+  tryCatch(expr = {
+    register <- XML::xmlToList(XML::xmlParse(register.xml))
+    }, 
+    error = function(e){
       PEcAn.logger::logger.severe("Requested source is not available")
-    }
+    } 
   )
   . <- NULL
   
-  if (!(purrr::is_empty(register %>% purrr::keep(names(.) == "collection")))) {
+  if(!(purrr::is_empty(register %>% purrr::keep(names(.) == "collection")))){
     # this is a type of source that requires different setup for its collections, e.g. GEE
     # then read collection specific information
-    register <-
-      register[[which(register %>% purrr::map_chr("original_name") == collection)]]
+    register <- register[[which(register %>% purrr::map_chr("original_name") == collection)]]
   }
   
   reg_list <- list()
-  reg_list$original_name  <-
-    ifelse(is.null(register$original_name),
-           collection,
-           register$original_name)
-  reg_list$pecan_name     <-
-    ifelse(is.null(register$pecan_name),
-           collection,
-           register$pecan_name)
+  reg_list$original_name  <- ifelse(is.null(register$original_name), collection, register$original_name)
+  reg_list$pecan_name     <- ifelse(is.null(register$pecan_name), collection, register$pecan_name)
   reg_list$scale          <- register$scale
   reg_list$qc             <- register$qc
   reg_list$projection     <- register$projection
@@ -529,7 +464,7 @@ read_remote_registry <- function(source, collection) {
 ##' @param pro_file_name pro_file_name
 ##' @param start start date requested by user
 ##' @param end end date requested by the user
-##' @param siteid siteid of the site
+##' @param siteid siteid of the site 
 ##' @param siteid_short short form of the siteid
 ##' @param out_get_data out_get_data
 ##' @param algorithm algorithm
@@ -565,6 +500,7 @@ remotedata_db_check <-
            out_process_data,
            overwrite,
            dbcon) {
+    
     # Information about the date variables used:
     # req_start, req_end : start, end dates requested by the user, the user does not have to be aware about the status of the requested file in the DB
     # start, end : effective start, end dates created after checking the DB status. These dates are sent to rp_control for downloading and processing data
@@ -645,7 +581,7 @@ remotedata_db_check <-
         existing_raw_file_path <- NULL
       } else if (!is.null(out_process_data)) {
         # if processed data is requested, example LAI
-        
+
         # check if processed file exists
         if (nrow(pro_check <-
                  PEcAn.DB::db.query(
@@ -661,8 +597,7 @@ remotedata_db_check <-
           pro_end         <- as.character(datalist$req_end)
           write_pro_start <- datalist$write_start
           write_pro_end   <- datalist$write_end
-          if (pro_start != "dont write" ||
-              pro_end != "dont write") {
+          if (pro_start != "dont write" || pro_end != "dont write") {
             stage_process_data <- datalist$stage
             pro_merge <- datalist$merge
             if (pro_merge == TRUE) {
@@ -682,10 +617,8 @@ remotedata_db_check <-
                   !is.null(raw_check$end_date)) {
                 raw_datalist <-
                   set_stage(raw_check, pro_start, pro_end, stage_get_data)
-                start           <-
-                  as.character(raw_datalist$req_start)
-                end             <-
-                  as.character(raw_datalist$req_end)
+                start           <- as.character(raw_datalist$req_start)
+                end             <- as.character(raw_datalist$req_end)
                 write_raw_start <- raw_datalist$write_start
                 write_raw_end   <- raw_datalist$write_end
                 stage_get_data  <- raw_datalist$stage
@@ -861,7 +794,7 @@ remotedata_db_check <-
     }
     
     return(
-      list(
+            list(
         remotefile_check_flag  = remotefile_check_flag,
         start                  = start,
         end                    = end,
@@ -879,7 +812,7 @@ remotedata_db_check <-
         raw_check              = raw_check,
         pro_check              = pro_check
       )
-    )
+      )
     
     
   }
@@ -893,12 +826,12 @@ remotedata_db_check <-
 ##' @name remotedata_db_insert
 ##' @param output output list from rp_control
 ##' @param remotefile_check_flag remotefile_check_flag
-##' @param siteid siteid
+##' @param siteid siteid 
 ##' @param out_get_data out_get_data
 ##' @param out_process_data out_process_data
 ##' @param write_raw_start write_raw_start, start date of the raw file
 ##' @param write_raw_end write_raw_end, end date of the raw file
-##' @param write_pro_start write_pro_start
+##' @param write_pro_start write_pro_start 
 ##' @param write_pro_end write_pro_end
 ##' @param raw_check  id, site_id, name, start_date, end_date, of the existing raw file from inputs table and file_path from dbfiles tables
 ##' @param pro_check pro_check  id, site_id, name, start_date, end_date, of the existing processed file from inputs table and file_path from dbfiles tables
@@ -947,6 +880,7 @@ remotedata_db_insert <-
            pro_mimetype,
            pro_formatname,
            dbcon) {
+    
     # The value of remotefile_check_flag denotes the following cases:
     
     # When processed file is requested,
@@ -1218,13 +1152,19 @@ remotedata_db_insert <-
       }
     }
     
-    return(list(
-      raw_id = raw_id,
-      raw_path = raw_path,
-      pro_id = pro_id,
-      pro_path = pro_path
-    ))
+    return(list(raw_id = raw_id, raw_path = raw_path, pro_id = pro_id, pro_path = pro_path))
   }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1247,11 +1187,12 @@ remotedata_db_insert <-
 ##'   latlon)
 ##' }
 ##' @author Istem Fer
-collapse_remote_data <- function(output, out_process_data, latlon) {
+collapse_remote_data <- function(output, out_process_data, latlon){
+  
   # open up the nc
   nc <- ncdf4::nc_open(output$process_data_path)
   ncdat <- ncdf4::ncvar_get(nc, out_process_data)
-  if (length(dim(ncdat)) == 3) {
+  if(length(dim(ncdat)) == 3){
     aggregated_ncdat_mean <- apply(ncdat, 3, mean, na.rm = TRUE)
     aggregated_ncdat_std  <- apply(ncdat, 3, sd, na.rm = TRUE)
   }
@@ -1259,66 +1200,26 @@ collapse_remote_data <- function(output, out_process_data, latlon) {
   # write back to nc file
   outlist <- list()
   outlist[[1]] <- aggregated_ncdat_mean  # LAI in (m2 m-2)
-  outlist[[2]] <- aggregated_ncdat_std
+  outlist[[2]] <- aggregated_ncdat_std  
   outlist[[3]] <- ncdat
   
-  t <- ncdf4::ncdim_def(
-    name = "time",
-    units = nc$var$lai$dim[[3]]$units,
-    nc$var$lai$dim[[3]]$vals,
-    # allow partial years, this info is already in matrix_weather
-    calendar = "standard",
-    unlim = TRUE
-  )
+  t <- ncdf4::ncdim_def(name = "time", 
+                        units = nc$var$lai$dim[[3]]$units, 
+                        nc$var$lai$dim[[3]]$vals, # allow partial years, this info is already in matrix_weather
+                        calendar = "standard", 
+                        unlim = TRUE)
   
   
-  lat <-
-    ncdf4::ncdim_def("lat",
-                     "degrees_north",
-                     vals = as.numeric(latlon$lat),
-                     longname = "latitude")
-  lon <-
-    ncdf4::ncdim_def("lon",
-                     "degrees_east",
-                     vals = as.numeric(latlon$lon),
-                     longname = "longitude")
+  lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(latlon$lat), longname = "latitude")
+  lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(latlon$lon), longname = "longitude")
   
-  x <-
-    ncdf4::ncdim_def("x",
-                     "",
-                     vals = as.numeric(nc$var$lai$dim[[2]]$vals),
-                     longname = "")
-  y <-
-    ncdf4::ncdim_def("y",
-                     "",
-                     vals = as.numeric(nc$var$lai$dim[[1]]$vals),
-                     longname = "")
+  x <- ncdf4::ncdim_def("x", "", vals = as.numeric(nc$var$lai$dim[[2]]$vals), longname = "")
+  y <- ncdf4::ncdim_def("y", "", vals = as.numeric(nc$var$lai$dim[[1]]$vals), longname = "")
   
   nc_var <- list()
-  nc_var[[1]] <-
-    ncdf4::ncvar_def(
-      "LAI",
-      units = "m2 m-2",
-      dim = list(lon, lat, t),
-      missval = -999,
-      longname = "Leaf Area Index"
-    )
-  nc_var[[2]] <-
-    ncdf4::ncvar_def(
-      "LAI_STD",
-      units = "",
-      dim = list(lon, lat, t),
-      missval = -999,
-      longname = ""
-    )
-  nc_var[[3]] <-
-    ncdf4::ncvar_def(
-      "LAI_UNCOLLAPSED",
-      units = "m2 m-2",
-      dim = list(y, x, t),
-      missval = -999,
-      longname = ""
-    )
+  nc_var[[1]] <- ncdf4::ncvar_def("LAI", units = "m2 m-2", dim = list(lon, lat, t), missval = -999, longname = "Leaf Area Index")
+  nc_var[[2]] <- ncdf4::ncvar_def("LAI_STD", units = "", dim = list(lon, lat, t), missval = -999, longname = "")
+  nc_var[[3]] <- ncdf4::ncvar_def("LAI_UNCOLLAPSED", units = "m2 m-2", dim = list(y, x, t), missval = -999, longname = "")
   
   ncdf4::nc_close(nc)
   
@@ -1331,3 +1232,13 @@ collapse_remote_data <- function(output, out_process_data, latlon) {
   ncdf4::nc_close(nc)
   
 } # collapse_remote_data
+
+
+
+
+
+
+
+
+
+

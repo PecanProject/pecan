@@ -31,8 +31,7 @@ Imports:
     reshape2,
     dbplyr,
     SimilarityMeasures,
-    zoo,
-    stringr
+    zoo
 Suggests:
     testthat (>= 2.0.0)
 License: BSD_3_clause + file LICENSE
