@@ -96,12 +96,12 @@ def rp_control(
 
     """
 
-    geofile = create_geojson(coords, siteid, outdir)
-
-
-    aoi_name = get_sitename(geofile)
-
+    
     if stage_get_data:
+      
+        # create GeoJSOn file from the BETY sites data
+        geofile = create_geojson(coords, siteid, outdir)
+        
         get_datareturn_path = get_remote_data(
             geofile,
             outdir,

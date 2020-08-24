@@ -183,7 +183,24 @@ remote_process <- function(settings) {
   input_file             <- dbstatus$input_file            
   existing_pro_file_path <- dbstatus$existing_pro_file_path
   raw_check              <- dbstatus$raw_check             
-  pro_check              <- dbstatus$pro_check  
+  pro_check              <- dbstatus$pro_check
+  
+  
+  
+  if(stage_get_data == FALSE && stage_process_data == FALSE){
+    # requested data already exists, no need to call rp_control
+    
+    pro_id   <- pro_check$id
+    pro_path <- pro_check$file_path
+    raw_id   <- raw_check$id
+    raw_path <- raw_check$file_path
+  
+    settings$remotedata$raw_id   <- raw_id
+    settings$remotedata$raw_path <- raw_path
+    settings$remotedata$pro_id   <- pro_id
+    settings$remotedata$pro_path <- pro_path
+    return(settings)
+  }
 
   
   # construct outdir path
@@ -226,17 +243,19 @@ remote_process <- function(settings) {
   
   # call rp_control
   output <- do.call(RpTools$rp_control, fcn.args)
-  # # IF: this is extremely hacky but we will need a post-processing function/sub-module here
-  # # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
-  # # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
-  # if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
-  #   settings$remotedata$collapse <- TRUE
-  # }
-  # 
-  # if(!is.null(settings$remotedata$collapse)){
-  #   collapse_remote_data(output, out_process_data, 
-  #                        list(lat = settings$run$site$lat, lon = settings$run$site$lon))
-  # }
+  
+  
+  # IF: this is extremely hacky but we will need a post-processing function/sub-module here
+  # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
+  # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
+  if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
+    settings$remotedata$collapse <- TRUE
+  }
+
+  if(!is.null(settings$remotedata$collapse)){
+    collapse_remote_data(output, out_process_data,
+                         list(lat = settings$run$site$lat, lon = settings$run$site$lon))
+  }
   
   # insert output data in the DB
   db_out <-
