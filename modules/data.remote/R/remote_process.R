@@ -4,7 +4,7 @@
 ##' @title remote_process
 ##' @export
 ##'
-##' @param settings PEcAn settings list containing remotedata tags: raw_mimetype, raw_formatname, source, collection, scale, projection, qc, algorithm, credfile, pro_mimetype, pro_formatname, out_get_data, out_process_data, overwrite
+##' @param settings PEcAn settings list containing remotedata tags: source, collection, scale, projection, qc, algorithm, credfile, out_get_data, out_process_data, overwrite
 ##'
 ##' @examples
 ##' \dontrun{
