@@ -22,6 +22,8 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
     RABBITMQ_QUEUE="pecan" \
     APPLICATION="workflow"
 
+USER rstudio
+
 # actual application that will be executed
 COPY executor.py sender.py /work/
 CMD python3 /work/executor.py
