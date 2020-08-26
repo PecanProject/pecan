@@ -102,6 +102,9 @@ def rp_control(
 
     """
 
+    out_get_data = out_get_data.lower()
+    out_process_data = out_process_data.lower()
+
     
     if stage_get_data:
       
