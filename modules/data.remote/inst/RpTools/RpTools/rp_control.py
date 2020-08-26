@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-remote_process controls the individual functions to create an automatic workflow for downloading and performing computation on remote sensing data.
+rp_control manages the individual functions to create an automatic workflow for downloading and performing computation on remote sensing data.
 
 Requires Python3
 
