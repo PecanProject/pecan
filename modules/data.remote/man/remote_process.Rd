@@ -7,7 +7,7 @@
 remote_process(settings)
 }
 \arguments{
-\item{settings}{PEcAn settings list containing remotedata tags: raw_mimetype, raw_formatname, source, collection, scale, projection, qc, algorithm, credfile, pro_mimetype, pro_formatname, out_get_data, out_process_data, overwrite}
+\item{settings}{PEcAn settings list containing remotedata tags: source, collection, scale, projection, qc, algorithm, credfile, out_get_data, out_process_data, overwrite}
 }
 \description{
 call rp_control (from RpTools Python package) and store the output in BETY

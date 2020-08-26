@@ -18,6 +18,8 @@ from . create_geojson import create_geojson
 def rp_control(
     coords,
     outdir,
+    lat,
+    lon,
     start,
     end,
     source,
@@ -49,6 +51,10 @@ def rp_control(
     coords (str) -- geometry of the site from BETY
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+
+    lat  (float) -- latitude of the site
+
+    lon (float) -- longitude of the site
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -125,6 +131,8 @@ def rp_control(
             out_get_data,
             out_process_data,
             outdir,
+            lat,
+            lon,
             algorithm,
             input_file,
             pro_merge,

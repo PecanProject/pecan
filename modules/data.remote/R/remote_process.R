@@ -40,6 +40,8 @@ remote_process <- function(settings) {
   siteid           <- as.numeric(settings$run$site$id)
   siteid_short     <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
   outdir           <- settings$database$dbfiles
+  lat              <- as.numeric(settings$run$site$lat)
+  lon              <- as.numeric(settings$run$site$lon)
   start            <- as.character(as.Date(settings$run$start.date))
   end              <- as.character(as.Date(settings$run$end.date))
   source           <- settings$remotedata$source
@@ -189,16 +191,10 @@ remote_process <- function(settings) {
   
   if(stage_get_data == FALSE && stage_process_data == FALSE){
     # requested data already exists, no need to call rp_control
-    
-    pro_id   <- pro_check$id
-    pro_path <- pro_check$file_path
-    raw_id   <- raw_check$id
-    raw_path <- raw_check$file_path
-  
-    settings$remotedata$raw_id   <- raw_id
-    settings$remotedata$raw_path <- raw_path
-    settings$remotedata$pro_id   <- pro_id
-    settings$remotedata$pro_path <- pro_path
+    settings$remotedata$raw_id   <- raw_check$id
+    settings$remotedata$raw_path <- raw_check$file_path
+    settings$remotedata$pro_id   <- pro_check$id
+    settings$remotedata$pro_path <- pro_check$file_path
     return(settings)
   }
 
@@ -211,6 +207,8 @@ remote_process <- function(settings) {
   fcn.args <- list()
   fcn.args$coords                 <- coords
   fcn.args$outdir                 <- outdir
+  fcn.args$lat                    <- lat
+  fcn.args$lon                    <- lon
   fcn.args$start                  <- start
   fcn.args$end                    <- end
   fcn.args$source                 <- source
@@ -244,18 +242,6 @@ remote_process <- function(settings) {
   # call rp_control
   output <- do.call(RpTools$rp_control, fcn.args)
   
-  
-  # IF: this is extremely hacky but we will need a post-processing function/sub-module here
-  # this code can remind us to implement it later, for now it is only used for GEE - Sentinel2 - SNAP- LAI example
-  # it would be better if this sub-module comes after DB insertion below and the processed files have their own insertion
-  if(source == "gee" & collection == "s2" & !is.null(algorithm) & !is.null(out_process_data)){
-    settings$remotedata$collapse <- TRUE
-  }
-
-  if(!is.null(settings$remotedata$collapse)){
-    collapse_remote_data(output, out_process_data,
-                         list(lat = settings$run$site$lat, lon = settings$run$site$lon))
-  }
   
   # insert output data in the DB
   db_out <-
@@ -1174,68 +1160,3 @@ remotedata_db_insert <-
     
     return(list(raw_id = raw_id, raw_path = raw_path, pro_id = pro_id, pro_path = pro_path))
   }
-
-
-
-
-
-##' collapses remote data (currently LAI only)
-##'
-##' @name collapse_remote_data
-##' @title collapse_remote_data
-##' @param output output list from rp_control
-##' @param out_process_data type of processed data
-##' @param latlon latlon
-##' @examples
-##' \dontrun{
-##' collapse_remote_data(
-##'   output,
-##'   out_process_data,
-##'   latlon)
-##' }
-##' @author Istem Fer
-collapse_remote_data <- function(output, out_process_data, latlon){
-  
-  # open up the nc
-  nc <- ncdf4::nc_open(output$process_data_path)
-  ncdat <- ncdf4::ncvar_get(nc, out_process_data)
-  if(length(dim(ncdat)) == 3){
-    aggregated_ncdat_mean <- apply(ncdat, 3, mean, na.rm = TRUE)
-    aggregated_ncdat_std  <- apply(ncdat, 3, sd, na.rm = TRUE)
-  }
-  
-  # write back to nc file
-  outlist <- list()
-  outlist[[1]] <- aggregated_ncdat_mean  # LAI in (m2 m-2)
-  outlist[[2]] <- aggregated_ncdat_std  
-  outlist[[3]] <- ncdat
-  
-  t <- ncdf4::ncdim_def(name = "time", 
-                        units = nc$var$lai$dim[[3]]$units, 
-                        nc$var$lai$dim[[3]]$vals, 
-                        calendar = "standard", 
-                        unlim = TRUE)
-  
-  
-  lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(latlon$lat), longname = "latitude")
-  lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(latlon$lon), longname = "longitude")
-  
-  x <- ncdf4::ncdim_def("x", "", vals = as.numeric(nc$var$lai$dim[[2]]$vals), longname = "")
-  y <- ncdf4::ncdim_def("y", "", vals = as.numeric(nc$var$lai$dim[[1]]$vals), longname = "")
-  
-  nc_var <- list()
-  nc_var[[1]] <- ncdf4::ncvar_def("LAI", units = "m2 m-2", dim = list(lon, lat, t), missval = -999, longname = "Leaf Area Index")
-  nc_var[[2]] <- ncdf4::ncvar_def("LAI_STD", units = "", dim = list(lon, lat, t), missval = -999, longname = "")
-  nc_var[[3]] <- ncdf4::ncvar_def("LAI_UNCOLLAPSED", units = "m2 m-2", dim = list(y, x, t), missval = -999, longname = "")
-  
-  ncdf4::nc_close(nc)
-  
-  ### Output netCDF data, overwrite previous
-  nc <- ncdf4::nc_create(output$process_data_path, nc_var)
-  for (i in seq_along(nc_var)) {
-    # print(i)
-    ncdf4::ncvar_put(nc, nc_var[[i]], outlist[[i]])
-  }
-  ncdf4::nc_close(nc)
-  
-} # collapse_remote_data
