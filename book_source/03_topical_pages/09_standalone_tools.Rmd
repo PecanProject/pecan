@@ -228,7 +228,7 @@ These tags are only required if processed data is requested:
 * `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
 * `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
 
-Additional information are taken from the registration files located at [pecan/modules/data.remote/inst/registration](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/registration), each source has its own registration file. This is so because there isn't a standardized way to retrieve all image collections from GEE and each image collections may require its own way of performing quality checks, etc whereas all of the products available on AppEEARS can be retrieved using its API in a standardized way.
+Additional information are taken from the registration files located at [pecan/modules/data.remote/inst/registration](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/registration), each source has its own registration file. This is so because there isn't a standardized way to retrieve all image collections from GEE and each image collection may require its own way of performing quality checks, etc whereas all of the products available on AppEEARS can be retrieved using its API in a standardized way.
 
 GEE registration file (register.GEE.xml) :
 
