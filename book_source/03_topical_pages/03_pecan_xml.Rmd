@@ -795,8 +795,6 @@ This section describes the tags required for configuring `remote_process`.
   </remotedata>
 ```
 
-* `raw_mimetype`: (required) MIME type of the raw file
-* `raw_formatname`: (required) format name of the raw file
 * `out_get_data`: (required) type of raw output requested, e.g, bands, smap
 * `source`: (required) source of remote data, e.g., gee or appeears 
 * `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
@@ -812,6 +810,8 @@ These tags are only required if processed data is requested:
 * `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
 * `pro_mimetype`: (optional) MIME type of the processed file
 * `pro_formatname`: (optional) format name of the processed file
+
+Additional information for the module are taken from the registration files located at `data.remote/inst/registration`
 
 The output data from the module are returned in the following tags:
 

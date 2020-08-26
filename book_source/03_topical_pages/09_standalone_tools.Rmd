@@ -174,10 +174,25 @@ pip3 install -e .
 #this will open a browser and ask you to sign in with the Google account registered for GEE
 earthengine authenticate
 ```
+Alternate way,
+```bash
+python3
+
+import ee
+ee.Authenticate()
+```
+
 5. **Save the Earthdata credentials**. If you wish to use AppEEARS you will have to store your username and password inside a JSON file and then pass its file path as an argument in `remote_process` 
 
 #### Usage guide:
-This module contains GEE and other processing functions which retrieve data from a specific dataset and source. For example, `gee2pecan_s2()` downloads bands from Sentinel 2 using GEE and `bands2lai_snap()` uses the downloaded bands to compute LAI using the SNAP algorithm. These functions can be used independently but the recommended way is to use `remote_process`which is the main function that controls all the individual functions to create an organized way of downloading and storing remote sensing data in PEcAn. 
+This module is accesible using the R function `remote_process` which uses the Python package "RpTools" (located at `data.remote/inst/RpTools`) for downloading and processing data. RpTools has a function named `rp_control` which controls two other functions,
+
+1. `get_remote_data` which controls the scripts which are used for downloading data from the source. For example, `gee2pecan_s2` downloads bands from Sentinel 2 using GEE.
+
+2. `process_remote_data` which controls the scripts responsible for processing the raw data. For example, `bands2lai_snap` uses the downloaded bands to compute LAI using the SNAP algorithm.
+
+![Workflow of the module](03_topical_pages/11_images/remotemodule.png)
+
 
 ### Configuring `remote_process`
 
@@ -185,8 +200,7 @@ This module contains GEE and other processing functions which retrieve data from
 
 ```xml
   <remotedata>
-  <raw_mimetype>...</raw_mimetype>
-  <raw_formatname>...</raw_formatname>
+  <out_get_data>...</out_get_data>
   <source>...</source>
   <collection>...</collection>
   <scale>...</scale>
@@ -194,16 +208,12 @@ This module contains GEE and other processing functions which retrieve data from
   <qc>...</qc>
   <algorithm>...</algorithm>
   <credfile>...</credfile>
-  <pro_mimetype>...</pro_mimetype>
-  <pro_formatname>...</pro_formatname>
-  <out_get_data>...</out_get_data>
   <out_process_data>...</out_process_data>
   <overwrite>...</overwrite>
   </remotedata>
 ```
 
-* `raw_mimetype`: (required) MIME type of the raw file
-* `raw_formatname`: (required) format name of the raw file
+
 * `out_get_data`: (required) type of raw output requested, e.g, bands, smap
 * `source`: (required) source of remote data, e.g., gee or appeears 
 * `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
@@ -217,10 +227,37 @@ These tags are only required if processed data is requested:
 * `out_process_data`: (optional) type of processed output requested, e.g, lai
 * `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
 * `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
-* `pro_mimetype`: (optional) MIME type of the processed file
-* `pro_formatname`: (optional) format name of the processed file
 
-Other input data:
+Additional information are taken from the registration files located at pecan/modules/data.remote/inst/registration, each source has its own registration file:
+
+GEE registration file (register.GEE.xml) :
+
+* `collection`
+   * `original_name` original name of the image collection, e.g. COPERNICUS/S2_SR
+   * `pecan_name` short form of original name using which the collection is represented in PEcAn, e.g. s2
+* `coord`
+  * `coord_type` coordinate type supported by the collection 
+* `scale` the default value of the scale can be specified here
+* `qc` the default value of the qc parameter can be specified here
+* `raw_format` format details of the raw file
+   * `id` id of the format
+   * `name` name of the format
+   * `mimetype` MIME type
+* `pro_format` format details of the processed file when the collection is used to create a processed file
+   * `id` id of the format
+   * `name` name of the format
+   * `mimetype` MIME type
+   
+AppEEARS registarion file (registrer.APPEEARS.xml) :
+
+* `coord`
+  * `coord_type` coordinate type supported by the product 
+* `raw_format` format details of the output file
+   * `id` id of the format
+   * `name` name of the format
+   * `mimetype` MIME type
+
+Remaining input data:
 
 * start date, end date: these are taken from the `run` tag in `pecan.xml`
 * outdir: from the `outdir` tag in `pecan.xml`
@@ -235,12 +272,9 @@ The output data from the module are returned in the following tags:
 
 **Output files**: 
 
-The output files are stored in a directory inside the specified outdir with the following naming convention: `source_site_siteid`
+The output files are of netCDF type and are stored in a directory inside the specified outdir with the following naming convention: `source_site_siteid`
 
-Output files returned by GEE functions are in the form of netCDF files. When using AppEEARS, output is in the form of netCDF files if the AOI type is a polygon and in the form of csv files if the AOI type is a point.
-
-The output files are created with the following naming convention: `collection_scale_projection_qc_site_siteid_TimeStampOfFileCreation`
-If scale, projection or qc is not applicable for the requested product "NA" would be put.
+The output files are created with the following naming convention: `source_collection_scale_projection_qc_site_siteid_TimeStampOfFileCreation`
 
 Whenever a data product is requested the output files are stored in the inputs table of BETYdb. Subsequently when the same product is requested again with a different date range but with the same qc, scale, projection the previous file in the db would be extended. The DB would always contain only one file of the same type.
 As an example, if a file containing Sentinel 2 bands for start date: 2018-01-01, end date: 2018-06-30 exists in the DB and the same product is requested again for a different date range one of the following cases would happen,
@@ -253,6 +287,24 @@ As an example, if a file containing Sentinel 2 bands for start date: 2018-01-01,
 
 When a processed data product such as SNAP-LAI is requested, the raw product (here Sentinel 2 bands) used to create it would also be stored in the DB. If the raw product required for creating the processed product already exists for the requested time period, the processed product would be created for the entire time period of the raw file. For example, if Sentinel 2 bands are present in the DB for 2017-01-01 to 2017-12-31 and SNAP-LAI is requested for 2017-03-01 to 2017-07-31, the output file would be containing LAI for 2017-01-01 to 2017-12-31.
 
+
+#### Creating Polygon based sites
+
+A polygon site can be created in the BETYdb using the following way,
+
+```
+PEcAn.DB::db.query("insert into sites (country, sitename, geometry) values ('country_name', 'site_name', ST_SetSRID(ST_MakePolygon(ST_GeomFromText('LINESTRING(lon lat elevation)')), crs));", con)
+```
+
+Example,
+
+```
+db.query("insert into sites (country, sitename, geometry) values ('FI', 'Qvidja_ca6cm', ST_SetSRID(ST_MakePolygon(ST_GeomFromText('LINESTRING(22.388957339620813 60.287395608412218 14.503780364990234, 22.389600591651835 60.287182336733203 14.503780364990234,
+22.38705422266651  60.285516177775868 14.503780364990234,      
+22.386575219445195 60.285763643883932 14.503780364990234,
+22.388957339620813 60.287395608412218 14.503780364990234 )')), 4326));", con)
+```
+
 #### Example use (GEE)
 This example will download Sentinel 2 bands and then use the SNAP algorithm to compute Leaf Area Index.
 
@@ -260,20 +312,13 @@ This example will download Sentinel 2 bands and then use the SNAP algorithm to c
 
 ```xml
   <remotedata>
-  <raw_mimetype>raw_mimetype</raw_mimetype>
-  <raw_formatname>raw_formatname</raw_formatname>
   <out_get_data>bands</out_get_data>
   <source>gee</source>
   <collection>COPERNICUS/S2_SR</collection>
   <scale>10</scale>
-  <projection></projection>
   <qc>1</qc>
   <algorithm>snap</algorithm>
-  <credfile></credfile>
-  <pro_mimetype>pro_mimetype</pro_mimetype>
-  <pro_formatname>pro_formatname</pro_formatname>
-  <out_process_data>lai</out_process_data>
-  <overwrite></overwrite>
+  <out_process_data>LAI</out_process_data>
   </remotedata>
 ```
 
@@ -293,20 +338,12 @@ This example will download the layers of a SMAP product(SPL3SMP_E.003)
 
 ```xml
   <remotedata>
-  <raw_mimetype>raw_mimetype</raw_mimetype>
-  <raw_formatname>raw_formatname</raw_formatname>
   <out_get_data>smap</out_get_data>
   <source>appeears</source>
   <collection>SPL3SMP_E.003</collection>
-  <scale></scale>
   <projection>native</projection>
-  <qc></qc>
   <algorithm></algorithm>
-  <credfile></credfile>
-  <pro_mimetype></pro_mimetype>
-  <pro_formatname></pro_formatname>
-  <out_process_data></out_process_data>
-  <overwrite></overwrite>
+  <credfile>path/to/jsonfile/containingcredentials</credfile>
   </remotedata>
 ```
 
@@ -324,8 +361,7 @@ The output netCDF file will be saved at outdir and its record would be kept in t
 Once you have the Python script for downloading the collection from GEE, please do the following to integrate it with this module.
 
 1. Make sure that the function and script names are same and named in the following way: `gee2pecan_pecancodeofimagecollection`
-   `pecancodeofimagecollection` can be any name which you want to use for representing the collection is an easier way. For example, the colection `NASA_USDA/HSL/SMAP_soil_moisture` has the pecancode `smap`. Add this information to the `collection_lut` data frame in `remote_process.R`
-   
+   `pecancodeofimagecollection` can be any name which you want to use for representing the collection is an easier way.
    Additionaly, ensure that the function accepts and uses the following arguments,
    * `geofile` - (str) GeoJSON file containing AOI information of the site
    * `outdir`  - (str) path where the output file has to be saved
@@ -333,8 +369,10 @@ Once you have the Python script for downloading the collection from GEE, please 
    * `end`     - (str) end date in the form YYYY-MM-DD
    * `scale` and `qc` if applicable.
    
-2. Make sure the output file is of netCDF or CSV type and follows the naming convention described above.
+2. Make sure the output file is of netCDF type and follows the naming convention described above.
 
 3. Store the Python script at `pecan/modules/data.remote/inst/RpTools/RpTools`
+
+4. Update the `register.GEE.xml` file.
    
 After performing these steps the script will be integrated with the remote data module and would be ready to use. 
