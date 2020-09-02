@@ -664,6 +664,7 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
 }
 
 
+
 ##' 
 ##' This function will move dbfiles - clim or nc -  from one location 
 ##' to another on the same machine and update BETY
@@ -672,8 +673,9 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
 ##' @title Move files to new location 
 ##' @param old.dir directory with files to be moved
 ##' @param new.dir directory where files should be moved 
-##' @param file.type what type of files are we moving either clim or nc 
-##' @param siteid needed to register .nc files that arent already in BETY
+##' @param file.type what type of files are being moved
+##' @param siteid needed to register files that arent already in BETY
+##' @param register if file isn't already in BETY, should it be registered? 
 ##' @return print statement of how many files were moved, registered, or have symbolic links
 ##' @export
 ##' @author kzarada
@@ -683,15 +685,16 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
 ##'   old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676", 
 ##'   new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
 ##'   file.type= clim, 
-##'   siteid = 676
+##'   siteid = 676, 
+##'   register = TRUE
 ##'   )
 ##' }
 
 
-dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){  
+dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = FALSE ){  
   
   
-  #create nulls for file movement and error  info 
+  #create nulls for file movement and error info 
   error = 0
   files.sym = 0
   files.changed = 0 
@@ -700,7 +703,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
   
   #check for file type and update to make it *.file type 
   if(file.type != "clim" | file.type != "nc"){ 
-    PEcAn.logger::logger.error('File type not supported by move at this time. Please enter either clim or nc')
+    PEcAn.logger::logger.error('File type not supported by move at this time. Currently only supports NC and CLIM files')
     error = 1
   }
   file.pattern = paste0("*.", file.type)
@@ -796,9 +799,9 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     
   } #end dbfile loop 
   
-  #if statement for when there are no matching files in BETY or if some clim files matched but others didn't
-  #for clim files not registered, we'll create a symbolic link to where we move the files
-  if (dim(dbfiles)[1] == 0 & file.pattern == "*.clim" | files.changed > 0 & file.pattern == "*.clim" ){ 
+  
+  #if there are files that are in the folder but not in BETY, we can either register them or not 
+  if (dim(dbfiles)[1] == 0 | files.changed > 0){ 
     
     #Recheck what files are in the directory since others may have been moved above 
     old.files <- list.files(path= old.dir, pattern = file.pattern)
@@ -806,8 +809,6 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     #Recreate full file path 
     full.old.file = file.path(old.dir, old.files)
     
-    #Record number of files that will have a symbolic link made 
-    files.sym = length(full.old.file)
     
     #Error check again to make sure there aren't any matching dbfiles 
     dbfile.path = dirname(full.old.file)
@@ -816,12 +817,51 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
       dplyr::filter(file_path %in% dbfile.path)
     
     if(dim(dbfiles)[1] > 0){ 
-      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling symbolic link creation")
+      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling link or registration")
       error = 1
     }
     
+    
+    if(error == 0 & register == TRUE){
+      
+      #Record how many files are being registered to BETY 
+      files.reg= length(full.old.file)
+      
+      for(i in 1:length(full.old.file)){
+        
+        file_path = dirname(full.old.file[i])
+        file_name = basename(full.old.file[i])
+        
+        if(file.type == "nc"){mimetype = "application/x-netcdf"
+        formatname ="CF Meteorology application" }
+        else if(file.type = "clim"){mimetype = 'text/csv'
+        formatname = "Sipnet.climna"}
+        else{PEcAn.logger::logger.error("File Type is currently not supported")} 
+        
+        
+        dbfile.input.insert(in.path = file_path,
+                            in.prefix = file_name,
+                            siteid = siteid,
+                            startdate = NULL,
+                            enddate = NULL,
+                            mimetype = mimetype,
+                            formatname = formatname,
+                            parentid=NA,
+                            con = con, 
+                            hostname=PEcAn.remote::fqdn(),
+                            allow.conflicting.dates=FALSE,
+                            ens=FALSE) 
+      }#end i loop 
+    } #end error loop 
+    
+  } #end register == TRUE 
+  
+  if(error == 0 & register == FALSE){
     #Create file path for symbolic link 
     full.new.file = file.path(new.dir, old.files)
+    
+    #Record number of files that will have a symbolic link made 
+    files.sym = length(full.new.file)
     
     #Line up files 
     full.new.file = sort(full.new.file)
@@ -843,55 +883,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
       }#end i loop 
     } #end error loop 
     
-    
-  } #end clim if statement 
-  
-  
-  #If files are .nc files and aren't in BETY for some reason, we will register them 
-  if (dim(dbfiles)[1] == 0 & file.pattern == "*.nc" | files.changed == 1 & file.pattern == "*.nc" ){ 
-    
-    #Re make full file path and find files that were not moved 
-    old.files <- list.files(path= old.dir, pattern = file.pattern)
-    
-    full.old.file = file.path(old.dir, old.files)
-    
-    #Record how many files are being registered to BETY 
-    files.reg= length(full.old.file)
-    
-    #Check again to make sure there aren't any matching dbfiles 
-    dbfile.path = dirname(full.old.file)
-    dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
-      dplyr::filter(file_name %in% basename(full.old.file)) %>% 
-      dplyr::filter(file_path %in% dbfile.path)
-    
-    if(dim(dbfiles)[1] > 0){ 
-      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling symbolic link creation")
-      error = 1
-    }
-    
-    if(error == 0){
-      
-      for(i in 1:length(full.old.file)){
-        
-        file_path = dirname(full.old.file[i])
-        file_name = basename(full.old.file[i])
-        
-        
-        dbfile.input.insert(in.path = file_path,
-                            in.prefix = file_name,
-                            siteid = siteid,
-                            startdate = NULL,
-                            enddate = NULL,
-                            mimetype = "application/x-netcdf",
-                            formatname = "CF Meteorology application",
-                            parentid=NA,
-                            con = con, 
-                            hostname=PEcAn.remote::fqdn(),
-                            allow.conflicting.dates=FALSE,
-                            ens=FALSE) 
-      }#end i loop 
-    } #end error loop
-  } #end nc file registration 
+  } #end Register == FALSE
   
   
   if(error > 0){ 
@@ -905,4 +897,4 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL ){
     
   }
   
-} #end dbfile.move()
+}  #end dbfile.move()
