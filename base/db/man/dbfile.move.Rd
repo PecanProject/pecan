@@ -4,16 +4,18 @@
 \alias{dbfile.move}
 \title{Move files to new location}
 \usage{
-dbfile.move(old.dir, new.dir, file.type, siteid = NULL)
+dbfile.move(old.dir, new.dir, file.type, siteid = NULL, register = FALSE)
 }
 \arguments{
 \item{old.dir}{directory with files to be moved}
 
 \item{new.dir}{directory where files should be moved}
 
-\item{file.type}{what type of files are we moving either clim or nc}
+\item{file.type}{what type of files are being moved}
 
-\item{siteid}{needed to register .nc files that arent already in BETY}
+\item{siteid}{needed to register files that arent already in BETY}
+
+\item{register}{if file isn't already in BETY, should it be registered?}
 }
 \value{
 print statement of how many files were moved, registered, or have symbolic links
@@ -28,7 +30,8 @@ to another on the same machine and update BETY
   old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676", 
   new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
   file.type= clim, 
-  siteid = 676
+  siteid = 676, 
+  register = TRUE
   )
 }
 }

@@ -834,7 +834,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
         
         if(file.type == "nc"){mimetype = "application/x-netcdf"
         formatname ="CF Meteorology application" }
-        else if(file.type = "clim"){mimetype = 'text/csv'
+        else if(file.type == "clim"){mimetype = 'text/csv'
         formatname = "Sipnet.climna"}
         else{PEcAn.logger::logger.error("File Type is currently not supported")} 
         
