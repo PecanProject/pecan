@@ -10,12 +10,12 @@
     <scale>10</scale>
     <qc>1</qc>
     <raw_format>
-     <id>99000000002</id>
+     <id>1000000129</id>
      <name>Remote_generic</name>
      <mimetype>application/x-netcdf</mimetype>
    </raw_format>
    <pro_format>
-     <id>99000000002</id>
+     <id>1000000129</id>
      <name>Remote_generic</name>
      <mimetype>application/x-netcdf</mimetype>
    </pro_format>
