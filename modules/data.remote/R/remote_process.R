@@ -187,8 +187,7 @@ remote_process <- function(settings) {
   raw_check              <- dbstatus$raw_check             
   pro_check              <- dbstatus$pro_check
   
-  
-  
+
   if(stage_get_data == FALSE && stage_process_data == FALSE){
     # requested data already exists, no need to call rp_control
     settings$remotedata$raw_id   <- raw_check$id
@@ -516,8 +515,8 @@ remotedata_db_check <-
     req_start              <- start
     req_end                <- end
     input_file             <- NULL
-    stage_get_data         <- NULL
-    stage_process_data     <- NULL
+    stage_get_data         <- FALSE
+    stage_process_data     <- FALSE
     raw_merge              <- NULL
     pro_merge              <- NULL
     existing_raw_file_path <- NULL
@@ -798,6 +797,7 @@ remotedata_db_check <-
         existing_pro_file_path <- NULL
       }
     }
+    
     
     return(
             list(
