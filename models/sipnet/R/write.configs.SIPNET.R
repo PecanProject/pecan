@@ -74,7 +74,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
-  jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
+  jobsh <- gsub("@END_DATE@",settings$run$end.date , jobsh)
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
@@ -515,7 +515,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     #some stuff about IC file that we can give in lieu of actual ICs
   }
   
-  if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet",Sys.time()%>%as.numeric,".param")))
+  if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,

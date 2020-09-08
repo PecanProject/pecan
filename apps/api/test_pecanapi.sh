@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd R; ./entrypoint.R & 
+cd R; ./entrypoint.R 2>/dev/null &
 PID=$!
 
 while ! curl --output /dev/null --silent http://localhost:8000

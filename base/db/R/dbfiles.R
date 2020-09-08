@@ -79,16 +79,18 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   inputid <- NULL
   if (nrow(existing.input) > 0) {
     # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
-    startdate <- lubridate::force_tz(time = lubridate::as_date(startdate), tzone = 'UTC')
-    enddate <- lubridate::force_tz(time = lubridate::as_date(enddate), tzone = 'UTC')
+    if(!is.null(startdate)){ startdate <- lubridate::force_tz(time = lubridate::as_date(startdate), tzone = 'UTC')}
+    if(!is.null(enddate)){enddate <- lubridate::force_tz(time = lubridate::as_date(enddate), tzone = 'UTC')}
     existing.input$start_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$start_date), tzone = 'UTC')
     existing.input$end_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$end_date), tzone = 'UTC')
     
     for (i in seq_len(nrow(existing.input))) {
       existing.input.i <- existing.input[i,]
-      if (existing.input.i$start_date == startdate && existing.input.i$end_date == enddate) {
+      if (is.na(existing.input.i$start_date) && is.null(startdate)) {
         inputid <- existing.input.i[['id']]
-        break
+      }else if(existing.input.i$start_date == startdate && existing.input.i$end_date == enddate){
+        inputid <- existing.input.i[['id']]
+        
       }
     }
     
@@ -109,12 +111,22 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   if (is.null(inputid)) {
     # Either there was no existing input, or there was but the dates don't match and
     # allow.conflicting.dates==TRUE. So, insert new input record.
-    if (parent == "") {
+    # adding is.null(startdate) to add inputs like soil that don't have dates
+    if(parent == "" && is.null(startdate)) { 
+      cmd <- paste0("INSERT INTO inputs ",
+                    "(site_id, format_id, name) VALUES (",
+                    siteid, ", ", formatid, ", '", name, 
+                    "'",") RETURNING id")
+    } else if(parent == "" && !is.null(startdate)) { 
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name,
                     "') RETURNING id")
-    } else {
+    }else if(is.null(startdate)){
+      cmd <- paste0("INSERT INTO inputs ",
+                    "(site_id, format_id, name, parent_id) VALUES (",
+                    siteid, ", ", formatid, ", '", name, "',", parentid, ") RETURNING id")
+    }else {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
@@ -123,7 +135,15 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     inserted.id <-db.query(query = cmd, con = con)
     name.s <- name
 
-    inputid <- db.query(
+    if(is.null(startdate)){
+      inputid <- db.query(
+        query = paste0(
+          "SELECT id FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid),
+        con = con
+      )$id
+      
+    }else{inputid <- db.query(
       query = paste0(
         "SELECT id FROM inputs WHERE site_id=", siteid,
         " AND format_id=", formatid,
@@ -132,7 +152,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         "'" , parent, ";"
       ),
       con = con
-    )$id
+    )$id}
   }else{
     inserted.id <- data.frame(id=inputid) # in the case that inputid is not null then this means that there was an exsiting input
   }
@@ -150,7 +170,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
-  if (nrow(dbfile) > 0 ) {
+  if (nrow(dbfile) > 0 & !ens) {
    
     if (nrow(dbfile) > 1) {
       print(dbfile)
@@ -158,7 +178,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       dbfile <- dbfile[nrow(dbfile),]
     }
     
-    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path ) {
+    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path && !ens) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",

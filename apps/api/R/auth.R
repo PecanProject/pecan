@@ -34,16 +34,15 @@ validate_crypt_pass <- function(username, crypt_pass) {
   res <- tbl(dbcon, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
-    count() %>%
     collect()
 
   PEcAn.DB::db.close(dbcon)
   
-  if (res == 1) {
-    return(TRUE)
+  if (nrow(res) == 1) {
+    return(res$id)
   }
   
-  return(FALSE)
+  return(NA)
 }
 
 #* Filter to authenticate a user calling the PEcAn API
@@ -52,13 +51,19 @@ validate_crypt_pass <- function(username, crypt_pass) {
 #* @return Appropriate response
 #* @author Tezan Sahu
 authenticate_user <- function(req, res) {
+  # Fix CORS issues
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  
   # If the API endpoint that do not require authentication
   if (
+    Sys.getenv("AUTH_REQ") == FALSE ||
     grepl("swagger", req$PATH_INFO, ignore.case = TRUE) || 
     grepl("openapi.json", req$PATH_INFO, fixed = TRUE) ||
-    grepl("ping", req$PATH_INFO, ignore.case = TRUE) ||
-    grepl("status", req$PATH_INFO, ignore.case = TRUE))
+    grepl("/api/ping", req$PATH_INFO, ignore.case = TRUE) ||
+    grepl("/api/status", req$PATH_INFO, ignore.case = TRUE))
   {
+    req$user$userid <- NA
+    req$user$username <- ""
     return(plumber::forward())
   }
   
@@ -70,7 +75,11 @@ authenticate_user <- function(req, res) {
     password <- auth_details[2]
     crypt_pass <- get_crypt_pass(username, password)
     
-    if(validate_crypt_pass(username, crypt_pass)){
+    userid <- validate_crypt_pass(username, crypt_pass)
+    
+    if(! is.na(userid)){
+      req$user$userid <- userid
+      req$user$username <- username
       return(plumber::forward())
     }
     

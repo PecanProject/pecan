@@ -159,6 +159,9 @@ services:
     restart: unless-stopped
     networks:
       - pecan
+    depends_on:
+      - rabbitmq
+      - postgres
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - FQDN=${PECAN_FQDN:-docker}
@@ -323,17 +326,21 @@ services:
     networks:
       - pecan
     environment:
-      - PECAN_VERSION=${PECAN_VERSION:-1.7.0}
-      - PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH:-develop}
-      - PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM:-unknown}
-      - PECAN_GIT_DATE=${PECAN_GIT_DATE:-unknown}
       - PGHOST=${PGHOST:-postgres}
       - HOST_ONLY=${HOST_ONLY:-FALSE}
       - AUTH_REQ=${AUTH_REQ:-TRUE}
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - DATA_DIR=${DATA_DIR:-/data/}
+      - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"
       - "traefik.backend=api"
+      - "traefik.port=8000"
+    depends_on:
+      - postgres
+    volumes:
+      - pecan:/data/
 
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers

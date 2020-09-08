@@ -52,6 +52,7 @@ get.parameter.samples <- function(settings,
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
+    
     rm(prior.distns, post.distns, trait.mcmc)
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
