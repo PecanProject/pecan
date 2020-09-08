@@ -107,7 +107,7 @@ clean:
 # HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
 # When these are fixed, can go back to simple `dependencies = TRUE`
 depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} \
-	-e "deps <- if (grepl('base/utils', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
+	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
 	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
 install_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "${1}" Rscript scripts/check_with_errors.R $(strip $(1))
