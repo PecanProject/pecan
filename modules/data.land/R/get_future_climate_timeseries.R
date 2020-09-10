@@ -249,15 +249,16 @@ all.ppt.df$proj <- rep(proj$V1, sapply(all.future.ppt , nrow))
 ppt.models <- all.ppt.df %>% tidyr::separate(proj, sep = -5, into = c("modelrun", "rcp")) #%>% 
   #tidyr::separate(modelrun, sep = "-", into = c("model", "run"))
 tmax.models <- all.tmax.df %>% tidyr::separate(proj, sep = -5, into = c("modelrun", "rcp")) 
-summary.tas <- tmax.models %>% dplyr::group_by(lat, lon, year, rcp) %>% dplyr::summarise(sd = sd(tmax.fall.spr, na.rm = TRUE), 
-                                                            mean = mean(tmax.fall.spr, na.rm = TRUE))
-
-summary.ppt <- ppt.models %>% dplyr::group_by(lat, lon, year, rcp) %>% dplyr::summarise(sd = sd(ppt, na.rm = TRUE), 
-                                                                                         mean = mean(ppt, na.rm = TRUE))
-
+# summary.tas <- tmax.models %>% dplyr::group_by(lat, lon, year, rcp) %>% dplyr::summarise(sd = sd(tmax.fall.spr, na.rm = TRUE), 
+#                                                             mean = mean(tmax.fall.spr, na.rm = TRUE))
+# 
+# summary.ppt <- ppt.models %>% dplyr::group_by(lat, lon, year, rcp) %>% dplyr::summarise(sd = sd(ppt, na.rm = TRUE), 
+#                                                                                          mean = mean(ppt, na.rm = TRUE))
+# 
 # okay lets merge these together:
-future.climate.ts <- merge(ppt.models, tmax.models, by = c("lat", "lon", "year", "modelrun","rcp"))
+future.climate.ts <- dplyr::left_join(ppt.models, tmax.models, by = c("lat", "lon", "year", "modelrun","rcp"))
 hist(future.climate.ts$year.ppt)
+hist(future.climate.ts$tmax.fall.spr)
 future.climate.ts[future.climate.ts$tmax.fall.spr >= 50,]
 
 future.climate.ts <- future.climate.ts %>% dplyr::select(-climate.x, -climate.y)
