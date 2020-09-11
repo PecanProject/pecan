@@ -301,20 +301,23 @@ model{
       TreeDataFusionMV <- sub(pattern = "## ENDOGENOUS BETAS", Xpriors, TreeDataFusionMV)
       
     }  ## end processing of X terms
-    
-    ## build design matrix from formula
-    Xf      <- with(cov.data, model.matrix(formula(fixed)))
-    Xf.cols <- colnames(Xf)
-    Xf.cols <- sub(":","_",Xf.cols) ## for interaction terms, switch separator
-    colnames(Xf) <- Xf.cols
-    Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
-    Xf      <- as.matrix(Xf[, Xf.cols])
-    colnames(Xf) <- Xf.cols
-    ##Center the covariate data
-    Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
-    Xf      <- t(t(Xf) - Xf.center)
-  }  ## end fixed effects parsing
-  
+    if(fixed == "~ "){ # special case for when we have only x and x^2 terms, but no other covariates
+      Xf <- NULL}else{
+        
+        
+        ## build design matrix from formula
+        Xf      <- with(cov.data, model.matrix(formula(fixed)))
+        Xf.cols <- colnames(Xf)
+        Xf.cols <- sub(":","_",Xf.cols) ## for interaction terms, switch separator
+        colnames(Xf) <- Xf.cols
+        Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
+        Xf      <- as.matrix(Xf[, Xf.cols])
+        colnames(Xf) <- Xf.cols
+        ##Center the covariate data
+        Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
+        Xf      <- t(t(Xf) - Xf.center)
+      }  ## end fixed effects parsing
+  }
   ## build formula in JAGS syntax
   if (!is.null(Xf)) {
     Xf.names <- gsub(" ", "_", colnames(Xf))  ## JAGS doesn't like spaces in variable names
