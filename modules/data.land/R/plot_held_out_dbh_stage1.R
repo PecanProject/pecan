@@ -63,8 +63,8 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
 library(rjags)
 #library(PEcAn.data.land)
 jags.comb <- NULL
-file.base.name <- "SDI_SI.norand.X.nadapt.5000."
-output.base.name <- "SDI_SI.norand.X.nadapt.5000"
+#file.base.name <- "SDI_SI.norand.X.nadapt.5000."
+#output.base.name <- "SDI_SI.norand.X.nadapt.5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 #workingdir <- "/Users/kah/Documents/docker_pecan/pecan"
@@ -616,3 +616,29 @@ plot_grid(
   nrow = 2, rel_heights = c(0.5, 1))
 dev.off()
 
+
+
+# plot increment residuals against yearly climate:
+rownames(time_data$tmax.fallspr)<- 1:515
+colnames(time_data$tmax.fallspr) <- 1966:2018
+tmax.fs.time <- reshape2::melt(time_data$tmax.fallspr)
+colnames(tmax.fs.time)<- c("id", "year", "Tmax.fallspr")
+
+rownames(time_data$wintP.wateryr)<- 1:515
+colnames(time_data$wintP.wateryr) <- 1966:2018
+P.wateryr.time <- reshape2::melt(time_data$wintP.wateryr)
+colnames(P.wateryr.time)<- c("id", "year", "P.wateryr")
+
+ts.climate <- merge(P.wateryr.time, tmax.fs.time, by = c("id", "year"))
+
+ts.residuals <- merge(in.sample.cov, ts.climate, by =c("id", "year"))
+
+tmax.residuals <- ggplot(ts.residuals , aes(x = P.wateryr, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+ppt.residuals <- ggplot(ts.residuals , aes(x = Tmax.fallspr, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+png(height = 8, width = 4, units = "in", res = 200, paste0(output.base.name, "_climate_ts_inc_residuals.png"))
+plot_grid(tmax.residuals, ppt.residuals, ncol = 1)
+dev.off()
