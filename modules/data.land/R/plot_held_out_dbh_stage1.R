@@ -63,8 +63,8 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
 library(rjags)
 #library(PEcAn.data.land)
 jags.comb <- NULL
-file.base.name <- "SDI_noSI.rand.X.nadapt.5000."
-output.base.name <- "SDI_noSI.rand.X.nadapt.5000"
+file.base.name <- "SDI_SI.norand.X.nadapt.5000."
+output.base.name <- "SDI_SI.norand.X.nadapt.5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 #workingdir <- "/Users/kah/Documents/docker_pecan/pecan"
@@ -114,7 +114,7 @@ jags.comb <- as.mcmc.list(jags.comb)
 
 # read in the held out DBH measurement dataframe
 df.validation <- readRDS("data/post2010.core.validation.rds")
-#df.validation <- readRDS("data/post2010.core.validation.rds")
+df.validation <- readRDS("data/post2010.core.validation.rds")
 
 jags.data <- readRDS("jags.data.new.rds")
 cov.data <- jags.data$cov.data
@@ -163,7 +163,7 @@ cov.data.ordered <- cov.data.joined[order(cov.data.joined$id),] # order the df b
 
 
 # make the predicte and observed plots
-model.out <- jags.comb
+
 pdf(paste0(output.base.name,"_held_out_dbh.pdf"))
 layout(matrix(1:8, 4, 2, byrow = TRUE))
 out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
@@ -194,7 +194,8 @@ for (i in smp) {
                                    predvar = var.pred[sel], # calculate varince of the predictions
                                    min.ci = ci[1,sel],
                                    mean.ci = ci[2,sel],
-                                   max.ci = ci[3,sel])
+                                   max.ci = ci[3,sel], 
+                                   id = cov.data.ordered[i,]$id)
   ci.year <- ci[,sel]
   colnames(ci.year)<- 1966:2018
   
@@ -209,7 +210,8 @@ for (i in smp) {
                                     predvar = var.year[as.character(cov.data.ordered[i,]$max.invyr)],
                                     min.ci = ci.year[1,as.character(cov.data.ordered[i,]$max.invyr)],
                                     mean.ci = ci.year[2,as.character(cov.data.ordered[i,]$max.invyr)],
-                                    max.ci = ci.year[3,as.character(cov.data.ordered[i,]$max.invyr)])
+                                    max.ci = ci.year[3,as.character(cov.data.ordered[i,]$max.invyr)], 
+                                    id = cov.data.ordered[i,]$id)
   #plot(pred.obs$z.data, pred.obs$mean.ci)
   #abline(a= 1, b =0)
   
@@ -227,6 +229,7 @@ for (i in smp) {
 }
 
 dev.off()
+
 # plot up the out of sample predictions for DBH:
 out.sample.dbh.df <- do.call(rbind,   out.sample.obs)
 summary.stats <- summary(lm(z.data ~ mean.ci, data = out.sample.dbh.df))
@@ -303,7 +306,7 @@ in.sample.validation.metrics$validation <- "in-sample"
 # concatenate together + add the model name + description:
 valid.metrics <- rbind(in.sample.validation.metrics, out.of.sample.validation.metrics)
 valid.metrics$model <- output.base.name
-valid.metrics$description <- "Model with SDI, no SI, random BetaX effects, plot random slopes"
+valid.metrics$description <- "Model with SDI, no SI, no random BetaX effects, plot random slopes"
 
 write.csv(valid.metrics, paste0(output.base.name, "model.validation.stats.csv"), row.names = FALSE)
 
@@ -311,6 +314,138 @@ write.csv(valid.metrics, paste0(output.base.name, "model.validation.stats.csv"),
 #---------------------------------------------------------------------------
 # Plot residuals
 #--------------------------------------------------------------------------
+#################################
+# out of sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+out.sample.cov <- merge(out.sample.dbh.df, cov.data, by = "id")
+out.sample.cov$residual <- out.sample.cov$z.data - out.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(out.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+install.packages("sp")
+install.packages("maps")
+install.packages("vidris")
+library(sp)
+library(maps)
+library("vidris")
+
+
+all_states <- map_data("state")
+states <- subset(all_states, region %in% c( "arizona") )
+coordinates(states)<-~long+lat
+class(states)
+proj4string(states) <-CRS("+proj=longlat +datum=NAD83")
+mapdata <- states
+mapdata<-data.frame(mapdata)
+
+residual.map <- ggplot(out.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(out.sample.cov, aes(x = z.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("DBH")
+
+res.sdi <- ggplot(out.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(out.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(out.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(out.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(out.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(out.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(out.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(out.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+install.packages("cowplot")
+library(cowplot)
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "out.sample.residual.plots.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
+
+#################################
+# In sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+in.sample.cov <- merge(in.sample.dbh.df, cov.data, by = "id")
+in.sample.cov$residual <- in.sample.cov$z.data - in.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(in.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+residual.map <- ggplot(in.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(in.sample.cov, aes(x = z.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("DBH")
+
+res.sdi <- ggplot(in.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(in.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(in.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(in.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(in.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(in.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(in.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(in.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "in.sample.residual.plots.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
+
+
 
 
 #--------------------------------------------------------------------------
@@ -355,7 +490,8 @@ for (i in smp) {
                                    predvar = var.pred.inc, # calculate varince of the predictions
                                    min.ci = inc.ci[1,],
                                    mean.ci = inc.ci[2,],
-                                   max.ci = inc.ci[3,])
+                                   max.ci = inc.ci[3,], 
+                                   id = i)
   
 }
 
@@ -375,13 +511,13 @@ p.o.inc.in.sample <- ggplot()+
   geom_point(data = in.sample.inc.df, aes(inc.data, mean.ci), size = 0.75)+
   geom_abline(aes(intercept = 0, slope = 1), color = "red", linetype = "dashed")+
   ylab("Predicted increment (cm)")+xlab("Measured Increment (in-sample)")+
-  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 2.5)+xlim(0, 2.5)#+
-#geom_text(data=data.frame(summary.stats$r.squared), aes( label = paste("R.sq: ", round(summary.stats$r.squared, digits = 3), sep="")),parse=T,x=0.5, y=2.5)
-
-
-
-
-png(height = 5, width = 5, units = "in", res = 300, paste0(output.base.name, "_increment_in_sample_p.o.plots.png"))
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 2.5)+xlim(0, 2.5)+
+  #geom_text(data=data.frame(summary.stats$r.squared), aes( label = paste("R.sq: ", round(summary.stats$r.squared, digits = 3), sep="")),parse=T,x=0.5, y=2.5)
+  
+  
+  
+  
+  png(height = 5, width = 5, units = "in", res = 300, paste0(output.base.name, "_increment_in_sample_p.o.plots.png"))
 p.o.inc.in.sample
 dev.off()
 
@@ -412,9 +548,71 @@ in.sample.validation.inc.metrics <- in.sample.inc.df %>% summarise(MSPE = mean((
 in.sample.validation.inc.metrics$validation <- "in-sample"
 # concatenate together + add the model name + description:
 in.sample.validation.inc.metrics$model <- output.base.name
-in.sample.validation.inc.metrics$description <- "Model with SDI, no SI, random BetaX effects, plot random slopes"
+in.sample.validation.inc.metrics$description <- "Model with SDI, no SI, no random BetaX effects, plot random slopes"
 
 write.csv(in.sample.validation.inc.metrics, paste0(output.base.name, "model.validation.stats.inc.csv"), row.names = FALSE)
 
 
+#-------------------------------------------------------------------------------------
+# Plot Increment Residuals
+#-------------------------------------------------------------------------------------
+
+
+
+#################################
+# In sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+in.sample.cov <- merge(in.sample.inc.df, cov.data, by = "id")
+in.sample.cov$residual <- in.sample.cov$inc.data - in.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(in.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+residual.map <- ggplot(in.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(in.sample.cov, aes(x = inc.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("Increment")
+
+res.sdi <- ggplot(in.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(in.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(in.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(in.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(in.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(in.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(in.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(in.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "in.sample.residual.plots.increment.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
 
