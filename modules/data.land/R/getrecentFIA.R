@@ -2,6 +2,7 @@
 #library(DBI)
 library(rFIA)
 library(dplyr)
+library(ggplot2)
 # note that this script uses temp2 and Tree2Tree.incored.plots dataframes from the Rdriver.R script
 
 if(!exists("/Users/kah/Documents/docker_pecan/pecan/recentFIA/AZ_COND.csv")){
@@ -14,8 +15,57 @@ PLOT <- fiadb$PLOT
 SUBPLOT <- fiadb$SUBPLOT
 COND <- fiadb$COND
 TREE <- fiadb$TREE
-TREE.sub TREE[TREE$INVYR >= 2010,]
+TREE.sub <- TREE[TREE$INVYR >= 2010,]
 unique(TREE.sub$INVYR)
+
+
+
+# select FIA variable DRYBIO_AG
+ag.carbon.plt.spcd <- TREE.sub %>% group_by(PLT_CN, SPCD) %>% 
+  summarise(ag.carbon = mean(DRYBIO_AG, na.rm = TRUE)) %>%
+  tidyr::spread(SPCD, ag.carbon)
+
+ag.carbon.plt.spcd.long <- TREE.sub %>% group_by(PLT_CN, SPCD) %>% 
+  summarise(ag.carbon = sum(CARBON_AG, na.rm = TRUE))
+
+ggplot(ag.carbon.plt.spcd, aes(`122`, `65`))+geom_point()
+
+cor.mat <- cor(ag.carbon.plt.spcd[,2:length(ag.carbon.plt.spcd)],use="pairwise.complete.obs")
+
+no.pipo.corind <- cor.mat[!is.na(cor.mat[,"122"]),]
+library(corrplot)
+corrplot(no.pipo.corind, method="circle")
+
+cor.pipo <- data.frame(correlations.w.pipo = no.pipo.corind[,"122"], 
+              spcd = names(no.pipo.corind[,"122"]))
+
+spcd.df <- data.frame(spcd = unique(cor.pipo$spcd), 
+                      common.name = c("white fir", "corkbark fir", "subalpine fir", "Arizona cypress", "alligator juniper", 
+                                      "Utah juniper", "Rocky mountain juniper", "oneseed juniper", "Engelmann spruce", "blue spruce",
+                                      "two-needle pinyon", "limber pine", "southwestern white pine", "Chihuahua pine", "ponderosa pine", 
+                                      "singleleaf pinyon", "border pinyon", "Mexican pinyon pine", "Arizona pinyon pine", "Douglas-fir",
+                                      "bigtooth maple", "Arizona elder", "Arizona walnut", "quaking aspen"))
+
+cor.by.spec <- merge(cor.pipo, fia.spcd, by = "spcd")
+
+ggplot(cor.pipo, aes(x = spcd, y = correlations.w.pipo))+geom_bar(stat = "identity")+theme(axis.text.x = element_text(hjust = 1, angle = 45))
+
+
+ggplot(ag.carbon.plt.spcd, aes(`122`, `15`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `18`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `19`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `51`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `59`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `62`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `63`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `65`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `66`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `69`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `93`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `96`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `106`))+geom_point()
+ggplot(ag.carbon.plt.spcd, aes(`122`, `112`))+geom_point()
+
 
 # Select the tree table attributes to check for new remeasurements
 #TREE.new <- TREE %>% select(CN, PLT_CN, STATUSCD, SPCD, SUBP, PREV_TRE_CN, DIA, INVYR)

@@ -30,8 +30,8 @@ library(pryr)
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "Full.model.validation.nadapt5000."
-output.base.name <- "Full.model.validation.nadapt5000"
+file.base.name <- "stage2.200.SDI_SI.norand.X.nadapt.5000."
+output.base.name <- "stage2.200.SDI_SI.norand.X.nadapt.5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
@@ -40,7 +40,7 @@ cov.data = cov.data
 
 jags.comb <- NULL
 
-for(i in 350:400){ # note this model stopped early b/c convergence
+for(i in 700:750){ # note this model stopped early b/c convergence
   load(paste0(workingdir,"IGF_PIPO_AZ_mcmc/", file.base.name,i,".RData"))
   new.out <- jags.out 
   
@@ -92,6 +92,8 @@ traceplot(jags.comb[, "betaX"], main = expression(beta~DBH), xlab = "last 2500 i
 traceplot(jags.comb[, "betaX2"], main = expression(beta~DBH^2), xlab = "last 2500 iterations")
 
 traceplot(jags.comb[, "betaSDI"], main = expression(beta~SDI), xlab = "last 2500 iterations")
+traceplot(jags.comb[, "betaSI"], main = expression(beta~SICOND), xlab = "last 2500 iterations")
+
 traceplot(jags.comb[, "betaX_SDI"], main = expression(beta~DBH_SDI), xlab = "last 2500 iterations")
 traceplot(jags.comb[, "betaX_SICOND"], main = expression(beta~DBH_SI), xlab = "last 2500 iterations")
 traceplot(jags.comb[, "betaX_wintP.wateryr"], main = expression(beta~DBH_wateryearPPT), xlab = "last 2500 iterations")
@@ -123,6 +125,37 @@ traceplot(jags.comb[, "tau_add"], main = "tau_add", xlab = "last 2500 iterations
 
 dev.off()
 
+#-------------------------------------------------------------------------------
+# Make parameter dotplots:
+#-------------------------------------------------------------------------------
+out <- as.matrix(jags.comb)
+summary(out)
+betas <- out[,grep(pattern = "beta",colnames(out))]
+# just get the fixed effects:
+
+betas.df <- data.frame(betas)
+betas.random <- betas.df[, grep(patter = "betaX_PLOT", colnames(betas))]
+names.fixed <- names(betas.df)[!(names(betas.df) %in% colnames(betas.random))] # get the names of fixed effects
+betas.fixed <- betas.df[,names.fixed]
+
+betas.fixed.m <- reshape2::melt(betas.fixed)
+model.params <- betas.fixed.m %>% group_by(variable) %>% summarise(median = quantile(value, 0.5), 
+                                                                   ci.lo = quantile(value, 0.025), 
+                                                                   ci.hi = quantile(value, 0.975))
+colnames(model.params)[1]<- c("Parameter")
+
+
+dotplot.fixed <- ggplot(model.params, aes(x= Parameter, y = median ))+geom_point()+geom_hline(aes(yintercept = 0), color = "lightgrey", linetype = "dashed")+
+  geom_errorbar(aes(x = Parameter, ymin = ci.lo, ymax = ci.hi), width = 0.01)+theme_bw(base_size = 12)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid = element_blank())+ylab("Coefficient  Value")
+
+png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_parameter_dotplots.png"))
+dotplot.fixed
+dev.off()
+
+# export the model.params object so we can compare:
+model.params$model <- output.base.name
+write.csv(model.params, paste0(output.base.name, "_parameter_cis.csv"), row.names = FALSE)
 
 
 
@@ -130,7 +163,7 @@ dev.off()
 if(stage2 ==TRUE){
   #priors <- readRDS("/home/rstudio/INV_FIA_DATA/data/IGFPPT.Tmax.fs.only.climint.40000.rds")
   #priors <- readRDS(gzcon(url("https://de.cyverse.org/dl/d/1FF350EA-4CE4-4561-9BDA-7E90C062DBB4/IGFX_X2_scaled.rds")))
-  priors <- readRDS("/home/rstudio/INV_FIA_DATA/data/IGFX2_Xscaled_forecasted_2018.rds")
+  priors <- readRDS("/home/rstudio/IGFSDI_SI.norand.X.nadapt.5000.rds")
   
   
   
@@ -1150,5 +1183,6 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     ggplot()+geom_errorbar(data = both.taus, aes(x = Var2, ymin = ci.low, ymax = ci.high, color = model), width = 0.1)+
       geom_point(data =both.taus, aes(x = Var2, y = median, color = model))+ylab("Posterior Precisions")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
     dev.off()
+    
     
     
