@@ -30,8 +30,8 @@ library(pryr)
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "stage2.200.SDI_SI.norand.X.nadapt.5000."
-output.base.name <- "stage2.200.SDI_SI.norand.X.nadapt.5000"
+file.base.name <- "SDI_SI.norand.X.nadapt.5000."
+output.base.name <- "SDI_SI.norand.X.nadapt.5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
@@ -154,7 +154,7 @@ dotplot.fixed
 dev.off()
 
 # export the model.params object so we can compare:
-model.params$model <- output.base.name
+model.params$model <- paste0(output.base.name, "model3")
 write.csv(model.params, paste0(output.base.name, "_parameter_cis.csv"), row.names = FALSE)
 
 
@@ -375,29 +375,55 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     xseq <- (1:58)-30
     incX <- matrix(NA,ns,length(xseq))
     
+    betas <- out[,grep(pattern = "beta",colnames(out))]
     
-    # need to add time since fire and all the temp interactions
+    # this code just makes all the betas with SICOND as zero if they dont exist
+    if("betaSICOND" %in% colnames(betas) ==FALSE){
+      betas$betaSICOND <- 0
+      betas$betaSICOND_tmax.fallspr <- 0
+      betas$betaSICOND_wintP.wateryr <- 0
+      betas$betaX_SICOND <- 0
+    }
+    
+    if("betaX" %in% colnames(betas)==FALSE){
+      betas$betaX <- 0
+    }
+    
+    if("betaX_SDI" %in% colnames(betas)==FALSE){
+      betas$betaX_SDI <- 0
+    }
+    # derive a mean value for betaX (this isnt really the true betaX, but will help)
+    betas$derivedbetX <- rowMeans(betas[,5:294])
+    if("derivedbetX" %in% colnames(betas)==TRUE){
+      betas$betaX <- betas$derivedbetX
+    }
+    
     for(k in seq_along(i)){
       j <- i[k]
-      incX[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + + betas[j,"betaX_SICOND"]*xseq*SI
-        betas[j,"betaX"]*xseq + betas[j,"betaX2"]*(xseq)*xseq +
-        betas[j,"betaX_SDI"]*xseq*SDI  + betas[j,"betaX_wintP.wateryr"]*xseq*wateryrP +
+      incX[k,] <- B0[j]+ 
+        betas[j,"betaX"]*xseq + 
+        betas[j,"betaX2"]*(xseq)*xseq +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
+        betas[j,"betaX_SICOND"]*xseq*SI+
+        
+        betas[j,"betaX_SDI"]*xseq*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*xseq*wateryrP +
         betas[j,"betawintP.wateryr"]*wateryrP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*xseq*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
         betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP # +
-      # time since fire
-      # betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*xseq*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
     }
     
     CIX <- apply(incX, 2, quantile,c(0.025,0.5,0.975)) # get CI on X
     
-    source("pecan/visualization/R/ciEnvelope.R") # read in ci.envelope function
+    source("visualization/R/ciEnvelope.R") # read in ci.envelope function
     
     
     # plot as pseudo object to save for later
@@ -407,6 +433,12 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       lines(xseq+30,CIX[2,],lwd=2)
       abline(h=0)
     }
+    
+    TreeSize.mid <- reshape2::melt(CIX) %>% spread(Var1, value)%>% add_column(size = "Medium", Size = xseq+30)
+    Size.Effect.gg <- ggplot()+geom_ribbon(data = TreeSize.mid, aes(Size, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
+      geom_line(data = TreeSize.mid, aes(Size, y = `50%`))+ylab("Predicted Growth")+xlab("Tree Diameter (cm)")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
     
     
     ##SDI
@@ -421,16 +453,24 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     for(k in seq_along(i)){
       j <- i[k]
       
-      incSDI[k,]  <- B0[j] + betas[j,"betaSDI"]*SDIseq + betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDIseq  + betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+      incSDI[k,]  <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
         betas[j,"betawintP.wateryr"]*wateryrP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP # +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP
       
     }
     CIsdi <- apply(incSDI,2,quantile,c(0.025,0.5,0.975))
@@ -449,158 +489,222 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       abline(h = 0)
     }
     
+    sdi.mid <- reshape2::melt(CIsdi) %>% spread(Var1, value)%>% add_column(size = "Medium", SDI = SDIseq.real)
+    SDI.Effect.gg <- ggplot()+geom_ribbon(data = sdi.mid, aes(SDI, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
+      geom_line(data = sdi.mid, aes(SDI, y = `50%`))+ylab("Predicted Growth")+xlab("Stand Density Index")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
     ## SDI * size
     incSDIXhi <- matrix(NA,ns,length(SDIseq))
     incSDIXlo <- matrix(NA,ns,length(SDIseq))
     
     for(k in seq_along(i)){
       j <- i[k]
-      incSDIXlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDIseq + betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDIseq*SI + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*Xhl[1]*SI+ betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax +
-        betas[j,"betaX"]*Xhl[1] + betas[j,"betaX2"]*(Xhl[1])*Xhl[1]+
-        betas[j,"betaX_SDI"]*Xhl[1]*SDIseq  + betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wintP +
-        betas[j,"betawintP.wateryr"]*wintP+ 
+      incSDIXlo[k,] <- B0[j]+ 
+        betas[j,"betaX"]*Xhl[1] + 
+        betas[j,"betaX2"]*(Xhl[1])*Xhl[1] +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
+        betas[j,"betaX_SICOND"]*Xhl[1]*SI+
+        betas[j,"betaX_SDI"]*Xhl[1]*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[1]*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP #+
-      # time since fire
-      # betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*Xhl[1]*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDIseq*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-      # 
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
       
-      
-      incSDIXhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDIseq + betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDIseq*SI + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*Xhl[2]*SI+betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax +
-        betas[j,"betaX"]*Xhl[2] + betas[j,"betaX2"]*(Xhl[2])*Xhl[2]+
-        betas[j,"betaX_SDI"]*Xhl[2]*SDIseq  + betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wintP +
-        betas[j,"betawintP.wateryr"]*wintP+ 
+      incSDIXhi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*Xhl[2] + 
+        betas[j,"betaX2"]*(Xhl[2])*Xhl[2] +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
+        betas[j,"betaX_SICOND"]*Xhl[2]*SI+
+        betas[j,"betaX_SDI"]*Xhl[2]*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[2]*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
         betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
-      # time since fire
-      # betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*Xhl[2]*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDIseq*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-      # 
     }
+    
+    
     CIsdiXlo <- apply(incSDIXlo,2,quantile,c(0.025,0.5,0.975))
     CIsdiXhi <- apply(incSDIXhi,2,quantile,c(0.025,0.5,0.975))
     
     # SDI plot
     SDI.DBH.Effect %<a-% {
       plot(SDIseq.real,CIsdi[2,],ylim=c(0,max(CIsdi[,1]+0.05)),type='l',xlab="Stand Density Index",ylab="Diameter Increment (cm)",cex.lab=1.5,lwd=3)
-      #ciEnvelope(SDIseq,CIsdi[1,],CIsdi[3,],col = "lightgrey")
+      ciEnvelope(SDIseq.real,CIsdi[1,],CIsdi[3,],col = "lightgrey")
+      ciEnvelope(SDIseq.real,CIsdiXlo[1,],CIsdiXlo[3,],col = "lightblue")
+      ciEnvelope(SDIseq.real,CIsdiXhi[1,],CIsdiXhi[3,],col = "pink")
       lines(SDIseq.real,CIsdiXlo[2,],lwd=3,col="blue")
       lines(SDIseq.real,CIsdiXhi[2,],lwd=3,col="red")
+      lines(SDIseq.real,CIsdi[2,],lwd=3,col="black")
       legend("topright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3)
       abline(h=0)
     }
     
+    
+    
+    # same but ggplot and prettier:
+    sdi.low <- reshape2::melt(CIsdiXlo) %>% spread(Var1, value) %>% add_column(size = "Small", SDI = SDIseq.real)
+    sdi.high <- reshape2::melt(CIsdiXhi) %>% spread(Var1, value) %>% add_column(size = "Large", SDI = SDIseq.real)
+    sdi.mid <- reshape2::melt(CIsdi) %>% spread(Var1, value)%>% add_column(size = "Medium", SDI = SDIseq.real)
+    
+    all.sdi <- rbind(sdi.low, sdi.high, sdi.mid)
+    
+    SDI.DBH.Effect.gg <- ggplot()+geom_ribbon(data = all.sdi, aes(SDI, ymin = `2.5%`, ymax = `97.5%`, fill = size), alpha = 0.5)+
+      geom_line(data = all.sdi, aes(SDI, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Stand Density Index")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
     ##SI
     # hist(cov.data$SI)
     # # KH note: need to standardize SDIseq first since I ran the model with standardized covariates
-    # SIseq.real <- 20:60
-    # SIseq <- (SIseq.real-mean(temp2$COND_SICOND))/sd(temp2$COND_SICOND)
-    # #SIseq <- 20:60
-    # incSI <- matrix(NA,ns,length(SDIseq))
-    # 
-    # for(k in seq_along(i)){
-    #   j <- i[k]
-    #   incSI[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIseq + betas[j,"betaSICOND_SDI"]*SDI*SIseq + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wintP + betas[j,"betaX"]*x + 
-    #     betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_SICOND"]*x*SIseq + betas[j,"betaX_wintP.wateryr"]*x*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIseq*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    # }
-    # CIsi <- apply(incSI,2,quantile,c(0.025,0.5,0.975))
-    # 
-    # SI.Effect %<a-% {
-    #   plot(SIseq.real,CIsi[2,],ylim=c(0,max(CIsi)),type='n',xlab="Site Index",ylab="Diameter Increment (cm)",cex.lab=1.5)
-    #   ciEnvelope(SIseq.real,CIsi[1,],CIsi[3,],col = "lightgrey")
-    #   lines(SIseq.real,CIsi[2,],lwd=2)
-    #   abline(h=0)
-    # }
-    # 
-    # 
+    SIseq.real <- 20:60
+    SIseq <- (SIseq.real-mean(temp2$COND_SICOND))/sd(temp2$COND_SICOND)
+    #SIseq <- 20:60
+    incSI <- matrix(NA,ns,length(SDIseq))
+    #
+    for(k in seq_along(i)){
+      j <- i[k]
+      incSI[k,] <-  B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
+        betas[j,"betaSICOND"]*SIseq + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SIseq +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SIseq+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+      
+    }
+    CIsi <- apply(incSI,2,quantile,c(0.025,0.5,0.975))
+    #
+    SI.Effect %<a-% {
+      plot(SIseq.real,CIsi[2,],ylim=c(0,max(CIsi)),type='n',xlab="Site Index",ylab="Diameter Increment (cm)",cex.lab=1.5)
+      ciEnvelope(SIseq.real,CIsi[1,],CIsi[3,],col = "lightgrey")
+      lines(SIseq.real,CIsi[2,],lwd=2)
+      abline(h=0)
+    }
+    
+    
+    si.mid <- reshape2::melt(CIsi) %>% spread(Var1, value)%>% add_column(size = "Medium", SI = SIseq.real)
+    SI.Effect.gg <- ggplot()+geom_ribbon(data = si.mid, aes(SI, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
+      geom_line(data = si.mid, aes(SI, y = `50%`))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    #
     # ## SI x DBH
-    # incSIXlo <- matrix(NA,ns,length(SDIseq))
-    # incSIXmed <- matrix(NA,ns,length(SDIseq))
-    # incSIXhi <- matrix(NA,ns,length(SDIseq))
-    # for(k in seq_along(i)){
-    #   j <- i[k]
-    #   incSIXlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIseq + betas[j,"betaSICOND_SDI"]*SDI*SIseq + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wintP + betas[j,"betaX"]*Xhl[1] + 
-    #     betas[j,"betaX_SDI"]*Xhl[1]*SDI + betas[j,"betaX_SICOND"]*Xhl[1]*SIseq + betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*Xhl[1]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIseq*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*Xhl[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    #   
-    #   
-    #   incSIXhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIseq + betas[j,"betaSICOND_SDI"]*SDI*SIseq + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wintP + betas[j,"betaX"]*Xhl[2] + 
-    #     betas[j,"betaX_SDI"]*Xhl[2]*SDI + betas[j,"betaX_SICOND"]*Xhl[2]*SIseq + betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*Xhl[2]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIseq*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*Xhl[2]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    #   
-    #   
-    #   incSIXmed[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIseq + betas[j,"betaSICOND_SDI"]*SDI*SIseq + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wintP + betas[j,"betaX"]*x + 
-    #     betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_SICOND"]*x*SIseq + betas[j,"betaX_wintP.wateryr"]*x*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIseq*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    # }
-    # 
-    # CIsiXl <- apply(incSIXlo,2,quantile,c(0.025,0.5,0.975))
-    # CIsiXh <- apply(incSIXhi,2,quantile,c(0.025,0.5,0.975))
-    # CIsiXm <- apply(incSIXmed,2,quantile,c(0.025,0.5,0.975))
-    # 
-    # SI.DBH.Effect %<a-% {
-    #   plot(SIseq.real,CIsiXm[2,],ylim=c(0,max(CIsi)),type='l',lwd=3,xlab="Site Index",ylab="Diameter Increment (cm)",cex.lab=1.5)
-    #   #ciEnvelope(SIseq,CIsi[1,],CIsi[3,],col = "lightgrey")
-    #   lines(SIseq.real,CIsiXl[2,],lwd=3,col="blue")
-    #   lines(SIseq.real,CIsiXh[2,],lwd=3,col="red")
-    #   legend("bottomright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3,cex=1)
-    # }
+    incSIXlo <- matrix(NA,ns,length(SDIseq))
+    incSIXmed <- matrix(NA,ns,length(SDIseq))
+    incSIXhi <- matrix(NA,ns,length(SDIseq))
+    
+    for(k in seq_along(i)){
+      j <- i[k]
+      incSIXlo[k,] <- B0[j]+ 
+        betas[j,"betaX"]*Xhl[1] + 
+        betas[j,"betaX2"]*(Xhl[1])*Xhl[1] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
+        betas[j,"betaSICOND"]*SIseq + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
+        betas[j,"betaX_SICOND"]*Xhl[1]*SIseq+
+        betas[j,"betaX_SDI"]*Xhl[1]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*Xhl[1]*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+      
+      
+      incSIXhi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*Xhl[2] + 
+        betas[j,"betaX2"]*(Xhl[2])*Xhl[2] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
+        betas[j,"betaSICOND"]*SIseq + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
+        betas[j,"betaX_SICOND"]*Xhl[2]*SIseq+
+        betas[j,"betaX_SDI"]*Xhl[2]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*Xhl[2]*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+      
+      incSIXmed[k,] <-B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
+        betas[j,"betaSICOND"]*SIseq + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SIseq+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+    }
+    
+    CIsiXl <- apply(incSIXlo,2,quantile,c(0.025,0.5,0.975))
+    CIsiXh <- apply(incSIXhi,2,quantile,c(0.025,0.5,0.975))
+    CIsiXm <- apply(incSIXmed,2,quantile,c(0.025,0.5,0.975))
+    
+    SI.DBH.Effect %<a-% {
+      plot(SIseq.real,CIsiXm[2,],ylim=c(0,max(CIsi)),type='l',lwd=3,xlab="Site Index",ylab="Diameter Increment (cm)",cex.lab=1.5)
+      #ciEnvelope(SIseq,CIsi[1,],CIsi[3,],col = "lightgrey")
+      lines(SIseq.real,CIsiXl[2,],lwd=3,col="blue")
+      lines(SIseq.real,CIsiXh[2,],lwd=3,col="red")
+      legend("bottomright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3,cex=1)
+    }
+    
+    
+    # same but ggplot and prettier:
+    si.low <- reshape2::melt(CIsiXl) %>% spread(Var1, value) %>% add_column(size = "Small", si = SIseq.real)
+    si.high <- reshape2::melt(CIsiXh) %>% spread(Var1, value) %>% add_column(size = "Large", si = SIseq.real)
+    si.mid <- reshape2::melt(CIsiXm) %>% spread(Var1, value)%>% add_column(size = "Medium", si = SIseq.real)
+    
+    all.si <- rbind(si.low, si.high, si.mid)
+    
+    si.DBH.Effect.gg <- ggplot()+geom_ribbon(data = all.si, aes(si, ymin = `2.5%`, ymax = `97.5%`, fill = size), alpha = 0.5)+
+      geom_line(data = all.si, aes(si, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
+      theme(panel.grid = element_blank())
     
     ## wintP
     clim.data <- readRDS("PRISM_non_scaled.rds")
@@ -611,31 +715,25 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     for(k in seq_along(i)){
       j <- i[k]
-      # incP[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-      #   betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI + 
-      #   betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + betas[j,"betaX"]*x + 
-      #   betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_SICOND"]*x*SI + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
-      #   betas[j,"betawintP.wateryr"]*wintPseq+
-      #   # temperature
-      #   betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-      #   betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-      #   betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq +
-      #   # time since fire
-      #   betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x*timesinceFire +
-      #   betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-      #   betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintPseq + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-      # 
       
-      incP[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
-        betas[j,"betawintP.wateryr"]*wintPseq + 
+      incP[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq # +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
       
     }
     
@@ -648,34 +746,55 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       abline(h=0)
     }
     
+    wintP.mid <- reshape2::melt(CIwintP) %>% spread(Var1, value)%>% add_column(wintPze = "Medium", wintP = wintPseq.real)
+    wintP.Effect.gg <- ggplot()+geom_ribbon(data = wintP.mid, aes(wintP, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
+      geom_line(data = wintP.mid, aes(wintP, y = `50%`))+ylab("Predicted Growth")+xlab("Total Water Year Precipitation")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
     ## PRECIP x SDI
     incPSDIlo <- matrix(NA,ns,length(wintPseq))
     incPSDIhi <- matrix(NA,ns,length(wintPseq))
     
     for(k in seq_along(i)){
       j <- i[k]
-      incPSDIlo[k,] <-   incP[k,] <- B0[j] + betas[j,"betaSDI"]*SDIhl[1]+ betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDIhl[1] + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
-        betas[j,"betawintP.wateryr"]*wintPseq + 
+      incPSDIlo[k,] <-   B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIhl[1] + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIhl[1]  + 
+        betas[j,"betaX_wintP.wateryr"]*x* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIhl[1]*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq # +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIhl[1]*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
       
-      
-      incPSDIhi[k,] <- incP[k,] <- B0[j] + betas[j,"betaSDI"]*SDIhl[2]+ betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDIhl[2] + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
-        betas[j,"betawintP.wateryr"]*wintPseq + 
+      incPSDIhi[k,] <-  B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIhl[2] + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIhl[2]  + 
+        betas[j,"betaX_wintP.wateryr"]*x* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIhl[2]*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq # +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIhl[2]*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
       
     }
     
@@ -690,38 +809,61 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       legend("bottomleft",legend=c("low SDI","mean SDI","high SDI"),col=c("blue",1,2),lwd=3)
     }
     
-    # left off heere
+    # same but ggplot and prettier:
+    sdi.P.low <- reshape2::melt(CIwintPSDIlo) %>% spread(Var1, value) %>% add_column(sdi = "Low", precip = wintPseq.real)
+    sdi.P.high <- reshape2::melt( CIwintPSDIhi) %>% spread(Var1, value) %>% add_column(sdi = "High", precip = wintPseq.real)
+    sdi.P.mid <- reshape2::melt(CIwintP) %>% spread(Var1, value)%>% add_column(sdi = "Medium", precip = wintPseq.real)
+    
+    all.sdi.P <- rbind(sdi.P.low, sdi.P.high, sdi.P.mid)
+    
+    sdi.Precip.Effect.gg <- ggplot()+geom_ribbon(data =all.sdi.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = sdi), alpha = 0.5)+
+      geom_line(data = all.sdi.P, aes(precip, y = `50%`, color = sdi))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
+    
     ## PRECIP x DBH
     incPXlo <- matrix(NA,ns,length(wintPseq))
     incPXhi <- matrix(NA,ns,length(wintPseq))
     
     for(k in seq_along(i)){
       j <- i[k]
-      incPXlo[k,] <-  B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*Xhl[1]*SI+ betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax +
-        betas[j,"betaX"]*Xhl[1] + betas[j,"betaX2"]*(Xhl[1])*Xhl[1]+
-        betas[j,"betaX_SDI"]*Xhl[1]*SDI  + betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wintPseq +
-        betas[j,"betawintP.wateryr"]*wintPseq+ 
+      incPXlo[k,] <-   B0[j]+ 
+        betas[j,"betaX"]*Xhl[1] + 
+        betas[j,"betaX2"]*(Xhl[1])*Xhl[1] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
+        betas[j,"betaX_SICOND"]*Xhl[1]*SI+
+        betas[j,"betaX_SDI"]*Xhl[1]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[1]* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[1]*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq #+
-      # time since fire
-      # betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*Xhl[1]*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-      # betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wateryrP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-      # 
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
       
-      incPXhi[k,] <-  B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*Xhl[2]*SI+ betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax +
-        betas[j,"betaX"]*Xhl[2] + betas[j,"betaX2"]*(Xhl[2])*Xhl[2]+
-        betas[j,"betaX_SDI"]*Xhl[2]*SDI  + betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wintPseq +
-        betas[j,"betawintP.wateryr"]*wintPseq+ 
+      incPXhi[k,] <-  B0[j]+ 
+        betas[j,"betaX"]*Xhl[2] + 
+        betas[j,"betaX2"]*(Xhl[2])*Xhl[2] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
+        betas[j,"betaX_SICOND"]*Xhl[2]*SI+
+        betas[j,"betaX_SDI"]*Xhl[2]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[2]* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[2]*sprfallTmax +
-        betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
         betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
     }
     
@@ -736,53 +878,87 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       legend("bottomright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3)
     }
     
+    # same but ggplot and prettier:
+    P.x.low <- reshape2::melt(CIwintPXhi) %>% spread(Var1, value) %>% add_column(size = "Small", precip = wintPseq.real)
+    P.x.high <- reshape2::melt(CIwintPXlo) %>% spread(Var1, value) %>% add_column(size = "Large", precip = wintPseq.real)
+    P.x.mid <- reshape2::melt(CIwintP) %>% spread(Var1, value)%>% add_column(size = "Medium", precip = wintPseq.real)
+    
+    all.size.P <- rbind(P.x.low, P.x.high, P.x.mid)
+    
+    Precipitation.DBH.Effect.gg <- ggplot()+geom_ribbon(data =all.size.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = size), alpha = 0.5)+
+      geom_line(data = all.size.P, aes(precip, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
+    
     # ## Precip X SI
-    # incP_SIlo <- matrix(NA,ns,length(wintPseq))
-    # incP_SIhi <- matrix(NA,ns,length(wintPseq))
-    # 
-    # for(k in seq_along(i)){
-    #   j <- i[k]
-    #   incP_SIlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-    #     betas[j,"betaSICOND"]*SIhl[1] + betas[j,"betaSICOND_SDI"]*SDI*SIhl[1] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + betas[j,"betaX"]*x[1] + 
-    #     betas[j,"betaX_SDI"]*x[1]*SDI + betas[j,"betaX_SICOND"]*x[1]*SIhl[1] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintPseq +
-    #     betas[j,"betawintP.wateryr"]*wintPseq+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x[1]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[1]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintPseq + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    #   
-    #   
-    #   incP_SIhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-    #     betas[j,"betaSICOND"]*SIhl[2] + betas[j,"betaSICOND_SDI"]*SDI*SIhl[2] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + betas[j,"betaX"]*x[1] +
-    #     betas[j,"betaX_SDI"]*x[1]*SDI + betas[j,"betaX_SICOND"]*x[1]*SIhl[2] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintPseq +
-    #     betas[j,"betawintP.wateryr"]*wintPseq+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x[1]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[2]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintPseq + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    # }
-    # CIwintPSIlo <- apply(incP_SIlo,2,quantile,c(0.025,0.5,0.975))
-    # CIwintPSIhi <- apply(incP_SIhi,2,quantile,c(0.025,0.5,0.975))
-    # 
-    # Climate.SI.Effect %<a-% {
-    #   plot(wintPseq.real,CIwintPSIhi[2,],ylim=c(0,max(CIwintPSIhi[2,])),type='l',lwd=3,xlab="Winter Precipitation (mm)",ylab="Diameter Increment (cm)",cex.lab=1.5)
-    #   #PEcAn.visualization::ciEnvelope(wintPseq,CIwintP[1,],CIwintP[3,],col = "lightgrey")
-    #   lines(wintPseq.real,CIwintPSIlo[2,],lwd=2,col="grey")
-    #   lines(wintPseq.real,CIwintPSIhi[2,],lwd=2,col="purple")
-    #   legend("bottomleft",legend=c("low SI","high SI"),col=c("grey", "purple"),lwd=3)
-    # }
+    incP_SIlo <- matrix(NA,ns,length(wintPseq))
+    incP_SIhi <- matrix(NA,ns,length(wintPseq))
+    
+    for(k in seq_along(i)){
+      j <- i[k]
+      incP_SIlo[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SIhl[1] + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[1]* wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SIhl[1]+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
+      
+      
+      incP_SIhi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SIhl[2] + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[2]* wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SIhl[2]+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x* wintPseq +
+        betas[j,"betawintP.wateryr"]* wintPseq + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintPseq
+      
+    }
+    
+    CIwintPSIlo <- apply(incP_SIlo,2,quantile,c(0.025,0.5,0.975))
+    CIwintPSIhi <- apply(incP_SIhi,2,quantile,c(0.025,0.5,0.975))
+    
+    Climate.SI.Effect %<a-% {
+      plot(wintPseq.real,CIwintPSIhi[2,],ylim=c(0,max(CIwintPSIhi[2,])),type='l',lwd=3,xlab="Winter Precipitation (mm)",ylab="Diameter Increment (cm)",cex.lab=1.5)
+      #PEcAn.visualization::ciEnvelope(wintPseq,CIwintP[1,],CIwintP[3,],col = "lightgrey")
+      lines(wintPseq.real,CIwintPSIlo[2,],lwd=2,col="grey")
+      lines(wintPseq.real,CIwintPSIhi[2,],lwd=2,col="purple")
+      legend("bottomleft",legend=c("low SI","high SI"),col=c("grey", "purple"),lwd=3)
+    }
+    
+    # same but ggplot and prettier:
+    P.si.low <- reshape2::melt(CIwintPSIlo) %>% spread(Var1, value) %>% add_column(si = "Low", precip = wintPseq.real)
+    P.si.high <- reshape2::melt(CIwintPSIhi) %>% spread(Var1, value) %>% add_column(si = "High", precip = wintPseq.real)
+    P.si.mid <- reshape2::melt(CIwintP) %>% spread(Var1, value)%>% add_column(si = "Medium", precip = wintPseq.real)
+    
+    all.si.P <- rbind(P.si.low, P.si.high, P.si.mid)
+    
+    Precipitation.SI.Effect.gg <- ggplot()+geom_ribbon(data =all.si.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = si), alpha = 0.5)+
+      geom_line(data = all.si.P, aes(precip, y = `50%`, color = si))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
+      theme(panel.grid = element_blank())
     # 
     # 
     # 
@@ -847,32 +1023,25 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     for(k in seq_along(i)){
       j <- i[k]
-      # incT[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-      #   betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI + 
-      #   betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + betas[j,"betaX"]*x + 
-      #   betas[j,"betaX_SDI"]*x*SDI + betas[j,"betaX_SICOND"]*x*SI + betas[j,"betaX_wintP.wateryr"]*x*wintP +
-      #   betas[j,"betawintP.wateryr"]*wintP+
-      #   # temperature
-      #   betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
-      #   betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-      #   betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP +
-      #   # time since fire
-      #   betas[j,"betaSICOND_TimeSinceFIRE"]*SI*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x*timesinceFire +
-      #   betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-      #   betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*tmaxseq
-      # 
       
-      incT[k,] <-  B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*x*wintP +
+      incT[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintP +
         betas[j,"betawintP.wateryr"]*wintP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
-        betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP # +
-      
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
     }
     
     CItmax <- apply(incT,2,quantile,c(0.025,0.5,0.975))
@@ -884,7 +1053,14 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       abline(h=0)
     }
     
-    # temperature x X
+    tmax.mid <- reshape2::melt(CItmax) %>% spread(Var1, value)%>% add_column(size = "Medium", Tmax = tmaxseq.real)
+    tmax.Effect.gg <- ggplot()+geom_ribbon(data = tmax.mid, aes(Tmax, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
+      geom_line(data = tmax.mid, aes(Tmax, y = `50%`))+ylab("Predicted Growth")+xlab("Fall-Spring Tmax (DegC)")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
+    
+    
     
     # Temperature x SDI
     
@@ -893,28 +1069,44 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     for(k in seq_along(i)){
       j <- i[k]
       
-      incTemplo[k,] <-  B0[j] + betas[j,"betaSDI"]*SDIhl[1] + betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDIhl[1]  + betas[j,"betaX_wintP.wateryr"]*x*wintP +
+      incTemplo[k,] <-  B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIhl[1] + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]* wintP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIhl[1]  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintP +
         betas[j,"betawintP.wateryr"]*wintP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
-        betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDIhl[1]*tmaxseq +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP # +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIhl[1]*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
       
       
-      incTemphi[k,] <- B0[j] + betas[j,"betaSDI"]*SDIhl[2] + betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDIhl[2]  + betas[j,"betaX_wintP.wateryr"]*x*wintP +
+      incTemphi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIhl[2] + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]* wintP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIhl[2]  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintP +
         betas[j,"betawintP.wateryr"]*wintP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
-        betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDIhl[2]*tmaxseq +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP # +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIhl[2]*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
       
     }
     
@@ -929,6 +1121,20 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       legend("bottomleft",legend=c("low SDI","mean SDI","high SDI"),col=c("blue",1,2),lwd=3)
     }
     
+    # make ggplot version
+    sdi.T.low <- reshape2::melt(CItmaxlo) %>% spread(Var1, value) %>% add_column(sdi = "Low", tmax = tmaxseq.real)
+    sdi.T.high <- reshape2::melt( CItmaxhi) %>% spread(Var1, value) %>% add_column(sdi = "High", tmax = tmaxseq.real)
+    sdi.T.mid <- reshape2::melt(CItmax) %>% spread(Var1, value)%>% add_column(sdi = "Medium", tmax = tmaxseq.real)
+    
+    all.sdi.T <- rbind(sdi.T.low, sdi.T.high, sdi.T.mid)
+    
+    tmax.SDI.Effect.gg <- ggplot()+geom_ribbon(data =all.sdi.T, aes(tmax, ymin = `2.5%`, ymax = `97.5%`, fill = sdi), alpha = 0.5)+
+      geom_line(data = all.sdi.T, aes(tmax, y = `50%`, color = sdi))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
+    
+    
     ## Tmax x DBH
     incTXlo <- matrix(NA,ns,length(tmaxseq))
     incTXhi <- matrix(NA,ns,length(tmaxseq))
@@ -936,27 +1142,43 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     for(k in seq_along(i)){
       j <- i[k]
       
-      incTXlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*Xhl[1] + betas[j,"betaX2"]*(Xhl[1])*Xhl[1] +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wintP +
+      incTXlo[k,] <-B0[j]+ 
+        betas[j,"betaX"]*Xhl[1] + 
+        betas[j,"betaX2"]*(Xhl[1])*Xhl[1] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
+        betas[j,"betaX_SICOND"]*Xhl[1]*SI+
+        betas[j,"betaX_SDI"]*Xhl[1]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[1]*wintP +
         betas[j,"betawintP.wateryr"]*wintP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[1]*tmaxseq +
-        betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP # +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
       
-      incTXhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*Xhl[2] + betas[j,"betaX2"]*(Xhl[2])*Xhl[2] +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wintP +
+      incTXhi[k,] <-B0[j]+ 
+        betas[j,"betaX"]*Xhl[2] + 
+        betas[j,"betaX2"]*(Xhl[2])*Xhl[2] +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
+        betas[j,"betaX_SICOND"]*Xhl[2]*SI+
+        betas[j,"betaX_SDI"]*Xhl[2]*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*Xhl[2]*wintP +
         betas[j,"betawintP.wateryr"]*wintP + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*Xhl[2]*tmaxseq +
-        betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP # +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
     }
     
     CItmaxXlo <- apply(incTXlo,2,quantile,c(0.025,0.5,0.975))
@@ -970,55 +1192,88 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       legend("bottomright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3)
     }
     
+    # same but ggplot and prettier:
+    T.x.low <- reshape2::melt(CItmaxXlo) %>% spread(Var1, value) %>% add_column(size = "Small", tmax = tmaxseq.real)
+    T.x.high <- reshape2::melt(CItmaxXhi) %>% spread(Var1, value) %>% add_column(size = "Large", tmax = tmaxseq.real)
+    T.x.mid <- reshape2::melt(CItmax) %>% spread(Var1, value)%>% add_column(size = "Medium", tmax = tmaxseq.real)
+    
+    all.size.T <- rbind(T.x.low, T.x.high, T.x.mid)
+    
+    Tmax.DBH.Effect.gg <- ggplot()+geom_ribbon(data =all.size.T, aes(tmax, ymin = `2.5%`, ymax = `97.5%`, fill = size), alpha = 0.5)+
+      geom_line(data = all.size.T, aes(tmax, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
     # ## Tmax X SI
     # # temperature x SICOND
-    # incT_SIlo <- matrix(NA,ns,length(tmaxseq))
-    # incT_SIhi <- matrix(NA,ns,length(tmaxseq))
+    incT_SIlo <- matrix(NA,ns,length(tmaxseq))
+    incT_SIhi <- matrix(NA,ns,length(tmaxseq))
     # 
-    # for(k in seq_along(i)){
-    #   j <- i[k]
-    #   incT_SIlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIhl[1] + betas[j,"betaSICOND_SDI"]*SDI*SIhl[1] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + betas[j,"betaX"]*x[1] + 
-    #     betas[j,"betaX_SDI"]*x[1]*SDI + betas[j,"betaX_SICOND"]*x[1]*SIhl[1] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*tmaxseq + betas[j,"betaX_tmax.fallspr"]*x[1]*tmaxseq +
-    #     betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[1]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*tmaxseq
-    #   
-    #   
-    #   
-    #   incT_SIhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintP + 
-    #     betas[j,"betaSICOND"]*SIhl[2] + betas[j,"betaSICOND_SDI"]*SDI*SIhl[2] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + betas[j,"betaX"]*x[1] +
-    #     betas[j,"betaX_SDI"]*x[1]*SDI + betas[j,"betaX_SICOND"]*x[1]*SIhl[2] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*tmaxseq + betas[j,"betaX_tmax.fallspr"]*x[1]*tmaxseq +
-    #     betas[j,"betatmax.fallspr"]*tmaxseq + betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[2]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDI*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*tmaxseq
-    #   
-    # }
-    # CItmaxSIlo <- apply(incT_SIlo,2,quantile,c(0.025,0.5,0.975))
-    # CItmaxSIhi <- apply(incT_SIhi,2,quantile,c(0.025,0.5,0.975))
-    # 
-    # Tmax.SI.Effect %<a-% {
-    #   plot(tmaxseq.real,CItmaxSIhi[2,],ylim=c(0,max(CItmaxSIhi[2,])),type='l',lwd=3,xlab="Fall Spr Tmax (DegC)",ylab="Diameter Increment (cm)",cex.lab=1.5)
-    #   #PEcAn.visualization::ciEnvelope(tmaxseq,CItmax[1,],CItmax[3,],col = "lightgrey")
-    #   lines(tmaxseq.real,CItmaxSIlo[2,],lwd=2,col="grey")
-    #   lines(tmaxseq.real,CItmaxSIhi[2,],lwd=2,col="purple")
-    #   legend("bottomleft",legend=c("low SI","high SI"),col=c("grey", "purple"),lwd=3)
-    # }
-    # 
+    for(k in seq_along(i)){
+      j <- i[k]
+      incT_SIlo[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
+        betas[j,"betaSICOND"]*SIhl[1] + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[1]*wintP + 
+        betas[j,"betaX_SICOND"]*x*SIhl[1]+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintP +
+        betas[j,"betawintP.wateryr"]*wintP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
+      
+      
+      incT_SIhi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
+        betas[j,"betaSICOND"]*SIhl[2] + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*tmaxseq + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[2]*wintP + 
+        betas[j,"betaX_SICOND"]*x*SIhl[2]+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintP +
+        betas[j,"betawintP.wateryr"]*wintP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*tmaxseq +
+        betas[j,"betatmax.fallspr"]*tmaxseq + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*tmaxseq +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*tmaxseq*wintP
+    }
+    
+    CItmaxSIlo <- apply(incT_SIlo,2,quantile,c(0.025,0.5,0.975))
+    CItmaxSIhi <- apply(incT_SIhi,2,quantile,c(0.025,0.5,0.975))
+    
+    Tmax.SI.Effect %<a-% {
+      plot(tmaxseq.real,CItmaxSIhi[2,],ylim=c(0,max(CItmaxSIhi[2,])),type='l',lwd=3,xlab="Fall Spr Tmax (DegC)",ylab="Diameter Increment (cm)",cex.lab=1.5)
+      #PEcAn.visualization::ciEnvelope(tmaxseq,CItmax[1,],CItmax[3,],col = "lightgrey")
+      lines(tmaxseq.real,CItmaxSIlo[2,],lwd=2,col="grey")
+      lines(tmaxseq.real,CItmaxSIhi[2,],lwd=2,col="purple")
+      legend("bottomleft",legend=c("low SI","high SI"),col=c("grey", "purple"),lwd=3)
+    }
+    
+    # same but ggplot and prettier:
+    T.si.low <- reshape2::melt(CItmaxSIlo) %>% spread(Var1, value) %>% add_column(si = "Low", tmax = tmaxseq.real)
+    T.si.high <- reshape2::melt(CItmaxSIhi) %>% spread(Var1, value) %>% add_column(si = "High", tmax = tmaxseq.real)
+    T.si.mid <- reshape2::melt(CItmax) %>% spread(Var1, value)%>% add_column(si = "Medium", tmax = tmaxseq.real)
+    
+    all.si.T <- rbind(T.si.low, T.si.high, T.si.mid)
+    
+    Tmax.SI.Effect.gg <- ggplot()+geom_ribbon(data =all.si.T, aes(tmax, ymin = `2.5%`, ymax = `97.5%`, fill = si), alpha = 0.5)+
+      geom_line(data = all.si.T, aes(tmax, y = `50%`, color = si))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    
+    
     # temperature x Precipitation
     
     
@@ -1032,31 +1287,47 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     for(k in seq_along(i)){
       j <- i[k]
-      incP_tlo[k,] <-  B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
+      incP_tlo[k,] <-  B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmaxhl[1] + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
         betas[j,"betawintP.wateryr"]*wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmaxhl[1] +
-        betas[j,"betatmax.fallspr"]*sprfallTmaxhl[1] + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmaxhl[1] +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmaxhl[1]*wintPseq # +
+        betas[j,"betatmax.fallspr"]*sprfallTmaxhl[1] + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmaxhl[1] +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmaxhl[1]*wintPseq
       
-      
-      
-      incP_thi[k,] <-  B0[j] + betas[j,"betaSDI"]*SDI + betas[j,"betaSDI_wintP.wateryr"]*SDI*wintPseq + 
-        #betas[j,"betaSICOND"]*SI + betas[j,"betaSICOND_SDI"]*SDI*SI +  betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
-        #betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + + betas[j,"betaX_SICOND"]*x*SI
-        betas[j,"betaX"]*x + betas[j,"betaX2"]*(x)*x +
-        betas[j,"betaX_SDI"]*x*SDI  + betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
+      incP_thi[k,] <-   B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDI + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
+        betas[j,"betaSICOND"]*SI + 
+        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmaxhl[2] + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDI  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wintPseq +
         betas[j,"betawintP.wateryr"]*wintPseq + 
         # temperature
         betas[j,"betaX_tmax.fallspr"]*x*sprfallTmaxhl[2] +
-        betas[j,"betatmax.fallspr"]*sprfallTmaxhl[2] + betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmaxhl[2] +
-        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmaxhl[2]*wintPseq # +
+        betas[j,"betatmax.fallspr"]*sprfallTmaxhl[2] + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmaxhl[2] +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmaxhl[2]*wintPseq
       
     }
+    
+    
     CIwintPTlo <- apply(incP_tlo,2,quantile,c(0.025,0.5,0.975))
     CIwintPThi <- apply(incP_thi,2,quantile,c(0.025,0.5,0.975))
     
@@ -1070,7 +1341,17 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     }
     
     
+    P.tmax.low <- reshape2::melt(CIwintPTlo) %>% spread(Var1, value) %>% add_column(tmax = "Low", precip = wintPseq.real)
+    P.tmax.high <- reshape2::melt(CIwintPThi) %>% spread(Var1, value) %>% add_column(tmax = "High", precip = wintPseq.real)
+    P.tmax.mid <- reshape2::melt(CIwintP) %>% spread(Var1, value)%>% add_column(tmax = "Medium", precip = wintPseq.real)
     
+    all.tmax.P <- rbind(P.tmax.low, P.tmax.high, P.tmax.mid)
+    
+    Precipitation.tmax.Effect.gg <- ggplot()+geom_ribbon(data =all.tmax.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = tmax), alpha = 0.5)+
+      geom_line(data = all.tmax.P, aes(precip, y = `50%`, color = tmax))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    # make into one big plot
     
     plot.effects.pryr %<a-% {
       split.screen(c(2, 2))
@@ -1091,7 +1372,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       close.screen(all=TRUE)
     }
     
-    png(height = 8, width = 6.5, units = "in", res = 200, paste0("Full_effects_",output.base.name,".png"))
+    png(height = 8, width = 6.5, units = "in", res = 200, paste0(workingdir,"/","Full_effects_",output.base.name,".png"))
     plot.effects.pryr
     dev.off()
     
@@ -1125,9 +1406,45 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       close.screen(all=TRUE)
     }
     
-    png(height = 8, width = 13, units = "in", res = 200, paste0("Full_interaction_effects_", output.base.name,".png"))
+    png(height = 8, width = 13, units = "in", res = 200, paste0(workingdir,"/","Full_interaction_effects_", output.base.name,".png"))
     plot.interaction.effects.pryr
     dev.off()
+    
+    # now plot out the ggplots main effects:
+    
+    library(cowplot) 
+    
+    png(height = 8, width =10, units = "in", res = 200, paste0(workingdir,"/", "Full_effects_ggplots",output.base.name,".png"))
+    plot_grid(
+      SDI.Effect.gg + ylim(0,0.55), 
+      SI.Effect.gg + ylim(0,0.55), 
+      Size.Effect.gg+ ylim(0,0.55), 
+      tmax.Effect.gg+ ylim(0,0.55), 
+      wintP.Effect.gg+ ylim(0,0.55),
+      
+      ncol = 3, align = "hv"
+    )
+    dev.off()
+    
+    png(height = 8, width =13, units = "in", res = 200, paste0(workingdir,"/", "Interaction_effects_ggplots",output.base.name,".png"))
+    plot_grid(
+      SDI.DBH.Effect.gg + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.DBH.Effect.gg + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.SI.Effect.gg+ ylim(0,0.55)  + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.2, 0.2)), 
+      sdi.Precip.Effect.gg + ylim(0, 0.55)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+xlab("Water Year Precipitation (mm)")+theme(legend.position = c(0.2, 0.2)), 
+      Tmax.DBH.Effect.gg + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      tmax.SDI.Effect.gg + ylim(0,0.55)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+theme(legend.position = c(0.2, 0.2)), 
+      Tmax.SI.Effect.gg + ylim(0,0.55) + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.tmax.Effect.gg+ ylim(0,0.55)+ scale_fill_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0")) + scale_color_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0"))+theme(legend.position = c(0.2, 0.2)), 
+      
+      ncol = 4, align = "hv"
+    )
+    
+    
+    dev.off()
+    
+    
+    
     
     
     # plot out the taus:
@@ -1183,6 +1500,4 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     ggplot()+geom_errorbar(data = both.taus, aes(x = Var2, ymin = ci.low, ymax = ci.high, color = model), width = 0.1)+
       geom_point(data =both.taus, aes(x = Var2, y = median, color = model))+ylab("Posterior Precisions")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
     dev.off()
-    
-    
     
