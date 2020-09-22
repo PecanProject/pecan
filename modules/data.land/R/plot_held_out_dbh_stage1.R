@@ -163,6 +163,7 @@ cov.data.ordered <- cov.data.joined[order(cov.data.joined$id),] # order the df b
 
 
 # make the predicte and observed plots
+model.out <- jags.comb
 
 pdf(paste0(output.base.name,"_held_out_dbh.pdf"))
 layout(matrix(1:8, 4, 2, byrow = TRUE))
@@ -289,7 +290,7 @@ out.of.sample.validation.metrics <- out.sample.dbh.df %>% summarise(MSPE = mean(
                                                                     V1 = mean(z.data-mean.ci)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
                                                                     V2 = (mean((z.data-mean.ci)^2)/(sum(predvar)/n())^(1/2)),  # estimate of accuracy of MSPEs (close to 1 = accurate)
                                                                     V3 = (mean((z.data-mean.ci)^2)^(1/2)), # goodness of fit estimate (small = better fit)
-                                                                    PPL = sum((z.data - mean.ci)^2) - sum(predvar)) # posterior predictive loss
+                                                                    PPL = sum((z.data - mean.ci)^2) + sum(predvar)) # posterior predictive loss
 
 out.of.sample.validation.metrics$validation <- "out-of-sample"              
 
@@ -301,7 +302,7 @@ in.sample.validation.metrics <- in.sample.dbh.df %>% summarise(MSPE = mean((z.da
                                                                V1 = mean(z.data-mean.ci, na.rm =TRUE)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
                                                                V2 = (mean((z.data-mean.ci)^2, na.rm =TRUE)/(sum(predvar)/n()^(1/2))),  # estimate of accuracy of MSPEs (close to 1 = accurate)
                                                                V3 = (mean((z.data-mean.ci)^2,na.rm =TRUE)^(1/2)),
-                                                               PPL = sum((z.data - mean.ci)^2, na.rm = TRUE) - sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
+                                                               PPL = sum((z.data - mean.ci)^2, na.rm = TRUE) + sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
 in.sample.validation.metrics$validation <- "in-sample"
 # concatenate together + add the model name + description:
 valid.metrics <- rbind(in.sample.validation.metrics, out.of.sample.validation.metrics)
@@ -544,7 +545,7 @@ in.sample.validation.inc.metrics <- in.sample.inc.df %>% summarise(MSPE = mean((
                                                                    V1 = mean(inc.data-mean.ci, na.rm =TRUE)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
                                                                    V2 = (mean((inc.data-mean.ci)^2, na.rm =TRUE)/(sum(predvar)/n()^(1/2))),  # estimate of accuracy of MSPEs (close to 1 = accurate)
                                                                    V3 = (mean((inc.data-mean.ci)^2,na.rm =TRUE)^(1/2)),
-                                                                   PPL = sum((inc.data - mean.ci)^2, na.rm = TRUE) - sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
+                                                                   PPL = sum((inc.data - mean.ci)^2, na.rm = TRUE) + sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
 in.sample.validation.inc.metrics$validation <- "in-sample"
 # concatenate together + add the model name + description:
 in.sample.validation.inc.metrics$model <- output.base.name
