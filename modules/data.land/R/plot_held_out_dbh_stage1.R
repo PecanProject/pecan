@@ -625,6 +625,7 @@ colnames(time_data$tmax.fallspr) <- 1966:2018
 tmax.fs.time <- reshape2::melt(time_data$tmax.fallspr)
 colnames(tmax.fs.time)<- c("id", "year", "Tmax.fallspr")
 
+
 rownames(time_data$wintP.wateryr)<- 1:515
 colnames(time_data$wintP.wateryr) <- 1966:2018
 P.wateryr.time <- reshape2::melt(time_data$wintP.wateryr)
