@@ -4,7 +4,7 @@ library(PEcAn.data.land)
 install.packages("pryr")
 install.packages("gridExtra")
 install.packages("psych")
-
+install.packages("cowplot")
 
 # filename
 # climate parameter --If climate list > 2, do the P + T plots
@@ -26,12 +26,13 @@ library(tidyverse)
 library(psych)
 library(gridExtra)
 library(pryr)
+library(cowplot)
 
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "SDI_SI.norand.X.nadapt.5000."
-output.base.name <- "SDI_SI.norand.X.nadapt.5000"
+file.base.name <- "SDI_noSI_no_plot_random_effects5000."
+output.base.name <- "SDI_noSI_no_plot_random_effects5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
@@ -154,7 +155,7 @@ dotplot.fixed
 dev.off()
 
 # export the model.params object so we can compare:
-model.params$model <- paste0(output.base.name, "model3")
+model.params$model <- output.base.name
 write.csv(model.params, paste0(output.base.name, "_parameter_cis.csv"), row.names = FALSE)
 
 
@@ -375,7 +376,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     xseq <- (1:58)-30
     incX <- matrix(NA,ns,length(xseq))
     
-    betas <- out[,grep(pattern = "beta",colnames(out))]
+    betas<- data.frame(betas)
     
     # this code just makes all the betas with SICOND as zero if they dont exist
     if("betaSICOND" %in% colnames(betas) ==FALSE){
@@ -392,6 +393,12 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     if("betaX_SDI" %in% colnames(betas)==FALSE){
       betas$betaX_SDI <- 0
     }
+    
+    if("betaX_tmax.fallspr" %in% colnames(betas)==FALSE){
+      betas$betaX_tmax.fallspr <- 0
+      betas$betaX_wintP.wateryr <- 0
+    }
+    
     # derive a mean value for betaX (this isnt really the true betaX, but will help)
     betas$derivedbetX <- rowMeans(betas[,5:294])
     if("derivedbetX" %in% colnames(betas)==TRUE){
@@ -423,7 +430,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     CIX <- apply(incX, 2, quantile,c(0.025,0.5,0.975)) # get CI on X
     
-    source("visualization/R/ciEnvelope.R") # read in ci.envelope function
+    source("pecan/visualization/R/ciEnvelope.R") # read in ci.envelope function
     
     
     # plot as pseudo object to save for later
@@ -439,7 +446,8 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = TreeSize.mid, aes(Size, y = `50%`))+ylab("Predicted Growth")+xlab("Tree Diameter (cm)")+theme_bw()+
       theme(panel.grid = element_blank())
     
-    
+    size.m <- reshape2::melt(data$z )
+    Size.effect.gg.rug <- Size.Effect.gg + geom_rug(data = size.m, aes(x = value), size = 0.05) 
     
     ##SDI
     hist(cov.data$SDI)
@@ -494,6 +502,8 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = sdi.mid, aes(SDI, y = `50%`))+ylab("Predicted Growth")+xlab("Stand Density Index")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    SDI.m <- reshape2::melt(temp2$SDI )
+    SDI.effect.gg.rug <- SDI.Effect.gg + geom_rug(data = SDI.m, aes(x = value), size = 0.05)
     
     ## SDI * size
     incSDIXhi <- matrix(NA,ns,length(SDIseq))
@@ -570,6 +580,8 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.sdi, aes(SDI, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Stand Density Index")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    SDI.DBH.effect.gg.rug <-  SDI.DBH.Effect.gg + geom_rug(data = SDI.m, aes(value), size = 0.05)
+    
     ##SI
     # hist(cov.data$SI)
     # # KH note: need to standardize SDIseq first since I ran the model with standardized covariates
@@ -614,7 +626,8 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     SI.Effect.gg <- ggplot()+geom_ribbon(data = si.mid, aes(SI, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
       geom_line(data = si.mid, aes(SI, y = `50%`))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
       theme(panel.grid = element_blank())
-    
+    SI.m <- reshape2::melt(temp2$COND_SICOND)
+    SI.effect.gg.rug <- SI.Effect.gg + geom_rug(data = SI.m, aes(value))
     #
     # ## SI x DBH
     incSIXlo <- matrix(NA,ns,length(SDIseq))
@@ -706,10 +719,13 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.si, aes(si, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    si.DBH.Effect.gg.rug <-  si.DBH.Effect.gg + geom_rug(data = SI.m, aes(value), size = 0.05)
+    
+    
     ## wintP
     clim.data <- readRDS("PRISM_non_scaled.rds")
     hist(time_data$wintP.wateryr)
-    wintPseq.real <- 0:800
+    wintPseq.real <- 0:1800
     wintPseq <- (wintPseq.real-mean(as.matrix(clim.data$wintP.wateryr)))/sd(as.matrix(clim.data$wintP.wateryr))
     incP <- matrix(NA,ns,length(wintPseq))
     
@@ -750,7 +766,8 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     wintP.Effect.gg <- ggplot()+geom_ribbon(data = wintP.mid, aes(wintP, ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5)+
       geom_line(data = wintP.mid, aes(wintP, y = `50%`))+ylab("Predicted Growth")+xlab("Total Water Year Precipitation")+theme_bw()+
       theme(panel.grid = element_blank())
-    
+    ppt.m <- reshape2::melt(clim.data$wintP.wateryr)
+    wintP.Effect.gg.rug <-  wintP.Effect.gg + geom_rug(data = ppt.m, aes(value), size = 0.05)
     
     ## PRECIP x SDI
     incPSDIlo <- matrix(NA,ns,length(wintPseq))
@@ -817,9 +834,10 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     all.sdi.P <- rbind(sdi.P.low, sdi.P.high, sdi.P.mid)
     
     sdi.Precip.Effect.gg <- ggplot()+geom_ribbon(data =all.sdi.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = sdi), alpha = 0.5)+
-      geom_line(data = all.sdi.P, aes(precip, y = `50%`, color = sdi))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
+      geom_line(data = all.sdi.P, aes(precip, y = `50%`, color = sdi))+ylab("Predicted Growth")+xlab("Precipitation")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    sdi.Precip.Effect.gg.rug <-  sdi.Precip.Effect.gg + geom_rug(data = ppt.m, aes(value), size = 0.05)
     
     
     ## PRECIP x DBH
@@ -889,7 +907,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.size.P, aes(precip, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
       theme(panel.grid = element_blank())
     
-    
+    Precipitation.DBH.Effect.gg.rug <-  Precipitation.DBH.Effect.gg + geom_rug(data = ppt.m, aes(x = value), size = 0.05)
     
     # ## Precip X SI
     incP_SIlo <- matrix(NA,ns,length(wintPseq))
@@ -959,6 +977,9 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     Precipitation.SI.Effect.gg <- ggplot()+geom_ribbon(data =all.si.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = si), alpha = 0.5)+
       geom_line(data = all.si.P, aes(precip, y = `50%`, color = si))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
       theme(panel.grid = element_blank())
+    
+    Precipitation.SI.Effect.gg.rug <-   Precipitation.SI.Effect.gg + geom_rug(data = ppt.m, aes(x = value), size = 0.05)
+    
     # 
     # 
     # 
@@ -1058,7 +1079,10 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = tmax.mid, aes(Tmax, y = `50%`))+ylab("Predicted Growth")+xlab("Fall-Spring Tmax (DegC)")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    tmax.falls.spr.trans <- (clim.data$tmax.fallspr-mean(as.matrix(clim.data$tmax.fallspr)))/sd(as.matrix(clim.data$tmax.fallspr))
+    tmax.m <- reshape2::melt(clim.data$tmax.fallspr)
     
+    tmax.Effect.gg.rug <-  tmax.Effect.gg + geom_rug(data = tmax.m, aes(x = value), size = 0.05)
     
     
     
@@ -1132,6 +1156,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.sdi.T, aes(tmax, y = `50%`, color = sdi))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    tmax.SDI.Effect.gg.rug <-  tmax.SDI.Effect.gg + geom_rug(data = tmax.m, aes(x = value), size = 0.05) 
     
     
     
@@ -1203,6 +1228,9 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.size.T, aes(tmax, y = `50%`, color = size))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    
+    Tmax.DBH.Effect.gg.rug <-  Tmax.DBH.Effect.gg + geom_rug(data = tmax.m, aes(x = value), size = 0.05)
+    
     # ## Tmax X SI
     # # temperature x SICOND
     incT_SIlo <- matrix(NA,ns,length(tmaxseq))
@@ -1272,6 +1300,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
       geom_line(data = all.si.T, aes(tmax, y = `50%`, color = si))+ylab("Predicted Growth")+xlab("Fall - Spring Tmax (DegC)")+theme_bw()+
       theme(panel.grid = element_blank())
     
+    Tmax.SI.Effect.gg.rug <-  Tmax.SI.Effect.gg + geom_rug(data = tmax.m, aes(x = value), size = 0.05) 
     
     
     # temperature x Precipitation
@@ -1350,6 +1379,9 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     Precipitation.tmax.Effect.gg <- ggplot()+geom_ribbon(data =all.tmax.P, aes(precip, ymin = `2.5%`, ymax = `97.5%`, fill = tmax), alpha = 0.5)+
       geom_line(data = all.tmax.P, aes(precip, y = `50%`, color = tmax))+ylab("Predicted Growth")+xlab("Water Year Precipitation")+theme_bw()+
       theme(panel.grid = element_blank())
+    
+    
+    Precipitation.tmax.Effect.gg.rug <-   Precipitation.tmax.Effect.gg + geom_rug(data = ppt.m, aes(x = value), size = 0.05) 
     
     # make into one big plot
     
@@ -1444,6 +1476,37 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     dev.off()
     
     
+    # do the same but with the rug plots:
+    
+    
+    png(height = 8, width =10, units = "in", res = 200, paste0(workingdir,"/", "Full_effects_ggplots_rugs",output.base.name,".png"))
+    plot_grid(
+      SDI.effect.gg.rug + ylim(0,0.55), 
+      SI.effect.gg.rug + ylim(0,0.55), 
+      Size.effect.gg.rug+ ylim(0,0.55), 
+      tmax.Effect.gg.rug+ ylim(0,0.55), 
+      wintP.Effect.gg.rug+ ylim(0,0.55),
+      
+      ncol = 3, align = "hv"
+    )
+    dev.off()
+    
+    png(height = 8, width =13, units = "in", res = 200, paste0(workingdir,"/", "Interaction_effects_ggplots_rugs_",output.base.name,".png"))
+    plot_grid(
+      SDI.DBH.effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.DBH.Effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.SI.Effect.gg.rug+ ylim(0,0.55)  + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.2, 0.2)), 
+      sdi.Precip.Effect.gg.rug + ylim(0, 0.55)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+xlab("Water Year Precipitation (mm)")+theme(legend.position = c(0.2, 0.2)), 
+      Tmax.DBH.Effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
+      tmax.SDI.Effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+theme(legend.position = c(0.2, 0.2)), 
+      Tmax.SI.Effect.gg.rug + ylim(0,0.55) + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.2, 0.2)), 
+      Precipitation.tmax.Effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0")) + scale_color_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0"))+theme(legend.position = c(0.2, 0.2)), 
+      
+      ncol = 4, align = "hv"
+    )
+    
+    
+    dev.off()
     
     
     
@@ -1500,4 +1563,6 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     ggplot()+geom_errorbar(data = both.taus, aes(x = Var2, ymin = ci.low, ymax = ci.high, color = model), width = 0.1)+
       geom_point(data =both.taus, aes(x = Var2, y = median, color = model))+ylab("Posterior Precisions")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
     dev.off()
+    
+    
     
