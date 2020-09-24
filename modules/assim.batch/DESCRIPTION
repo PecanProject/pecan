@@ -42,7 +42,7 @@ Imports:
     stats,
     prodlim,
     MCMCpack,
-    TruncatedNormal (>= 2),
+    TruncatedNormal (>= 2.0),
     udunits2 (>= 0.11),
     utils,
     XML,
