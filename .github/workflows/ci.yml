@@ -20,8 +20,8 @@ env:
 jobs:
 
   build:
-    runs-on: ubuntu-20.04
     container: pecan/depends:develop
+    
     steps:
     - uses: actions/checkout@v2
     - run: mkdir -p "${HOME}${R_LIBS#'~'}"
@@ -55,16 +55,18 @@ jobs:
 
   test:
     needs: build
-    runs-on: ubuntu-20.04
     container: pecan/depends:develop
+
     services:
       postgres:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    
     env:
       NCPUS: 2
       PGHOST: postgres
       CI: true
+    
     steps:
     - uses: actions/checkout@v2
     - name: install utils
@@ -96,8 +98,8 @@ jobs:
 
   check:
     needs: build
-    runs-on: ubuntu-20.04
     container: pecan/depends:develop
+
     env:
       NCPUS: 2
       CI: true
@@ -106,6 +108,7 @@ jobs:
       # Avoid compilation check warnings that come from the system Makevars
       # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
       _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
+
     steps:
     - uses: actions/checkout@v2
     - name: install ssh
@@ -136,14 +139,16 @@ jobs:
 
   sipnet:
     needs: build
-    runs-on: ubuntu-20.04
     container: pecan/depends:develop
+
     services:
       postgres:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     env:
       PGHOST: postgres
+
     steps:
     - uses: actions/checkout@v2
     - run: apt-get update && apt-get install -y curl postgresql-client
