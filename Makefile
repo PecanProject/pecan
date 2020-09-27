@@ -81,7 +81,8 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 include Makefile.depends
 
-SETROPTIONS = "options(Ncpus = ${NCPUS}, repos = 'https://cran.rstudio.com')"
+#SETROPTIONS = "options(Ncpus = ${NCPUS}, repos = 'https://cran.rstudio.com')"
+SETROPTIONS = "options(Ncpus = ${NCPUS})"
 
 clean:
 	rm -rf .install .check .test .doc

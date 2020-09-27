@@ -11,11 +11,11 @@ on:
 
   pull_request:
 
-env:
+#env:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
-  R_LIBS: ~/R/library
+  #R_LIBS: ~/R/library
 
 jobs:
 
@@ -25,30 +25,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
-      shell: bash
-    - name: cache R packages
-      uses: actions/cache@v1
-      with:
-        key: pkgcache-${{ github.sha }}
-        path: ${{ env.R_LIBS }}
-        restore-keys: |
-          pkgcache-
-    - name: cache .doc
-      uses: actions/cache@v1
-      with:
-        key: doc-${{ github.sha }}
-        path: .doc
-    - name: cache .install
-      uses: actions/cache@v1
-      with:
-        key: install-${{ github.sha }}
-        path: .install
     - name: update dependency lists
       run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
-        cat /usr/local/lib/R/site-library/TruncatedNormal/DESCRIPTION
         make -j1
       env:
         NCPUS: 2
@@ -79,24 +59,6 @@ jobs:
       uses: docker://pecan/db:ci
     - name: add models to db
       run: ./scripts/add.models.sh
-    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
-    - name: cache R packages
-      uses: actions/cache@v1
-      with:
-        key: pkgcache-${{ github.sha }}
-        path: ${{ env.R_LIBS }}
-        restore-keys: |
-          pkgcache-
-    - name: cache .doc
-      uses: actions/cache@v1
-      with:
-        key: doc-${{ github.sha }}
-        path: .doc
-    - name: cache .install
-      uses: actions/cache@v1
-      with:
-        key: install-${{ github.sha }}
-        path: .install
     - name: test
       run: make test
 
@@ -118,24 +80,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: install ssh
       run: apt-get update && apt-get install -y openssh-client qpdf
-    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
-    - name: cache R packages
-      uses: actions/cache@v1
-      with:
-        key: pkgcache-${{ github.sha }}
-        path: ${{ env.R_LIBS }}
-        restore-keys: |
-          pkgcache-
-    - name: cache .doc
-      uses: actions/cache@v1
-      with:
-        key: doc-${{ github.sha }}
-        path: .doc
-    - name: cache .install
-      uses: actions/cache@v1
-      with:
-        key: install-${{ github.sha }}
-        path: .install
     - name: check
       run: make check
       env:
@@ -169,13 +113,5 @@ jobs:
       uses: docker://pecan/db:ci
     - name: add models to db
       run: ./scripts/add.models.sh
-    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
-    - name: cache R packages
-      uses: actions/cache@v1
-      with:
-        key: pkgcache-${{ github.sha }}
-        path: ${{ env.R_LIBS }}
-        restore-keys: |
-          pkgcache-
     - name: integration test
       run: ./tests/integration.sh ghaction
