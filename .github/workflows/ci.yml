@@ -20,7 +20,7 @@ env:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: pecan/depends:develop
     steps:
     - uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
 
   test:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: pecan/depends:develop
     services:
       postgres:
@@ -96,7 +96,7 @@ jobs:
 
   check:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: pecan/depends:develop
     env:
       NCPUS: 2
@@ -136,7 +136,7 @@ jobs:
 
   sipnet:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: pecan/depends:develop
     services:
       postgres:
