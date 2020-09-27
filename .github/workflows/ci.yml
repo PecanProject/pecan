@@ -47,7 +47,9 @@ jobs:
     - name: update dependency lists
       run: Rscript scripts/generate_dependencies.R
     - name: build
-      run: make -j1
+      run: |
+        cat /usr/local/lib/R/site-library/TruncatedNormal/DESCRIPTION
+        make -j1
       env:
         NCPUS: 2
         CI: true
