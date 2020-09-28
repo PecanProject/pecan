@@ -61,9 +61,9 @@ jobs:
       run: |
         Rscript -e "install.packages(c('devtools', 'littler'), repos = 'http://cran.rstudio.com')"
         Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')"
-    # - name: install PEcAn dependencies
-    #   run: |
-    #     bash docker/depends/pecan.depends
+    - name: install PEcAn dependencies
+      run: |
+        bash docker/depends/pecan.depends
     # - name: update dependency lists
     #   run: Rscript scripts/generate_dependencies.R
     - name: build
