@@ -1,12 +1,12 @@
 context("Download MERRA")
 
 outdir <- tempdir()
-testthat::setup(dir.create(outdir, showWarnings = FALSE, recursive = TRUE))
-testthat::teardown(unlink(outdir, recursive = TRUE))
+setup(dir.create(outdir, showWarnings = FALSE, recursive = TRUE))
+teardown(unlink(outdir, recursive = TRUE))
 
 test_that("MERRA download works", {
   start_date <- "2009-06-01"
-  end_date <- "2009-06-30"
+  end_date <- "2009-06-10"
   dat <- download.MERRA(outdir, start_date, end_date,
                         lat.in = 45.3, lon.in = -85.3, overwrite = TRUE)
   expect_true(file.exists(dat$file[[1]]))

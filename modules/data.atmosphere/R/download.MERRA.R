@@ -1,28 +1,24 @@
 #' Download MERRA data
 #'
-#' @param outfolder
-#' @param start_date
-#' @param end_date
-#' @param lat.in
-#' @param lon.in
-#' @param overwrite
-#' @param verbose
-#' @return
+#' @inheritParams download.CRUNCEP
+#' @return `data.frame` of meteorology data metadata
 #' @author Alexey Shiklomanov
+#' @export
 download.MERRA <- function(outfolder, start_date, end_date,
                            lat.in, lon.in,
                            overwrite = FALSE,
                            verbose = FALSE) {
 
-  dates <- seq.Date(start_date, end_date, "1 day")
+  dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
 
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
   # Download all MERRA files first. This skips files that have already been downloaded.
   for (i in seq_along(dates)) {
     date <- dates[[i]]
-    message("Downloading ", as.character(date),
-            " (", i, " of ", length(dates), ")")
+    PEcAn.logger::logger.debug(paste0(
+      "Downloading ", as.character(date), " (", i, " of ", length(dates), ")"
+    ))
     get_merra_date(date, lat.in, lon.in, outfolder)
   }
 
@@ -45,7 +41,20 @@ download.MERRA <- function(outfolder, start_date, end_date,
 
   for (i in seq_len(nyear)) {
     year <- ylist[i]
-    ntime <- PEcAn.utils::days_in_year(year) * 24  # Hourly data
+    baseday <- paste0(year, "-01-01T00:00:00Z")
+
+    # Accommodate partial years
+    y_startdate <- pmax(ISOdate(year, 01, 01, 0, tz = "UTC"),
+                        lubridate::as_datetime(start_date))
+    y_enddate <- pmin(ISOdate(year, 12, 31, 23, 59, 59, tz = "UTC"),
+                      lubridate::as_datetime(paste(end_date, "23:59:59Z")))
+
+    timeseq <- as.numeric(difftime(
+      seq(y_startdate, y_enddate, "hours"),
+      baseday,
+      tz = "UTC", unit = "days"
+    ))
+    ntime <- length(timeseq)
 
     loc.file <- file.path(outfolder, paste("MERRA", year, "nc", sep = "."))
     results$file[i] <- loc.file
@@ -55,17 +64,22 @@ download.MERRA <- function(outfolder, start_date, end_date,
     results$mimetype[i] <- "application/x-netcdf"
     results$formatname[i] <- "CF Meteorology"
 
-    if (file.exists(loc.file) && !isTRUE(overwrite)) {
-     PEcAn.logger::logger.error("File already exists. Skipping to next year")
-      next
+    if (file.exists(loc.file)) {
+      if (overwrite) {
+        PEcAn.logger::logger.info(paste0("Removing existing file ", loc.file))
+        file.remove(loc.file)
+      } else {
+        PEcAn.logger::logger.info(paste0(
+          "File ", loc.file, " already exists. Skipping to next year"
+        ))
+        next
+      }
     }
 
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    days_elapsed <- seq(1, ntime) * 1 / 24 - 0.5 / 24
-    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", year, "-01-01T00:00:00Z"),
-                             vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = baseday, vals = timeseq, create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
 
     ## Create output variables
@@ -190,7 +204,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   outfile <- file.path(outdir, sprintf("merra-flux-%d-%02d-%02d.nc",
                                        year, month, day))
   if (overwrite || !file.exists(outfile)) {
-    req <- httr::GET(
+    req <- robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
       httr::write_disk(outfile, overwrite = TRUE)
