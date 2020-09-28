@@ -15,21 +15,42 @@ on:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
-  #R_LIBS: ~/R/library
+  R_LIBS: ~/R/library
 
 jobs:
 
   build:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     container: pecan/depends:develop
-    
+
     steps:
     - uses: actions/checkout@v2
+    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
+      shell: bash
+    - name: cache R packages
+      uses: actions/cache@v1
+      with:
+        key: pkgcache-${{ github.sha }}
+        path: ${{ env.R_LIBS }}
+        restore-keys: |
+          pkgcache-
+    - name: cache .doc
+      uses: actions/cache@v1
+      with:
+        key: doc-${{ github.sha }}
+        path: .doc
+    - name: cache .install
+      uses: actions/cache@v1
+      with:
+        key: install-${{ github.sha }}
+        path: .install
     - name: update dependency lists
       run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
+        echo ${R_LIBS}
         make -j1
+        ls -l ${R_LIBS}
       env:
         NCPUS: 2
         CI: true
@@ -38,19 +59,19 @@ jobs:
 
   test:
     needs: build
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     container: pecan/depends:develop
 
     services:
       postgres:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    
+
     env:
       NCPUS: 2
       PGHOST: postgres
       CI: true
-    
+
     steps:
     - uses: actions/checkout@v2
     - name: install utils
@@ -64,7 +85,7 @@ jobs:
 
   check:
     needs: build
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     container: pecan/depends:develop
 
     env:
@@ -88,7 +109,7 @@ jobs:
 
   sipnet:
     needs: build
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     container: pecan/depends:develop
 
     services:
