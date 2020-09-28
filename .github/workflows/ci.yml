@@ -57,29 +57,31 @@ jobs:
           ${{ env.R_LIBS_USER }}
         restore-keys: |
           pkgcache-${{ matrix.R }}-
-    - name: install dependencies
+    - name: install core dependencies
       run: |
-        Rscript -e "install.packages(c('devtools'), repos = 'http://cran.rstudio.com')"
+        Rscript -e "install.packages(c('devtools', 'littler'), repos = 'http://cran.rstudio.com')"
         Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')"
-        bash docker/depends/pecan.depends
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
-    - name: build
-      run: |
-        echo ${R_LIBS}
-        ls -l ${R_LIBS}
-        echo ${R_LIBS_USER}
-        ls -l ${R_LIBS_USER}
-        #make -j1
-        echo ${R_LIBS}
-        ls -l ${R_LIBS}
-        echo ${R_LIBS_USER}
-        ls -l ${R_LIBS_USER}
-      env:
-        NCPUS: 2
-        CI: true
-    - name: check for out-of-date Rd files
-      uses: infotroph/tree-is-clean@v1
+    # - name: install dependencies
+    #   run: |
+    #     bash docker/depends/pecan.depends
+    # - name: update dependency lists
+    #   run: Rscript scripts/generate_dependencies.R
+    # - name: build
+    #   run: |
+    #     echo ${R_LIBS}
+    #     ls -l ${R_LIBS}
+    #     echo ${R_LIBS_USER}
+    #     ls -l ${R_LIBS_USER}
+    #     #make -j1
+    #     echo ${R_LIBS}
+    #     ls -l ${R_LIBS}
+    #     echo ${R_LIBS_USER}
+    #     ls -l ${R_LIBS_USER}
+    #   env:
+    #     NCPUS: 2
+    #     CI: true
+    # - name: check for out-of-date Rd files
+    #   uses: infotroph/tree-is-clean@v1
 
   test:
     needs: build
