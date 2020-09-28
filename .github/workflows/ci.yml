@@ -35,6 +35,17 @@ jobs:
       uses: r-lib/actions/setup-r@v1
       with:
         r-version: '${{ matrix.R }}'
+    - name: install dependencies
+      run: |
+        apt-get -qq update
+        apt-get -y --no-install-recommends install \
+          libgdal-dev \
+          libglpk-dev \
+          librdf0-dev \
+          libnetcdf-dev \
+          libudunits2-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev
     - name: make lib folders
       run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
     - name: cache R packages
@@ -59,7 +70,7 @@ jobs:
         ls -l ${R_LIBS}
         echo ${R_LIBS_USER}
         ls -l ${R_LIBS_USER}
-        make -j1
+        #make -j1
         echo ${R_LIBS}
         ls -l ${R_LIBS}
         echo ${R_LIBS_USER}
