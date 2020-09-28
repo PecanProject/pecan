@@ -49,6 +49,8 @@ jobs:
     - name: build
       run: |
         echo ${R_LIBS}
+        mkdir -p ${R_LIBS}
+        ls -l ${R_LIBS}
         make -j1
         ls -l ${R_LIBS}
       env:
