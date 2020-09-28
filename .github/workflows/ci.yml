@@ -66,20 +66,20 @@ jobs:
     #     bash docker/depends/pecan.depends
     # - name: update dependency lists
     #   run: Rscript scripts/generate_dependencies.R
-    # - name: build
-    #   run: |
-    #     echo ${R_LIBS}
-    #     ls -l ${R_LIBS}
-    #     echo ${R_LIBS_USER}
-    #     ls -l ${R_LIBS_USER}
-    #     #make -j1
-    #     echo ${R_LIBS}
-    #     ls -l ${R_LIBS}
-    #     echo ${R_LIBS_USER}
-    #     ls -l ${R_LIBS_USER}
-    #   env:
-    #     NCPUS: 2
-    #     CI: true
+    - name: build
+      run: |
+        echo ${R_LIBS}
+        ls -l ${R_LIBS}
+        echo ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER}
+        #make -j1
+        echo ${R_LIBS}
+        ls -l ${R_LIBS}
+        echo ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER}
+      env:
+        NCPUS: 2
+        CI: true
     # - name: check for out-of-date Rd files
     #   uses: infotroph/tree-is-clean@v1
 
