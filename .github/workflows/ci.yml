@@ -11,7 +11,7 @@ on:
 
   pull_request:
 
-#env:
+env:
   # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
