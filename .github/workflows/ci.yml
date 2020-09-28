@@ -21,38 +21,44 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: pecan/depends:develop
+    #container: pecan/depends:develop
+
+    strategy:
+      fail-fast: false
+      matrix:
+        R:
+          - 4.0.2
 
     steps:
     - uses: actions/checkout@v2
-    - run: mkdir -p "${HOME}${R_LIBS#'~'}"
-      shell: bash
+    - name: setup R ${{ matrix.R }}
+      uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '${{ matrix.R }}'
+    - name: mkdir
+      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
-        key: pkgcache-${{ github.sha }}
-        path: ${{ env.R_LIBS }}
+        key: pkgcache-${{ runner.os }}-${{ hashFiles('docker/depends/pecan.depends') }}
+        path: |
+          ${{ env.R_LIBS }}
+          ${{ env.R_LIBS_USER }}
         restore-keys: |
           pkgcache-
-    - name: cache .doc
-      uses: actions/cache@v1
-      with:
-        key: doc-${{ github.sha }}
-        path: .doc
-    - name: cache .install
-      uses: actions/cache@v1
-      with:
-        key: install-${{ github.sha }}
-        path: .install
     - name: update dependency lists
       run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
         echo ${R_LIBS}
-        mkdir -p ${R_LIBS}
         ls -l ${R_LIBS}
+        echo ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER}
         make -j1
+        echo ${R_LIBS}
         ls -l ${R_LIBS}
+        echo ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER}
       env:
         NCPUS: 2
         CI: true
