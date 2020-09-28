@@ -37,8 +37,8 @@ jobs:
         r-version: '${{ matrix.R }}'
     - name: install dependencies
       run: |
-        apt-get -qq update
-        apt-get -y --no-install-recommends install \
+        sudo apt-get -qq update
+        sudo apt-get -y --no-install-recommends install \
           libgdal-dev \
           libglpk-dev \
           librdf0-dev \
