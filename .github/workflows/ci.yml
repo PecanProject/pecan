@@ -35,17 +35,22 @@ jobs:
       uses: r-lib/actions/setup-r@v1
       with:
         r-version: '${{ matrix.R }}'
-    - name: mkdir
-      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
+    - name: make lib folders
+      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}
     - name: cache R packages
       uses: actions/cache@v1
       with:
-        key: pkgcache-${{ runner.os }}-${{ hashFiles('docker/depends/pecan.depends') }}
+        key: pkgcache-${{ matrix.R }}-${{ hashFiles('docker/depends/pecan.depends') }}
         path: |
           ${{ env.R_LIBS }}
           ${{ env.R_LIBS_USER }}
         restore-keys: |
-          pkgcache-
+          pkgcache-${{ matrix.R }}-
+    - name: install dependencies
+      run: |
+        Rscript -e "install.packages(c('devtools'), repos = 'http://cran.rstudio.com')"
+        Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')"
+        bash docker/depends/pecan.depends/pecan.depends
     - name: update dependency lists
       run: Rscript scripts/generate_dependencies.R
     - name: build
