@@ -36,7 +36,7 @@ jobs:
       with:
         r-version: '${{ matrix.R }}'
     - name: make lib folders
-      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}
+      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
     - name: cache R packages
       uses: actions/cache@v1
       with:
