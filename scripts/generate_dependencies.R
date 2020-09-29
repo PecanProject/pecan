@@ -129,5 +129,5 @@ cat("#!/usr/bin/env Rscript",
     "# install all packages (depends, imports, suggests)",
     "wanted <- c(", paste(shQuote(sort(docker)), sep = "", collapse = ",\n"), ")",
     "missing <- wanted[!(wanted %in% installed.packages()[,'Package'])]",
-    "lapply(missing, remotes::install_cran, lib = rlib)",
+    "install.packages(missing, lib = rlib)",
     file = "docker/depends/pecan.depends.R", sep = "\n", append = FALSE)

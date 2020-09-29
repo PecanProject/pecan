@@ -126,4 +126,4 @@ wanted <- c(
 'zoo'
 )
 missing <- wanted[!(wanted %in% installed.packages()[,'Package'])]
-lapply(missing, remotes::install_cran, lib = rlib)
+install.packages(missing, lib = rlib)
