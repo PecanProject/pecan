@@ -64,15 +64,15 @@ jobs:
     - name: install PEcAn dependencies
       run: |
         bash docker/depends/pecan.depends || Rscript docker/depends/pecan.depends.R
-    # - name: update dependency lists
-    #   run: Rscript scripts/generate_dependencies.R
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
         echo ${R_LIBS}
         ls -l ${R_LIBS}
         echo ${R_LIBS_USER}
         ls -l ${R_LIBS_USER}
-        #make -j1
+        make -j1
         echo ${R_LIBS}
         ls -l ${R_LIBS}
         echo ${R_LIBS_USER}
