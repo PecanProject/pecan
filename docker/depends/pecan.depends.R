@@ -5,8 +5,9 @@
 # Don't use X11 for rgl
 Sys.setenv(RGL_USE_NULL = TRUE)
 rlib_user = Sys.getenv('R_LIBS_USER')
-rlib = ifelse(rlib_user == '', '/usr/local/lib/r/site-library', rlib_user)
+rlib = ifelse(rlib_user == '', '/usr/local/lib/R/site-library', rlib_user)
 Sys.setenv(RLIB = rlib)
+
 # install remotes first in case packages are references in dependencies
 lapply(c(
 'araiho/linkages_package',
@@ -15,8 +16,9 @@ lapply(c(
 'ropensci/geonames',
 'ropensci/nneo'
 ), remotes::install_github, lib = rlib)
+
 # install all packages (depends, imports, suggests)
-install.packages(c(
+wanted <- c(
 'abind',
 'BayesianTools',
 'binaryLogic',
@@ -122,4 +124,6 @@ install.packages(c(
 'xtable',
 'xts',
 'zoo'
-), lib = rlib)
+)
+missing <- wanted[!(wanted %in% installed.packages()[,'Package'])]
+lapply(missing, remotes::install_cran, lib = rlib)
