@@ -39,6 +39,7 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt-get -y --no-install-recommends install \
+          jags \
           libgdal-dev \
           libglpk-dev \
           librdf0-dev \
