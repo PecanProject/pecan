@@ -26,7 +26,7 @@ Consult documentation of the PEcAn Project; either the [lastest stable developme
 
 ## Getting Started
 
-See ["Getting Started"](https://pecanproject.github.io/pecan-documentation/develop/getting-started.html) on the PEcAn.
+See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that provides self-guided tutorials, links to vignettes, and an overview presentation.
 
 ### Installation
 
