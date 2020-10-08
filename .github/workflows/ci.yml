@@ -46,7 +46,8 @@ jobs:
           libnetcdf-dev \
           libudunits2-dev \
           libgl1-mesa-dev \
-          libglu1-mesa-dev
+          libglu1-mesa-dev \
+          libmagick++-dev
     - name: make lib folders
       run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
     - name: cache R packages
@@ -69,25 +70,24 @@ jobs:
       run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
-        echo ${R_LIBS}
-        ls -l ${R_LIBS}
-        echo ${R_LIBS_USER}
-        ls -l ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER} > /tmp/before
         make -j1
-        echo ${R_LIBS}
-        ls -l ${R_LIBS}
-        echo ${R_LIBS_USER}
-        ls -l ${R_LIBS_USER}
+        ls -l ${R_LIBS_USER} > /tmp/after
+        diff /tmp/before /tmp/after
       env:
         NCPUS: 2
         CI: true
+    - name: check
+      run: make check
+      env:
+        REBUILD_DOCS: "FALSE"
+        RUN_TESTS: "FALSE"
     # - name: check for out-of-date Rd files
     #   uses: infotroph/tree-is-clean@v1
 
   test:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:develop
 
     services:
       postgres:
@@ -107,13 +107,21 @@ jobs:
       uses: docker://pecan/db:ci
     - name: add models to db
       run: ./scripts/add.models.sh
+    - name: cache R packages
+      uses: actions/cache@v2
+      with:
+        key: pkgcache-${{ matrix.R }}-${{ hashFiles('docker/depends/pecan.depends') }}
+        path: |
+          ${{ env.R_LIBS }}
+          ${{ env.R_LIBS_USER }}
+        restore-keys: |
+          pkgcache-${{ matrix.R }}-
     - name: test
       run: make test
 
   check:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:develop
 
     env:
       NCPUS: 2
