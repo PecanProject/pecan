@@ -70,10 +70,7 @@ jobs:
       run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
-        ls -l ${R_LIBS_USER} > /tmp/before
         make -j1
-        ls -l ${R_LIBS_USER} > /tmp/after
-        diff /tmp/before /tmp/after
       env:
         NCPUS: 2
         CI: true
