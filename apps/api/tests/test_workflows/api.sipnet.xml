@@ -14,6 +14,7 @@
   </meta.analysis>
 
   <ensemble>
+    <size>1</size>
     <variable>NPP</variable>
   </ensemble>
 

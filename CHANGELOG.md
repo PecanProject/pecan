@@ -38,6 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Renamed functions that looked like S3 methods but were not:
     * PEcAn.priors: `plot.posterior.density`->`plot_posterior.density`, `plot.prior.density`->`plot_prior.density`, `plot.trait`->`plot_trait` (#2439).
     * PEcAn.visualization: `plot.netcdf`->`plot_netcdf` (#2526).
+    * PEcAn.assim.sequential: `Remote.Sync.launcher` -> `Remote_Sync_launcher` (#2652)
 - Stricter package checking: `make check` and CI builds will now fail if `R CMD check` returns any ERRORs or any "newly-added" WARNINGs or NOTEs. "Newly-added" is determined by strict string comparison against a check result saved 2019-09-03; messages that exist in the reference result do not break the build but will be fixed as time allows in future refactorings (#2404).
 - No longer writing an arbitrary num for each PFT, this was breaking ED runs potentially.
 - The pecan/data container has no longer hardcoded path for postgres
@@ -46,9 +47,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
 -Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
 
-
 ### Added
 
+- New functionality to the PEcAn API to GET information about PFTs, formats & sites, submit workflows in XML or JSON formats & download relevant inputs/outputs/files related to runs & workflows (#2674 #2665 #2662 #2655)
 - Functions to send/receive messages to/from rabbitmq.
 - Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
 - PEcAn API that can be used to talk to PEcAn servers. Endpoints to GET the details about the server that user is talking to, PEcAn models, workflows & runs. Authetication enabled. (#2631)
