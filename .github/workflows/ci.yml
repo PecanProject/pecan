@@ -30,40 +30,6 @@ jobs:
         R:
           - "4.0.2"
 
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: build
-      run: |
-        make -j1
-      env:
-        NCPUS: 2
-        CI: true
-    - name: check for out-of-date Rd files
-      uses: infotroph/tree-is-clean@v1
-
-  # check to make sure dependencies are still correct
-  dependencies:
-    runs-on: ubuntu-latest
-    container: 
-      image: pecan/depends:R4.0.2
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
-    - name: check for out-of-date Rd files
-      uses: infotroph/tree-is-clean@v1
-
-  # run all PEcAn unit tests
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: pecan/depends:R4.0.2
-
     services:
       postgres:
         image: mdillon/postgis:9.5
@@ -72,38 +38,6 @@ jobs:
     env:
       NCPUS: 2
       PGHOST: postgres
-      CI: true
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client
-    - name: db setup
-      uses: docker://pecan/db:ci
-    - name: add models to db
-      run: ./scripts/add.models.sh
-    - name: cache R packages
-      uses: actions/cache@v2
-      with:
-        key: pkgcache-${{ matrix.R }}-${{ hashFiles('docker/depends/pecan.depends') }}
-        path: |
-          ${{ env.R_LIBS }}
-          ${{ env.R_LIBS_USER }}
-        restore-keys: |
-          pkgcache-${{ matrix.R }}-
-    - name: test
-      run: make test
-    - name: check for out-of-date Rd files
-      uses: infotroph/tree-is-clean@v1
-
-  check:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: pecan/depends:R4.0.2
-
-    env:
-      NCPUS: 2
       CI: true
       _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
@@ -111,35 +45,14 @@ jobs:
       # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
       _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: install ssh
-      run: apt-get update && apt-get install -y openssh-client qpdf
-    - name: check
-      run: make check
-      env:
-        REBUILD_DOCS: "FALSE"
-        RUN_TESTS: "FALSE"
-    - name: check for out-of-date Rd files
-      uses: infotroph/tree-is-clean@v1
-
-  sipnet:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: pecan/depends:R4.0.2
-
-    services:
-      postgres:
-        image: mdillon/postgis:9.5
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    env:
-      PGHOST: postgres
+    container: 
+      image: pecan/depends:R${{ matrix.R }}
 
     steps:
+    # checkout source code
     - uses: actions/checkout@v2
-    - run: apt-get update && apt-get install -y curl postgresql-client
+
+    # install sipnet for later
     - name: install sipnet
       run: |
         cd ${HOME}
@@ -147,9 +60,46 @@ jobs:
         tar zxf sipnet_unk.tar.gz
         cd sipnet_unk
         make
+
+    # initialize database
+    - name: install utils
+      run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: db setup
       uses: docker://pecan/db:ci
     - name: add models to db
       run: ./scripts/add.models.sh
+
+    # check dependencies
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
+    - name: check for out-of-date dependencies files
+      uses: infotroph/tree-is-clean@v1
+
+    # compile PEcAn code
+    - name: build
+      run: |
+        make -j1
+      env:
+        NCPUS: 2
+        CI: true
+    - name: check for out-of-date files
+      uses: infotroph/tree-is-clean@v1
+
+    # run PEcAn tests
+    - name: test
+      run: make test
+    - name: check for out-of-date files
+      uses: infotroph/tree-is-clean@v1
+
+    # run PEcAn checks
+    - name: check
+      run: make check
+      env:
+        REBUILD_DOCS: "FALSE"
+        RUN_TESTS: "FALSE"
+    - name: check for out-of-date files
+      uses: infotroph/tree-is-clean@v1
+
+    # run SIPNET test
     - name: integration test
       run: ./tests/integration.sh ghaction
