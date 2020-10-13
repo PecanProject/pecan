@@ -52,6 +52,10 @@ jobs:
     # checkout source code
     - uses: actions/checkout@v2
 
+    # install additional tools needed
+    - name: install utils
+      run: apt-get update && apt-get install -y postgresql-client qpdf curl
+
     # install sipnet for later
     - name: install sipnet
       run: |
@@ -62,8 +66,6 @@ jobs:
         make
 
     # initialize database
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: db setup
       uses: docker://pecan/db:ci
     - name: add models to db
