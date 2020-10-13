@@ -56,15 +56,6 @@ jobs:
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf curl
 
-    # install sipnet for later
-    - name: install sipnet
-      run: |
-        cd ${HOME}
-        curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-        tar zxf sipnet_unk.tar.gz
-        cd sipnet_unk
-        make
-
     # initialize database
     - name: db setup
       uses: docker://pecan/db:ci
@@ -81,9 +72,6 @@ jobs:
     - name: build
       run: |
         make -j1
-      env:
-        NCPUS: 2
-        CI: true
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
@@ -101,6 +89,17 @@ jobs:
         RUN_TESTS: "FALSE"
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
+
+    # install sipnet
+    - name: Check out SIPNET
+      uses: actions/checkout@v2
+      with:
+        repository: pecan/sipnet
+        path: sipnet
+    - name: install sipnet
+      run: |
+        cd ${GITHUB_WORKSPACE}/sipnet
+        make
 
     # run SIPNET test
     - name: integration test
