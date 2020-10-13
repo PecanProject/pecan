@@ -18,7 +18,7 @@ env:
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
   R_LIBS: ~/R/library
   # official supported version of R
-  R_VERSION: 4.0.2
+  R_VERSION: "4.0.2"
 
 jobs:
 
@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - 4.0.2
+          - "4.0.2"
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
