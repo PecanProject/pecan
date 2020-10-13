@@ -82,13 +82,13 @@ jobs:
       uses: infotroph/tree-is-clean@v1
 
     # run PEcAn checks
-    # - name: check
-    #   run: make check
-    #   env:
-    #     REBUILD_DOCS: "FALSE"
-    #     RUN_TESTS: "FALSE"
-    # - name: check for out-of-date files
-    #   uses: infotroph/tree-is-clean@v1
+    - name: check
+      run: make check
+      env:
+        REBUILD_DOCS: "FALSE"
+        RUN_TESTS: "FALSE"
+    - name: check for out-of-date files
+      uses: infotroph/tree-is-clean@v1
 
     # install sipnet
     - name: Check out SIPNET
