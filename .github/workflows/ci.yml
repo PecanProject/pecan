@@ -94,8 +94,7 @@ jobs:
     - name: Check out SIPNET
       uses: actions/checkout@v2
       with:
-        repository: pecan/sipnet
-        ref: master
+        repository: PecanProject/sipnet
         path: sipnet
     - name: install sipnet
       run: |
