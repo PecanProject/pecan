@@ -17,12 +17,14 @@ env:
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
   R_LIBS: ~/R/library
+  # official supported version of R
+  R_VERSION: 4.0.2
 
 jobs:
 
+  # try to build PEcAn on all versions of R
   build:
     runs-on: ubuntu-latest
-    container: pecan/depends:testing
 
     strategy:
       fail-fast: false
@@ -30,45 +32,11 @@ jobs:
         R:
           - 4.0.2
 
+    container: 
+      image: pecan/depends:R${{ matrix.R }}
+
     steps:
     - uses: actions/checkout@v2
-    - name: setup R ${{ matrix.R }}
-      uses: r-lib/actions/setup-r@v1
-      with:
-        r-version: '${{ matrix.R }}'
-    - name: install os dependencies
-      run: |
-        sudo apt-get -qq update
-        sudo apt-get -y --no-install-recommends install \
-          jags \
-          libgdal-dev \
-          libglpk-dev \
-          librdf0-dev \
-          libnetcdf-dev \
-          libudunits2-dev \
-          libgl1-mesa-dev \
-          libglu1-mesa-dev \
-          libmagick++-dev
-    - name: make lib folders
-      run: mkdir -p "${R_LIBS}" "${R_LIBS_USER}"
-    - name: cache R packages
-      uses: actions/cache@v2
-      with:
-        key: pkgcache-${{ matrix.R }}-${{ hashFiles('docker/depends/pecan.depends') }}
-        path: |
-          ${{ env.R_LIBS }}
-          ${{ env.R_LIBS_USER }}
-        restore-keys: |
-          pkgcache-${{ matrix.R }}-
-    - name: install core dependencies
-      run: |
-        Rscript -e "if (!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
-        Rscript -e "if (!require('roxygen2')) devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')"
-    - name: install PEcAn dependencies
-      run: |
-        bash docker/depends/pecan.depends || Rscript docker/depends/pecan.depends.R
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
     - name: build
       run: |
         make -j1
@@ -78,10 +46,25 @@ jobs:
     - name: check for out-of-date Rd files
       uses: infotroph/tree-is-clean@v1
 
+  # check to make sure dependencies are still correct
+  dependencies:
+    runs-on: ubuntu-latest
+    container: 
+      image: pecan/depends:R${{ env.R_VERSION }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
+
+  # run all PEcAn unit tests
   test:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:testing
+    container:
+      image: pecan/depends:R${{ env.R_VERSION }}
 
     services:
       postgres:
@@ -116,9 +99,10 @@ jobs:
       uses: infotroph/tree-is-clean@v1
 
   check:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:testing
+    container:
+      image: pecan/depends:R${{ env.R_VERSION }}
 
     env:
       NCPUS: 2
@@ -144,7 +128,8 @@ jobs:
   sipnet:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:testing
+    container:
+      image: pecan/depends:R${{ env.R_VERSION }}
 
     services:
       postgres:
