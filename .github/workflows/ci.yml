@@ -69,17 +69,17 @@ jobs:
       uses: infotroph/tree-is-clean@v1
 
     # compile PEcAn code
-    - name: build
-      run: |
-        make -j1
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
+    # - name: build
+    #   run: |
+    #     make -j1
+    # - name: check for out-of-date files
+    #   uses: infotroph/tree-is-clean@v1
 
-    # run PEcAn tests
-    - name: test
-      run: make test
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
+    # # run PEcAn tests
+    # - name: test
+    #   run: make test
+    # - name: check for out-of-date files
+    #   uses: infotroph/tree-is-clean@v1
 
     # run PEcAn checks
     # - name: check
@@ -95,6 +95,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: pecan/sipnet
+        ref: master
         path: sipnet
     - name: install sipnet
       run: |
