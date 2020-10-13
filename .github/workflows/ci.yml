@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - '*'
 
     tags:
       - '*'
@@ -21,7 +22,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    #container: pecan/depends:develop
+    container: pecan/depends:testing
 
     strategy:
       fail-fast: false
@@ -74,17 +75,13 @@ jobs:
       env:
         NCPUS: 2
         CI: true
-    - name: check
-      run: make check
-      env:
-        REBUILD_DOCS: "FALSE"
-        RUN_TESTS: "FALSE"
-    # - name: check for out-of-date Rd files
-    #   uses: infotroph/tree-is-clean@v1
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
 
   test:
     needs: build
     runs-on: ubuntu-latest
+    container: pecan/depends:testing
 
     services:
       postgres:
@@ -99,7 +96,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install utils
-      run: apt-get update && apt-get install -y openssh-client postgresql-client curl
+      run: apt-get update && apt-get install -y postgresql-client
     - name: db setup
       uses: docker://pecan/db:ci
     - name: add models to db
@@ -115,10 +112,13 @@ jobs:
           pkgcache-${{ matrix.R }}-
     - name: test
       run: make test
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
 
   check:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
+    container: pecan/depends:testing
 
     env:
       NCPUS: 2
@@ -138,11 +138,13 @@ jobs:
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
+    - name: check for out-of-date Rd files
+      uses: infotroph/tree-is-clean@v1
 
   sipnet:
     needs: build
     runs-on: ubuntu-latest
-    container: pecan/depends:develop
+    container: pecan/depends:testing
 
     services:
       postgres:
