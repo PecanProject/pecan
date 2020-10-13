@@ -17,8 +17,6 @@ env:
   # ...and it's always present here, because the rocker/tidyverse base image
   # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
   R_LIBS: ~/R/library
-  # official supported version of R
-  R_VERSION: "4.0.2"
 
 jobs:
 
@@ -50,7 +48,7 @@ jobs:
   dependencies:
     runs-on: ubuntu-latest
     container: 
-      image: pecan/depends:R${{ env.R_VERSION }}
+      image: pecan/depends:R4.0.2
 
     steps:
     - uses: actions/checkout@v2
@@ -64,7 +62,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container:
-      image: pecan/depends:R${{ env.R_VERSION }}
+      image: pecan/depends:R4.0.2
 
     services:
       postgres:
@@ -102,7 +100,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container:
-      image: pecan/depends:R${{ env.R_VERSION }}
+      image: pecan/depends:R4.0.2
 
     env:
       NCPUS: 2
@@ -129,7 +127,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container:
-      image: pecan/depends:R${{ env.R_VERSION }}
+      image: pecan/depends:R4.0.2
 
     services:
       postgres:
