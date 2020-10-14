@@ -61,8 +61,7 @@ jobs:
 
     # compile PEcAn code
     - name: build
-      run: |
-        make -j1
+      run: make -j1
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
@@ -112,7 +111,7 @@ jobs:
 
     # run PEcAn tests
     - name: test
-      run: make test
+      run: make -j1 test
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
@@ -151,7 +150,7 @@ jobs:
 
     # run PEcAn checks
     - name: check
-      run: make check
+      run: make -j1 check
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
@@ -216,8 +215,7 @@ jobs:
 
     # compile PEcAn code
     - name: build
-      run: |
-        make -j1
+      run: make -j1
 
     # run SIPNET test
     - name: integration test
