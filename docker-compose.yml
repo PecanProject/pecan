@@ -37,7 +37,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=traefik"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /traefik"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /traefik"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -63,7 +63,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=minio"
       - "traefik.port=9000"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/minio/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/minio/"
     volumes:
       - pecan:/data
 
@@ -79,7 +79,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/thredds"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/thredds"
       - "traefik.backend=thredds"
 
   # ----------------------------------------------------------------------
@@ -102,7 +102,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=rabbitmq"
       - "traefik.port=15672"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rabbitmq"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rabbitmq"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - rabbitmq:/var/lib/rabbitmq
@@ -137,7 +137,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/bety/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/bety/"
       - "traefik.backend=bety"
 
   # ----------------------------------------------------------------------
@@ -153,7 +153,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=rstudio"
       - "traefik.port=80"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
 
   rstudio:
@@ -189,7 +189,7 @@ services:
       - pecan
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
       - "traefik.backend=docs"
 
   # PEcAn web front end, this is just the PHP code
@@ -209,7 +209,7 @@ services:
     labels:
       - "traefik.port=8080"
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/pecan/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/pecan/"
       - "traefik.backend=pecan"
     volumes:
       - pecan:/data
@@ -231,7 +231,7 @@ services:
        - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/monitor/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/monitor/"
       - "traefik.backend=monitor"
     volumes:
       - pecan:/data
@@ -327,7 +327,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=dbsync"
       - "traefik.port=3838"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
 
 
   # ----------------------------------------------------------------------
@@ -347,7 +347,7 @@ services:
       - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"
+      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"
       - "traefik.backend=api"
       - "traefik.port=8000"
     depends_on:
