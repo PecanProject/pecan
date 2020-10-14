@@ -6,7 +6,7 @@ teardown(unlink(tmpdir, recursive = TRUE))
 
 test_that("download works and returns a valid CF file", {
   # download is slow and was causing lots of Travis timeouts
-  skip_on_travis()
+  skip_on_ci()
 
   PEcAn.logger::logger.setLevel("WARN")
 

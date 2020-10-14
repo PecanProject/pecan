@@ -51,12 +51,16 @@ validate_crypt_pass <- function(username, crypt_pass) {
 #* @return Appropriate response
 #* @author Tezan Sahu
 authenticate_user <- function(req, res) {
+  # Fix CORS issues
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  
   # If the API endpoint that do not require authentication
   if (
+    Sys.getenv("AUTH_REQ") == FALSE ||
     grepl("swagger", req$PATH_INFO, ignore.case = TRUE) || 
     grepl("openapi.json", req$PATH_INFO, fixed = TRUE) ||
-    grepl("ping", req$PATH_INFO, ignore.case = TRUE) ||
-    grepl("status", req$PATH_INFO, ignore.case = TRUE))
+    grepl("/api/ping", req$PATH_INFO, ignore.case = TRUE) ||
+    grepl("/api/status", req$PATH_INFO, ignore.case = TRUE))
   {
     req$user$userid <- NA
     req$user$username <- ""

@@ -43,14 +43,26 @@ The currently implemented functionalities include:
   * [`GET /api/pfts/`](#get-apipfts): Search for PFT(s) using search pattern based on PFT name, PFT type & Model type
   * [`GET /api/pfts/{pft_id}`](#get-apipftspft_id): Fetch the details of specific PFT
 
+* __Formats:__
+  * [`GET /api/formats/`](#get-apiformats): Search for format(s) using search pattern based on format name & mime type
+  * [`GET /api/formats/{format_id}`](#get-formatsformat_id): Fetch the details of specific Format
+  
+* __Inputs:__
+  * [`GET /api/inputs/`](#get-apiinputs): Search for inputs needed for a PEcAn workflow based on `model_id`, `site_id`, `format_id` & `host_id`.
+  * [`GET /api/inputs/{input_id}`](#get-apiinputsinput_id) *: Download the desired input file (if the `input_id` corresponds to a folder, an optional `filename` argument must be provided)
+  
 * __Workflows:__
   * [`GET /api/workflows/`](#get-apiworkflows): Retrieve a list of PEcAn workflows
   * [`POST /api/workflows/`](#post-apiworkflows): Submit a new PEcAn workflow
   * [`GET /api/workflows/{id}`](#get-apiworkflowsid): Obtain the details of a particular PEcAn workflow by supplying its ID
+  * [`GET /api/workflows/{id}/status`](#get-apiworkflowsidstatus): Obtain the status of a particular PEcAn workflow
+  * [`GET /api/workflows/{id}/file/{filename}`](#get-apiworkflowsidfilefilename): Download the desired file from a PEcAn workflow
 
 * __Runs:__
   * [`GET /api/runs`](#get-apiruns):  Get the list of all the runs
   * [`GET /api/runs/{run_id}`](#get-apirunsrun_id): Fetch the details of a specified PEcAn run
+  * [`GET /api/runs/{run_id}/input/{filename}`](#get-apirunsrun_idinputfilename): Download the desired input file for a run
+  * [`GET /api/runs/{run_id}/output/{filename}`](#get-apirunsrun_idoutputfilename): Download the desired output file for a run
   * [`GET /api/runs/{run_id}/graph/{year}/{y_var}`](#get-apirunsrun_idgraphyeary_var): Plot the graph of desired output variables for a run
 
 _* indicates that the particular API is under development & may not be ready for use_
@@ -541,6 +553,282 @@ print(json.dumps(response.json(), indent=2))
 
 ### {-}
 
+### `GET /api/formats/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Search format(s) with name containing 'ameriflux' & mime type containing 'csv'
+res <- httr::GET(
+         "http://localhost:8000/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $formats
+##   mimetype format_id        format_name
+## 1 text/csv        19 AmeriFlux.level4.h
+## 2 text/csv        20 AmeriFlux.level4.d
+## 3 text/csv        21 AmeriFlux.level4.w
+## 4 text/csv        22 AmeriFlux.level4.m
+## 5 text/csv        35 AmeriFlux.level2.h
+## 6 text/csv        36 AmeriFlux.level3.h
+
+## $count
+## [1] 6
+```
+
+#### Python Snippet
+
+```python
+# # Search format(s) with name containing 'ameriflux' & mime type containing 'csv'
+response = requests.get(
+             "http://localhost:8000/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "formats": [
+##     {
+##       "mimetype": "text/csv",
+##       "format_id": 19,
+##       "format_name": "AmeriFlux.level4.h"
+##     },
+##     {
+##       "mimetype": "text/csv",
+##       "format_id": 20,
+##       "format_name": "AmeriFlux.level4.d"
+##     },
+##     ...
+##   ],
+##   "count": 6
+## }
+  
+```
+
+### {-}
+
+### `GET /api/formats/{format_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Fetch the details of PEcAn format with id = 19
+res <- httr::GET(
+         "http://localhost:8000/api/formats/19",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $mimetype
+## [1] "text/csv"
+
+## $format_id
+## [1] 19
+
+## $name
+## [1] "AmeriFlux.level4.h"
+
+## $notes
+## [1] "Half-hourly AmeriFlux level 4 gap filled, partitioned, and flagged flux tower data. Variables description:  Level 4 data are obtained from the level 3 products, data are ustar filtered, gap-filled using different methods (ANN and MDS) and partitioned (i.e. NEE, GPP, and Re). Flags with information regarding quality of the original and gapfilled data are added.  Missing values: -9999."
+
+## $header
+## [1] ""
+
+## $format_variables
+##                                                   description        name             unit
+## 1                                            Latent heat flux        LE_f            W m-2
+## 2                                          Sensible heat flux         H_f            W m-2
+## 3                                             air temperature        Ta_f        degrees C
+## 4                                      Vapor Pressure Deficit       VPD_f               Pa
+## 5 Cumulative ecosystem respiration over a specified time step        Reco umol C02 m-2 s-1
+## 6                                      Net ecosystem exchange NEE_st_fMDS   umol C m-2 s-1
+```
+
+#### Python Snippet
+
+```python
+# Fetch the details of PEcAn format with id = 19
+response = requests.get(
+             "http://localhost:8000/api/formats/19",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "mimetype": "text/csv",
+##   "format_id": 19,
+##   "name": "AmeriFlux.level4.h",
+##   "notes": "Half-hourly AmeriFlux level 4 gap filled, partitioned, and flagged flux tower data. Variables description:  ## Level 4 data are obtained from the level 3 products, data are ustar filtered, gap-filled using different methods (ANN and ## MDS) and partitioned (i.e. NEE, GPP, and Re). Flags with information regarding quality of the original and gapfilled data ## are added.  Missing values: -9999.",
+##   "header": "",
+##   "format_variables": [
+##     {
+##       "description": "Latent heat flux",
+##       "name": "LE_f",
+##       "unit": "W m-2"
+##     },
+##     ...
+##   ]
+## }
+```
+
+### {-}
+
+### `GET /api/inputs/` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $inputs
+##                sitename model_name revision tag                      hostname file_name   format_name mimetype
+## 1 Willow Creek (US-WCr)     SIPNET      ssr met ebi-forecast.igb.illinois.edu  wcr.clim Sipnet.climna text/csv
+## 2 Willow Creek (US-WCr)     SIPNET      ssr met                        docker  wcr.clim Sipnet.climna text/csv
+##                   file_path         id input_name          start_date            end_date
+## 1 /home/share/data/dbfiles/        235            2000-01-01 06:00:00 2007-01-01 05:59:00
+## 2        /data/sites/willow 2000000001            1998-01-01 00:00:00 2006-12-31 00:00:00
+
+## $count
+## [1] 2
+```
+
+```R
+# Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $inputs
+##                                sitename mimetype       format_name hostname               file_name
+## 1 Niwot Ridge Forest/LTER NWT1 (US-NR1) text/csv AMERIFLUX_BASE_HH   docker AMF_US-NR1_BASE_HH_15-5
+##                               file_path         id              input_name start_date   end_date
+## 1 /data/dbfiles/AmerifluxLBL_site_0-772 1000011238 AmerifluxLBL_site_0-772 1998-01-01 2016-12-31
+
+## $count
+## [1] 1
+```
+
+#### Python Snippet
+
+```python
+# Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
+response = requests.get(
+             "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "inputs": [
+##     {
+##       "sitename": "Willow Creek (US-WCr)",
+##       "model_name": "SIPNET",
+##       "revision": "ssr",
+##       "tag": "met",
+##       "hostname": "ebi-forecast.igb.illinois.edu",
+##       "file_name": "wcr.clim",
+##       "format_name": "Sipnet.climna",
+##       "mimetype": "text/csv",
+##       "file_path": "/home/share/data/dbfiles/",
+##       "id": 235,
+##       "input_name": "",
+##       "start_date": "2000-01-01 06:00:00",
+##       "end_date": "2007-01-01 05:59:00"
+##     },
+##     ...
+##   ],
+##   "count": 2
+## }
+```
+
+```python
+# Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
+response = requests.get(
+             "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "inputs": [
+##     {
+##       "sitename": "Niwot Ridge Forest/LTER NWT1 (US-NR1)",
+##       "hostname": "docker",
+##       "file_name": "AMF_US-NR1_BASE_HH_15-5",
+##       "format_name": "AMERIFLUX_BASE_HH",
+##       "mimetype": "text/csv",
+##       "file_path": "/data/dbfiles/AmerifluxLBL_site_0-772",
+##       "id": 1000011238,
+##       "input_name": "AmerifluxLBL_site_0-772",
+##       "start_date": "1998-01-01",
+##       "end_date": "2016-12-31"
+##     }
+##   ],
+##   "count": 1,
+## }
+```
+
+### {-}
+
+### `GET /api/inputs/{input_id}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the input file with id = 99000000003
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/99000000003",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.2002.nc")
+
+# Download the file 'fraction.plantation' from the input directory with id = 295
+res <- httr::GET(
+         "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.fraction.plantation")
+```
+
+#### Python Snippet
+
+```python
+# Download the input file for with id = 99000000003
+response = requests.get(
+             "http://localhost:8000/api/inputs/99000000003",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
+  
+# Download the file 'fraction.plantation' from the input directory with id = 295
+response = requests.get(
+             "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
+```
+
+### {-}
+
 ### `GET /api/workflows/` {.tabset .tabset-pills}
 
 #### R Snippet
@@ -555,9 +843,9 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
 ## $workflows
-##   id              properties 
-##   <S3: integer64> <list>     
-## 1 1000009172      <list [14]>
+##           id                             folder          started_at site_id   model_id          hostname start_date   end_date
+## 1 1000009900 /fs/data2/output//PEcAn_1000009900 2018-11-09 08:56:37     676 1000000022        geo.bu.edu 2004-01-01 2004-12-31
+## 2 1000009172 /fs/data2/output//PEcAn_1000009172 2018-04-11 18:14:52     676 1000000022 test-pecan.bu.edu 2004-01-01 2004-12-31
 ## ...
 
 ## $count
@@ -579,25 +867,13 @@ print(json.dumps(response.json(), indent=2))
 ##   "workflows": [
 ##     {
 ##       "id": 1000009172,
-##       "properties": {
-##         "end": "2004/12/31",
-##         "pft": [
-##           "soil.IF",
-##           "temperate.deciduous.IF"
-##         ],
-##        "email": "",
-##        "notes": "",
-##        "start": "2004/01/01",
-##        "siteid": "676",
-##        "modelid": "1000000022",
-##        "hostname": "test-pecan.bu.edu",
-##        "sitename": "WillowCreek(US-WCr)",
-##        "input_met": "AmerifluxLBL.SIPNET",
-##        "pecan_edit": "on",
-##        "sitegroupid": "1000000022",
-##        "fluxusername": "pecan",
-##        "input_poolinitcond": "-1"
-##        }
+##       "folder": "/fs/data2/output//PEcAn_1000009900",
+##       "started_at": "2018-11-09 08:56:37",
+##       "site_id": 676,
+##       "model_id": 1000000022,
+##       "hostname": "geo.bu.edu",
+##       "start_date": "2004-01-01",
+##       "end_date": "2004-12-31"
 ##     },
 ##     ...
 ##   ],
@@ -670,6 +946,15 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ## $id
 ## [1] "1000009172"
 
+## $folder
+## [1] "/fs/data2/output//PEcAn_1000009172"
+
+## $hostname
+## [1] "test-pecan.bu.edu"
+
+## $user_id
+## [1] "NA"
+
 ## $properties
 ## $properties$end
 ## [1] "2004/12/31"
@@ -732,6 +1017,9 @@ print(json.dumps(response.json(), indent=2))
 ```
 ## {
 ##   "id": "1000009172",
+##   "folder": "/fs/data2/output//PEcAn_1000009172",
+##   "hostname": "test-pecan.bu.edu",
+##   "user_id": "NA",
 ##   "properties": {
 ##     "end": "2004/12/31",
 ##     "pft": [
@@ -752,6 +1040,87 @@ print(json.dumps(response.json(), indent=2))
 ##     "input_poolinitcond": "-1"
 ##   }
 ## }
+```
+
+### {-}
+
+### `GET /api/workflows/{id}/status` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Get list of run belonging to the workflow with `workflow_id` = '99000000001'
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/99000000001/status",
+         httr::authenticate("carya", "illinois")
+       )
+print(jsonlite::fromJSON(rawToChar(res$content)))
+```
+```
+## $workflow_id
+## [1] "99000000001"
+
+## $status
+## [1] "TRAIT  2020-07-22 07:02:33  2020-07-22 07:02:35  DONE  "      
+## [2] "META  2020-07-22 07:02:35  2020-07-22 07:02:38  DONE  "       
+## [3] "CONFIG  2020-07-22 07:02:38  2020-07-22 07:02:40  DONE  "     
+## [4] "MODEL  2020-07-22 07:02:40  2020-07-22 07:04:07  DONE  "      
+## [5] "OUTPUT  2020-07-22 07:04:07  2020-07-22 07:04:08  DONE  "     
+## [6] "ENSEMBLE  2020-07-22 07:04:08  2020-07-22 07:04:09  DONE  "   
+## [7] "SENSITIVITY  2020-07-22 07:04:09  2020-07-22 07:04:16  DONE  "
+## [8] "FINISHED  2020-07-22 07:04:16  2020-07-22 07:04:16  DONE  "
+```
+
+#### Python Snippet
+
+```python
+# Get list of run belonging to the workflow with `workflow_id` = '99000000001'
+response = requests.get(
+             "http://localhost:8000/api/workflows/99000000001/status",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+print(json.dumps(response.json(), indent=2))
+```
+```
+## {
+##   "workflow_id": "99000000001",
+##   "status": [
+##     "TRAIT  2020-07-22 07:02:33  2020-07-22 07:02:35  DONE  ",
+##     "META  2020-07-22 07:02:35  2020-07-22 07:02:38  DONE  ",
+##     "CONFIG  2020-07-22 07:02:38  2020-07-22 07:02:40  DONE  ",
+##     "MODEL  2020-07-22 07:02:40  2020-07-22 07:04:07  DONE  ",
+##     "OUTPUT  2020-07-22 07:04:07  2020-07-22 07:04:08  DONE  ",
+##     "ENSEMBLE  2020-07-22 07:04:08  2020-07-22 07:04:09  DONE  ",
+##     "SENSITIVITY  2020-07-22 07:04:09  2020-07-22 07:04:16  DONE  ",
+##     "FINISHED  2020-07-22 07:04:16  2020-07-22 07:04:16  DONE  "
+##   ]
+## }
+```
+### {-}
+
+### `GET /api/workflows/{id}/file/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
+res <- httr::GET(
+         "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.ensemble.ts.99000000017.NPP.2002.2002.Rdata")
+```
+
+#### Python Snippet
+
+```python
+# Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
+response = requests.get(
+             "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.ensemble.ts.99000000017.NPP.2002.2002.Rdata", "wb") as file:
+  file.write(response.content)
 ```
 
 ### {-}
@@ -859,6 +1228,13 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ## $finished_at
 ## [1] "2020-07-22 07:02:57"
 
+## $inputs
+## $inputs$info
+## [1] "README.txt"
+
+## $inputs$others
+## [1] "sipnet.clim"          "sipnet.in"            "sipnet.param"         "sipnet.param-spatial"
+
 ## $outputs
 ## $outputs$logfile
 ## [1] "logfile.txt"
@@ -902,6 +1278,15 @@ print(json.dumps(response.json(), indent=2))
 ##   "parameter_list": "ensemble=1",
 ##   "start_time": "2005-01-01",
 ##   "finish_time": "2011-12-31",
+##   "inputs": {
+##     "info": "README.txt",
+##     "others": [
+##       "sipnet.clim",
+##       "sipnet.in",
+##       "sipnet.param",
+##       "sipnet.param-spatial"
+##     ]
+##   }
 ##   "outputs": {
 ##     "logfile": "logfile.txt",
 ##     "info": "README.txt",
@@ -921,6 +1306,60 @@ print(json.dumps(response.json(), indent=2))
 
 ### {-}
 
+### `GET /api/runs/{run_id}/input/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the 'sipnet.in' input file for the run with id = 99000000282
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.sipnet.in")
+```
+
+#### Python Snippet
+
+```python
+# Download the 'sipnet.in' input file for the run with id = 99000000282
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.sipnet.in", "wb") as file:
+  file.write(response.content)
+```
+
+### {-}
+
+### `GET /api/runs/{run_id}/output/{filename}` {.tabset .tabset-pills}
+
+#### R Snippet
+
+```R
+# Download the '2002.nc' output file for the run with id = 99000000282
+res <- httr::GET(
+         "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+         httr::authenticate("carya", "illinois")
+       )
+writeBin(res$content, "test.2002.nc")
+```
+
+#### Python Snippet
+
+```python
+# Download the '2002.nc' output file for the run with id = 99000000282
+response = requests.get(
+             "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+             auth=HTTPBasicAuth('carya', 'illinois')
+           )
+with open("test.2002.nc", "wb") as file:
+  file.write(response.content)
+```
+
+### {-}
+
 ### `GET /api/runs/{run_id}/graph/{year}/{y_var}` {.tabset .tabset-pills}
 
 #### R Snippet
@@ -934,7 +1373,7 @@ res <- httr::GET(
 writeBin(res$content, "test.png")
 ```
 ```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("../../figures/run_output_plot.png"))
+knitr::include_graphics(rep("figures/run_output_plot.png"))
 ```
 
 #### Python Snippet
@@ -949,7 +1388,7 @@ with open("test.png", "wb") as file:
   file.write(response.content)
 ```
 ```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("../../figures/run_output_plot.png"))
+knitr::include_graphics(rep("figures/run_output_plot.png"))
 ```
 
 

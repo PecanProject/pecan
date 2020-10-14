@@ -31,6 +31,14 @@ root$mount("/api/sites", sites_pr)
 pfts_pr <- plumber::plumber$new("pfts.R")
 root$mount("/api/pfts", pfts_pr)
 
+# The endpoints mounted here are related to details of PEcAn formats
+formats_pr <- plumber::plumber$new("formats.R")
+root$mount("/api/formats", formats_pr)
+
+# The endpoints mounted here are related to details of PEcAn inputs
+inputs_pr <- plumber::plumber$new("inputs.R")
+root$mount("/api/inputs", inputs_pr)
+
 # The endpoints mounted here are related to details of PEcAn workflows
 workflows_pr <- plumber::plumber$new("workflows.R")
 root$mount("/api/workflows", workflows_pr)
