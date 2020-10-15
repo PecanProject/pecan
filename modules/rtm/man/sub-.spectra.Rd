@@ -13,9 +13,9 @@
     indices specifying elements to extract or replace.  Indices are
     \code{numeric} or \code{character} vectors or empty (missing) or
     \code{NULL}.  Numeric values are coerced to integer as by
-    \code{\link{as.integer}} (and hence truncated towards zero).
-    Character vectors will be matched to the \code{\link{names}} of the
-    object (or for matrices/arrays, the \code{\link{dimnames}}):
+    \code{\link[base]{as.integer}} (and hence truncated towards zero).
+    Character vectors will be matched to the \code{\link[base]{names}} of the
+    object (or for matrices/arrays, the \code{\link[base]{dimnames}}):
     see \sQuote{Character indices} below for further details.
 
     For \code{[}-indexing only: \code{i}, \code{j}, \code{\dots} can be
@@ -36,9 +36,9 @@
     indices specifying elements to extract or replace.  Indices are
     \code{numeric} or \code{character} vectors or empty (missing) or
     \code{NULL}.  Numeric values are coerced to integer as by
-    \code{\link{as.integer}} (and hence truncated towards zero).
-    Character vectors will be matched to the \code{\link{names}} of the
-    object (or for matrices/arrays, the \code{\link{dimnames}}):
+    \code{\link[base]{as.integer}} (and hence truncated towards zero).
+    Character vectors will be matched to the \code{\link[base]{names}} of the
+    object (or for matrices/arrays, the \code{\link[base]{dimnames}}):
     see \sQuote{Character indices} below for further details.
 
     For \code{[}-indexing only: \code{i}, \code{j}, \code{\dots} can be
@@ -58,7 +58,7 @@
 \item{drop}{For matrices and arrays.  If \code{TRUE} the result is
     coerced to the lowest possible dimension (see the examples).  This
     only works for extracting elements, not for the replacement.  See
-    \code{\link{drop}} for further details.
+    \code{\link[base]{drop}} for further details.
   }
 }
 \description{

@@ -15,8 +15,10 @@ Depends:
     PEcAn.utils
 Imports:
     PEcAn.logger,
-    ggplot2
+    PEcAn.MA,
+    ggplot2,
+    MASS
 Suggests:
     testthat
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

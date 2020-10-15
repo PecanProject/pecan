@@ -105,9 +105,9 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-### Core configuration {#xml-core-config}
+## Core configuration {#xml-core-config}
 
-#### Top-level structure {#xml-structure}
+### Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -123,7 +123,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-#### `info`: Run metadata {#xml-info}
+### `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -132,7 +132,7 @@ This information is not essential to a successful model run, but is useful for t
   <info>
     <notes>Example run</notes>
     <userid>-1</userid>
-	<username>guestuser</username>
+    <username>guestuser</username>
     <date>2018/09/18 19:12:28 +0000</date>
   </info>
 ```
@@ -507,7 +507,7 @@ The `modellauncher` has 2 arguements:
 * `binary` : [required] The full path to the binary modellauncher. Source code for this file can be found in `pecan/contrib/modellauncher`](https://github.com/PecanProject/pecan/tree/develop/contrib/modellauncher).
 * `qsub.extra` : [optional] Additional flags to pass to qsub besides those specified in the `qsub` tag in host. This option can be used to specify that the MPI environment needs to be used and the number of nodes that should be used.
 
-### Advanced features {#xml-advanced}
+## Advanced features {#xml-advanced}
 
 ### `ensemble`: Ensemble Runs {#xml-ensemble}
 

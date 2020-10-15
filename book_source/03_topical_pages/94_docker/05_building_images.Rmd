@@ -9,20 +9,20 @@ However, there are cases where it makes sense to re-build the Docker images loca
 The following is a list of PEcAn-specific images and reasons why you would want to rebuild them locally: 
 
 - `pecan/depends` -- Rebuild if:
-  - You modify the `docker/base/Dockerfile.depends`
+  - You modify the `docker/depends/Dockerfile`
   - You introduce new system dependencies (i.e. things that need to be installed with `apt-get`)
   - You introduce new R package dependencies, and you want those R package installations to be cached during future builds. For packages with fast build times, it may be fine to let them be installed as part of PEcAn's standard build process (i.e. `make`).
 - `pecan/base` -- Rebuild if:
   - You built a new version of `pecan/depends` (on which `pecan/base` depends)
-  - You modify the `docker/base/Dockerfile.base`
+  - You modify the `docker/base/Dockerfile`
   - You made changes to the PEcAn R package source code, the Makefile, or `web/workflow.R`.
 	- NOTE that changes to the web interface code affect `pecan/web`, _not_ `pecan/base`
 - `pecan/executor` -- Rebuild if:
   - You built a new version of `pecan/base` (on which `pecan/executor` depends) and/or, `pecan/depends` (on which `pecan/base` depends)
-  - You modified the `docker/base/Dockerfile.executor`
+  - You modified the `docker/executor/Dockerfile`
   - You modified the RabbitMQ Python scripts (e.g. `docker/receiver.py`, `docker/sender.py`)
 - `pecan/web` -- Rebuild if you modified any of the following:
-  - `docker/base/Dockerfile.web`
+  - `docker/web/Dockerfile`
   - The PHP/HTML/JavaScript code for the PEcAn web interface in `web/` (_except_ `web/workflow.R` -- that goes in `pecan/base`) 
   - `docker/config.docker.php` (the `config.php` file for Docker web instances)
   - `documentation/index_vm.html` (the documentation HTML website)
@@ -47,7 +47,7 @@ docker build -t pecan/<image name>:<image version> -f docker/base/Dockerfile.<im
 For instance, to build a local version of the `pecan/depends:latest` image, you would run:
 
 ```bash
-docker build -t pecan/depends:latest -f docker/base/Dockerfile.depends .
+docker build -t pecan/depends:latest -f docker/depends/Dockerfile .
 ```
 
 The breakdown of this command is as follows:
@@ -75,8 +75,7 @@ To see a table of all local images, including their tags and IDs, run `docker im
 	
 	This is an effective way to do local development and testing of different PEcAn versions, as described [below](#docker-local-devel).
 
-- `-f docker/base/Dockerfile.depends` -- The `-f/--file` tag is used to provide an alternative location and file name for the Dockerfile.
-The convention in PEcAn is to put Dockerfiles for core PEcAn functionality in `docker/base/` and for specific models in `docker/models/`, and to name these files `Dockerfile.<image name>`.
+- `-f docker/depends/Dockerfile` -- The `-f/--file` tag is used to provide an alternative location and file name for the Dockerfile.
 
 ### Local development and testing with Docker {#docker-local-devel}
 

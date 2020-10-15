@@ -59,6 +59,12 @@ test_that("returns empty list if no trait data found", {
   expect_equal(query.traits(ids=1, priors="not_a_trait", con=con), list())
 })
 
+test_that("connection is required", {
+  expect_error(
+    query.traits(ids = 938, priors = "SLA"),
+    '"con" is missing')
+})
+
 # Test `query_traits` function, which has a slightly different API
 test_that("query_traits works as expected", {
   # NOTE: Capture output used here to avoid polluting the testthat

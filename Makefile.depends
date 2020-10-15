@@ -11,15 +11,15 @@ $(call depends,base/workflow): | .install/modules/data.atmosphere .install/modul
 $(call depends,modules/allometry): | .install/base/logger .install/base/db
 $(call depends,modules/assim.batch): | .install/modules/benchmark .install/base/db .install/modules/emulator .install/base/logger .install/modules/meta.analysis .install/base/remote .install/base/settings .install/modules/uncertainty .install/base/utils
 $(call depends,modules/assim.sequential): | .install/base/logger .install/base/remote
-$(call depends,modules/benchmark): | .install/modules/data.land .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils
+$(call depends,modules/benchmark): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/modules/data.land
 $(call depends,modules/data.atmosphere): | .install/base/db .install/base/logger .install/base/remote .install/base/utils
 $(call depends,modules/data.hydrology): | .install/base/logger .install/base/utils
-$(call depends,modules/data.land): | .install/base/db .install/base/utils .install/base/logger .install/base/remote .install/base/settings
-$(call depends,modules/data.remote): | .install/base/logger .install/base/remote
+$(call depends,modules/data.land): | .install/modules/benchmark .install/modules/data.atmosphere .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization
+$(call depends,modules/data.remote): | .install/base/db .install/base/utils .install/base/logger .install/base/remote
 $(call depends,modules/emulator): | .install/base/logger
-$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/logger .install/base/settings .install/modules/priors
+$(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/logger .install/base/settings
 $(call depends,modules/photosynthesis): | .install/base/logger
-$(call depends,modules/priors): | .install/base/utils .install/base/logger
+$(call depends,modules/priors): | .install/base/utils .install/base/logger .install/modules/meta.analysis
 $(call depends,modules/rtm): | .install/base/logger .install/modules/assim.batch .install/base/utils .install/models/ed
 $(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors .install/base/db .install/modules/emulator .install/base/logger
 $(call depends,models/basgra): | .install/base/logger .install/base/utils
@@ -38,3 +38,5 @@ $(call depends,models/maat): | .install/modules/data.atmosphere .install/base/lo
 $(call depends,models/maespa): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/utils
 $(call depends,models/preles): | .install/base/utils .install/base/logger .install/modules/data.atmosphere .install/base/utils
 $(call depends,models/sipnet): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/utils
+$(call depends,models/stics): | .install/base/settings .install/base/db .install/base/logger .install/base/utils .install/base/remote
+$(call depends,models/template): | .install/base/db .install/base/logger .install/base/utils

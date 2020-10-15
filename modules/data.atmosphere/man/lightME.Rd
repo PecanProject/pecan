@@ -4,8 +4,7 @@
 \alias{lightME}
 \title{Simulates the light macro environment}
 \usage{
-lightME(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05,
-  alpha = 0.85)
+lightME(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05, alpha = 0.85)
 }
 \arguments{
 \item{lat}{the latitude, default is 40 (Urbana, IL, U.S.).}

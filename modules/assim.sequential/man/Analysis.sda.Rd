@@ -4,8 +4,15 @@
 \alias{Analysis.sda}
 \title{Analysis.sda}
 \usage{
-Analysis.sda(settings, FUN, Forecast = list(Pf = NULL, mu.f = NULL, Q =
-  NULL, X = NULL), Observed = list(R = NULL, Y = NULL), H, extraArg, ...)
+Analysis.sda(
+  settings,
+  FUN,
+  Forecast = list(Pf = NULL, mu.f = NULL, Q = NULL, X = NULL),
+  Observed = list(R = NULL, Y = NULL),
+  H,
+  extraArg,
+  ...
+)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

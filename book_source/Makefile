@@ -23,7 +23,10 @@ DEMO_1_FIGS := $(wildcard ../documentation/tutorials/01_Demo_Basic_Run/extfiles/
 build: bkdcheck
 	mkdir -p extfiles
 	cp -f ${DEMO_1_FIGS} extfiles/
-	Rscript -e 'bookdown::render_book("index.Rmd", "bookdown::gitbook")'
+	# options call is a workaround for a behavior change and probable bug in bookdown 0.20:
+	# https://stackoverflow.com/a/62583304
+	# Remove when this is fixed in Bookdown
+	Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
 
 clean:
 	rm -rf ../book/*
@@ -32,4 +35,4 @@ deploy: build
 	./deploy.sh
 
 pdf: bkdcheck
-	Rscript -e 'bookdown::render_book("index.Rmd", "bookdown::pdf_book")'
+	Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::pdf_book")'

@@ -112,3 +112,5 @@ Estab,NA,1 ha-1,New Individuals,Diversity,real,lon,lat,time,pft,New Individuals,
 Mort,NA,1 ha-1,Mortality,Diversity,real,lon,lat,time,pft,Individuals lost through death,
 SoilDepth,NA,m,Soil Depth Layer,Deprecated,real,depth,NA,NA,NA,Depth to the bottom of each model-defined soil layer,
 assimilation_rate,NA,kg C m-2 s-1,Leaf assimilation rate,Carbon Fluxes,real,lon,lat,time,NA,Rate of leaf photosynthesis / carbon assimilation,
+date_of_budburst,NA,day of year,Date of Budburst,Phenology,real,lon,lat,time,NA,Date of Budburst
+date_of_senescence,NA,day of year,Date of Senescence,Phenology,real,lon,lat,time,NA,Date of Senescence

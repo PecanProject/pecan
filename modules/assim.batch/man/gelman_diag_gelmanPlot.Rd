@@ -6,8 +6,13 @@
 \usage{
 gelman_diag_gelmanPlot(x, ...)
 }
+\arguments{
+\item{x}{MCMC samples}
+
+\item{...}{additional arguments}
+}
 \description{
-Calculates Gelman diagnostic cumulatively. This is a much 
+Calculates Gelman diagnostic cumulatively. This is a much
 more conservative approach than the moving-window method.
 }
 \author{

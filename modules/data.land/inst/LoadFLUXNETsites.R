@@ -96,7 +96,7 @@ for(s in 1:nsite){
                   " TOWER_BEGAN =",as.character(AMERIFLUX_table$TOWER_BEGAN[s]),
                   " TOWER_END =",as.character(AMERIFLUX_table$TOWER_END[s])
                   )
-    InsertString = paste0("INSERT INTO sites(sitename,country,mat,map,notes,geometry,user_id,created_at,updated_at) VALUES(",
+    InsertString = paste0("INSERT INTO sites(sitename,country,mat,map,notes,geometry,user_id) VALUES(",
                           "'",sitename,"', ",
                           "'",country,"', ",
                           mat,", ",
@@ -104,7 +104,7 @@ for(s in 1:nsite){
                           "'",notes,"', ",
                           "ST_GeomFromText('POINT(",lon," ",lat," ",elev,")', 4326), ",
                           user.id,
-                          ", NOW(), NOW() );")
+                          ");")
     db.query(InsertString,con)        
   }
     
@@ -185,13 +185,13 @@ for(s in 1:nsite){
     notes = paste0("PI: ",PI,"; ",site.char,"; FLUXNET DESCRIPTION: ",description)
     notes = gsub("'","",notes) # drop single quotes from notes
     
-    InsertString = paste0("INSERT INTO sites(sitename,country,notes,geometry,user_id,created_at,updated_at) VALUES(",
+    InsertString = paste0("INSERT INTO sites(sitename,country,notes,geometry,user_id) VALUES(",
                           "'",sitename,"', ",
                           "'",country,"', ",
                           "'",notes,"', ",
                           "ST_GeomFromText('POINT(",lon," ",lat," ",elev,")', 4326), ",
                           user.id,
-                          ", NOW(), NOW() );")
+                          ");")
     db.query(InsertString,con)
     
   } ## end IF new site

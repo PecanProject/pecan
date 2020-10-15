@@ -4,8 +4,16 @@
 \alias{get_NARR_thredds}
 \title{Retrieve NARR data using thredds}
 \usage{
-get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = TRUE,
-  drop_outside = TRUE, parallel = TRUE, ncores = 1)
+get_NARR_thredds(
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  progress = TRUE,
+  drop_outside = TRUE,
+  parallel = TRUE,
+  ncores = 1
+)
 }
 \arguments{
 \item{start_date}{Start date for meteorology}

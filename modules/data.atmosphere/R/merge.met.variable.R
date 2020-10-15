@@ -10,7 +10,7 @@
 #'   print debugging information as they run? 
 #' @param ... 
 #'
-#' @return
+#' @return Currently nothing. TODO: Return a data frame summarizing the merged files.
 #' @export
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
