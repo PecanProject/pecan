@@ -22,15 +22,18 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/) for full documentation of the PEcAn Project.
+Consult documentation of the PEcAn Project; either the [lastest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/master/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
 
 ## Getting Started
 
-See ["Getting Started"](https://pecanproject.github.io/pecan-documentation/getting-started.html) on the PEcAn.
+See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that provides self-guided tutorials, links to vignettes, and an overview presentation.
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/appendix.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of three methods:
+1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
+2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-docker). This is recommended, especially for development and production deployment.
+3. Install all of the components individually on your own Linux or MacOS computer or server. This is called a ['native install'](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-native), but is more challenging and has relatively few advantages over using Docker.
 
 ### Website
 
@@ -51,6 +54,8 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 * Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](https://doi.org/10.1890/14-0497.1)
 * Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
 * LeBauer, David, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P. Long, and Michael C. Dietze. "BETYdb: a yield, trait, and ecosystem service database applied to second‐generation bioenergy feedstock production." GCB Bioenergy (2017).
+
+A extensive list of publications that apply PEcAn or are informed by our work on [Google Scholar](https://scholar.google.com/citations?hl=en&user=HWhxBY4AAAAJ).
 
 ## Acknowledgements
 
