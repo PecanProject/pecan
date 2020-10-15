@@ -28,8 +28,9 @@ ENV AUTH_REQ="TRUE" \
     PGHOST="postgres"\
     RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F"\
     DATA_DIR="/data/"\
-    DBFILES_DIR="/data/dbfiles/"
-    
+    DBFILES_DIR="/data/dbfiles/" \
+    SECRET_KEY_BASE="thisisnotasecret"
+
 WORKDIR /api/R
 
 CMD Rscript entrypoint.R
