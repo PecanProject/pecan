@@ -1,4 +1,4 @@
-* using log directory ‘/tmp/RtmpkgaWNG/PEcAn.utils.Rcheck’
+* using log directory ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck’
 * using R version 4.0.2 (2020-06-22)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
@@ -8,7 +8,10 @@
 * this is package ‘PEcAn.utils’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... NOTE
+Packages suggested but not available for checking:
+  'PEcAn.data.atmosphere', 'PEcAn.data.land', 'PEcAn.settings',
+  'PEcAn.DB'
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -96,14 +99,12 @@ Rd file 'retry.func.Rd':
 
 These lines will be truncated in the PDF manual.
 * checking Rd cross-references ... WARNING
+Unknown packages ‘PEcAn.priors’, ‘PEcAn.benchmark’ in Rd xrefs
 Missing link or links in documentation object 'download.file.Rd':
   ‘method’
 
 Missing link or links in documentation object 'get.results.Rd':
   ‘read.settings’
-
-Missing link or links in documentation object 'read.output.Rd':
-  ‘[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}’
 
 Missing link or links in documentation object 'standard_vars.Rd':
   ‘[udunits2]{udunits}’
@@ -222,9 +223,9 @@ Argument items with no description in Rd object 'theme_border':
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 5 WARNINGs, 4 NOTEs
+Status: 5 WARNINGs, 5 NOTEs
 See
-  ‘/tmp/RtmpkgaWNG/PEcAn.utils.Rcheck/00check.log’
+  ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck/00check.log’
 for details.
 
 
