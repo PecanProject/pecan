@@ -4,73 +4,74 @@ on:
   push:
     branches:
       - develop
+      - master
+      - '*'
 
   # this runs on the develop branch
   schedule:
     - cron: '0 0 * * *'
 
+env:
+  # official supported version of R
+  SUPPORTED: 4.0.2
+  MASTER_REPO: PecanProject/pecan
+  DOCKERHUB_ORG: pecan
+
 jobs:
   depends:
-    if: github.repository == 'PecanProject/pecan'
-
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          # develop is special since it will build the default depends for develop
-          # this is not a real R version.
-          - develop
-          # 3.4 does not work
-          - 3.5
-          # 3.6 != latest in 3.6 series
           - 3.6.3
-          # 4.0 not released yet
-          # unstable version
-          - devel
-        include:
-          - R: develop
-            TAG: develop
-          - R: 3.5
-            TAG: 3.5-develop
-          - R: 3.6.3
-            TAG: 3.6-develop
-          - R: devel
-            TAG: unstable-develop
+          - 4.0.2
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build for R version ${{ matrix.R }}
+      # calculate some variables that are used later
+      - name: github branch
         run: |
-          if [ "${{ matrix.R }}" == "develop" ]; then
-            docker build --pull \
-              --tag image \
-              docker/depends
-          else
-            docker build --pull \
-              --build-arg R_VERSION=${{ matrix.R }} \
-              --tag image \
-              docker/depends
+          BRANCH=${GITHUB_REF##*/}
+          echo "::set-env name=GITHUB_BRANCH::${BRANCH}"
+
+          tags="R${{ matrix.R }}"
+          if [ "${{ matrix.R }}" == "${{ env.SUPPORTED }}" ]; then
+            if [ "$BRANCH" == "master" ]; then
+              tags="${tags},latest"
+            elif [ "$BRANCH" == "develop" ]; then
+              tags="${tags},develop"
+            fi
           fi
+          echo "::set-env name=TAG::${tags}"
 
-      - name: Login into registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
-            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          fi
+      # this will publish to the actor (person) github packages
+      - name: Publish to GitHub
+        if: github.event_name == 'push'
+        uses: elgohr/Publish-Docker-Github-Action@2.22
+        env:
+          R_VERSION: ${{ matrix.R  }}
+        with:
+          name: ${{ github.repository_owner }}/pecan/depends
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          context: docker/depends
+          tags: "${{ env.TAG }}"
+          registry: docker.pkg.github.com
+          buildargs: R_VERSION
 
-      - name: Push docker image ${{ matrix.R }}
-        run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/depends
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          docker tag image $IMAGE_ID:${{ matrix.TAG }}
-          docker push $IMAGE_ID:${{ matrix.TAG }}
-
-          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" -a -n "${{ secrets.DOCKERHUB_PASSWORD }}" ]; then
-            docker tag image pecan/depends:${{ matrix.TAG }}
-            docker push pecan/depends:${{ matrix.TAG }}
-          fi
+      # this will publish to the clowder dockerhub repo
+      - name: Publish to Docker Hub
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
+        uses: elgohr/Publish-Docker-Github-Action@2.18
+        env:
+          R_VERSION: ${{ matrix.R  }}
+        with:
+          name: ${{ env.DOCKERHUB_ORG }}/depends
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          context: docker/depends
+          tags: "${{ env.TAG }}"
+          buildargs: R_VERSION

@@ -1,4 +1,5 @@
 library(dplyr)
+source("get.file.R")
 
 #' Get the list of runs (belonging to a particuar workflow)
 #' @param workflow_id Workflow id (character)
@@ -85,7 +86,7 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<run_id>
-getRunDetails <- function(run_id, res){
+getRunDetails <- function(req, run_id, res){
   
   dbcon <- PEcAn.DB::betyConnect()
   
@@ -99,6 +100,13 @@ getRunDetails <- function(run_id, res){
   
   qry_res <- Runs %>% collect()
   
+  if(Sys.getenv("AUTH_REQ") == TRUE){
+    user_id <- tbl(dbcon, "workflows") %>%
+      select(workflow_id=id, user_id) %>% full_join(Runs, by="workflow_id")  %>%
+      filter(id == !!run_id) %>%
+      pull(user_id)
+  }
+  
   PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
@@ -106,10 +114,25 @@ getRunDetails <- function(run_id, res){
     return(list(error="Run with specified ID was not found"))
   }
   else {
+    
+    if(Sys.getenv("AUTH_REQ") == TRUE) {
+      # If user id of requested run does not match the caller of the API, return 403 Access forbidden
+      if(is.na(user_id) || user_id != req$user$userid){
+        res$status <- 403
+        return(list(error="Access forbidden"))
+      }
+    }
+    
     # Convert the response from tibble to list
     response <- list()
     for(colname in colnames(qry_res)){
       response[colname] <- qry_res[colname]
+    }
+    
+    # If inputs exist on the host, add them to the response
+    indir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/run/", run_id)
+    if(dir.exists(indir)){
+      response$inputs <- getRunInputs(indir)
     }
     
     # If outputs exist on the host, add them to the response
@@ -120,6 +143,86 @@ getRunDetails <- function(run_id, res){
     
     return(response)
   }
+}
+
+#################################################################################################
+
+#' Get the input file specified by user for a run
+#' @param run_id Run id (character)
+#' @param filename Name of the input file (character)
+#' @return Input file specified by user for the run
+#' @author Tezan Sahu
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<run_id>/input/<filename>
+getRunInputFile <- function(req, run_id, filename, res){
+  
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Run <- tbl(dbcon, "runs") %>%
+    filter(id == !!run_id)
+  
+  workflow_id <- tbl(dbcon, "ensembles") %>%
+    select(ensemble_id=id, workflow_id) %>%
+    full_join(Run, by="ensemble_id")  %>%
+    filter(id == !!run_id) %>%
+    pull(workflow_id)
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  inputpath <- paste0( Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
+
+  result <- get.file(inputpath, req$user$userid)
+  if(is.null(result$file_contents)){
+    if(result$status == "Error" && result$message == "Access forbidden") {
+      res$status <- 403
+      return()
+    }
+    if(result$status == "Error" && result$message == "File not found") {
+      res$status <- 404
+      return()
+    }
+  }
+  return(result$file_contents)
+}
+
+#################################################################################################
+
+#' Get the output file specified by user for a run
+#' @param run_id Run id (character)
+#' @param filename Name of the output file (character)
+#' @return Output file specified by user for the run
+#' @author Tezan Sahu
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<run_id>/output/<filename>
+getRunOutputFile <- function(req, run_id, filename, res){
+  
+  dbcon <- PEcAn.DB::betyConnect()
+  
+  Run <- tbl(dbcon, "runs") %>%
+    filter(id == !!run_id)
+  
+  workflow_id <- tbl(dbcon, "ensembles") %>%
+    select(ensemble_id=id, workflow_id) %>%
+    full_join(Run, by="ensemble_id")  %>%
+    filter(id == !!run_id) %>%
+    pull(workflow_id)
+  
+  PEcAn.DB::db.close(dbcon)
+  
+  outputpath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
+  
+  result <- get.file(outputpath, req$user$userid)
+  if(is.null(result$file_contents)){
+    if(result$status == "Error" && result$message == "Access forbidden") {
+      res$status <- 403
+      return()
+    }
+    if(result$status == "Error" && result$message == "File not found") {
+      res$status <- 404
+      return()
+    }
+  }
+  return(result$file_contents)
 }
 
 #################################################################################################
@@ -136,7 +239,7 @@ getRunDetails <- function(run_id, res){
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
 
-plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600, res){
+plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res){
   # Get workflow_id for the run
   dbcon <- PEcAn.DB::betyConnect()
   
@@ -149,6 +252,14 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
     filter(id == !!run_id) %>%
     pull(workflow_id)
   
+  if(Sys.getenv("AUTH_REQ") == TRUE){
+    user_id <- tbl(dbcon, "workflows") %>%
+      select(id, user_id) %>%
+      filter(id == !!workflow_id) %>%
+      pull(user_id)
+  }
+  
+  
   PEcAn.DB::db.close(dbcon)
   
   # Check if the data file exists on the host
@@ -158,12 +269,38 @@ plotResults <- function(run_id, year, y_var, x_var="time", width=800, height=600
     return()
   }
   
+  if(Sys.getenv("AUTH_REQ") == TRUE) {
+    # If user id of requested run does not match the caller of the API, return 403 Access forbidden
+    if(is.na(user_id) || user_id != req$user$userid){
+      res$status <- 403
+      return(list(error="Access forbidden"))
+    }
+  }
+  
   # Plot & return
   filename <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/temp", stringi::stri_rand_strings(1, 10), ".png")
   PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), year=year, filename=filename)
   img_bin <- readBin(filename,'raw',n = file.info(filename)$size)
   file.remove(filename)
   return(img_bin)
+}
+
+
+#################################################################################################
+
+#' Get the inputs of a run (if the files exist on the host)
+#' @param indir Run input directory (character)
+#' @return Input details of the run
+#' @author Tezan Sahu
+
+getRunInputs <- function(indir){
+  inputs <- list()
+  if(file.exists(paste0(indir, "/README.txt"))){
+    inputs$info <- "README.txt"
+  }
+  all_files <- list.files(indir)
+  inputs$others <- all_files[!all_files %in% c("job.sh", "rabbitmq.out", "README.txt")]
+  return(inputs)
 }
 
 #################################################################################################

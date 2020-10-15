@@ -41,6 +41,8 @@ getSite <- function(site_id, res){
 #' @author Tezan Sahu
 #* @get /
 searchSite <- function(sitename="", ignore_case=TRUE, res){
+  sitename <- URLdecode(sitename)
+  
   dbcon <- PEcAn.DB::betyConnect()
   
   sites <- tbl(dbcon, "sites") %>%
