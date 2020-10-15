@@ -11,7 +11,7 @@ cd $(dirname $0)
 # Can set the following variables
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
-R_VERSION=${R_VERSION:-"3.5"}
+R_VERSION=${R_VERSION:-"4.0.2"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -229,4 +229,5 @@ for x in api; do
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
         apps/$x/
-done        
+done
+

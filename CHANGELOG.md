@@ -7,8 +7,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Due to dependencies, PEcAn is now using R 4.0.2 for Docker images.
+
+This is a major change:
+
+- Newer version of R 
+- Ubuntu 20.04 instead of Debian.
+
 ### Fixed
 
+- Use TRAEFIK_FRONTEND_RULE in compose file and TRAEFIK_HOST in env.example, using TRAEFIK_HOST everywhere now. Make sure TRAEFIK_HOST is used in .env
 - Use initial biomass pools for Sorghum and Setaria #2495, #2496
 - PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
 - PEcAn.utils::tranformstats() assumed the statistic names column of its input was a factor. It now accepts character too, and returns the same class given as input (#2545).
@@ -30,6 +38,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
 - Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
