@@ -69,10 +69,11 @@ jobs:
       - name: Publish to GitHub
         #if: github.event_name == 'push'
         run: |
+          repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github ${{ github.repository }}/${image#pecan/}:${v}
-              docker push ${{ github.repository }}/${image#pecan/}:${v}
+              docker tag ${image}:github ${repo}/${image#pecan/}:${v}
+              docker push ${repo}/${image#pecan/}:${v}
             done
           done
 
