@@ -18,7 +18,7 @@ $(call depends,modules/data.land): | .install/modules/benchmark .install/modules
 $(call depends,modules/data.remote): | .install/base/db .install/base/utils .install/base/logger .install/base/remote
 $(call depends,modules/emulator): | .install/base/logger
 $(call depends,modules/meta.analysis): | .install/base/utils .install/base/db .install/base/logger .install/base/settings
-$(call depends,modules/photosynthesis): | .install/base/logger
+$(call depends,modules/photosynthesis): |
 $(call depends,modules/priors): | .install/base/utils .install/base/logger .install/modules/meta.analysis
 $(call depends,modules/rtm): | .install/base/logger .install/modules/assim.batch .install/base/utils .install/models/ed
 $(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors .install/base/db .install/modules/emulator .install/base/logger
