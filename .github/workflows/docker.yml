@@ -58,35 +58,35 @@ jobs:
             echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           fi
 
-      # test
-      - name: test
-        if: env.PECAN_TAGS != ''
-        run: |
-          echo ${PECAN_VERSION}
-          echo ${PECAN_TAGS}
-
       # use shell script to build, there is some complexity in this
-      # - name: create images
-      #   run: ./docker.sh -i github
-      #   env:
-      #     PECAN_GIT_CHECKSUM: ${{ github.sha }}
-      #     PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
-      #     VERSION: ${PECAN_VERSION}
+      - name: create images
+        run: ./docker.sh -i github
+        env:
+          PECAN_GIT_CHECKSUM: ${{ github.sha }}
+          PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
+          VERSION: ${PECAN_VERSION}
 
-      # # push all images to github
-      # - name: Publish to GitHub
-      #   run: |
-      #     echo ${PECAN_VERSION}
-      #     echo ${PECAN_TAGS}
-          
-      #     for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
-      #       for v in ${PECAN_TAGS}; do
-      #         docker tag ${image}:github ${{ github.repository_owner }}/${image}:${v}
-      #         docker push ${{ github.repository_owner }}/${image}:${v}
-      #       done
-      #     done
+      # push all images to github
+      - name: Publish to GitHub
+        if: github.event_name == 'push'
+        run: |
+          for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
+            for v in ${PECAN_TAGS}; do
+              docker tag ${image}:github ${{ github.repository }}/${image#pecan/}:${v}
+              docker push ${{ github.repository }}/${image#pecan/}:${v}
+            done
+          done
 
-
+      # push all images to dockerhub
+      - name: Publish to DockerHub
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
+        run: |
+          for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
+            for v in ${PECAN_TAGS}; do
+              docker tag ${image}:github ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+              docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+            done
+          done
 
       # # build the docker image, this will always run to make sure
       # # the Dockerfile still works.
