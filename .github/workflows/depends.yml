@@ -5,7 +5,6 @@ on:
     branches:
       - develop
       - master
-      - '*'
 
   # this runs on the develop branch
   schedule:

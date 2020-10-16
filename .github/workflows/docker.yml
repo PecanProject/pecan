@@ -67,106 +67,36 @@ jobs:
 
       # push all images to github
       - name: Publish to GitHub
-        #if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
         run: |
           echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
           repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
+              docker tag ${image}:github ${INPUT_REGISTRY}/${DOCKER_PROJECT}/${image#pecan/}:${v}
               docker push docker.pkg.github.com/${repo}/${image#pecan/}:${v}
             done
           done
           docker logout
         env:
+          DOCKER_PROJECT: ${{ github.repository_owner }}/pecan
           INPUT_REGISTRY: docker.pkg.github.com
           INPUT_USERNAME: ${{ github.actor }}
           INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       # push all images to dockerhub
       - name: Publish to DockerHub
-        #if: github.event_name == 'push' && github.repository == env.MASTER_REPO
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
         run: |
           echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+              docker tag ${image}:github ${DOCKER_PROJECT}/${image#pecan/}:${v}
               docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
             done
           done
           docker logout
         env:
+          DOCKER_PROJECT: ${{ env.DOCKERHUB_ORG }}
           INPUT_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           INPUT_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      # # build the docker image, this will always run to make sure
-      # # the Dockerfile still works.
-      # - name: Build image
-      #   run: |
-      #     docker build \
-      #       --build-arg BRANCH=${GITHUB_BRANCH} \
-      #       --build-arg VERSION=${CLOWDER_VERSION} \
-      #       --build-arg BUILDNUMBER=${{ github.run_number }} \
-      #       --build-arg GITSHA1=${{ github.sha  }} \
-      #       --tag image ${{ matrix.FOLDER }}
-
-      # # this will publish to the actor (person) github packages
-      # - name: Publish to GitHub
-      #   if: github.event_name == 'push'
-      #   uses: elgohr/Publish-Docker-Github-Action@2.18
-      #   env:
-      #     BRANCH: ${{ env.GITHUB_BRANCH }}
-      #     VERSION: ${{ env.CLOWDER_VERSION }}
-      #     BUILDNUMBER: ${{ github.run_number }}
-      #     GITSHA1: ${{ github.sha  }}
-      #   with:
-      #     name: ${{ github.repository_owner }}/clowder/${{ matrix.IMAGE }}
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      #     context: ${{ matrix.FOLDER }}
-      #     tags: "${{ env.CLOWDER_TAGS }}"
-      #     registry: docker.pkg.github.com
-      #     buildargs: BRANCH,VERSION,BUILDNUMBER,GITSHA1
-
-      # # this will publish to the clowder dockerhub repo
-      # - name: Publish to Docker Hub
-      #   if: github.event_name == 'push' && github.repository == env.MASTER_REPO
-      #   uses: elgohr/Publish-Docker-Github-Action@2.18
-      #   env:
-      #     BRANCH: ${{ env.GITHUB_BRANCH }}
-      #     VERSION: ${{ env.CLOWDER_VERSION }}
-      #     BUILDNUMBER: ${{ github.run_number }}
-      #     GITSHA1: ${{ github.sha  }}
-      #   with:
-      #     name: ${{ env.DOCKERHUB_ORG }}/${{ matrix.IMAGE }}
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      #     context: ${{ matrix.FOLDER }}
-      #     tags: "${{ env.CLOWDER_TAGS }}"
-      #     buildargs: BRANCH,VERSION,BUILDNUMBER,GITSHA1
-
-      # # this will update the README of the dockerhub repo
-      # - name: check file
-      #   id: filecheck
-      #   run: |
-      #     if [ "${{ matrix.README }}" != "" ]; then
-      #       if [ -e "${{ matrix.README }}" ]; then
-      #         echo "##[set-output name=readme;]${{ matrix.README }}"
-      #       else
-      #         echo "##[set-output name=readme;]"
-      #       fi
-      #     else
-      #       if [ -e "${{ matrix.FOLDER }}/README.md" ]; then
-      #         echo "##[set-output name=readme;]${{ matrix.FOLDER }}/README.md"
-      #       else
-      #         echo "##[set-output name=readme;]"
-      #       fi
-      #     fi
-      # - name: Docker Hub Description
-      #   if: github.event_name == 'push' && github.repository == env.MASTER_REPO && env.BRANCH == 'master' && steps.filecheck.outputs.readme != ''
-      #   uses: peter-evans/dockerhub-description@v2
-      #   env:
-      #     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      #     DOCKERHUB_REPOSITORY: ${{ env.DOCKERHUB_ORG }}/${{ matrix.IMAGE }}
-      #     README_FILEPATH: ${{ steps.filecheck.outputs.readme }}
