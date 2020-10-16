@@ -11,7 +11,7 @@ cd $(dirname $0)
 # Can set the following variables
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
-R_VERSION=${R_VERSION:-"3.5"}
+R_VERSION=${R_VERSION:-"4.0.2"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -45,7 +45,7 @@ while getopts dfhi:r: opt; do
         ;;
     h)
         cat << EOF
-$0 [-dfh] [-i <IMAGE_VERSION>] [-r <R VERSION]
+$0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION]
 
 The following script can be used to create all docker images. Without any
 options this will build all images and tag them based on the branch you
@@ -73,6 +73,12 @@ You can use the FROM_IMAGE environment variable to also specify what
 image should be used when building the base image. You can for example
 use the previous base image which will speed up the compile process of
 PEcAn.
+  -d : debug more, do not run, print out commands
+  -f : force a build of the depends image
+  -h : this help message
+  -i : tag to use for the build images
+  -n : debug more, do not run, print out commands
+  -r : R version to use, unless -f it will try and use depends image
 EOF
         exit 1
         ;;
@@ -84,7 +90,6 @@ EOF
         ;;
     r)
         R_VERSION="$OPTARG"
-        DEPEND="build"
         ;;
     esac
 done
@@ -117,11 +122,9 @@ if [ "${DEPEND}" == "build" ]; then
 else
     if [ "$( docker image ls -q pecan/depends:${IMAGE_VERSION} )" == "" ]; then
         if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
-            if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
-                ${DEBUG} docker pull pecan/depends:develop
-            fi
+            ${DEBUG} docker pull pecan/depends:R${R_VERSION}
             if [ "${IMAGE_VERSION}" != "develop" ]; then
-                ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
+                ${DEBUG} docker tag pecan/depends:R${R_VERSION} pecan/depends:${IMAGE_VERSION}
             fi
         else
             if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
@@ -229,4 +232,5 @@ for x in api; do
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
         apps/$x/
-done        
+done
+
