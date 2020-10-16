@@ -55,15 +55,16 @@ jobs:
             echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           else 
             echo "PECAN_VERSION=testing" >> $GITHUB_ENV
-            echo "PECAN_TAGS=''" >> $GITHUB_ENV
+            echo "PECAN_TAGS=" >> $GITHUB_ENV
           fi
 
       # test
       - name: test
+        if: "${PECAN_TAGS}" == ""
         run: |
           echo ${PECAN_VERSION}
           echo ${PECAN_TAGS}
-        
+
       # use shell script to build, there is some complexity in this
       # - name: create images
       #   run: ./docker.sh -i github
