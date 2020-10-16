@@ -78,7 +78,7 @@ jobs:
             done
           done
           docker logout
-        with:
+        env:
           INPUT_REGISTRY: docker.pkg.github.com
           INPUT_USERNAME: ${{ github.actor }}
           INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
@@ -95,7 +95,7 @@ jobs:
             done
           done
           docker logout
-        with:
+        env:
           INPUT_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           INPUT_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
