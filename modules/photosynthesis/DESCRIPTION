@@ -18,7 +18,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     rjags
 Imports:
-    PEcAn.logger,
     coda (>= 0.18)
 SystemRequirements: JAGS2.2.0
 License: BSD_3_clause + file LICENSE
