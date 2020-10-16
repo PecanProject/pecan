@@ -69,24 +69,35 @@ jobs:
       - name: Publish to GitHub
         #if: github.event_name == 'push'
         run: |
+          echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
           repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github docker.pkg.github.com/${repo}/${image#pecan/}:${v}
+              docker tag ${image}:github ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
               docker push docker.pkg.github.com/${repo}/${image#pecan/}:${v}
             done
           done
+          docker logout
+        with:
+          INPUT_REGISTRY: docker.pkg.github.com
+          INPUT_USERNAME: ${{ github.actor }}
+          INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       # push all images to dockerhub
       - name: Publish to DockerHub
         #if: github.event_name == 'push' && github.repository == env.MASTER_REPO
         run: |
+          echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
               docker tag ${image}:github ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
               docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
             done
           done
+          docker logout
+        with:
+          INPUT_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          INPUT_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       # # build the docker image, this will always run to make sure
       # # the Dockerfile still works.
