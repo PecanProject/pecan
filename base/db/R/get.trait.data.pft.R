@@ -275,7 +275,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     
     PEcAn.logger::logger.info(
       "\n Number of observations per trait for PFT ", shQuote(pft[["name"]]), ":\n",
-      PEcAn.logger::print2string(trait_counts, n = Inf),
+      PEcAn.logger::print2string(trait_counts, n = Inf, na.print = ""),
       wrap = FALSE
     )
   } else {

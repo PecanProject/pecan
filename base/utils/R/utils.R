@@ -221,7 +221,11 @@ summarize.result <- function(result) {
     dplyr::filter(n != 1) %>%
     # ANS: Silence factor to character conversion warning
     dplyr::mutate(statname = as.character(statname))
-  return(dplyr::bind_rows(ans1, ans2))
+  if (nrow(ans2) > 0) {
+    dplyr::bind_rows(ans1, ans2)
+  } else {
+    return(ans1)
+  }
 } # summarize.result
 
 

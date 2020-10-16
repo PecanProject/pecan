@@ -382,7 +382,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
-The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
+The main function to process cohort data is the `ic_process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
 
 ###### Example 1: Processing Veg data from data in hand.
 
@@ -392,7 +392,7 @@ First, you'll need to create a input record in BETY that will have a file record
 
 Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
 
-With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `useic` flag.
+With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic_process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic_process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `useic` flag.
 ```
 <inputs>
       <css>
@@ -496,12 +496,12 @@ Once you edit your PEcAn.xml you can than create a settings object using PEcAn f
 settings <- PEcAn.settings::read.settings("pecan.xml")
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 ```
-You can then execute the `ic.process` function to convert data into a standard Rds file:
+You can then execute the `ic_process` function to convert data into a standard Rds file:
 
 ```
 input <- settings$run$inputs
 dir <- "."
-ic.process(settings, input, dir, overwrite = FALSE)
+ic_process(settings, input, dir, overwrite = FALSE)
 ```
 
 Note that the argument `dir` is set to the current directory. You will find the final ED2 file there. More importantly though you will find the `.Rds ` file within the same directory.

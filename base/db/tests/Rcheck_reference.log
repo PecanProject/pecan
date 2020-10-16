@@ -1,11 +1,11 @@
-* using log directory ‘/tmp/RtmpzhxcCR/PEcAn.DB.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/tmp/RtmpcCXxhc/PEcAn.DB.Rcheck’
+* using R version 4.0.2 (2020-06-22)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.DB/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.DB’ version ‘1.7.0’
+* this is package ‘PEcAn.DB’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -19,6 +19,7 @@
 * checking whether package ‘PEcAn.DB’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
@@ -49,8 +50,6 @@ dbfile.check: no visible binding for global variable ‘container_id’
 dbfile.check: no visible binding for global variable ‘machine_id’
 dbfile.check: no visible binding for global variable ‘updated_at’
 dbHostInfo: no visible binding for global variable ‘sync_host_id’
-dbHostInfo: no visible binding for global variable ‘sync_start’
-dbHostInfo: no visible binding for global variable ‘sync_end’
 get_run_ids: no visible binding for global variable ‘run_id’
 get_users: no visible binding for global variable ‘id’
 get_workflow_ids: no visible binding for global variable ‘workflow_id’
@@ -70,7 +69,6 @@ match_dbcols: no visible global function definition for ‘head’
 match_dbcols: no visible binding for global variable ‘.’
 match_dbcols: no visible binding for global variable ‘as’
 query_pfts: no visible binding for global variable ‘name’
-query.data: no visible binding for global variable ‘settings’
 query.format.vars: no visible binding for global variable ‘variable_id’
 query.format.vars: no visible binding for global variable
   ‘storage_type’
@@ -86,7 +84,6 @@ query.pft_cultivars: no visible binding for global variable
   ‘scientificname’
 query.pft_cultivars: no visible binding for global variable ‘name.cv’
 query.priors: no visible binding for global variable ‘settings’
-query.traits: no visible binding for global variable ‘settings’
 query.traits: no visible binding for global variable ‘name’
 rename_jags_columns: no visible binding for global variable ‘stat’
 rename_jags_columns: no visible binding for global variable ‘n’
@@ -114,9 +111,9 @@ Undefined global functions or variables:
   container_id container_type created_at cultivar_id ensemble_id folder
   genus greenhouse head id issued machine_id n name name.cv name.mt
   pft_id pft_type posix read.output run_id scientificname score
-  settings site_id specie_id species stat storage_type sync_end
-  sync_host_id sync_start trait trt_id updated_at user.permission vals
-  var_name variable_id workflow_id
+  settings site_id specie_id species stat storage_type sync_host_id
+  trait trt_id updated_at user.permission vals var_name variable_id
+  workflow_id
 Consider adding
   importFrom("methods", "as")
   importFrom("utils", "head")
@@ -125,7 +122,8 @@ contains 'methods').
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... OK
+* checking Rd cross-references ... NOTE
+Unknown package ‘PEcAn.MA’ in Rd xrefs
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
@@ -172,6 +170,16 @@ Files in the 'vignettes' directory but no files in 'inst/doc':
 Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 WARNINGs, 1 NOTE
+
+Status: 2 WARNINGs, 2 NOTEs
+See
+  ‘/tmp/RtmpcCXxhc/PEcAn.DB.Rcheck/00check.log’
+for details.
+
+

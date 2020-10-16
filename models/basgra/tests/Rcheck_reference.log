@@ -1,6 +1,6 @@
-* using log directory ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck’
-* using R version 3.4.3 (2017-11-30)
-* using platform: x86_64-apple-darwin15.6.0 (64-bit)
+* using log directory ‘/tmp/RtmpYGHcZE/PEcAn.BASGRA.Rcheck’
+* using R version 4.0.2 (2020-06-22)
+* using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.BASGRA/DESCRIPTION’ ... OK
@@ -15,9 +15,11 @@
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
 * checking whether package ‘PEcAn.BASGRA’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
@@ -52,17 +54,25 @@ Non-portable flags in variable 'PKG_FCFLAGS':
   -x -fdefault-real-8
 * checking for GNU extensions in Makefiles ... OK
 * checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking use of SHLIB_OPENMP_*FLAGS in Makefiles ... OK
+* checking pragmas in C/C++ headers and code ... OK
+* checking compilation flags used ... NOTE
+Compilation used the following non-portable flag(s):
+  ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’
 * checking compiled code ... OK
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
   Running ‘testthat.R’
  OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 1 WARNING
+Status: 1 WARNING, 1 NOTE
 See
-  ‘/private/var/folders/qr/mbw8xxpd45jdv_46b27914280000gn/T/Rtmpcw7AZN/PEcAn.BASGRA.Rcheck/00check.log’
+  ‘/tmp/RtmpYGHcZE/PEcAn.BASGRA.Rcheck/00check.log’
 for details.
 
 
