@@ -58,6 +58,7 @@ This is a major change:
 
 ### Added
 
+- Now creates docker images during a PR, when merged it will push them to docker hub and github packages
 - New functionality to the PEcAn API to GET information about PFTs, formats & sites, submit workflows in XML or JSON formats & download relevant inputs/outputs/files related to runs & workflows (#2674 #2665 #2662 #2655)
 - Functions to send/receive messages to/from rabbitmq.
 - Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)
