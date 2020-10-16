@@ -38,7 +38,7 @@ jobs:
       - name: get version tag
         run: |
           BRANCH=${GITHUB_REF##*/}
-          echo "::set-env name=GITHUB_BRANCH::${BRANCH}"
+          echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
           if [ "$BRANCH" == "master" ]; then
             version="$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"
             tags="latest"
@@ -48,32 +48,42 @@ jobs:
               tags="${tags},${version}"
               version=${version%.*}
             done
-            echo "::set-env name=PECAN_VERSION::$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"
-            echo "::set-env name=PECAN_TAGS::${tags}"
+            echo "PECAN_VERSION=$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)" >> $GITHUB_ENV
+            echo "PECAN_TAGS=${tags}" >> $GITHUB_ENV
           elif [ "$BRANCH" == "develop" ]; then
-            echo "::set-env name=PECAN_VERSION::develop"
-            echo "::set-env name=PECAN_TAGS::develop"
+            echo "PECAN_VERSION=develop" >> $GITHUB_ENV
+            echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           else 
-            echo "::set-env name=PECAN_VERSION::testing"
-            echo "::set-env name=PECAN_TAGS::"
+            echo "PECAN_VERSION=testing" >> $GITHUB_ENV
+            echo "PECAN_TAGS=''" >> $GITHUB_ENV
           fi
 
-      # use shell script to build, there is some complexity in this
-      - name: create images
-        run: ./docker.sh
-
-      # push all images to github
-      - name: Publish to GitHub
+      # test
+      - name: test
         run: |
-          docker image ls pecan/*
-          # for image in pecan/check ${OLDEST} $( docker image ls pecan/*:${IMAGE_VERSION} --filter "since=${OLDEST}:${IMAGE_VERSION}" --format "{{ .Repository }}" ); do
-          #   for v in ${TAGS}; do
-          #     if [ "$v" != "${IMAGE_VERSION}" -o "$SERVER" != "" ]; then
-          #       ${DEBUG} docker tag ${image}:${IMAGE_VERSION} ${SERVER}${image}:${v}
-          #     fi
-          #     ${DEBUG} docker push ${SERVER}${image}:${v}
-          #   done
-          # done
+          echo ${PECAN_VERSION}
+          echo ${PECAN_TAGS}
+        
+      # use shell script to build, there is some complexity in this
+      # - name: create images
+      #   run: ./docker.sh -i github
+      #   env:
+      #     PECAN_GIT_CHECKSUM: ${{ github.sha }}
+      #     PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
+      #     VERSION: ${PECAN_VERSION}
+
+      # # push all images to github
+      # - name: Publish to GitHub
+      #   run: |
+      #     echo ${PECAN_VERSION}
+      #     echo ${PECAN_TAGS}
+          
+      #     for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
+      #       for v in ${PECAN_TAGS}; do
+      #         docker tag ${image}:github ${{ github.repository_owner }}/${image}:${v}
+      #         docker push ${{ github.repository_owner }}/${image}:${v}
+      #       done
+      #     done
 
 
 
