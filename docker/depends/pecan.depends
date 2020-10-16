@@ -26,9 +26,9 @@ install2.r -e -s -l "${RLIB}" -n -1\
     bit64 \
     coda \
     corrplot \
+    data.table \
     dataone \
     datapack \
-    data.table \
     DBI \
     dbplyr \
     devtools \
