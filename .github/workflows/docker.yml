@@ -73,13 +73,12 @@ jobs:
           repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github ${INPUT_REGISTRY}/${DOCKER_PROJECT}/${image#pecan/}:${v}
-              docker push docker.pkg.github.com/${repo}/${image#pecan/}:${v}
+              docker tag ${image}:github ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
+              docker push ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
             done
           done
           docker logout
         env:
-          DOCKER_PROJECT: ${{ github.repository_owner }}/pecan
           INPUT_REGISTRY: docker.pkg.github.com
           INPUT_USERNAME: ${{ github.actor }}
           INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
@@ -91,12 +90,11 @@ jobs:
           echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github ${DOCKER_PROJECT}/${image#pecan/}:${v}
+              docker tag ${image}:github {{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
               docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
             done
           done
           docker logout
         env:
-          DOCKER_PROJECT: ${{ env.DOCKERHUB_ORG }}
           INPUT_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           INPUT_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
