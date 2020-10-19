@@ -6,6 +6,24 @@ documentclass: book
 biblio-style: apalike
 link-citations: yes
 author: "By: PEcAn Team"
+output:
+  bookdown::gitbook:
+    lib_dir: assets
+    split_by: section
+    config:
+      toolbar:
+        position: static
+  bookdown::pdf_book:
+    keep_tex: yes
+  bookdown::epub_book:
+    toc: true
+  bookdown::html_book:
+    css: toc.css
+always_allow_html: true
+#output:
+#  html_document:
+#    toc: true
+#    toc_float: true
 ---
 
 # Welcome {-}
