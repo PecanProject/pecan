@@ -990,6 +990,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dir.create(path.diagnostics, recursive=T, showWarnings=F)
       
       dat.pred <- source.data$time
+      dat.pred$Date <- as.POSIXct(dat.pred$Date)
       dat.pred$obs  <- apply(source.data[[v]], 1, mean, na.rm=T)
       dat.pred$mean <- apply(dat.out[[v]], 1, mean, na.rm=T)
       dat.pred$lwr  <- apply(dat.out[[v]], 1, quantile, 0.025, na.rm=T)
