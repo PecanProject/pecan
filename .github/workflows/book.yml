@@ -6,10 +6,10 @@ on:
       - master
       - develop
 
-  tags:
-    - '*'
+    tags:
+      - '*'
 
-pull_request:
+  pull_request:
 
 jobs:
 bookdown:
