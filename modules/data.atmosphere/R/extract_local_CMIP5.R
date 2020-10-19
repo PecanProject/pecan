@@ -102,7 +102,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   # If our extraction bath is different from what we had, modify it
   if("atmos" %in% vars.gcm.day){
 	path.day <- file.path(in.path, "day", "atmos", "day", ensemble_member, "latest")
-	path.mo <- file.path(in.path, "month", "atmos", "month", ensemble_member, "latest")
+	path.mo <- file.path(in.path, "mon", "atmos", "Amon", ensemble_member, "latest")
 
 	vars.gcm.day <- dir(path.day)
   	vars.gcm.mo <- dir(path.mo)  	
@@ -184,13 +184,20 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       ncT <- ncdf4::nc_open(file.path(p.res, var.now, f.now))
       
       # Extract our dimensions
-      lat_bnd <- ncdf4::ncvar_get(ncT, "lat_bnds")
-      lon_bnd <- ncdf4::ncvar_get(ncT, "lon_bnds")
+      # Check to see if we need to extract lat/lon or not
+      if(ncT$var[[var.now]]$ndims>1){
+	      lat_bnd <- ncdf4::ncvar_get(ncT, "lat_bnds")
+    	  lon_bnd <- ncdf4::ncvar_get(ncT, "lon_bnds")      	
+      }
       nc.time <- ncdf4::ncvar_get(ncT, "time")
 
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(stringr::str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
       nc.date <- date.origin + nc.time
+      
+      if(as.Date(min(nc.date)) < as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01"))){
+      	nc.date <- as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")) + nc.time
+      }
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
       # Figure out if we're missing leap dat
       no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
@@ -235,7 +242,12 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
           dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, time.ind[1]), c(1,1,1,length(time.ind)))
         }
       } else {
-        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, time.ind[1]), c(1,1,length(time.ind)))
+        # Note that CO2 appears to be a global value
+        if(ncT$var[[var.now]]$ndims==1){
+	        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(time.ind[1]), c(length(time.ind)))
+        } else {
+	        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, time.ind[1]), c(1,1,length(time.ind)))	
+        }        
       }
       
       # Add leap year and trick monthly into daily
