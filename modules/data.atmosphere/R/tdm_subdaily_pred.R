@@ -70,7 +70,13 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
     err.resid <- Xp.res[, resid.piv] %*% t(Rbeta.resid)
   } # End residual error
   
-  dat.sim <- Xp[, piv] %*% t(Rbeta) + err.resid
+  if(length(piv)==ncol(Rbeta)){
+    dat.sim <- Xp[, piv] %*% t(Rbeta) + err.resid
+  } else {
+    # dat.sim <- Xp[,piv] %*% t(Rbeta[,piv]) + err.resid
+    dat.sim <- Xp[,piv] %*% t(matrix(Rbeta[,piv], nrow=nrow(Rbeta))) + err.resid
+  }
+  
   
   
   return(dat.sim)
