@@ -17,7 +17,7 @@ bookdown:
     runs-on: ubuntu-latest  
 
     container: 
-      image: pecan/depends:R${{ matrix.R }}
+      image: pecan/depends:R4.0.2
 
     steps:
     # checkout source code
