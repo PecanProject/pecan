@@ -78,21 +78,27 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   
   # The table of var name conversion
   # psl; sfcWind; tasmax; tasmin; huss
-  var <- data.frame(DAP.name = c("tas", "tasmax", "tasmin", "rlds", "ps", "rsds", "uas", "vas", "sfcWind", "ua", "va", "huss", "pr"), 
+  #"co2", "mole_fraction_of_carbon_dioxide_in_air", "1e-6"
+  var <- data.frame(DAP.name = c("tas", "tasmax", "tasmin", "rlds", "ps", "rsds", "uas", "vas", "sfcWind", "ua", "va", "huss", "pr", "co2mass"), 
                     CF.name = c("air_temperature", "air_temperature_maximum", "air_temperature_minimum", 
                                 "surface_downwelling_longwave_flux_in_air",
                                 "air_pressure", "surface_downwelling_shortwave_flux_in_air", 
                                 "eastward_wind", "northward_wind", "wind_speed", "eastward_wind", "northward_wind", 
-                                "specific_humidity", "precipitation_flux"), 
-                    units = c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "m/s", "m/s", "m/s", "g/g", "kg/m2/s"))
-  
+                                "specific_humidity", "precipitation_flux", "mole_fraction_of_carbon_dioxide_in_air"), 
+                    units = c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "m/s", "m/s", "m/s", "g/g", "kg/m2/s", "1e-6"))
+                    
+  # Some constants for converting CO2 if it's there                  
+  co2.molmass <- 44.01 # g/mol https://en.wikipedia.org/wiki/Carbon_dioxide#Atmospheric_concentration
+  atm.molmass <- 28.97 # g/mol https://en.wikipedia.org/wiki/Density_of_air
+  atm.masstot <- 5.1480e18 # kg https://journals.ametsoc.org/doi/10.1175/JCLI-3299.1
+  atm.mol <- atm.masstot/atm.molmass
+
   # Figuring out what we have daily for and what we only have monthly for
   path.day <- file.path(in.path, "day")
   path.mo <- file.path(in.path, "month")
   
   vars.gcm.day <- dir(path.day)
-  vars.gcm.mo <- dir(path.month)
-  
+  vars.gcm.mo <- dir(path.mo) 
   # If our extraction bath is different from what we had, modify it
   if("atmos" %in% vars.gcm.day){
 	path.day <- file.path(in.path, "day", "atmos", "day", ensemble_member, "latest")
@@ -334,6 +340,12 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     
     # Adjusting Preciptiation if necessary
     dat.list[["precipitation_flux"]] <- dat.list[["precipitation_flux"]]*adjust.pr
+    
+    if("mole_fraction_of_carbon_dioxide_in_air" %in% names(dat.list)){        
+        co2.mol <- dat.list[["mole_fraction_of_carbon_dioxide_in_air"]]/co2.molmass # kg co2
+        dat.list[["mole_fraction_of_carbon_dioxide_in_air"]] <- co2.mol/atm.mol*1e6 # kmol/kmol * 1e6 to be in CF units (ppm)
+    }
+    
     ## put data in new file
     loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in 1:nrow(var)){
