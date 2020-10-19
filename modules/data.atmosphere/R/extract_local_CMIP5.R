@@ -27,6 +27,7 @@
 ##' @param no.leap (optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
 ##'                otherwise the code will automatically determine if leap year is missing and if it should be 
 ##'                added in.
+##' @param adjust.pr - adjustment factor fore preciptiation when the extracted values seem off
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. to control printing of debug info
 ##' @param ... Other arguments, currently ignored
@@ -34,7 +35,7 @@
 ##' @examples
 # -----------------------------------
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
-                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
+                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL, adjust.pr=1,
                                 overwrite = FALSE, verbose = FALSE, ...){
   
   # Some GCMs don't do leap year; we'll have to deal with this separately
@@ -316,7 +317,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     for(v in 1:nrow(var)){
 	    	dat.list[[v]] <- dat.all[[v]][yr.ind]	
     } # End variable loop
-        
+    
+    # Adjusting Preciptiation if necessary
+    dat.list[["precipitation_flux"]] <- dat.list[["precipitation_flux"]]*adjust.pr
     ## put data in new file
     loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in 1:nrow(var)){
