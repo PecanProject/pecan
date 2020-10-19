@@ -236,11 +236,6 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       # }
       # rows.beta <- as.numeric(rows.beta)
       
-      #### ******************************** ####
-      #### ******************************** ####
-      #### CHRISTY START HERE FOR DEBUGGING ####
-      #### ******************************** ####
-      #### ******************************** ####
       # n.new <- ifelse(n.ens==1, 10, n.ens) # If we're not creating an ensemble, we'll add a mean step to remove chance of odd values
       n.new <- n.ens
       cols.redo <- 1:n.new
