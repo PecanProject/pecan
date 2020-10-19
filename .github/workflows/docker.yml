@@ -90,7 +90,7 @@ jobs:
           echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
-              docker tag ${image}:github {{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+              docker tag ${image}:github ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
               docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
             done
           done
