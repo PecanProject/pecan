@@ -47,7 +47,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     } else if(scenario == "historical" & GCM!="MPI-ESM-P") {
       date.origin=as.Date("1850-01-01")
     } else {
-      PEcAn.logger::logger.error("No date.origin specified and scenario not implemented yet")
+      # PEcAn.logger::logger.error("No date.origin specified and scenario not implemented yet")
+      date.origin=as.Date("0001-01-01")
     }
   } 
   
@@ -86,8 +87,20 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
                     units = c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", "m/s", "m/s", "m/s", "m/s", "g/g", "kg/m2/s"))
   
   # Figuring out what we have daily for and what we only have monthly for
-  vars.gcm.day <- dir(file.path(in.path, "day"))
-  vars.gcm.mo <- dir(file.path(in.path, "month"))
+  path.day <- file.path(in.path, "day")
+  path.mo <- file.path(in.path, "month")
+  
+  vars.gcm.day <- dir(path.day)
+  vars.gcm.mo <- dir(path.month)
+  
+  # If our extraction bath is different from what we had, modify it
+  if("atmos" %in% vars.gcm.day){
+	path.day <- file.path(in.path, "day", "atmos", "day", ensemble_member, "latest")
+	path.mo <- file.path(in.path, "month", "atmos", "month", ensemble_member, "latest")
+
+	vars.gcm.day <- dir(path.day)
+  	vars.gcm.mo <- dir(path.mo)  	
+  }
   vars.gcm.mo <- vars.gcm.mo[!vars.gcm.mo %in% vars.gcm.day]
   
   vars.gcm <- c(vars.gcm.day, vars.gcm.mo)
@@ -109,9 +122,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   	files.var[[v]] <- list()
     if(v %in% vars.gcm.day){
 	  # Get a list of file names
-      files.var[[v]] <- data.frame(file.name=dir(file.path(in.path, "day", v)) ) 		
+      files.var[[v]] <- data.frame(file.name=dir(file.path(path.day, v)) ) 		
   	} else {
-  	  files.var[[v]] <- data.frame(file.name=dir(file.path(in.path, "month", v)))
+  	  files.var[[v]] <- data.frame(file.name=dir(file.path(path.mo, v)))
   	}
   	
 	  # Set up an index to help us find out which file we'll need
@@ -151,6 +164,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     dat.all[[v]] <- vector() # initialize the layer
     # Figure out the temporal resolution of the variable
     v.res <- ifelse(var.now %in% vars.gcm.day, "day", "month")
+    p.res <- ifelse(var.now %in% vars.gcm.day, path.day, path.mo)
 
     # Figure out what file we need
     # file.ind <- which(files.var[[var.now]][i])
@@ -161,7 +175,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       # print(f.now)
       
       # Open up the file
-      ncT <- ncdf4::nc_open(file.path(in.path, v.res, var.now, f.now))
+      ncT <- ncdf4::nc_open(file.path(p.res, var.now, f.now))
       
       # Extract our dimensions
       lat_bnd <- ncdf4::ncvar_get(ncT, "lat_bnds")
