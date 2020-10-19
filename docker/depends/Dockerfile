@@ -24,6 +24,7 @@ RUN apt-get update \
        jags \
        time \
        openssh-client \
+       rsync \
        libgdal-dev \
        libglpk-dev \
        librdf0-dev \
