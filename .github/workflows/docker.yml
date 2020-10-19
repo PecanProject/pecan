@@ -1,0 +1,100 @@
+name: Docker
+
+# initially we would us on: [release] as well, the problem is that
+# the code in clowder would not know what branch the code is in,
+# and would not set the right version flags.
+
+# This will run when:
+# - when new code is pushed to master/develop to push the tags
+#   latest and develop
+# - when a pull request is created and updated  to make sure the
+#   Dockerfile is still valid.
+# To be able to push to dockerhub, this execpts the following
+# secrets to be set in the project:
+# - DOCKERHUB_USERNAME : username that can push to the org
+# - DOCKERHUB_PASSWORD : password asscoaited with the username
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+  pull_request:
+
+# Certain actions will only run when this is the master repo.
+env:
+  MASTER_REPO: PecanProject/pecan
+  DOCKERHUB_ORG: pecan
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # calculate some variables that are used later
+      - name: get version tag
+        run: |
+          BRANCH=${GITHUB_REF##*/}
+          echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
+          if [ "$BRANCH" == "master" ]; then
+            version="$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"
+            tags="latest"
+            oldversion=""
+            while [ "${oldversion}" != "${version}" ]; do
+              oldversion="${version}"
+              tags="${tags},${version}"
+              version=${version%.*}
+            done
+            echo "PECAN_VERSION=$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)" >> $GITHUB_ENV
+            echo "PECAN_TAGS=${tags}" >> $GITHUB_ENV
+          elif [ "$BRANCH" == "develop" ]; then
+            echo "PECAN_VERSION=develop" >> $GITHUB_ENV
+            echo "PECAN_TAGS=develop" >> $GITHUB_ENV
+          else 
+            echo "PECAN_VERSION=develop" >> $GITHUB_ENV
+            echo "PECAN_TAGS=develop" >> $GITHUB_ENV
+          fi
+
+      # use shell script to build, there is some complexity in this
+      - name: create images
+        run: ./docker.sh -i github
+        env:
+          PECAN_GIT_CHECKSUM: ${{ github.sha }}
+          PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
+          VERSION: ${PECAN_VERSION}
+
+      # push all images to github
+      - name: Publish to GitHub
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
+        run: |
+          echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
+          repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
+          for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
+            for v in ${PECAN_TAGS}; do
+              docker tag ${image}:github ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
+              docker push ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
+            done
+          done
+          docker logout
+        env:
+          INPUT_REGISTRY: docker.pkg.github.com
+          INPUT_USERNAME: ${{ github.actor }}
+          INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      # push all images to dockerhub
+      - name: Publish to DockerHub
+        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
+        run: |
+          echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin
+          for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
+            for v in ${PECAN_TAGS}; do
+              docker tag ${image}:github ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+              docker push ${{ env.DOCKERHUB_ORG }}/${image#pecan/}:${v}
+            done
+          done
+          docker logout
+        env:
+          INPUT_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          INPUT_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}

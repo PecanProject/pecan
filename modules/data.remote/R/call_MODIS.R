@@ -147,7 +147,7 @@ call_MODIS <- function(var, product,
     {
       PEcAn.logger::logger.severe(
         "Start and end date (", start_date, ", ", end_date,
-        ") are not within MODIS data product date range (", modis_dates[1], ", ", modis_dates(length(modis_dates)),
+        ") are not within MODIS data product date range (", modis_dates[1], ", ", modis_dates[length(modis_dates)],
         "). Please choose another date.")
     }
        

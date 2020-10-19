@@ -23,6 +23,8 @@ RUN apt-get update \
     && apt-get -y --no-install-recommends install \
        jags \
        time \
+       openssh-client \
+       rsync \
        libgdal-dev \
        libglpk-dev \
        librdf0-dev \

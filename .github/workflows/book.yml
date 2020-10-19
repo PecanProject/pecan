@@ -1,61 +1,66 @@
+name: renderbook
+
 on:
   push:
-     branches:
-       - master
-       - develop
-       - release/* 
-     tags:
-       - v1
-       - v1*
+    branches:
+      - master
+      - develop
 
-# render book
-name: renderbook
+    tags:
+      - '*'
+
+  pull_request:
 
 jobs:
   bookdown:
-    name: Render-Book
-    runs-on: ubuntu-latest
-    container: pecan/base:latest
+    runs-on: ubuntu-latest  
+
+    container: 
+      image: pecan/depends:R4.0.2
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: r-lib/actions/setup-r@v1
-      - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install rmarkdown
-        run: Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
-      - name: Render Book
-        run: cd book_source && Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd")'
-      - uses: actions/upload-artifact@v2
-        with:
-          name: _book
-          path: book_source/_book/
-  
-  
-  checkout-and-deploy:
-   runs-on: ubuntu-latest
-   needs: bookdown
-   steps:
-     - name: Download artifact
-       uses: actions/download-artifact@v2
-       with:
-         # Artifact name
-         name: _book # optional
-         # Destination path
-         path: _book/ # optional
-        # repo-token: ${{ secrets.GITHUB_TOKEN }}
-     - name: Checkout documentation repo
-       uses: actions/checkout@v2
-       with:
+    # checkout source code
+    - uses: actions/checkout@v2
+    # install rmarkdown
+    - name: Install rmarkdown
+      run: |
+        Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
+    # copy files
+    - name: copy extfiles
+      run: |
+        mkdir -p book_source/extfiles
+        cp -f documentation/tutorials/01_Demo_Basic_Run/extfiles/* book_source/extfiles
+    # compile PEcAn code
+    - name: build
+      run: make -j1
+    # render book
+    - name: Render Book
+      run: |
+        cd book_source
+        Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
+    # save artifact
+    - uses: actions/upload-artifact@v2
+      with:
+        name: pecan-documentation
+        path: book_source/_book/
+    # download documentation repo
+    - name: Checkout documentation repo
+      if: github.event_name != 'pull_request'
+      uses: actions/checkout@v2
+      with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
         token: ${{ secrets.GH_PAT }}
-     - run: |
-        export VERSION=${GITHUB_REF##*/}_test
-        cd pecan-documentation && mkdir -p $VERSION
+    # upload new documentation
+    - name: publish to github
+      if: github.event_name != 'pull_request'
+      run: |
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
-        rsync -a --delete ../_book/ $VERSION
+        export VERSION=${GITHUB_REF##*/}
+        cd pecan-documentation
+        mkdir -p $VERSION
+        rsync -a --delete ../book_source/_book/ ${VERSION}/
         git add --all *
-        git commit -m "Build book from pecan revision $GITHUB_SHA" || true
+        git commit -m "Build book from pecan revision ${GITHUB_SHA}" || true
         git push -q origin master
-   
- 
