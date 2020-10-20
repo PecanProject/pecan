@@ -200,10 +200,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       
       # If things don't align with the specified origin, update it & try again
       if(nc.min != date.ref){
-        date.off <- date.ref - nc.min
-        date.origin <- date.origin + date.off + 1
-        
-        nc.date <- nc.time + date.origin
+        date.off <- date.ref - nc.min # Figure out our date offset
+
+        nc.date <- nc.date + date.off + 1
       }
 
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
