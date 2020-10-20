@@ -16,7 +16,6 @@ extract.local.CMIP5(
   scenario,
   ensemble_member = "r1i1p1",
   date.origin = NULL,
-  no.leap = NULL,
   overwrite = FALSE,
   verbose = FALSE,
   ...
@@ -44,10 +43,6 @@ extract.local.CMIP5(
 \item{date.origin}{(optional) specify the date of origin for timestamps in the files being read.
 If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
 850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD}
-
-\item{no.leap}{(optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
-otherwise the code will automatically determine if leap year is missing and if it should be 
-added in.}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 
