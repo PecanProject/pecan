@@ -128,24 +128,24 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   	files.var[[v]] <- list()
     if(v %in% vars.gcm.day){
 	  # Get a list of file names
-      files.var[[v]] <- data.frame(file.name=dir(file.path(path.day, v)) ) 		
+      files.var[[v]] <- data.frame(file.name=dir(file.path(path.day, v))) 		
   	} else {
   	  files.var[[v]] <- data.frame(file.name=dir(file.path(path.mo, v)))
   	}
   	
 	  # Set up an index to help us find out which file we'll need
-    # files.var[[v]][["years"]] <- data.frame(first.year=NA, last.year=NA)
+    # files.var[[v]][["years"]] <- data.frame(first.date=NA, last.date=NA)
     for(i in 1:nrow(files.var[[v]])){
-    	yr.str <- stringr::str_split(stringr::str_split(files.var[[v]][i,"file.name"], "_")[[1]][6], "-")[[1]]
+    	dt.str <- stringr::str_split(stringr::str_split(files.var[[v]][i,"file.name"], "_")[[1]][6], "-")[[1]]
 
     	# Don't bother storing this file if we don't want those years
-    	files.var[[v]][i, "first.year"] <- as.numeric(substr(yr.str[1], 1, 4))
-  		files.var[[v]][i, "last.year" ] <- as.numeric(substr(yr.str[2], 1, 4))
+    	files.var[[v]][i, "first.date"] <- as.Date(dt.str[1], format="%Y%m%d")
+  		files.var[[v]][i, "last.date" ] <- as.Date(substr(dt.str[2], 1, 8), format="%Y%m%d")
 
   	 } # End file loop
   	
   	# get rid of files outside of what we actually need
-  	files.var[[v]] <- files.var[[v]][files.var[[v]]$first.year<=end_year & files.var[[v]]$last.year>=start_year,]
+  	files.var[[v]] <- files.var[[v]][files.var[[v]]$first.date<=as.Date(end_date) & files.var[[v]]$last.date>=as.Date(start_date),]
   	# if(as.numeric(substr(yr.str[1], 1, 4)) > end_year | as.numeric(substr(yr.str[2], 1, 4))< start_year) next
 		n.file=n.file+nrow(files.var[[v]])
   	
@@ -196,7 +196,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       nc.date <- date.origin + nc.time
       
       nc.min <- as.Date(min(nc.date))
-      date.ref <- as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01"))
+      date.ref <- files.var[[var.now]][i,"first.date"]+0.5 # Set a half-day offset to make centered
       
       # If things don't align with the specified origin, update it & try again
       if(nc.min != date.ref){
@@ -205,7 +205,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
         nc.date <- nc.date + date.off + 1
       }
 
-      date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
+      date.leaps <- seq(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="day")
       # Figure out if we're missing leap dat
       no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
       
@@ -219,10 +219,10 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       
       # Find our time index
       if(v.res=="day"){
-        time.ind <- which(lubridate::year(nc.date)>=start_year & lubridate::year(nc.date)<=end_year)
+        time.ind <- which(nc.date>=as.Date(start_date) & nc.date<=as.Date(end_date)+0.5)
       } else {
-        yr.ind <- rep(files.var[[var.now]][i,"first.year"]:files.var[[var.now]][i,"last.year"], each=12)
-        time.ind <- which(yr.ind>=start_year & yr.ind<=end_year)
+        date.ind <- rep(files.var[[var.now]][i,"first.date"]:files.var[[var.now]][i,"last.date"], each=12)
+        time.ind <- which(date.ind>=as.Date(start_date) & date.ind<=as.Date(end_date)+0.5)
       }
       
       # Subset our dates & times to match our index
@@ -270,7 +270,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       # If we have monthly data, lets trick it into being daily
       if(v.res == "month"){
         mo.ind <- rep(1:12, length.out=length(dat.temp))
-        yr.ind <- rep(files.var[[var.now]][i,"first.year"]:files.var[[var.now]][i,"last.year"], each=12)
+        yr.ind <- rep(files.var[[var.now]][i,"first.date"]:files.var[[var.now]][i,"last.date"], each=12)
         dat.trick <- vector()
         for(j in 1:length(dat.temp)){
           if(lubridate::leap_year(yr.ind[j]) & mo.ind[j]==2){
