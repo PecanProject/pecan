@@ -127,9 +127,11 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   for(v in var$DAP.name){
   	files.var[[v]] <- list()
     if(v %in% vars.gcm.day){
-	  # Get a list of file names
+	    v.res="day"
+      # Get a list of file names
       files.var[[v]] <- data.frame(file.name=dir(file.path(path.day, v))) 		
   	} else {
+  	  v.res="month"
   	  files.var[[v]] <- data.frame(file.name=dir(file.path(path.mo, v)))
   	}
   	
@@ -139,8 +141,19 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     	dt.str <- stringr::str_split(stringr::str_split(files.var[[v]][i,"file.name"], "_")[[1]][6], "-")[[1]]
 
     	# Don't bother storing this file if we don't want those years
-    	files.var[[v]][i, "first.date"] <- as.Date(dt.str[1], format="%Y%m%d")
-  		files.var[[v]][i, "last.date" ] <- as.Date(substr(dt.str[2], 1, 8), format="%Y%m%d")
+    	if(v.res=="day"){
+    	  files.var[[v]][i, "first.date"] <- as.Date(dt.str[1], format="%Y%m%d")
+    	  files.var[[v]][i, "last.date" ] <- as.Date(substr(dt.str[2], 1, 8), format="%Y%m%d")
+    	} else {
+    	  # For monthly data, we can assume the first day of the month is day 1 of that month
+    	  dfirst <- lubridate::days_in_month(as.numeric(substr(dt.str[1], 5, 6)))
+    	  files.var[[v]][i, "first.date"] <- as.Date(paste0(dt.str[1], dfirst/2), format="%Y%m%d")
+    	  
+    	  # For the last day, i wish we could assume it ends in December, but some models are 
+    	  # jerks, so we should double check
+    	  dlast <- lubridate::days_in_month(as.numeric(substr(dt.str[2], 5, 6)))
+    	  files.var[[v]][i, "last.date" ] <- as.Date(paste0(substr(dt.str[2], 1, 6), dlast), format="%Y%m%d")
+    	}
 
   	 } # End file loop
   	
@@ -193,16 +206,30 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
 
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(stringr::str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
-      nc.date <- date.origin + nc.time
-      
-      nc.min <- as.Date(min(nc.date))
-      date.ref <- files.var[[var.now]][i,"first.date"]+0.5 # Set a half-day offset to make centered
-      
-      # If things don't align with the specified origin, update it & try again
-      if(nc.min != date.ref){
-        date.off <- date.ref - nc.min # Figure out our date offset
-
-        nc.date <- nc.date + date.off + 1
+      if(v.res == "day"){
+        nc.date <- date.origin + nc.time
+        
+        nc.min <- as.Date(min(nc.date))
+        # mean(diff(nc.date))
+        date.ref <- files.var[[var.now]][i,"first.date"]+0.5 # Set a half-day offset to make centered
+        
+        # If things don't align with the specified origin, update it & try again
+        if(nc.min != date.ref & v.res=="day"){
+          date.off <- date.ref - nc.min # Figure out our date offset
+          
+          nc.date <- nc.date + date.off + 1
+        } 
+      } else {
+        dates.mo <- seq.Date(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="month")
+        
+        if(length(dates.mo) == length(nc.time)){
+          nc.date <- dates.mo
+        } else {
+          # I have no freaking clue what to do if things don't work out, so lets just go back to whatever we first tried
+          date.off <- date.ref - nc.min # Figure out our date offset
+          
+          nc.date <- nc.date + date.off + 1
+        }
       }
 
       date.leaps <- seq(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="day")
@@ -221,8 +248,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       if(v.res=="day"){
         time.ind <- which(nc.date>=as.Date(start_date) & nc.date<=as.Date(end_date)+0.5)
       } else {
-        date.ind <- rep(files.var[[var.now]][i,"first.date"]:files.var[[var.now]][i,"last.date"], each=12)
-        time.ind <- which(date.ind>=as.Date(start_date) & date.ind<=as.Date(end_date)+0.5)
+        # date.ind <- rep(files.var[[var.now]][i,"first.date"]:files.var[[var.now]][i,"last.date"], each=12)
+        time.ind <- which(nc.date>=as.Date(start_date) & nc.date<=as.Date(end_date)+0.5)
       }
       
       # Subset our dates & times to match our index
@@ -270,7 +297,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       # If we have monthly data, lets trick it into being daily
       if(v.res == "month"){
         mo.ind <- rep(1:12, length.out=length(dat.temp))
-        yr.ind <- rep(files.var[[var.now]][i,"first.date"]:files.var[[var.now]][i,"last.date"], each=12)
+        yr.ind <- lubridate::year(nc.date)
         dat.trick <- vector()
         for(j in 1:length(dat.temp)){
           if(lubridate::leap_year(yr.ind[j]) & mo.ind[j]==2){
