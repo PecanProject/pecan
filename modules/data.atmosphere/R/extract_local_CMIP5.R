@@ -101,10 +101,10 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   vars.gcm.mo <- dir(path.mo) 
   # If our extraction bath is different from what we had, modify it
   if("atmos" %in% vars.gcm.day){
-	path.day <- file.path(in.path, "day", "atmos", "day", ensemble_member, "latest")
-	path.mo <- file.path(in.path, "mon", "atmos", "Amon", ensemble_member, "latest")
+	  path.day <- file.path(in.path, "day", "atmos", "day", ensemble_member, "latest")
+	  path.mo <- file.path(in.path, "mon", "atmos", "Amon", ensemble_member, "latest")
 
-	vars.gcm.day <- dir(path.day)
+	  vars.gcm.day <- dir(path.day)
   	vars.gcm.mo <- dir(path.mo)  	
   }
   vars.gcm.mo <- vars.gcm.mo[!vars.gcm.mo %in% vars.gcm.day]
@@ -112,8 +112,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
   vars.gcm <- c(vars.gcm.day, vars.gcm.mo)
   
   # Rewriting the dap name to get the closest variable that we have for the GCM (some only give uss stuff at sea level)
-  if(!("huss" %in% vars.gcm)) levels(var$DAP.name) <- sub("huss", "hus", levels(var$DAP.name))
-  if(!("ps" %in% vars.gcm  )) levels(var$DAP.name) <- sub("ps", "psl", levels(var$DAP.name))
+  if(!("huss" %in% vars.gcm)) var$DAP.name[var$DAP.name=="huss"] <- "hus"
+  if(!("ps" %in% vars.gcm)) var$DAP.name[var$DAP.name=="ps"] <- "psl"
 
   # Making sure we're only trying to grab the variables we have (i.e. don't try sfcWind if we don't have it)
   var <- var[var$DAP.name %in% vars.gcm,]
@@ -195,9 +195,17 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       # date.origin <- as.Date(stringr::str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
       nc.date <- date.origin + nc.time
       
-      if(as.Date(min(nc.date)) < as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01"))){
-      	nc.date <- as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")) + nc.time
+      nc.min <- as.Date(min(nc.date))
+      date.ref <- as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01"))
+      
+      # If things don't align with the specified origin, update it & try again
+      if(nc.min != date.ref){
+        date.off <- date.ref - nc.min
+        date.origin <- date.origin + date.off + 1
+        
+        nc.date <- nc.time + date.origin
       }
+
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
       # Figure out if we're missing leap dat
       no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
