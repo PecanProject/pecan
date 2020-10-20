@@ -37,7 +37,6 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=traefik"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=$${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /traefik"
       - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip: /traefik"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
