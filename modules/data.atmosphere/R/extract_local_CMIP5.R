@@ -24,9 +24,6 @@
 ##' @param date.origin (optional) specify the date of origin for timestamps in the files being read.  
 ##'                    If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
 ##'                    850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD
-##' @param no.leap (optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
-##'                otherwise the code will automatically determine if leap year is missing and if it should be 
-##'                added in.
 ##' @param adjust.pr - adjustment factor fore preciptiation when the extracted values seem off
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. to control printing of debug info
@@ -35,7 +32,7 @@
 ##' @examples
 # -----------------------------------
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
-                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL, adjust.pr=1,
+                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, adjust.pr=1,
                                 overwrite = FALSE, verbose = FALSE, ...){
   
   # Some GCMs don't do leap year; we'll have to deal with this separately
@@ -146,8 +143,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
     	  files.var[[v]][i, "last.date" ] <- as.Date(substr(dt.str[2], 1, 8), format="%Y%m%d")
     	} else {
     	  # For monthly data, we can assume the first day of the month is day 1 of that month
-    	  dfirst <- lubridate::days_in_month(as.numeric(substr(dt.str[1], 5, 6)))
-    	  files.var[[v]][i, "first.date"] <- as.Date(paste0(dt.str[1], dfirst/2), format="%Y%m%d")
+    	  # dfirst <- lubridate::days_in_month(as.numeric(substr(dt.str[1], 5, 6)))
+    	  files.var[[v]][i, "first.date"] <- as.Date(paste0(dt.str[1], 01), format="%Y%m%d")
     	  
     	  # For the last day, i wish we could assume it ends in December, but some models are 
     	  # jerks, so we should double check
@@ -204,6 +201,15 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       }
       nc.time <- ncdf4::ncvar_get(ncT, "time")
 
+      if(v.res=="day"){
+        date.leaps <- seq(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="day")
+      } else {
+        # if we're dealing with monthly data, start with the first of the month
+        date.leaps <- seq(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="day")
+      }
+      # Figure out if we're missing leap dat
+      no.leap <- ifelse(length(nc.time)!=length(date.leaps), TRUE, FALSE)
+      
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(stringr::str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
       if(v.res == "day"){
@@ -214,13 +220,15 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
         date.ref <- files.var[[var.now]][i,"first.date"]+0.5 # Set a half-day offset to make centered
         
         # If things don't align with the specified origin, update it & try again
-        if(nc.min != date.ref & v.res=="day"){
+        if(nc.min != date.ref){
           date.off <- date.ref - nc.min # Figure out our date offset
           
-          nc.date <- nc.date + date.off + 1
+          nc.date <- date.origin + nc.time + date.off 
         } 
       } else {
-        dates.mo <- seq.Date(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="month")
+        dfirst <- lubridate::days_in_month(lubridate::month(files.var[[var.now]][i,"first.date"]))
+        
+        dates.mo <- seq.Date(files.var[[var.now]][i,"first.date"]+dfirst/2, files.var[[var.now]][i,"last.date"], by="month")
         
         if(length(dates.mo) == length(nc.time)){
           nc.date <- dates.mo
@@ -232,15 +240,12 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
         }
       }
 
-      date.leaps <- seq(files.var[[var.now]][i,"first.date"], files.var[[var.now]][i,"last.date"], by="day")
-      # Figure out if we're missing leap dat
-      no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
       
       # If we're missing leap year, lets adjust our date stamps so we can only pull what we need
       if(v.res=="day" & no.leap==TRUE){
         cells.bump <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==29)
         for(j in 1:length(cells.bump)){
-          nc.date[cells.bump[j]:length(nc.date)] <- nc.date[cells.bump[j]:length(nc.date)]+1
+          nc.date[(cells.bump[j]-1):length(nc.date)] <- nc.date[(cells.bump[j]-1):length(nc.date)]+1
         }
       }
       
