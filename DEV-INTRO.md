@@ -174,7 +174,7 @@ docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@exa
 docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
-#### load example data
+#### Load example data
 
 Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers. As with the database we first pull the latest version of the image, and then execute the image to copy all the data:
 
@@ -204,7 +204,10 @@ docker run -ti --rm -v pecan_lib:/rlib pecan/base:develop cp -a /usr/local/lib/R
 
 #### Copy web config file (optional)
 
-The `docker-compose.override.yml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using 
+If you want to use the web interface, you will need to:
+
+1. Uncomment the web section from the `docker-compose.override.yml` file. This section includes three lines at the top of the file, just under the `services` section. Uncomment the lines that start `web:`, `  volumes:`, and `- pecan_web:`.
+2. Then copy the config.php from the docker/web folder. You can do this using 
 
 For Linux/MacOSX
 
@@ -217,8 +220,6 @@ For Windows
 ```
 copy docker\web\config.docker.php web\config.php
 ```
-
-
 
 ### PEcAn Development
 
