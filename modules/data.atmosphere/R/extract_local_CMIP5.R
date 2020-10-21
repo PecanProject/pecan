@@ -259,7 +259,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       
       # Subset our dates & times to match our index
       nc.date <- nc.date[time.ind]
-      date.leaps <- date.leaps[which(lubridate::year(date.leaps)>=start_year & lubridate::year(date.leaps)<=end_year)]
+      date.leaps <- date.leaps[which(date.leaps>=as.Date(start_date) & date.leaps<=as.Date(end_date))]
       
       # Find the closest grid cell for our site (using harvard as a protoype)
       ind.lat <- which(lat_bnd[1,]<=lat.in & lat_bnd[2,]>=lat.in)
@@ -293,8 +293,10 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in
       # Figure out if we're missing leap year
       if(v.res=="day" & no.leap==TRUE){
         cells.dup <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==28)
-        for(j in 1:length(cells.dup)){
-          dat.temp <- append(dat.temp, dat.temp[cells.dup[j]], cells.dup[j])
+        if(length(cells.dup)>0){
+          for(j in 1:length(cells.dup)){
+            dat.temp <- append(dat.temp, dat.temp[cells.dup[j]], cells.dup[j])
+          }
         }
       }
       
