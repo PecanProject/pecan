@@ -171,6 +171,15 @@ docker pull pecan/data:develop
 docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 ```
 
+Linux & Mac
+
+```bash
+# Change ownership of /data directory in pecan volume to the current user
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
+
+docker run -ti --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+```
+
 #### copy R packages (optional but recommended)
 
 Next copy the R packages from a container to volume `pecan_lib`. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. This folder is shared with all PEcAn containers, allowing you to compile the code in one place, and have the compiled code available in all other containers. For example modify the code for a model, allows you to compile the code in rstudio container, and see the results in the model container.
