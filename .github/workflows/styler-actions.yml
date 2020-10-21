@@ -21,13 +21,15 @@ jobs:
         run: |
           Rscript -e 'install.packages(c("styler", "devtools"), repos = "cloud.r-project.org")'
           Rscript -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "cloud.r-project.org")'
-      - name: string operations
+      - name: run styler
         shell: bash
+        env:
+          FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
         run: |
-          for i in ${{ join(steps.file_changes.outputs.files_modified, " ") }}; do;
-            if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]];
-              then Rscript -e "styler::style_file("$i")";
-            fi;
+          for f in ${FILES}; do
+            if [[ "$f" == *.R\" || "$f" == *.Rmd\" ]]
+              then Rscript -e "styler::style_file("$f")"
+            fi
           done
       - name: commit
         run: |
@@ -39,7 +41,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
 
-  check:
+  document:
     if: (startsWith(github.event.comment.body, '/style') || startsWith(github.event.comment.body, '/document'))
     runs-on: ubuntu-latest
     container: pecan/depends:develop
@@ -54,12 +56,15 @@ jobs:
         uses: trilom/file-changes-action@v1.2.3
       - name : make
         shell: bash
+        env:
+          FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
         run: |
-          echo ${{ join(steps.file_changes.outputs.files_modified, "\n") }} \
+          echo ${FILES} \
+          | tr ' ' '\n' \
+          | grep -e base -e models -e modules \
           | cut -d / -f 1-2 \
           | sort \
           | uniq \
-          | grep -e base -e models -e modules \
           | xargs -n1 -I{} make .doc/{}
       - name: commit
         run: |
