@@ -10,8 +10,8 @@ jobs:
     steps:
       - id: file_changes
         uses: trilom/file-changes-action@v1.2.3
-      - name: testing
-        run: echo '${{ steps.file_changes.outputs.files_modified}}'   
+      - name: list changed files
+        run: echo '${{ steps.file_changes.outputs.files_modified }}'
       - uses: actions/checkout@v2
       - uses: r-lib/actions/pr-fetch@master
         with:
@@ -24,18 +24,11 @@ jobs:
       - name: string operations
         shell: bash
         run: |
-          echo '${{ steps.file_changes.outputs.files_modified}}' > names.txt
-          cat names.txt | tr -d '[]' > changed_files.txt
-          text=$(cat changed_files.txt)
-          IFS=',' read -ra ids <<< "$text"
-          for i in "${ids[@]}"; do if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]]; then echo "$i" >> files_to_style.txt; fi; done
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: artifacts
-          path: files_to_style.txt
-      - name: Style
-        run: for i in $(cat files_to_style.txt); do Rscript -e "styler::style_file("$i")"; done
+          for i in ${{ join(steps.file_changes.outputs.files_modified, " ") }}; do;
+            if [[ "$i" == *.R\" || "$i" == *.Rmd\" ]];
+              then Rscript -e "styler::style_file("$i")";
+            fi;
+          done
       - name: commit
         run: |
           git add \*.R
@@ -47,29 +40,27 @@ jobs:
 
 
   check:
-    needs: [style]
+    if: (startsWith(github.event.comment.body, '/style') || startsWith(github.event.comment.body, '/document'))
     runs-on: ubuntu-latest
     container: pecan/depends:develop
     steps:
       - uses: actions/checkout@v2
-      - uses: r-lib/actions/pr-fetch@master
+      - uses: r-lib/actions/pr-fetch@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      # - uses: r-lib/actions/setup-r@v1
-      - name : download artifacts
-        uses: actions/download-artifact@v1
-        with:
-          name: artifacts
       - name: update dependency lists
         run: Rscript scripts/generate_dependencies.R
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.3
       - name : make
         shell: bash
         run: |
-          cut -d / -f 1-2 artifacts/files_to_style.txt | tr -d '"' > changed_dirs.txt
-          cat changed_dirs.txt
-          sort changed_dirs.txt | uniq > needs_documenting.txt
-          cat needs_documenting.txt      
-          for i in $(cat needs_documenting.txt); do make .doc/${i}; done
+          echo ${{ join(steps.file_changes.outputs.files_modified, "\n") }} \
+          | cut -d / -f 1-2 \
+          | sort \
+          | uniq \
+          | grep -e base -e models -e modules \
+          | xargs -n1 -I{} make .doc/{}
       - name: commit
         run: |
           git config --global user.email "pecan_bot@example.com"
