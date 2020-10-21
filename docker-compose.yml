@@ -158,6 +158,7 @@ services:
 
   rstudio:
     image: pecan/base:${PECAN_VERSION:-latest}
+    command: /work/rstudio.sh
     restart: unless-stopped
     networks:
       - pecan
@@ -165,6 +166,7 @@ services:
       - rabbitmq
       - postgres
     environment:
+      - KEEP_ENV=RABBITMQ_URI FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
@@ -172,7 +174,6 @@ services:
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
       - USERID=${UID:-1001}
       - GROUPID=${GID:-1001}
-    entrypoint: /init
     volumes:
       - pecan:/data
       - rstudio:/home
