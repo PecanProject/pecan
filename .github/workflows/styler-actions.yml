@@ -17,10 +17,9 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: r-lib/actions/setup-r@master
-      - name: Install dependencies
+      - name: Install styler
         run: |
-          Rscript -e 'install.packages(c("styler", "devtools"), repos = "cloud.r-project.org")'
-          Rscript -e 'devtools::install_version("roxygen2", version = "7.0.2", repos = "cloud.r-project.org")'
+          Rscript -e 'install.packages("styler", repos = "cloud.r-project.org")'
       - name: run styler
         shell: bash
         env:
