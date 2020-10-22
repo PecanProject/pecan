@@ -479,7 +479,7 @@ The following provides a quick overview of XML tags related to remote execution.
 		<clearscratch>TRUE</clearscratch>
 		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
 		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
-		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
+		<qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
 		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
 		<modellauncher>
       <binary>/usr/local/bin/modellauncher</binary>
