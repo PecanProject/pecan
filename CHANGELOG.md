@@ -16,6 +16,7 @@ This is a major change:
 
 ### Fixed
 
+- Removed sender.py and now allow the submission of workflows from inside the rstudio container.
 - Use TRAEFIK_FRONTEND_RULE in compose file and TRAEFIK_HOST in env.example, using TRAEFIK_HOST everywhere now. Make sure TRAEFIK_HOST is used in .env
 - Use initial biomass pools for Sorghum and Setaria #2495, #2496
 - PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).

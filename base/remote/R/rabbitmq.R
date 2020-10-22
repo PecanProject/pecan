@@ -1,5 +1,7 @@
-#' parse the RabbiMQ URI. This will parse the uri into smaller pieces that can
-#' be used to talk to the rest endpoint for RabbitMQ.
+#' parse the RabbiMQ URI.
+#'
+#' This will parse the uri into smaller pieces that can be used to talk to the
+#' rest endpoint for RabbitMQ.
 #'
 #' @param uri the amqp URI
 #' @param prefix the prefix that the RabbitMQ managmenet interface uses
@@ -44,8 +46,10 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
   return(list(url=url, vhost=vhost, username=upw[[1]], password=upw[[2]]))
 }
 
-#' Send a message to RabbitMQ rest API. It will check the resulting status code
-#' and print a message in case something goes wrong.
+#' Send a message to RabbitMQ rest API.
+#'
+#' It will check the resulting status code and print a message in case
+#' something goes wrong.
 #'
 #' @param url the full endpoint rest url
 #' @param auth authentication for rabbitmq in httr:auth
@@ -97,10 +101,11 @@ rabbitmq_send_message <- function(url, auth, body, action = "POST", silent = FAL
   }
 }
 
-#' Create a queu in RabbitMQ. This will first check to see if the queue
-#' already exists in RabbitMQ, if not it will create the queue. If the
-#' queue exists, or is created it will return TRUE, it will return FALSE
-#' otherwise.
+#' Create a queue in RabbitMQ.
+#'
+#' This will first check to see if the queue already exists in RabbitMQ, if not
+#' it will create the queue. If the queue exists, or is created it will return
+#' TRUE, it will return FALSE otherwise.
 #'
 #' @param url parsed RabbitMQ URL.
 #' @param auth the httr authentication object to use.
@@ -129,9 +134,11 @@ rabbitmq_create_queue <- function(url, auth, vhost, queue, auto_delete = FALSE, 
   return(length(result) > 1 || !is.na(result))
 }
 
-#' Post message to RabbitMQ. This will submit a message to RabbitMQ, if the
-#' queue does not exist it will be created. The message will be converted to
-#' a json message that is submitted.
+#' Post message to RabbitMQ.
+#'
+#' This will submit a message to RabbitMQ, if the queue does not exist it will
+#' be created. The message will be converted to a json message that is
+#' submitted.
 #'
 #' @param uri RabbitMQ URI or URL to rest endpoint
 #' @param queue the queue the message is submitted to
@@ -167,9 +174,10 @@ rabbitmq_post_message <- function(uri, queue, message, prefix="", port=15672) {
   return(rabbitmq_send_message(url, auth, body, "POST"))
 }
 
-#' Get message from RabbitMQ. This will get a message from RabbitMQ, if the
-#' queue does not exist it will be created. The message will be converted to
-#' a json message that is returned.
+#' Get message from RabbitMQ.
+#'
+#' This will get a message from RabbitMQ, if the queue does not exist it will
+#' be created. The message will be converted to a json message that is returned.
 #'
 #' @param uri RabbitMQ URI or URL to rest endpoint
 #' @param queue the queue the message is received from.
