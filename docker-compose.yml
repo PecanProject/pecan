@@ -166,8 +166,10 @@ services:
       - rabbitmq
       - postgres
     environment:
-      - KEEP_ENV=RABBITMQ_URI FQDN NAME
+      - KEEP_ENV=RABBITMQ_URI RABBITMQ_PREFIX RABBITMQ_PORT FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
       - USER=${PECAN_RSTUDIO_USER:-carya}
@@ -247,6 +249,8 @@ services:
       - pecan
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
        - postgres
