@@ -2,9 +2,7 @@
 % Please edit documentation in R/rabbitmq.R
 \name{rabbitmq_get_message}
 \alias{rabbitmq_get_message}
-\title{Get message from RabbitMQ. This will get a message from RabbitMQ, if the
-queue does not exist it will be created. The message will be converted to
-a json message that is returned.}
+\title{Get message from RabbitMQ.}
 \usage{
 rabbitmq_get_message(uri, queue, count = 1, prefix = "", port = 15672)
 }
@@ -23,9 +21,8 @@ rabbitmq_get_message(uri, queue, count = 1, prefix = "", port = 15672)
 NA if no message was retrieved, or a list of the messages payload.
 }
 \description{
-Get message from RabbitMQ. This will get a message from RabbitMQ, if the
-queue does not exist it will be created. The message will be converted to
-a json message that is returned.
+This will get a message from RabbitMQ, if the queue does not exist it will
+be created. The message will be converted to a json message that is returned.
 }
 \author{
 Alexey Shiklomanov, Rob Kooper
