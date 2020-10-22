@@ -27,11 +27,10 @@ RUN cd /pecan && make && rm -rf /tmp/downloaded_packages
 
 # COPY WORKFLOW
 WORKDIR /work
-COPY web/workflow.R /work/
+COPY web/workflow.R docker/base/rstudio.sh /work/
 
 # COMMAND TO RUN
 CMD Rscript --vanilla workflow.R | tee workflow.Rout
-
 
 # variables to store in docker image
 ENV PECAN_VERSION=${PECAN_VERSION} \

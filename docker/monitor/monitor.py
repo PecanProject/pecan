@@ -165,7 +165,7 @@ def insert_model(model_info):
             logging.debug("Adding host")
             cur = conn.cursor()
             cur.execute('INSERT INTO machines (hostname) '
-                        'VALUES (%s) RETURNING id', (pecan_fqdn, ))
+                        'VALUES (%s) RETURNING id', (pecan_fqdn,))
             result = cur.fetchone()
             cur.close()
             if not result:
@@ -185,7 +185,7 @@ def insert_model(model_info):
             logging.debug("Adding modeltype")
             cur = conn.cursor()
             cur.execute('INSERT INTO modeltypes (name) '
-                        'VALUES (%s) RETURNING id', (model_info['type']))
+                        'VALUES (%s) RETURNING id', (model_info['type'],))
             result = cur.fetchone()
             cur.close()
             if not result:

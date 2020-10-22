@@ -1,14 +1,17 @@
-* using log directory ‘/tmp/RtmpWosl3N/PEcAn.utils.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck’
+* using R version 4.0.2 (2020-06-22)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.utils/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.utils’ version ‘1.7.0’
+* this is package ‘PEcAn.utils’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... NOTE
+Packages suggested but not available for checking:
+  'PEcAn.data.atmosphere', 'PEcAn.data.land', 'PEcAn.settings',
+  'PEcAn.DB'
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -19,6 +22,7 @@
 * checking whether package ‘PEcAn.utils’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
@@ -81,8 +85,8 @@ summarize.result: no visible binding for global variable ‘statname’
 Undefined global functions or variables:
   . citation_id control cultivar_id ensemble.samples
   get.parameter.samples greenhouse id median n nr runs.samples
-  sa.samples se settings site_id specie_id statname time
-  trait.samples trt_id x y years yieldarray
+  sa.samples se settings site_id specie_id statname time trait.samples
+  trt_id x y years yieldarray
 Consider adding
   importFrom("stats", "median", "time")
 to your NAMESPACE file.
@@ -95,14 +99,12 @@ Rd file 'retry.func.Rd':
 
 These lines will be truncated in the PDF manual.
 * checking Rd cross-references ... WARNING
+Unknown packages ‘PEcAn.priors’, ‘PEcAn.benchmark’ in Rd xrefs
 Missing link or links in documentation object 'download.file.Rd':
   ‘method’
 
 Missing link or links in documentation object 'get.results.Rd':
   ‘read.settings’
-
-Missing link or links in documentation object 'read.output.Rd':
-  ‘[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}’
 
 Missing link or links in documentation object 'standard_vars.Rd':
   ‘[udunits2]{udunits}’
@@ -217,5 +219,13 @@ Argument items with no description in Rd object 'theme_border':
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 5 WARNINGs, 4 NOTEs
+
+Status: 5 WARNINGs, 5 NOTEs
+See
+  ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck/00check.log’
+for details.
+
+
