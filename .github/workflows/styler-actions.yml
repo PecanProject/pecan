@@ -27,7 +27,7 @@ jobs:
         run: |
           for f in ${FILES}; do
             if [[ "$f" == *.R || "$f" == *.Rmd ]]
-              then Rscript -e "styler::style_file("$f")"
+              then Rscript -e 'styler::style_file("'${f}'")'
             fi
           done
       - name: commit
