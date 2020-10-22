@@ -499,7 +499,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       }
       # summary(mod.anom)
       # plot(mod.anom, pages=1)
-      
+      # pred.anom <- predict(mod.anom)
       resid.anom <- resid(mod.anom)
       # ---------
       
@@ -637,9 +637,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         # we'll get the uncertainty subtract the multi-decadal trend out of the anomalies; not a perfect solution, but it will increase the variability
         if(pair.anoms==F & (v %in% c("air_temperature_maximum", "air_temperature_minimum"))){
           # sim1b.norm <- apply(sim1b, 1, mean) 
-          sim1b[,cols.redo] <- as.vector(met.src[met.src$ind==ind,"anom.raw"]) - sim1b[,cols.redo] # Get the range around that medium-frequency trend 
+          # What we need is to remove the mean-trend from the anomalies and then add the trend (with uncertinaties) back in
+          # Note that for a single-member ensemble, this just undoes itself
+          anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - predict(mod.anom)
+          
+          sim1b[,cols.redo] <- anom.detrend + sim1b[,cols.redo] # Get the range around that medium-frequency trend
         }
-        
         
         
         # Option 1: Adding a constant error per time series for the cliamte correction 
