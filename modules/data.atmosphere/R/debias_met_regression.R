@@ -72,6 +72,10 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   
   if(parallel==TRUE) warning("Warning! Parallel processing not reccomended because of memory constraints")
   if(ncol(source.data[[2]])>1) warning("Feeding an ensemble of source data is currently experimental!  This could crash")
+  if(n.ens<1){
+    warning("You need to generate at least one vector of outputs.  Changing n.ens to 1, which will be based on the model means.")
+    n.ens=1
+  } 
   if(!uncert.prop %in% c("mean", "random")) stop("unspecified uncertainty propogation method.  Must be 'random' or 'mean' ")
   
   # Variables need to be done in a specific order
