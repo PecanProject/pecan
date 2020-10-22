@@ -26,7 +26,7 @@ jobs:
           FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
         run: |
           for f in ${FILES}; do
-            if [[ "$f" == *.R\" || "$f" == *.Rmd\" ]]
+            if [[ "$f" == *.R || "$f" == *.Rmd ]]
               then Rscript -e "styler::style_file("$f")"
             fi
           done
