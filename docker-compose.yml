@@ -50,6 +50,7 @@ services:
 
   # webserver to handle access to data
   minio:
+    user: "${UID:-1001}:${GID:-1001}"
     image: minio/minio:latest
     command: server /data
     restart: unless-stopped
@@ -68,6 +69,7 @@ services:
 
   # THREDDS data server
   thredds:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/thredds:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -156,6 +158,7 @@ services:
 
   rstudio:
     image: pecan/base:${PECAN_VERSION:-latest}
+    command: /work/rstudio.sh
     restart: unless-stopped
     networks:
       - pecan
@@ -163,12 +166,16 @@ services:
       - rabbitmq
       - postgres
     environment:
+      - KEEP_ENV=RABBITMQ_URI RABBITMQ_PREFIX RABBITMQ_PORT FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
       - USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
-    entrypoint: /init
+      - USERID=${UID:-1001}
+      - GROUPID=${GID:-1001}
     volumes:
       - pecan:/data
       - rstudio:/home
@@ -190,6 +197,7 @@ services:
 
   # PEcAn web front end, this is just the PHP code
   web:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -203,6 +211,7 @@ services:
        - postgres
        - rabbitmq
     labels:
+      - "traefik.port=8080"
       - "traefik.enable=true"
       - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/pecan/"
       - "traefik.backend=pecan"
@@ -212,6 +221,7 @@ services:
 
   # PEcAn model monitor
   monitor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -232,12 +242,15 @@ services:
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
        - postgres
@@ -251,6 +264,7 @@ services:
 
   # PEcAn basgra model runner
   basgra:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -264,6 +278,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -277,6 +292,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -290,6 +306,7 @@ services:
 
   # PEcAn MAESPA model runner
   maespa:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -323,6 +340,7 @@ services:
   # ----------------------------------------------------------------------
   api:
     image: pecan/api:${PECAN_VERSION:-latest}
+    user: "${UID:-1001}:${GID:-1001}"
     networks:
       - pecan
     environment:

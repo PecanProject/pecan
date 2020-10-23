@@ -20,7 +20,7 @@ The following is a list of PEcAn-specific images and reasons why you would want 
 - `pecan/executor` -- Rebuild if:
   - You built a new version of `pecan/base` (on which `pecan/executor` depends) and/or, `pecan/depends` (on which `pecan/base` depends)
   - You modified the `docker/executor/Dockerfile`
-  - You modified the RabbitMQ Python scripts (e.g. `docker/receiver.py`, `docker/sender.py`)
+  - You modified the RabbitMQ Python script (e.g. `docker/receiver.py`)
 - `pecan/web` -- Rebuild if you modified any of the following:
   - `docker/web/Dockerfile`
   - The PHP/HTML/JavaScript code for the PEcAn web interface in `web/` (_except_ `web/workflow.R` -- that goes in `pecan/base`) 

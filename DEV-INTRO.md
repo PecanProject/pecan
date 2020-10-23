@@ -2,6 +2,18 @@
 
 This is a minimal guide to getting started with PEcAn development under Docker. You can find more information about docker in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
 
+## Requirements and Recommendations
+
+Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Catalina, and Windows 10 with Windows Subsystem for Linux 2.
+
+- Software (installation instructions below): 
+  - Docker version 19
+  - Docker-compose version 1.26
+  - Git (optional until you want to make major changes)
+- Hardware 
+  - 100 GB storage (minimum 50 GB)
+  - 16 GB RAM (minimum 8 GB) 
+
 ## Git Repository and Workflow
 
 We recommend following the the [gitflow](https://nvie.com/posts/a-successful-git-branching-model/) workflow and working in your own [fork of the PEcAn repsitory](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). See the [PEcAn developer guide](book_source/02_demos_tutorials_workflows/05_developer_workflows/02_git/01_using-git.Rmd) for further details. In the `/scripts` folder there is a script called [syncgit.sh](scripts/syncgit.sh) that will help with synchronizing your fork with the official repository.
@@ -69,13 +81,13 @@ You can copy the [`docker/env.example`](docker/env.example) file as .env in your
 For Linux/MacOSX
 
 ```sh
-cp docker/env.example ./env
+cp docker/env.example .env
 ```
 
 For Windows
 
 ```
-copy docker/env.example ./env
+copy docker/env.example .env
 ```
 
 * `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
@@ -137,7 +149,7 @@ The following volumes are specified:
 
 These folders will hold all the persistent data for each of the respective containers and can grow. For example the postgres database is multiple GB. The pecan folder will hold all data produced by the workflows, including any downloaded data, and can grow to many giga bytes.
 
-#### postgresql database
+#### Postgresql database
 
 First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start): 
 
@@ -162,7 +174,7 @@ docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@exa
 docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
-#### load example data
+#### Load example data
 
 Once the database is loaded we can add some example data, some of the example runs and runs for the ED model, assume some of this data is available. This can take some time, but all the data needed will be copied to the `/data` folder in the pecan containers. As with the database we first pull the latest version of the image, and then execute the image to copy all the data:
 
@@ -171,7 +183,16 @@ docker pull pecan/data:develop
 docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 ```
 
-#### copy R packages (optional but recommended)
+Linux & Mac
+
+```bash
+# Change ownership of /data directory in pecan volume to the current user
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
+
+docker run -ti --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+```
+
+#### Copy R packages (optional but recommended)
 
 Next copy the R packages from a container to volume `pecan_lib`. This is not really needed, but will speed up the process of the first compilation. Later we will put our newly compiled code here as well. This folder is shared with all PEcAn containers, allowing you to compile the code in one place, and have the compiled code available in all other containers. For example modify the code for a model, allows you to compile the code in rstudio container, and see the results in the model container.
 
@@ -181,9 +202,12 @@ You can copy all the data using the following command. This will copy all compil
 docker run -ti --rm -v pecan_lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/
 ```
 
-#### copy web config file (optional)
+#### Copy web config file (optional)
 
-The `docker-compose.override.yml` file has a section that will enable editing the web application. This is by default commented out. If you want to uncoment it you will need to first copy the config.php from the docker/web folder. You can do this using 
+If you want to use the web interface, you will need to:
+
+1. Uncomment the web section from the `docker-compose.override.yml` file. This section includes three lines at the top of the file, just under the `services` section. Uncomment the lines that start `web:`, `  volumes:`, and `- pecan_web:`.
+2. Then copy the config.php from the docker/web folder. You can do this using 
 
 For Linux/MacOSX
 
@@ -196,8 +220,6 @@ For Windows
 ```
 copy docker\web\config.docker.php web\config.php
 ```
-
-
 
 ### PEcAn Development
 
