@@ -75,6 +75,7 @@ wanted <- c(
 'neonUtilities',
 'nimble',
 'nneo',
+'optparse',
 'parallel',
 'plotrix',
 'plyr',

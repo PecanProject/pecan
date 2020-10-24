@@ -75,6 +75,7 @@ install2.r -e -s -l "${RLIB}" -n -1\
     neonUtilities \
     nimble \
     nneo \
+    optparse \
     parallel \
     plotrix \
     plyr \
