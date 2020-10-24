@@ -110,7 +110,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
       sltb <- default.params[default.params$Spp_Name == pft, ]$SLTB
     }
     if ("SLA" %in% names(new.params[[as.character(pft)]])) {
-      fwt <- (1 / new.params[[as.character(pft)]]$SLA) * 1000 #(1 / new.params[[as.character(pft)]]$SLA) * 10000
+      sla_use <- (1/new.params[[as.character(pft)]]$SLA)*1000
+      sla_use[sla_use>5000] <- rnorm(1,4000,100)
+      fwt <- sla_use#(1 / new.params[[as.character(pft)]]$SLA) * 10000
     } else {
       fwt <- default.params[default.params$Spp_Name == pft, ]$FWT
     }

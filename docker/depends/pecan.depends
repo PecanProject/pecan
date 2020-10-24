@@ -25,11 +25,13 @@ install2.r -e -s -l "${RLIB}" -n -1\
     BioCro \
     bit64 \
     coda \
+    corrplot \
     data.table \
     dataone \
     datapack \
     DBI \
     dbplyr \
+    devtools \
     doParallel \
     dplR \
     dplyr \
@@ -37,10 +39,12 @@ install2.r -e -s -l "${RLIB}" -n -1\
     foreach \
     fs \
     furrr \
+    future \
     geonames \
     getPass \
     ggmap \
     ggplot2 \
+    ggrepel \
     glue \
     graphics \
     grDevices \
@@ -62,6 +66,7 @@ install2.r -e -s -l "${RLIB}" -n -1\
     maps \
     maptools \
     MASS \
+    Matrix \
     mclust \
     MCMCpack \
     methods \
