@@ -72,6 +72,10 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   
   if(parallel==TRUE) warning("Warning! Parallel processing not reccomended because of memory constraints")
   if(ncol(source.data[[2]])>1) warning("Feeding an ensemble of source data is currently experimental!  This could crash")
+  if(n.ens<1){
+    warning("You need to generate at least one vector of outputs.  Changing n.ens to 1, which will be based on the model means.")
+    n.ens=1
+  } 
   if(!uncert.prop %in% c("mean", "random")) stop("unspecified uncertainty propogation method.  Must be 'random' or 'mean' ")
   
   # Variables need to be done in a specific order
@@ -114,7 +118,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     ens.src <- ens.train
   }
   
-  if(pair.ens==F & ncol(source.data[[2]])==1 ){
+  if(pair.ens==F & ncol(source.data[[2]])==1){
     ens.src=1
   } else if(pair.ens==F & ncol(source.data[[2]]) > n.ens) {
     ens.src <- sample(1:ncol(source.data[[2]]), ncol(source.data[[2]]),replace=T)
@@ -499,7 +503,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       }
       # summary(mod.anom)
       # plot(mod.anom, pages=1)
-      
+      # pred.anom <- predict(mod.anom)
       resid.anom <- resid(mod.anom)
       # ---------
       
@@ -524,7 +528,11 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Generate a random distribution of betas using the covariance matrix
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
         # set.seed=42  
-        Rbeta <- matrix(MASS::mvrnorm(n=n.new, coef(mod.bias), vcov(mod.bias)), ncol=length(coef(mod.bias)))
+        if(n.ens==1){
+          Rbeta <- matrix(coef(mod.bias), ncol=length(coef(mod.bias)))
+        } else {
+          Rbeta <- matrix(MASS::mvrnorm(n=n.new, coef(mod.bias), vcov(mod.bias)), ncol=length(coef(mod.bias)))
+        }
         dimnames(Rbeta)[[2]] <- names(coef(mod.bias))
 
         #   # Filter our betas to remove outliers
@@ -542,7 +550,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         # while(nrow(Rbeta.anom)<1 & try.now<=ntries){
           # Generate a random distribution of betas using the covariance matrix
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
+        if(n.ens>1){
+          Rbeta.anom <- matrix(coef(mod.anom), ncol=length(coef(mod.anom)))
+        } else {
+          
           Rbeta.anom <- matrix(MASS::mvrnorm(n=n.new, coef(mod.anom), vcov(mod.anom)), ncol=length(coef(mod.anom)))
+        }
         dimnames(Rbeta.anom)[[2]] <- names(coef(mod.anom))  
         #   # Filter our betas to remove outliers
         #   ci.anom <- matrix(apply(Rbeta.anom, 2, quantile, c(0.01, 0.99)), nrow=2)
@@ -560,7 +573,11 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         
         
         if(v == "precipitation_flux"){
-          Rbeta.ann <- matrix(MASS::mvrnorm(n=n.new, coef(mod.ann), vcov(mod.ann)), ncol=length(coef(mod.ann)))
+          if(n.ens==1){
+            Rbeta.ann <- matrix(coef(mod.ann), ncol=length(coef.ann))
+          } else {  
+            Rbeta.ann <- matrix(MASS::mvrnorm(n=n.new, coef(mod.ann), vcov(mod.ann)), ncol=length(coef(mod.ann)))
+          }
           # ci.ann <- matrix(apply(Rbeta.ann, 2, quantile, c(0.01, 0.99)), nrow=2)
           # Rbeta.ann <- Rbeta.ann[which(apply(Rbeta.ann, 1, function(x) all(x > ci.ann[1,] & x < ci.ann[2,]))),]
           # Rbeta.ann <- matrix(Rbeta.ann[sample(1:nrow(Rbeta.ann), n.new, replace=T),], ncol=ncol(Rbeta.ann))
@@ -624,9 +641,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         # we'll get the uncertainty subtract the multi-decadal trend out of the anomalies; not a perfect solution, but it will increase the variability
         if(pair.anoms==F & (v %in% c("air_temperature_maximum", "air_temperature_minimum"))){
           # sim1b.norm <- apply(sim1b, 1, mean) 
-          sim1b[,cols.redo] <- as.vector(met.src[met.src$ind==ind,"anom.raw"]) - sim1b[,cols.redo] # Get the range around that medium-frequency trend 
+          # What we need is to remove the mean-trend from the anomalies and then add the trend (with uncertinaties) back in
+          # Note that for a single-member ensemble, this just undoes itself
+          anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - predict(mod.anom)
+          
+          sim1b[,cols.redo] <- anom.detrend + sim1b[,cols.redo] # Get the range around that medium-frequency trend
         }
-        
         
         
         # Option 1: Adding a constant error per time series for the cliamte correction 
@@ -963,7 +983,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       pb.ind <- pb.ind+1
       
       rm(mod.bias, anom.train, anom.src, mod.anom, Xp, Xp.anom, sim1, sim1a, sim1b)
-    }
+    } # End ensemble loop
 
     if(v == "precipitation_flux"){ 
       # sim1 <- sim1*sim1c
@@ -990,18 +1010,22 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dir.create(path.diagnostics, recursive=T, showWarnings=F)
       
       dat.pred <- source.data$time
+      dat.pred$Date <- as.POSIXct(dat.pred$Date)
       dat.pred$obs  <- apply(source.data[[v]], 1, mean, na.rm=T)
       dat.pred$mean <- apply(dat.out[[v]], 1, mean, na.rm=T)
       dat.pred$lwr  <- apply(dat.out[[v]], 1, quantile, 0.025, na.rm=T)
       dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975, na.rm=T)
       
       # Plotting the observed and the bias-corrected 95% CI
-      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Date, y=mean), color="red", size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Date, y=obs), color='black', size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Date, y=obs, color="original"), size=0.5) +
+          ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
+          ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
+          ggplot2::guides(fill=F) +
           ggplot2::ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
           ggplot2::theme_bw()
       )
@@ -1011,7 +1035,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       stack.sims <- utils::stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
       stack.sims[,c("Year", "DOY", "Date")] <- dat.pred[,c("Year", "DOY", "Date")]
       
-      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
           ggplot2::geom_line(ggplot2::aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
@@ -1026,12 +1050,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                           FUN=mean)
       names(dat.yr)[1] <- "Year"
       
-      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")))
+      grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.yr[,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr), fill="red", alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Year, y=mean), color="red", size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Year, y=obs), color='black', size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=Year, y=obs, color="original"), size=0.5) +
+          ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
+          ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
+          ggplot2::guides(fill=F) +
+
           ggplot2::ggtitle(paste0(v, " - annual mean time series")) +
           ggplot2::theme_bw()
       )

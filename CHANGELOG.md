@@ -16,6 +16,7 @@ This is a major change:
 
 ### Fixed
 
+- Removed sender.py and now allow the submission of workflows from inside the rstudio container.
 - Use TRAEFIK_FRONTEND_RULE in compose file and TRAEFIK_HOST in env.example, using TRAEFIK_HOST everywhere now. Make sure TRAEFIK_HOST is used in .env
 - Use initial biomass pools for Sorghum and Setaria #2495, #2496
 - PEcAn.DB::betyConnect() is now smarter, and will try to use either config.php or environment variables to create a connection. It has switched to use db.open helper function (#2632).
@@ -33,8 +34,8 @@ This is a major change:
 - Update ED docker build, will now build version 2.2.0 and git
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 - model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
+- Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
 -gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
- 
 
 ### Changed
 
@@ -58,6 +59,7 @@ This is a major change:
 
 ### Added
 
+- Now creates docker images during a PR, when merged it will push them to docker hub and github packages
 - New functionality to the PEcAn API to GET information about PFTs, formats & sites, submit workflows in XML or JSON formats & download relevant inputs/outputs/files related to runs & workflows (#2674 #2665 #2662 #2655)
 - Functions to send/receive messages to/from rabbitmq.
 - Documentation in [DEV-INTRO.md](DEV-INTRO.md) on development in a docker environment (#2553)

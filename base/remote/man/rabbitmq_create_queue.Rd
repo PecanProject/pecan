@@ -2,10 +2,7 @@
 % Please edit documentation in R/rabbitmq.R
 \name{rabbitmq_create_queue}
 \alias{rabbitmq_create_queue}
-\title{Create a queu in RabbitMQ. This will first check to see if the queue
-already exists in RabbitMQ, if not it will create the queue. If the
-queue exists, or is created it will return TRUE, it will return FALSE
-otherwise.}
+\title{Create a queue in RabbitMQ.}
 \usage{
 rabbitmq_create_queue(
   url,
@@ -33,10 +30,9 @@ rabbitmq_create_queue(
 TRUE if the queue now exists, FALSE otherwise.
 }
 \description{
-Create a queu in RabbitMQ. This will first check to see if the queue
-already exists in RabbitMQ, if not it will create the queue. If the
-queue exists, or is created it will return TRUE, it will return FALSE
-otherwise.
+This will first check to see if the queue already exists in RabbitMQ, if not
+it will create the queue. If the queue exists, or is created it will return
+TRUE, it will return FALSE otherwise.
 }
 \author{
 Rob Kooper
