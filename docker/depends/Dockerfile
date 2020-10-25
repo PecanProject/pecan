@@ -1,4 +1,4 @@
-ARG R_VERSION="3.5"
+ARG R_VERSION="4.0.2"
 
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
@@ -21,6 +21,7 @@ RUN if [ "$(lsb_release -s -c)" = "stretch" ]; then \
 # ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+       curl \
        jags \
        time \
        openssh-client \
@@ -37,9 +38,9 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
-COPY pecan.depends /
+COPY pecan.depends.R /
 RUN  Rscript -e "install.packages(c('devtools'), repos = 'http://cran.rstudio.com')" \
   && Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')" \
-  && bash /pecan.depends \
+  && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 
