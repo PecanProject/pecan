@@ -1,5 +1,13 @@
 library(dplyr)
 
+.bety_params <- PEcAn.DB::get_postgres_envvars(
+  host = "localhost",
+  dbname = "bety",
+  user = "bety",
+  password = "bety",
+  driver = "Postgres"
+)
+
 #* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
@@ -36,18 +44,12 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* @author Tezan Sahu
 submit.workflow.list <- function(workflowList, userDetails) {
   # Fix details about the database
-  workflowList$database <- list(
-    bety = PEcAn.DB::get_postgres_envvars(
-      host = "localhost",
-      dbname = "bety",
-      user = "bety",
-      password = "bety", 
-      driver = "PostgreSQL"
-    )
-  )
-  if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    dbcon <- PEcAn.DB::betyConnect()
-    res <- dplyr::tbl(dbcon, "models") %>% 
+  workflowList$database <- list(bety = .bety_params)
+
+  if (!is.null(workflowList$model$id) &&
+        (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
+    dbcon <- PEcAn.DB::db.open(.bety_params)
+    res <- dplyr::tbl(dbcon, "models") %>%
       select(id, model_name, revision) %>%
       filter(id == !!workflowList$model$id) %>%
       collect()
@@ -56,8 +58,9 @@ submit.workflow.list <- function(workflowList, userDetails) {
     workflowList$model$type <- res$model_name
     workflowList$model$revision <- res$revision
   }
+
   # Fix RabbitMQ details
-  dbcon <- PEcAn.DB::betyConnect()
+  dbcon <- PEcAn.DB::db.open(.bety_params)
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
   PEcAn.DB::db.close(dbcon)
   workflowList$host <- list(
@@ -126,8 +129,8 @@ submit.workflow.list <- function(workflowList, userDetails) {
 #* @author Tezan Sahu
 insert.workflow <- function(workflowList){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
+  dbcon <- PEcAn.DB::db.open(.bety_params)
+
   model_id <- workflowList$model$id
   if(is.null(model_id)){
     model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
@@ -136,33 +139,45 @@ insert.workflow <- function(workflowList){
   start_time <- Sys.time()
   
   workflow_df <- tibble::tibble(
-    "site_id" = c(bit64::as.integer64(workflowList$run$site$id)),
-    "model_id" = c(bit64::as.integer64(model_id)),
+    "site_id" = bit64::as.integer64(workflowList$run$site$id),
+    "model_id" = bit64::as.integer64(model_id),
     "folder" = "temp_dir",
-    "hostname" = c("docker"),
-    "start_date" = c(as.POSIXct(workflowList$run$start.date)),
-    "end_date" = c(as.POSIXct(workflowList$run$end.date)),
-    "advanced_edit" = c(FALSE),
-    "started_at" = c(start_time),
-    stringsAsFactors = FALSE
+    "hostname" = "docker",
+    "start_date" = as.POSIXct(workflowList$run$start.date),
+    "end_date" = as.POSIXct(workflowList$run$end.date),
+    "advanced_edit" = FALSE,
+    "started_at" = start_time
   )
   
-  if(! is.na(workflowList$info$userid)){
-    workflow_df <- workflow_df %>% tibble::add_column("user_id" = c(bit64::as.integer64(workflowList$info$userid)))
+  if (! is.na(workflowList$info$userid)){
+    workflow_df <- workflow_df %>%
+      tibble::add_column("user_id" = bit64::as.integer64(workflowList$info$userid))
   }
-  
-  insert <- PEcAn.DB::insert_table(workflow_df, "workflows", dbcon)
-  
-  workflow_id <- dplyr::tbl(dbcon, "workflows") %>% 
-    filter(started_at == start_time 
-           && site_id == bit64::as.integer64(workflowList$run$site$id)
-           && model_id == bit64::as.integer64(model_id)
-    ) %>% 
-    pull(id)
-  
-  update_qry <- paste0("UPDATE workflows SET folder = 'data/workflows/PEcAn_", workflow_id, "' WHERE id = '", workflow_id, "';")
-  PEcAn.DB::db.query(update_qry, dbcon)
-  
+
+  insert_query <- glue::glue(
+    "INSERT INTO workflows ",
+    "({paste(colnames(workflow_df), collapse = ', ')}) ",
+    "VALUES ({paste0('$', seq_len(ncol(workflow_df)), collapse = ', ')}) ",
+    "RETURNING id"
+  )
+  PEcAn.logger::logger.debug(insert_query)
+  workflow_id <- PEcAn.DB::db.query(
+    insert_query, dbcon,
+    values = unname(as.list(workflow_df))
+  )[["id"]]
+
+  PEcAn.logger::logger.debug(
+    "Running workflow ID: ",
+    format(workflow_id, scientific = FALSE)
+  )
+
+  PEcAn.DB::db.query(
+    "UPDATE workflows SET folder = $1 WHERE id = $2", dbcon, values = list(
+      file.path("data", "workflows", paste0("PEcAn_", format(workflow_id, scientific = FALSE))),
+      workflow_id
+    )
+  )
+
   PEcAn.DB::db.close(dbcon)
   
   return(workflow_id)
