@@ -7,7 +7,7 @@
 source("auth.R")
 source("general.R")
 
-root <- plumber::plumber$new()
+root <- plumber::Plumber$new()
 root$setSerializer(plumber::serializer_unboxed_json())
 
 # Filter for authenticating users trying to hit the API endpoints
@@ -20,31 +20,31 @@ root$handle("GET", "/api/ping", ping)
 root$handle("GET", "/api/status", status)
 
 # The endpoints mounted here are related to details of PEcAn models
-models_pr <- plumber::plumber$new("models.R")
+models_pr <- plumber::Plumber$new("models.R")
 root$mount("/api/models", models_pr)
 
 # The endpoints mounted here are related to details of PEcAn sites
-sites_pr <- plumber::plumber$new("sites.R")
+sites_pr <- plumber::Plumber$new("sites.R")
 root$mount("/api/sites", sites_pr)
 
 # The endpoints mounted here are related to details of PEcAn pfts
-pfts_pr <- plumber::plumber$new("pfts.R")
+pfts_pr <- plumber::Plumber$new("pfts.R")
 root$mount("/api/pfts", pfts_pr)
 
 # The endpoints mounted here are related to details of PEcAn formats
-formats_pr <- plumber::plumber$new("formats.R")
+formats_pr <- plumber::Plumber$new("formats.R")
 root$mount("/api/formats", formats_pr)
 
 # The endpoints mounted here are related to details of PEcAn inputs
-inputs_pr <- plumber::plumber$new("inputs.R")
+inputs_pr <- plumber::Plumber$new("inputs.R")
 root$mount("/api/inputs", inputs_pr)
 
 # The endpoints mounted here are related to details of PEcAn workflows
-workflows_pr <- plumber::plumber$new("workflows.R")
+workflows_pr <- plumber::Plumber$new("workflows.R")
 root$mount("/api/workflows", workflows_pr)
 
 # The endpoints mounted here are related to details of PEcAn runs
-runs_pr <- plumber::plumber$new("runs.R")
+runs_pr <- plumber::Plumber$new("runs.R")
 root$mount("/api/runs", runs_pr)
 
 # The API server is bound to 0.0.0.0 on port 8000
