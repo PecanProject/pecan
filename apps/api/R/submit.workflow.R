@@ -1,5 +1,13 @@
 library(dplyr)
 
+.bety_params <- PEcAn.DB::get_postgres_envvars(
+  host = "localhost",
+  dbname = "bety",
+  user = "bety",
+  password = "bety",
+  driver = "Postgres"
+)
+
 #* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
@@ -36,18 +44,12 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* @author Tezan Sahu
 submit.workflow.list <- function(workflowList, userDetails) {
   # Fix details about the database
-  workflowList$database <- list(
-    bety = PEcAn.DB::get_postgres_envvars(
-      host = "localhost",
-      dbname = "bety",
-      user = "bety",
-      password = "bety", 
-      driver = "PostgreSQL"
-    )
-  )
-  if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    dbcon <- PEcAn.DB::betyConnect()
-    res <- dplyr::tbl(dbcon, "models") %>% 
+  workflowList$database <- list(bety = .bety_params)
+
+  if (!is.null(workflowList$model$id) &&
+        (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
+    dbcon <- PEcAn.DB::db.open(.bety_params)
+    res <- dplyr::tbl(dbcon, "models") %>%
       select(id, model_name, revision) %>%
       filter(id == !!workflowList$model$id) %>%
       collect()
@@ -56,8 +58,9 @@ submit.workflow.list <- function(workflowList, userDetails) {
     workflowList$model$type <- res$model_name
     workflowList$model$revision <- res$revision
   }
+
   # Fix RabbitMQ details
-  dbcon <- PEcAn.DB::betyConnect()
+  dbcon <- PEcAn.DB::db.open(.bety_params)
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
   PEcAn.DB::db.close(dbcon)
   workflowList$host <- list(
@@ -126,8 +129,8 @@ submit.workflow.list <- function(workflowList, userDetails) {
 #* @author Tezan Sahu
 insert.workflow <- function(workflowList){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
+  dbcon <- PEcAn.DB::db.open(.bety_params)
+
   model_id <- workflowList$model$id
   if(is.null(model_id)){
     model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
