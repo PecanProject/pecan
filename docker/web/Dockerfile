@@ -12,8 +12,8 @@ RUN apt-get update \
     && docker-php-ext-install -j$(nproc) pdo pdo_pgsql \
     && pecl install amqp \
     && docker-php-ext-enable amqp \
-    && mkdir -p /data/workflows /data/dbfiles \
-    && chown www-data /data/workflows /data/dbfiles
+    && sed -i -e 's/ 80/ 8080/g' -e 's/ 443/ 8443/g' /etc/apache2/ports.conf \
+    && sed -i -e 's/:80/:8080/g' -e 's/:443/:8443/g' /etc/apache2/sites-enabled/000-default.conf
 
 # ----------------------------------------------------------------------
 # copy webpages
@@ -35,3 +35,5 @@ ENV PECAN_VERSION=${PECAN_VERSION} \
     PECAN_GIT_BRANCH=${PECAN_GIT_BRANCH} \
     PECAN_GIT_CHECKSUM=${PECAN_GIT_CHECKSUM} \
     PECAN_GIT_DATE=${PECAN_GIT_DATE}
+
+EXPOSE 8080

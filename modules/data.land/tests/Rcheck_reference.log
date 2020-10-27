@@ -1,18 +1,18 @@
-* using log directory ‘/tmp/RtmpVmBk6A/PEcAn.data.land.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck’
+* using R version 4.0.2 (2020-06-22)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.data.land/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.data.land’ version ‘1.7.0’
+* this is package ‘PEcAn.data.land’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
-Depends: includes the non-default packages:
-  ‘datapack’ ‘dataone’ ‘PEcAn.DB’ ‘PEcAn.utils’ ‘redland’ ‘sirt’ ‘sf’
-Adding so many packages to the search path is excessive and importing
-selectively is preferable.
+Imports includes 31 non-default packages.
+Importing from so many packages makes the package vulnerable to any of
+them becoming unavailable.  Move as many as possible to Suggests and
+use conditionally.
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -23,7 +23,7 @@ selectively is preferable.
 * checking whether package ‘PEcAn.data.land’ can be installed ... WARNING
 Found the following significant warnings:
   Note: possible error in 'write_veg(outfolder, ': unused argument (source) 
-See ‘/tmp/RtmpVmBk6A/PEcAn.data.land.Rcheck/00install.out’ for details.
+See ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00install.out’ for details.
 Information on the location(s) of code generating the ‘Note’s can be
 obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
 to ‘yes’.
@@ -33,13 +33,8 @@ to ‘yes’.
     data            9.4Mb
     FIA_allometry   2.7Mb
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
-Package listed in more than one of Depends, Imports, Suggests, Enhances:
-  ‘sf’
-A package should be listed in only one of these fields.
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... NOTE
 Non-standard file/directory found at top level:
   ‘contrib’
@@ -54,83 +49,23 @@ Non-standard file/directory found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘coda’ ‘lubridate’ ‘PEcAn.benchmark’ ‘PEcAn.data.atmosphere’
-  ‘PEcAn.visualization’ ‘raster’ ‘RCurl’ ‘traits’ ‘udunits2’
-'library' or 'require' calls not declared from:
-  ‘dplR’ ‘maptools’ ‘mvtnorm’ ‘RCurl’ ‘rjags’
-'library' or 'require' calls in package code:
-  ‘dplR’ ‘fields’ ‘maptools’ ‘mvtnorm’ ‘RCurl’ ‘rgdal’ ‘rjags’
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Packages in Depends field not imported from:
-  ‘dataone’ ‘datapack’ ‘PEcAn.DB’ ‘PEcAn.utils’ ‘redland’ ‘sf’ ‘sirt’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
-* checking S3 generic/method consistency ... WARNING
-subset:
-  function(x, ...)
-subset.layer:
-  function(file, coords, sub.layer, clip, out.dir, out.name)
-
-See section ‘Generic functions and methods’ in the ‘Writing R
-Extensions’ manual.
-
-Found the following apparent S3 methods exported but not registered:
-  subset.layer
-See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
-manual.
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-BADM_IC_process: no visible global function definition for ‘setNames’
 dataone_download: no visible binding for '<<-' assignment to
   ‘newdir_D1’
 dataone_download: no visible binding for global variable ‘newdir_D1’
-diametergrow : plotend: no visible global function definition for
-  ‘dev.off’
-diametergrow : plotstart: no visible global function definition for
-  ‘pdf’
-diametergrow : tnorm: no visible global function definition for ‘runif’
-diametergrow : tnorm: no visible global function definition for ‘pnorm’
-diametergrow : tnorm: no visible global function definition for ‘qnorm’
-diametergrow : diamint: no visible global function definition for ‘cov’
-diametergrow : diamint: no visible global function definition for ‘var’
-diametergrow : f.update: no visible global function definition for
-  ‘rmvnorm’
-diametergrow : f.update: no visible global function definition for
-  ‘rnorm’
-diametergrow : di.update_new: no visible global function definition for
-  ‘rgamma’
 diametergrow : di.update_new: no visible binding for global variable
   ‘aa’
 diametergrow : di.update: no visible global function definition for
-  ‘dnorm’
-diametergrow : di.update: no visible global function definition for
   ‘runif’
-diametergrow : di.update: no visible global function definition for
-  ‘rgamma’
-diametergrow : sd.update: no visible global function definition for
-  ‘rgamma’
-diametergrow : sp.update: no visible global function definition for
-  ‘rgamma’
-diametergrow : se.update: no visible global function definition for
-  ‘rgamma’
 diametergrow: no visible binding for global variable ‘settings’
-diametergrow: no visible global function definition for ‘rnorm’
-diametergrow: no visible global function definition for ‘rgamma’
-diametergrow: no visible binding for global variable ‘quantile’
-diametergrow: no visible global function definition for ‘write.table’
-diametergrow: no visible global function definition for ‘lm’
-diametergrow: no visible global function definition for ‘predict.lm’
-diametergrow: no visible global function definition for ‘par’
-diametergrow: no visible global function definition for ‘plot’
 diametergrow: no visible global function definition for ‘lines’
 diametergrow: no visible global function definition for ‘density’
 diametergrow: no visible global function definition for ‘dgamma’
 diametergrow: no visible global function definition for ‘title’
-diametergrow: no visible global function definition for ‘dnorm’
 diametergrow: no visible global function definition for ‘text’
 diametergrow: no visible global function definition for ‘abline’
 diametergrow: no visible global function definition for ‘points’
@@ -178,11 +113,6 @@ extract_soil_gssurgo : <anonymous>: no visible global function
 extract_soil_nc: no visible global function definition for ‘median’
 extract_veg: possible error in write_veg(outfolder, start_date,
   end_date, veg_info = veg_info, source): unused argument (source)
-fia.to.psscss: no visible global function definition for ‘db.open’
-fia.to.psscss: no visible global function definition for ‘db.close’
-fia.to.psscss: no visible global function definition for
-  ‘dbfile.input.check’
-fia.to.psscss: no visible global function definition for ‘db.query’
 fia.to.psscss: no visible global function definition for ‘data’
 fia.to.psscss: no visible binding for global variable ‘pftmapping’
 fia.to.psscss: no visible global function definition for ‘na.omit’
@@ -192,9 +122,6 @@ fia.to.psscss: no visible global function definition for
   ‘dbfile.input.insert’
 find.land: no visible global function definition for ‘data’
 find.land: no visible binding for global variable ‘wrld_simpl’
-find.land: no visible global function definition for ‘SpatialPoints’
-find.land: no visible global function definition for ‘CRS’
-find.land: no visible global function definition for ‘proj4string’
 find.land: no visible global function definition for ‘over’
 find.land: no visible binding for global variable ‘land’
 format_identifier: no visible binding for '<<-' assignment to ‘doi1’
@@ -210,10 +137,6 @@ get_veg_module: no visible global function definition for
   ‘convert.input’
 get_veg_module: no visible binding for global variable ‘input’
 get_veg_module: no visible binding for global variable ‘new.site’
-get.elevation: no visible global function definition for ‘getURL’
-get.elevation: no visible global function definition for ‘xmlTreeParse’
-get.elevation: no visible global function definition for ‘xpathApply’
-get.elevation: no visible global function definition for ‘xmlValue’
 gSSURGO.Query: no visible global function definition for ‘xmlTreeParse’
 gSSURGO.Query: no visible global function definition for ‘xmlRoot’
 gSSURGO.Query: no visible global function definition for ‘getNodeSet’
@@ -233,12 +156,9 @@ InventoryGrowthFusion: no visible global function definition for
   ‘runif’
 InventoryGrowthFusion: no visible global function definition for ‘var’
 InventoryGrowthFusion: no visible global function definition for
-  ‘jags.model’
+  ‘load.module’
 InventoryGrowthFusion: no visible global function definition for
   ‘coda.samples’
-InventoryGrowthFusion: no visible global function definition for ‘plot’
-InventoryGrowthFusion: no visible global function definition for
-  ‘load.module’
 InventoryGrowthFusion: no visible global function definition for
   ‘as.mcmc.list’
 InventoryGrowthFusion : <anonymous>: no visible global function
@@ -251,8 +171,6 @@ InventoryGrowthFusionDiagnostics: no visible global function definition
   for ‘layout’
 InventoryGrowthFusionDiagnostics: no visible binding for global
   variable ‘data’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘plot’
 InventoryGrowthFusionDiagnostics: no visible global function definition
   for ‘points’
 InventoryGrowthFusionDiagnostics: no visible global function definition
@@ -279,25 +197,20 @@ is.land: no visible binding for global variable ‘met.nc’
 match_species_id: no visible binding for global variable ‘id’
 match_species_id: no visible binding for global variable ‘genus’
 match_species_id: no visible binding for global variable ‘species’
-match_species_id: no visible binding for global variable ‘input_code’
 matchInventoryRings: no visible global function definition for
   ‘combine.rwl’
 matchInventoryRings: no visible global function definition for
   ‘write.table’
 plot2AGB: no visible global function definition for ‘txtProgressBar’
-plot2AGB: no visible global function definition for ‘rmvnorm’
 plot2AGB: no visible global function definition for ‘setTxtProgressBar’
 plot2AGB: no visible binding for global variable ‘sd’
 plot2AGB: no visible global function definition for ‘pdf’
 plot2AGB: no visible global function definition for ‘par’
-plot2AGB: no visible global function definition for ‘plot’
 plot2AGB: no visible global function definition for ‘lines’
-plot2AGB: no visible global function definition for ‘dev.off’
 put_veg_module: no visible global function definition for ‘db.close’
 put_veg_module: no visible global function definition for ‘db.query’
 put_veg_module: no visible global function definition for
   ‘convert.input’
-Read_Tucson: no visible global function definition for ‘read.tucson’
 Read.IC.info.BADM: no visible global function definition for ‘read.csv’
 Read.IC.info.BADM: no visible binding for global variable ‘NA_L2CODE’
 Read.IC.info.BADM: no visible binding for global variable ‘VARIABLE’
@@ -317,8 +230,6 @@ Read.IC.info.BADM : <anonymous>: no visible binding for global variable
 read.plot: no visible global function definition for ‘read.csv’
 read.velmex: no visible global function definition for ‘read.fwf’
 sample_ic: no visible global function definition for ‘complete.cases’
-shp2kml: no visible global function definition for ‘ogrListLayers’
-shp2kml: no visible global function definition for ‘ogrInfo’
 soil_params: no visible binding for global variable ‘soil.name’
 soil_params: no visible binding for global variable ‘xsand.def’
 soil_params: no visible binding for global variable ‘xclay.def’
@@ -346,30 +257,26 @@ write_ic: no visible binding for global variable ‘input_veg’
 Undefined global functions or variables:
   . aa abline air.cond air.hcap Area as as_Spatial as.mcmc.list
   aws050wta bagitFile boxplot clay.cond clay.hcap coda.samples coef
-  combine.rwl complete.cases comppct_r convert.input cor cov CRS data
-  DATAVALUE db.close db.open db.query dbfile.input.check
-  dbfile.input.insert density dev.off dgamma dnorm doi1 fieldcp.K
-  filter gelman.diag genus getNodeSet getURL grav GROUP_ID h2o.cond
-  hist hzdept_r id input input_code input_veg is.mcmc.list jags.model
-  kair kclay ksand ksilt land layout legend lines lm load.module
-  mcmc.list2init median met.nc mn mnId mukey mutate NA_L1CODE NA_L2CODE
-  na.omit new.site newdir_D1 ogrInfo ogrListLayers over pairs par pdf
-  pftmapping plot pnorm points predict.lm proj4string qnorm quantile
-  read.csv read.fwf read.tucson resource_map rgamma rmvnorm rnorm runif
-  sand.cond sand.hcap sd setNames settings setTxtProgressBar silt.cond
-  silt.hcap SITE_ID soil.name soilcp.MPa soilwp.MPa SpatialPoints
-  species text texture title txtProgressBar var VARIABLE VARIABLE_GROUP
-  write.table wrld_simpl xclay.def xmlRoot xmlToList xmlTreeParse
-  xmlValue xpathApply xsand.def zip_contents
+  combine.rwl complete.cases comppct_r convert.input cor data DATAVALUE
+  db.close db.query dbfile.input.insert density dgamma doi1 fieldcp.K
+  filter gelman.diag genus getNodeSet grav GROUP_ID h2o.cond hist
+  hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt land
+  layout legend lines lm load.module mcmc.list2init median met.nc mn
+  mnId mukey mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1 over
+  pairs par pdf pftmapping points quantile read.csv read.fwf
+  resource_map runif sand.cond sand.hcap sd setNames settings
+  setTxtProgressBar silt.cond silt.hcap SITE_ID soil.name soilcp.MPa
+  soilwp.MPa species text texture title txtProgressBar var VARIABLE
+  VARIABLE_GROUP write.table wrld_simpl xclay.def xmlRoot xmlToList
+  xmlTreeParse xsand.def zip_contents
 Consider adding
   importFrom("graphics", "abline", "boxplot", "hist", "layout", "legend",
-             "lines", "pairs", "par", "plot", "points", "text", "title")
-  importFrom("grDevices", "dev.off", "pdf")
+             "lines", "pairs", "par", "points", "text", "title")
+  importFrom("grDevices", "pdf")
   importFrom("methods", "as")
-  importFrom("stats", "coef", "complete.cases", "cor", "cov", "density",
-             "dgamma", "dnorm", "filter", "lm", "median", "na.omit",
-             "pnorm", "predict.lm", "qnorm", "quantile", "rgamma",
-             "rnorm", "runif", "sd", "setNames", "var")
+  importFrom("stats", "coef", "complete.cases", "cor", "density",
+             "dgamma", "filter", "lm", "median", "na.omit", "quantile",
+             "runif", "sd", "setNames", "var")
   importFrom("utils", "data", "read.csv", "read.fwf",
              "setTxtProgressBar", "txtProgressBar", "write.table")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
@@ -378,11 +285,8 @@ contains 'methods').
 Found the following calls to data() loading into the global environment:
 File ‘PEcAn.data.land/R/fia2ED.R’:
   data(pftmapping)
-File ‘PEcAn.data.land/R/find.land.R’:
-  data("wrld_simpl", package = "maptools")
 See section ‘Good practice’ in ‘?data’.
-* checking Rd files ... WARNING
-checkRd: (7) gSSURGO.Query.Rd:29-35: Tag \dontrun not recognized
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
 Rd file 'dataone_download.Rd':
@@ -494,9 +398,6 @@ Undocumented arguments in documentation object 'write_ic'
   ‘in.path’ ‘in.name’ ‘start_date’ ‘end_date’ ‘outfolder’ ‘model’
   ‘new_site’ ‘pfts’ ‘source’ ‘overwrite’ ‘...’
 
-Undocumented arguments in documentation object 'write_veg'
-  ‘outfolder’ ‘start_date’ ‘veg_info’ ‘source’
-
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
@@ -529,7 +430,6 @@ Please use e.g. ‘inst/extdata’ for non-R data files
 
 Object named ‘.Random.seed’ found in dataset: ‘soil_class’
 Please remove it.
-
 * checking data for non-ASCII characters ... WARNING
   Warning: found non-ASCII strings
   'US-Bar,272,44.0646,-71.2881,NA,4297,GRP_LOCATION,LOCATION_COMMENT,... Bartlett Experimental Forest. ...The correct location is 44 deg 3' 52.702794\ N     [NOT 43 deg as I had earlier specified]  71 deg 17 17.0766744\" W","5","NORTHERN FORESTS","5.3","ATLANTIC HIGHLANDS"
@@ -1385,6 +1285,9 @@ Please remove it.
   US-Fmf,2160,35.1426,-111.7273,NA,27372,GRP_BIOMASS_CHEM,BIOMASS_PHEN,Mixed/unknown,13,TEMPERATE SIERRAS,13.1,UPPER GILA MOUNTAINS
   US-Fmf,2160,35.1426,-111.7273,NA,27372,GRP_BIOMASS_CHEM,BIOMASS_SPP,PIPO (NRCS plant code),13,TEMPERATE SIERRAS,13.1,UPPER GILA MOUNTAINS
   US-Fmf,2160,35.1426,-111.7273,NA,27372,GRP_BIOMASS_CHEM,BIOMASS_COMMENT,pinus ponderosa' in object 'BADM'
+  'US-SP1,50,29.7381,-82.2188,NA,29203,GRP_AG_LIT_BIOMASS,AG_LIT_BIOMASS_COMMENT,842 <c2><b1> 277,8,EASTERN TEMPERATE FORESTS,8.5,MISSISSIPPI ALLUVIAL AND SOUTHEAST USA COASTAL PLAINS' in object 'BADM'
+  'US-SRM,1120,31.8214,-110.8661,NA,27355,GRP_AG_BIOMASS_OTHER,AG_BIOMASS_COMMENT,*aboveground tree biomass = (EXP(1.6*LN(35)-0.58)/100)/1000*.47 estimated using equation given in Browning et al. 2008EcolApp,18,933 (be careful<e2><80><a6>numbers not verified), biomass of herbage production given in Follet, SRER100 issue,12,SOUTHERN SEMIARID HIGHLANDS,12.1,WESTERN SIERRA MADRE PIEDMONT' in object 'BADM'
+  'US-SRM,1120,31.8214,-110.8661,NA,27975,GRP_AG_BIOMASS_TREE,AG_BIOMASS_COMMENT,*aboveground tree biomass = (EXP(1.6*LN(35)-0.58)/100)/1000*.47 estimated using equation given in Browning et al. 2008EcolApp,18,933 (be careful<e2><80><a6>numbers not verified), biomass of herbage production given in Follet, SRER100 issue,12,SOUTHERN SEMIARID HIGHLANDS,12.1,WESTERN SIERRA MADRE PIEDMONT' in object 'BADM'
   'US-Shd,346,36.9333,-96.6833,NA,23740,GRP_SOIL_TEX,SOIL_TEX_COMMENT,(5-6); Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
   'US-Shd,346,36.9333,-96.6833,NA,23741,GRP_SOIL_TEX,SOIL_TEX_COMMENT,(6-7); Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
   'US-Shd,346,36.9333,-96.6833,NA,23742,GRP_SOIL_TEX,SOIL_TEX_COMMENT,(4-5); Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
@@ -1395,9 +1298,6 @@ Please remove it.
   'US-Shd,346,36.9333,-96.6833,NA,24781,GRP_SOIL_TEX,SOIL_TEX_COMMENT,(4-5); Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
   'US-Shd,346,36.9333,-96.6833,NA,26057,GRP_SOIL_TEX,SOIL_TEX_COMMENT,Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
   'US-Shd,346,36.9333,-96.6833,NA,26058,GRP_SOIL_TEX,SOIL_TEX_COMMENT,Soil at Tallgrass Prairie Site: silty clay loam of Wolco-Dwight complex (Pachic Argiustolls & Typic Natrustolls)<c2><a0>; George Burba. Y:\Okla-SR\LAIBiomass&Soils\Properties of OK soils.doc.,9,GREAT PLAINS,9.4,SOUTH CENTRAL SEMIARID PRAIRIES' in object 'BADM'
-  'US-SP1,50,29.7381,-82.2188,NA,29203,GRP_AG_LIT_BIOMASS,AG_LIT_BIOMASS_COMMENT,842 <c2><b1> 277,8,EASTERN TEMPERATE FORESTS,8.5,MISSISSIPPI ALLUVIAL AND SOUTHEAST USA COASTAL PLAINS' in object 'BADM'
-  'US-SRM,1120,31.8214,-110.8661,NA,27355,GRP_AG_BIOMASS_OTHER,AG_BIOMASS_COMMENT,*aboveground tree biomass = (EXP(1.6*LN(35)-0.58)/100)/1000*.47 estimated using equation given in Browning et al. 2008EcolApp,18,933 (be careful<e2><80><a6>numbers not verified), biomass of herbage production given in Follet, SRER100 issue,12,SOUTHERN SEMIARID HIGHLANDS,12.1,WESTERN SIERRA MADRE PIEDMONT' in object 'BADM'
-  'US-SRM,1120,31.8214,-110.8661,NA,27975,GRP_AG_BIOMASS_TREE,AG_BIOMASS_COMMENT,*aboveground tree biomass = (EXP(1.6*LN(35)-0.58)/100)/1000*.47 estimated using equation given in Browning et al. 2008EcolApp,18,933 (be careful<e2><80><a6>numbers not verified), biomass of herbage production given in Follet, SRER100 issue,12,SOUTHERN SEMIARID HIGHLANDS,12.1,WESTERN SIERRA MADRE PIEDMONT' in object 'BADM'
   'US-UMB,234,45.5598,-84.7138,NA,18391,GRP_AG_BIOMASS_OTHER,AG_BIOMASS_COMMENT,Litter traps are .179 m^2 with one trap in each of 60 - 0.08 ha plots and 20 traps in a 1.13 ha plot with flux tower a plot center. Litter trap collection date is 20011020 <c2><b1> 20 d,5,NORTHERN FORESTS,5.2,MIXED WOOD SHIELD' in object 'BADM'
   'US-UMB,234,45.5598,-84.7138,NA,18392,GRP_AG_BIOMASS_TREE,AG_BIOMASS_COMMENT,Litter traps are .179 m^2 with one trap in each of 60 - 0.08 ha plots and 20 traps in a 1.13 ha plot with flux tower a plot center. Litter trap collection date is 20011020 <c2><b1> 20 d,5,NORTHERN FORESTS,5.2,MIXED WOOD SHIELD' in object 'BADM'
   'US-UMB,234,45.5598,-84.7138,NA,18423,GRP_AG_BIOMASS_OTHER,AG_BIOMASS_COMMENT,Litter traps are .179 m^2 with one trap in each of 60 - 0.08 ha plots and 20 traps in a 1.13 ha plot with flux tower at plot center. Litter trap collection date is 20011020 <c2><b1> 20 d,5,NORTHERN FORESTS,5.2,MIXED WOOD SHIELD' in object 'BADM'
@@ -1421,6 +1321,16 @@ Please remove it.
   soil_class.RData    117Kb     18Kb       xz
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 11 WARNINGs, 6 NOTEs
+
+Status: 8 WARNINGs, 5 NOTEs
+See
+  ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00check.log’
+for details.
+
+

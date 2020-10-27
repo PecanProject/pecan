@@ -85,7 +85,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   if ("litter_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
-    names(forecast[[length(forecast)]]) <- c("Litter")
+    names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
 
     
