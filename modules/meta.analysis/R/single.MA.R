@@ -43,7 +43,8 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
                     site = "beta.site[site[k]]",
                     trt = "beta.trt[trt[k]]")
 
-  # making sure trt is factor
+  # making sure ghs and trt are factor
+  data$ghs <- as.factor(data$ghs)
   data$trt <- as.factor(data$trt)
 
   if (sum(model.parms > 1) == 0) {
