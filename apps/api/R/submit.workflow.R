@@ -82,12 +82,14 @@ submit.workflow.list <- function(workflowList, userDetails) {
   # Add entry to workflows table in database
   workflow_id <- insert.workflow(workflowList)
   workflowList$workflow$id <- workflow_id
+  workflow_id_str <- format(workflow_id, scientific = FALSE)
 
   # Add entry to attributes table in database
   insert.attribute(workflowList)
 
   # Fix the output directory
-  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
+  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_",
+                   workflow_id_str)
   workflowList$outdir <- outdir
   
   # Create output diretory
@@ -105,11 +107,11 @@ submit.workflow.list <- function(workflowList, userDetails) {
   res <- file.copy("/work/workflow.R", outdir)
   
   # Post workflow to RabbitMQ
-  message <- list(folder = outdir, workflowid = workflow_id)
+  message <- list(folder = outdir, workflowid = workflow_id_str)
   res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
   
   if(res$routed){
-    return(list(workflow_id = as.character(workflow_id), status = "Submitted successfully"))
+    return(list(workflow_id = workflow_id_str, status = "Submitted successfully"))
   }
   else{
     return(list(status = "Error", message = "Could not submit to RabbitMQ"))
