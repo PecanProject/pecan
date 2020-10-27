@@ -47,6 +47,10 @@ root$mount("/api/workflows", workflows_pr)
 runs_pr <- plumber::Plumber$new("runs.R")
 root$mount("/api/runs", runs_pr)
 
+# Available models
+runs_pr <- plumber::Plumber$new("available-models.R")
+root$mount("/api/availableModels", runs_pr)
+
 # The API server is bound to 0.0.0.0 on port 8000
 # The Swagger UI for the API draws its source from the pecanapi-spec.yml file
 root$run(host="0.0.0.0", port=8000, debug=TRUE, swagger = function(pr, spec, ...) {
