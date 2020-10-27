@@ -46,6 +46,10 @@ submit.workflow.list <- function(workflowList, userDetails) {
   # Fix details about the database
   workflowList$database <- list(bety = .bety_params)
 
+  # HACK: We are not read for the Postgres driver yet. Way too many places rely
+  # on implicit string conversion, which doesn't work well for bit64 integers
+  workflowList$database$bety$driver <- "PostgreSQL"
+
   if (!is.null(workflowList$model$id) &&
         (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
     dbcon <- PEcAn.DB::db.open(.bety_params)
