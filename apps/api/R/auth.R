@@ -29,15 +29,11 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* @author Tezan Sahu
 validate_crypt_pass <- function(username, crypt_pass) {
 
-  dbcon <- PEcAn.DB::betyConnect()
-  
   res <- tbl(dbcon, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
     collect()
 
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(res) == 1) {
     return(res$id)
   }

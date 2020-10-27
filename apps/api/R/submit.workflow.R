@@ -1,13 +1,5 @@
 library(dplyr)
 
-.bety_params <- PEcAn.DB::get_postgres_envvars(
-  host = "localhost",
-  dbname = "bety",
-  user = "bety",
-  password = "bety",
-  driver = "Postgres"
-)
-
 #* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
@@ -52,21 +44,17 @@ submit.workflow.list <- function(workflowList, userDetails) {
 
   if (!is.null(workflowList$model$id) &&
         (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    dbcon <- PEcAn.DB::db.open(.bety_params)
     res <- dplyr::tbl(dbcon, "models") %>%
       select(id, model_name, revision) %>%
       filter(id == !!workflowList$model$id) %>%
       collect()
-    PEcAn.DB::db.close(dbcon)
-    
+
     workflowList$model$type <- res$model_name
     workflowList$model$revision <- res$revision
   }
 
   # Fix RabbitMQ details
-  dbcon <- PEcAn.DB::db.open(.bety_params)
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
-  PEcAn.DB::db.close(dbcon)
   workflowList$host <- list(
     rabbitmq = list(
       uri = Sys.getenv("RABBITMQ_URI", "amqp://guest:guest@localhost/%2F"),
@@ -133,8 +121,6 @@ submit.workflow.list <- function(workflowList, userDetails) {
 #* @author Tezan Sahu
 insert.workflow <- function(workflowList){
   
-  dbcon <- PEcAn.DB::db.open(.bety_params)
-
   model_id <- workflowList$model$id
   if(is.null(model_id)){
     model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
@@ -182,8 +168,6 @@ insert.workflow <- function(workflowList){
     )
   )
 
-  PEcAn.DB::db.close(dbcon)
-  
   return(workflow_id)
 }
 
@@ -193,8 +177,7 @@ insert.workflow <- function(workflowList){
 #* @param workflowList List containing the workflow details
 #* @author Tezan Sahu
 insert.attribute <- function(workflowList){
-  dbcon <- PEcAn.DB::betyConnect()
-  
+
   # Create an array of PFTs
   pfts <- c()
   for(i in seq(length(workflowList$pfts))){

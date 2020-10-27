@@ -7,8 +7,6 @@ library(dplyr)
 #* @get /<pft_id>
 getPfts <- function(pft_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   pft <- tbl(dbcon, "pfts") %>%
     select(pft_id = id, pft_name = name, definition, pft_type, modeltype_id) %>%
     filter(pft_id == !!pft_id)
@@ -20,8 +18,6 @@ getPfts <- function(pft_id, res){
   qry_res <- pft %>% 
     select(-modeltype_id) %>% 
     collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
@@ -58,8 +54,6 @@ searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE
     return(list(error = "Invalid pft_type"))
   }
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   pfts <- tbl(dbcon, "pfts") %>%
     select(pft_id = id, pft_name = name, pft_type, modeltype_id)
   
@@ -74,8 +68,6 @@ searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE
     select(-modeltype_id) %>%
     arrange(pft_id) %>%
     collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

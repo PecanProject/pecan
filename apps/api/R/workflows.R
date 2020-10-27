@@ -15,8 +15,6 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
     return(list(error = "Invalid value for parameter"))
   }
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Workflow <- tbl(dbcon, "workflows") %>%
     select(-created_at, -updated_at, -params, -advanced_edit, -notes)
   
@@ -32,8 +30,6 @@ getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, r
   
   qry_res <- Workflow %>% collect()
 
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
     return(list(error="Workflows not found"))
@@ -116,8 +112,6 @@ submitWorkflow <- function(req, res){
 #' @author Tezan Sahu
 #* @get /<id>
 getWorkflowDetails <- function(id, req, res){
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, model_id, site_id, folder, hostname, user_id)
   
@@ -127,8 +121,6 @@ getWorkflowDetails <- function(id, req, res){
     filter(id == !!id)
   
   qry_res <- Workflow %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
@@ -173,16 +165,12 @@ getWorkflowDetails <- function(id, req, res){
 #' @author Tezan Sahu
 #* @get /<id>/status
 getWorkflowStatus <- function(req, id, res){
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, user_id) %>%
     filter(id == !!id)
 
   
   qry_res <- Workflow %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
@@ -211,15 +199,11 @@ getWorkflowStatus <- function(req, id, res){
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<id>/file/<filename>
 getWorkflowFile <- function(req, id, filename, res){
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, user_id) %>%
     filter(id == !!id)
   
   qry_res <- Workflow %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

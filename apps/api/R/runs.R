@@ -14,8 +14,6 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
     return(list(error = "Invalid value for parameter"))
   }
 
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Runs <- tbl(dbcon, "runs") %>%
     select(id, model_id, site_id, parameter_list, ensemble_id, start_time, finish_time)
   
@@ -31,8 +29,6 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
   qry_res <- Runs %>% 
     arrange(id) %>%
     collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
@@ -88,8 +84,6 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 #* @get /<run_id>
 getRunDetails <- function(req, run_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Runs <- tbl(dbcon, "runs") %>%
     select(-outdir, -outprefix, -setting, -created_at, -updated_at)
   
@@ -106,8 +100,6 @@ getRunDetails <- function(req, run_id, res){
       filter(id == !!run_id) %>%
       pull(user_id)
   }
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
@@ -156,8 +148,6 @@ getRunDetails <- function(req, run_id, res){
 #* @get /<run_id>/input/<filename>
 getRunInputFile <- function(req, run_id, filename, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)
   
@@ -166,8 +156,6 @@ getRunInputFile <- function(req, run_id, filename, res){
     full_join(Run, by="ensemble_id")  %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
-  
-  PEcAn.DB::db.close(dbcon)
   
   inputpath <- paste0( Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
 
@@ -196,8 +184,6 @@ getRunInputFile <- function(req, run_id, filename, res){
 #* @get /<run_id>/output/<filename>
 getRunOutputFile <- function(req, run_id, filename, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)
   
@@ -206,8 +192,6 @@ getRunOutputFile <- function(req, run_id, filename, res){
     full_join(Run, by="ensemble_id")  %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
-  
-  PEcAn.DB::db.close(dbcon)
   
   outputpath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
   
@@ -241,8 +225,6 @@ getRunOutputFile <- function(req, run_id, filename, res){
 
 plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res){
   # Get workflow_id for the run
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)
   
@@ -258,9 +240,6 @@ plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, heigh
       filter(id == !!workflow_id) %>%
       pull(user_id)
   }
-  
-  
-  PEcAn.DB::db.close(dbcon)
   
   # Check if the data file exists on the host
   datafile <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", year, ".nc")

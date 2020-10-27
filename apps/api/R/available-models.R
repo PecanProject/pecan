@@ -1,13 +1,5 @@
 library(magrittr, include.only = "%>%")
 
-.bety_params <- PEcAn.DB::get_postgres_envvars(
-  host = "localhost",
-  dbname = "bety",
-  user = "bety",
-  password = "bety",
-  driver = "Postgres"
-)
-
 #' List models available on a specific machine
 #'
 #' @param machine_name Target machine hostname. Default = `"docker"`
@@ -16,7 +8,6 @@ library(magrittr, include.only = "%>%")
 #' @author Alexey Shiklomanov
 #* @get /
 availableModels <- function(machine_name = "docker", machine_id = NULL) {
-  dbcon <- PEcAn.DB::db.open(.bety_params)
   if (is.null(machine_id)) {
     machines <- dplyr::tbl(dbcon, "machines")
     machineid <- machines %>%

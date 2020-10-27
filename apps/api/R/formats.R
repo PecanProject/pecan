@@ -7,8 +7,6 @@ library(dplyr)
 #* @get /<format_id>
 getFormat <- function(format_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Format <- tbl(dbcon, "formats") %>%
     select(format_id = id, name, notes, header, mimetype_id) %>%
     filter(format_id == !!format_id)
@@ -21,7 +19,6 @@ getFormat <- function(format_id, res){
   qry_res <- Format %>% collect()
   
   if (nrow(qry_res) == 0) {
-    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Format not found"))
   }
@@ -42,8 +39,6 @@ getFormat <- function(format_id, res){
       select(-variable_id, -format_id, -units) %>%
       collect()
     
-    PEcAn.DB::db.close(dbcon)
-    
     response$format_variables <- format_vars
     return(response)
   }
@@ -62,8 +57,6 @@ searchFormats <- function(format_name="", mimetype="", ignore_case=TRUE, res){
   format_name <- URLdecode(format_name)
   mimetype <- URLdecode(mimetype)
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Formats <- tbl(dbcon, "formats") %>%
     select(format_id = id, format_name=name, mimetype_id) %>%
     filter(grepl(!!format_name, format_name, ignore.case=ignore_case))
@@ -76,8 +69,6 @@ searchFormats <- function(format_name="", mimetype="", ignore_case=TRUE, res){
     arrange(format_id)
   
   qry_res <- Formats %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

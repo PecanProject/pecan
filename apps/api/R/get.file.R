@@ -12,8 +12,7 @@ get.file <- function(filepath, userid) {
   run_id <- substr(parent_dir, stringi::stri_locate_last(parent_dir, regex="/")[1] + 1, stringr::str_length(parent_dir))
   
   if(Sys.getenv("AUTH_REQ") == TRUE) {
-    dbcon <- PEcAn.DB::betyConnect()
-    
+
     Run <- tbl(dbcon, "runs") %>%
       filter(id == !!run_id)
     Run <- tbl(dbcon, "ensembles") %>%
@@ -24,8 +23,6 @@ get.file <- function(filepath, userid) {
       select(workflow_id=id, user_id) %>% full_join(Run, by="workflow_id")  %>%
       filter(id == !!run_id) %>%
       pull(user_id)
-    
-    PEcAn.DB::db.close(dbcon)
     
     if(! user_id == userid) {
       return(list(status = "Error", message = "Access forbidden"))

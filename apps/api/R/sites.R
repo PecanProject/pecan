@@ -7,16 +7,12 @@ library(dplyr)
 #* @get /<site_id>
 getSite <- function(site_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   site <- tbl(dbcon, "sites") %>%
     select(-created_at, -updated_at, -user_id, -geometry) %>%
     filter(id == !!site_id)
   
   
   qry_res <- site %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
@@ -43,8 +39,6 @@ getSite <- function(site_id, res){
 searchSite <- function(sitename="", ignore_case=TRUE, res){
   sitename <- URLdecode(sitename)
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   sites <- tbl(dbcon, "sites") %>%
     select(id, sitename) %>%
     filter(grepl(!!sitename, sitename, ignore.case=ignore_case)) %>%
@@ -52,8 +46,6 @@ searchSite <- function(sitename="", ignore_case=TRUE, res){
   
   
   qry_res <- sites %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

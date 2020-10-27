@@ -7,8 +7,6 @@ library(dplyr)
 #* @get /<model_id>
 getModel <- function(model_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Model <- tbl(dbcon, "models") %>%
     select(model_id = id, model_name, revision, modeltype_id) %>%
     filter(model_id == !!model_id)
@@ -53,8 +51,6 @@ searchModels <- function(model_name="", revision="", ignore_case=TRUE, res){
   model_name <- URLdecode(model_name)
   revision <- URLdecode(revision)
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
   Models <- tbl(dbcon, "models") %>%
     select(model_id = id, model_name, revision) %>%
     filter(grepl(!!model_name, model_name, ignore.case=ignore_case)) %>%
@@ -63,8 +59,6 @@ searchModels <- function(model_name="", revision="", ignore_case=TRUE, res){
   
   qry_res <- Models %>% collect()
 
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0) {
     res$status <- 404
     return(list(error="Model(s) not found"))
