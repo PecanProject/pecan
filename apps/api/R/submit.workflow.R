@@ -35,12 +35,17 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
 submit.workflow.list <- function(workflowList, userDetails) {
-  # Fix details about the database
-  workflowList$database <- list(bety = .bety_params)
 
-  # HACK: We are not read for the Postgres driver yet. Way too many places rely
-  # on implicit string conversion, which doesn't work well for bit64 integers
-  workflowList$database$bety$driver <- "PostgreSQL"
+  # Set database details
+  workflowList$database <- list(
+    bety = PEcAn.DB::get_postgres_envvars(
+      host = "localhost",
+      dbname = "bety",
+      user = "bety",
+      password = "bety",
+      driver = "PostgreSQL"
+    )
+  )
 
   if (!is.null(workflowList$model$id) &&
         (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
