@@ -151,6 +151,12 @@ insert.workflow <- function(workflowList){
       tibble::add_column("user_id" = bit64::as.integer64(workflowList$info$userid))
   }
 
+  # NOTE: Have to "checkout" a connection from the pool here to work with
+  # dbSendStatement and friends. We make sure to return the connection when the
+  # function exits (successfully or not).
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+
   insert_query <- glue::glue(
     "INSERT INTO workflows ",
     "({paste(colnames(workflow_df), collapse = ', ')}) ",
@@ -159,7 +165,7 @@ insert.workflow <- function(workflowList){
   )
   PEcAn.logger::logger.debug(insert_query)
   workflow_id <- PEcAn.DB::db.query(
-    insert_query, dbcon,
+    insert_query, con,
     values = unname(as.list(workflow_df))
   )[["id"]]
 
@@ -169,7 +175,7 @@ insert.workflow <- function(workflowList){
   )
 
   PEcAn.DB::db.query(
-    "UPDATE workflows SET folder = $1 WHERE id = $2", dbcon, values = list(
+    "UPDATE workflows SET folder = $1 WHERE id = $2", con, values = list(
       file.path("data", "workflows", paste0("PEcAn_", format(workflow_id, scientific = FALSE))),
       workflow_id
     )
@@ -235,7 +241,9 @@ insert.attribute <- function(workflowList){
   # Insert properties into attributes table
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
-  res <- DBI::dbSendStatement(dbcon, 
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+  res <- DBI::dbSendStatement(con,
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
 
