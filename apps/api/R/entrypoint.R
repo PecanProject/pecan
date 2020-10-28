@@ -18,7 +18,7 @@ source("general.R")
 
 .bety_params$driver <- NULL
 .bety_params$drv <- RPostgres::Postgres()
-dbcon <- do.call(pool::dbPool, .bety_params)
+global_db_pool <- do.call(pool::dbPool, .bety_params)
 
 root <- plumber::Plumber$new()
 root$setSerializer(plumber::serializer_unboxed_json())

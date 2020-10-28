@@ -32,9 +32,10 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* Submit a workflow (converted to list)
 #* @param workflowList Workflow parameters expressed as a list
 #* @param userDetails List containing userid & username
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
-submit.workflow.list <- function(workflowList, userDetails) {
+submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool) {
 
   # Set database details
   workflowList$database <- list(
@@ -124,9 +125,10 @@ submit.workflow.list <- function(workflowList, userDetails) {
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
-insert.workflow <- function(workflowList){
+insert.workflow <- function(workflowList, dbcon = global_db_pool){
   
   model_id <- workflowList$model$id
   if(is.null(model_id)){
@@ -188,8 +190,9 @@ insert.workflow <- function(workflowList){
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @author Tezan Sahu
-insert.attribute <- function(workflowList){
+insert.attribute <- function(workflowList, dbcon = global_db_pool){
 
   # Create an array of PFTs
   pfts <- c()

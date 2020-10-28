@@ -2,10 +2,11 @@ library(dplyr)
 
 #' Retrieve the details of a PEcAn site, based on site_id
 #' @param site_id Site ID (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Site details
 #' @author Tezan Sahu
 #* @get /<site_id>
-getSite <- function(site_id, res){
+getSite <- function(site_id, res, dbcon = global_db_pool){
   
   site <- tbl(dbcon, "sites") %>%
     select(-created_at, -updated_at, -user_id, -geometry) %>%
@@ -33,10 +34,11 @@ getSite <- function(site_id, res){
 #' Search for PEcAn sites containing wildcards for filtering
 #' @param sitename Site name search string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Site subset matching the site search string
 #' @author Tezan Sahu
 #* @get /
-searchSite <- function(sitename="", ignore_case=TRUE, res){
+searchSite <- function(sitename="", ignore_case=TRUE, res, dbcon = global_db_pool){
   sitename <- URLdecode(sitename)
   
   sites <- tbl(dbcon, "sites") %>%

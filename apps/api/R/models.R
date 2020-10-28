@@ -2,10 +2,11 @@ library(dplyr)
 
 #' Retrieve the details of a PEcAn model, based on model_id
 #' @param model_id Model ID (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Model details
 #' @author Tezan Sahu
 #* @get /<model_id>
-getModel <- function(model_id, res){
+getModel <- function(model_id, res, dbcon = global_db_pool){
   
   Model <- tbl(dbcon, "models") %>%
     select(model_id = id, model_name, revision, modeltype_id) %>%
@@ -44,10 +45,12 @@ getModel <- function(model_id, res){
 #' @param model_name Model name search string (character)
 #' @param revision Model version/revision search string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Model subset matching the model search string
 #' @author Tezan Sahu
 #* @get /
-searchModels <- function(model_name="", revision="", ignore_case=TRUE, res){
+searchModels <- function(model_name="", revision="", ignore_case=TRUE, res,
+                         dbcon = global_db_pool){
   model_name <- URLdecode(model_name)
   revision <- URLdecode(revision)
   

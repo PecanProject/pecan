@@ -4,11 +4,13 @@ source("get.file.R")
 #' Get the list of runs (belonging to a particuar workflow)
 #' @param workflow_id Workflow id (character)
 #' @param offset
-#' @param limit 
+#' @param limit
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /
-getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
+getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res,
+                    dbcon = global_db_pool){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
@@ -82,7 +84,7 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res){
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<run_id>
-getRunDetails <- function(req, run_id, res){
+getRunDetails <- function(req, run_id, res, dbcon = global_db_pool){
   
   Runs <- tbl(dbcon, "runs") %>%
     select(-outdir, -outprefix, -setting, -created_at, -updated_at)
@@ -142,11 +144,12 @@ getRunDetails <- function(req, run_id, res){
 #' Get the input file specified by user for a run
 #' @param run_id Run id (character)
 #' @param filename Name of the input file (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Input file specified by user for the run
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/input/<filename>
-getRunInputFile <- function(req, run_id, filename, res){
+getRunInputFile <- function(req, run_id, filename, res, dbcon = global_db_pool){
   
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)
@@ -182,7 +185,7 @@ getRunInputFile <- function(req, run_id, filename, res){
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/output/<filename>
-getRunOutputFile <- function(req, run_id, filename, res){
+getRunOutputFile <- function(req, run_id, filename, res, dbcon = global_db_pool){
   
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)
@@ -223,7 +226,8 @@ getRunOutputFile <- function(req, run_id, filename, res){
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
 
-plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res){
+plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res,
+                        dbcon = global_db_pool) {
   # Get workflow_id for the run
   Run <- tbl(dbcon, "runs") %>%
     filter(id == !!run_id)

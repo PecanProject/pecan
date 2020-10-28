@@ -1,6 +1,14 @@
 library(dplyr)
 
-get.file <- function(filepath, userid) {
+#' Download a file associated with PEcAn
+#'
+#' @param filepath Absolute path to file on target machine
+#' @param userid User ID associated with file (typically the same as the user
+#'   running the corresponding workflow)
+#' @param dbcon Database connection object. Default is global database pool.
+#' @return Raw binary file contents
+#' @author Tezan Sehu
+get.file <- function(filepath, userid, dbcon = global_db_pool) {
   # Check if the file path is valid
   if(! file.exists(filepath)){
     return(list(status = "Error", message = "File not found"))

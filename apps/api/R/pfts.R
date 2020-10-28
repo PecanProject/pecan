@@ -2,10 +2,11 @@ library(dplyr)
 
 #' Retrieve the details of a PEcAn PFT, based on pft_id
 #' @param pft_id PFT ID (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return PFT details
 #' @author Tezan Sahu
 #* @get /<pft_id>
-getPfts <- function(pft_id, res){
+getPfts <- function(pft_id, res, dbcon = global_db_pool){
   
   pft <- tbl(dbcon, "pfts") %>%
     select(pft_id = id, pft_name = name, definition, pft_type, modeltype_id) %>%
@@ -41,10 +42,12 @@ getPfts <- function(pft_id, res){
 #' @param pft_type PFT type (either 'plant' or 'cultivar') (character)
 #' @param model_type Model type serch string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return PFT subset matching the searc criteria
 #' @author Tezan Sahu
 #* @get /
-searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE, res){
+searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE, res,
+                       dbcon = global_db_pool){
   pft_name <- URLdecode(pft_name)
   pft_type <- URLdecode(pft_type)
   model_type <- URLdecode(model_type)

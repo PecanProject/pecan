@@ -5,11 +5,13 @@ source("submit.workflow.R")
 #' @param model_id Model id (character)
 #' @param site_id Site id (character)
 #' @param offset
-#' @param limit 
+#' @param limit Max number of workflows to retrieve (default = 50)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return List of workflows (using a particular model & site, if specified)
 #' @author Tezan Sahu
 #* @get /
-getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, res){
+getWorkflows <- function(req, model_id=NULL, site_id=NULL, offset=0, limit=50, res,
+                         dbcon = global_db_pool){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
@@ -108,10 +110,11 @@ submitWorkflow <- function(req, res){
 
 #' Get the of the workflow specified by the id
 #' @param id Workflow id (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Details of requested workflow
 #' @author Tezan Sahu
 #* @get /<id>
-getWorkflowDetails <- function(id, req, res){
+getWorkflowDetails <- function(id, req, res, dbcon = global_db_pool){
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, model_id, site_id, folder, hostname, user_id)
   
@@ -161,10 +164,11 @@ getWorkflowDetails <- function(id, req, res){
 
 #' Get the of the workflow specified by the id
 #' @param id Workflow id (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Details of requested workflow
 #' @author Tezan Sahu
 #* @get /<id>/status
-getWorkflowStatus <- function(req, id, res){
+getWorkflowStatus <- function(req, id, res, dbcon = global_db_pool){
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, user_id) %>%
     filter(id == !!id)
@@ -194,11 +198,12 @@ getWorkflowStatus <- function(req, id, res){
 
 #' Get a specified file of the workflow specified by the id
 #' @param id Workflow id (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Details of requested workflow
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<id>/file/<filename>
-getWorkflowFile <- function(req, id, filename, res){
+getWorkflowFile <- function(req, id, filename, res, dbcon = global_db_pool){
   Workflow <- tbl(dbcon, "workflows") %>%
     select(id, user_id) %>%
     filter(id == !!id)

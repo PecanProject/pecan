@@ -4,10 +4,12 @@ library(magrittr, include.only = "%>%")
 #'
 #' @param machine_name Target machine hostname. Default = `"docker"`
 #' @param machine_id Target machine ID. If `NULL` (default), deduced from hostname.
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return `data.frame` of information on available models
 #' @author Alexey Shiklomanov
 #* @get /
-availableModels <- function(machine_name = "docker", machine_id = NULL) {
+availableModels <- function(machine_name = "docker", machine_id = NULL,
+                            dbcon = global_db_pool) {
   if (is.null(machine_id)) {
     machines <- dplyr::tbl(dbcon, "machines")
     machineid <- machines %>%
