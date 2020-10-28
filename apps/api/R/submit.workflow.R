@@ -1,13 +1,5 @@
 library(dplyr)
 
-.bety_params <- PEcAn.DB::get_postgres_envvars(
-  host = "localhost",
-  dbname = "bety",
-  user = "bety",
-  password = "bety",
-  driver = "Postgres"
-)
-
 #* Submit a workflow sent as XML
 #* @param workflowXmlString String containing the XML workflow from request body
 #* @param userDetails List containing userid & username
@@ -40,33 +32,35 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* Submit a workflow (converted to list)
 #* @param workflowList Workflow parameters expressed as a list
 #* @param userDetails List containing userid & username
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
-submit.workflow.list <- function(workflowList, userDetails) {
-  # Fix details about the database
-  workflowList$database <- list(bety = .bety_params)
+submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool) {
 
-  # HACK: We are not read for the Postgres driver yet. Way too many places rely
-  # on implicit string conversion, which doesn't work well for bit64 integers
-  workflowList$database$bety$driver <- "PostgreSQL"
+  # Set database details
+  workflowList$database <- list(
+    bety = PEcAn.DB::get_postgres_envvars(
+      host = "localhost",
+      dbname = "bety",
+      user = "bety",
+      password = "bety",
+      driver = "PostgreSQL"
+    )
+  )
 
   if (!is.null(workflowList$model$id) &&
         (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    dbcon <- PEcAn.DB::db.open(.bety_params)
     res <- dplyr::tbl(dbcon, "models") %>%
       select(id, model_name, revision) %>%
       filter(id == !!workflowList$model$id) %>%
       collect()
-    PEcAn.DB::db.close(dbcon)
-    
+
     workflowList$model$type <- res$model_name
     workflowList$model$revision <- res$revision
   }
 
   # Fix RabbitMQ details
-  dbcon <- PEcAn.DB::db.open(.bety_params)
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
-  PEcAn.DB::db.close(dbcon)
   workflowList$host <- list(
     rabbitmq = list(
       uri = Sys.getenv("RABBITMQ_URI", "amqp://guest:guest@localhost/%2F"),
@@ -89,12 +83,14 @@ submit.workflow.list <- function(workflowList, userDetails) {
   # Add entry to workflows table in database
   workflow_id <- insert.workflow(workflowList)
   workflowList$workflow$id <- workflow_id
+  workflow_id_str <- format(workflow_id, scientific = FALSE)
 
   # Add entry to attributes table in database
   insert.attribute(workflowList)
 
   # Fix the output directory
-  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
+  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_",
+                   workflow_id_str)
   workflowList$outdir <- outdir
   
   # Create output diretory
@@ -112,11 +108,11 @@ submit.workflow.list <- function(workflowList, userDetails) {
   res <- file.copy("/work/workflow.R", outdir)
   
   # Post workflow to RabbitMQ
-  message <- list(folder = outdir, workflowid = workflow_id)
+  message <- list(folder = outdir, workflowid = workflow_id_str)
   res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
   
   if(res$routed){
-    return(list(workflow_id = as.character(workflow_id), status = "Submitted successfully"))
+    return(list(workflow_id = workflow_id_str, status = "Submitted successfully"))
   }
   else{
     return(list(status = "Error", message = "Could not submit to RabbitMQ"))
@@ -129,12 +125,11 @@ submit.workflow.list <- function(workflowList, userDetails) {
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
-insert.workflow <- function(workflowList){
+insert.workflow <- function(workflowList, dbcon = global_db_pool){
   
-  dbcon <- PEcAn.DB::db.open(.bety_params)
-
   model_id <- workflowList$model$id
   if(is.null(model_id)){
     model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
@@ -158,6 +153,12 @@ insert.workflow <- function(workflowList){
       tibble::add_column("user_id" = bit64::as.integer64(workflowList$info$userid))
   }
 
+  # NOTE: Have to "checkout" a connection from the pool here to work with
+  # dbSendStatement and friends. We make sure to return the connection when the
+  # function exits (successfully or not).
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+
   insert_query <- glue::glue(
     "INSERT INTO workflows ",
     "({paste(colnames(workflow_df), collapse = ', ')}) ",
@@ -166,7 +167,7 @@ insert.workflow <- function(workflowList){
   )
   PEcAn.logger::logger.debug(insert_query)
   workflow_id <- PEcAn.DB::db.query(
-    insert_query, dbcon,
+    insert_query, con,
     values = unname(as.list(workflow_df))
   )[["id"]]
 
@@ -176,14 +177,12 @@ insert.workflow <- function(workflowList){
   )
 
   PEcAn.DB::db.query(
-    "UPDATE workflows SET folder = $1 WHERE id = $2", dbcon, values = list(
+    "UPDATE workflows SET folder = $1 WHERE id = $2", con, values = list(
       file.path("data", "workflows", paste0("PEcAn_", format(workflow_id, scientific = FALSE))),
       workflow_id
     )
   )
 
-  PEcAn.DB::db.close(dbcon)
-  
   return(workflow_id)
 }
 
@@ -191,10 +190,10 @@ insert.workflow <- function(workflowList){
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @author Tezan Sahu
-insert.attribute <- function(workflowList){
-  dbcon <- PEcAn.DB::betyConnect()
-  
+insert.attribute <- function(workflowList, dbcon = global_db_pool){
+
   # Create an array of PFTs
   pfts <- c()
   for(i in seq(length(workflowList$pfts))){
@@ -245,7 +244,9 @@ insert.attribute <- function(workflowList){
   # Insert properties into attributes table
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
-  res <- DBI::dbSendStatement(dbcon, 
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+  res <- DBI::dbSendStatement(con,
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
 

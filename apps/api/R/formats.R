@@ -2,12 +2,11 @@ library(dplyr)
 
 #' Retrieve the details of a PEcAn format, based on format_id
 #' @param format_id Format ID (character)
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Format details
 #' @author Tezan Sahu
 #* @get /<format_id>
-getFormat <- function(format_id, res){
-  
-  dbcon <- PEcAn.DB::betyConnect()
+getFormat <- function(format_id, res, dbcon = global_db_pool){
   
   Format <- tbl(dbcon, "formats") %>%
     select(format_id = id, name, notes, header, mimetype_id) %>%
@@ -21,7 +20,6 @@ getFormat <- function(format_id, res){
   qry_res <- Format %>% collect()
   
   if (nrow(qry_res) == 0) {
-    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Format not found"))
   }
@@ -42,8 +40,6 @@ getFormat <- function(format_id, res){
       select(-variable_id, -format_id, -units) %>%
       collect()
     
-    PEcAn.DB::db.close(dbcon)
-    
     response$format_variables <- format_vars
     return(response)
   }
@@ -55,14 +51,14 @@ getFormat <- function(format_id, res){
 #' @param format_name Format name search string (character)
 #' @param mimetype Mime type search string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Formats subset matching the model search string
 #' @author Tezan Sahu
 #* @get /
-searchFormats <- function(format_name="", mimetype="", ignore_case=TRUE, res){
+searchFormats <- function(format_name="", mimetype="", ignore_case=TRUE, res,
+                          dbcon = global_db_pool){
   format_name <- URLdecode(format_name)
   mimetype <- URLdecode(mimetype)
-  
-  dbcon <- PEcAn.DB::betyConnect()
   
   Formats <- tbl(dbcon, "formats") %>%
     select(format_id = id, format_name=name, mimetype_id) %>%
@@ -76,8 +72,6 @@ searchFormats <- function(format_name="", mimetype="", ignore_case=TRUE, res){
     arrange(format_id)
   
   qry_res <- Formats %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404
