@@ -1,13 +1,15 @@
 #' Download MERRA data
 #'
 #' @inheritParams download.CRUNCEP
+#' @param ... Not used -- silently soak up extra arguments from `convert.input`, etc.
 #' @return `data.frame` of meteorology data metadata
 #' @author Alexey Shiklomanov
 #' @export
 download.MERRA <- function(outfolder, start_date, end_date,
                            lat.in, lon.in,
                            overwrite = FALSE,
-                           verbose = FALSE) {
+                           verbose = FALSE,
+                           ...) {
 
   dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
 
