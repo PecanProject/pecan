@@ -9,7 +9,7 @@ setwd("/home/rstudio")
 library(tidyr)
 library(tidyverse)
 ### prep data files into jags objects
-AZ.PIPO <- read.delim("INV_FIA_DATA/data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+AZ.PIPO <- read.delim("data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
 ### merge together three diameter columns
 AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
@@ -27,7 +27,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.csv("INV_FIA_DATA/data/Tree2Tree.csv", stringsAsFactors = F)
+Tree2Tree <- read.csv("data/Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
@@ -39,7 +39,7 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 
 # read in the FIA condition table to get DISTURBYR along with each disturbance code
-FIA.COND <- read.csv("INV_FIA_DATA/data/AZ_COND.csv", stringsAsFactors = F)
+FIA.COND <- read.csv("data/AZ_COND.csv", stringsAsFactors = F)
 Tree2Tree <- merge(FIA.COND[c("DSTRBYR1", "DSTRBYR2", "DSTRBYR3", "CN", "PLT_CN", "INVYR", "PLOT")], Tree2Tree, by.x = "PLT_CN", by.y = "T1_PLT_CN")
 unique(temp2$Plot) %in% unique(Tree2Tree$T1_PLOT)
 incPlot.in.dbhPlot <- (unique(temp2$Plot) %in% unique(Tree2Tree$T1_PLOT) == TRUE)
@@ -73,7 +73,7 @@ source("pecan/modules/data.land/R/BuildJAGSdataobject.R")
 
 # get all the data with cores set up for stage 1
 jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
-saveRDS(jags.stuff, "FIA_inc_data/jags.data.basic.rds")
+saveRDS(jags.stuff, "data/jags.data.basic.rds")
 
 saveRDS(jags.stuff, "jags.data.basic.rds")
 
@@ -93,8 +93,8 @@ length(Tree2Tree.incored.plots$PLT_CN)
 # check that we only have plot ids with tree cores
 #unique(paste0(Tree2Tree.incored.plots$COUNTYCD, Tree2Tree.incored.plots$PLOT)) %in% unique(paste0(newtemp2$CountyNo, newtemp2$PlotNo))
 
-jags.new <- buildJAGSdataobject(newtemp2, YEARDISTURBED = TRUE, rnd.subset = 100, trunc.yr = 1966)
-
+jags.new <- buildJAGSdataobject(newtemp2, YEARDISTURBED = TRUE, rnd.subset = 100, trunc.yr = 1966, forecast = TRUE)
+saveRDS(jags.new, paste0("jags.new.", output.base.name, ".rds"))
 head(jags.new$cov.data)
 
 data <- jags.new$data
@@ -154,7 +154,7 @@ View(z0)
 
 
 # read in the cores for validation:
-valid.cores <- read.csv("INV_FIA_DATA/data/validation_cores_SDI_plot.csv")
+valid.cores <- read.csv("data/validation_cores_SDI_plot.csv")
 colnames(cov.data)
 validation.cores <- valid.cores %>% select(CC_PLOT, TREE.x, SICOND, SDI, ELEV, SLOPE, ASPECT, STAGE2, STAGE3, STDAGE, TRTCD1, DSTRBCD1, MAP, MAT, T2_FIADB, DIA.x, INVYR, FILE) 
 colnames(validation.cores)[1:2] <- c("PLOT", "TREE")
