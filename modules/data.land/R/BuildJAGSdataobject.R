@@ -191,8 +191,8 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, forecast
   if(forecast == TRUE){
     # need to read in the additional data
     if(stage.2 == FALSE){
-      new.ppt <- readRDS("INV_FIA_DATA/data/ppt_for_validation_2010_2018.rds")
-      new.tmax <- readRDS("INV_FIA_DATA/data/tmax_for_validation_2010_2018.rds")
+      new.ppt <- readRDS("data/ppt_for_validation_2010_2018.rds")
+      new.tmax <- readRDS("data/tmax_for_validation_2010_2018.rds")
       
       
       new.ppt <- new.ppt[!duplicated(new.ppt),]
@@ -317,8 +317,8 @@ buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, stage.2 = FALSE, forecast
       
     }else{
       # need to do a separate climate matching for tree2tree dataset because it does not have a keynew
-      new.ppt <- readRDS("INV_FIA_DATA/data/ppt_tree2tree_for_validation_2010_2018.rds")
-      new.tmax <- readRDS("INV_FIA_DATA/data/tmax_tree2tree_for_validation_2010_2018.rds")
+      new.ppt <- readRDS("data/ppt_tree2tree_for_validation_2010_2018.rds")
+      new.tmax <- readRDS("data/tmax_tree2tree_for_validation_2010_2018.rds")
       #myppt <- getURL('https://de.cyverse.org/dl/d/9E59BCB7-98C2-44F0-9E25-C162BD106465/ppt_tree2tree_for_validation_2010_2018.rds', ssl.verifyhost=FALSE, ssl.verifypeer=FALSE)
       
       #newppt <- readRDS(textConnection(myppt))
