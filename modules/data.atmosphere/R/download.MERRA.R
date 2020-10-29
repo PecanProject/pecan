@@ -54,7 +54,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
     timeseq <- as.numeric(difftime(
       seq(y_startdate, y_enddate, "hours"),
       baseday,
-      tz = "UTC", unit = "days"
+      tz = "UTC", units = "days"
     ))
     ntime <- length(timeseq)
 
