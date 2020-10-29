@@ -33,7 +33,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
   results <- data.frame(
     file = character(nyear),
     host = "",
-    mimimetype = "",
+    mimetype = "",
     formatname = "",
     startdate = "",
     enddate = "",
