@@ -8,17 +8,11 @@ Requires Python3
 
 Author(s): Ayush Prasad, Istem Fer
 """
-
+from RpTools.merge_files import nc_merge, csv_merge
 from importlib import import_module
-from appeears2pecan import appeears2pecan
-
-# dictionary used to map the GEE image collection id to PEcAn specific function name
-collection_dict = {
-    "LANDSAT/LC08/C01/T1_SR": "l8",
-    "COPERNICUS/S2_SR": "s2",
-    "NASA_USDA/HSL/SMAP_soil_moisture": "smap",
-    # "insert GEE collection id": "insert PEcAn specific name",
-}
+from . appeears2pecan import appeears2pecan
+import os
+import os.path
 
 
 def get_remote_data(
@@ -32,6 +26,9 @@ def get_remote_data(
     projection=None,
     qc=None,
     credfile=None,
+    raw_merge=None,
+    existing_raw_file_path=None,
+    raw_file_name=None
 ):
     """
     uses GEE and AppEEARS functions to download data
@@ -54,36 +51,48 @@ def get_remote_data(
 
     projection (str) -- type of projection. Only required for appeears polygon AOI type. None by default. 
 
-    qc (float) -- quality control parameter
+    qc (float) -- quality control parameter, None by default
+    
+    credfile (str) -- path to credentials file only requried for AppEEARS, None by default
 
+    raw_merge (str) -- if the existing raw file has to be merged, None by default
+    
+    existing_raw_file_path (str) -- path to exisiting raw file if raw_merge is TRUE., None by default
+  
+    raw_file_name (str) -- filename of the output file
+  
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the created file.
+    output netCDF is saved in the specified directory.
     """
+
+
     if source == "gee":
-        try:
-            # get collection id from the dictionary
-            collection = collection_dict[collection]
-        except KeyError:
-            print(
-                "Please check if the collection name you requested is one of these and spelled correctly. If not, you need to implement a corresponding gee2pecan_{} function and add it to the collection dictionary.".format(
-                    collection
-                )
-            )
-            print(collection_dict.keys())
         # construct the function name
         func_name = "".join([source, "2pecan", "_", collection])
         # import the module
-        module = import_module(func_name)
+        module_from_pack = "RpTools" + "." + func_name
+        module = import_module(module_from_pack)
         # import the function from the module
         func = getattr(module, func_name)
         # if a qc parameter is specified pass these arguments to the function
         if qc:
-            func(geofile, outdir, start, end, scale, qc)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, scale=scale, qc=qc, filename=raw_file_name)
         # this part takes care of functions which do not perform any quality checks, e.g. SMAP
         else:
-            func(geofile, outdir, start, end)
+            get_datareturn_path = func(geofile=geofile, outdir=outdir, start=start, end=end, filename=raw_file_name)
 
     if source == "appeears":
-        appeears2pecan(geofile, outdir, start, end, collection, projection, credfile)
+        get_datareturn_path = appeears2pecan(geofile=geofile, outdir=outdir, out_filename=raw_file_name, start=start, end=end, product=collection, projection=projection, credfile=credfile)
+
+    if raw_merge == True and raw_merge != "replace":
+        # if output file is of csv type use csv_merge, example AppEEARS point AOI type 
+        if os.path.splitext(existing_raw_file_path)[1][1:] == "csv":
+            get_datareturn_path = csv_merge(existing_raw_file_path, get_datareturn_path, outdir)
+        # else it must be of netCDF type, use nc_merge
+        else:
+            get_datareturn_path = nc_merge(existing_raw_file_path, get_datareturn_path, outdir)
+
+    return get_datareturn_path
+

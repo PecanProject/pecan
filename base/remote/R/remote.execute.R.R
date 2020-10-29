@@ -22,6 +22,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
   if (is.character(host)) {
     host <- list(name = host)
   }
+  dir.create(scratchdir, showWarnings = FALSE, recursive = TRUE)
   uuid <- paste0("pecan-", paste(sample(c(letters[1:6], 0:9), 30, replace = TRUE),
                                  collapse = ""))
   tmpfile <- file.path(scratchdir, uuid)

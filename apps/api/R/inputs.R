@@ -4,17 +4,17 @@ library(dplyr)
 #' @param model_id Model Id (character)
 #' @param site_id Site Id (character)
 #' @param offset
-#' @param limit 
+#' @param limit
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Information about Inputs based on model & site
 #' @author Tezan Sahu
 #* @get /
-searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_id=NULL, offset=0, limit=50, res){
+searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_id=NULL, offset=0, limit=50, res,
+                         dbcon = global_db_pool){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
-  
-  dbcon <- PEcAn.DB::betyConnect()
   
   inputs <- tbl(dbcon, "inputs") %>%
     select(input_name=name, id, site_id, format_id, start_date, end_date)
@@ -77,8 +77,6 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
     arrange(id) %>%
     collect()
   
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
     return(list(error="Input(s) not found"))
@@ -132,12 +130,12 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
 #' @param id Input id (character)
 #' @param filename Optional filename specified if the id points to a folder instead of file (character)
 #' If this is passed with an id that actually points to a file, this name will be ignored
+#' @param dbcon Database connection object. Default is global database pool.
 #' @return Input file specified by user
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<input_id>
-downloadInput <- function(input_id, filename="", req, res){
-  dbcon <- PEcAn.DB::betyConnect()
+downloadInput <- function(input_id, filename="", req, res, dbcon = global_db_pool){
   db_hostid <- PEcAn.DB::dbHostInfo(dbcon)$hostid
   
   # This is just for temporary testing due to the existing issue in dbHostInfo()
@@ -149,8 +147,6 @@ downloadInput <- function(input_id, filename="", req, res){
     filter(container_type == "Input") %>%
     filter(container_id == !!input_id) %>%
     collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(input) == 0) {
     res$status <- 404

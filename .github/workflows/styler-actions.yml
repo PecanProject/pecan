@@ -69,7 +69,7 @@ jobs:
         run: |
           git config --global user.email "pecan_bot@example.com"
           git config --global user.name "PEcAn stylebot"
-          git add \*.Rd
+          git add \*.Rd \*NAMESPACE Makefile.depends docker/depends/pecan.depends.R
           if [ "$(git diff --name-only --cached)" != "" ]; then  git commit -m 'automated documentation update' ; fi
       - uses: r-lib/actions/pr-push@master
         with:
