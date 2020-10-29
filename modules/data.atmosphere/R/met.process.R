@@ -201,7 +201,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       dbparms=dbparms
     )
     
-    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
+    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS_downscale", "MERRA")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
