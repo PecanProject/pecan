@@ -1,7 +1,7 @@
 Package: PEcAn.settings
 Title: PEcAn Settings package
 Authors@R: c(person("David","LeBauer", role = c("aut", "cre"),
-                email = "dlebauer@illinois.edu"),
+                email = "dlebauer@arizona.edu"),
              person("Rob","Kooper", rol="aut"))
 Version: 1.7.1
 Date: 2019-09-05
@@ -20,7 +20,8 @@ Imports:
     PEcAn.utils,
     lubridate (>= 1.6.0),
     purrr,
-    XML (>= 3.98-1.3)
+    XML (>= 3.98-1.3),
+    optparse
 Suggests:
     testthat (>= 2.0.0)
 Encoding: UTF-8
