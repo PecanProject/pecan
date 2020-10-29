@@ -1,8 +1,8 @@
 Package: PEcAn.assim.sequential
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.5.3
-Date: 2018-04-26
+Version: 1.7.1
+Date: 2019-09-05
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -17,12 +17,16 @@ Imports:
     magic (>= 1.5.0),
     lubridate (>= 1.6.0),
     reshape2 (>= 1.4.2),
-    nimble
+    nimble,
+    tictoc, 
+    purrr,
+    furrr,
+    coda
 Suggests:
     testthat
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 7.0.2

@@ -1,7 +1,27 @@
 # ViewMet Server 
+lapply(c( "shiny",
+          "ggplot2",
+          "stringr",
+          "ncdf4",
+          "DT",
+          "plyr",
+          "dplyr"),function(pkg){
+            if (!(pkg %in% installed.packages()[,1])){
+              install.packages(pkg)
+            }
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+)
 
-library(PEcAn.benchmark)
-library(PEcAn.visualization)
+lapply(c( "PEcAn.benchmark",
+          "PEcAn.visualization",
+          "PEcAn.logger",
+          "PEcAn.remote"),function(pkg){
+            library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+)
+
+
 
 options(shiny.maxRequestSize=30*1024^2) #maximum file input size
 
@@ -118,9 +138,11 @@ server <- function(input, output, session) {
       formatid <- tbl(bety, "inputs") %>% filter(id == inputid) %>% pull(format_id)
       siteid <- tbl(bety, "inputs") %>% filter(id == inputid) %>% pull(site_id)
       
-      site = query.site(con = bety$con, siteid)
+      site = query.site(con = bety, siteid)
       
-      vars_in_file <- ncdf4::nc_open(rv$load.paths[i]) %>% ncdf4.helpers::nc.get.variable.list()
+      current_nc <- ncdf4::nc_open(rv$load.paths[i])
+      vars_in_file <- names(current_nc[["var"]])
+      ncdf4::nc_close(current_nc)
       format = query.format.vars(bety, inputid, formatid)
       format$vars <- format$vars %>% filter(input_name %in% vars_in_file)
       
@@ -128,7 +150,7 @@ server <- function(input, output, session) {
       dat <- try(load_data(data.path = rv$load.paths[i],
                            format = format, site = site, ))
       
-      if(class(dat) == "data.frame"){
+      if(inherits(dat, "data.frame")) {
         dat$met <- rv$load.paths[i] %>% dirname() %>% basename() %>%
           gsub(pattern = "\\_site_.*",replacement = "", x = .)
         data[[i]] <- dat

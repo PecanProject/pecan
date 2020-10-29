@@ -1,11 +1,9 @@
 ##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a poimt from a local download of the full grid
-# ----------------------------------- 
+##' Extract NLDAS meteorology for a point from a local download of the full grid
+# -----------------------------------
 # Description
 # -----------------------------------
-##' @title extract.local.NLDAS
-##' @family 
-##' @author Christy Rollinson, 
+##' @author Christy Rollinson
 ##' @description This function extracts NLDAS data from grids that have been downloaded and stored locally.
 ##'              Once upon a time, you could query these files directly from the internet, but now they're 
 ##'              behind a tricky authentication wall. Files are saved as a netCDF file in CF conventions. 
@@ -18,7 +16,6 @@
 ##' @param in.path - path to the raw full grids
 ##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
 ##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param site_id name to associate with extracted files
 ##' @param lat.in site latitude in decimal degrees
 ##' @param lon.in site longitude in decimal degrees
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
@@ -27,7 +24,7 @@
 ##' @param ... Other arguments, currently ignored
 ##' @export
 # -----------------------------------
-extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
+extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 overwrite = FALSE, verbose = FALSE, ...){
 
   # Date stuff
@@ -144,6 +141,8 @@ extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, site_i
       for (v in 1:nrow(var)) {
         v.nldas <- paste(var$NLDAS.name[v])
         v.cf    <- paste(var$CF.name   [v])
+        
+        if(!v.nldas %in% names(dap_file$var) & v.cf %in% names(dap_file$var)) v.nldas <- v.cf
         
         # Variables have different dimensions (which is a pain in the butt)
         # so we need to check to see whether we're pulling 4 dimensions or just 3

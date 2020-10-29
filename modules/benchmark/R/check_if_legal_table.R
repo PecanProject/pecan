@@ -15,7 +15,7 @@ check_if_legal_table<-function(table, observation_one, observation_two){
   all_there<-TRUE
   names<-names(table)
   if(!"plant_functional_type_one" %in% names|!"plant_functional_type_two" %in% names ){
-    logger.severe("Custom table provided does not use correct column names. Requires both 'plant_functional_type_one', and 'plant_functional_type_two'. 
+    PEcAn.logger::logger.severe("Custom table provided does not use correct column names. Requires both 'plant_functional_type_one', and 'plant_functional_type_two'. 
                   Column names are currently", names(table))
   }else{
     missing<-list()
@@ -64,7 +64,7 @@ check_if_legal_table<-function(table, observation_one, observation_two){
       
       return(is_legal_table)
     } else{
-      logger.severe("Not every species or plant_functional_type is accounted for in custom_table provided. Please account for", missing, "and make sure that 'plant_fucntional_type_one' is matches to 'observation_one'")
+      PEcAn.logger::logger.severe("Not every species or plant_functional_type is accounted for in custom_table provided. Please account for", missing, "and make sure that 'plant_fucntional_type_one' is matches to 'observation_one'")
     }
   
   }

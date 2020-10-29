@@ -6,20 +6,19 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-source('db.setup.R')
-
 context("Testing utility functions")
 
 test_that("get.id works on some tables, and with different inputs", {
   con <- check_db_test()
   pftid <- get.id("pfts", "name", "salix", con)
-  expect_is(pftid, "numeric")
+  expect_true(is.numeric(pftid))
   
   pftname <- 'ebifarm.salix'
   modeltypeid <- 1
   pftid <- get.id("pfts", c("name", "modeltype_id"), c(pftname, modeltypeid), con)
   pft <- db.query(paste0("select name, modeltype_id from pfts where id = ", pftid), con)
   expect_equal(pft$name, pftname)
-  expect_equal(pft$modeltype_id, modeltypeid)
+  # `as.numeric` here because of `integer64` type mismatch
+  expect_equal(as.numeric(pft$modeltype_id), modeltypeid)
   try(db.close(con))
 })

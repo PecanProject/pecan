@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/data/tests/sipnet</outdir>
+
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>postgres</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>temperate.coniferous</name> 
+    </pft>
+  </pfts>
+
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
+  <ensemble>
+    <variable>NPP</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
+  <model>
+    <type>SIPNET</type>
+    <revision>r136</revision>
+  </model>
+
+  <run>
+    <site>
+      <id>772</id>
+    </site>
+    <inputs>
+      <met>
+        <id>5000000005</id>
+      </met>
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+
+  <host>
+    <name>localhost</name>
+    <rabbitmq>
+      <uri>amqp://guest:guest@rabbitmq/%2F</uri>
+      <queue>SIPNET_r136</queue>
+    </rabbitmq>
+  </host>
+</pecan>

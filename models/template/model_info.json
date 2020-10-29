@@ -1,0 +1,36 @@
+{
+  "name": "Name of model, displayed in UI",
+  "type": "Type of model",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "Longer description of the model, right now only displayed in the monitor",
+  "creator": "Main creator of model",
+  "contributors": ["List of contributors", "Both for model", "And PEcAn code for model"],
+  "links": [
+    {
+      "type": "git",
+      "description": "Link to source code, if not exist, just remove",
+      "url": "https://github.com/...."
+    },
+    {
+      "type": "issues",
+      "description": "Link to issues, if not exist, just remove",
+      "url": "https://github.com/..../issues"
+    },
+    {
+      "type": "documentation",
+      "description": "Link to documentation, if not exist, just remove",
+      "url": "https://github.com/..../wiki"
+    },
+    {
+      "type": "docker",
+      "description": "Link to docker image, if not exist, just remove",
+      "url": "organization/image"
+    }
+  ],
+  "inputs": {},
+  "bibtex": [
+    "How to cite the model, paper 1",
+    "How to cite the model, paper 2"
+  ]
+}

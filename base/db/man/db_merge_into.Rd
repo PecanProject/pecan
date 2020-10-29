@@ -11,21 +11,18 @@ db_merge_into(values, table, con, by = NULL, drop = FALSE, ...)
 
 \item{table}{Name of target SQL table, as character}
 
-\item{con}{database connection object}
+\item{con}{Database connection object}
 
 \item{by}{Character vector of columns by which to perform merge. Defaults to all columns in `values`}
 
 \item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
 
-\item{...}{Arguments passed on to \code{insert_table}
-\describe{
-  \item{values}{`data.frame` of values to write to SQL database}
-  \item{table}{Name of target SQL table, as character}
-  \item{coerce_col_class}{logical, whether or not to coerce local data columns 
+\item{...}{
+  Arguments passed on to \code{\link[=insert_table]{insert_table}}
+  \describe{
+    \item{\code{coerce_col_class}}{logical, whether or not to coerce local data columns 
 to SQL classes. Default = `TRUE.`}
-  \item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
-  \item{con}{database connection object}
-}}
+  }}
 }
 \value{
 Data frame: Inner join of SQL table and input data frame (as unevaluated "lazy query" table)

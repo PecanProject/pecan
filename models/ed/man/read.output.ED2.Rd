@@ -4,8 +4,14 @@
 \alias{read.output.ED2}
 \title{Read ED output}
 \usage{
-read.output.ED2(run.id, outdir, start.year = NA, end.year = NA,
-  variables = c("AGB_CO", "NPLANT"), output.type = "Y")
+read.output.ED2(
+  run.id,
+  outdir,
+  start.year = NA,
+  end.year = NA,
+  variables = c("AGB_CO", "NPLANT"),
+  output.type = "Y"
+)
 }
 \arguments{
 \item{run.id}{the id distiguishing the model run}
@@ -14,7 +20,7 @@ read.output.ED2(run.id, outdir, start.year = NA, end.year = NA,
 
 \item{start.year}{}
 
-\item{output.type}{type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I\link{DMYT}OUTPUT}
+\item{output.type}{type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL\%I\link{DMYT}OUTPUT}
 }
 \value{
 vector of output variable for all runs within ensemble

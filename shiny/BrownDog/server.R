@@ -1,8 +1,22 @@
-library(shiny)
-library(leaflet)
-library(RPostgreSQL)
-library(PEcAn.DB)
-library(PEcAn.visualization)
+## Check and load Packages
+lapply(c( "shiny",
+          "leaflet",
+          "RPostgreSQL"
+        ),function(pkg){
+          if (!(pkg %in% installed.packages()[,1])){
+                install.packages(pkg)
+                }
+                library(pkg,character.only = TRUE,quietly = TRUE)
+          }
+      )
+
+lapply(c( "PEcAn.DB",
+          "PEcAn.visualization"
+      ),function(pkg){
+        library(pkg,character.only = TRUE,quietly = TRUE)
+        }
+      )
+
 
 
 # Define server logic
@@ -19,9 +33,8 @@ server <- shinyServer(function(input, output, session) {
   
   output$modelSelector <- renderUI({
     bety <- betyConnect("../../web/config.php")
-    con <- bety$con
-    on.exit(db.close(con))
-    models <- db.query("SELECT name FROM modeltypes;", con)
+    on.exit(db.close(bety), add = TRUE)
+    models <- db.query("SELECT name FROM modeltypes;", bety)
     selectInput("model", "Model", models)
   })
   
@@ -61,8 +74,7 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$type, {
     # get all sites name, lat and lon by sitegroups
     bety <- betyConnect("../../web/config.php")
-    con <- bety$con
-    on.exit(db.close(con))
+    on.exit(db.close(bety), add = TRUE)
     sites <-
       db.query(
         paste0(
@@ -73,7 +85,7 @@ server <- shinyServer(function(input, output, session) {
           input$type,
           "');"
           ),
-        con
+        bety
         )
     
     if(length(sites) > 0){

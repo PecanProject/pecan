@@ -8,9 +8,6 @@ read.settings(inputfile = "pecan.xml")
 }
 \arguments{
 \item{inputfile}{the PEcAn settings file to be used.}
-
-\item{outputfile}{the name of file to which the settings will be
-written inside the outputdir. If set to null nothing is saved.}
 }
 \value{
 list of all settings as loaded from the XML file(s)
@@ -23,16 +20,17 @@ This will try and find the PEcAn settings file in the following order:
 \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
 \item {./pecan.xml}{pecan.xml in the current folder}
 }
-Once the function finds a valid file, it will not look further. 
-Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be ignored. 
-Even if a \code{file} argument is passed, it will be ignored if a file is passed through
-a higher priority method.
+Once the function finds a valid file, it will not look further.
+Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be
+  ignored.
+Even if a \code{file} argument is passed, it will be ignored if a file
+  is passed through a higher priority method.
 }
 \examples{
 \dontrun{
 ## bash shell:
 ## example workflow.R and pecan.xml files in pecan/tests
-R --vanilla -- --settings path/to/mypecan.xml < workflow.R 
+R --vanilla -- --settings path/to/mypecan.xml < workflow.R
 
 ## R:
 

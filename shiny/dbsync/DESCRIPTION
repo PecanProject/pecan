@@ -1,0 +1,6 @@
+Type: Shiny
+Title: Database Sync Vis
+License: BSD_3_clause + file LICENSE
+Author: Rob Kooper <kooper@illinois.edu>
+Tags: PEcAn
+Imports: shiny

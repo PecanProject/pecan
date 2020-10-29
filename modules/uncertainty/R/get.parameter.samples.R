@@ -15,10 +15,15 @@ get.parameter.samples <- function(settings,
   num.pfts  <- length(settings$pfts)
   pft.names <- list()
   outdirs   <- list()
-  
   ## Open database connection
-  con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
+  con <- try(PEcAn.DB::db.open(settings$database$bety))
+  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  
+  # If we fail to connect to DB then we set to NULL
+  if (inherits(con, "try-error"))  {
+    con <- NULL
+    PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
+  }
   
   for (i.pft in seq_along(pfts)) {
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name
@@ -47,6 +52,7 @@ get.parameter.samples <- function(settings,
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
+    
     rm(prior.distns, post.distns, trait.mcmc)
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
@@ -67,7 +73,7 @@ get.parameter.samples <- function(settings,
     }
     
     ### Load trait mcmc data (if exists, either from MA or PDA)
-    if (!is.null(settings$pfts[[i]]$posteriorid)) { # first check if there are any files associated with posterior ids
+    if (!is.null(settings$pfts[[i]]$posteriorid) && !inherits(con, "try-error")) {# first check if there are any files associated with posterior ids
       files <- PEcAn.DB::dbfile.check("Posterior",
                                       settings$pfts[[i]]$posteriorid, 
                                       con, settings$host$name, return.all = TRUE)
@@ -126,7 +132,7 @@ get.parameter.samples <- function(settings,
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-        samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
+        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
       }

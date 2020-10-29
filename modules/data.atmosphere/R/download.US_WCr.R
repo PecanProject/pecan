@@ -31,7 +31,7 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
   
   # Data is found here
   # Original url: http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek2018_flux.txt
-  base_url <- "http://flux.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
+  base_url <- "http://co2.aos.wisc.edu/data/cheas/wcreek/flux/prelim/wcreek"
   
   flux = NULL;
   
@@ -39,7 +39,7 @@ download.US_WCr <- function(start_date, end_date, timestep = 1) {
     url <- paste0(base_url, year, "_flux.txt") #Build proper url
     PEcAn.logger::logger.info(paste0("Reading data for year ", year))
     print(url)
-    influx <- tryCatch(read.table(url, sep="", header=FALSE), error=function(e) {NULL}, warning=function(e) {NULL})
+    influx <- tryCatch(utils::read.table(url, sep="", header=FALSE), error=function(e) {NULL}, warning=function(e) {NULL})
     if (is.null(influx)) { #Error encountered in data fetching.
       PEcAn.logger::logger.warn(paste0("Data not avaliable for year ", year, ". All values for ", year, " will be NA."))
       # Determine the number of days in the year

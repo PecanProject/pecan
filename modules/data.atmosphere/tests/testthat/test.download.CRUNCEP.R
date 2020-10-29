@@ -1,19 +1,18 @@
 context("Checking CRUNCEP download")
 
-tmpdir = tempfile(pattern="CRUNCEPtest")
+tmpdir <- tempfile(pattern = "CRUNCEPtest")
 dir.create(tmpdir)
 teardown(unlink(tmpdir, recursive = TRUE))
 
 test_that("download works and returns a valid CF file", {
   # download is slow and was causing lots of Travis timeouts
-  skip_on_travis()
+  skip_on_ci()
 
   PEcAn.logger::logger.setLevel("WARN")
 
   result <- download.CRUNCEP(outfolder = tmpdir,
                              start_date = "2000-01-01",
                              end_date = "2000-12-31",
-                             site_id = 753,
                              lat.in = 40,
                              lon.in = -88)
   cf <- ncdf4::nc_open(result$file)
@@ -28,7 +27,6 @@ test_that("download works and returns a valid CF file", {
       outfolder = tmpdir,
       start_date = "2000-01-01",
       end_date = "2000-12-31",
-      site_id = 753,
       lat.in = 40,
       lon.in = -88,
       overwrite = FALSE),

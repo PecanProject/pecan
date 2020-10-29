@@ -7,7 +7,7 @@
 #' @param lon.in Site longitude coordinate
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
-#' @param parallel Download in parallel? Default = TRUE.
+#' @param parallel Download in parallel? Default = TRUE
 #' @param ncores Number of cores for parallel download. Default is 
 #' `parallel::detectCores()`
 #'
@@ -27,7 +27,7 @@ download.NARR_site <- function(outfolder,
                                overwrite = FALSE,
                                verbose = FALSE,
                                progress = TRUE,
-                               parallel = FALSE,
+                               parallel = TRUE,
                                ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
 
@@ -109,7 +109,7 @@ prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
     dims = list(lat_nc, lon_nc, time_nc)
   )
   nc <- ncdf4::nc_create(file, ncvar_list, verbose = verbose)
-  on.exit(ncdf4::nc_close(nc))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
   purrr::iwalk(nc_values, ~ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
   invisible(ncvar_list)
 }
@@ -144,7 +144,11 @@ col2ncvar <- function(variable, dims) {
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
+#'
+#' \dontrun{
 #' dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
+#' }
+#'
 #' @export
 get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE,
@@ -205,10 +209,17 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
 
   # Load dimensions, etc. from first netCDF file
   nc1 <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
-  on.exit(ncdf4::nc_close(nc1))
+  on.exit(ncdf4::nc_close(nc1), add = TRUE)
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
   if (parallel) {
+    if (!requireNamespace("parallel", quietly = TRUE)
+        || !requireNamespace("doParallel", quietly = TRUE)) {
+      PEcAn.logger::logger.severe(
+        "Could not find all packages needed for simultaneous NARR downloads. ",
+        "Either run `install.packages(c(\"parallel\", \"doParallel\"))`, ",
+        "or call get_NARR_thredds with `parallel = FALSE`.")
+    }
 
     # Load in parallel
     PEcAn.logger::logger.info("Downloading in parallel")
@@ -362,7 +373,7 @@ daygroup <- function(date, flx) {
 get_narr_url <- function(url, xy, flx, pb = NULL) {
   stopifnot(length(xy) == 2, length(url) == 1, is.character(url))
   nc <- ncdf4::nc_open(url)
-  on.exit(ncdf4::nc_close(nc))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
   timevar <- if (flx) "time" else "reftime"
   dhours <- ncdf4::ncvar_get(nc, timevar)
   # HACK: Time variable seems inconsistent.
@@ -452,6 +463,10 @@ latlon2narr <- function(nc, lat.in, lon.in) {
 #' @inheritParams get_NARR_thredds
 #' @return `sp::SpatialPoints` object containing transformed x and y 
 #' coordinates, in km, which should match NARR coordinates
+#' @importFrom rgdal checkCRSArgs
+  # ^not used directly here, but needed by sp::CRS.
+  # sp lists rgdal in Suggests rather than Imports,
+  # so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export
 latlon2lcc <- function(lat.in, lon.in) {

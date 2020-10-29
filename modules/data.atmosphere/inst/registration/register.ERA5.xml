@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ERA5>
+  <scale>regional</scale>
+  <ensemble>10</ensemble>
+  <Local>TRUE</Local>
+  <ParentSite>1000026755</ParentSite>
+  <format>
+    <id>33</id>
+    <name>CF Meteorology</name>
+    <mimetype>application/x-netcdf</mimetype>
+    <inputtype>nc</inputtype>
+  </format>
+</ERA5>

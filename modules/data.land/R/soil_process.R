@@ -11,15 +11,15 @@
 #' @examples
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
-  if(input$soil$source=="PalEON_soil" && is.null(input$id)){
+  # This tries to avoid the problem of having the soil tag under input but not having source in it.
+  if(is.null(input$source)){
+    input$source <- "gSSURGO"  ## temporarily hardcoding in the only source
+    ## in the future this should throw an error
+  }else if(input$source=="PalEON_soil" && is.null(input$id)){
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
   
-  if(is.null(input$soil$source)){
-    input$soil$source <- "PalEON_soil"  ## temporarily hardcoding in the only source
-                                   ## in the future this should throw an error
-  }
   # Extract info from settings and setup
   site       <- settings$run$site
   model      <- settings$model$type
@@ -31,19 +31,51 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
                               user     = dbparms$bety$user, 
                               password = dbparms$bety$password)
   con <- bety$con
-  on.exit(PEcAn.DB::db.close(con))
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
   latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
   new.site <- data.frame(id = as.numeric(site$id), 
                          lat = latlon$lat, 
                          lon = latlon$lon)
+  
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  outfolder <- file.path(dbfiles, paste0(input$soil$source, "_site_", str_ns))
+  
+  outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
+  
   if(!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#   
   # if we are reading from gSSURGO
-  if (input$soil$source=="gSSURGO"){
-    newfile<-extract_soil_gssurgo(outfolder,lat = latlon$lat,lon=latlon$lon)
+  if (input$source=="gSSURGO"){
+    
+    #see if there is already files generated there
+    newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
+      as.list()
+    names(newfile) <- rep("path", length(newfile))
+    
+    if(length(newfile)==0){
+      radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
+      
+      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius = radiusL)
+      
+      # register files in DB 
+      for(i in 1:length(newfile)){
+        in.path = paste0(dirname(newfile[i]$path), '/')
+        in.prefix = stringr::str_remove(basename(newfile[i]$path), ".nc")
+        
+        PEcAn.DB::dbfile.input.insert (in.path,
+                             in.prefix, 
+                             new.site$id, 
+                             startdate = NULL, 
+                             enddate = NULL, 
+                             mimetype =  "application/x-netcdf", 
+                             formatname = "pecan_soil_standard", 
+                             con = con, 
+                             ens=TRUE) 
+      }
+      
+      
+      }
+
     return(newfile)
   }
   #--------------------------------------------------------------------------------------------------# 

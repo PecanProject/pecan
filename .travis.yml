@@ -1,21 +1,60 @@
-# Follow instructions on:
-# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
-
-# A few blocks in here can be removed when Travis updates its Ubuntu image past 
-# trusty. They are marked with TRUSTY for easy grepping.
-
 language: r
-r:
-  - 3.4
 
-# TRUSTY: Change version when 16.04 image is available.
-dist: trusty
-sudo: required
+dist: xenial
+os: linux
 
 env:
-  - PGHOST=localhost
+  global:
+    # TODO: `make -j2` interleaves output lines from simultaneous processes.
+    # Would be nice to fix by adding `-Otarget`, but not supported in Make 3.x.
+    # When Travis updates, check for Make 4 and add -O if available.
+    - MAKEFLAGS="-j2"
+    - PGHOST=localhost
+    - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
+    - _R_CHECK_LENGTH_1_CONDITION_=true
+    - _R_CHECK_LENGTH_1_LOGIC2_=true
 
-cache: 
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
+    packages:
+      - bc
+      - curl
+      - gdal-bin
+      - jags
+      - libgdal-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
+      - libglpk-dev # indirectly needed by BayesianTools
+      - libgmp-dev
+      - libhdf5-dev
+      - liblapack-dev
+      - libnetcdf-dev
+      - libproj-dev
+      - librdf0-dev
+      - libudunits2-dev
+      - netcdf-bin
+      - pandoc
+      - python-dev
+      - qpdf
+      - tcl
+      - tcl-dev
+      - udunits-bin
+
+jobs:
+  fast_finish: true
+  include:
+    - r: release
+    - r: devel
+    - r: oldrel
+    - r: 3.5
+  allow_failures:
+    - r: devel
+    - r: oldrel
+    - r: 3.5
+
+cache:
   - directories:
     - .install
     - .check
@@ -23,57 +62,7 @@ cache:
     - .doc
   - packages
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:marutter/c2d4u'
-      - sourceline: 'ppa:nschloe/hdf5-backports'
-      - sourceline: 'ppa:ubuntugis/ppa' # for GDAL 2 binaries
-    packages:
-      - bc
-      - curl
-      - gdal-bin
-      - jags
-      - libcurl4-openssl-dev
-      - libgdal-dev
-      - libgmp-dev
-      - libhdf5-dev
-      - liblapack-dev
-      - libnetcdf-dev
-      - libproj-dev
-      - libudunits2-dev
-      - netcdf-bin
-      - pandoc
-      - python-dev
-      - tcl
-      - tcl-dev
-      - udunits-bin
-      # R package binaries from c2d4u
-      - r-bioc-biocinstaller
-      - r-cran-ape
-      - r-cran-curl
-      - r-cran-devtools
-      - r-cran-dplyr
-      - r-cran-ggplot2
-      - r-cran-httr
-      - r-cran-igraph
-      - r-cran-lme4
-      - r-cran-matrixstats
-      - r-cran-mcmcpack
-      - r-cran-raster
-      - r-cran-rcpp
-      - r-cran-rcurl
-      - r-cran-redland
-      - r-cran-rncl
-      - r-cran-roxygen2
-      - r-cran-shiny
-      - r-cran-testthat
-      - r-cran-tidyverse
-      - r-cran-xml
-      - r-cran-xml2
-
-  
-## notifications should go to gitter
+## notifications should go to slack
 notifications:
   slack:
     # Slack token created by Chris Black, 2018-02-17
@@ -87,64 +76,13 @@ services:
   - docker
 
 install:
-  - pushd $HOME
-  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-  - tar zxf sipnet_unk.tar.gz
-  - cd sipnet_unk
-  - make
-  - popd
+  - scripts/travis/install.sh
 
 before_script:
-  - sudo service postgresql stop
-  - docker run --detach --rm --name postgresql --publish 5432:5432 mdillon/postgis:9.6-alpine
-  - echo -n "Waiting for Postgres to start...";
-    until psql -U postgres -c 'select 1' >/dev/null 2>&1;
-      do echo -n ".";
-      sleep 1;
-    done;
-    echo " OK"
-  - psql -q -o /dev/null -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  - psql -q -o /dev/null -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
-  - psql -q -o /dev/null -U postgres < bety.sql
-  - rm bety.sql
-  - ./scripts/add.models.sh
-  - chmod +x book_source/deploy.sh
-  - chmod +x documentation/tutorials/deploy.sh
+  - scripts/travis/before_script.sh
 
 script:
-  - set -e
-  - echo 'Installing PEcAn packages'
-  # TODO: Would be nice to add `-Otarget` after `-j` below,
-  # but not supported in Make 3.x.
-  # When Travis updates, check for Make 4 and add -O if available.
-  - make # TODO: add -j2 here after #1976 closed
-  - echo 'Testing PEcAn packages'
-  - make -j2 test
-  - make -j2 document
-  # Skip modules with known broken checks
-  - mkdir -p .check/modules # only needed for `touch` below
-  - touch .check/modules/benchmark # delete when #1978 closed
-  - touch .check/modules/rtm # delete when #1976 closed
-  - make -j2 check
-  - echo 'Testing Integration'
-  - ./tests/integration.sh travis
-  - if [[ `git status -s` ]]; then 
-      echo "These files were changed by the build process:";
-      git status -s;
-      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-      exit 1; 
-    fi
-  - set +e
+  - scripts/travis/script.sh
 
 after_script:
-  - set -e
-  - echo 'Building Book'
-  - pushd book_source
-  - make
-  - popd
-  - echo 'Building Tutorials'
-  - pushd documentation/tutorials
-  - make build deploy
-  - popd
-  - set +e
+  - scripts/travis/after_script.sh

@@ -23,7 +23,7 @@
 ##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.
 ##' @param xlab is label for the x axis 
 ##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
-##' @param lab.spikes = TRUE labels the \% of data in the spikes
+##' @param lab.spikes = TRUE labels the % of data in the spikes
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
@@ -184,14 +184,15 @@ iqr <- function(x) {
 ##' Creates empty ggplot object
 ##'
 ##' An empty base plot to which layers created by other functions
-##' (\code{\link{plot_data}}, \code{\link{plot.prior.density}},
-##' \code{\link{plot.posterior.density}}) can be added.
+##' (\code{\link{plot_data}}, \code{\link[PEcAn.priors]{plot_prior.density}},
+##' \code{\link[PEcAn.priors]{plot_posterior.density}}) can be added.
 ##' @name create.base.plot
 ##' @title Create Base Plot
 ##' @return empty ggplot object
 ##' @export
 ##' @author David LeBauer
 create.base.plot <- function() {
+  need_packages("ggplot2")
   base.plot <- ggplot2::ggplot()
   return(base.plot)
 } # create.base.plot
@@ -217,6 +218,7 @@ create.base.plot <- function() {
 ##' @examples
 ##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
+  need_packages("ggplot2")
   
   if (is.null(base.plot)) {
     base.plot <- create.base.plot()

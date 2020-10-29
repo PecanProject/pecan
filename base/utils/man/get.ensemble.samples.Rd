@@ -4,8 +4,14 @@
 \alias{get.ensemble.samples}
 \title{Get Ensemble Samples}
 \usage{
-get.ensemble.samples(ensemble.size, pft.samples, env.samples,
-  method = "uniform", param.names = NULL, ...)
+get.ensemble.samples(
+  ensemble.size,
+  pft.samples,
+  env.samples,
+  method = "uniform",
+  param.names = NULL,
+  ...
+)
 }
 \arguments{
 \item{ensemble.size}{number of runs in model ensemble}
@@ -29,7 +35,7 @@ DEPRECATED: This function has been moved to the \code{PEcAn.uncertainty} package
 The version in \code{PEcAn.utils} is deprecated, will not be updated to add any new features,
 and will be removed in a future release of PEcAn.
 Please use \code{PEcAn.uncertainty::get.ensemble.samples} instead.
-Returns a matrix of randomly or quasi-randomly sampled trait values 
+Returns a matrix of randomly or quasi-randomly sampled trait values
 to be assigned to traits over several model runs.
 given the number of model runs and a list of sample distributions for traits
 The model run is indexed first by model run, then by trait

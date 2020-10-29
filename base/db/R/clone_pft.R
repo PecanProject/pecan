@@ -32,10 +32,10 @@ clone_pft <- function(parent.pft.name,
   }
 
   con <- db.open(settings$database$bety)
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
 
   parent.pft <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == parent.pft.name)
+    %>% dplyr::filter(name == !!parent.pft.name)
     %>% dplyr::collect())
 
   if (nrow(parent.pft) == 0) {
@@ -45,9 +45,9 @@ clone_pft <- function(parent.pft.name,
   new.pft <- (parent.pft
     %>% dplyr::select(-id, -created_at, -updated_at)
     %>% dplyr::mutate(
-      name = new.pft.name,
-      definition = new.pft.definition,
-      parent_id = parent.pft$id))
+      name = !!new.pft.name,
+      definition = !!new.pft.definition,
+      parent_id = !!parent.pft$id))
 
   ## create new pft
   DBI::dbWriteTable(
@@ -58,7 +58,7 @@ clone_pft <- function(parent.pft.name,
     row.names = FALSE)
 
   new.pft$id <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == new.pft.name)
+    %>% dplyr::filter(name == !!new.pft.name)
     %>% dplyr::pull(id))
 
 
@@ -72,8 +72,8 @@ clone_pft <- function(parent.pft.name,
     member_tbl <- "pfts_species"
   }
   new_members <- (dplyr::tbl(con, member_tbl)
-    %>% dplyr::filter(pft_id == parent.pft$id)
-    %>% dplyr::mutate(pft_id = new.pft$id)
+    %>% dplyr::filter(pft_id == !!parent.pft$id)
+    %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 
@@ -87,8 +87,8 @@ clone_pft <- function(parent.pft.name,
   }
 
   new_priors <- (dplyr::tbl(con, "pfts_priors")
-    %>% dplyr::filter(pft_id == parent.pft$id)
-    %>% dplyr::mutate(pft_id = new.pft$id)
+    %>% dplyr::filter(pft_id == !!parent.pft$id)
+    %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 

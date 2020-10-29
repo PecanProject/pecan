@@ -9,7 +9,7 @@ Ways to Access BETYdb from R
 
 ### PEcAn.DB functions
 
-```{r}
+```{r, eval=FALSE}
 settings <-list(database = list(bety = list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")))
 
 # equivalent to standard method to load PEcAn settings:
@@ -30,7 +30,7 @@ salix_vcmax <- query.trait.data(trait = "Vcmax", spstr = vecpaste(salix_spp$id),
 
 Documentation for the `dplyr` interface to databases is provided in the [dplyr vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html)
 
-```{r}
+```{r, eval=FALSE}
 library(dplyr)
 d <- settings$database$bety[c("dbname", "password", "host", "user")]
 bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
@@ -58,7 +58,7 @@ mxgdata <- inner_join(species, yields, by = 'specie_id') %>%
 
 ### rOpensci traits API
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 # install_github("ropensci/traits")
 library("traits")
 

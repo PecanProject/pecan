@@ -169,8 +169,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
                                                                            dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim$air_temperature)))))
           names(sim.lag) <- c("lag.air_temperature", "ens")
-          sim.lag$lag.air_temperature_min <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
-          sim.lag$lag.air_temperature_max <- utils::stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, max))[, 1]
+          sim.lag$lag.air_temperature_min <- utils::stack(apply(data.frame(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ]), 2, min))[, 1]
+          sim.lag$lag.air_temperature_max <- utils::stack(apply(data.frame(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ]), 2, max))[, 1]
         }
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
       } else if (v == "precipitation_flux") {
@@ -235,15 +235,22 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # rows.beta[i] <- betas.tem
       # }
       # rows.beta <- as.numeric(rows.beta)
+      
+      # n.new <- ifelse(n.ens==1, 10, n.ens) # If we're not creating an ensemble, we'll add a mean step to remove chance of odd values
       n.new <- n.ens
       cols.redo <- 1:n.new
       sane.attempt=0
       betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", v, "_", day.now, ".nc")))
       col.beta <- betas_nc$var[[1]]$dim[[2]]$len # number of coefficients
       while(n.new>0 & sane.attempt <= sanity.tries){
-        betas.tem <- sample(1:(n.beta-n.new), 1, replace = TRUE)
         
-        Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now), c(betas.tem,1), c(n.new,col.beta)), ncol = col.beta)
+        if(n.ens==1){
+          Rbeta <- matrix(mod.save$coef, ncol=col.beta)
+        } else {
+          betas.tem <- sample(1:max((n.beta-n.new), 1), 1, replace = TRUE)
+          Rbeta <- matrix(ncdf4::ncvar_get(betas_nc, paste(day.now), c(betas.tem,1), c(n.new,col.beta)), ncol = col.beta)
+        }
+        
         
         if(ncol(Rbeta)!=col.beta) Rbeta <- t(Rbeta)
         
@@ -252,9 +259,17 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           dat.pred <- matrix(nrow=nrow(dat.temp), ncol=n.ens)
         }
         
-        dat.pred[,cols.redo] <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
-                                  Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL, 
-                                  n.ens = n.new)
+        # if(n.ens==1){
+        #   dat.dum <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
+        #                            Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL,
+        #                            n.ens = n.new)
+        #   dat.pred[,1] <- apply(dat.dum, 1, mean)
+        # } else {
+          dat.pred[,cols.redo] <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
+                                                Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL, 
+                                                n.ens = n.new)
+          
+        # }
         
         # Occasionally specific humidty may go serioulsy off the rails
         if(v=="specific_humidity" & (max(dat.pred)>log(40e-3) | min(dat.pred)<log(1e-6))){
@@ -266,9 +281,12 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # make more peaky If there's no rain on this day, skip the
         # re-proportioning
         if (v == "precipitation_flux") {
-          if (max(dat.pred[,cols.redo]) > 0) {
+          
+          # if(n.ens == 1) next
+          cols.check <- ifelse(n.ens==1, 1, cols.check)
+          if (max(dat.pred[,cols.check]) > 0) {
             tmp <- 1:nrow(dat.pred)  # A dummy vector of the 
-            for (j in cols.redo) {
+            for (j in cols.check) {
               if (min(dat.pred[, j]) >= 0) next # skip if no negative rain to redistribute
               rows.neg <- which(dat.pred[, j] < 0)
               rows.add <- sample(tmp[!tmp %in% rows.neg], length(rows.neg), 
@@ -282,12 +300,15 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
             } # j End loop
 
             # Make sure each day sums to 1
-            dat.pred[,cols.redo] <- dat.pred[,cols.redo]/rowSums(dat.pred[,cols.redo], na.rm=T)
+            # dat.pred[,cols.check] <- dat.pred[,cols.check]/colSums(data.frame(dat.pred[,cols.check]), na.rm=T)
             dat.pred[is.na(dat.pred)] <- 0
           } # End case of re-proportioning
           
           # Convert precip proportions into real units
-          dat.pred[,cols.redo] <- dat.pred[,cols.redo] * as.vector((dat.temp$precipitation_flux.day))*length(unique(dat.temp$hour))
+          # Total Daily precip = precipitaiton_flux.day*24*60*60
+          # precip.day <- dat.temp$precipitation_flux.day[1]*nrow(dat.temp)
+          precip.day <- dat.temp$precipitation_flux.day[1]
+          dat.pred[,cols.check] <- dat.pred[,cols.check] * precip.day
         } # End Precip re-propogation
         
         # -----
@@ -309,7 +330,12 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           } else {
             rows.filter <- which(dat.mod$sim.day <= days.sim[i] & dat.mod$sim.day >= days.sim[i]-14)
           }
-          dat.filter <- utils::stack(dat.sim[[v]][rows.filter,])[,1]
+          if(n.ens>1){
+            dat.filter <- utils::stack(dat.sim[[v]][rows.filter,])[,1]
+          } else {
+            dat.filter <- dat.sim[[v]][rows.filter,]
+          }
+          
           
           filter.mean <- mean(dat.filter, na.rm=T) 
           filter.sd   <- sd(dat.filter, na.rm=T) 
@@ -538,7 +564,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
             hrs.wet <- sample(hrs.add, length(hrs.go), replace=T)
   
             for(dry in seq_along(hrs.go)){
-              rain.now[hrs.wet[dry]] <- rain.now[hrs.go[dry]]
+              rain.now[hrs.wet[dry]] <- rain.now[hrs.wet[dry]] + rain.now[hrs.go[dry]]
               rain.now[hrs.go[dry]] <- 0
             }
             
@@ -554,17 +580,27 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       # ---------- 
       if (v == "surface_downwelling_shortwave_flux_in_air") {
         # Randomly pick which values to save & propogate
-        cols.prop <- as.integer(cols.list[i,])
-        for (j in 1:ncol(dat.sim[[v]])) {
-          dat.sim[[v]][rows.mod, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
+
+        if(ncol(dat.sim[[v]])>1){
+          cols.prop <- as.integer(cols.list[i,])
+          for (j in 1:ncol(dat.sim[[v]])) {
+            dat.sim[[v]][rows.mod, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
+          }
+        } else { # Only one ensemble member... it's really easy
+          dat.sim[[v]][rows.mod, 1] <- dat.pred
         }
+        
         
         dat.sim[[v]][rows.now[!rows.now %in% rows.mod], ] <- 0
       } else {
-        cols.prop <- as.integer(cols.list[i,])
         
-        for (j in 1:ncol(dat.sim[[v]])) {
-          dat.sim[[v]][rows.now, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
+        if(ncol(dat.sim[[v]])>1){
+          cols.prop <- as.integer(cols.list[i,])
+          for (j in 1:ncol(dat.sim[[v]])) {
+            dat.sim[[v]][rows.now, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
+          }
+        } else { # Only one ensemble member... it's really easy
+          dat.sim[[v]][rows.now, 1] <- dat.pred
         }
       }
       rm(mod.save)  # Clear out the model to save memory
@@ -578,7 +614,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
     } # end day loop
     # --------------------------------
     
-  }  
+  }  # End vars.list 
   # ---------- End of downscaling for loop
   return(dat.sim)
 }

@@ -24,7 +24,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 if [ ! -e "@OUTDIR@/history.xml" ]; then
   cd "@RUNDIR@"
   
-  "@BINARY@"
+  "@BINARY@" "@BINARY_ARGS@"
   STATUS=$?
   if [ $STATUS == 0 ]; then
     if grep -Fq '=== Time integration ends; Total elapsed time=' "@OUTDIR@/logfile.txt"; then

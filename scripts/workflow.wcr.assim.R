@@ -14,10 +14,10 @@ library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
 # make sure always to call status.end
-options(warn=1)
-options(error=quote({
-  PEcAn.utils::status.end("ERROR")
-  PEcAn.remote::kill.tunnel(settings)
+options(warn = 1)
+options(error = quote({
+  try(PEcAn.utils::status.end("ERROR"))
+  try(PEcAn.remote::kill.tunnel(settings))
   if (!interactive()) {
     q()
   }
@@ -57,7 +57,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
   file.remove(statusFile)
 }
 # Do conversions
-settings <- PEcAn.utils::do_conversions(settings)
+settings <- PEcAn.workflow::do_conversions(settings)
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
   PEcAn.utils::status.start("TRAIT")

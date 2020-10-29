@@ -20,7 +20,7 @@ settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$dat
   settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, 
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects$on, 
   settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
 
 ## @knitr , echo=FALSE,warning=FALSE,cache=TRUE

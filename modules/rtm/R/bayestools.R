@@ -38,7 +38,7 @@ rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE
 bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mpsrf = TRUE) {
   i <- ifelse(use_CI, 2, 1)
   gelman <- try(BayesianTools::gelmanDiagnostics(samples))
-  if (class(gelman) == 'try-error') {
+  if (inherits(gelman, "try-error")) {
     message('Error trying to calculate gelman diagnostic. Assuming no convergence')
     return(FALSE)
   }
@@ -171,7 +171,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list(), loglike 
     # `file.create` returns FALSE if target directory doesn't exist.
     stopifnot(file.create(save_progress))
   }
-  stopifnot('prior' %in% class(prior))
+  stopifnot(inherits(prior, "prior"))
   test_samp <- prior$sampler()
   param_names <- names(test_samp)
   if (is.null(param_names)) {

@@ -4,15 +4,22 @@
 \alias{download.NOAA_GEFS}
 \title{Download NOAA GEFS Weather Data}
 \usage{
-download.NOAA_GEFS(outfolder, lat.in, lon.in, sitename,
-  start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz =
-  "UTC") + lubridate::days(16)), overwrite = FALSE, verbose = FALSE,
-  ...)
+download.NOAA_GEFS(
+  outfolder,
+  lat.in,
+  lon.in,
+  site_id,
+  start_date = Sys.time(),
+  end_date = (as.POSIXct(start_date, tz = "UTC") + lubridate::days(16)),
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
-\item{sitename}{The unique ID given to each site. This is used as part of the file name.}
+\item{site_id}{The unique ID given to each site. This is used as part of the file name.}
 
 \item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
 
@@ -35,14 +42,15 @@ Download NOAA GEFS Weather Data
 }
 \section{Information on Units}{
 
-Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
-in Kelvin.
+Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, 
+but is converted at the station and downlaoded in Kelvin.
 }
 
 \section{NOAA_GEFS General Information}{
 
-This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
-every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
+This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  
+A 16 day forecast is avaliable every 6 hours.  Each forecast includes information on a total of 8 variables.  
+These are transformed from the NOAA standard to the internal PEcAn
 standard.
 }
 
@@ -63,7 +71,10 @@ June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 
 \examples{
 \dontrun{
- download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
+ download.NOAA_GEFS(outfolder="~/Working/results", 
+    lat.in= 45.805925, 
+    lon.in = -90.07961, 
+    site_id = 676)
 }
 
 }

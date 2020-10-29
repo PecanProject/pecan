@@ -4,8 +4,13 @@
 \alias{match_species_id}
 \title{Match BETY species ID.}
 \usage{
-match_species_id(input_codes, format_name = "custom", bety = NULL,
-  translation_table = NULL, ...)
+match_species_id(
+  input_codes,
+  format_name = "custom",
+  bety = NULL,
+  translation_table = NULL,
+  ...
+)
 }
 \arguments{
 \item{input_codes}{Character vector of species codes}
@@ -38,6 +43,7 @@ Parses species codes in input data and matches them with the BETY species ID.
 }
 }
 \examples{
+\dontrun{
 bety <- dplyr::src_postgres(dbname = 'bety',
                        user = 'bety',
                        password = 'bety',
@@ -47,6 +53,7 @@ format_name <- 'usda'
 match_species_id(input_codes = input_codes,
                  format_name = format_name,
                  bety = bety)
+}
 
 }
 \author{

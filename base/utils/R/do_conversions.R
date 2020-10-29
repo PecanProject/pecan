@@ -1,14 +1,19 @@
-##' @export 
+##' @export
 ##' @aliases do.conversions
 ##' @name do_conversions
 ##' @title do_conversions
 ##' @description Input conversion workflow
+##'
+##' DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
 ##' @param settings PEcAn settings list
 ##' @param overwrite.met,overwrite.fia,overwrite.ic logical
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+
+  .Deprecated("PEcAn.workflow::do_conversions")
+
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }

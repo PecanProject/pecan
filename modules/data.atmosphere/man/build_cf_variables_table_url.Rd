@@ -4,21 +4,24 @@
 \alias{build_cf_variables_table_url}
 \title{Construct a URL to a specific version of the CF variables table XML}
 \usage{
-build_cf_variables_table_url(version,
-  url_format_string = "http://cfconventions.org/Data/cf-standard-names/\%d/src/src-cf-standard-name-table.xml")
+build_cf_variables_table_url(
+  version,
+  url_format_string = paste0("http://cfconventions.org/",
+    "Data/cf-standard-names/\%d/src/", "src-cf-standard-name-table.xml")
+)
 }
 \arguments{
 \item{version}{CF variables table version number (integer/numeric)}
 
-\item{url_format_string}{A format string passed to [sprintf]. This
+\item{url_format_string}{A format string passed to \link{sprintf}. This
 should contain the entire target URL with the version number
-replaced by `"%d"`, and _no other string substitutions_.}
+replaced by \code{"\%d"}, and \emph{no other string substitutions}.}
 }
 \value{
 Complete URL, as a string
 }
 \description{
-This uses [sprintf] to construct the URL with the version number as
+This uses \link{sprintf} to construct the URL with the version number as
 the first argument.
 }
 \author{

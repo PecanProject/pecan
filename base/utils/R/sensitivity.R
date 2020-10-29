@@ -23,6 +23,7 @@
 ##' @param variables variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @export
+##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
@@ -93,7 +94,6 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                              clean = FALSE, write.to.db = TRUE) {
   scipen <- getOption("scipen")
   options(scipen = 12)
-  
   my.write.config <- paste("write.config.", model, sep = "")
   
   if (write.to.db) {
@@ -101,7 +101,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     if (inherits(con, "try-error")) {
       con <- NULL
     } else {
-      on.exit(PEcAn.DB::db.close(con))
+      on.exit(PEcAn.DB::db.close(con), add = TRUE)
     }
   } else {
     con <- NULL
@@ -119,6 +119,22 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   inputs <- inputs[grepl(".id$", inputs)]
   
   runs <- data.frame()
+  
+  # Reading the site.pft specific tags from xml
+  site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+  
+  if(!is.null(site.pfts.vec)){
+    # find the name of pfts defined in the body of pecan.xml
+    defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+    # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
+    if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
+      quantile.samples <- quantile.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+    # warn if there is a pft specified in the site but it's not defined in the pecan xml.
+    if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
+      PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
+                                       site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+  }
+  
   
   ## write median run
   MEDIAN <- "50"
@@ -198,6 +214,17 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       "outdir      : ", file.path(settings$host$outdir, run.id), "\n", 
       file = file.path(settings$rundir, run.id, "README.txt"), 
       sep = "")
+ 
+  
+  # I check to make sure the path under the met is a list. if it's specified what met needs to be used in 'met.id' under sensitivity analysis of pecan xml we used that otherwise, I use the first met.
+  if (is.list(settings$run$inputs$met$path)){
+    # This checks for met.id tag in the settings under sensitivity analysis - if it's not there it creates it. Then it's gonna use what it created.
+    if (is.null(settings$sensitivity.analysis$met.id))  settings$sensitivity.analysis$met.id <- 1
+    
+    settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
+    
+  }
+  
   
   # write configuration
   do.call(my.write.config, args = list(defaults = defaults, 
@@ -228,34 +255,29 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait, drop=FALSE]
           
           if (!is.null(con)) {
-            now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
             paramlist <- paste0("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname)
-            PEcAn.DB::db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('",
+            insert_result <- PEcAn.DB::db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) values ('",
                             settings$model$id, "', '", 
                             settings$run$site$id, "', '", 
                             settings$run$start.date, "', '",
                             settings$run$end.date, "', '", 
-                            settings$run$outdir, "', '", 
-                            now, "', ", 
+                            settings$run$outdir, "', ", 
                             ensemble.id, ", '", 
-                            paramlist, "')"), con = con)
-            run.id <- PEcAn.DB::db.query(paste0("SELECT id FROM runs WHERE created_at='",
-                                      now, "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
+                            paramlist, "') RETURNING id"), con = con)
+            run.id <- insert_result[["id"]]
             
             # associate posteriors with ensembles
             for (pft in defaults) {
-              PEcAn.DB::db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+              PEcAn.DB::db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (",
                               pft$posteriorid, ", ", 
-                              ensemble.id, ", '", 
-                              now, "', '", now, 
-                              "');"), con = con)
+                              ensemble.id, ");"), con = con)
             }
             
             # associate inputs with runs
             if (!is.null(inputs)) {
               for (x in inputs) {
-                PEcAn.DB::db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
-                                "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
+                PEcAn.DB::db.query(paste0("INSERT INTO inputs_runs (input_id, run_id) ",
+                                "values (", settings$run$inputs[[x]], ", ", run.id, ");"),
                          con = con)
               }
             }
@@ -296,6 +318,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               file = file.path(settings$rundir, run.id, "README.txt"), 
               sep = "")
           
+
           # write configuration
           do.call(my.write.config, args = list(defaults = defaults,
                                                trait.values = trait.samples, 

@@ -2,20 +2,20 @@
 % Please edit documentation in R/get_cf_variables_table.R
 \name{get_cf_variables_table}
 \alias{get_cf_variables_table}
-\title{Retrieve the current CF variables table from `cfconventions.org`
-and convert it into a `data.frame`}
+\title{Retrieve the current CF variables table from \code{cfconventions.org}
+and convert it into a \code{data.frame}}
 \usage{
 get_cf_variables_table(cf_url = build_cf_variables_table_url(57))
 }
 \arguments{
-\item{cf_url}{URL of CF variables table XML. See also [build_cf_variables_table_url].}
+\item{cf_url}{URL of CF variables table XML. See also \link{build_cf_variables_table_url}.}
 }
 \value{
-CF variables table, as a `tibble`
+CF variables table, as a \code{tibble}
 }
 \description{
-Retrieve the current CF variables table from `cfconventions.org`
-and convert it into a `data.frame`
+Retrieve the current CF variables table from \code{cfconventions.org}
+and convert it into a \code{data.frame}
 }
 \author{
 Alexey Shiklomanov

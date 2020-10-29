@@ -26,15 +26,22 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
   
-  con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
-  
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
     ## if posterior.files is specified us that
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
+        
+        tryCatch({
+          con <- PEcAn.DB::db.open(settings$database$bety)
+          on.exit(PEcAn.DB::db.close(con), add = TRUE)
+        }, error = function(e) {
+          PEcAn.logger::logger.severe(
+            "Connection requested, but failed to open with the following error: ",
+            conditionMessage(e))
+        })
+  
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
                               con, settings$host$name, return.all = TRUE)
@@ -54,6 +61,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
+
   PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
@@ -92,10 +100,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Write out SA config files
-    if (!exists("cnt")) {
-      cnt <- 0
-      assign("cnt", cnt, .GlobalEnv)
-    }
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
     sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 

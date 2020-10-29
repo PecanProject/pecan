@@ -5,8 +5,12 @@
 \alias{do.conversions}
 \title{do_conversions}
 \usage{
-do_conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE,
-  overwrite.ic = FALSE)
+do_conversions(
+  settings,
+  overwrite.met = FALSE,
+  overwrite.fia = FALSE,
+  overwrite.ic = FALSE
+)
 }
 \arguments{
 \item{settings}{PEcAn settings list}
@@ -15,6 +19,8 @@ do_conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE,
 }
 \description{
 Input conversion workflow
+
+DEPRECATED: This function has been moved to the PEcAn.workflow package and will be removed from PEcAn.utils.
 }
 \author{
 Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer

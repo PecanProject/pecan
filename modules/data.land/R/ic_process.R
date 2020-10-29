@@ -5,7 +5,7 @@
 ##' @param settings pecan settings list
 ##' @param dbfiles where to write files
 ##' @param overwrite whether to force ic_process to proceed
-##' @author Istem Fer
+##' @author Istem Fer, Hamze Dokoohaki
 ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   
@@ -48,7 +48,21 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
+  
+  latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
+  # setup site database number, lat, lon and name and copy for format.vars if new input
+  new.site <- data.frame(id = as.numeric(site$id), 
+                         lat = latlon$lat, 
+                         lon = latlon$lon)
+  
+  new.site$name <- settings$run$site$name
+  
+  
+  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  
+  
+  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
   
   ## We need two types of start/end dates now
   ## i)  start/end of the run when we have no veg file to begin with (i.e. we'll be querying a DB)
@@ -61,6 +75,23 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     start_date <- settings$run$start.date
     end_date   <- settings$run$end.date
+  }else if (input$source=="BADM"){
+    
+    outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
+    if(!dir.exists(outfolder)) dir.create(outfolder)
+    
+    #see if there is already files generated there
+    newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
+      as.list()
+    names(newfile) <- rep("path", length(newfile))
+    
+    if (length(newfile)==0){
+      newfile <- PEcAn.data.land::BADM_IC_process(settings, dir=outfolder, overwrite=FALSE)
+    }
+    
+    settings$run$inputs[['poolinitcond']]$path <- newfile
+    
+    return(settings)
   }else{
     
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)
@@ -78,18 +109,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     modeltype_id <- db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
     model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
   }
-  
-  # setup site database number, lat, lon and name and copy for format.vars if new input
-  new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
-                         lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
-  new.site$name <- settings$run$site$name
-  
 
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  
-  
-  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
 
    
   getveg.id <- putveg.id <- NULL

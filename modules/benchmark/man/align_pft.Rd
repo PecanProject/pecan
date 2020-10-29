@@ -4,9 +4,17 @@
 \alias{align_pft}
 \title{align_pft}
 \usage{
-align_pft(con, observation_one, observation_two, custom_table = NULL,
-  format_one, format_two, subset_are_ok = FALSE,
-  comparison_type = "data_to_data", ...)
+align_pft(
+  con,
+  observation_one,
+  observation_two,
+  custom_table = NULL,
+  format_one,
+  format_two,
+  subset_is_ok = FALSE,
+  comparison_type = "data_to_data",
+  ...
+)
 }
 \arguments{
 \item{con}{database connection}
@@ -22,7 +30,7 @@ In the second case, must be passable to match_species_id.}
 
 \item{format_two}{The output of query.format.vars() of observation two of the form output$vars$bety_names}
 
-\item{subset_are_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
+\item{subset_is_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
 set to FALSE by default.}
 }
 \value{
@@ -56,6 +64,7 @@ Can align:
  }
 }
 \examples{
+\dontrun{
 
 
 #------------ A species to PFT alignment -----------
@@ -73,7 +82,7 @@ table<-as.data.frame(table)
 
 aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 format_one = format_one, format_two = format_two, custom_table = table)
-
+}
 
 }
 \author{

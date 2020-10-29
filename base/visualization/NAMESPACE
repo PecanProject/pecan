@@ -2,8 +2,6 @@
 
 export(add_icon)
 export(ciEnvelope)
-export(create_status_page)
 export(map.output)
-export(plot.netcdf)
-export(points2county)
+export(plot_netcdf)
 export(vwReg)

@@ -9,8 +9,7 @@ ashiklom@bu.edu
 Easiest way to install is via `install_github` from the `devtools` package.
 
 ```R
-library(devtools)
-install_github("ashiklom/pecan", subdir="modules/rtm")
+devtools::install_github("PecanProject/pecan", subdir="modules/rtm", ref='develop')
 ```
 
 If you want a specific branch, do `install_github(..., ref="<branch>")`.

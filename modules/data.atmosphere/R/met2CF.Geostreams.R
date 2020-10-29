@@ -15,9 +15,6 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
                     start_date, end_date, 
                     overwrite = FALSE, verbose = FALSE, ...) {
 
-  met.lookup = utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
-                        header = TRUE, stringsAsFactors = FALSE)
-
   start_date <- as.POSIXct(start_date, tz="UTC")
   end_date <- as.POSIXct(end_date, tz="UTC")
 
@@ -34,12 +31,14 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     dat$start_time <- lubridate::parse_date_time(dat$start_time, orders = "ymdHMSz", tz = "UTC")
     dat$end_time <- lubridate::parse_date_time(dat$end_time, orders = "ymdHMSz", tz = "UTC")
     if (year == lubridate::year(start_date) & start_date < min(dat$start_time)) {
-    PEcAn.logger::logger.severe("Requested start date is", start_date,
-                   "but", year, "data begin on", min(dat$start_time))
+      PEcAn.logger::logger.severe(
+        "Requested start date is", start_date,
+        "but", year, "data begin on", min(dat$start_time))
     }
     if (year == lubridate::year(end_date) & end_date > max(dat$end_time)) {
-    PEcAn.logger::logger.severe("Requested end date is", end_date,
-                   "but", year, "data end on", max(dat$end_time))
+      PEcAn.logger::logger.severe(
+        "Requested end date is", end_date,
+        "but", year, "data end on", max(dat$end_time))
     }
 
     dat$mid_time <- dat$start_time + (dat$end_time - dat$start_time)/2
@@ -74,10 +73,10 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     }
 
     make_ncvar <- function(name){
-      if (! name %in% met.lookup$CF_standard_name) {
+      if (! name %in% pecan_standard_met_table$cf_standard_name) {
        PEcAn.logger::logger.severe("Don't know how to convert parameter", name, "to CF standard format")
       }
-      unit <- met.lookup[met.lookup$CF_standard_name == name, "units"]
+      unit <- pecan_standard_met_table[pecan_standard_met_table$cf_standard_name == name, "units"]
       ncdf4::ncvar_def(name = name,
                        units = unit,
                        dim = cf_dims,

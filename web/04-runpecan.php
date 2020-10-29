@@ -161,12 +161,11 @@ $modeltype=$row['name'];
 $stmt->closeCursor();
 
 // create the workflow execution
-$params=str_replace(' ', '', str_replace("\n", "", var_export($_REQUEST, true)));
 $userid=get_userid();
 if ($userid != -1) {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW(), :userid)");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), :userid)");
 } else {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, params, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :params, :advanced_edit, NOW(), NOW())");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW())");
 }
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
@@ -174,7 +173,6 @@ $q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
-$q->bindParam(':params', trim($params), PDO::PARAM_STR);
 if ($userid != -1) {
   $q->bindParam(':userid', $userid, PDO::PARAM_INT);
 }
@@ -195,6 +193,15 @@ if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}"
   die('Can\'t update workflow : ' . (error_database()));
 }
 
+# parameters
+$params=json_encode($_REQUEST);
+$ins = $pdo->prepare("INSERT INTO attributes(container_type, container_id, value) VALUES ('workflows', :id, :params);");
+$ins->bindParam(':id', $workflowid, PDO::PARAM_INT);
+$ins->bindParam(':params', $params, PDO::PARAM_STR);
+if ($ins->execute() === FALSE) {
+  die('Can\'t insert attributes : ' . (error_database()));
+}
+
 # quick check on dbfiles_folder
 if (! isset($dbfiles_folder)) {
   if (isset($inputs_folder)) {
@@ -205,7 +212,7 @@ if (! isset($dbfiles_folder)) {
 }
 
 # setup umask so group has write as well
-umask(0002);
+umask(0000);
 
 # create the folder(s)
 if (!mkdir($folder)) {
@@ -253,11 +260,7 @@ if (isset($db_bety_port)) {
         fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
 }
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
-if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
-} else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
-}
+fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
 
@@ -289,22 +292,20 @@ if ($browndog) {
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
-$pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
-	fwrite($fh, "      <constants>" . PHP_EOL);
-	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
-	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
 
 fwrite($fh, "  <meta.analysis>" . PHP_EOL);
 fwrite($fh, "    <iter>3000</iter>" . PHP_EOL);
-fwrite($fh, "    <random.effects>FALSE</random.effects>" . PHP_EOL);
+fwrite($fh, "    <random.effects>" . PHP_EOL);
+fwrite($fh, "     <on>FALSE</on>" . PHP_EOL);
+fwrite($fh, "     <use_ghs>TRUE</use_ghs>" . PHP_EOL);
+fwrite($fh, "    </random.effects>" . PHP_EOL);
 fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){
@@ -360,16 +361,22 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    </config.header>" . PHP_EOL);
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
-if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  if (is_array($hostoptions['models'][$modeltype])) {
-    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
-      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+if (isset($hostoptions['models'])) {
+  $model_version="${modeltype}";
+  if (isset($hostoptions['models']["${modeltype} (r${revision})"])) {
+    $model_version="${modeltype} (r${revision})";
+  }
+  if (isset($hostoptions['models'][$model_version])) {
+    if (is_array($hostoptions['models'][$model_version])) {
+      if (isset($hostoptions['models'][$model_version]['prerun'])) {
+        fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]['prerun']) . "</prerun>" . PHP_EOL);      
+      }
+      if (isset($hostoptions['models'][$model_version]['postrun'])) {
+        fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$model_version]['postrun']) . "</postrun>" . PHP_EOL);      
+      }
+    } else {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$model_version]) . "</prerun>" . PHP_EOL);      
     }
-    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
-      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
-    }
-  } else {
-    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
   }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
@@ -452,8 +459,8 @@ if ($hostname != $fqdn) {
     fwrite($fh, "    <data_hostname>" . toXML($hostoptions['data_hostname']) . "</data_hostname>" . PHP_EOL);
   }
 }
-if ($rabbitmq_host != "") {
-  $rabbitmq_uri = "amqp://" . $rabbitmq_username . ":" . $rabbitmq_password . "@" . $rabbitmq_host . ":" . $rabbitmq_port . "/" . urlencode($rabbitmq_vhost);
+if (isset($hostoptions['rabbitmq_uri'])) {
+  $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
   $rabbitmq_model_queue = $modeltype . "_" . $revision;
 
   fwrite($fh, "    <rabbitmq>" . PHP_EOL);
@@ -508,7 +515,7 @@ if ($hostname != $fqdn) {
 
 # redirect to the right location
 if ($pecan_edit) {
-  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit";
+  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit&hostname=${hostname}";
   if ($model_edit) {
     $path .= "&model_edit=model_edit";
   }
@@ -516,36 +523,24 @@ if ($pecan_edit) {
     $path .= "&offline=offline";
   }
   header("Location: ${path}");
-} else if ($rabbitmq_host != "") {
-
-  # create connection and queue
-  $connection = new AMQPConnection();
-  $connection->setHost($rabbitmq_host);
-  $connection->setPort($rabbitmq_port);
-  $connection->setVhost($rabbitmq_vhost);
-  $connection->setLogin($rabbitmq_username);
-  $connection->setPassword($rabbitmq_password);
-  $connection->connect();
-  $channel = new AMQPChannel($connection);
-  $exchange = new AMQPExchange($channel);
-
-  # create the queue
-  $queue = new AMQPQueue($channel);
-  $queue->setName($rabbitmq_queue);
-  $queue->setFlags(AMQP_DURABLE);
-  $queue->declareQueue();
+} else if (isset($hostoptions['rabbitmq_uri'])) {
+  $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
+  if (isset($hostoptions['rabbitmq_queue'])) {
+    $rabbitmq_queue = $hostoptions['rabbitmq_queue'];
+  } else {
+    $rabbitmq_queue = "pecan";
+  }
 
   # create the message
-  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
-
-  # send the message
-  $exchange->publish($message, $rabbitmq_queue);
-
-  # cleanup
-  $connection->disconnect();
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"';
+  if ($model_edit) {
+    $message .= ', "modeledit": true';
+  }
+  $message .= '}';
+  send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done
-  $path = "05-running.php?workflowid=$workflowid";
+  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }
@@ -567,7 +562,7 @@ if ($pecan_edit) {
   }
 
   #done
-  $path = "05-running.php?workflowid=$workflowid";
+  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }

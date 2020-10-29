@@ -4,9 +4,16 @@
 \alias{dhist}
 \title{Diagonally Cut Histogram}
 \usage{
-dhist(x, a = 5 * iqr(x), nbins = grDevices::nclass.Sturges(x),
-  rx = range(x, na.rm = TRUE), eps = 0.15, xlab = "x", plot = TRUE,
-  lab.spikes = TRUE)
+dhist(
+  x,
+  a = 5 * iqr(x),
+  nbins = grDevices::nclass.Sturges(x),
+  rx = range(x, na.rm = TRUE),
+  eps = 0.15,
+  xlab = "x",
+  plot = TRUE,
+  lab.spikes = TRUE
+)
 }
 \arguments{
 \item{x}{is a numeric vector (the data)}

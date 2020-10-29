@@ -1,3 +1,3 @@
 #!/usr/bin/env Rscript
 
-if (!require("bookdown"))install.packages("bookdown")
+if (!requireNamespace("bookdown", quietly = TRUE)) install.packages("bookdown")

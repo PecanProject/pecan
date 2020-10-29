@@ -9,16 +9,18 @@
 # 3 : model revision number
 # 4 : name of executable, without the path
 # 5 : optionally path to executable
-addLocalModel "ED2.2"     "ED2"      "46"  "ed2.r46"
-addLocalModel "ED2.2"     "ED2"      "82"  "ed2.r82"
-addLocalModel "ED2.2"     "ED2"      "git" "ed2.git"
-addLocalModel "SIPNET"    "SIPNET"   "unk" "sipnet.runk"
-addLocalModel "SIPNET"    "SIPNET"   "136" "sipnet.r136"
-addLocalModel "DALEC"     "DALEC"    ""    "dalec_seqMH"
-addLocalModel "Linkages"  "LINKAGES" "git" "linkages.git"
-addLocalModel "MAESPA"    "MAESPA"   "git" "maespa.git"
-addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"
-addLocalModel "GDAY(Day)" "GDAY"     ""    "gday"
+addLocalModel "ED2.2"     "ED2"      "46"   "ed2.r46"
+addLocalModel "ED2.2"     "ED2"      "82"   "ed2.r82"
+addLocalModel "ED2.2"     "ED2"      "git"  "ed2.git"
+addLocalModel "SIPNET"    "SIPNET"   "unk"  "sipnet.runk"
+addLocalModel "SIPNET"    "SIPNET"   "136"  "sipnet.r136"
+addLocalModel "SIPNET"    "SIPNET"   "git"  "sipnet.git"
+addLocalModel "DALEC"     "DALEC"    ""     "dalec_seqMH"
+addLocalModel "Linkages"  "LINKAGES" "git"  "linkages.git"
+addLocalModel "MAESPA"    "MAESPA"   "git"  "maespa.git"
+addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1"  "guess.3.1"
+addLocalModel "GDAY(Day)" "GDAY"     ""     "gday"
+addLocalModel "BASGRA"    "BASGRA_N" "v1.0" "basgra"
 
 # special case for PRELES
 addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"

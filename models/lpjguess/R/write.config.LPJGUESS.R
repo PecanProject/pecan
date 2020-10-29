@@ -98,6 +98,8 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  pftindx   <- 152:222 # should grab automatically
+  pftblock  <- paramsins[pftindx] # lines with pft params
   
   # cp the grid indices file
   grid.file <- file.path(settings$host$rundir, "gridind.txt")
@@ -105,25 +107,70 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   system(paste("cp ", gridind, settings$rundir))
   guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
-  # write parameter values
-  param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x], "_", 
-                                                                     names(trait.values[[x]]), ".*"))
+  pft_names <- sapply(settings$pfts, `[[`,"name")
+  load(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
   
+  # name and unit conversion
+  trait.values <- pecan2lpjguess(trait.values)
+  
+  # these are strings, should they be passed via xml?
+  # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural pathway=c3
+  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover", "pathway")
+  
+  write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
-    for (n in seq_along(trait.values[[i]])) {
-      paramsins <- gsub(param.names[[i]][n], trait.values[[i]][n], paramsins)
-    }
-  }
+
+      write2pftblock[[i]] <- pftblock
+      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+      
+      warning_list <- list()
+      
+      # pass param values
+      # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
+      for(t in seq_along(lpjguess_param_list)){
+        trait_name <- names(lpjguess_param_list)[t]
+        if(trait_name != "pft" & !(trait_name %in% noprior_params)){
+          if(trait_name %in% names(trait.values[[i]])){ # pass sample
+            
+            pecan_sample <- trait.values[[i]][[trait_name]]
+            
+            if(trait_name == "rootdist"){  # convert from ratio to fractions
+              lower_layer_fraction = 1/(pecan_sample+1)
+              upper_layer_fraction = 1 - lower_layer_fraction
+              pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
+            }
+            
+            if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
+              pecan_sample <- pecan_sample*997 # density of water
+            }
+            
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
+          }else{ # use default
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
+            warning_list[[trait_name]] <- trait_name
+          }
+        }  
+      }
+      
+      # handle the no prior params
+      for(t in seq_along(noprior_params)){
+        trait_name <- noprior_params[t]
+        if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
+        }else{ #pass the default, add to warning
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
+          warning_list[[trait_name]] <- trait_name
+        }
+      }
+
+      PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
+  } #end of pft-loop
   
-  # if anything is not replaced use the defaults param value if '.@' exists, remove the string
-  # infront of '.@' and use the value
-  for (i in seq_along(paramsins)) {
-    if (grepl(".@", paramsins[i])) {
-      paramsins[i] <- gsub("\\s*\\w*$", paste0(" ", gsub("^[^:]*.@", "", paramsins[i])),
-                           gsub(".@.*", "", paramsins[i]))
-    }
-  }
+  # erase the placeholder, write back the pft blocks
+  paramsins <- paramsins[-pftindx] 
+  paramsins <- c(paramsins, unlist(write2pftblock))
+  
   
   # write clim file names
   
@@ -171,3 +218,97 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   
   return(settings)
 } # write.insfile.LPJGUESS
+
+
+# ==================================================================================================#
+#' Function to translate pecan param names and units to lpjguess names and units
+#' @export
+#' @param trait.values trait.values, list
+#' @return translated list
+#' @author Istem Fer
+pecan2lpjguess <- function(trait.values){
+  
+  # TODO :match all lpjguess and pecan names
+  vartable <- tibble::tribble(
+    ~pecanname, ~lpjguessname, ~pecanunits, ~lpjguessunits, 
+    "root_turnover_rate", "turnover_root", NA, NA,   
+    "sapwood_turnover_rate", "turnover_sap", NA, NA,
+    "leaf_turnover_rate", "turnover_leaf", NA, NA,
+    "SLA", "sla", NA, NA,
+    "ci2ca", "lambda_max", NA, NA,         
+    "Emax", "emax", NA, NA,
+    "reprfrac", "reprfrac", NA, NA,
+    "water_stress_threshold", "wscal_min", NA, NA,
+    "drought_tolerance", "drought_tolerance", NA, NA,
+    "turnover_harv_prod", "turnover_harv_prod", NA, NA, 
+    "crownarea_max", "crownarea_max", NA, NA,
+    "ltor_max", "ltor_max", NA, NA,                
+    "root_dist_ratio", "rootdist", NA, NA,
+    "k_allom2", "k_allom2", NA, NA,           
+    "k_allom3", "k_allom3", NA, NA,          
+    "k_rp", "k_rp", NA, NA,               
+    "wood_density", "wooddens", NA, NA,           
+    "c2n_fineroot", "cton_root", NA, NA,
+    "c2n_sapwood", "cton_sap", NA, NA,           
+    "nup2root_max", "nuptoroot", NA, NA,
+    "km_volume", "km_volume", NA, NA,            
+    "growth_resp_factor", "respcoeff", NA, NA,
+    "kest_repr", "kest_repr", NA, NA,
+    "kest_bg", "kest_bg", NA, NA,           
+    "kest_pres", "kest_pres", NA, NA,
+    "k_chilla", "k_chilla", NA, NA,
+    "k_chillb", "k_chillb", NA, NA,
+    "k_chillk", "k_chillk", NA, NA,
+    "litterme", "litterme", NA, NA,
+    "harv_eff", "harv_eff", NA, NA,
+    "res_outtake", "res_outtake", NA, NA,
+    "harvest_slow_frac", "harvest_slow_frac", NA, NA,
+    "fnstorage", "fnstorage", NA, NA,      
+    "GDD", "phengdd5ramp", NA, NA,
+    "est_max", "est_max", NA, NA,
+    "parff_min", "parff_min", NA, NA,
+    "alphar", "alphar", NA, NA,
+    "greff_min", "greff_min", NA, NA, 
+    "k_allom1", "k_allom1", NA, NA,
+    "k_latosa", "k_latosa", NA, NA,        
+    "gcmin", "gmin", "m s-1", "mm s-1",               
+    "intc", "intc", NA, NA,
+    "ga", "ga", NA, NA,
+    "tcmin_surv", "tcmin_surv", NA, NA,
+    "tcmin_est", "tcmin_est", NA, NA,
+    "tcmax_est", "tcmax_est", NA, NA,
+    "twmin_est", "twmin_est", NA, NA,
+    "gdd5min_est", "gdd5min_est", NA, NA,
+    "pstemp_min", "pstemp_min", NA, NA,
+    "pstemp_low", "pstemp_low", NA, NA,
+    "pstemp_high", "pstemp_high", NA, NA,        
+    "pstemp_max", "pstemp_max", NA, NA,
+    "leaf_longevity", "leaflong", NA, NA,
+    "longevity", "longevity", NA, NA,
+    "fireresist", "fireresist", NA, NA,
+    "eps_iso", "eps_iso", NA, NA,
+    "seas_iso", "seas_iso", NA, NA,
+    "eps_mon", "eps_mon", NA, NA,
+    "storfrac_mon", "storfrac_mon", NA, NA)
+  
+  trait.values <- lapply(trait.values, function(x){
+    names(x) <- vartable$lpjguessname[match(names(x), vartable$pecanname)]
+    return(x)
+  })
+  
+  # TODO : unit conversions?
+  toconvert <- vartable$lpjguessname[!is.na(vartable$lpjguessunits)]
+  trait.values <- lapply(trait.values, function(x){
+    canconvert <- toconvert[toconvert %in% names(x)]      
+    if(length(canconvert) != 0){
+      for(c in seq_along(canconvert)){
+        x[,names(x) == canconvert[c]] <- udunits2::ud.convert(x[,names(x) == canconvert[c]], 
+                                                             vartable$pecanunits[vartable$lpjguessname == canconvert[c]], 
+                                                             vartable$lpjguessunits[vartable$lpjguessname == canconvert[c]])
+      }
+    }
+    return(x)
+  })
+  
+  return(trait.values)
+} 

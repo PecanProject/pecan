@@ -4,8 +4,17 @@
 \alias{met2model.MAAT}
 \title{Create MAAT met driver files}
 \usage{
-met2model.MAAT(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+met2model.MAAT(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  leap_year = TRUE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs (CF met drivers) are stored}
@@ -21,6 +30,9 @@ met2model.MAAT(in.path, in.prefix, outfolder, start_date, end_date,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. 
+If set to false, will require all years to have 365 days. Default = TRUE.}
 }
 \description{
 met2model wrapper for MAAT
