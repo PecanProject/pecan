@@ -39,8 +39,10 @@ def create_geo(geofile):
             list(df.geometry.exterior[row_id].coords) for row_id in range(df.shape[0])
         ]
         # create geometry
+        for i in range(len(area[0])):
+             area[0][i] = area[0][i][0:2]
         geo = ee.Geometry.Polygon(area)
-
+        
     else:
         # if the input geometry type is not
         raise ValueError("geometry type not supported")
