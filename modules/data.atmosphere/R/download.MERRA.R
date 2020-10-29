@@ -81,7 +81,8 @@ download.MERRA <- function(outfolder, start_date, end_date,
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = baseday, vals = timeseq, create_dimvar = TRUE, unlim = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = paste("Days since ", baseday),
+                             vals = timeseq, create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
 
     ## Create output variables
