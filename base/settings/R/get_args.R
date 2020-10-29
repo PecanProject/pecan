@@ -9,30 +9,30 @@
 #' @examples
 #' \dontrun{./web/workflow.R -h}
 get_args <- function() {
-    option_list <- list(
-      optparse::make_option(
-        c("-s", "--settings"),
-        default = Sys.getenv("PECAN_SETTINGS", "pecan.xml"),
-        type = "character",
-        help = "Settings XML file",
-        metavar = "FILE",
-      ),
-      optparse::make_option(
-        c("-c", "--continue"),
-        default = FALSE,
-        action = "store_true",
-        type = "logical",
-        help = "Continue processing",
-      )
+  option_list <- list(
+    optparse::make_option(
+      c("-s", "--settings"),
+      default = Sys.getenv("PECAN_SETTINGS", "pecan.xml"),
+      type = "character",
+      help = "Settings XML file",
+      metavar = "FILE",
+    ),
+    optparse::make_option(
+      c("-c", "--continue"),
+      default = FALSE,
+      action = "store_true",
+      type = "logical",
+      help = "Continue processing",
     )
+  )
 
-    parser <- optparse::OptionParser(option_list = option_list)
-    args <- optparse::parse_args(parser)
+  parser <- optparse::OptionParser(option_list = option_list)
+  args <- optparse::parse_args(parser)
 
-    if (!file.exists(args$settings)) {
-        optparse::print_help(parser)
-        stop(sprintf('--settings "%s" not a valid file\n', args$settings))
-    }
+  if (!file.exists(args$settings)) {
+    optparse::print_help(parser)
+    stop(sprintf('--settings "%s" not a valid file\n', args$settings))
+  }
 
-    return(args)
+  return(args)
 }
