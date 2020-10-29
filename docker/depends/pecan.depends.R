@@ -4,8 +4,7 @@
 
 # Don't use X11 for rgl
 Sys.setenv(RGL_USE_NULL = TRUE)
-rlib_user = Sys.getenv('R_LIBS_USER')
-rlib = ifelse(rlib_user == '', '/usr/local/lib/R/site-library', rlib_user)
+rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
 Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
@@ -75,6 +74,7 @@ wanted <- c(
 'neonUtilities',
 'nimble',
 'nneo',
+'optparse',
 'parallel',
 'plotrix',
 'plyr',

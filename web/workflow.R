@@ -11,9 +11,13 @@
 # ----------------------------------------------------------------------
 # Load required libraries
 # ----------------------------------------------------------------------
-library(PEcAn.all)
-library(PEcAn.utils)
-library(RCurl)
+library("PEcAn.all")
+library("RCurl")
+
+
+# --------------------------------------------------
+# get command-line arguments
+args <- get_args()
 
 # make sure always to call status.end
 options(warn = 1)
@@ -29,13 +33,7 @@ options(error = quote({
 # PEcAn Workflow
 # ----------------------------------------------------------------------
 # Open and read in settings file for PEcAn run.
-args <- commandArgs(trailingOnly = TRUE)
-if (is.na(args[1])) {
-  settings <- PEcAn.settings::read.settings("pecan.xml")
-} else {
-  settings_file <- args[1]
-  settings <- PEcAn.settings::read.settings(settings_file)
-}
+settings <- PEcAn.settings::read.settings(args$settings)
 
 # Check for additional modules that will require adding settings
 if ("benchmarking" %in% names(settings)) {
@@ -45,14 +43,15 @@ if ("benchmarking" %in% names(settings)) {
 
 if ("sitegroup" %in% names(settings)) {
   if (is.null(settings$sitegroup$nSite)) {
-    settings <- PEcAn.settings::createSitegroupMultiSettings(
-      settings,
-      sitegroupId = settings$sitegroup$id)
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings,
+      sitegroupId = settings$sitegroup$id
+    )
   } else {
     settings <- PEcAn.settings::createSitegroupMultiSettings(
       settings,
       sitegroupId = settings$sitegroup$id,
-      nSite = settings$sitegroup$nSite)
+      nSite = settings$sitegroup$nSite
+    )
   }
   # zero out so don't expand a second time if re-reading
   settings$sitegroup <- NULL
@@ -60,15 +59,15 @@ if ("sitegroup" %in% names(settings)) {
 
 # Update/fix/check settings.
 # Will only run the first time it's called, unless force=TRUE
-settings <- PEcAn.settings::prepare.settings(settings, force = FALSE)
+settings <-
+  PEcAn.settings::prepare.settings(settings, force = FALSE)
 
 # Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
 # start from scratch if no continue is passed in
 status_file <- file.path(settings$outdir, "STATUS")
-if (length(which(commandArgs() == "--continue")) == 0
-    && file.exists(status_file)) {
+if (args$continue && file.exists(status_file)) {
   file.remove(status_file)
 }
 
@@ -79,13 +78,12 @@ settings <- PEcAn.workflow::do_conversions(settings)
 if (PEcAn.utils::status.check("TRAIT") == 0) {
   PEcAn.utils::status.start("TRAIT")
   settings <- PEcAn.workflow::runModule.get.trait.data(settings)
-  PEcAn.settings::write.settings(
-    settings,
-    outputfile = "pecan.TRAIT.xml")
+  PEcAn.settings::write.settings(settings,
+    outputfile = "pecan.TRAIT.xml"
+  )
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.TRAIT.xml"))) {
-  settings <- PEcAn.settings::read.settings(
-    file.path(settings$outdir, "pecan.TRAIT.xml"))
+  settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.TRAIT.xml"))
 }
 
 
@@ -101,18 +99,18 @@ if (!is.null(settings$meta.analysis)) {
 # Write model specific configs
 if (PEcAn.utils::status.check("CONFIG") == 0) {
   PEcAn.utils::status.start("CONFIG")
-  settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+  settings <-
+    PEcAn.workflow::runModule.run.write.configs(settings)
   PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {
-  settings <- PEcAn.settings::read.settings(
-    file.path(settings$outdir, "pecan.CONFIGS.xml"))
+  settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.CONFIGS.xml"))
 }
 
 if ((length(which(commandArgs() == "--advanced")) != 0)
-    && (PEcAn.utils::status.check("ADVANCED") == 0)) {
+&& (PEcAn.utils::status.check("ADVANCED") == 0)) {
   PEcAn.utils::status.start("ADVANCED")
-  q();
+  q()
 }
 
 # Start ecosystem model runs
@@ -131,7 +129,7 @@ if (PEcAn.utils::status.check("OUTPUT") == 0) {
 
 # Run ensemble analysis on model output.
 if ("ensemble" %in% names(settings)
-    && PEcAn.utils::status.check("ENSEMBLE") == 0) {
+&& PEcAn.utils::status.check("ENSEMBLE") == 0) {
   PEcAn.utils::status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)
   PEcAn.utils::status.end()
@@ -139,7 +137,7 @@ if ("ensemble" %in% names(settings)
 
 # Run sensitivity analysis and variance decomposition on model output
 if ("sensitivity.analysis" %in% names(settings)
-    && PEcAn.utils::status.check("SENSITIVITY") == 0) {
+&& PEcAn.utils::status.check("SENSITIVITY") == 0) {
   PEcAn.utils::status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   PEcAn.utils::status.end()
@@ -149,7 +147,8 @@ if ("sensitivity.analysis" %in% names(settings)
 if ("assim.batch" %in% names(settings)) {
   if (PEcAn.utils::status.check("PDA") == 0) {
     PEcAn.utils::status.start("PDA")
-    settings <- PEcAn.assim.batch::runModule.assim.batch(settings)
+    settings <-
+      PEcAn.assim.batch::runModule.assim.batch(settings)
     PEcAn.utils::status.end()
   }
 }
@@ -165,9 +164,12 @@ if ("state.data.assimilation" %in% names(settings)) {
 
 # Run benchmarking
 if ("benchmarking" %in% names(settings)
-    && "benchmark" %in% names(settings$benchmarking)) {
+&& "benchmark" %in% names(settings$benchmarking)) {
   PEcAn.utils::status.start("BENCHMARKING")
-  results <- papply(settings, function(x) calc_benchmark(x, bety))
+  results <-
+    papply(settings, function(x) {
+      calc_benchmark(x, bety)
+    })
   PEcAn.utils::status.end()
 }
 
@@ -175,17 +177,25 @@ if ("benchmarking" %in% names(settings)
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
   PEcAn.remote::kill.tunnel(settings)
-  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=",
-                 settings$workflow$id, "AND finished_at IS NULL"),
-           params = settings$database$bety)
+  db.query(
+    paste(
+      "UPDATE workflows SET finished_at=NOW() WHERE id=",
+      settings$workflow$id,
+      "AND finished_at IS NULL"
+    ),
+    params = settings$database$bety
+  )
 
   # Send email if configured
   if (!is.null(settings$email)
-      && !is.null(settings$email$to)
-      && (settings$email$to != "")) {
-    sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", base::date()),
-             paste0("You can find the results on ", settings$email$url))
+  && !is.null(settings$email$to)
+  && (settings$email$to != "")) {
+    sendmail(
+      settings$email$from,
+      settings$email$to,
+      paste0("Workflow has finished executing at ", base::date()),
+      paste0("You can find the results on ", settings$email$url)
+    )
   }
   PEcAn.utils::status.end()
 }
