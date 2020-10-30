@@ -15,8 +15,7 @@ y_star_create <-  nimbleFunction(
     y_star <- X
     
     return(y_star)
-  },
-  where = nimble::getLoadingNamespace()
+  }
 )
 
 #' @export
@@ -29,8 +28,7 @@ alr <-  nimbleFunction(
     y_out <- log(y[1:(length(y) - 1)] / y[length(y)])
     
     return(y_out)
-  },
-  where = nimble::getLoadingNamespace()
+  }
 )
 
 #' @export
@@ -41,8 +39,7 @@ inv.alr <-  nimbleFunction(
     y = exp(c(alr, 0)) / sum(exp(c(alr, 0)))
     
     return(y)
-  },
-  where = nimble::getLoadingNamespace()
+  }
 )
 
 #' @export
@@ -57,8 +54,7 @@ rwtmnorm <- nimbleFunction(
     Prob <-
       rmnorm_chol(n = 1, mean, chol(prec), prec_param = TRUE) * wt
     return(Prob)
-  },
-  where = nimble::getLoadingNamespace()
+  }
 )
 
 #' @export
@@ -84,8 +80,7 @@ dwtmnorm <- nimbleFunction(
     } else {
       return((exp(logProb)))
     }
-  },
-  where = nimble::getLoadingNamespace()
+  }
 )
 
 registerDistributions(list(dwtmnorm = list(
@@ -223,8 +218,7 @@ sampler_toggle <- nimbleFunction(
   methods = list(
     reset = function()
       nested_sampler_list[[1]]$reset()
-  ),
-  where = nimble::getLoadingNamespace()
+  )
 )
 
 #' @export
