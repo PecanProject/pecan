@@ -20,6 +20,7 @@ RUN   apt-get update \
   &&  rm -rf /var/lib/apt/lists/* \
   &&  Rscript -e "devtools::install_version('promises', '1.1.0', repos = 'http://cran.rstudio.com')" \
   &&  Rscript -e "devtools::install_version('webutils', '1.1', repos = 'http://cran.rstudio.com')" \
+  &&  Rscript -e "install.packages('pool', repos = 'http://cran.rstudio.com')" \
   &&  Rscript -e "devtools::install_github('rstudio/swagger')" \
   &&  Rscript -e "devtools::install_github('rstudio/plumber')"
 

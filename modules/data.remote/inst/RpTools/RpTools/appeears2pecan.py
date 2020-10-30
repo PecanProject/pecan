@@ -10,7 +10,8 @@ Requires Python3
 
 Author(s): Ayush Prasad
 """
-
+import xarray as xr
+import pandas as pd
 import requests as r
 import geopandas as gpd
 import getpass
@@ -18,12 +19,16 @@ import time
 import os
 import cgi
 import json
-from gee_utils import get_sitename
+from .gee_utils import get_sitename
 from datetime import datetime
 from warnings import warn
+import os.path
+import time
 
 
-def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfile=None):
+def appeears2pecan(
+    geofile, outdir, out_filename, start, end, product, projection=None, credfile=None
+):
     """
     Downloads remote sensing data from AppEEARS
 
@@ -32,6 +37,8 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
     geofile (str) -- path to the GeoJSON file containing the name and coordinates of AOI
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+  
+    out_filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -43,11 +50,12 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
 
     credfile (str) -- path to JSON file containing Earthdata username and password. None by default
 
+    siteid (str) -- shortform of siteid, None by default
+  
     Returns
     -------
-    Nothing:
-            Output files are saved in the specified directory.
-            Output file is of netCDF type when AOI is a Polygon and csv type when AOI is a Point.
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
     """
 
     # API url
@@ -69,7 +77,9 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
                     user = cred["username"]
                     password = cred["password"]
             except IOError:
-                print("specified file does not exist, please make sure that you have specified the path correctly")
+                print(
+                    "specified file does not exist, please make sure that you have specified the path correctly"
+                )
         else:
             # if user does not want to store the credentials
             user = getpass.getpass(prompt="Enter NASA Earthdata Login Username: ")
@@ -104,7 +114,9 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
         "SPL4CMDL.004",
         "SPL4SMGP.004",
     ]:
-        warn("Since you have requested a SMAP product, all layers cannot be downloaded, selecting first 25 layers..")
+        warn(
+            "Since you have requested a SMAP product, all layers cannot be downloaded, selecting first 25 layers.."
+        )
         # change this part to select your own SMAP layers
         prodLayer = prodLayer[0:25]
 
@@ -137,6 +149,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
                 "coordinates": coordinates,
             },
         }
+        outformat = "csv"
 
     elif (df.geometry.type == "Polygon").bool():
         # query the projections
@@ -160,6 +173,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
                 "geo": geo,
             },
         }
+        outformat = "nc"
 
     else:
         # if the input geometry is not of Polygon or Point Type
@@ -201,7 +215,7 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
     files = {}
     for f in bundle["files"]:
         files[f["file_id"]] = f["file_name"]
-    # download and save the files
+    # download and save the file
     for f in files:
         dl = r.get("{}bundle/{}/{}".format(api, task_id, f), stream=True)
         filename = os.path.basename(
@@ -211,3 +225,39 @@ def appeears2pecan(geofile, outdir, start, end, product, projection=None, credfi
         with open(filepath, "wb") as f:
             for data in dl.iter_content(chunk_size=8192):
                 f.write(data)
+            if os.path.splitext(filename)[1][1:] == outformat:
+                break
+
+
+    timestamp = time.strftime("%y%m%d%H%M%S")
+    save_path = os.path.join(
+        outdir,
+        filename
+        + "_"
+        + timestamp
+        + "."
+        + outformat
+    )
+    os.rename(filepath, save_path)
+    
+    if outformat == "csv":
+      df = pd.read_csv(save_path)
+      coords = {
+        "time": df["Date"].values,
+      }
+      
+      tosave = xr.Dataset(
+        df,
+        coords=coords,
+      )
+      
+      save_path = os.path.join(
+        outdir,
+        out_filename
+        + "_"
+        + timestamp
+        + ".nc"
+      )
+      tosave.to_netcdf(os.path.join(save_path))
+      
+    return os.path.abspath(save_path)
