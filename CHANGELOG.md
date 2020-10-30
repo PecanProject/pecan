@@ -35,7 +35,8 @@ This is a major change:
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 - model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
--gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
 
 ### Changed
 
