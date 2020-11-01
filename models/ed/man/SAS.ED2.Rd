@@ -4,18 +4,46 @@
 \alias{SAS.ED2}
 \title{Use semi-analytical solution to accellerate model spinup}
 \usage{
-SAS.ED2(dir.analy, dir.histo, outdir, prefix, lat, lon, block, yrs.met = 30,
-  treefall, sm_fire = 0, fire_intensity = 0, slxsand = 0.33,
-  slxclay = 0.33, sufx = "g01.h5", decomp_scheme = 2,
-  kh_active_depth = -0.2, decay_rate_fsc = 11, decay_rate_stsc = 4.5,
-  decay_rate_ssc = 0.2, Lc = 0.049787, c2n_slow = 10,
-  c2n_structural = 150, r_stsc = 0.3, rh_decay_low = 0.24,
-  rh_decay_high = 0.6, rh_low_temp = 18 + 273.15, rh_high_temp = 45 +
-  273.15, rh_decay_dry = 12, rh_decay_wet = 36, rh_dry_smoist = 0.48,
-  rh_wet_smoist = 0.98, resp_opt_water = 0.8938,
-  resp_water_below_opt = 5.0786, resp_water_above_opt = 4.5139,
-  resp_temperature_increase = 0.0757, rh_lloyd_1 = 308.56,
-  rh_lloyd_2 = 1/56.02, rh_lloyd_3 = 227.15)
+SAS.ED2(
+  dir.analy,
+  dir.histo,
+  outdir,
+  prefix,
+  lat,
+  lon,
+  block,
+  yrs.met = 30,
+  treefall,
+  sm_fire = 0,
+  fire_intensity = 0,
+  slxsand = 0.33,
+  slxclay = 0.33,
+  sufx = "g01.h5",
+  decomp_scheme = 2,
+  kh_active_depth = -0.2,
+  decay_rate_fsc = 11,
+  decay_rate_stsc = 4.5,
+  decay_rate_ssc = 0.2,
+  Lc = 0.049787,
+  c2n_slow = 10,
+  c2n_structural = 150,
+  r_stsc = 0.3,
+  rh_decay_low = 0.24,
+  rh_decay_high = 0.6,
+  rh_low_temp = 18 + 273.15,
+  rh_high_temp = 45 + 273.15,
+  rh_decay_dry = 12,
+  rh_decay_wet = 36,
+  rh_dry_smoist = 0.48,
+  rh_wet_smoist = 0.98,
+  resp_opt_water = 0.8938,
+  resp_water_below_opt = 5.0786,
+  resp_water_above_opt = 4.5139,
+  resp_temperature_increase = 0.0757,
+  rh_lloyd_1 = 308.56,
+  rh_lloyd_2 = 1/56.02,
+  rh_lloyd_3 = 227.15
+)
 }
 \arguments{
 \item{dir.analy}{Location of ED2 analyis files; expects monthly and yearly output}
