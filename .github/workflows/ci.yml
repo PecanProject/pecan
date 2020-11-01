@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    
   repository_dispatch:
     types:
       - force
