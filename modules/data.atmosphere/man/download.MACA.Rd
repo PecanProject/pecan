@@ -4,10 +4,20 @@
 \alias{download.MACA}
 \title{download.MACA}
 \usage{
-download.MACA(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-  model = "IPSL-CM5A-LR", scenario = "rcp85",
-  ensemble_member = "r1i1p1", overwrite = FALSE, verbose = FALSE,
-  ...)
+download.MACA(
+  outfolder,
+  start_date,
+  end_date,
+  site_id,
+  lat.in,
+  lon.in,
+  model = "IPSL-CM5A-LR",
+  scenario = "rcp85",
+  ensemble_member = "r1i1p1",
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{start_date}{, of the format "YEAR-01-01 00:00:00"}

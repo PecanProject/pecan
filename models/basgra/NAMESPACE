@@ -2,4 +2,4 @@
 
 export(run_BASGRA)
 export(write.config.BASGRA)
-useDynLib(PEcAn.BASGRA)
+useDynLib(PEcAn.BASGRA, .registration = TRUE)

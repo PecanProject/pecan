@@ -4,9 +4,13 @@
 \alias{check_met_input_file}
 \title{Check a meteorology data file for compliance with the PEcAn standard}
 \usage{
-check_met_input_file(metfile, variable_table = pecan_standard_met_table,
+check_met_input_file(
+  metfile,
+  variable_table = pecan_standard_met_table,
   required_vars = variable_table \%>\% dplyr::filter(is_required) \%>\%
-  dplyr::pull(cf_standard_name), warn_unknown = TRUE)
+    dplyr::pull(cf_standard_name),
+  warn_unknown = TRUE
+)
 }
 \arguments{
 \item{metfile}{Path of met file to check, as a scalar character.}

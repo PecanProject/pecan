@@ -14,10 +14,10 @@ library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
 # make sure always to call status.end
-options(warn=1)
-options(error=quote({
-  PEcAn.utils::status.end("ERROR")
-  PEcAn.remote::kill.tunnel(settings)
+options(warn = 1)
+options(error = quote({
+  try(PEcAn.utils::status.end("ERROR"))
+  try(PEcAn.remote::kill.tunnel(settings))
   if (!interactive()) {
     q()
   }

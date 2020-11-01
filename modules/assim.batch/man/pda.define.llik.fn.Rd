@@ -7,7 +7,7 @@
 pda.define.llik.fn(settings)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{PEcAn settings list}
 }
 \value{
 List of likelihood functions, one for each dataset to be assimilated against.

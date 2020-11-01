@@ -32,7 +32,7 @@ clone_pft <- function(parent.pft.name,
   }
 
   con <- db.open(settings$database$bety)
-  on.exit(db.close(con))
+  on.exit(db.close(con), add = TRUE)
 
   parent.pft <- (dplyr::tbl(con, "pfts")
     %>% dplyr::filter(name == !!parent.pft.name)

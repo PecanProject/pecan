@@ -4,12 +4,30 @@
 \alias{pda.init.run}
 \title{Initialise Model Runs for PDA}
 \usage{
-pda.init.run(settings, con, my.write.config, workflow.id, params,
+pda.init.run(
+  settings,
+  con,
+  my.write.config,
+  workflow.id,
+  params,
   n = ifelse(is.null(dim(params)), 1, nrow(params)),
-  run.names = paste("run", 1:n, sep = "."))
+  run.names = paste("run", 1:n, sep = ".")
+)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{a PEcAn settings list}
+
+\item{con}{DB connection}
+
+\item{my.write.config}{model write config fcn name}
+
+\item{workflow.id}{workflow ID}
+
+\item{params}{parameters of the run}
+
+\item{n}{number of runs}
+
+\item{run.names}{names of runs}
 }
 \value{
 Vector of run IDs for all model runs that were set up (including write.configs)

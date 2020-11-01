@@ -33,7 +33,7 @@ status.skip <- function(name) {
 
 options(warn = 1)
 options(error = quote({
-  status.end("ERROR")
+  try(status.end("ERROR"))
   if (!interactive()) {
     q()
   }

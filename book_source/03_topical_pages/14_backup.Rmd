@@ -2,13 +2,13 @@
 
 This section provides additional details about the BETY database used by PEcAn. It will discuss best practices for setting up the BETY database, how to backup the database and how to restore the database.
 
-### Best practices {#database-setup}
+## Best practices {#database-setup}
 
 When using the BETY database in non testing mode, it is best not to use the default users. This is accomplished when running the initialize of the database. When the database is initally created the database will be created with some default users (best known is the carya user) as well as the guestuser that can be used in the BETY web application. To disable these users you will either need to disable the users from the web interface, or you can reinitialize the database and remove the `-u` flag from the command line (the `-u` flag will create the default users). To disable the guestuser as well you can remove the `-g` flag from the command line, or disable the account from BETY.
 
 The default installation of BETY and PEcAn will assume there is a database called bety with a default username and password. The default installation will setup the database account to not have any superuser abilities. It is also best to limit access to the postgres database from trusted hosts, either by using firewalls, or configuring postgresql to only accept connections from a limited set of hosts.
 
-### Backup of BETY database
+## Backup of BETY database
 
 It is good practice to make sure you backup the BETY database. Just creating a copy of the files on disk is not enough to ensure you have a valid backup. Most likely if you do this you will end up with a corrupted backup of the database.
 
@@ -23,7 +23,7 @@ Using this scheme, we can restore the database using any of the files generated.
 
 It is recommeneded to run this script using a cronjob at midnight such that you have a daily backup of the database and do not have to remember to create these backups. When running this script (either cron or by hand) make sure to place the backups on a different machine than the machine that holds the database in case of a larger system failure.
 
-### Restore of BETY database
+## Restore of BETY database
 
 Hopefully this section will never need to be used. Following are 5 steps that have been used to restore the database. Before you start it is worth it to read up online a bit on restoring the database as well as join the slack channel and ask any of the people there for help.
 

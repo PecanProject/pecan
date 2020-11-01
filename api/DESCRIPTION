@@ -18,5 +18,5 @@ Suggests:
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)

@@ -79,7 +79,5 @@ With a recent-enough R version (> 3.2), we can bring in the following:
           date_day --> ^^
           time_hour --> from measurement time
           time_minute --> ^^
-          created_at --> NOW()
-          updated_at --> NOW()
         2. Store ID at every time step -- match with ObsDataID of TRY? Not perfect because miss time, etc., but may help later.
       

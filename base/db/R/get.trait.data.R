@@ -42,7 +42,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
   }
   
   dbcon <- db.open(database)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
   
   if (is.null(trait.names)) {
     PEcAn.logger::logger.debug(paste0(

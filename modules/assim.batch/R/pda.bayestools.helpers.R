@@ -146,6 +146,7 @@ pda.settings.bt <- function(settings) {
 #' @param density type of plot to do
 #' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
 #' @param method method for calculating correlations
+#' @param whichParameters all params or some
 #' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 #' @export
 #' 
@@ -160,7 +161,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   
   panel.hist.dens <- function(x, ...) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(usr[1:2], 0, 1.5))
     h <- graphics::hist(x, plot = FALSE)
     breaks <- h$breaks
@@ -173,7 +174,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   # replaced by spearman
   panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(0, 1, 0, 1))
     r <- stats::cor(x, y, use = "complete.obs", method = method)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
@@ -186,7 +187,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   
   plotEllipse <- function(x, y) {
     usr <- graphics::par("usr")
-    on.exit(graphics::par(usr))
+    on.exit(graphics::par(usr), add = TRUE)
     graphics::par(usr = c(usr[1:2], 0, 1.5))
     cor <- stats::cor(x, y)
     el <- ellipse::ellipse(cor)

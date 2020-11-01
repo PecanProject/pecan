@@ -7,7 +7,8 @@
 check.database(database)
 }
 \arguments{
-\item{settings}{settings file}
+\item{database}{settings list to check.
+You'll probably use `settings$database`}
 }
 \description{
 Check Database

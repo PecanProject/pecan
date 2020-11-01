@@ -8,6 +8,8 @@ pda.neff.calc(inputs, recalculate = FALSE)
 }
 \arguments{
 \item{inputs}{list}
+
+\item{recalculate}{repeat neff calculation or not}
 }
 \value{
 inputs list, updated inputs with n_eff
@@ -16,7 +18,7 @@ inputs list, updated inputs with n_eff
 Autocorelation correction and efficient sample size calculation on latent process
 }
 \details{
-What we're trying to do is to calculate the autocorrelation of the latent state, after attempting to "remove" the observation error. 
+What we're trying to do is to calculate the autocorrelation of the latent state, after attempting to "remove" the observation error.
 The first step is thus to estimate the latent state using a simple 'process free' state-space model (e.g. random walk).
 }
 \author{

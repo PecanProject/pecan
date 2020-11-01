@@ -4,21 +4,67 @@
 \alias{pda.emulator}
 \title{Paramater Data Assimilation using emulator}
 \usage{
-pda.emulator(settings, external.data = NULL, external.priors = NULL,
-  params.id = NULL, param.names = NULL, prior.id = NULL,
-  chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
-  ar.target = NULL, jvar = NULL, n.knot = NULL)
+pda.emulator(
+  settings,
+  external.data = NULL,
+  external.priors = NULL,
+  external.knots = NULL,
+  external.formats = NULL,
+  ensemble.id = NULL,
+  params.id = NULL,
+  param.names = NULL,
+  prior.id = NULL,
+  chain = NULL,
+  iter = NULL,
+  adapt = NULL,
+  adj.min = NULL,
+  ar.target = NULL,
+  jvar = NULL,
+  n.knot = NULL,
+  individual = TRUE,
+  remote = FALSE
+)
 }
 \arguments{
-\item{settings}{= a pecan settings list}
+\item{settings}{a pecan settings list}
 
-\item{external.data}{= list of inputs}
+\item{external.data}{list of external inputs}
 
-\item{external.priors}{= list or priors}
+\item{external.priors}{list of external priors}
+
+\item{external.knots}{list of external knots}
+
+\item{external.formats}{bety formats used when function is used without a DB connection, e.g. remote}
+
+\item{ensemble.id}{ensemble IDs}
+
+\item{params.id}{id of pars}
+
+\item{param.names}{names of pars}
+
+\item{prior.id}{ids of priors}
+
+\item{chain}{how many chains}
+
+\item{iter}{how many iterations}
+
+\item{adapt}{adaptation intervals}
+
+\item{adj.min}{to be used in adjustment}
+
+\item{ar.target}{acceptance rate target}
+
+\item{jvar}{jump variance}
+
+\item{n.knot}{number of knots requested}
+
+\item{individual}{logical, if TRUE it becomes a site-level PDA}
+
+\item{remote}{logical, if TRUE runs are submitted to remote and objects prepared accordingly}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
- are saved as files and db records.
+are saved as files and db records.
 }
 \description{
 Paramater Data Assimilation using emulator

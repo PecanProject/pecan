@@ -4,8 +4,12 @@
 \alias{metric_timeseries_plot}
 \title{Timeseries Plot}
 \usage{
-metric_timeseries_plot(metric_dat, var, filename = NA,
-  draw.plot = is.na(filename))
+metric_timeseries_plot(
+  metric_dat,
+  var,
+  filename = NA,
+  draw.plot = is.na(filename)
+)
 }
 \description{
 Timeseries Plot

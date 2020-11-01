@@ -4,8 +4,14 @@
 \alias{read.output.ED2}
 \title{Read ED output}
 \usage{
-read.output.ED2(run.id, outdir, start.year = NA, end.year = NA,
-  variables = c("AGB_CO", "NPLANT"), output.type = "Y")
+read.output.ED2(
+  run.id,
+  outdir,
+  start.year = NA,
+  end.year = NA,
+  variables = c("AGB_CO", "NPLANT"),
+  output.type = "Y"
+)
 }
 \arguments{
 \item{run.id}{the id distiguishing the model run}
