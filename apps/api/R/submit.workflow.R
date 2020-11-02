@@ -48,15 +48,8 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
     )
   )
 
-  if (!is.null(workflowList$model$id) &&
-        (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    res <- dplyr::tbl(dbcon, "models") %>%
-      select(id, model_name, revision) %>%
-      filter(id == !!workflowList$model$id) %>%
-      collect()
-
-    workflowList$model$type <- res$model_name
-    workflowList$model$revision <- res$revision
+  if (is.null(workflowList$model$id)) {
+    stop("Must provide model ID.")
   }
 
   # Fix RabbitMQ details
