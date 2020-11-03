@@ -35,7 +35,7 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* @param dbcon Database connection object. Default is global database pool.
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
-submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool, res) {
+submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool) {
 
   # Set database details
   workflowList$database <- list(
@@ -49,8 +49,8 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
   )
 
   if (is.null(workflowList$model$id)) {
-    res$status <- 400
-    return(list(error = "Must provide model ID."))
+    return(list(status = "Error",
+                error = "Must provide model ID."))
   }
 
   # Get model revision and type for the RabbitMQ queue
@@ -61,17 +61,15 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
     dplyr::collect()
 
   if (nrow(model_info) < 1) {
-    res$status <- 404  # Not found
     msg <- paste0("No models found with ID ", format(workflowList$model$id, scientific = FALSE))
-    return(list(error = msg))
+    return(list(status = "Error", error = msg))
   } else if (nrow(model_info) > 1) {
-    res$status <- 400
     msg <- paste0(
       "Found multiple (", nrow(model_info), ") matching models for id ",
       format(workflowList$model$id, scientific = FALSE),
       ". This shouldn't happen! Check your database for errors."
     )
-    return(list(error = msg))
+    return(list(status = "Error", error = msg))
   }
 
   model_type <- model_info$name
