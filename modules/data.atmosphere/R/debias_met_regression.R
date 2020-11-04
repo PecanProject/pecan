@@ -32,6 +32,7 @@
 ##'                   without having to do do giant runs at once; if NULL will be numbered 1:n.ens
 ##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
 ##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
+##' @param sanity.sd - how many standard deviations from the mean should be used to determine sane outliers (default 8)
 ##' @param lat.in - latitude of site
 ##' @param lon.in - longitude of site
 ##' @param save.diagnostics - logical; save diagnostic plots of output?
@@ -62,7 +63,7 @@
 
 debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NULL, CRUNCEP=FALSE,
                                   pair.anoms = TRUE, pair.ens = FALSE, uncert.prop="mean", resids = FALSE, seed=Sys.Date(),
-                                  outfolder, yrs.save=NULL, ens.name, ens.mems=NULL, force.sanity=TRUE, sanity.tries=25, lat.in, lon.in,
+                                  outfolder, yrs.save=NULL, ens.name, ens.mems=NULL, force.sanity=TRUE, sanity.tries=25, sanity.sd=8, lat.in, lon.in,
                                   save.diagnostics=TRUE, path.diagnostics=NULL,
                                   parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE) {
   library(MASS)
@@ -682,8 +683,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # max air temp = 70 C; hottest temperature from sattellite; very ridiculous
           # min air temp = -95 C; colder than coldest natural temperature recorded in Antarctica
           cols.redo <- which(apply(sim1, 2, function(x) min(x) < 273.15-95 | max(x) > 273.15+70 |
-                                                        min(x) < mean(met.train$X) - 8*sd(met.train$X) |
-                                                        max(x) > mean(met.train$X) + 8*sd(met.train$X)
+                                                        min(x) < mean(met.train$X) - sanity.sd*sd(met.train$X) |
+                                                        max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
                                    ))
         }
         #"specific_humidity", 
@@ -692,8 +693,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Also, the minimum humidity can't be 0 so lets just make it extremely dry; lets set this for 1 g/Mg
           
           cols.redo <- which(apply(sim1, 2, function(x) min(x^2) < 1e-6  | max(x^2) > 40e-3 |
-                                                        min(x^2) < mean(met.train$X^2) - 8*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + 8*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
                                    )) 
         }
         #"surface_downwelling_shortwave_flux_in_air", 
@@ -702,8 +703,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Lets round 1360 and divide that by 2 (because it should be a daily average) and conservatively assume albedo of 20% (average value is more like 30)
           # Source http://eesc.columbia.edu/courses/ees/climate/lectures/radiation/
           cols.redo <- which(apply(sim1, 2, function(x) max(x^2) > 1360/2*0.8 |
-                                                        min(x^2) < mean(met.train$X^2) - 8*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + 8*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
                                    )) 
         }
         if(v == "air_pressure"){
@@ -711,8 +712,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           #  - Lets round up to 1100 hPA
           # Also according to Wikipedia, the lowest non-tornadic pressure ever measured was 870 hPA
           cols.redo <- which(apply(sim1, 2, function(x) min(x) < 870*100  | max(x) > 1100*100 |
-                                                        min(x) < mean(met.train$X) - 8*sd(met.train$X) |
-                                                        max(x) > mean(met.train$X) + 8*sd(met.train$X)
+                                                        min(x) < mean(met.train$X) - sanity.sd*sd(met.train$X) |
+                                                        max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
                                    )) 
         }
         if(v == "surface_downwelling_longwave_flux_in_air"){ 
@@ -721,16 +722,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # ED2 sanity checks boudn longwave at 40 & 600
           
           cols.redo <- which(apply(sim1, 2, function(x) min(x^2) < 40  | max(x^2) > 600 |
-                                                        min(x^2) < mean(met.train$X^2) - 8*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + 8*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
                                    )) 
         
         }
         if(v == "wind_speed"){
           # According to wikipedia, the hgihest wind speed ever recorded is a gust of 113 m/s; the maximum 5-mind wind speed is 49 m/s
           cols.redo <- which(apply(sim1, 2, function(x) max(x^2) > 50/2 |
-                                                        min(x^2) < mean(met.train$X^2) - 8*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + 8*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
                                    ))  
         }
         if(v == "precipitation_flux"){
@@ -738,8 +739,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # https://www.wunderground.com/blog/weatherhistorian/what-is-the-most-rain-to-ever-fall-in-one-minute-or-one-hour.html
           # 16/2 = round number; x25.4 = inches to mm; /(60*60) = hr to sec
           cols.redo <- which(apply(sim1, 2, function(x) max(x) > 16/2*25.4/(60*60) |
-                                                        min(x) < min(met.train$X) - 8*sd(met.train$X) |
-                                                        max(x) > max(met.train$X) + 8*sd(met.train$X)
+                                                        min(x) < min(met.train$X) - sanity.sd*sd(met.train$X) |
+                                                        max(x) > max(met.train$X) + sanity.sd*sd(met.train$X)
                                    ))  
         }
         n.new = length(cols.redo)
@@ -762,12 +763,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # for known problem variables, lets force sanity as a last resort 
           if(v %in% c("air_temperature", "air_temperature_maximum", "air_temperature_minimum")){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1) < max(273.15-95, mean(met.train$X) - 8*sd(met.train$X))) {
-              qtrim <- max(273.15-95, mean(met.train$X) - 8*sd(met.train$X)) + 1e-6
+            if(min(sim1) < max(273.15-95, mean(met.train$X) - sanity.sd*sd(met.train$X))) {
+              qtrim <- max(273.15-95, mean(met.train$X) - sanity.sd*sd(met.train$X)) + 1e-6
               sim1[sim1 < qtrim] <- qtrim
             }
             if(max(sim1) > min(273.15+70, mean(met.train$X) + sd(met.train$X^2))) {
-              qtrim <- min(273.15+70, mean(met.train$X) + 8*sd(met.train$X)) - 1e-6
+              qtrim <- min(273.15+70, mean(met.train$X) + sanity.sd*sd(met.train$X)) - 1e-6
               sim1[sim1 > qtrim] <- qtrim
             }
           } else if(v == "surface_downwelling_shortwave_flux_in_air"){
@@ -775,16 +776,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             #   # Lets round 1360 and divide that by 2 (because it should be a daily average) and conservatively assume albedo of 20% (average value is more like 30)
             #   # Source http://eesc.columbia.edu/courses/ees/climate/lectures/radiation/
             #   cols.redo <- which(apply(sim1, 2, function(x) max(x^2) > 1360/2*0.8 |
-            #                              min(x) < mean(met.train$X) - 8*sd(met.train$X) |
-            #                              max(x) > mean(met.train$X) + 8*sd(met.train$X)
+            #                              min(x) < mean(met.train$X) - sanity.sd*sd(met.train$X) |
+            #                              max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
             #   )) 
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1^2) < max(mean(met.train$X^2) - 8*sd(met.train$X^2))) {
-              qtrim <- max(mean(met.train$X^2) - 8*sd(met.train$X^2))
+            if(min(sim1^2) < max(mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
+              qtrim <- max(mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(1360/2*0.8, mean(met.train$X^2) + 8*sd(met.train$X^2))) {
-              qtrim <- min(1360/2*0.8, mean(met.train$X^2) + 8*sd(met.train$X^2)) 
+            if(max(sim1^2) > min(1360/2*0.8, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
+              qtrim <- min(1360/2*0.8, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)) 
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
             
@@ -793,43 +794,43 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             # ED2 sanity checks boudn longwave at 40 & 600
             
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1^2) < max(40, mean(met.train$X^2) - 8*sd(met.train$X^2))) {
-              qtrim <- max(40, mean(met.train$X^2) - 8*sd(met.train$X^2))
+            if(min(sim1^2) < max(40, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
+              qtrim <- max(40, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(600, mean(met.train$X^2) + 8*sd(met.train$X^2))) {
-              qtrim <- min(600, mean(met.train$X^2) + 8*sd(met.train$X^2)) 
+            if(max(sim1^2) > min(600, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
+              qtrim <- min(600, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)) 
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
           } else if(v=="specific_humidity"){
             warning(paste("Forcing Sanity:", v))
             # I'm having a hell of a time trying to get SH to fit sanity bounds, so lets brute-force fix outliers
-            if(min(sim1^2) < max(1e-6, mean(met.train$X^2) - 8*sd(met.train$X^2))) {
-              qtrim <- max(1e-6, mean(met.train$X^2) - 8*sd(met.train$X^2))
+            if(min(sim1^2) < max(1e-6, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
+              qtrim <- max(1e-6, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(40e-3, mean(met.train$X^2) + 8*sd(met.train$X^2))) {
-              qtrim <- min(40e-3, mean(met.train$X^2) + 8*sd(met.train$X^2))
+            if(max(sim1^2) > min(40e-3, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
+              qtrim <- min(40e-3, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
           } else if(v=="air_pressure"){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1)< max(870*100, mean(met.train$X) - 8*sd(met.train$X))){
-              qtrim <- min(870*100, mean(met.train$X) - 8*sd(met.train$X))
+            if(min(sim1)< max(870*100, mean(met.train$X) - sanity.sd*sd(met.train$X))){
+              qtrim <- min(870*100, mean(met.train$X) - sanity.sd*sd(met.train$X))
               sim1[sim1 < qtrim] <- qtrim
             }
-            if(max(sim1) < min(1100*100, mean(met.train$X) + 8*sd(met.train$X))){
-              qtrim <- min(1100*100, mean(met.train$X) + 8*sd(met.train$X))
+            if(max(sim1) < min(1100*100, mean(met.train$X) + sanity.sd*sd(met.train$X))){
+              qtrim <- min(1100*100, mean(met.train$X) + sanity.sd*sd(met.train$X))
               sim1[sim1 > qtrim] <- qtrim
             }
           } else if(v=="wind_speed"){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1)< max(0, mean(met.train$X) - 8*sd(met.train$X))){
-              qtrim <- min(0, mean(met.train$X) - 8*sd(met.train$X))
+            if(min(sim1)< max(0, mean(met.train$X) - sanity.sd*sd(met.train$X))){
+              qtrim <- min(0, mean(met.train$X) - sanity.sd*sd(met.train$X))
               sim1[sim1 < qtrim] <- qtrim
             }
-            if(max(sim1) < min(sqrt(50/2), mean(met.train$X) + 8*sd(met.train$X))){
-              qtrim <- min(sqrt(50/2), mean(met.train$X) + 8*sd(met.train$X))
+            if(max(sim1) < min(sqrt(50/2), mean(met.train$X) + sanity.sd*sd(met.train$X))){
+              qtrim <- min(sqrt(50/2), mean(met.train$X) + sanity.sd*sd(met.train$X))
               sim1[sim1 > qtrim] <- qtrim
             }
           } else {
