@@ -21,6 +21,7 @@ debias.met.regression(
   ens.mems = NULL,
   force.sanity = TRUE,
   sanity.tries = 25,
+  sanity.sd = 8,
   lat.in,
   lon.in,
   save.diagnostics = TRUE,
@@ -48,7 +49,7 @@ met variables that have been naively gapfilled for certain time periods}
 \item{pair.ens}{- logical stating whether ensembles from train and source data need to be paired together 
 (for uncertainty propogation)}
 
-\item{uncert.prop}{- method for error propogation if only 1 ensemble member; options=c(random, mean); *Not Implemented yet}
+\item{uncert.prop}{- method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1}
 
 \item{resids}{- logical stating whether to pass on residual data or not *Not implemented yet}
 
@@ -66,6 +67,8 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
 
 \item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
+
+\item{sanity.sd}{- how many standard deviations from the mean should be used to determine sane outliers (default 8)}
 
 \item{lat.in}{- latitude of site}
 
