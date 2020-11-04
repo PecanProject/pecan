@@ -22,7 +22,7 @@
 ##' @param pair.anoms - logical stating whether anomalies from the same year should be matched or not
 ##' @param pair.ens - logical stating whether ensembles from train and source data need to be paired together 
 ##'                   (for uncertainty propogation)
-##' @param uncert.prop - method for error propogation if only 1 ensemble member; options=c(random, mean); *Not Implemented yet
+##' @param uncert.prop - method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1
 ##' @param resids - logical stating whether to pass on residual data or not *Not implemented yet
 ##' @param seed - specify seed so that random draws can be reproduced
 ##' @param outfolder - directory where the data should go
@@ -78,6 +78,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     n.ens=1
   } 
   if(!uncert.prop %in% c("mean", "random")) stop("unspecified uncertainty propogation method.  Must be 'random' or 'mean' ")
+  if(uncert.prop=="mean" & n.ens>1) warning(pate0("Warning! Use of mean propagation with n.ens>1 not encouraged as all results will be the same and you will not be adding uncertainty at this stage."))
   
   # Variables need to be done in a specific order
   vars.all <- c("air_temperature", "air_temperature_maximum", "air_temperature_minimum", "specific_humidity", "surface_downwelling_shortwave_flux_in_air", "air_pressure", "surface_downwelling_longwave_flux_in_air", "wind_speed", "precipitation_flux")
@@ -517,8 +518,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       if(v == "precipitation_flux") coef.ann <- coef(mod.ann)
       
       # Setting up a case where if sanity checks fail, we pull more ensemble members
-      n.new <- round(n.ens/2)+1
-      cols.redo <- 1:n.new
+      n.new <- 1
+      cols.redo <- n.new
       sane.attempt=0
       while(n.new>0 & sane.attempt <= sanity.tries){
         
@@ -529,7 +530,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Generate a random distribution of betas using the covariance matrix
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
         # set.seed=42  
-        if(n.ens==1){
+        if(n.ens==1 | uncert.prop=="mean"){
           Rbeta <- matrix(coef(mod.bias), ncol=length(coef(mod.bias)))
         } else {
           Rbeta <- matrix(MASS::mvrnorm(n=n.new, coef(mod.bias), vcov(mod.bias)), ncol=length(coef(mod.bias)))
@@ -645,7 +646,13 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Note that for a single-member ensemble, this just undoes itself
           anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - predict(mod.anom)
           
-          sim1b[,cols.redo] <- apply(sim1b[,cols.redo], 2, FUN=function(x){x+anom.detrend}) # Get the range around that medium-frequency trend
+          # NOTE: This section can probably be removed and simplified since it should always be a 1-column array now
+          if(length(cols.redo)>1){
+            sim1b[,cols.redo] <- apply(sim1b[,cols.redo], 2, FUN=function(x){x+anom.detrend}) # Get the range around that medium-frequency trend
+          } else {
+            sim1b[,cols.redo] <- as.matrix(sim1b[,cols.redo] + anom.detrend)
+          }
+          
         }
         
         
@@ -972,12 +979,13 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       # Randomly pick one from this meta-ensemble to save
       # this *should* be propogating uncertainty because we have the ind effects in all of the models and we're randomly adding as we go
-      if(uncert.prop=="random"){
-        sim.final[,ens] <- sim1[,sample(1:ncol(sim1),1)]
-      }
-      if(uncert.prop=="mean"){
-        sim.final[,ens] <- apply(sim1, 1, mean)
-      }
+      sim.final[,ens] <- sim1
+      # if(uncert.prop=="random"){
+      #   sim.final[,ens] <- sim1[,sample(1:ncol(sim1),1)]
+      # }
+      # if(uncert.prop=="mean"){
+      #   sim.final[,ens] <- apply(sim1, 1, mean)
+      # }
       
       utils::setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1
