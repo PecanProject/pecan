@@ -979,7 +979,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       # Randomly pick one from this meta-ensemble to save
       # this *should* be propogating uncertainty because we have the ind effects in all of the models and we're randomly adding as we go
-      sim.final[,ens] <- sim1
+      sim.final[,ens] <- as.vector(sim1)
       # if(uncert.prop=="random"){
       #   sim.final[,ens] <- sim1[,sample(1:ncol(sim1),1)]
       # }
