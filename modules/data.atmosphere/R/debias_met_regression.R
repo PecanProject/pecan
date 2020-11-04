@@ -1040,7 +1040,14 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::dev.off()
       
       # Plotting a few random series to get an idea for what an individual pattern looks liek
-      stack.sims <- utils::stack(data.frame(dat.out[[v]][,sample(1:n.ens, min(3, n.ens))]))
+      col.samp <- paste0("X", sample(1:n.ens, min(3, n.ens)))
+      
+      sim.sub <- data.frame(dat.out[[v]])[,col.samp]
+      for(i in 1:ncol(sim.sub)){
+        sim.sub[,i] <- as.vector(sim.sub[,i])
+      }
+      # names(test) <- col.samp
+      stack.sims <- utils::stack(sim.sub)
       stack.sims[,c("Year", "DOY", "Date")] <- dat.pred[,c("Year", "DOY", "Date")]
       
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")), height=6, width=6, units="in", res=220)
