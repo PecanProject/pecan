@@ -48,23 +48,39 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
     )
   )
 
-  if (!is.null(workflowList$model$id) &&
-        (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    res <- dplyr::tbl(dbcon, "models") %>%
-      select(id, model_name, revision) %>%
-      filter(id == !!workflowList$model$id) %>%
-      collect()
-
-    workflowList$model$type <- res$model_name
-    workflowList$model$revision <- res$revision
+  if (is.null(workflowList$model$id)) {
+    return(list(status = "Error",
+                error = "Must provide model ID."))
   }
+
+  # Get model revision and type for the RabbitMQ queue
+  model_info <- dplyr::tbl(dbcon, "models") %>%
+    dplyr::filter(id == !!workflowList$model$id) %>%
+    dplyr::inner_join(dplyr::tbl(dbcon, "modeltypes"),
+                      by = c("modeltype_id" = "id")) %>%
+    dplyr::collect()
+
+  if (nrow(model_info) < 1) {
+    msg <- paste0("No models found with ID ", format(workflowList$model$id, scientific = FALSE))
+    return(list(status = "Error", error = msg))
+  } else if (nrow(model_info) > 1) {
+    msg <- paste0(
+      "Found multiple (", nrow(model_info), ") matching models for id ",
+      format(workflowList$model$id, scientific = FALSE),
+      ". This shouldn't happen! Check your database for errors."
+    )
+    return(list(status = "Error", error = msg))
+  }
+
+  model_type <- model_info$name
+  model_revision <- model_info$revision
 
   # Fix RabbitMQ details
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
   workflowList$host <- list(
     rabbitmq = list(
       uri = Sys.getenv("RABBITMQ_URI", "amqp://guest:guest@localhost/%2F"),
-      queue = paste0(workflowList$model$type, "_", workflowList$model$revision)
+      queue = paste0(model_type, "_", model_revision)
     )
   )
   workflowList$host$name <- if(hostInfo$hostname == "") "localhost" else hostInfo$hostname
