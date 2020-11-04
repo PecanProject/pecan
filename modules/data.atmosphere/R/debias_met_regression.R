@@ -551,10 +551,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         # while(nrow(Rbeta.anom)<1 & try.now<=ntries){
           # Generate a random distribution of betas using the covariance matrix
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
-        if(n.ens>1){
+        if(n.ens==1){
           Rbeta.anom <- matrix(coef(mod.anom), ncol=length(coef(mod.anom)))
         } else {
-          
           Rbeta.anom <- matrix(MASS::mvrnorm(n=n.new, coef(mod.anom), vcov(mod.anom)), ncol=length(coef(mod.anom)))
         }
         dimnames(Rbeta.anom)[[2]] <- names(coef(mod.anom))  
@@ -646,7 +645,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Note that for a single-member ensemble, this just undoes itself
           anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - predict(mod.anom)
           
-          sim1b[,cols.redo] <- anom.detrend + sim1b[,cols.redo] # Get the range around that medium-frequency trend
+          sim1b[,cols.redo] <- apply(sim1b[,cols.redo], 2, FUN=function(x){x+anom.detrend}) # Get the range around that medium-frequency trend
         }
         
         
