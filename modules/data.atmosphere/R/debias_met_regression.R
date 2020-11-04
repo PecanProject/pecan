@@ -760,12 +760,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       
       if(force.sanity & n.new>0){
-        # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
-        if(n.new<(round(n.ens/2)+1)){
-          cols.safe <- 1:ncol(sim1)
-          cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
-          sim1[,cols.redo] <- sim1[,sample(cols.safe, n.new, replace=T)]
-        } else {
+        # # If we're still struggling, but we have at least some workable columns, lets just duplicate those:
+        # if(n.new<(round(n.ens/2)+1)){
+        #   cols.safe <- 1:ncol(sim1)
+        #   cols.safe <- cols.safe[!(cols.safe %in% cols.redo)]
+        #   sim1[,cols.redo] <- sim1[,sample(cols.safe, n.new, replace=T)]
+        # } else {
           # for known problem variables, lets force sanity as a last resort 
           if(v %in% c("air_temperature", "air_temperature_maximum", "air_temperature_minimum")){
             warning(paste("Forcing Sanity:", v))
@@ -843,7 +843,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             # If this is a new problem variable, lets stop and look at it
             stop(paste("Unable to produce a sane prediction:", v, "- ens", ens, "; problem child =", paste(cols.redo, collapse=" ")))
           }
-        }
+        # } # End if else
       } # End force sanity
       
       
