@@ -283,7 +283,6 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         if (v == "precipitation_flux") {
           
           # if(n.ens == 1) next
-          cols.check <- ifelse(n.ens==1, 1, cols.check)
           if (max(dat.pred[,cols.check]) > 0) {
             tmp <- 1:nrow(dat.pred)  # A dummy vector of the 
             for (j in cols.check) {
