@@ -19,7 +19,6 @@ getModel <- function(model_id, res, dbcon = global_db_pool){
   qry_res <- Model %>% collect()
   
   if (nrow(qry_res) == 0) {
-    PEcAn.DB::db.close(dbcon)
     res$status <- 404
     return(list(error="Model not found"))
   }
@@ -34,7 +33,6 @@ getModel <- function(model_id, res, dbcon = global_db_pool){
       filter(modeltype_id == bit64::as.integer64(qry_res$modeltype_id)) %>% 
       select(input=tag, required) %>% collect()
     response$inputs <- jsonlite::fromJSON(gsub('(\")', '"', jsonlite::toJSON(inputs_req)))
-    PEcAn.DB::db.close(dbcon)
     return(response)
   }
 }
