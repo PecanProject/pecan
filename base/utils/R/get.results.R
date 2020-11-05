@@ -184,9 +184,9 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     variables.ens <- variable
     if (is.null(variables.ens)) {
       if ("variable" %in% names(settings$ensemble)) {
-        var <- which(names(settings$ensemble) == "variable")
-        for (i in seq_along(var)) {
-          variables.ens[i] <- settings$ensemble[[var[i]]]
+        nc_var <- which(names(settings$ensemble) == "variable")
+        for (i in seq_along(nc_var)) {
+          variables.ens[i] <- settings$ensemble[[nc_var[i]]]
         }
       }
     }

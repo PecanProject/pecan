@@ -4,9 +4,16 @@
 \alias{download.LandTrendr.AGB}
 \title{download.LandTrendr.AGB}
 \usage{
-download.LandTrendr.AGB(outdir, target_dataset = "biomass",
-  product_dates = NULL, product_version = "v1", con = NULL,
-  run_parallel = TRUE, ncores = NULL, overwrite = FALSE)
+download.LandTrendr.AGB(
+  outdir,
+  target_dataset = "biomass",
+  product_dates = NULL,
+  product_version = "v1",
+  con = NULL,
+  run_parallel = TRUE,
+  ncores = NULL,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{outdir}{Where to place output}

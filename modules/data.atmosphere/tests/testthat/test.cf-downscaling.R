@@ -1,7 +1,7 @@
 context("downscaling")
 
 daily.nc <- ncdf4::nc_open("data/urbana_daily_test.nc")
-on.exit(ncdf4::nc_close(daily.nc))
+on.exit(ncdf4::nc_close(daily.nc), add = TRUE)
 daily.cf <- load.cfmet(met.nc = daily.nc, lat = 39.75, lon = -87.25,
                        start.date = "1951-01-02", end.date = "1951-05-31")
 

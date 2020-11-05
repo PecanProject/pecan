@@ -4,8 +4,14 @@
 \alias{get.results}
 \title{Generate model output for PEcAn analyses}
 \usage{
-get.results(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
-  variable = NULL, start.year = NULL, end.year = NULL)
+get.results(
+  settings,
+  sa.ensemble.id = NULL,
+  ens.ensemble.id = NULL,
+  variable = NULL,
+  start.year = NULL,
+  end.year = NULL
+)
 }
 \arguments{
 \item{settings}{list, read from settings file (xml) using \code{\link{read.settings}}}

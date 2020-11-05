@@ -4,8 +4,14 @@
 \alias{model2netcdf.MAAT}
 \title{Function to convert MAAT model output to standard netCDF format}
 \usage{
-model2netcdf.MAAT(rundir, outdir, sitelat = -999, sitelon = -999,
-  start_date = NULL, end_date = NULL)
+model2netcdf.MAAT(
+  rundir,
+  outdir,
+  sitelat = -999,
+  sitelon = -999,
+  start_date = NULL,
+  end_date = NULL
+)
 }
 \arguments{
 \item{rundir}{Location of MAAT model run (i.e. MAAT project) directory with all required model run inputs.

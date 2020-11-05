@@ -1,14 +1,7 @@
-# Follow instructions on:
-# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
-
 language: r
-r:
-  - release
-  - devel
-  - oldrel
 
 dist: xenial
-sudo: required
+os: linux
 
 env:
   global:
@@ -20,20 +13,6 @@ env:
     - RGL_USE_NULL=TRUE # Keeps RGL from complaining it can't find X11
     - _R_CHECK_LENGTH_1_CONDITION_=true
     - _R_CHECK_LENGTH_1_LOGIC2_=true
-
-matrix:
-  fast_finish: true
-  allow_failures:
-    - r: devel
-    - r: oldrel
-
-cache: 
-  - directories:
-    - .install
-    - .check
-    - .test
-    - .doc
-  - packages
 
 addons:
   apt:
@@ -47,6 +26,7 @@ addons:
       - libgdal-dev
       - libgl1-mesa-dev
       - libglu1-mesa-dev
+      - libglpk-dev # indirectly needed by BayesianTools
       - libgmp-dev
       - libhdf5-dev
       - liblapack-dev
@@ -57,41 +37,31 @@ addons:
       - netcdf-bin
       - pandoc
       - python-dev
+      - qpdf
       - tcl
       - tcl-dev
       - udunits-bin
-      # R package binaries from c2d4u
-      - r-bioc-biocinstaller
-      - r-cran-ape
-      - r-cran-curl
-      - r-cran-data.table
-      - r-cran-devtools
-      - r-cran-dplyr
-      - r-cran-gap
-      - r-cran-ggplot2
-      - r-cran-httr
-      - r-cran-igraph
-      - r-cran-lme4
-      - r-cran-matrixstats
-      - r-cran-mcmcpack
-      - r-cran-raster
-      - r-cran-rcpp
-      - r-cran-rcurl
-      - r-cran-redland
-      - r-cran-rjags
-      - r-cran-rncl
-      - r-cran-roxygen2
-      - r-cran-rsqlite
-      # - r-cran-sf
-      - r-cran-shiny
-      - r-cran-sirt
-      - r-cran-testthat
-      - r-cran-tidyverse
-      - r-cran-xml
-      - r-cran-xml2
-      - r-cran-xts
 
-  
+jobs:
+  fast_finish: true
+  include:
+    - r: release
+    - r: devel
+    - r: oldrel
+    - r: 3.5
+  allow_failures:
+    - r: devel
+    - r: oldrel
+    - r: 3.5
+
+cache:
+  - directories:
+    - .install
+    - .check
+    - .test
+    - .doc
+  - packages
+
 ## notifications should go to slack
 notifications:
   slack:
@@ -107,7 +77,7 @@ services:
 
 install:
   - scripts/travis/install.sh
-  
+
 before_script:
   - scripts/travis/before_script.sh
 

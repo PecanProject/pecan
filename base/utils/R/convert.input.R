@@ -221,18 +221,23 @@ convert.input <-
                                       verbose = TRUE,R = Rbinary, scratchdir = outfolder)
       
       successful <- FALSE
-      on.exit(if (exists("successful") && successful) {
-        PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-      } else {
-        PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-      }
-      )#Close on.exit
+      on.exit(
+        if (exists("successful") && successful) {
+          PEcAn.logger::logger.info(
+            "Conversion successful, with overwrite=TRUE. Deleting old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$delete.tmp,
+            host, user = NA,
+            verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+        } else {
+          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$replace.from.tmp,
+            host, user = NA,
+            verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+        },
+        add = TRUE
+      ) # Close on.exit
     }
     
     # If all of the files for an existing ensemble exist, we'll just use those files.  Otherwise, we'll need to run the function to
@@ -265,8 +270,11 @@ convert.input <-
                                                       hostname = host$name, 
                                                       exact.dates = TRUE,
                                                       pattern = pattern
-      ) %>%
-        dplyr::filter(id==input.args$dbfile.id)
+      )
+      if ("id" %in% colnames(existing.dbfile)) {
+        existing.dbfile <- existing.dbfile %>%
+          dplyr::filter(id==input.args$dbfile.id)
+      }
     }else{
       existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                       mimetype = mimetype, 
@@ -319,18 +327,22 @@ convert.input <-
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-                PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-        } else {
-                PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        }
-        )#Close on.exit
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # Close on.exit
       }
       
       
@@ -436,21 +448,25 @@ convert.input <-
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-          PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp,
-                            host, user = NA, 
-                            verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-          
-        } else {
-          
-          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp,
-                            host, user = NA,
-                            verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        } 
-        )#close on on.exit
-        
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info(
+              "Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info(
+              "Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # close on.exit
+
       } else if ((start_date >= existing.input$start_date) &&
                  (end_date <= existing.input$end_date)) {
         

@@ -5,9 +5,16 @@
 \alias{plot.trait}
 \title{Plot trait density and data}
 \usage{
-plot_trait(trait, prior = NULL, posterior.sample = NULL,
-  trait.df = NULL, fontsize = list(title = 18, axis = 14),
-  x.lim = NULL, y.lim = NULL, logx = FALSE)
+plot_trait(
+  trait,
+  prior = NULL,
+  posterior.sample = NULL,
+  trait.df = NULL,
+  fontsize = list(title = 18, axis = 14),
+  x.lim = NULL,
+  y.lim = NULL,
+  logx = FALSE
+)
 }
 \arguments{
 \item{trait}{character, name of trait to be plotted}

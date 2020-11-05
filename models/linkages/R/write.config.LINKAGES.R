@@ -65,7 +65,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
   dbcon <- db.open(settings$database$bety)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
   
   if("soil" %in% names(settings$run$inputs)){
     ## open soil file

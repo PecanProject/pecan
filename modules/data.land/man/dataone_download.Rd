@@ -4,8 +4,13 @@
 \alias{dataone_download}
 \title{DataONE download}
 \usage{
-dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles",
-  CNode = "PROD", lazyLoad = FALSE, quiet = FALSE)
+dataone_download(
+  id,
+  filepath = "/fs/data1/pecan.data/dbfiles",
+  CNode = "PROD",
+  lazyLoad = FALSE,
+  quiet = FALSE
+)
 }
 \arguments{
 \item{id}{"The identifier of a package, package metadata or other package member" -- dataone r}

@@ -50,7 +50,6 @@ php_file <- file.path(pecan_path, "web", "config.php")
 stopifnot(file.exists(php_file))
 config.list <- PEcAn.utils::read_web_config(php_file)
 bety <- PEcAn.DB::betyConnect(php_file)
-con <- bety$con
 
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
@@ -73,7 +72,7 @@ for (i in seq_len(nrow(input_table))) {
   revision <- table_row$revision
   message("Model: ", shQuote(model))
   message("Revision: ", shQuote(revision))
-  model_df <- tbl(con, "models") %>%
+  model_df <- tbl(bety, "models") %>%
     filter(model_name == !!model,
            revision == !!revision) %>%
     collect()

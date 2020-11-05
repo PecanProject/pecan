@@ -4,8 +4,14 @@
 \alias{extract_soil_gssurgo}
 \title{Extract soil data from gssurgo}
 \usage{
-extract_soil_gssurgo(outdir, lat, lon, size = 1, radius = 500,
-  depths = c(0.15, 0.3, 0.6))
+extract_soil_gssurgo(
+  outdir,
+  lat,
+  lon,
+  size = 1,
+  radius = 500,
+  depths = c(0.15, 0.3, 0.6)
+)
 }
 \arguments{
 \item{outdir}{Output directory for writing down the netcdf file}

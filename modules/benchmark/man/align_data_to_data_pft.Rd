@@ -4,8 +4,15 @@
 \alias{align_data_to_data_pft}
 \title{align_data_to_data_pft}
 \usage{
-align_data_to_data_pft(con, observation_one, observation_two,
-  custom_table = NULL, format_one, format_two, subset_is_ok = FALSE)
+align_data_to_data_pft(
+  con,
+  observation_one,
+  observation_two,
+  custom_table = NULL,
+  format_one,
+  format_two,
+  subset_is_ok = FALSE
+)
 }
 \arguments{
 \item{con}{database connection}

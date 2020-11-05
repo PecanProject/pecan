@@ -29,7 +29,7 @@ variance.stats <- function(x){
 ##' @author David LeBauer
 get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
   ## check inputs
-  if(class(trait.samples) == 'list'){
+  if(is.list(trait.samples)){
     trait.samples <- matrix(unlist(trait.samples), 
                             ncol = length(names(trait.samples)))
     colnames(trait.samples) <- names(splinefuns)
@@ -38,7 +38,7 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
       trait.samples <- trait.samples[j, ]
     }
   }
-  if(class(trait.samples) != 'matrix'){
+  if(!is.matrix(trait.samples)){
     stop(paste('variance.decomposition currently does not handle trait.samples of class', class(trait.samples), '\n please convert to list or matrix'))
   }
   if(!all(names(splinefuns) %in% colnames(trait.samples))){

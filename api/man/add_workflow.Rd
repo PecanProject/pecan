@@ -10,7 +10,7 @@ add_workflow(settings, workflow_df, overwrite = FALSE)
 \item{settings}{Partially completed PEcAn \code{settings} list.}
 
 \item{workflow_df}{Workflow \code{data.frame}, such as that returned by
-\link{insert_new_workflow}, or from running query \code{SELECT * FROM workflows}}
+\link{insert_new_workflow}, or from running query \verb{SELECT * FROM workflows}}
 
 \item{overwrite}{Whether or not to overwrite existing \code{settings}
 tags (logical; default = \code{FALSE})}

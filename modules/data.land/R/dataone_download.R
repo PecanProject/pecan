@@ -21,7 +21,7 @@
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode = "PROD", lazyLoad = FALSE, quiet = FALSE){ 
   ### Check for wget functionality
   test <- try(system2("wget", "--version", stderr = TRUE))
-  if (class(test) == "try-error") {
+  if (inherits(test, "try-error")) {
     PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
   }
 

@@ -1,4 +1,4 @@
 model,revision,met,site_id,pft,start_date,end_date,sensitivity,ensemble_size,comment
-"SIPNET","unk","AmerifluxLBL",772,"temperate.coniferous","2003-01-01","2006-12-31",FALSE,1,"Demo 1"
-"SIPNET","unk","AmerifluxLBL",772,"temperate.coniferous","2003-01-01","2006-12-31",TRUE,100,"Demo 2"
+"SIPNET","git","AmerifluxLBL",772,"temperate.coniferous","2003-01-01","2006-12-31",FALSE,1,"Demo 1"
+"SIPNET","git","AmerifluxLBL",772,"temperate.coniferous","2003-01-01","2006-12-31",TRUE,100,"Demo 2"
 "ED2","git","CRUNCEP",758,"temperate.Early_Hardwood","2001-06-01","2001-08-31",FALSE,1, "ED2 git Harvard Forest summer"

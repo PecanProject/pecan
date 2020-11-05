@@ -21,6 +21,7 @@ It contains the following major sections ("nodes"):
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
+	- [`remote_process`](#xml-remote_process) -- Remote data module 
 	
 A basic example looks like this:
 
@@ -105,9 +106,9 @@ A basic example looks like this:
 
 In the following sections, we step through each of these sections in detail.
 
-### Core configuration {#xml-core-config}
+## Core configuration {#xml-core-config}
 
-#### Top-level structure {#xml-structure}
+### Top-level structure {#xml-structure}
 
 The first line of the XML file should contain version and encoding information. 
 
@@ -123,7 +124,7 @@ The rest of the XML file should be surrounded by `<pecan>...</pecan>` tags.
 </pecan>
 ```
 
-#### `info`: Run metadata {#xml-info}
+### `info`: Run metadata {#xml-info}
 
 This section contains run metadata.
 This information is not essential to a successful model run, but is useful for tracking run provenance. 
@@ -132,7 +133,7 @@ This information is not essential to a successful model run, but is useful for t
   <info>
     <notes>Example run</notes>
     <userid>-1</userid>
-	<username>guestuser</username>
+    <username>guestuser</username>
     <date>2018/09/18 19:12:28 +0000</date>
   </info>
 ```
@@ -479,7 +480,7 @@ The following provides a quick overview of XML tags related to remote execution.
 		<clearscratch>TRUE</clearscratch>
 		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
 		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
-		<qstat>qstat -j @JOBID@ &> /dev/null || echo DONE</qstat>
+		<qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
 		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
 		<modellauncher>
       <binary>/usr/local/bin/modellauncher</binary>
@@ -507,7 +508,7 @@ The `modellauncher` has 2 arguements:
 * `binary` : [required] The full path to the binary modellauncher. Source code for this file can be found in `pecan/contrib/modellauncher`](https://github.com/PecanProject/pecan/tree/develop/contrib/modellauncher).
 * `qsub.extra` : [optional] Additional flags to pass to qsub besides those specified in the `qsub` tag in host. This option can be used to specify that the MPI environment needs to be used and the number of nodes that should be used.
 
-### Advanced features {#xml-advanced}
+## Advanced features {#xml-advanced}
 
 ### `ensemble`: Ensemble Runs {#xml-ensemble}
 
@@ -775,3 +776,46 @@ This information is currently used by the following R functions:
 
 Coming soon...
 
+### Remote data module {#xml-remote_process}
+
+This section describes the tags required for configuring `remote_process`.
+
+```xml
+  <remotedata>
+  <out_get_data>...</out_get_data>
+  <source>...</source>
+  <collection>...</collection>
+  <scale>...</scale>
+  <projection>...</projection>
+  <qc>...</qc>
+  <algorithm>...</algorithm>
+  <credfile>...</credfile>
+  <out_process_data>...</out_process_data>
+  <overwrite>...</overwrite>
+  </remotedata>
+```
+
+* `out_get_data`: (required) type of raw output requested, e.g, bands, smap
+* `source`: (required) source of remote data, e.g., gee or appeears 
+* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
+* `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2
+* `projection`: (optional) type of projection. Only required for appeears polygon AOI type
+* `qc`: (optional) quality control parameter, required for some gee collections
+* `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
+
+These tags are only required if processed data is requested:
+
+* `out_process_data`: (optional) type of processed output requested, e.g, LAI
+* `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
+* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
+* `pro_mimetype`: (optional) MIME type of the processed file
+* `pro_formatname`: (optional) format name of the processed file
+
+Additional information for the module are taken from the registration files located at `data.remote/inst/registration`
+
+The output data from the module are returned in the following tags:
+
+* `raw_id`: input id of the raw file
+* `raw_path`: absolute path to the raw file
+* `pro_id`: input id of the processed file
+* `pro_path`: absolute path to the processed file

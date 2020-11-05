@@ -39,21 +39,21 @@ to_ncdim <- function(dimname,vals){
 ##' @return ncvar defined according to standard_vars
 ##' @author Anne Thomas
 to_ncvar <- function(varname,dims){
-  var <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == varname),]
-  #check var exists
-  if(nrow(var)==0){
+  nc_var <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == varname),]
+  #check nc_var exists
+  if(nrow(nc_var)==0){
     PEcAn.logger::logger.severe(paste("Variable",varname,"not in standard_vars"))
   }
   
-  dimset <- var[,c("dim1","dim2","dim3","dim4")]
+  dimset <- nc_var[,c("dim1","dim2","dim3","dim4")]
   dim <- dims[which(names(dims) %in% dimset)] #subset list of all dims for this variable
   #check that dim isn't 0
   if(length(dim)==0 || is.null(dim)){
     PEcAn.logger::logger.severe(paste("No dimensions were loaded for",varname))
   }
   
-  units = as.character(var$Units) #if the units are a factor the function fails
-  longname <- as.character(var$Long.name)
+  units = as.character(nc_var$Units) #if the units are a factor the function fails
+  longname <- as.character(nc_var$Long.name)
   
   ncvar <- ncdf4::ncvar_def(name = varname, units = units, longname = longname, dim = dim, -999, prec = "double") 
   

@@ -4,8 +4,16 @@
 \alias{merge_met_variable}
 \title{Merge a new met variable from an external file (e.g. CO2) into existing met files}
 \usage{
-merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
-  overwrite = FALSE, verbose = FALSE, ...)
+merge_met_variable(
+  in.path,
+  in.prefix,
+  start_date,
+  end_date,
+  merge.file,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{path to original data}
@@ -24,6 +32,9 @@ merge_met_variable(in.path, in.prefix, start_date, end_date, merge.file,
 print debugging information as they run?}
 
 \item{...}{}
+}
+\value{
+Currently nothing. TODO: Return a data frame summarizing the merged files.
 }
 \description{
 Merge a new met variable from an external file (e.g. CO2) into existing met files

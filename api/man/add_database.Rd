@@ -4,13 +4,18 @@
 \alias{add_database}
 \title{Add PEcAn database information to settings list}
 \usage{
-add_database(settings, host = getOption("pecanapi.db_hostname"),
+add_database(
+  settings,
+  host = getOption("pecanapi.db_hostname"),
   user = getOption("pecanapi.db_user"),
   password = getOption("pecanapi.db_password"),
   dbname = getOption("pecanapi.db_dbname"),
   driver = getOption("pecanapi.db_driver"),
   dbfiles = getOption("pecanapi.db_dbfiles"),
-  write = getOption("pecanapi.db_write"), overwrite = FALSE, ...)
+  write = getOption("pecanapi.db_write"),
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{settings}{Input settings list (list)}
