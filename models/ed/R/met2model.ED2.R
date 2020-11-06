@@ -131,17 +131,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       flat <- nc$dim[[1]]$vals[1]
     }
     if (is.na(lat)) {
-      lat <- flat
+      # Have to `drop` here because NetCDF returns a length-1 array, not a
+      # scalar. This causes `non-conforming array` errors in the
+      # `cos_solar_zenith_angle` function later when trying to add these to
+      # scalars. `drop` simplifies away any length-1 dimensions.
+      lat <- drop(flat)
     } else if (lat != flat) {
       PEcAn.logger::logger.warn("Latitude does not match that of file", lat, "!=", flat)
     }
 
     flon <- try(ncdf4::ncvar_get(nc, "longitude"), silent = TRUE)
     if (!is.numeric(flon)) {
-      flat <- nc$dim[[2]]$vals[1]
+      flon <- nc$dim[[2]]$vals[1]
     }
     if (is.na(lon)) {
-      lon <- flon
+      # See above comment re: `drop`
+      lon <- drop(flon)
     } else if (lon != flon) {
       PEcAn.logger::logger.warn("Longitude does not match that of file", lon, "!=", flon)
     }
