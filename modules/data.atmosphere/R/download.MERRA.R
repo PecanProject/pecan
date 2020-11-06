@@ -1,6 +1,8 @@
 #' Download MERRA data
 #'
 #' @inheritParams download.CRUNCEP
+#' @param redownload Logical. If `TRUE`, force re-download of files even if they
+#'   already exist (default = `FALSE`).
 #' @param ... Not used -- silently soak up extra arguments from `convert.input`, etc.
 #' @return `data.frame` of meteorology data metadata
 #' @author Alexey Shiklomanov
@@ -9,6 +11,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
                            lat.in, lon.in,
                            overwrite = TRUE,
                            verbose = FALSE,
+                           redownload = FALSE,
                            ...) {
 
   dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
@@ -21,7 +24,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
     PEcAn.logger::logger.debug(paste0(
       "Downloading ", as.character(date), " (", i, " of ", length(dates), ")"
     ))
-    get_merra_date(date, lat.in, lon.in, outfolder)
+    get_merra_date(date, lat.in, lon.in, outfolder, redownload = redownload)
   }
 
   # Now, post-process
@@ -143,7 +146,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
   return(results)
 }
 
-get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE) {
+get_merra_date <- function(date, latitude, longitude, outdir, redownload = FALSE) {
   date <- as.character(date)
   dpat <- "([[:digit:]]{4})-([[:digit:]]{2})-([[:digit:]]{2})"
   year <- as.numeric(gsub(dpat, "\\1", date))
@@ -175,7 +178,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   qstring <- paste(qvars, collapse = ",")
   outfile <- file.path(outdir, sprintf("merra-most-%d-%02d-%02d.nc",
                                        year, month, day))
-  if (overwrite || !file.exists(outfile)) {
+  if (redownload || !file.exists(outfile)) {
     req <- httr::GET(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
@@ -193,7 +196,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   qstring <- paste(qvars, collapse = ",")
   outfile <- file.path(outdir, sprintf("merra-pres-%d-%02d-%02d.nc",
                                        year, month, day))
-  if (overwrite || !file.exists(outfile)) {
+  if (redownload || !file.exists(outfile)) {
     req <- httr::GET(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
@@ -211,7 +214,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   qstring <- paste(qvars, collapse = ",")
   outfile <- file.path(outdir, sprintf("merra-flux-%d-%02d-%02d.nc",
                                        year, month, day))
-  if (overwrite || !file.exists(outfile)) {
+  if (redownload || !file.exists(outfile)) {
     req <- robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
