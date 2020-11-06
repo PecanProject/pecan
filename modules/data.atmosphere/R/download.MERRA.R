@@ -7,7 +7,7 @@
 #' @export
 download.MERRA <- function(outfolder, start_date, end_date,
                            lat.in, lon.in,
-                           overwrite = FALSE,
+                           overwrite = TRUE,
                            verbose = FALSE,
                            ...) {
 
@@ -66,18 +66,6 @@ download.MERRA <- function(outfolder, start_date, end_date,
     results$mimetype[i] <- "application/x-netcdf"
     results$formatname[i] <- "CF Meteorology"
 
-    if (file.exists(loc.file)) {
-      if (overwrite) {
-        PEcAn.logger::logger.info(paste0("Removing existing file ", loc.file))
-        file.remove(loc.file)
-      } else {
-        PEcAn.logger::logger.info(paste0(
-          "File ", loc.file, " already exists. Skipping to next year"
-        ))
-        next
-      }
-    }
-
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -99,6 +87,23 @@ download.MERRA <- function(outfolder, start_date, end_date,
     }
 
     ## Create output file
+    if (file.exists(loc.file) && overwrite) {
+      if (overwrite) {
+        PEcAn.logger::logger.warn(
+          "Target file ", loc.file, " already exists.",
+          "It will be overwritten."
+        )
+      } else {
+        PEcAn.logger::logger.warn(
+          "Target file ", loc.file, " already exists and",
+          "`overwrite = FALSE`. Skipping to next year.",
+          "Note that `overwrite = TRUE` by default to allow met",
+          "time series to be extended in the PEcAn workflow!",
+          "Running with `overwrite = FALSE` may produce unexpected behavior."
+        )
+      }
+      next
+    }
     loc <- ncdf4::nc_create(loc.file, var_list)
     on.exit(ncdf4::nc_close(loc), add = TRUE)
 
