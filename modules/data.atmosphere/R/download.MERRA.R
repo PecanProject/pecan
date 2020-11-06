@@ -215,31 +215,44 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   }
 }
 
-# Time-integrated variables
+# For more on MERRA variables, see:
+# - The MERRA2 readme -- https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXRAD.5.12.4/doc/MERRA2.README.pdf
+# - The MERRA2 file spec -- https://gmao.gsfc.nasa.gov/pubs/docs/Bosilovich785.pdf
+# Page numbers below correspond to pages in the file spec.
+
+# Surface flux diagnostics (pg. 33)
 merra_prod <- "M2T1NXFLX.5.12.4"
 merra_file <- "tavg1_2d_flx_Nx"
 merra_vars <- tibble::tribble(
   ~CF_name, ~MERRA_name, ~units,
+  # TLML - Surface air temperature
   "air_temperature", "TLML", "Kelvin",
+  # ULML - Surface eastward wind
   "eastward_wind", "ULML", "m/s",
+  # VLML - Surface northward wind
   "northward_wind", "VLML", "m/s",
+  # QSH - Effective surface specific humidity
   "specific_humidity", "QSH", "g/g",
+  # PRECTOT - Total precipitation from atmospheric model physics
   "precipitation_flux", "PRECTOT", "kg/m2/s"
 )
 
-# Instantaneous variables
+# Single-level diagnostics (pg. 17)
 merra_pres_prod <- "M2I1NXASM.5.12.4"
 merra_pres_file <- "inst1_2d_asm_Nx"
 merra_pres_vars <- tibble::tribble(
   ~CF_name, ~MERRA_name, ~units,
+  # PS - Surface pressure
   "air_pressure", "PS", "Pascal",
 )
 
-# Radiation variables
+# Radiation diagnostics (pg. 43)
 merra_flux_prod <- "M2T1NXRAD.5.12.4"
 merra_flux_file <- "tavg1_2d_rad_Nx"
 merra_flux_vars <- tibble::tribble(
   ~CF_name, ~MERRA_name, ~units,
-  "surface_downwelling_longwave_flux_in_air", "LWGNT", "W/m2",
-  "surface_downwelling_shortwave_flux_in_air", "SWGNT", "W/m2"
+  # LWGAB is 'Surface absorbed longwave radiation'
+  "surface_downwelling_longwave_flux_in_air", "LWGAB", "W/m2",
+  # SWGDN is 'Surface incoming shortwave flux'
+  "surface_downwelling_shortwave_flux_in_air", "SWGDN", "W/m2"
 )
