@@ -1293,7 +1293,7 @@ for(t in seq_len(nt)) { #
                               r2 = PEcAn.benchmark::metric_R2(dat),
                               rae = PEcAn.benchmark::metric_RAE(dat),
                               ame = PEcAn.benchmark::metric_AME(dat))
-      require(gridExtra)
+##      require(gridExtra)
       plot1 <- PEcAn.benchmark::metric_residual_plot(dat, var = colnames(Ybar)[i])
       plot2 <- PEcAn.benchmark::metric_scatter_plot(dat, var = colnames(Ybar)[i])
       #PEcAn.benchmark::metric_lmDiag_plot(dat, var = colnames(Ybar)[i])
@@ -1301,8 +1301,8 @@ for(t in seq_len(nt)) { #
       text = paste("\n   The following is text that'll appear in a plot window.\n",
                    "       As you can see, it's in the plot window\n",
                    "       One might imagine useful informaiton here")
-      ss <- tableGrob(signif(dat.stats,digits = 3))
-      grid.arrange(plot1,plot2,plot3,ss,ncol=2)
+      ss <- gridExtra::tableGrob(signif(dat.stats,digits = 3))
+      gridExtra::grid.arrange(plot1,plot2,plot3,ss,ncol=2)
       
       
     }
