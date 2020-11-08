@@ -35,7 +35,8 @@ This is a major change:
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 - model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
--gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
 
 ### Changed
 
@@ -74,6 +75,7 @@ This is a major change:
 - Documentation how to run ED using singularity
 - PEcAn.DB gains new function `get_postgres_envvars`, which tries to look up connection parameters from Postgres environment variables (if they are set) and return them as a list ready to be passed to `db.open`. It should be especially useful when writing tests that need to run on systems with many different database configurations (#2541).
 - New shiny application to show database synchronization status (shiny/dbsync)
+- Ability to run with [MERRA-2 meteorology](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/) (reanalysis product based on GEOS-5 model)
 
 ### Removed
 

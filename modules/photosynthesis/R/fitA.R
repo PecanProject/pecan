@@ -167,9 +167,16 @@ To <- 35    ## Representative value, would benifit from spp calibration!
 
 ## prep data
 sel <- seq_len(nrow(dat))  #which(dat$spp == s)
-if (!any(names(dat) == "Tleaf")) {
-  dat$Tleaf <- rep(25 + 273.15, nrow(dat))  ## if leaf temperature is absent, assume 25C
+if("Tleaf" %in% names(dat)){
+  if(max(dat$Tleaf) < 100){ # if Tleaf in C, convert to K
+    dat$Tleaf <- dat$Tleaf + 273.15
+  } 
+} else if (!"Tleaf" %in% names(dat)) {
+    dat$Tleaf <- 25 + 273.15 ## if no Tleaf, assume 25C in Kelvin
+    warning("No Leaf Temperature provided, setting to 25C\n",
+            "To change add a column named Tleaf to flux.data data frame")
 }
+
 mydat <- list(an = dat$Photo[sel], 
               pi = dat$Ci[sel], 
               q = dat$PARi[sel],

@@ -32,38 +32,55 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* Submit a workflow (converted to list)
 #* @param workflowList Workflow parameters expressed as a list
 #* @param userDetails List containing userid & username
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
-submit.workflow.list <- function(workflowList, userDetails) {
-  # Fix details about the database
+submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool) {
+
+  # Set database details
   workflowList$database <- list(
     bety = PEcAn.DB::get_postgres_envvars(
       host = "localhost",
       dbname = "bety",
       user = "bety",
-      password = "bety", 
+      password = "bety",
       driver = "PostgreSQL"
     )
   )
-  if(! is.null(workflowList$model$id) && (is.null(workflowList$model$type) || is.null(workflowList$model$revision))) {
-    dbcon <- PEcAn.DB::betyConnect()
-    res <- dplyr::tbl(dbcon, "models") %>% 
-      select(id, model_name, revision) %>%
-      filter(id == !!workflowList$model$id) %>%
-      collect()
-    PEcAn.DB::db.close(dbcon)
-    
-    workflowList$model$type <- res$model_name
-    workflowList$model$revision <- res$revision
+
+  if (is.null(workflowList$model$id)) {
+    return(list(status = "Error",
+                error = "Must provide model ID."))
   }
+
+  # Get model revision and type for the RabbitMQ queue
+  model_info <- dplyr::tbl(dbcon, "models") %>%
+    dplyr::filter(id == !!workflowList$model$id) %>%
+    dplyr::inner_join(dplyr::tbl(dbcon, "modeltypes"),
+                      by = c("modeltype_id" = "id")) %>%
+    dplyr::collect()
+
+  if (nrow(model_info) < 1) {
+    msg <- paste0("No models found with ID ", format(workflowList$model$id, scientific = FALSE))
+    return(list(status = "Error", error = msg))
+  } else if (nrow(model_info) > 1) {
+    msg <- paste0(
+      "Found multiple (", nrow(model_info), ") matching models for id ",
+      format(workflowList$model$id, scientific = FALSE),
+      ". This shouldn't happen! Check your database for errors."
+    )
+    return(list(status = "Error", error = msg))
+  }
+
+  model_type <- model_info$name
+  model_revision <- model_info$revision
+
   # Fix RabbitMQ details
-  dbcon <- PEcAn.DB::betyConnect()
   hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
-  PEcAn.DB::db.close(dbcon)
   workflowList$host <- list(
     rabbitmq = list(
       uri = Sys.getenv("RABBITMQ_URI", "amqp://guest:guest@localhost/%2F"),
-      queue = paste0(workflowList$model$type, "_", workflowList$model$revision)
+      queue = paste0(model_type, "_", model_revision)
     )
   )
   workflowList$host$name <- if(hostInfo$hostname == "") "localhost" else hostInfo$hostname
@@ -82,12 +99,14 @@ submit.workflow.list <- function(workflowList, userDetails) {
   # Add entry to workflows table in database
   workflow_id <- insert.workflow(workflowList)
   workflowList$workflow$id <- workflow_id
+  workflow_id_str <- format(workflow_id, scientific = FALSE)
 
   # Add entry to attributes table in database
   insert.attribute(workflowList)
 
   # Fix the output directory
-  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id)
+  outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_",
+                   workflow_id_str)
   workflowList$outdir <- outdir
   
   # Create output diretory
@@ -105,11 +124,11 @@ submit.workflow.list <- function(workflowList, userDetails) {
   res <- file.copy("/work/workflow.R", outdir)
   
   # Post workflow to RabbitMQ
-  message <- list(folder = outdir, workflowid = workflow_id)
+  message <- list(folder = outdir, workflowid = workflow_id_str)
   res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
   
   if(res$routed){
-    return(list(workflow_id = as.character(workflow_id), status = "Submitted successfully"))
+    return(list(workflow_id = workflow_id_str, status = "Submitted successfully"))
   }
   else{
     return(list(status = "Error", message = "Could not submit to RabbitMQ"))
@@ -122,11 +141,10 @@ submit.workflow.list <- function(workflowList, userDetails) {
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
-insert.workflow <- function(workflowList){
-  
-  dbcon <- PEcAn.DB::betyConnect()
+insert.workflow <- function(workflowList, dbcon = global_db_pool){
   
   model_id <- workflowList$model$id
   if(is.null(model_id)){
@@ -136,35 +154,51 @@ insert.workflow <- function(workflowList){
   start_time <- Sys.time()
   
   workflow_df <- tibble::tibble(
-    "site_id" = c(bit64::as.integer64(workflowList$run$site$id)),
-    "model_id" = c(bit64::as.integer64(model_id)),
+    "site_id" = bit64::as.integer64(workflowList$run$site$id),
+    "model_id" = bit64::as.integer64(model_id),
     "folder" = "temp_dir",
-    "hostname" = c("docker"),
-    "start_date" = c(as.POSIXct(workflowList$run$start.date)),
-    "end_date" = c(as.POSIXct(workflowList$run$end.date)),
-    "advanced_edit" = c(FALSE),
-    "started_at" = c(start_time),
-    stringsAsFactors = FALSE
+    "hostname" = "docker",
+    "start_date" = as.POSIXct(workflowList$run$start.date),
+    "end_date" = as.POSIXct(workflowList$run$end.date),
+    "advanced_edit" = FALSE,
+    "started_at" = start_time
   )
   
-  if(! is.na(workflowList$info$userid)){
-    workflow_df <- workflow_df %>% tibble::add_column("user_id" = c(bit64::as.integer64(workflowList$info$userid)))
+  if (! is.na(workflowList$info$userid)){
+    workflow_df <- workflow_df %>%
+      tibble::add_column("user_id" = bit64::as.integer64(workflowList$info$userid))
   }
-  
-  insert <- PEcAn.DB::insert_table(workflow_df, "workflows", dbcon)
-  
-  workflow_id <- dplyr::tbl(dbcon, "workflows") %>% 
-    filter(started_at == start_time 
-           && site_id == bit64::as.integer64(workflowList$run$site$id)
-           && model_id == bit64::as.integer64(model_id)
-    ) %>% 
-    pull(id)
-  
-  update_qry <- paste0("UPDATE workflows SET folder = 'data/workflows/PEcAn_", workflow_id, "' WHERE id = '", workflow_id, "';")
-  PEcAn.DB::db.query(update_qry, dbcon)
-  
-  PEcAn.DB::db.close(dbcon)
-  
+
+  # NOTE: Have to "checkout" a connection from the pool here to work with
+  # dbSendStatement and friends. We make sure to return the connection when the
+  # function exits (successfully or not).
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+
+  insert_query <- glue::glue(
+    "INSERT INTO workflows ",
+    "({paste(colnames(workflow_df), collapse = ', ')}) ",
+    "VALUES ({paste0('$', seq_len(ncol(workflow_df)), collapse = ', ')}) ",
+    "RETURNING id"
+  )
+  PEcAn.logger::logger.debug(insert_query)
+  workflow_id <- PEcAn.DB::db.query(
+    insert_query, con,
+    values = unname(as.list(workflow_df))
+  )[["id"]]
+
+  PEcAn.logger::logger.debug(
+    "Running workflow ID: ",
+    format(workflow_id, scientific = FALSE)
+  )
+
+  PEcAn.DB::db.query(
+    "UPDATE workflows SET folder = $1 WHERE id = $2", con, values = list(
+      file.path("data", "workflows", paste0("PEcAn_", format(workflow_id, scientific = FALSE))),
+      workflow_id
+    )
+  )
+
   return(workflow_id)
 }
 
@@ -172,10 +206,10 @@ insert.workflow <- function(workflowList){
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
+#* @param dbcon Database connection object. Default is global database pool.
 #* @author Tezan Sahu
-insert.attribute <- function(workflowList){
-  dbcon <- PEcAn.DB::betyConnect()
-  
+insert.attribute <- function(workflowList, dbcon = global_db_pool){
+
   # Create an array of PFTs
   pfts <- c()
   for(i in seq(length(workflowList$pfts))){
@@ -226,7 +260,9 @@ insert.attribute <- function(workflowList){
   # Insert properties into attributes table
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
-  res <- DBI::dbSendStatement(dbcon, 
+  con <- pool::poolCheckout(dbcon)
+  on.exit(pool::poolReturn(con), add = TRUE)
+  res <- DBI::dbSendStatement(con,
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
 

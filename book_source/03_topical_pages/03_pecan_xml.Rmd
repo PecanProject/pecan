@@ -21,6 +21,7 @@ It contains the following major sections ("nodes"):
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
 	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
+	- [`remote_process`](#xml-remote_process) -- Remote data module 
 	
 A basic example looks like this:
 
@@ -775,3 +776,46 @@ This information is currently used by the following R functions:
 
 Coming soon...
 
+### Remote data module {#xml-remote_process}
+
+This section describes the tags required for configuring `remote_process`.
+
+```xml
+  <remotedata>
+  <out_get_data>...</out_get_data>
+  <source>...</source>
+  <collection>...</collection>
+  <scale>...</scale>
+  <projection>...</projection>
+  <qc>...</qc>
+  <algorithm>...</algorithm>
+  <credfile>...</credfile>
+  <out_process_data>...</out_process_data>
+  <overwrite>...</overwrite>
+  </remotedata>
+```
+
+* `out_get_data`: (required) type of raw output requested, e.g, bands, smap
+* `source`: (required) source of remote data, e.g., gee or appeears 
+* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
+* `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2
+* `projection`: (optional) type of projection. Only required for appeears polygon AOI type
+* `qc`: (optional) quality control parameter, required for some gee collections
+* `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
+
+These tags are only required if processed data is requested:
+
+* `out_process_data`: (optional) type of processed output requested, e.g, LAI
+* `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
+* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
+* `pro_mimetype`: (optional) MIME type of the processed file
+* `pro_formatname`: (optional) format name of the processed file
+
+Additional information for the module are taken from the registration files located at `data.remote/inst/registration`
+
+The output data from the module are returned in the following tags:
+
+* `raw_id`: input id of the raw file
+* `raw_path`: absolute path to the raw file
+* `pro_id`: input id of the processed file
+* `pro_path`: absolute path to the processed file

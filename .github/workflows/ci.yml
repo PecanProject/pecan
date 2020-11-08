@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  repository_dispatch:
+    types:
+      - force
+
   push:
     branches:
       - master
@@ -12,10 +16,7 @@ on:
   pull_request:
 
 env:
-  # Would be more usual to set R_LIBS_USER, but R uses R_LIBS first if present
-  # ...and it's always present here, because the rocker/tidyverse base image
-  # checks at R startup time for R_LIBS and R_LIBS_USER, sets both if not found
-  R_LIBS: ~/R/library
+  R_LIBS_USER: /usr/local/lib/R/site-library
 
 jobs:
 
@@ -100,7 +101,9 @@ jobs:
 
     # install additional tools needed
     - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf curl
+      run: apt-get update && apt-get install -y postgresql-client qpdf
+    - name: install new dependencies
+      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
     # initialize database
     - name: db setup
@@ -145,7 +148,9 @@ jobs:
 
     # install additional tools needed
     - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf curl
+      run: apt-get update && apt-get install -y postgresql-client qpdf
+    - name: install new dependencies
+      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
     # run PEcAn checks
     - name: check
@@ -193,7 +198,9 @@ jobs:
 
     # install additional tools needed
     - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf curl
+      run: apt-get update && apt-get install -y postgresql-client qpdf
+    - name: install new dependencies
+      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
     # initialize database
     - name: db setup
