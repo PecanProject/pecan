@@ -24,7 +24,7 @@ load_data_paleon_sda <- function(settings){
     return(obs.list)
   }
   
-  library(plyr) #need to load to use .fnc below
+  # library(plyr) #need to load to use .fnc below
   
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
   bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
