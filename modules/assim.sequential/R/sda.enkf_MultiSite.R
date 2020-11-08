@@ -590,7 +590,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ### adjustement/update state matrix                                   ###
       ###-------------------------------------------------------------------###---- 
-      tic(paste0("Adjustment for cycle = ", t))
+      tictoc::tic(paste0("Adjustment for cycle = ", t))
       if(adjustment == TRUE){
         analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
       } else {
@@ -625,7 +625,7 @@ sda.enkf.multisite <- function(settings,
            out.configs, ensemble.samples, inputs, Viz.output,
            file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
       
-      tic(paste0("Visulization for cycle = ", t))
+      tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
       
