@@ -1298,9 +1298,14 @@ for(t in seq_len(nt)) { #
       text = paste("\n   The following is text that'll appear in a plot window.\n",
                    "       As you can see, it's in the plot window\n",
                    "       One might imagine useful informaiton here")
-      ss <- gridExtra::tableGrob(signif(dat.stats,digits = 3))
-      gridExtra::grid.arrange(plot1,plot2,plot3,ss,ncol=2)
-      
+      if(require(gridExtra)){
+        ss <- gridExtra::tableGrob(signif(dat.stats,digits = 3))
+        gridExtra::grid.arrange(plot1,plot2,plot3,ss,ncol=2)
+      } else {
+        print(plot1)
+        print(plot2)
+        print(plot3)
+      }
       
     }
     dev.off()
