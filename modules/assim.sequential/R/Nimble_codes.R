@@ -18,6 +18,7 @@ y_star_create <-  nimbleFunction(
   }
 )
 
+#' Additive Log Ratio transform
 #' @param y state var
 #' @export
 alr <-  nimbleFunction(
@@ -32,6 +33,7 @@ alr <-  nimbleFunction(
   }
 )
 
+#' inverse of ALR transform
 #' @param alr state var
 #' @export
 inv.alr <-  nimbleFunction(
@@ -44,6 +46,7 @@ inv.alr <-  nimbleFunction(
   }
 )
 
+#' random weighted multivariate normal
 #' @param n sample size
 #' @param mean mean
 #' @param prec precision
@@ -63,6 +66,7 @@ rwtmnorm <- nimbleFunction(
   }
 )
 
+#' weighted multivariate normal density
 #' @param n sample size
 #' @param mean mean
 #' @param prec precision
@@ -105,6 +109,7 @@ registerDistributions(list(dwtmnorm = list(
 )))
 
 #tobit2space.model------------------------------------------------------------------------------------------------
+#' Fit tobit prior to ensemble members
 #' @export
 tobit2space.model <- nimbleCode({
   for (i in 1:N) {
@@ -122,6 +127,7 @@ tobit2space.model <- nimbleCode({
 })
 
 #tobit.model--This does the GEF ----------------------------------------------------
+#' TWEnF
 #' @export
 tobit.model <-  nimbleCode({
   q[1:N, 1:N]  ~ dwish(R = aq[1:N, 1:N], df = bq) ## aq and bq are estimated over time
@@ -164,6 +170,7 @@ tobit.model <-  nimbleCode({
 })
 
 #tobit.model--This does the GEF for multi Site -------------------------------------
+#' multisite TWEnF
 #' @export
 GEF.MultiSite.Nimble <-  nimbleCode({
   if (q.type == 1) {
@@ -208,6 +215,7 @@ GEF.MultiSite.Nimble <-  nimbleCode({
 })
 
 #sampler_toggle------------------------------------------------------------------------------------------------
+#' sampler toggling
 #' @export
 sampler_toggle <- nimbleFunction(
   contains = sampler_BASE,
@@ -232,6 +240,7 @@ sampler_toggle <- nimbleFunction(
   )
 )
 
+#' Weighted conjugate wishart
 #' @export
 conj_wt_wishart_sampler <-  nimbleFunction(
   contains = sampler_BASE,
