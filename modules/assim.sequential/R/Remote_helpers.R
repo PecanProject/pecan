@@ -460,7 +460,7 @@ alltocs <-function(fname="tocs.csv") {
         get(".tictoc", envir = baseenv())) %>%
       seq_along() %>%
       map_dfr(function(x) {
-        s <- toc(quiet = T, log = T)
+        s <- tictoc::toc(quiet = T, log = T)
         dfout <- data.frame(
           Task = s$msg %>%  as.character(),
           TimeElapsed = round(s$toc - s$tic, 1),
