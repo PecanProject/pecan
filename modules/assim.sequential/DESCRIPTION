@@ -36,6 +36,7 @@ Suggests:
     devtools,
     ggrepel,
     magic (>= 1.5.0),
+    methods,
     plotrix,
     sf,
     testthat,
