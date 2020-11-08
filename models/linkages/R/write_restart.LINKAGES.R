@@ -111,7 +111,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     }
     if ("SLA" %in% names(new.params[[as.character(pft)]])) {
       sla_use <- (1/new.params[[as.character(pft)]]$SLA)*1000
-      sla_use[sla_use>5000] <- rnorm(1,4000,100)
+      sla_use[sla_use>5000] <- stats::rnorm(1,4000,100)
       fwt <- sla_use#(1 / new.params[[as.character(pft)]]$SLA) * 10000
     } else {
       fwt <- default.params[default.params$Spp_Name == pft, ]$FWT
@@ -355,7 +355,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   ##### SOIL
   if ("TotSoilCarb" %in% names(new.state.other)) {
     leaf.sum <- sum(tyl[1:12]) * 0.48
-    if(new.state.other["TotSoilCarb"] > 1000) new.state.other["TotSoilCarb"] = rnorm(1,1000,10)
+    if(new.state.other["TotSoilCarb"] > 1000) new.state.other["TotSoilCarb"] = stats::rnorm(1,1000,10)
     soil.org.mat <- new.state.other["TotSoilCarb"] - leaf.sum
     soil.corr <- soil.org.mat / (sum(C.mat[C.mat[1:ncohrt, 5], 1]) * 0.48)
     #if(soil.corr > 1) soil.corr <- 1

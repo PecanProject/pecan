@@ -138,7 +138,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           
           if ("SLA" %in% names(vals)) {
             sla_use <- (1/vals$SLA)*1000
-            sla_use[sla_use>5000] <- rnorm(1,4000,100)
+            sla_use[sla_use>5000] <- stats::rnorm(1,4000,100)
             spp.params[spp.params$Spp_Name == group, ]$FWT <- sla_use
             ## If change here need to change in write_restart as well
             }
