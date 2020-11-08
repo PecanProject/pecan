@@ -6,6 +6,15 @@
 \usage{
 conj_wt_wishart_sampler(model, mvSaved, target, control)
 }
+\arguments{
+\item{model}{model}
+
+\item{mvSaved}{copied to}
+
+\item{target}{thing being targetted}
+
+\item{control}{unused}
+}
 \description{
 Weighted conjugate wishart
 }

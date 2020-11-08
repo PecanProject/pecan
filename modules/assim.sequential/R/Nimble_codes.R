@@ -67,7 +67,7 @@ rwtmnorm <- nimbleFunction(
 )
 
 #' weighted multivariate normal density
-#' @param n sample size
+#' @param x random variable
 #' @param mean mean
 #' @param prec precision
 #' @param wt weight
@@ -110,6 +110,7 @@ registerDistributions(list(dwtmnorm = list(
 
 #tobit2space.model------------------------------------------------------------------------------------------------
 #' Fit tobit prior to ensemble members
+#' @format TBD
 #' @export
 tobit2space.model <- nimbleCode({
   for (i in 1:N) {
@@ -129,6 +130,7 @@ tobit2space.model <- nimbleCode({
 #tobit.model--This does the GEF ----------------------------------------------------
 #' TWEnF
 #' @export
+#' @format TBD
 tobit.model <-  nimbleCode({
   q[1:N, 1:N]  ~ dwish(R = aq[1:N, 1:N], df = bq) ## aq and bq are estimated over time
   Q[1:N, 1:N] <- inverse(q[1:N, 1:N])
@@ -171,6 +173,7 @@ tobit.model <-  nimbleCode({
 
 #tobit.model--This does the GEF for multi Site -------------------------------------
 #' multisite TWEnF
+#' @format TBD
 #' @export
 GEF.MultiSite.Nimble <-  nimbleCode({
   if (q.type == 1) {
@@ -241,6 +244,10 @@ sampler_toggle <- nimbleFunction(
 )
 
 #' Weighted conjugate wishart
+#' @param model model
+#' @param mvSaved copied to
+#' @param target thing being targetted
+#' @param control unused
 #' @export
 conj_wt_wishart_sampler <-  nimbleFunction(
   contains = sampler_BASE,

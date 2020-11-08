@@ -7,6 +7,8 @@
 dwtmnorm(x, mean, prec, wt, log = 0)
 }
 \arguments{
+\item{x}{random variable}
+
 \item{mean}{mean}
 
 \item{prec}{precision}
@@ -14,8 +16,6 @@ dwtmnorm(x, mean, prec, wt, log = 0)
 \item{wt}{weight}
 
 \item{log}{log}
-
-\item{n}{sample size}
 }
 \description{
 weighted multivariate normal density

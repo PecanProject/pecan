@@ -35,6 +35,7 @@ Suggests:
     corrplot,
     devtools,
     ggrepel,
+    gridExtra,
     magic (>= 1.5.0),
     methods,
     plotrix,
