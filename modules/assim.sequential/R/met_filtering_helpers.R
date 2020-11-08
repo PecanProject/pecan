@@ -1,3 +1,4 @@
+##' Sample meteorological ensembles
 ##' 
 ##' @param settings PEcAn settings list
 ##' @param nens number of ensemble members to be sampled
