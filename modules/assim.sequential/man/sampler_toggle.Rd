@@ -6,6 +6,15 @@
 \usage{
 sampler_toggle(model, mvSaved, target, control)
 }
+\arguments{
+\item{model}{model}
+
+\item{mvSaved}{copied to}
+
+\item{target}{thing being targetted}
+
+\item{control}{unused}
+}
 \description{
 sampler toggling
 }

@@ -220,6 +220,10 @@ GEF.MultiSite.Nimble <-  nimbleCode({
 #sampler_toggle------------------------------------------------------------------------------------------------
 #' sampler toggling
 #' @export
+#' @param model model
+#' @param mvSaved copied to
+#' @param target thing being targetted
+#' @param control unused
 sampler_toggle <- nimbleFunction(
   contains = sampler_BASE,
   setup = function(model, mvSaved, target, control) {
