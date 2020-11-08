@@ -7,6 +7,9 @@
 \usage{
 y_star_create(X)
 }
+\arguments{
+\item{X}{state var}
+}
 \description{
 This functions is internally used to register a series of nimble functions inside GEF analysis function.
 }

@@ -5,7 +5,7 @@
 ##' @description This functions is internally used to register a series of nimble functions inside GEF analysis function.
 ##'
 #' @import nimble
-#'
+#' @param X state var
 #'
 #' @export
 y_star_create <-  nimbleFunction(
@@ -18,6 +18,7 @@ y_star_create <-  nimbleFunction(
   }
 )
 
+#' @param y state var
 #' @export
 alr <-  nimbleFunction(
   run = function(y = double(1)) {
@@ -31,6 +32,7 @@ alr <-  nimbleFunction(
   }
 )
 
+#' @param alr state var
 #' @export
 inv.alr <-  nimbleFunction(
   run = function(alr = double(1)) {
@@ -42,6 +44,10 @@ inv.alr <-  nimbleFunction(
   }
 )
 
+#' @param n sample size
+#' @param mean mean
+#' @param prec precision
+#' @param wt weight
 #' @export
 rwtmnorm <- nimbleFunction(
   run = function(n = integer(0),
@@ -57,6 +63,11 @@ rwtmnorm <- nimbleFunction(
   }
 )
 
+#' @param n sample size
+#' @param mean mean
+#' @param prec precision
+#' @param wt weight
+#' @param log log
 #' @export
 dwtmnorm <- nimbleFunction(
   run = function(x = double(1),
