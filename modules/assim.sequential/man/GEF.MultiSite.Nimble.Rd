@@ -4,7 +4,7 @@
 \name{GEF.MultiSite.Nimble}
 \alias{GEF.MultiSite.Nimble}
 \title{multisite TWEnF}
-\format{An object of class \code{{} of length 9.}
+\format{TBD}
 \usage{
 GEF.MultiSite.Nimble
 }

@@ -4,7 +4,7 @@
 \name{tobit2space.model}
 \alias{tobit2space.model}
 \title{Fit tobit prior to ensemble members}
-\format{An object of class \code{{} of length 4.}
+\format{TBD}
 \usage{
 tobit2space.model
 }

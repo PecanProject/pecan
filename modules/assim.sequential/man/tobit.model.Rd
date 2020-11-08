@@ -4,7 +4,7 @@
 \name{tobit.model}
 \alias{tobit.model}
 \title{TWEnF}
-\format{An object of class \code{{} of length 10.}
+\format{TBD}
 \usage{
 tobit.model
 }
