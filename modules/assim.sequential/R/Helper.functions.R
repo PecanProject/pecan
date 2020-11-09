@@ -84,7 +84,7 @@ SDA_control <-
 #' @param X Any Matrix with column names as variable names
 #' @param multiply TRUE = multiplication, FALSE = division
 #' @description This function uses a set of scaling factors defined in the pecan XML to scale a given matrix
-#' @return
+#' @return rescaled Matrix
 #' @export
 #' @importFrom magrittr %>%
 rescaling_stateVars <- function(settings, X, multiply=TRUE) {

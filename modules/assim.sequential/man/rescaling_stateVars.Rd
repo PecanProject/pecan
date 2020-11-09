@@ -14,7 +14,7 @@ rescaling_stateVars(settings, X, multiply = TRUE)
 \item{multiply}{TRUE = multiplication, FALSE = division}
 }
 \value{
-
+rescaled Matrix
 }
 \description{
 This function uses a set of scaling factors defined in the pecan XML to scale a given matrix
