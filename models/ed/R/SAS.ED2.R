@@ -1,6 +1,9 @@
 ##' sets parameters and defaults for the ED2 semi-analytical spin-up
 ##' @param decomp_scheme Decomposition scheme specified in ED2IN
 ##' @param kh_active_depth Depth threshold for averaging soil moisture and temperature
+##' @param decay_rate_fsc  Fast soil carbon decay rate
+##' @param decay_rate_stsc Structural soil carbon decay rate
+##' @param decay_rate_ssc  Slow soil carbon decay rate
 ##' @param Lc Used to compute nitrogen immpobilzation factor; ED default is 0.049787 (soil_respiration.f90)
 ##' @param c2n_slow Carbon to Nitrogen ratio, slow pool; ED Default 10.0
 ##' @param c2n_structural Carbon to Nitrogen ratio, structural pool. ED default 150.0
@@ -94,7 +97,7 @@ SAS.ED2.param.Args <- function(decomp_scheme=2,
 }
 
 
-#Soil Moisture at saturation
+#Soil Moisture at saturation (should replace with soil functions in data.lab)
 calc.slmsts <- function(slxsand, slxclay){
   # Soil moisture at saturation [ m^3/m^3 ]
   (50.5 - 14.2*slxsand - 3.7*slxclay) / 100.
@@ -154,12 +157,14 @@ smfire.pos <- function(slmsts, soilcp, smfire){
 ##' @param outdir Location to write SAS .css & .pss files
 ##' @param lat site latitude; used for file naming
 ##' @param lon site longitude; used for file naming
-##' @param block Number of years between patch ages
+##' @param blckyr Number of years between patch ages (aka blocks)
+##' @param prefix ED2 -E- output file prefix 
 ##' @param treefall Value to be used for TREEFALL_DISTURBANCE_RATE in ED2IN for full runs (disturbance on)
+##' @param param.args ED2 parameter arguments (mostly soil biogeochem)
 ##' @param sufx ED2 out file suffix; used in constructing file names(default "g01.h5) 
 ##' @export
 ##'
-SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block,
+SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
                     prefix, treefall, param.args = SAS.ED2.param.Args(), sufx =
                       "g01.h5") {
   
@@ -330,9 +335,9 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block,
   
   stand.age <- seq(yrs[1]-yeara,nrow(pss.big)*blckyr,by=blckyr)
   area.dist <- vector(length=nrow(pss.big))
-  area.dist[1] <- sum(dgeom(0:(stand.age[2]-1), disturb))
+  area.dist[1] <- sum(stats::dgeom(0:(stand.age[2]-1), disturb))
   for(i in 2:(length(area.dist)-1)){
-    area.dist[i] <- sum(dgeom((stand.age[i]):(stand.age[i+1]-1),disturb))
+    area.dist[i] <- sum(stats::dgeom((stand.age[i]):(stand.age[i+1]-1),disturb))
   }
   area.dist[length(area.dist)] <- 1 - sum(area.dist[1:(length(area.dist)-1)])
   pss.big[,"area"] <- area.dist
@@ -414,7 +419,7 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block,
   #       -- Monthly data is then aggregated to a yearly value: sum for carbon inputs; mean for temp/moist 
   #          (if not calculated above)
   #---------------------------------------
-  pss.big <- pss.big[complete.cases(pss.big),]
+  pss.big <- pss.big[stats::complete.cases(pss.big),]
   
   # some empty vectors for storage etc
   fsc_in_y <- ssc_in_y <- ssl_in_y <- fsn_in_y <- pln_up_y <- vector()
@@ -628,10 +633,10 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, block,
   # Write everything to file!!
   #---------------------------------------
   file.prefix=paste0(prefix, "-lat", lat, "lon", lon)
-  write.table(css.big,file=file.path(outdir,paste0(file.prefix,".css")),row.names=FALSE,append=FALSE,
+  utils::write.table(css.big,file=file.path(outdir,paste0(file.prefix,".css")),row.names=FALSE,append=FALSE,
               col.names=TRUE,quote=FALSE)
   
-  write.table(pss.big,file=file.path(outdir,paste0(file.prefix,".pss")),row.names=FALSE,append=FALSE,
+  utils::write.table(pss.big,file=file.path(outdir,paste0(file.prefix,".pss")),row.names=FALSE,append=FALSE,
               col.names=TRUE,quote=FALSE)
   #---------------------------------------
   

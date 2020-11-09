@@ -10,7 +10,7 @@ SAS.ED2(
   outdir,
   lat,
   lon,
-  block,
+  blckyr,
   prefix,
   treefall,
   param.args = SAS.ED2.param.Args(),
@@ -28,9 +28,13 @@ SAS.ED2(
 
 \item{lon}{site longitude; used for file naming}
 
-\item{block}{Number of years between patch ages}
+\item{blckyr}{Number of years between patch ages (aka blocks)}
+
+\item{prefix}{ED2 -E- output file prefix}
 
 \item{treefall}{Value to be used for TREEFALL_DISTURBANCE_RATE in ED2IN for full runs (disturbance on)}
+
+\item{param.args}{ED2 parameter arguments (mostly soil biogeochem)}
 
 \item{sufx}{ED2 out file suffix; used in constructing file names(default "g01.h5)}
 }

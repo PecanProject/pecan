@@ -41,6 +41,12 @@ SAS.ED2.param.Args(
 
 \item{kh_active_depth}{Depth threshold for averaging soil moisture and temperature}
 
+\item{decay_rate_fsc}{Fast soil carbon decay rate}
+
+\item{decay_rate_stsc}{Structural soil carbon decay rate}
+
+\item{decay_rate_ssc}{Slow soil carbon decay rate}
+
 \item{Lc}{Used to compute nitrogen immpobilzation factor; ED default is 0.049787 (soil_respiration.f90)}
 
 \item{c2n_slow}{Carbon to Nitrogen ratio, slow pool; ED Default 10.0}

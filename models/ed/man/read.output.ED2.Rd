@@ -22,6 +22,8 @@ read.output.ED2(
 
 \item{end.year}{last year}
 
+\item{variables}{which ED2 variables to extract}
+
 \item{output.type}{type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL\%I\link{DMYT}OUTPUT}
 }
 \value{
