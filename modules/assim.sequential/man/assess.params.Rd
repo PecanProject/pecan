@@ -5,12 +5,14 @@
 \alias{assessParams}
 \title{assess.params}
 \usage{
-assessParams(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL)
+assessParams(dat, Xt, wts = NULL, mu_f_TRUE = NULL, P_f_TRUE = NULL)
 }
 \arguments{
 \item{dat}{MCMC output}
 
 \item{Xt}{ensemble output matrix}
+
+\item{wts}{ensemble weights}
 
 \item{mu_f_TRUE}{muf before tobit2space}
 

@@ -3,6 +3,8 @@
 S3method(print,ed2in)
 S3method(write_ed2in,default)
 S3method(write_ed2in,ed2in)
+export(SAS.ED2)
+export(SAS.ED2.param.Args)
 export(check_css)
 export(check_ed2in)
 export(check_ed_metheader)

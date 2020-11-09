@@ -3,6 +3,7 @@
 #' @author Ann Raiho \email{ann.raiho@gmail.com}
 #' 
 #' @param settings  PEcAn settings object
+#' @param time_do   Give user specific time so you don't have to have it be annual
 #'
 #' @description Creates file of ensemble weights in format needed for SDA
 #' 
@@ -12,7 +13,7 @@
 #' @export
 #' 
 
-get_ensemble_weights <- function(settings){
+get_ensemble_weights <- function(settings, time_do){
 
   
   nens <- as.numeric(settings$ensemble$size)
@@ -34,12 +35,23 @@ get_ensemble_weights <- function(settings){
     ###-------------------------------------------------------------------###
     ### Assigning Weights                                                 ###
     ###-------------------------------------------------------------------###
-    for(tt in 1:length(years_get)){
-      weight_list[[tt]] <- weight_file[weight_file$year==years_get[tt],'weights'] * nens
+    #TO DO: Right now just takes snapshot weights. Consider averaging over time period.
+    for(tt in seq_along(time_do)){
       
-      #assuming weights are in the same order at the met in the settings file
-      #will need to have some way of dealing with sampling too if there are more ensemble members than weights or vice versa
+      which_ens <- settings$run$inputs$met$path
       
+      climate_names <- unlist(lapply(which_ens,FUN=function(x) strsplit(x,'/')[[1]][6]))
+      
+      #TO DO: make more general for subannual weights
+      weight_list[[tt]] <-
+        (weight_file[weight_file$year == time_do[tt] &
+                       weight_file$climate_model %in% climate_names, 'weights'] / sum(weight_file[weight_file$year ==
+                                                                                                    time_do[tt] &
+                                                                                                    weight_file$climate_model %in% climate_names, 'weights'])) * nens
+      
+      if(sum(weight_list[[tt]]) != nens) PEcAn.utils::logger.warn(paste('Time',tt,'does not equal the number of ensemble members',nens))
+      
+      #TO DO: will need to have some way of dealing with sampling too if there are more ensemble members than weights or vice versa
       
       if(sum(weight_list[[tt]])==0){
         weight_list[[tt]] <- rep(1,nens) #no weights
@@ -57,8 +69,32 @@ get_ensemble_weights <- function(settings){
     }
   }
   
-  names(weight_list) <- years_get
+  names(weight_list) <- time_do
   
   save(weight_list, file = file.path(settings$outdir, "ensemble_weights.Rdata"))
+  
+}
+
+
+#Example script to rename if climate files get messed up seps
+if(FALSE){
+  
+  files_get <- list.dirs('~/TENSION_MET/')
+  
+  for(ii in 2:length(files_get)){
+    file.rename(from = files_get[ii],
+                to = str_replace_all(
+                  string = files_get[ii],
+                  pattern = '-',
+                  replacement = '.'
+                ))
+  }
+  
+  
+  for(ii in 2:length(files_get)){
+    load(paste0(files_get[ii],'/climate.Rdata'))
+    rownames(temp.mat) <- rownames(precip.mat) <- 850:2010
+    save(temp.mat, precip.mat,file=paste0(files_get[ii],'/climate.Rdata'))
+  }
   
 }
