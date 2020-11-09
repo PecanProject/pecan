@@ -11,6 +11,9 @@ rescaling_stateVars(settings, X, multiply = TRUE)
 
 \item{X}{Any Matrix with column names as variable names}
 }
+\value{
+
+}
 \description{
 This function uses a set of scaling factors defined in the pecan XML to scale a given matrix
 }
