@@ -78,7 +78,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     n.ens=1
   } 
   if(!uncert.prop %in% c("mean", "random")) stop("unspecified uncertainty propogation method.  Must be 'random' or 'mean' ")
-  if(uncert.prop=="mean" & n.ens>1) warning(pate0("Warning! Use of mean propagation with n.ens>1 not encouraged as all results will be the same and you will not be adding uncertainty at this stage."))
+  if(uncert.prop=="mean" & n.ens>1) warning(paste0("Warning! Use of mean propagation with n.ens>1 not encouraged as all results will be the same and you will not be adding uncertainty at this stage."))
   
   # Variables need to be done in a specific order
   vars.all <- c("air_temperature", "air_temperature_maximum", "air_temperature_minimum", "specific_humidity", "surface_downwelling_shortwave_flux_in_air", "air_pressure", "surface_downwelling_longwave_flux_in_air", "wind_speed", "precipitation_flux")
