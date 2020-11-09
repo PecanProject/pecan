@@ -37,20 +37,7 @@ Use \uxxxx escapes for other characters.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘devtools’ ‘dplyr’ ‘future’ ‘ggrepel’ ‘Matrix’ ‘ncdf4’
-  ‘PEcAn.benchmark’ ‘PEcAn.DB’ ‘PEcAn.settings’ ‘sf’ ‘sp’ ‘tidyr’ ‘XML’
-'library' or 'require' calls not declared from:
-  ‘corrplot’ ‘gridExtra’ ‘nimble’ ‘plotrix’ ‘plyr’
-'library' or 'require' calls in package code:
-  ‘corrplot’ ‘gridExtra’ ‘nimble’ ‘plotrix’ ‘plyr’
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-There are ::: calls to the package's namespace in its code. A package
-  almost never needs to use ::: for its own objects:
-  ‘load_nimble’ ‘post.analysis.ggplot.violin’
-  ‘postana.bias.plotting.sda’
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -896,12 +883,7 @@ File ‘PEcAn.assim.sequential/R/Analysis_sda.R’:
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘sample_met’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'Contruct.Pf'
@@ -948,4 +930,4 @@ Extensions’ manual.
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
 * DONE
-Status: 4 WARNINGs, 1 NOTE
+Status: 2 WARNINGs, 1 NOTE
