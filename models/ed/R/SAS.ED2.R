@@ -61,36 +61,36 @@ SAS.ED2.param.Args <- function(decomp_scheme=2,
                                slxclay=0.33) {
   
   return(
-    c(
-      decomp_scheme,
-      kh_active_depth,
-      decay_rate_fsc,
-      decay_rate_stsc,
-      decay_rate_ssc,
-      Lc,
-      c2n_slow,
-      c2n_structural,
-      r_stsc, # Constants from ED
-      rh_decay_low,
-      rh_decay_high, 
-      rh_low_temp,
-      rh_high_temp,
-      rh_decay_dry,
-      rh_decay_wet,
-      rh_dry_smoist,
-      rh_wet_smoist,
-      resp_opt_water,
-      resp_water_below_opt,
-      resp_water_above_opt,
-      resp_temperature_increase,
-      rh_lloyd_1,
-      rh_lloyd_2,
-      rh_lloyd_3,
-      yrs.met, 
-      sm_fire,
-      fire_intensity,
-      slxsand,
-      slxclay
+    data.frame(
+      decomp_scheme = decomp_scheme,
+      kh_active_depth = kh_active_depth,
+      decay_rate_fsc = decay_rate_fsc,
+      decay_rate_stsc = decay_rate_stsc,
+      decay_rate_ssc = decay_rate_ssc,
+      Lc = Lc,
+      c2n_slow = c2n_slow,
+      c2n_structural = c2n_structural,
+      r_stsc = r_stsc, # Constants from ED
+      rh_decay_low = rh_decay_low,
+      rh_decay_high = rh_decay_high, 
+      rh_low_temp = rh_low_temp,
+      rh_high_temp = rh_high_temp,
+      rh_decay_dry = rh_decay_dry,
+      rh_decay_wet = rh_decay_wet,
+      rh_dry_smoist = rh_dry_smoist,
+      rh_wet_smoist = rh_wet_smoist,
+      resp_opt_water = resp_opt_water,
+      resp_water_below_opt = resp_water_below_opt,
+      resp_water_above_opt = resp_water_above_opt,
+      resp_temperature_increase = resp_temperature_increase,
+      rh_lloyd_1 = rh_lloyd_1,
+      rh_lloyd_2 = rh_lloyd_2,
+      rh_lloyd_3 = rh_lloyd_3,
+      yrs.met = yrs.met, 
+      sm_fire = sm_fire,
+      fire_intensity = fire_intensity,
+      slxsand = slxsand,
+      slxclay = slxclay
     )
   )
   
@@ -168,38 +168,7 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
                     prefix, treefall, param.args = SAS.ED2.param.Args(), sufx =
                       "g01.h5") {
   
-  #--- Reading in the parameters
-  decomp_scheme <- param.args[1]
-  kh_active_depth  <-  param.args[2]
-  decay_rate_fsc <- param.args[3]
-  decay_rate_stsc <- param.args[4]
-  decay_rate_ssc <- param.args[5]
-  Lc <- param.args[6]
-  c2n_slow <- param.args[7]
-  c2n_structural <- param.args[8]
-  r_stsc <- param.args[9] # Constants from ED
-  rh_decay_low <- param.args[10]
-  rh_decay_high <- param.args[11]
-  rh_low_temp <- param.args[12]
-  rh_high_temp <- param.args[13]
-  rh_decay_dry <- param.args[14]
-  rh_decay_wet <- param.args[15]
-  rh_dry_smoist <- param.args[16]
-  rh_wet_smoist <- param.args[17]
-  resp_opt_water <- param.args[18]
-  resp_water_below_opt <- param.args[19]
-  resp_water_above_opt <- param.args[20]
-  resp_temperature_increase <- param.args[21]
-  rh_lloyd_1 <- param.args[22]
-  rh_lloyd_2 <- param.args[23]
-  rh_lloyd_3 <- param.args[24]
-  yrs.met <- param.args[25]
-  sm_fire <- param.args[26]
-  fire_intensity <- param.args[27]
-  slxsand <- param.args[28]
-  slxclay <- param.args[29]
-  
-  if(!decomp_scheme %in% 0:4) stop("Invalid decomp_scheme")
+  if(!param.args$decomp_scheme %in% 0:4) stop("Invalid decomp_scheme")
   # create a directory for the initialization files
   dir.create(outdir, recursive=T, showWarnings=F)
   
@@ -233,7 +202,7 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
     dslz[i] <- slz[i+1] - slz[i]    
   }
   
-  nsoil=which(slz >= kh_active_depth-1e-3)  # Maximum depth for avg. temperature and moisture; adding a fudge factor bc it's being weird
+  nsoil=which(slz >= param.args$kh_active_depth-1e-3)  # Maximum depth for avg. temperature and moisture; adding a fudge factor bc it's being weird
   # nsoil=length(slz)
   #---------------------------------------
   
@@ -252,20 +221,20 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   #        with; if using the means from the spin met cycle work best, insert them here
   # This will also be necessary for helping update disturbance parameter
   #---------------------------------------
-  soil.obj <- PEcAn.data.land::soil_params(sand = slxsand, clay = slxclay)
+  soil.obj <- PEcAn.data.land::soil_params(sand = param.args$slxsand, clay = param.args$slxclay)
   
-  slmsts <- calc.slmsts(slxsand, slxclay) # Soil Moisture at saturation
-  slpots <- calc.slpots(slxsand, slxclay)   # Soil moisture potential at saturation [ m ]
-  slbs   <- calc.slbs(slxsand, slxclay)   # B exponent (unitless)
+  slmsts <- calc.slmsts(param.args$slxsand, param.args$slxclay) # Soil Moisture at saturation
+  slpots <- calc.slpots(param.args$slxsand, param.args$slxclay)   # Soil moisture potential at saturation [ m ]
+  slbs   <- calc.slbs(param.args$slxsand, param.args$slxclay)   # B exponent (unitless)
   soilcp <- calc.soilcp(slmsts, slpots, slbs) # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
   
   # Calculating Soil fire characteristics
   soilfr=0
-  if(abs(sm_fire)>0){
-    if(sm_fire>0){
-      soilfr <- smfire.pos(slmsts, soilcp, smfire=sm_fire)
+  if(abs(param.args$sm_fire)>0){
+    if(param.args$sm_fire>0){
+      soilfr <- smfire.pos(slmsts, soilcp, smfire=param.args$sm_fire)
     } else {
-      soilfr <- smfire.neg(slmsts, slpots, smfire=sm_fire, slbs)
+      soilfr <- smfire.neg(slmsts, slpots, smfire=param.args$sm_fire, slbs)
     }
   }
 
@@ -326,7 +295,7 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # ------
   # Calculate the Rate of fire & total disturbance
   # ------
-  fire_rate <- pfire * fire_intensity
+  fire_rate <- pfire * param.args$fire_intensity
   
   # Total disturbance rate = treefall + fire
   #  -- treefall = % area/yr
@@ -513,9 +482,9 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # -----------------------
   # Calculate the annual carbon loss if things are stable
   # -----------
-  fsc_loss <- decay_rate_fsc
-  ssc_loss <- decay_rate_ssc
-  ssl_loss <- decay_rate_stsc
+  fsc_loss <- param.args$decay_rate_fsc
+  ssc_loss <- param.args$decay_rate_ssc
+  ssl_loss <- param.args$decay_rate_stsc
   # -----------
   
   
@@ -527,20 +496,20 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # Temperature Limitation 
   # ========================
   # soil_tempk <- sum(soil_tempo_y*area.dist)
-  if(decomp_scheme %in% c(0, 3)){
-    temperature_limitation = min(1,exp(resp_temperature_increase * (soil_tempk-318.15)))
-  } else if(decomp_scheme %in% c(1,4)){
-    lnexplloyd             = rh_lloyd_1 * ( rh_lloyd_2 - 1. / (soil_tempk - rh_lloyd_3))
+  if(param.args$decomp_scheme %in% c(0, 3)){
+    temperature_limitation = min(1,exp(param.args$resp_temperature_increase * (soil_tempk-318.15)))
+  } else if(param.args$decomp_scheme %in% c(1,4)){
+    lnexplloyd             = param.args$rh_lloyd_1 * ( param.args$rh_lloyd_2 - 1. / (soil_tempk - param.args$rh_lloyd_3))
     lnexplloyd             = max(-38.,min(38,lnexplloyd))
-    temperature_limitation = min( 1.0, resp_temperature_increase * exp(lnexplloyd) )
-  } else if(decomp_scheme==2) {
+    temperature_limitation = min( 1.0, param.args$resp_temperature_increase * exp(lnexplloyd) )
+  } else if(param.args$decomp_scheme==2) {
     # Low Temp Limitation
-    lnexplow <- rh_decay_low * (rh_low_temp - soil_tempk)
+    lnexplow <- param.args$rh_decay_low * (param.args$rh_low_temp - soil_tempk)
     lnexplow <- max(-38, min(38, lnexplow))
     tlow_fun <- 1 + exp(lnexplow)
     
     # High Temp Limitation
-    lnexphigh <- rh_decay_high*(soil_tempk - rh_high_temp)
+    lnexphigh <- param.args$rh_decay_high*(soil_tempk - param.args$rh_high_temp)
     lnexphigh <- max(-38, min(38, lnexphigh))
     thigh_fun <- 1 + exp(lnexphigh)
     
@@ -552,20 +521,20 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # Moisture Limitation 
   # ========================
   # rel_soil_moist <- sum(swc_y*area.dist)
-  if(decomp_scheme %in% c(0,1)){
-    if (rel_soil_moist <= resp_opt_water){
-      water_limitation = exp( (rel_soil_moist - resp_opt_water) * resp_water_below_opt)
+  if(param.args$decomp_scheme %in% c(0,1)){
+    if (rel_soil_moist <= param.args$resp_opt_water){
+      water_limitation = exp( (rel_soil_moist - param.args$resp_opt_water) * param.args$resp_water_below_opt)
     } else {
-      water_limitation = exp( (resp_opt_water - rel_soil_moist) * resp_water_above_opt)
+      water_limitation = exp( (param.args$resp_opt_water - rel_soil_moist) * param.args$resp_water_above_opt)
     }
-  } else if(decomp_scheme==2){
+  } else if(param.args$decomp_scheme==2){
     # Dry soil Limitation
-    lnexpdry <- rh_decay_dry * (rh_dry_smoist - rel_soil_moist)
+    lnexpdry <- param.args$rh_decay_dry * (param.args$rh_dry_smoist - rel_soil_moist)
     lnexpdry <- max(-38, min(38, lnexpdry))
     smdry_fun <- 1+exp(lnexpdry)
     
     # Wet Soil limitation
-    lnexpwet <- rh_decay_wet * (rel_soil_moist - rh_wet_smoist)
+    lnexpwet <- param.args$rh_decay_wet * (rel_soil_moist - param.args$rh_wet_smoist)
     lnexpwet <- max(-38, min(38, lnexpwet))
     smwet_fun <- 1+exp(lnexpwet)
     
@@ -587,8 +556,8 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # Do the carbon and fast nitrogen pools
   # -------------------
   fsc_ss <- fsc_in_y[length(fsc_in_y)]/(fsc_loss * A_decomp)
-  ssl_ss <- ssl_in_y[length(ssl_in_y)]/(ssl_loss * A_decomp * Lc) # Structural soil C
-  ssc_ss <- ((ssl_loss * A_decomp * Lc * ssl_ss)*(1 - r_stsc))/(ssc_loss * A_decomp )
+  ssl_ss <- ssl_in_y[length(ssl_in_y)]/(ssl_loss * A_decomp * param.args$Lc) # Structural soil C
+  ssc_ss <- ((ssl_loss * A_decomp * param.args$Lc * ssl_ss)*(1 - param.args$r_stsc))/(ssc_loss * A_decomp )
   fsn_ss <- fsn_in_y[length(fsn_in_y)]/(fsc_loss * A_decomp)
   # -------------------
   
@@ -599,11 +568,11 @@ SAS.ED2 <- function(dir.analy, dir.histo, outdir, lat, lon, blckyr,
   # + csite%today_Af_decomp(ipa) * Lc * K1 * csite%structural_soil_C(ipa)                     
   # * ( (1.0 - r_stsc) / c2n_slow - 1.0 / c2n_structural)
   msn_loss <- pln_up_y[length(pln_up_y)] + 
-    A_decomp*Lc*ssl_loss*ssl_in_y[length(ssl_in_y)]*
-    ((1.0-r_stsc)/c2n_slow - 1.0/c2n_structural)
+    A_decomp*param.args$Lc*ssl_loss*ssl_in_y[length(ssl_in_y)]*
+    ((1.0-param.args$r_stsc)/param.args$c2n_slow - 1.0/param.args$c2n_structural)
   
   #fast_N_loss + slow_C_loss/c2n_slow
-  msn_med  <- fsc_loss*A_decomp*fsn_in_y[length(fsn_in_y)]+ (ssc_loss * A_decomp)/c2n_slow 
+  msn_med  <- fsc_loss*A_decomp*fsn_in_y[length(fsn_in_y)]+ (ssc_loss * A_decomp)/param.args$c2n_slow 
   
   msn_ss   <- msn_med/msn_loss
   # -------------------
