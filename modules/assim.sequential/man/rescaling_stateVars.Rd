@@ -10,6 +10,8 @@ rescaling_stateVars(settings, X, multiply = TRUE)
 \item{settings}{pecan xml settings where state variables have the scaling_factor tag}
 
 \item{X}{Any Matrix with column names as variable names}
+
+\item{multiply}{TRUE = multiplication, FALSE = division}
 }
 \value{
 
