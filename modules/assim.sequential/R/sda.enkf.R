@@ -21,8 +21,6 @@
 ##' 
 sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
   
-  library(nimble)
-
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
   second  <- lubridate::second
@@ -371,14 +369,14 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   }
   
-  sampler_toggle <- nimbleFunction(
+  sampler_toggle <- nimble::nimbleFunction(
     contains = sampler_BASE,
     setup = function(model, mvSaved, target, control) {
       type <- control$type
       nested_sampler_name <- paste0('sampler_', type)
-      control_new <- nimbleOptions('MCMCcontrolDefaultList')
+      control_new <- nimble::nimbleOptions('MCMCcontrolDefaultList')
       control_new[[names(control)]] <- control
-      nested_sampler_list <- nimbleFunctionList(sampler_BASE)
+      nested_sampler_list <- nimble::nimbleFunctionList(sampler_BASE)
       nested_sampler_list[[1]] <- do.call(nested_sampler_name, list(model, mvSaved, target, control_new))
       toggle <- 1
     },
@@ -393,7 +391,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   )
   
   if(var.names=="Fcomp"){
-    y_star_create <-  nimbleFunction(
+    y_star_create <-  nimble::nimbleFunction(
       run = function(X = double(1)) {
         returnType(double(1))
         
@@ -404,7 +402,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
         return(y_star)
       })
   }else{
-    y_star_create <-  nimbleFunction(
+    y_star_create <-  nimble::nimbleFunction(
       run = function(X = double(1)) {
         returnType(double(1))
         
@@ -415,7 +413,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   }
   
   
-  tobit.model <- nimbleCode({ 
+  tobit.model <- nimble::nimbleCode({ 
     
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
     Q[1:N,1:N] <- inverse(q[1:N,1:N])
@@ -439,7 +437,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     
   })
   
-  tobit2space.model <- nimbleCode({
+  tobit2space.model <- nimble::nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
       for(j in 1:J){
@@ -454,7 +452,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     
   })
   
-  tobit2space.model <- nimbleCode({
+  tobit2space.model <- nimble::nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
       for(j in 1:J){
@@ -683,7 +681,7 @@ for(t in seq_len(nt)) { #
           inits.tobit2space = list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
           #set.seed(0)
           #ptm <- proc.time()
-          tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
+          tobit2space_pred <- nimble::nimbleModel(tobit2space.model, data = data.tobit2space,
                                           constants = constants.tobit2space, inits = inits.tobit2space,
                                           name = 'space')
           ## Adding X.mod,q,r as data for building model.
@@ -705,16 +703,16 @@ for(t in seq_len(nt)) { #
           
           #conf_tobit2space$printSamplers()
           
-          Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
+          Rmcmc_tobit2space <- nimble::buildMCMC(conf_tobit2space)
           
-          Cmodel_tobit2space <- compileNimble(tobit2space_pred)
-          Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
+          Cmodel_tobit2space <- nimble::compileNimble(tobit2space_pred)
+          Cmcmc_tobit2space <- nimble::compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
           
           for(i in seq_along(X)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
-            valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
+            nimble::valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
           }
           
         }else{
@@ -728,7 +726,7 @@ for(t in seq_len(nt)) { #
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
-            valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
+            nimble::valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
           }
           
         }
@@ -801,7 +799,7 @@ for(t in seq_len(nt)) { #
           inits.pred = list(q = diag(length(mu.f)), X.mod = as.vector(mu.f),
                             X = rnorm(length(mu.f),0,1)) #
           
-          model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
+          model_pred <- nimble::nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
                                     constants = constants.tobit, inits = inits.pred,
                                     name = 'base')
           ## Adding X.mod,q,r as data for building model.
@@ -824,16 +822,16 @@ for(t in seq_len(nt)) { #
           ## can monitor y.censored, if you wish, to verify correct behaviour
           #conf$addMonitors('y.censored')
           
-          Rmcmc <- buildMCMC(conf)
+          Rmcmc <- nimble::buildMCMC(conf)
           
-          Cmodel <- compileNimble(model_pred)
-          Cmcmc <- compileNimble(Rmcmc, project = model_pred)
+          Cmodel <- nimble::compileNimble(model_pred)
+          Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred)
           
           for(i in 1:length(y.ind)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
-            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+            nimble::valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
           }
           
         }else{
@@ -853,7 +851,7 @@ for(t in seq_len(nt)) { #
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
-            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+            nimble::valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
           }
           
         }
@@ -1293,7 +1291,6 @@ for(t in seq_len(nt)) { #
                               r2 = PEcAn.benchmark::metric_R2(dat),
                               rae = PEcAn.benchmark::metric_RAE(dat),
                               ame = PEcAn.benchmark::metric_AME(dat))
-      require(gridExtra)
       plot1 <- PEcAn.benchmark::metric_residual_plot(dat, var = colnames(Ybar)[i])
       plot2 <- PEcAn.benchmark::metric_scatter_plot(dat, var = colnames(Ybar)[i])
       #PEcAn.benchmark::metric_lmDiag_plot(dat, var = colnames(Ybar)[i])
@@ -1301,9 +1298,14 @@ for(t in seq_len(nt)) { #
       text = paste("\n   The following is text that'll appear in a plot window.\n",
                    "       As you can see, it's in the plot window\n",
                    "       One might imagine useful informaiton here")
-      ss <- tableGrob(signif(dat.stats,digits = 3))
-      grid.arrange(plot1,plot2,plot3,ss,ncol=2)
-      
+      if(requireNamespace("gridExtra")){
+        ss <- gridExtra::tableGrob(signif(dat.stats,digits = 3))
+        gridExtra::grid.arrange(plot1,plot2,plot3,ss,ncol=2)
+      } else {
+        print(plot1)
+        print(plot2)
+        print(plot3)
+      }
       
     }
     dev.off()
@@ -1313,14 +1315,13 @@ for(t in seq_len(nt)) { #
     ###-------------------------------------------------------------------### 
     if (processvar) {
       
-      library(corrplot)
       pdf('process.var.plots.pdf')
       
       cor.mat <- cov2cor(solve(enkf.params[[t]]$q.bar))
       colnames(cor.mat) <- colnames(X)
       rownames(cor.mat) <- colnames(X)
       par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-      corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+      corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
       
       par(mfrow=c(1,1))   
       plot(as.Date(obs.times[t1:t]), unlist(lapply(enkf.params,'[[','n')),
@@ -1494,14 +1495,13 @@ for(t in seq_len(nt)) { #
   ###-------------------------------------------------------------------### 
   if (processvar) {
     
-    library(corrplot)
     pdf('process.var.plots.pdf')
     
     cor.mat <- cov2cor(aqq[t,,] / bqq[t])
     colnames(cor.mat) <- colnames(X)
     rownames(cor.mat) <- colnames(X)
     par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-    corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+    corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
     
     par(mfrow=c(1,1))   
     plot(as.Date(obs.times[t1:t]), bqq[t1:t],

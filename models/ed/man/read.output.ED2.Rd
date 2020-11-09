@@ -14,11 +14,15 @@ read.output.ED2(
 )
 }
 \arguments{
-\item{run.id}{the id distiguishing the model run}
+\item{run.id}{the id distinguishing the model run}
 
 \item{outdir}{the directory that the model's output was sent to}
 
-\item{start.year}{}
+\item{start.year}{first year}
+
+\item{end.year}{last year}
+
+\item{variables}{which ED2 variables to extract}
 
 \item{output.type}{type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL\%I\link{DMYT}OUTPUT}
 }

@@ -18,7 +18,7 @@
 #' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
 #' 
 #' @return NONE
-#' @import nimble tictoc furrr
+#' @import nimble furrr
 #' @export
 #' 
 sda.enkf.multisite <- function(settings, 
@@ -42,7 +42,7 @@ sda.enkf.multisite <- function(settings,
                                ...) {
   future::plan(multiprocess)
   if (control$debug) browser()
-  tic("Prepration")
+  tictoc::tic("Prepration")
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -267,7 +267,7 @@ sda.enkf.multisite <- function(settings,
     # if it beaks at least save the trace
     #tryCatch({
       
-      tic(paste0("Writing configs for cycle = ", t))
+      tictoc::tic(paste0("Writing configs for cycle = ", t))
       # do we have obs for this time - what year is it ?
       obs <- which(!is.na(obs.mean[[t]]))
       obs.t<-names(obs.mean)[t]
@@ -353,7 +353,7 @@ sda.enkf.multisite <- function(settings,
       
       #if(t==1)  inputs <- out.configs %>% map(~.x[['samples']][['met']]) # for any time after t==1 the met is the splitted met
       #-------------------------------------------- RUN
-      tic(paste0("Running models for cycle = ", t))
+      tictoc::tic(paste0("Running models for cycle = ", t))
       if (control$debug) browser()
       PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
       
@@ -381,7 +381,7 @@ sda.enkf.multisite <- function(settings,
         }
       }
       
-      tic(paste0("Preparing for Analysis for cycle = ", t))
+      tictoc::tic(paste0("Preparing for Analysis for cycle = ", t))
       #------------------------------------------- Reading the output
       if (control$debug) browser()
       #--- Reading just the first run when we have all years and for VIS
@@ -491,7 +491,7 @@ sda.enkf.multisite <- function(settings,
         ### Analysis                                                          ###
         ###-------------------------------------------------------------------###----
         
-        tic(paste0("Analysis for cycle = ", t))
+        tictoc::tic(paste0("Analysis for cycle = ", t))
         
         if(processvar == FALSE){an.method<-EnKF.MultiSite  }else{    an.method<-GEF.MultiSite   }  
         
@@ -519,7 +519,7 @@ sda.enkf.multisite <- function(settings,
           blocked.dis = blocked.dis,
           distances = distances
         )
-        tic(paste0("Preparing for Adjustment for cycle = ", t))
+        tictoc::tic(paste0("Preparing for Adjustment for cycle = ", t))
         #Forecast
         mu.f <- enkf.params[[obs.t]]$mu.f
         Pf <- enkf.params[[obs.t]]$Pf
@@ -590,7 +590,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ### adjustement/update state matrix                                   ###
       ###-------------------------------------------------------------------###---- 
-      tic(paste0("Adjustment for cycle = ", t))
+      tictoc::tic(paste0("Adjustment for cycle = ", t))
       if(adjustment == TRUE){
         analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
       } else {
@@ -625,7 +625,7 @@ sda.enkf.multisite <- function(settings,
            out.configs, ensemble.samples, inputs, Viz.output,
            file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
       
-      tic(paste0("Visulization for cycle = ", t))
+      tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
       
