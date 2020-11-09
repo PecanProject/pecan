@@ -1,5 +1,6 @@
+##' sets parameters and defaults for the ED2 semi-analytical spin-up
 ##' @param decomp_scheme Decomposition scheme specified in ED2IN
-##' @param kh_active_depth
+##' @param kh_active_depth Depth threshold for averaging soil moisture and temperature
 ##' @param Lc Used to compute nitrogen immpobilzation factor; ED default is 0.049787 (soil_respiration.f90)
 ##' @param c2n_slow Carbon to Nitrogen ratio, slow pool; ED Default 10.0
 ##' @param c2n_structural Carbon to Nitrogen ratio, structural pool. ED default 150.0
@@ -139,7 +140,7 @@ smfire.pos <- function(slmsts, soilcp, smfire){
 
 
 ##' @name SAS.ED2
-##' @title Use semi-analytical solution to accellerate model spinup
+##' @title Use semi-analytic solution to accelerate model spinup
 ##' @author Christine Rollinson, modified from original by Jaclyn Hatala-Matthes (2/18/14)
 ##'         2014 Feb: Original ED SAS solution Script at PalEON modeling HIPS sites (Matthes)
 ##'         2015 Aug: Modifications for greater site flexibility & updated ED
@@ -148,7 +149,7 @@ smfire.pos <- function(slmsts, soilcp, smfire){
 ##'@description This functions approximates landscape equilibrium steady state for vegetation and 
 ##'             soil pools using the successional trajectory of a single patch modeled with disturbance
 ##'             off and the prescribed disturbance rates for runs (Xia et al. 2012 GMD 5:1259-1271). 
-##' @param dir.analy Location of ED2 analyis files; expects monthly and yearly output
+##' @param dir.analy Location of ED2 analysis files; expects monthly and yearly output
 ##' @param dir.histo Location of ED2 history files (for vars not in analy); expects monthly
 ##' @param outdir Location to write SAS .css & .pss files
 ##' @param lat site latitude; used for file naming
