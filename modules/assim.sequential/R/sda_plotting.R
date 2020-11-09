@@ -509,6 +509,13 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 ##' @rdname interactive.plotting.sda
 ##' @export
 post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+
+  if (!requireNamespace("ggrepel", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Package `ggrepel` not found, but needed by",
+      "PEcAn.assim.sequential::post.analysis.multisite.ggplot.",
+      "Please install it and try again.")
+  }
   
   # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
   # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
@@ -551,9 +558,6 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     obs.mean[name] = data_mean
     obs.cov[name] = data_cov
   }
-  
-
-  if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
   t1 <- 1
