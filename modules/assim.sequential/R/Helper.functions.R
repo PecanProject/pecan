@@ -96,7 +96,7 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   scaling.factors <-
     settings$state.data.assimilation$state.variables %>%
     purrr::map('scaling_factor') %>%
-    setNames(settings$state.data.assimilation$state.variables %>%
+    stats::setNames(settings$state.data.assimilation$state.variables %>%
                purrr::map('variable.name')) %>%
     purrr::discard(is.null)
   
