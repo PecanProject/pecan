@@ -356,13 +356,15 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(obs.mean[[t]]), 2)
+  # Each observe variable needs to have its own file tag under inputs
+  interval <-settings$state.data.assimilation$inputs %>%
+    purrr::map_dfr( ~ data.frame(
+      .x$'min_value' %>% as.numeric(),.x$'max_value' %>% as.numeric()
+    )) %>%
+    as.matrix()
+  
   rownames(interval) <- names(obs.mean[[t]])
-  for(i in 1:length(input.vars)){
-    interval[grep(x=rownames(interval),
-                  pattern=input.vars[i]), ] <- matrix(c(as.numeric(settings$state.data.assimilation$inputs[[i]]$min_value), #needs to be inputs because sometimes the observation is on a different scale than the state variable
-                                                        as.numeric(settings$state.data.assimilation$inputs[[i]]$max_value)),
-                                                      length(grep(x=rownames(interval),pattern=input.vars[i])),2,byrow = TRUE)
-  }
+  
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[,1])
