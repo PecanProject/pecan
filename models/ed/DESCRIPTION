@@ -24,6 +24,7 @@ Depends:
     PEcAn.utils
 Imports:
     PEcAn.data.atmosphere,
+    PEcAn.data.land,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
