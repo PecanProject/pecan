@@ -212,10 +212,10 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
   
   ## drop variables that are only meaningful internally
-  mysoil$slpotcp <- NULL
-  mysoil$slpotwp <- NULL
-  mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
-  mysoil$slcpd <- NULL
+  #mysoil$slpotcp <- NULL
+  #mysoil$slpotwp <- NULL
+  #mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
+  #mysoil$slcpd <- NULL
   
   return(mysoil)
   }#end function

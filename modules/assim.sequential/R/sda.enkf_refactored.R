@@ -149,8 +149,8 @@ sda.enkf <- function(settings,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   #The aqq and bqq are shape parameters estimated over time for the proccess covariance. #see GEF help
-  aqq         <- list()
-  bqq         <- list()
+  aqq         <- NULL
+  bqq         <- numeric(nt + 1)
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
@@ -365,9 +365,7 @@ sda.enkf <- function(settings,
     #--- Reformating X
     X <- do.call(rbind, X)
     
-    FORECAST[[t]] <- X
-    mu.f <- colMeans(X)
-    Pf <- cov(X)
+
     
     if(sum(X,na.rm=T) == 0){
       logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
@@ -454,6 +452,7 @@ sda.enkf <- function(settings,
                                        obs.cov=obs.cov)
       
       #Reading back mu.f/Pf and mu.a/Pa
+      FORECAST[[t]] <- X
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
       Pf <- enkf.params[[t]]$Pf

@@ -21,10 +21,10 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation. This package provides functions to
     link the Ecosystem Demography Model, version 2, to PEcAn.
 Depends:
-    PEcAn.utils,
-    coda
+    PEcAn.utils
 Imports:
     PEcAn.data.atmosphere,
+    PEcAn.data.land,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,

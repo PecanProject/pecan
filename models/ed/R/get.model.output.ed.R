@@ -42,10 +42,11 @@ read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")) {
 ##' This function applies \link{read.output.file.ed} to a list of files from a single run
 ##' @title Read ED output
 ##' @name read.output.ED2
-##' @param run.id the id distiguishing the model run
+##' @param run.id the id distinguishing the model run
 ##' @param outdir the directory that the model's output was sent to
-##' @param start.year 
-##' @param end.year
+##' @param start.year first year
+##' @param end.year last year
+##' @param variables which ED2 variables to extract
 ##' @param output.type type of output file to read, can be '-Y-' for annual output, '-M-' for monthly means, '-D-' for daily means, '-T-' for instantaneous fluxes. Output types are set in the ED2IN namelist as NL%I[DMYT]OUTPUT
 ##' @return vector of output variable for all runs within ensemble
 ##' @export
