@@ -74,7 +74,7 @@ cov.data = cov.data
 
 jags.comb <- NULL
 
-for(i in 725:750){ # note this model stopped early b/c convergence
+for(i in 390:400){ # note this model stopped early b/c convergence
   load(paste0(workingdir,"/IGF_PIPO_AZ_mcmc/", file.base.name,i,".RData"))
   new.out <- jags.out 
   
@@ -110,7 +110,7 @@ for(i in 1:3){
   jags.comb[[i]] <- as.mcmc(jags.comb[[i]])
 }
 jags.comb <- as.mcmc.list(jags.comb)
-
+saveRDS(jags.comb, paste0("IGF_xvals_", output.base.name, ".rds"))
 
 # read in the held out DBH measurement dataframe
 df.validation <- readRDS("data/post2010.core.validation.tree2tree.rds")
@@ -138,13 +138,17 @@ yvals.new <- yvals[!ndex.dups,]
 df.validation$PLOT <- paste0(df.validation$COUNTYCD, df.validation$PlotNo)
 cov.data[cov.data$PLOT %in% df.validation$PLOT,]
 
+df.validation[df.validation$PLOT %in% cov.data$PLOT, ]
+
 colnames(df.validation)[2] 
 cored <- Tree2Tree.incored.plots[, c("PLOT", "T1_SUBP", "T1_PLOT","T1_TREE", "COUNTYCD",  "T1_DIA", "T2_DIA", "T1_MEASYR", "T2_MEASYR", "T2_FIADB_PLOT" )] 
-colnames(cored)[1:4] <- c("PlotNo", "SUBP", "T1_PLOT", "TREE")
-colnames(cored)[10] <- "PLOT"
+colnames(cored)[1:4] <- c("PlotNo", "SUBP", "PLOT", "TREE")
+#colnames(cored)[10] <- "PLOT"
+cored$PLOT <- paste0(cored$PLOT, df.validation$PLOT)
+
 #cored <- cov.data
 cored$id <- 1:length(cored$PlotNo) # set an id to preserve tree order in the output
-cov.data.joined <- merge(cored, df.validation[, c("PLOT", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PLOT"), all.x = TRUE, sort = F)
+cov.data.joined <- merge(cored, df.validation[, c("PlotNo", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PlotNo"), all.x = TRUE, sort = F)
 #cov.data.joined <- merge(cored, df.validation[, c("PLOT", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PLOT"), all.x = TRUE, sort = F)
 
 cored[1:3,]
@@ -177,7 +181,7 @@ x.cols   <- which(substr(colnames(out), 1, 1) == "x") # grab the state variable 
 ci      <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
 var.pred       <- apply(out[, x.cols], 2, var)
 ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
-total.index <- 1:515
+total.index <- 1:5794
 index.smp <- cov.data.ordered[!is.na(cov.data.ordered$max.invyr),]$id # get the row index of all trees with additional measurements
 #smp <- sample.int(data$ni, min(8, data$ni)) # select a random sample of 8 trees to plot
 smp <- index.smp
