@@ -63,8 +63,8 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
 library(rjags)
 #library(PEcAn.data.land)
 jags.comb <- NULL
-file.base.name <- "X2_Xscaled_plotrand_test_parallel"
-output.base.name <- "X2_Xscaled_plotrand_test_parallel"
+#file.base.name <- "SDI_SI.norand.X.nadapt.5000."
+#output.base.name <- "SDI_SI.norand.X.nadapt.5000"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 #workingdir <- "/Users/kah/Documents/docker_pecan/pecan"
@@ -74,16 +74,10 @@ cov.data = cov.data
 
 jags.comb <- NULL
 
-for(i in 175:200){ # note this model stopped early b/c convergence
-  for(clust in 1:3){ # reorganize 'm5' as an 'mcmc.list' object
-    load(paste0(workingdir,"/IGF_PIPO_AZ_mcmc/","node_",clust,"_avail.chunk_", file.base.name,i,".RData"))
-    list.of.mcmc.chains[[clust]] <- m[[1]]
-    
-    # m5[[i]] <- m5[[i]][[1]]
-  }
+for(i in 725:750){ # note this model stopped early b/c convergence
+  load(paste0(workingdir,"/IGF_PIPO_AZ_mcmc/", file.base.name,i,".RData"))
+  new.out <- jags.out 
   
-  jags.out <- list.of.mcmc.chains
-  new.out <- jags.out
   if(is.null(jags.comb)){
     for(j in seq_along(new.out)){
       x.cols <- grep("^x",colnames(new.out[[j]]))
@@ -119,24 +113,46 @@ jags.comb <- as.mcmc.list(jags.comb)
 
 
 # read in the held out DBH measurement dataframe
-df.validation <- readRDS("INV_FIA_DATA/data/post2010.core.validation.rds")
+df.validation <- readRDS("data/post2010.core.validation.tree2tree.rds")
+#df.validation <- readRDS("data/post2010.core.validation.rds")
+
+jags.data <- readRDS("jags.data.5794.stage2.rds")
+cov.data <- jags.data$cov.data
+data <- jags.data$data
+data$time <- 1994:2018
+data$y <- cbind(data$y, matrix(NA, nrow = nrow(data$y), ncol = 8))
+colnames(data$y)<- 1994:2018
+data$z <- cbind(data$z, matrix(NA, nrow = nrow(data$y), ncol = 8))
+colnames(data$z)<- 1994:2018
+data$nt <- length(1994:2018)
+data$nt2 <- rep(length(1994:2018), 515)
+data$endyr <- rep(length(1994:2018), 515)
+
+yvals <- data$y
+ndex.dups <- duplicated(yvals)
+yvals.new <- yvals[!ndex.dups,]
 #colnames(df.validation)[10] <- "T2_FIADB_PLOT"
 # df.validation contains the PLOT, SUBP, TREE, COUNTYCD to match with the temp2 or cov.data dataframes
-cov.data[cov.data$T2_FIADB %in% df.validation$PLOT,]
+#colnames(df.validation)[10] <- "T2_FIADB_PLOT"
+# df.validation contains the PLOT, SUBP, TREE, COUNTYCD to match with the temp2 or cov.data dataframes
+df.validation$PLOT <- paste0(df.validation$COUNTYCD, df.validation$PlotNo)
+cov.data[cov.data$PLOT %in% df.validation$PLOT,]
 
-cored <- temp2[, c("PlotNo", "SubplotNo", "TreeNo", "CountyNo", "DBH", "T1_DIA", "T2_DIA", "T1_MEASYR", "T2_MEASYR", "T2_FIADB_PLOT" )] 
-colnames(cored)[1:4] <- c("PlotNo", "SUBP", "TREE", "COUNTYCD")
+colnames(df.validation)[2] 
+cored <- Tree2Tree.incored.plots[, c("PLOT", "T1_SUBP", "T1_PLOT","T1_TREE", "COUNTYCD",  "T1_DIA", "T2_DIA", "T1_MEASYR", "T2_MEASYR", "T2_FIADB_PLOT" )] 
+colnames(cored)[1:4] <- c("PlotNo", "SUBP", "T1_PLOT", "TREE")
 colnames(cored)[10] <- "PLOT"
-cored <- cored[!duplicated(cored),]
-
-cored$id <- 1:543 # set an id to preserve tree order in the output
+#cored <- cov.data
+cored$id <- 1:length(cored$PlotNo) # set an id to preserve tree order in the output
 cov.data.joined <- merge(cored, df.validation[, c("PLOT", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PLOT"), all.x = TRUE, sort = F)
+#cov.data.joined <- merge(cored, df.validation[, c("PLOT", "SUBP", "TREE", "COUNTYCD", "max.invyr", "max.DIA")], by = c( "SUBP", "TREE", "COUNTYCD", "PLOT"), all.x = TRUE, sort = F)
+
 cored[1:3,]
 
 cov.data.joined<- cov.data.joined[!duplicated(cov.data.joined),]
 length(cov.data.joined$PLOT)
 cov.data.ordered <- cov.data.joined[order(cov.data.joined$id),] # order the df based on the original tree order
-
+#cov.data.ordered <- cov.data.joined
 # T2_FIADB is the plot number recorded in the FIA database:
 
 # reformate df.validation so we have a dataframe
@@ -151,18 +167,15 @@ cov.data.ordered <- cov.data.joined[order(cov.data.joined$id),] # order the df b
 
 
 # make the predicte and observed plots
-
 model.out <- jags.comb
 
-### DBH par(mfrow=c(3,2))
-
-pdf(paste0("IGF.", output.base.name,".pdf"))
-
+pdf(paste0(output.base.name,"_held_out_dbh.pdf"))
 layout(matrix(1:8, 4, 2, byrow = TRUE))
 out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
 x.cols   <- which(substr(colnames(out), 1, 1) == "x") # grab the state variable columns
 
 ci      <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
+var.pred       <- apply(out[, x.cols], 2, var)
 ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
 total.index <- 1:515
 index.smp <- cov.data.ordered[!is.na(cov.data.ordered$max.invyr),]$id # get the row index of all trees with additional measurements
@@ -183,20 +196,27 @@ for (i in smp) {
   # lines(data$time,z0[i,],lty=2)
   in.sample.obs[[i]] <- data.frame(z.data = data$z[i, ], 
                                    year = data$time, 
+                                   predvar = var.pred[sel], # calculate varince of the predictions
                                    min.ci = ci[1,sel],
                                    mean.ci = ci[2,sel],
-                                   max.ci = ci[3,sel])
+                                   max.ci = ci[3,sel], 
+                                   id = cov.data.ordered[i,]$id)
   ci.year <- ci[,sel]
   colnames(ci.year)<- 1966:2018
   
   ci.year[1,as.character(cov.data.ordered[i,]$max.invyr)]
   
+  # var.pred
+  var.year <- var.pred[sel]
+  names(var.year)<- 1966:2018
+  
   out.sample.obs[[i]] <- data.frame(z.data = cov.data.ordered[i,]$max.DIA*2.54, 
                                     year = cov.data.ordered[i,]$max.invyr, 
-                                    
+                                    predvar = var.year[as.character(cov.data.ordered[i,]$max.invyr)],
                                     min.ci = ci.year[1,as.character(cov.data.ordered[i,]$max.invyr)],
                                     mean.ci = ci.year[2,as.character(cov.data.ordered[i,]$max.invyr)],
-                                    max.ci = ci.year[3,as.character(cov.data.ordered[i,]$max.invyr)])
+                                    max.ci = ci.year[3,as.character(cov.data.ordered[i,]$max.invyr)], 
+                                    id = cov.data.ordered[i,]$id)
   #plot(pred.obs$z.data, pred.obs$mean.ci)
   #abline(a= 1, b =0)
   
@@ -220,7 +240,7 @@ out.sample.dbh.df <- do.call(rbind,   out.sample.obs)
 summary.stats <- summary(lm(z.data ~ mean.ci, data = out.sample.dbh.df))
 
 
-saveRDS(out.sample.dbh.df, "pred.obs.out.of.sample.dbh.rds")
+saveRDS(out.sample.dbh.df, paste0(output.base.name,"pred.obs.out.of.sample.dbh.rds"))
 
 
 p.o.out.of.sample <- ggplot()+
@@ -228,8 +248,8 @@ p.o.out.of.sample <- ggplot()+
   geom_point(data = out.sample.dbh.df, aes(z.data, mean.ci), size = 0.75)+
   geom_abline(aes(intercept = 0, slope = 1), color = "red", linetype = "dashed")+
   ylab("Predicted DBH (cm)")+xlab("Measured DBH (held-out samples)")+
-  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 80)+xlim(0, 80)+
-  geom_text(data=data.frame(summary.stats$r.squared), aes( label = paste("R.sq: ", round(summary.stats$r.squared, digits = 3), sep="")),parse=T,x=20, y=75)
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 80)+xlim(0, 80)#+
+#geom_text(data=data.frame(summary.stats$r.squared), aes( label = paste("R.sq: ", round(summary.stats$r.squared, digits = 3), sep="")),parse=T,x=20, y=75)
 
 
 
@@ -238,7 +258,7 @@ in.sample.dbh.df <- do.call(rbind,   in.sample.obs)
 in.sample.summary.stats <- summary(lm(z.data ~ mean.ci, data = in.sample.dbh.df))
 
 
-saveRDS(in.sample.dbh.df, "pred.obs.within.sample.dbh.rds")
+saveRDS(in.sample.dbh.df, paste0(output.base.name,"pred.obs.within.sample.dbh.rds"))
 
 
 p.o.within.sample <-ggplot()+
@@ -246,18 +266,385 @@ p.o.within.sample <-ggplot()+
   geom_point(data = in.sample.dbh.df, aes(z.data, mean.ci), size = 0.75)+
   geom_abline(aes(intercept = 0, slope = 1), color = "red", linetype = "dashed")+
   ylab("Predicted DBH (cm)")+xlab("Measured DBH (within-sample)")+
-  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 80)+xlim(0, 80)+
-  geom_text(data=data.frame(in.sample.summary.stats$r.squared), aes( label = paste("R.sq: ", round(in.sample.summary.stats$r.squared, digits = 3), sep="")),parse=T,x=20, y=75)
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 80)+xlim(0, 80)#+
+#geom_text(data=data.frame(in.sample.summary.stats$r.squared), aes( label = paste("R.sq: ", round(in.sample.summary.stats$r.squared, digits = 3), sep="")),parse=T,x=20, y=75)
 
 png(height = 5, width = 10, units = "in", res = 300, paste0(output.base.name, "_DBH_held_out_p.o.plots.png"))
 grid.arrange(p.o.within.sample, p.o.out.of.sample, ncol = 2)
 dev.off()
 
+#-------------------------------------------------------------------------------------
+# calculating Error statistics for model valiation:
+#-------------------------------------------------------------------------------------
+# want to calculate:
+# MSPE-mean squared predictive error
+# RMSE-root mean squared predictive error
+# MAPE-mean absolute predictive error
+# V1-check for bias over time
+# V2-accuracy of MSPE estimates
+# V3-goodness of fit to compare across models
+# PPL- calculating posterior predictive loss for model comparison:
+
+#PPL = sum((Zobs - predZ)^2) - sum(var(predZ))
+
+# out of sample calculations
+out.of.sample.validation.metrics <- out.sample.dbh.df %>% summarise(MSPE = mean((z.data-mean.ci)^2), 
+                                                                    RMSPE = sqrt(mean((z.data-mean.ci)^2)),
+                                                                    MAPE = mean(abs(z.data-mean.ci)), 
+                                                                    V1 = mean(z.data-mean.ci)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
+                                                                    V2 = (mean((z.data-mean.ci)^2)/(sum(predvar)/n())^(1/2)),  # estimate of accuracy of MSPEs (close to 1 = accurate)
+                                                                    V3 = (mean((z.data-mean.ci)^2)^(1/2)), # goodness of fit estimate (small = better fit)
+                                                                    PPL = sum((z.data - mean.ci)^2) + sum(predvar)) # posterior predictive loss
+
+out.of.sample.validation.metrics$validation <- "out-of-sample"              
+
+
+# in of sample calculations
+in.sample.validation.metrics <- in.sample.dbh.df %>% summarise(MSPE = mean((z.data-mean.ci)^2, na.rm =TRUE), 
+                                                               RMSPE = sqrt(mean((z.data-mean.ci)^2, na.rm =TRUE)),
+                                                               MAPE = mean(abs(z.data-mean.ci), na.rm =TRUE), 
+                                                               V1 = mean(z.data-mean.ci, na.rm =TRUE)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
+                                                               V2 = (mean((z.data-mean.ci)^2, na.rm =TRUE)/(sum(predvar)/n()^(1/2))),  # estimate of accuracy of MSPEs (close to 1 = accurate)
+                                                               V3 = (mean((z.data-mean.ci)^2,na.rm =TRUE)^(1/2)),
+                                                               PPL = sum((z.data - mean.ci)^2, na.rm = TRUE) + sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
+in.sample.validation.metrics$validation <- "in-sample"
+# concatenate together + add the model name + description:
+valid.metrics <- rbind(in.sample.validation.metrics, out.of.sample.validation.metrics)
+valid.metrics$model <- output.base.name
+valid.metrics$description <- "Model with SDI, no SI, no random BetaX effects, plot random slopes"
+
+write.csv(valid.metrics, paste0(output.base.name, "model.validation.stats.csv"), row.names = FALSE)
+
+
+#---------------------------------------------------------------------------
+# Plot residuals
+#--------------------------------------------------------------------------
+#################################
+# out of sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+out.sample.cov <- merge(out.sample.dbh.df, cov.data, by = "id")
+out.sample.cov$residual <- out.sample.cov$z.data - out.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(out.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+install.packages("sp")
+install.packages("maps")
+install.packages("vidris")
+library(sp)
+library(maps)
+library("vidris")
+
+
+all_states <- map_data("state")
+states <- subset(all_states, region %in% c( "arizona") )
+coordinates(states)<-~long+lat
+class(states)
+proj4string(states) <-CRS("+proj=longlat +datum=NAD83")
+mapdata <- states
+mapdata<-data.frame(mapdata)
+
+residual.map <- ggplot(out.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(out.sample.cov, aes(x = z.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("DBH")
+
+res.sdi <- ggplot(out.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(out.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(out.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(out.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(out.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(out.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(out.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(out.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+install.packages("cowplot")
+library(cowplot)
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "out.sample.residual.plots.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
+
+#################################
+# In sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+in.sample.cov <- merge(in.sample.dbh.df, cov.data, by = "id")
+in.sample.cov$residual <- in.sample.cov$z.data - in.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(in.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+residual.map <- ggplot(in.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(in.sample.cov, aes(x = z.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("DBH")
+
+res.sdi <- ggplot(in.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(in.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(in.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(in.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(in.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(in.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(in.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(in.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "in.sample.residual.plots.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
 
 
 
-# Plot up the time series of all validation individuals + data used to constrain the model + data used to validate
 
-# Plot predicted vs. observed (for the held out dataset) + calculate the Rsq
+#--------------------------------------------------------------------------
+# Validation for Increment (within sample only)
+#--------------------------------------------------------------------------
+pdf(paste0(output.base.name,"_insample_increment.pdf"))
+layout(matrix(1:8, 4, 2, byrow = TRUE))
+out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
+x.cols   <- which(substr(colnames(out), 1, 1) == "x") # grab the state variable columns
 
-# uncertainty in the forecast(?)
+ci      <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
+var.pred       <- apply(out[, x.cols], 2, var)
+ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
+total.index <- 1:515
+index.smp <- cov.data.ordered[!is.na(cov.data.ordered$max.invyr),]$id # get the row index of all trees with additional measurements
+#smp <- sample.int(data$ni, min(8, data$ni)) # select a random sample of 8 trees to plot
+smp <- total.index
+
+in.sample.inc <-  list()
+
+for (i in smp) {
+  sel <- which(ci.names$row == i)
+  rng <- c(range(ci[, sel], na.rm = TRUE), range(data$z[i, ], na.rm = TRUE))
+  
+  
+  # increment growth
+  sel      <- which(ci.names$row == i)
+  inc.mcmc <- apply(out[, x.cols[sel]], 1, diff)
+  inc.ci   <- apply(inc.mcmc, 1, quantile, c(0.025, 0.5, 0.975))
+  inc.names = parse.MatrixNames(colnames(ci),numeric=TRUE)
+  var.pred.inc <- apply( inc.mcmc, 1, var)
+  
+  
+  plot(data$time[-1], inc.ci[2, ], type = "n",
+       ylim = range(inc.ci, na.rm = TRUE), ylab = "Increment (mm)", xlab="Year")
+  ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
+  ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
+  points(data$time, data$y[i, ] , pch = "+", cex = 1.5, type = "b", lty = 2)
+  
+  in.sample.inc[[i]] <- data.frame(inc.data = data$y[i, -1],
+                                   year = data$time[-1],
+                                   predvar = var.pred.inc, # calculate varince of the predictions
+                                   min.ci = inc.ci[1,],
+                                   mean.ci = inc.ci[2,],
+                                   max.ci = inc.ci[3,], 
+                                   id = i)
+  
+}
+
+dev.off()
+
+#------------------------Do validation & diagnostics for increment----------------------------
+
+# plot up the out of sample predictions for increment:
+in.sample.inc.df <- do.call(rbind,  in.sample.inc)
+summary.stats <- summary(lm(inc.data ~ mean.ci, data =in.sample.inc.df))
+
+saveRDS(in.sample.inc.df, paste0(output.base.name,"pred.obs.out.of.sample.inc.rds"))
+
+
+p.o.inc.in.sample <- ggplot()+
+  geom_errorbar(data = in.sample.inc.df, aes(inc.data, ymin = min.ci, ymax = max.ci), color = "grey")+
+  geom_point(data = in.sample.inc.df, aes(inc.data, mean.ci), size = 0.75)+
+  geom_abline(aes(intercept = 0, slope = 1), color = "red", linetype = "dashed")+
+  ylab("Predicted increment (cm)")+xlab("Measured Increment (in-sample)")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+ylim(0, 2.5)+xlim(0, 2.5)+
+  #geom_text(data=data.frame(summary.stats$r.squared), aes( label = paste("R.sq: ", round(summary.stats$r.squared, digits = 3), sep="")),parse=T,x=0.5, y=2.5)
+  
+  
+  
+  
+  png(height = 5, width = 5, units = "in", res = 300, paste0(output.base.name, "_increment_in_sample_p.o.plots.png"))
+p.o.inc.in.sample
+dev.off()
+
+
+#-------------------------------------------------------------------------------------
+# calculating Error statistics for model valiation: Increments
+#-------------------------------------------------------------------------------------
+# want to calculate:
+# MSPE-mean squared predictive error
+# RMSE-root mean squared predictive error
+# MAPE-mean absolute predictive error
+# V1-check for bias over time
+# V2-accuracy of MSPE estimates
+# V3-goodness of fit to compare across models
+# PPL- calculating posterior predictive loss for model comparison:
+
+#PPL = sum((Zobs - predZ)^2) - sum(var(predZ))
+
+
+# in of sample calculations for increment
+in.sample.validation.inc.metrics <- in.sample.inc.df %>% summarise(MSPE = mean((inc.data-mean.ci)^2, na.rm =TRUE), 
+                                                                   RMSPE = sqrt(mean((inc.data-mean.ci)^2, na.rm =TRUE)),
+                                                                   MAPE = mean(abs(inc.data-mean.ci), na.rm =TRUE), 
+                                                                   V1 = mean(inc.data-mean.ci, na.rm =TRUE)/(sum(predvar)^(1/2))/n(), # estimate of bias in predictors over time (close to 0 = unbiased)
+                                                                   V2 = (mean((inc.data-mean.ci)^2, na.rm =TRUE)/(sum(predvar)/n()^(1/2))),  # estimate of accuracy of MSPEs (close to 1 = accurate)
+                                                                   V3 = (mean((inc.data-mean.ci)^2,na.rm =TRUE)^(1/2)),
+                                                                   PPL = sum((inc.data - mean.ci)^2, na.rm = TRUE) + sum(predvar, na.rm = TRUE)) # posterior predictive loss# goodness of fit estimate (small = better fit)
+in.sample.validation.inc.metrics$validation <- "in-sample"
+# concatenate together + add the model name + description:
+in.sample.validation.inc.metrics$model <- output.base.name
+in.sample.validation.inc.metrics$description <- "Model with SDI, no SI, no random BetaX effects, plot random slopes"
+
+write.csv(in.sample.validation.inc.metrics, paste0(output.base.name, "model.validation.stats.inc.csv"), row.names = FALSE)
+
+
+#-------------------------------------------------------------------------------------
+# Plot Increment Residuals
+#-------------------------------------------------------------------------------------
+
+
+
+#################################
+# In sample residuals plots:#
+#################################
+cov.data$id <- 1:515
+
+in.sample.cov <- merge(in.sample.inc.df, cov.data, by = "id")
+in.sample.cov$residual <- in.sample.cov$inc.data - in.sample.cov$mean.ci
+
+# make a histogram of residuals
+residual.hist <- ggplot(in.sample.cov, aes(residual))+geom_histogram(bins = 20)+theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank())+geom_vline(aes(xintercept = mean(residual)), color = "red", linetype = "dashed")
+
+# make a map of residuals
+residual.map <- ggplot(in.sample.cov, aes(x = LON, y = LAT, color = residual))+geom_point()+
+  geom_polygon(data=data.frame(mapdata), aes(x=long, y=lat, group=group),
+               colour = "darkgrey", fill = NA)+theme_bw(base_size = 12)+theme(panel.grid = element_blank())+
+  scale_color_continuous(type = "viridis")
+
+
+# now plot scatter plots of residuals against all the covariates:
+res.Size <- ggplot(in.sample.cov, aes(x = inc.data, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())+xlab("Increment")
+
+res.sdi <- ggplot(in.sample.cov, aes(x = SDI, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.si <- ggplot(in.sample.cov, aes(x = SICOND, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAP <- ggplot(in.sample.cov, aes(x = MAP, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.MAT <- ggplot(in.sample.cov, aes(x = MAT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.ele <- ggplot(in.sample.cov, aes(x = ELEV, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.slope <- ggplot(in.sample.cov, aes(x = SLOPE, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.aspect <- ggplot(in.sample.cov, aes(x = ASPECT, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+res.dstrb <- ggplot(in.sample.cov, aes(x = DSTRBCD1, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+
+png(height = 10, width = 8, units = "in", res = 300, paste0(output.base.name, "in.sample.residual.plots.increment.png"))
+plot_grid(
+  plot_grid(residual.hist, residual.map, ncol = 2, align = "hv"),
+  plot_grid(res.sdi, res.si, res.Size, 
+            res.MAP, res.MAT, res.ele, 
+            res.slope, res.aspect, res.dstrb, ncol = 3, align = "hv"), 
+  nrow = 2, rel_heights = c(0.5, 1))
+dev.off()
+
+
+
+# plot increment residuals against yearly climate:
+rownames(time_data$tmax.fallspr)<- 1:515
+colnames(time_data$tmax.fallspr) <- 1966:2018
+tmax.fs.time <- reshape2::melt(time_data$tmax.fallspr)
+colnames(tmax.fs.time)<- c("id", "year", "Tmax.fallspr")
+
+
+rownames(time_data$wintP.wateryr)<- 1:515
+colnames(time_data$wintP.wateryr) <- 1966:2018
+P.wateryr.time <- reshape2::melt(time_data$wintP.wateryr)
+colnames(P.wateryr.time)<- c("id", "year", "P.wateryr")
+
+ts.climate <- merge(P.wateryr.time, tmax.fs.time, by = c("id", "year"))
+
+ts.residuals <- merge(in.sample.cov, ts.climate, by =c("id", "year"))
+
+tmax.residuals <- ggplot(ts.residuals , aes(x = P.wateryr, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+ppt.residuals <- ggplot(ts.residuals , aes(x = Tmax.fallspr, y = residual))+geom_point()+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "lightgrey")+
+  theme_bw(base_size = 12)+theme(panel.grid = element_blank())
+
+png(height = 8, width = 4, units = "in", res = 200, paste0(output.base.name, "_climate_ts_inc_residuals.png"))
+plot_grid(tmax.residuals, ppt.residuals, ncol = 1)
+dev.off()
