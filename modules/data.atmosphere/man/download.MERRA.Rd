@@ -10,9 +10,8 @@ download.MERRA(
   end_date,
   lat.in,
   lon.in,
-  overwrite = TRUE,
+  overwrite = FALSE,
   verbose = FALSE,
-  redownload = FALSE,
   ...
 )
 }
@@ -33,9 +32,6 @@ but only the year portion is used and the resulting files always contain a full 
 
 \item{verbose}{logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 to control printing of debug info}
-
-\item{redownload}{Logical. If `TRUE`, force re-download of files even if they
-already exist (default = `FALSE`).}
 
 \item{...}{Not used -- silently soak up extra arguments from `convert.input`, etc.}
 }
