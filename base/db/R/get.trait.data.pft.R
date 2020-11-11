@@ -141,10 +141,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           existing_membership <- utils::read.csv(
             need_paths[["pft_membership"]],
             # Columns are: id, genus, species, scientificname
-            # Need this so NA values are
+            # Need this so NA values are formatted consistently
             colClasses = c("double", "character", "character", "character"),
             stringsAsFactors = FALSE,
-            na.strings = ""
+            na.strings = c("", "NA")
           )
           diff_membership <- symmetric_setdiff(
             existing_membership,
