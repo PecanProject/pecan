@@ -117,14 +117,14 @@ if ((length(which(commandArgs() == "--advanced")) != 0)
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
   stop_on_error <- as.logical(settings[[c("run", "stop_on_error")]])
-  if (is.null(stop_on_error)) {
+  if (length(stop_on_error) == 0) {
     # If we're doing an ensemble run, don't stop. If only a single run, we
     # should be stopping.
     if (is.null(settings[["ensemble"]]) ||
           as.numeric(settings[[c("ensemble", "size")]]) == 1) {
-      stop_on_error <- FALSE
-    } else {
       stop_on_error <- TRUE
+    } else {
+      stop_on_error <- FALSE
     }
   }
   PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = stop_on_error)
