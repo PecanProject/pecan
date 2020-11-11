@@ -186,18 +186,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     # `dt` is the met product time step in seconds. We calculate it here as
     # `sec[i] - sec[i-1]` for all `[i]`. For a properly formatted product, the
     # timesteps should be regular, so there is a single, constant difference. If
-    # that's not the case, we throw an informative error.
+    # that's not the case, we throw an informative warning and try to round
+    # instead (as some met products will not always have neat time steps).
     #
     # `drop` here simplifies length-1 arrays to vectors. Without it, R will
     # later throw an error about "non-conformable arrays" when trying to add a
     # length-1 array to a vector.
     dt <- drop(unique(diff(sec)))
     if (length(dt) > 1) {
-      PEcAn.logger::logger.severe(paste0(
+      dt_old <- dt
+      dt <- drop(round(mean(diff(sec))))
+      PEcAn.logger::logger.warn(paste0(
         "Time step (`dt`) is not uniform! Identified ",
-        length(dt), " unique time steps. ",
+        length(dt_old), " unique time steps. ",
         "`head(dt)` (in seconds): ",
-        paste(utils::head(dt), collapse = ", ")
+        paste(utils::head(dt_old), collapse = ", "),
+        " Using the rounded mean difference as the time step: ", dt
       ))
     }
 
