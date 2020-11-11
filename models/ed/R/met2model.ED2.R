@@ -197,7 +197,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         "Time step (`dt`) is not uniform! Identified ",
         length(dt), " unique time steps. ",
         "`head(dt)` (in seconds): ",
-        paste(head(dt), collapse = ", ")
+        paste(utils::head(dt), collapse = ", ")
       ))
     }
 
