@@ -380,6 +380,7 @@ This section provides detailed configuration for the model run, including the si
     </inputs>
     <start.date>2004/01/01</start.date>
     <end.date>2004/12/31</end.date>
+    <stop_on_error>TRUE</stop_on_error>
   </run>
 ```
 
@@ -456,6 +457,8 @@ PEcAn tries to detect and throw informative errors when dates are out of bounds 
 The following tags are optional run settings that apply to any model: 
 
 * `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
+
+* `stop_on_error`: (logical) Whether the workflow should immediately terminate if _any_ of the model runs fail. If unset, this defaults to `TRUE` unless you are running an ensemble simulation (and ensemble size is greater than 1).
 
 Some models also have model-specific tags, which are described in the [PEcAn Models](#pecan-models) section.
 
