@@ -122,9 +122,9 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
     # should be stopping.
     if (is.null(settings[["ensemble"]]) ||
           as.numeric(settings[[c("ensemble", "size")]]) == 1) {
-      stop_on_error <- FALSE
-    } else {
       stop_on_error <- TRUE
+    } else {
+      stop_on_error <- FALSE
     }
   }
   PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = stop_on_error)
