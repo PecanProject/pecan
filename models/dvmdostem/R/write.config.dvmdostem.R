@@ -100,7 +100,7 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
     a <- system2(file.path(appbinary_path, "scripts/outspec_utils.py"), 
                  args=c(rs_outspec_path, "-s", "--csv"), stdout=TRUE)
     con <- textConnection(a)
-    already_on <- read.csv(con, header = TRUE)
+    already_on <- utils::read.csv(con, header = TRUE)
 
     for (j in req_v_list) {
       if (j %in% already_on$Name) {
@@ -165,12 +165,18 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
   return(c(rs_outspec_path, req_v_str))
 }
 
-requested_vars_string2list <- function(req_v_str, outspec_path){
-
-  # Look up the "depends_on" in the output variable mapping, 
-  # accumulate list of dvmdostem variables to turn on to support
-  # the requested variables in the pecan.xml tag
-
+##------------------------------------------------------------------------------------------------#
+##' Look up the "depends_on" in the output variable mapping, 
+##' accumulate a list of dvmdostem variables to turn on to support 
+##' the requested variables in the pecan.xml tag
+##' @name requested_vars_string2list
+##' @title Requested variables string to list conversion.
+##' @param req_v_str A string, (comma or space separated?) of variables
+##' @param outspec_path The path to an outspec file
+##' @return a list of the requested variables
+##' @export
+##' @author Tobey Carman
+requested_vars_string2list <- function(req_v_str, outspec_path) {
   req_v_str <- ""
   for (pov in unlist(lapply(unlist(strsplit(pecan_outvars, ",")), trimws))) {
     #print(paste("HERE>>>", vmap_reverse[[pov]][["depends_on"]]))
@@ -182,7 +188,7 @@ requested_vars_string2list <- function(req_v_str, outspec_path){
   req_v_list <- unlist(lapply(unlist(strsplit(req_v_str, ",")), function(x){x[!x== ""]}))
 
   # Check that all variables specified in list exist in the base output spec file.
-  a <- read.csv(rs_outspec_path)
+  a <- utils::read.csv(rs_outspec_path)
   for (j in req_v_list) {
     if (! j %in% a[["Name"]]) {
       PEcAn.logger::logger.error(paste0("ERROR! Can't find variable: '", j, "' in the output spec file: ", rs_outspec_path))
