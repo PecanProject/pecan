@@ -91,7 +91,7 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
             args=c(rs_outspec_path, "--enable-cal-vars"))
 
     # Now enable anything in pecan_outvars that is not already enabled.
-    requested_vars <- requested_vars_str2list(pecan_outvars, outspec_path = rs_outspec_path)
+    requested_vars <- requested_vars_string2list(pecan_outvars, outspec_path = rs_outspec_path)
     
     # Figure out which variables are already 'ON' in order to support the calibration
     # run. These will be at yearly resolution. We don't want to modify the output spec 
@@ -169,6 +169,7 @@ setup.outputs.dvmdostem <- function(dvmdostem_calibration,
 ##' Look up the "depends_on" in the output variable mapping, 
 ##' accumulate a list of dvmdostem variables to turn on to support 
 ##' the requested variables in the pecan.xml tag
+##'
 ##' @name requested_vars_string2list
 ##' @title Requested variables string to list conversion.
 ##' @param req_v_str A string, (comma or space separated?) of variables
