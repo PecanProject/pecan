@@ -67,4 +67,4 @@ gapfill_WCr <- function(start_date, end_date,
   CombinedData.F <- cbind(flux, FilledEddyData.F)
   
   return(CombinedData.F)
-  
+}
