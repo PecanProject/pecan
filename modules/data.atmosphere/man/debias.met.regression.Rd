@@ -41,12 +41,12 @@ debias.met.regression(
 
 \item{vars.debias}{- which met variables should be debiased? if NULL, all variables in train.data}
 
-\item{CRUNCEP}{- flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for 
+\item{CRUNCEP}{- flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for
 met variables that have been naively gapfilled for certain time periods}
 
 \item{pair.anoms}{- logical stating whether anomalies from the same year should be matched or not}
 
-\item{pair.ens}{- logical stating whether ensembles from train and source data need to be paired together 
+\item{pair.ens}{- logical stating whether ensembles from train and source data need to be paired together
 (for uncertainty propogation)}
 
 \item{uncert.prop}{- method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1}
@@ -61,7 +61,7 @@ met variables that have been naively gapfilled for certain time periods}
 
 \item{ens.name}{- what is the name that should be attached to the debiased ensemble}
 
-\item{ens.mems}{- what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles 
+\item{ens.mems}{- what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles
 without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
@@ -88,8 +88,8 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 functions print debugging information as they run?}
 }
 \description{
-This script debiases one dataset (e.g. GCM, re-analysis product) given another higher 
-             resolution product or empirical observations. It assumes input are in annual CF standard 
+This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
+             resolution product or empirical observations. It assumes input are in annual CF standard
              files that are generate from the pecan extract or download funcitons.
 }
 \details{
