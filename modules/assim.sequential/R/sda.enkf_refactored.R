@@ -316,7 +316,7 @@ sda.enkf <- function(settings,
       
       run.id <- outconfig$runs$id
       ensemble.id <- outconfig$ensemble.id
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the split met
       
       if(control$debug) browser()
       #-------------------------------------------- RUN
@@ -355,7 +355,7 @@ sda.enkf <- function(settings,
       "*.nc$",
       recursive = TRUE,
       full.names = TRUE)
-   files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
+   files <-  files[grep(pattern = "SDA*", basename(files), invert = TRUE)]
     
     
    file.rename(files, 
