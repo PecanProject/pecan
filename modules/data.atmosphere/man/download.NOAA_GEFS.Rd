@@ -5,33 +5,36 @@
 \title{Download NOAA GEFS Weather Data}
 \usage{
 download.NOAA_GEFS(
-  outfolder,
+  site_id,
+  sitename = NULL,
+  username = "pecan",
   lat.in,
   lon.in,
-  site_id,
-  start_date = Sys.time(),
-  end_date = (as.POSIXct(start_date, tz = "UTC") + lubridate::days(16)),
-  overwrite = FALSE,
-  verbose = FALSE,
-  ...
+  outfolder,
+  start_date = Sys.Date(),
+  end_date = start_date + lubridate::days(16),
+  downscale = TRUE,
+  overwrite = FALSE
 )
 }
 \arguments{
-\item{outfolder}{Directory where results should be written}
-
 \item{site_id}{The unique ID given to each site. This is used as part of the file name.}
+
+\item{outfolder}{Directory where results should be written}
 
 \item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
 
+\item{downscale}{logical, assumed True. Indicated whether data should be downscaled to hourly}
+
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
-
-\item{verbose}{logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.}
-
-\item{...}{Other arguments, currently ignored}
 
 \item{lat}{site latitude in decimal degrees}
 
 \item{lon}{site longitude in decimal degrees}
+
+\item{verbose}{logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.}
+
+\item{...}{Other arguments, currently ignored}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
@@ -82,5 +85,5 @@ June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 https://www.ncdc.noaa.gov/crn/measurements.html
 }
 \author{
-Luke Dramko
+Quinn Thomas, modified by K Zarada
 }
