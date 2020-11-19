@@ -366,6 +366,10 @@ sda.enkf <- function(settings,
     X <- do.call(rbind, X)
     
 
+    #unit scaling if needed 
+    
+    X <-  rescaling_stateVars(settings, X, multiply = TRUE)
+    
     
     if(sum(X,na.rm=T) == 0){
       logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
@@ -541,6 +545,8 @@ sda.enkf <- function(settings,
     
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
+    FORECAST[[t]] <- X
+    
     
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
