@@ -18,7 +18,7 @@ noaa_grid_download(
 \item{output_directory}{}
 }
 \value{
-
+NA
 }
 \description{
 Download gridded forecast in the box bounded by the latitude and longitude list

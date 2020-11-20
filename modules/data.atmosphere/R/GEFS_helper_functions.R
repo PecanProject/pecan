@@ -8,9 +8,9 @@
 #' @param num_cores
 #' @param output_directory
 #'
-#' @return
+#' @return NA
 #'
-#' @examples
+
 noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date, model_name_raw, output_directory, end_hr) {
   
   
@@ -186,9 +186,8 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param model_name_raw
 #' @param output_directory
 #'
-#' @return
+#' @return List
 #'
-#' @examples
 #'
 process_gridded_noaa_download <- function(lat_list,
                                           lon_list,

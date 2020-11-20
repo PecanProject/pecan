@@ -22,11 +22,8 @@ process_gridded_noaa_download(
 \item{output_directory}{}
 }
 \value{
-
+List
 }
 \description{
 Extract and temporally downscale points from downloaded grid files
-}
-\examples{
-
 }
