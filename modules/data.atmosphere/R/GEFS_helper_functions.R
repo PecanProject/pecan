@@ -9,13 +9,12 @@
 #' @param output_directory
 #'
 #' @return
-#' @export
 #'
 #' @examples
-noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date ,model_name_raw, output_directory, end_hr) {
+noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date, model_name_raw, output_directory, end_hr) {
   
   
-  download_neon_grid <- function(ens_index, location, directory, hours_char, cycle, base_filename1, vars,working_directory){
+  download_grid <- function(ens_index, location, directory, hours_char, cycle, base_filename1, vars,working_directory){
     #for(j in 1:31){
     if(ens_index == 1){
       base_filename2 <- paste0("gec00",".t",cycle,"z.pgrb2a.0p50.f")
@@ -34,7 +33,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date 
     for(i in 1:length(curr_hours)){
       file_name <- paste0(base_filename2, curr_hours[i])
       
-      destfile <- paste0(working_directory,"/", file_name,".neon.grib")
+      destfile <- paste0(working_directory,"/", file_name,".grib")
       
       if(file.exists(destfile)){
         
@@ -160,7 +159,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date 
         ens_index <- 1:31
         
         parallel::mclapply(X = ens_index,
-                           FUN = download_neon_grid,
+                           FUN = download_grid,
                            location,
                            directory,
                            hours_char,
@@ -188,7 +187,6 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date 
 #' @param output_directory
 #'
 #' @return
-#' @export
 #'
 #' @examples
 #'
@@ -239,8 +237,8 @@ process_gridded_noaa_download <- function(lat_list,
     for(hr in 1:length(curr_hours)){
       file_name <- paste0(base_filename2, curr_hours[hr])
       
-      if(file.exists(paste0(working_directory,"/", file_name,".neon.grib"))){
-        grib <- rgdal::readGDAL(paste0(working_directory,"/", file_name,".neon.grib"), silent = TRUE)
+      if(file.exists(paste0(working_directory,"/", file_name,".grib"))){
+        grib <- rgdal::readGDAL(paste0(working_directory,"/", file_name,".grib"), silent = TRUE)
         lat_lon <- sp::coordinates(grib)
         for(s in 1:length(site_id)){
           
@@ -511,14 +509,13 @@ process_gridded_noaa_download <- function(lat_list,
   return(results_list)
 } #process_gridded_noaa_download
 
-#' @title Downscale NOAA GEFS frin 6hr to 1hr
+#' @title Downscale NOAA GEFS from 6hr to 1hr
 #' @return None
 #'
 #' @param input_file, full path to 6hr file
 #' @param output_file, full path to 1hr file that will be generated
 #' @param overwrite, logical stating to overwrite any existing output_file
 #' @param hr time step in hours of temporal downscaling (default = 1)
-#' @export
 #'
 #' @author Quinn Thomas
 #'
@@ -619,7 +616,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
     dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
   
   #Write netCDF
-  noaaGEFSpoint::write_noaa_gefs_netcdf(df = forecast_noaa_ds,
+  write_noaa_gefs_netcdf(df = forecast_noaa_ds,
                                         ens = ens,
                                         lat = lat.in,
                                         lon = lon.in,
@@ -629,214 +626,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
   
 } #temporal_downscale
 
-#' @title Downscale spline to hourly
-#' @return A dataframe of downscaled state variables
-#' @param df, dataframe of data to be downscales
-#' @noRd
-#' @author Laura Puckett
-#'
-#'
 
-downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
-  # --------------------------------------
-  # purpose: interpolates debiased forecasts from 6-hourly to hourly
-  # Creator: Laura Puckett, December 16 2018
-  # --------------------------------------
-  # @param: df, a dataframe of debiased 6-hourly forecasts
-  
-  t0 = min(df$time)
-  df <- df %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days"))
-  
-  interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
-  
-  noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days, tz = "UTC"))
-  
-  for(Var in 1:length(VarNames)){
-    curr_data <- spline(x = df$days_since_t0, y = unlist(df[VarNames[Var]]), method = "fmm", xout = interp.df.days)$y
-    noaa_data_interp <- cbind(noaa_data_interp, curr_data)
-  }
-  
-  names(noaa_data_interp) <- c("time",VarNames)
-  
-  return(noaa_data_interp)
-}
-
-#' @title Downscale shortwave to hourly
-#' @return A dataframe of downscaled state variables
-#'
-#' @param df, data frame of variables
-#' @param lat, lat of site
-#' @param lon, long of site
-#' @return ShortWave.ds
-#' @noRd
-#' @author Laura Puckett
-#'
-#'
-
-downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
-  ## downscale shortwave to hourly
-  
-  t0 <- min(df$time)
-  df <- df %>%
-    dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
-    dplyr::mutate(lead_var = dplyr::lead(surface_downwelling_shortwave_flux_in_air, 1))
-  
-  interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
-  
-  noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days))
-  
-  data.hrly <- noaa_data_interp %>%
-    dplyr::left_join(df, by = "time")
-  
-  data.hrly$group_6hr <- NA
-  
-  group <- 0
-  for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      group <- group + 1
-      data.hrly$group_6hr[i] <- group
-    }else{
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      data.hrly$group_6hr[i] <- group
-    }
-  }
-  
-  ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(time)) %>%
-    dplyr::mutate(doy = lubridate::yday(time) + hour/(24/hr))%>%
-    dplyr::mutate(rpot = downscale_solar_geom(doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by(group_6hr) %>%
-    dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
-    dplyr::ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
-    dplyr::select(time,surface_downwelling_shortwave_flux_in_air)
-  
-  return(ShortWave.ds)
-  
-}
-
-#' Cosine of solar zenith angle
-#'
-#' For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
-#'
-#' @author Alexey Shiklomanov
-#' @param doy Day of year
-#' @param lat Latitude
-#' @param lon Longitude
-#' @param dt Timestep
-#' @noRd
-#' @param hr Hours timestep
-#' @return `numeric(1)` of cosine of solar zenith angle
-#' @export
-cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
-  et <- equation_of_time(doy)
-  merid  <- floor(lon / 15) * 15
-  merid[merid < 0] <- merid[merid < 0] + 15
-  lc     <- (lon - merid) * -4/60  ## longitude correction
-  tz     <- merid / 360 * 24  ## time zone
-  midbin <- 0.5 * dt / 86400 * 24  ## shift calc to middle of bin
-  t0   <- 12 + lc - et - tz - midbin  ## solar time
-  h    <- pi/12 * (hr - t0)  ## solar hour
-  dec  <- -23.45 * pi / 180 * cos(2 * pi * (doy + 10) / 365)  ## declination
-  cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
-  cosz[cosz < 0] <- 0
-  return(cosz)
-}
-
-#' Equation of time: Eccentricity and obliquity
-#'
-#' For description of calculations, see https://en.wikipedia.org/wiki/Equation_of_time#Calculating_the_equation_of_time
-#'
-#' @author Alexey Shiklomanov
-#' @param doy Day of year
-#' @noRd
-#' @return `numeric(1)` length of the solar day, in hours.
-
-equation_of_time <- function(doy) {
-  stopifnot(doy <= 366)
-  f      <- pi / 180 * (279.5 + 0.9856 * doy)
-  et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 *
-               sin(4 * f) - 429.3 * cos(f) - 2 *
-               cos(2 * f) + 19.3 * cos(3 * f)) / 3600  # equation of time -> eccentricity and obliquity
-  return(et)
-}
-
-#' @title Downscale repeat to hourly
-#' @return A dataframe of downscaled data
-#' @param df, dataframe of data to be downscaled (Longwave)
-#' @noRd
-#' @author Laura Puckett
-#'
-#'
-
-downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
-  
-  #Get first time point
-  t0 <- min(df$time)
-  
-  df <- df %>%
-    dplyr::select("time", all_of(varName)) %>%
-    #Calculate time difference
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
-    #Shift valued back because the 6hr value represents the average over the
-    #previous 6hr period
-    dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
-  
-  #Create new vector with all hours
-  interp.df.days <- seq(min(df$days_since_t0),
-                        as.numeric(max(df$days_since_t0)),
-                        1 / (24 / hr))
-  
-  #Create new data frame
-  noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days))
-  
-  #Join 1 hr data frame with 6 hr data frame
-  data.hrly <- noaa_data_interp %>%
-    dplyr::left_join(df, by = "time")
-  
-  #Fill in hours
-  for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
-    }else{
-      data.hrly$lead_var[i] <- curr
-    }
-  }
-  
-  #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", lead_var) %>%
-    dplyr::arrange(time)
-  
-  names(data.hrly) <- c("time", varName)
-  
-  return(data.hrly)
-}
-
-#' @title Calculate potential shortwave radiation
-#' @return vector of potential shortwave radiation for each doy
-#'
-#' @param doy, day of year in decimal
-#' @param lon, longitude
-#' @param lat, latitude
-#' @return `numeric(1)`
-#' @author Quinn Thomas
-#' @noRd
-#'
-#'
-downscale_solar_geom <- function(doy, lon, lat) {
-  
-  dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
-  hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
-  
-  ## calculate potential radiation
-  cosz <- cos_solar_zenith_angle(doy, lat, lon, dt, hr)
-  rpot <- 1366 * cosz
-  return(rpot)
-}
 
 ##' @title Write NOAA GEFS netCDF
 ##' @param df data frame of meterological variables to be written to netcdf.  Columns
@@ -849,7 +639,6 @@ downscale_solar_geom <- function(doy, lon, lat) {
 ##' @param overwrite logical to overwrite existing netcdf file
 ##' @return NA
 ##'
-##' @export
 ##'
 ##' @author Quinn Thomas
 ##'
