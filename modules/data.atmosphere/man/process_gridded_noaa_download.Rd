@@ -19,7 +19,27 @@ process_gridded_noaa_download(
 )
 }
 \arguments{
-\item{output_directory}{}
+\item{lat_list}{lat for site}
+
+\item{lon_list}{lon for site}
+
+\item{site_id}{Unique site_id for file creation}
+
+\item{downscale}{Logical. Default is TRUE. Downscales from 6hr to hourly}
+
+\item{overwrite}{Logical. Default is FALSE. Should exisiting files be overwritten}
+
+\item{forecast_date}{Date for download}
+
+\item{forecast_time}{Time (0,6,12,18) for start of download}
+
+\item{model_name}{Name of model for file name}
+
+\item{model_name_ds}{Name of downscale file name}
+
+\item{model_name_raw}{Name of raw file name}
+
+\item{output_directory}{Output directory}
 }
 \value{
 List
