@@ -1,12 +1,12 @@
 #' Download gridded forecast in the box bounded by the latitude and longitude list
 #'
-#' @param lat_list
-#' @param lon_list
-#' @param forecast_time
-#' @param forecast_date
-#' @param model_name_raw
-#' @param num_cores
-#' @param output_directory
+#' @param lat_list lat for site
+#' @param lon_list long for site
+#' @param forecast_time start hour of forecast
+#' @param forecast_date date for forecast
+#' @param model_name_raw model name for directory creation
+#' @param end_hr end hr to determine how many hours to download
+#' @param output_directory output directory 
 #'
 #' @return NA
 #'
@@ -176,15 +176,17 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 }
 #' Extract and temporally downscale points from downloaded grid files
 #'
-#' @param lat_list
-#' @param lon_list
-#' @param site_id
-#' @param downscale
-#' @param overwrite
-#' @param model_name
-#' @param model_name_ds
-#' @param model_name_raw
-#' @param output_directory
+#' @param lat_list lat for site
+#' @param lon_list lon for site
+#' @param site_id Unique site_id for file creation
+#' @param downscale Logical. Default is TRUE. Downscales from 6hr to hourly
+#' @param overwrite Logical. Default is FALSE. Should exisiting files be overwritten
+#' @param forecast_date Date for download
+#' @param forecast_time Time (0,6,12,18) for start of download 
+#' @param model_name Name of model for file name
+#' @param model_name_ds Name of downscale file name
+#' @param model_name_raw Name of raw file name
+#' @param output_directory Output directory 
 #'
 #' @return List
 #'
@@ -478,7 +480,7 @@ process_gridded_noaa_download <- function(lat_list,
       
       
       #Write netCDF
-      noaaGEFSpoint::write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
+      write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
       
       if(downscale){
         #Downscale the forecast from 6hr to 1hr
@@ -499,7 +501,7 @@ process_gridded_noaa_download <- function(lat_list,
         results_list[[ens]] <- results
         
         #Run downscaling
-        noaaGEFSpoint::temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
+        temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
       }
       
       
@@ -516,6 +518,7 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param overwrite, logical stating to overwrite any existing output_file
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #'
+#' @import tidyselect
 #' @author Quinn Thomas
 #'
 #'

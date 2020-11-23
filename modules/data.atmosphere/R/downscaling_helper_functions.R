@@ -37,8 +37,8 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
 #' @param df, data frame of variables
 #' @param lat, lat of site
 #' @param lon, long of site
-#' @return ShortWave.ds
 #' @noRd
+#' @return ShortWave.ds
 #' @author Laura Puckett
 #' @export
 #' 
@@ -150,8 +150,8 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
 #' @param lon, longitude
 #' @param lat, latitude
 #' @return `numeric(1)`
-#' @author Quinn Thomas
 #' @noRd
+#' @author Quinn Thomas
 #' @export
 #'
 downscale_solar_geom <- function(doy, lon, lat) {

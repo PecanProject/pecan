@@ -26,14 +26,15 @@
 ##' data frame contains information about one file.
 ##'
 ##' @param outfolder Directory where results should be written
-##' @param start_date, end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)
-##' @param lat site latitude in decimal degrees
-##' @param lon site longitude in decimal degrees
+##' @param start_date, Range of dates/times to be downloaded (default assumed to be time that function is run) 
+##' @param end_date, end date for range of dates to be downloaded (default 16 days from start_date)
+##' @param lat.in site latitude in decimal degrees
+##' @param lon.in site longitude in decimal degrees
 ##' @param site_id The unique ID given to each site. This is used as part of the file name.
+##' @param sitename Site name 
+##' @param username username from pecan workflow 
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param downscale logical, assumed True. Indicated whether data should be downscaled to hourly
-##' @param verbose logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.
-##' @param ... Other arguments, currently ignored
 ##' @export
 ##' 
 ##' @examples 
