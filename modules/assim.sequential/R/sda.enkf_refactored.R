@@ -304,12 +304,17 @@ sda.enkf <- function(settings,
         restart.arg = NULL
       }
       
+      if(t == 1){
+      config.settings = settings 
+      config.settings$run$end.date = lubridate::ymd_hms(obs.times[t+1], truncated = 3)} 
+      if(t != 1){config.settings = settings}
+      
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-      outconfig <- write.ensemble.configs(defaults = settings$pfts, 
+      outconfig <- write.ensemble.configs(defaults = config.settings$pfts, 
                                           ensemble.samples = ensemble.samples, 
-                                          settings = settings,
-                                          model = settings$model$type, 
-                                          write.to.db = settings$database$bety$write,
+                                          settings = config.settings,
+                                          model = config.settings$model$type, 
+                                          write.to.db = config.settings$database$bety$write,
                                           restart = restart.arg)
       
       save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
