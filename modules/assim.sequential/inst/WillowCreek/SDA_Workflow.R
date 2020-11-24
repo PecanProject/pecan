@@ -349,7 +349,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 
 settings <- PEcAn.workflow::do_conversions(settings)          #end if loop for existing inputs  
 
-# if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
+ # if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
 #   settings$run$inputs$met$id = index_id
 #   settings$run$inputs$met$path = clim_check
 # }
