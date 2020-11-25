@@ -37,7 +37,7 @@ This is a major change:
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
 - gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
 - ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
-- fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2752)
+- fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
 
 ### Changed
 
