@@ -114,7 +114,7 @@ registerDistributions(list(dwtmnorm = list(
 #' @export
 tobit2space.model <- nimbleCode({
   for (i in 1:N) {
-    y.censored[i, 1:J] ~ dwtmnorm(mean = muf[1:J],
+    y.censored[i, 1:J] ~ PEcAn.assim.sequential::dwtmnorm(mean = muf[1:J],
                                   prec = pf[1:J, 1:J],
                                   wt = wts[i]) #
     for (j in 1:J) {
