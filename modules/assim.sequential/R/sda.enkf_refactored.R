@@ -211,7 +211,7 @@ sda.enkf <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
     }
     
-    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = 1 + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
@@ -304,10 +304,12 @@ sda.enkf <- function(settings,
         restart.arg = NULL
       }
       
-      if(t == 1){
-      config.settings = settings 
-      config.settings$run$end.date = lubridate::ymd_hms(obs.times[t+1], truncated = 3)} 
-      if(t != 1){config.settings = settings}
+       if(t == 1){
+       config.settings = settings 
+       config.settings$run$end.date = lubridate::ymd_hms(obs.times[t+1], truncated = 3)} 
+       if(t != 1){config.settings = settings}
+       
+      
       
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
       outconfig <- write.ensemble.configs(defaults = config.settings$pfts, 
