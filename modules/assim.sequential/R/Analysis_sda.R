@@ -129,6 +129,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   Pf = stats::cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   
+  diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
+  
   #Observed inputs
   R <- try(solve(Observed$R), silent = F) #putting solve() here so if not invertible error is before compiling tobit2space #sfsmisc::posdefify(
   Y <- Observed$Y
@@ -203,7 +205,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
                                   pf = rwish_chol(1,df = ncol(X)+1,
-                                                  cholesky = chol(solve(stats::cov(X)))))
+                                                  cholesky = chol(solve(Pf))))
       
       #ptm <- proc.time()
       tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
@@ -226,7 +228,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       for(j in seq_along(mu.f)){
         for(n in seq_len(nrow(X))){
           node <- paste0('y.censored[',n,',',j,']')
-          conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
+          conf_tobit2space$addSampler(node, 'toggle', control=list(type='slice'))
           ## could instead use slice samplers, or any combination thereof, e.g.:
           ##conf$addSampler(node, 'toggle', control=list(type='slice'))
         }
