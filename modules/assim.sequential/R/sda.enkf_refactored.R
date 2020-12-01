@@ -121,6 +121,7 @@ sda.enkf <- function(settings,
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
+  
   obs.times.POSIX <- lubridate::ymd_hms(obs.times)
   
   ### TO DO: Need to find a way to deal with years before 1000 for paleon ### need a leading zero
@@ -408,8 +409,9 @@ sda.enkf <- function(settings,
       }
       # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
-      if (length(na.obs.mean) > 0)
-        choose <- choose [-na.obs.mean]
+      na.obs.cov <- which(is.na(unlist(obs.cov[[t]][choose])))
+      if (length(na.obs.mean) > 0) choose <- choose [-na.obs.mean]
+      if (length(na.obs.cov) > 0) choose.cov <- choose[-na.obs.cov]
       
       Y <- unlist(obs.mean[[t]][choose])
     
