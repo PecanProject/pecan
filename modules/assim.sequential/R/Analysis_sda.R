@@ -194,6 +194,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       constants.tobit2space <- list(N = nrow(X),
                                      J = length(mu.f))
       
+      save.image(file = '/fs/data3/kzarada/nimble_fix.RData')
       data.tobit2space <- list(y.ind = x.ind,
                                 y.censored = x.censored,
                                 mu_0 = rep(0,length(mu.f)),
@@ -201,13 +202,15 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                 nu_0 = ncol(X)+1,
                                 wts = wts*nrow(X), #sigma x2 max Y
                                 Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
-      
+      Pf.i = stats::cov(X)
+      diag(Pf.i)[which(diag(Pf.i)==0)] <- min(diag(Pf.i)[which(diag(Pf.i) != 0)])/5
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
                                   pf = rwish_chol(1,df = ncol(X)+1,
-                                                  cholesky = chol(solve(Pf))))
+                                                  cholesky = chol(solve(Pf.i))))
       
       #ptm <- proc.time()
+      
       tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
                                        constants = constants.tobit2space, inits = inits.tobit2space(),
                                        name = 'space')
@@ -228,7 +231,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       for(j in seq_along(mu.f)){
         for(n in seq_len(nrow(X))){
           node <- paste0('y.censored[',n,',',j,']')
-          conf_tobit2space$addSampler(node, 'toggle', control=list(type='slice'))
+          conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
           ## could instead use slice samplers, or any combination thereof, e.g.:
           ##conf$addSampler(node, 'toggle', control=list(type='slice'))
         }
