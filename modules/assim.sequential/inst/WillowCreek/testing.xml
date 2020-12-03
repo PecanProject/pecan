@@ -33,15 +33,6 @@
     <min_value>0</min_value>
     <max_value>9999</max_value>
     <variable.name>
-     <variable.name>Qle</variable.name>
-    </variable.name>
-  </file>
-  <file>
-    <input.id>1000013298</input.id>
-    <operator>direct</operator>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-    <variable.name>
      <variable.name>LAI</variable.name>
     </variable.name>
   </file>
@@ -49,27 +40,9 @@
     <input.id>1000013298</input.id>
     <operator>direct</operator>
     <min_value>0</min_value>
-    <max_value>9999</max_value>
-    <variable.name>
-     <variable.name>TotSoilCarb</variable.name>
-    </variable.name>
-   </file>
-  <file>
-    <input.id>1000013298</input.id>
-    <operator>direct</operator>
-    <min_value>0</min_value>
     <max_value>1</max_value>
     <variable.name>
      <variable.name>SoilMoistFrac</variable.name>
-    </variable.name>
-   </file>
-  <file>
-    <input.id>1000013298</input.id>
-    <operator>direct</operator>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-    <variable.name>
-     <variable.name>litter_carbon_content</variable.name>
     </variable.name>
    </file>
   </inputs>
@@ -86,32 +59,15 @@
     <max_value>9999</max_value>
     <scaling_factor>1000000000</scaling_factor>
    </variable>
-   <variable>
-    <variable.name>Qle</variable.name>
-    <unit>mW m-2</unit>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-    <scaling_factor>100</scaling_factor>
-   </variable>
     <variable>
     <variable.name>LAI</variable.name>
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
-    <variable>
-    <variable.name>TotSoilCarb</variable.name>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-  </variable>
   <variable>
    <variable.name>SoilMoistFrac</variable.name>
     <min_value>0</min_value>
     <max_value>1</max_value>
-  </variable>
-  <variable>
-   <variable.name>litter_carbon_content</variable.name>
-   <min_value>0</min_value>
-   <max_value>9999</max_value>
   </variable>
   </state.variables>
   <forecast.time.step>year</forecast.time.step>

@@ -202,12 +202,11 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                 nu_0 = ncol(X)+1,
                                 wts = wts*nrow(X), #sigma x2 max Y
                                 Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
-      Pf.i = stats::cov(X)
-      diag(Pf.i)[which(diag(Pf.i)==0)] <- min(diag(Pf.i)[which(diag(Pf.i) != 0)])/5
+    
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
                                   pf = rwish_chol(1,df = ncol(X)+1,
-                                                  cholesky = chol(solve(Pf.i))))
+                                                  cholesky = chol(stats::cov(X))))
       
       #ptm <- proc.time()
       
