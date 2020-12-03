@@ -364,7 +364,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
 
           # we'll allow some drift outside of what we have for our max/min, but not too much;
           # - right now general rule of thumb of 2 degrees leeway on the prescribed
-          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 273.15-95 | max(x) > 273.15+70 |
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 184 | max(x) > 331 |
                                                            # min(x) < tmin.ens-2 | max(x) > tmax.ens+2 |
                                                            min(x) < filter.mean-sanity.sd*filter.sd | max(x) > filter.mean+sanity.sd*filter.sd
                                    ))
@@ -373,7 +373,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         if(v == "specific_humidity"){ #LOG!!
           # Based on google, it looks like values of 30 g/kg can occur in the tropics, so lets go above that
           # Also, the minimum humidity can't be 0 so lets just make it extremely dry; lets set this for 1 g/Mg
-          cols.redo <- which(apply(dat.pred, 2, function(x) min(exp(x)) < 1e-6  | max(exp(x)) > 40e-3 |
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(exp(x)) < 1e-6  | max(exp(x)) > 3.2e-2 |
                                                             min(exp(x)) < filter.mean-sanity.sd*filter.sd |
                                                             max(exp(x)) > filter.mean+sanity.sd*filter.sd
                                    ) )
@@ -384,7 +384,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           # Lets round 1360 and divide that by 2 (because it should be a daily average) and conservatively assume albedo of 20% (average value is more like 30)
           # Source http://eesc.columbia.edu/courses/ees/climate/lectures/radiation/
           dat.pred[dat.pred < 0] <- 0
-          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 1360 | min(x) < filter.mean-sanity.sd*filter.sd |
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 1500 | min(x) < filter.mean-sanity.sd*filter.sd |
                                                             max(x) > filter.mean+sanity.sd*filter.sd
                                    ))
         }
@@ -392,7 +392,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           # According to wikipedia the highest barometric pressure ever recorded was 1085.7 hPa = 1085.7*100 Pa; Dead sea has average pressure of 1065 hPa
           #  - Lets round up to 1100 hPA
           # Also according to Wikipedia, the lowest non-tornadic pressure ever measured was 870 hPA
-          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 850*100  | max(x) > 1100*100 |
+          cols.redo <- which(apply(dat.pred, 2, function(x) min(x) < 45000  | max(x) > 110000 |
                                                             min(x) < filter.mean-sanity.sd*filter.sd |
                                                             max(x) > filter.mean+sanity.sd*filter.sd
                                    ))
@@ -410,7 +410,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         }
         if(v == "wind_speed"){
           # According to wikipedia, the hgihest wind speed ever recorded is a gust of 113 m/s; the maximum 5-mind wind speed is 49 m/s
-          cols.redo <- which(apply(dat.pred, 2, function(x) max(x^2) > 50 |
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x^2) > 85 |
                                                             min(x^2) < filter.mean-sanity.sd*filter.sd |
                                                             max(x^2) > filter.mean+sanity.sd*filter.sd
                                    ))
@@ -419,7 +419,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           # According to wunderground, ~16" in 1 hr is the max
           # https://www.wunderground.com/blog/weatherhistorian/what-is-the-most-rain-to-ever-fall-in-one-minute-or-one-hour.html
           # 16; x25.4 = inches to mm; /(60*60) = hr to sec
-          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 16*25.4/(60*60)
+          # Updated to ED2 max: 400 mm/hr
+          cols.redo <- which(apply(dat.pred, 2, function(x) max(x) > 0.1111
                                    ))
         }
 

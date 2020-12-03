@@ -26,9 +26,6 @@ $Rbinary="/usr/bin/R";
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
-# google map key
-$googleMapKey="AIzaSyDBBrRM8Ygo-wGAnubrtVGZklK3bmXlUPI";
-
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
