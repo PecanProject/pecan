@@ -4,6 +4,7 @@
 library("PEcAn.all")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
+library("PEcAn.assim.sequential")
 library("RCurl")
 library("REddyProc")
 library("tidyverse")

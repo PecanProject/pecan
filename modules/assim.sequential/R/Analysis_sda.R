@@ -194,7 +194,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       constants.tobit2space <- list(N = nrow(X),
                                      J = length(mu.f))
       
-      save.image(file = '/fs/data3/kzarada/nimble_fix.RData')
       data.tobit2space <- list(y.ind = x.ind,
                                 y.censored = x.censored,
                                 mu_0 = rep(0,length(mu.f)),
