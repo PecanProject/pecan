@@ -34,8 +34,6 @@
 ##' @param logfile Path to file for sinking meta analysis output. If
 ##'   `NULL`, only print output to console.
 ##' @param verbose Logical. If `TRUE` (default), print progress messages.
-##' @param madata_file Path to file for storing copy of data used in
-##'   meta-analysis. If `NULL`, don't store at all.
 ##' @return four chains with 5000 total samples from posterior
 ##' @author David LeBauer, Michael C. Dietze, Alexey Shiklomanov
 ##' @export
@@ -67,13 +65,8 @@ pecan.ma <- function(trait.data, prior.distns,
                      outdir,
                      random = FALSE, overdispersed = TRUE,
                      logfile = file.path(outdir, "meta-analysis.log)"),
-                     verbose = TRUE,
-                     madata_file = file.path(outdir, "madata.Rdata")) {
+                     verbose = TRUE)) {
 
-  if (!is.null(madata_file)) {
-    madata <- list()
-  }
-  ## Meta-analysis for each trait
   mcmc.object <- list()  #  initialize output list of mcmc objects for each trait
   mcmc.mat <- list()
 
@@ -140,9 +133,6 @@ pecan.ma <- function(trait.data, prior.distns,
       }
     }
 
-    if (!is.null(madata)) {
-      madata[[trait.name]] <- data
-    }
     jag.model.file <- file.path(outdir, paste0(trait.name, ".model.bug"))  # file to store model
 
     ## run the meta-analysis in JAGS
@@ -166,8 +156,6 @@ pecan.ma <- function(trait.data, prior.distns,
 
     mcmc.object[[trait.name]] <- jags.out.trunc
   }
-  if (!is.null(madata_file)) {
-    save(madata, file = madata_file)
-  }
+
   return(mcmc.object)
 } # pecan.ma

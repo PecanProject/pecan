@@ -58,7 +58,8 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
   
-  ## Save the jagged.data object, meta-analysis inputs
+  ## Save the jagged.data object, replaces previous madata.Rdata object
+  ## First 6 columns are equivalent and direct inputs into the meta-analysis
   save(jagged.data, file = file.path(pft$outdir, "jagged.data.Rdata"))
   
   if(!use_ghs){
