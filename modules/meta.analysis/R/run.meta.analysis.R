@@ -58,6 +58,9 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
   
+  ## Save the jagged.data object, meta-analysis inputs
+  save(jagged.data, file = file.path(pft$outdir, "jagged.data.Rdata"))
+  
   if(!use_ghs){
     # check if any data left after excluding greenhouse
     all_trait_check <- sapply(jagged.data, nrow)

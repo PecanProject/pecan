@@ -103,8 +103,9 @@ pecan.ma <- function(trait.data, prior.distns,
       writeLines(paste("------------------------------------------------"))
     }
     data <- trait.data[[trait.name]]
-    data <- data[, which(!colnames(data) %in% c("cite", "trait_id", "se"))]  ## remove citation and other unneeded columns
-    data <- data[order(data[["site"]], data[["trt"]]), ]  # not sure why, but required for JAGS model
+    data <- data[, which(!colnames(data) %in% c("cite", "trait_id", "se",
+                                                "greenhouse", "site_id", "treatment_id", "trt_name", "trt_num"))]  ## remove citation and other unneeded columns
+
 
     ## check for excess missing data
 
