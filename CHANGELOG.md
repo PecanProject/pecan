@@ -38,6 +38,7 @@ This is a major change:
 - gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
 - ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
 - fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
+- ensure that control treatments always receive the random effect index of 1, replace madata.Rdata with jagged.data.Rdata, which includes identifying variables useful for calculating parameter estimates by treatment (#2756)
 
 ### Changed
 
