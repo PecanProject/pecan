@@ -204,9 +204,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
-                                  pf = rwish_chol(1,df = ncol(X)+1,
-                                                  cholesky = chol(stats::cov(X))))
-      
+                                           pf = rwish_chol(1,df = ncol(X)+1,
+                                                           cholesky = chol(solve(stats::cov(X)))))
       #ptm <- proc.time()
       
       tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
@@ -238,7 +237,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
       
       #restarting at good initial conditions is somewhat important here
-      Cmodel_tobit2space <- compileNimble(tobit2space_pred)
+      Cmodel_tobit2space <- compileNimble(tobit2space_pred, showCompilerOutput = TRUE)
       Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
       
       for(i in seq_along(X)) {
