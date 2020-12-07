@@ -49,7 +49,6 @@ Imports:
     testthat (>= 2.0.0),
     tibble,
     tidyr,
-    tidyselect,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
@@ -61,7 +60,8 @@ Suggests:
     parallel,
     progress,
     reticulate,
-    rlang (>= 0.2.0)
+    rlang (>= 0.2.0), 
+    tidyselect
 Remotes:
     github::ropensci/geonames,
     github::ropensci/nneo
