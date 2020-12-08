@@ -65,7 +65,7 @@ pecan.ma <- function(trait.data, prior.distns,
                      outdir,
                      random = FALSE, overdispersed = TRUE,
                      logfile = file.path(outdir, "meta-analysis.log)"),
-                     verbose = TRUE)) {
+                     verbose = TRUE) {
 
   mcmc.object <- list()  #  initialize output list of mcmc objects for each trait
   mcmc.mat <- list()

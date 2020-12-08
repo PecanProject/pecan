@@ -18,7 +18,7 @@
 rename_jags_columns <- function(data) {
   
   # Change variable names and calculate obs.prec within data frame
-  # Swap column names
+  # Swap column names; needed for downstream function pecan.ma()
   colnames(data)[colnames(data) %in% c("greenhouse", "ghs")] <- c("ghs", "greenhouse")
   colnames(data)[colnames(data) %in% c("site_id", "site")] <- c("site", "site_id")
   
