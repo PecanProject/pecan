@@ -77,9 +77,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   traits <- names(trait.data.check)
   
   # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
-  if (!is.logical(forceupdate)) {
-    forceupdate <- FALSE
-  }
+  forceupdate <- isTRUE(as.logical(forceupdate))
   
   # check to see if we need to update
   if (!forceupdate) {
