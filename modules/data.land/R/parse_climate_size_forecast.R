@@ -156,7 +156,7 @@ set.seed (11)
 # ------------------------------------------------------------------------------------
 plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  print =TRUE){
   
-  if(file.exists(paste0("scenarios/tree_", m,"_Diameter", "_", scenario,"_",output.base.name,"_scenario_preds", ".csv")) == FALSE){
+  #if(file.exists(paste0("scenarios/tree_", m,"_Diameter", "_", scenario,"_",output.base.name,"_scenario_preds", ".csv")) == FALSE){
   #-----------------------------------------------------------------------
   # Partitioning uncertainty
   #-----------------------------------------------------------------------
@@ -570,6 +570,8 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
                "#7570b3", 
                "grey")
   
+  write.csv(pred.sims.class.inc, paste0("scenarios/tree_", m,"_", axis.name.inc, "_", scenario,"_",output.base.name,"_scenario_preds", ".csv"))
+  write.csv(pred.sims.class, paste0("scenarios/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_scenario_preds", ".csv"))
   
   
   predYinc_plot <- ggplot(data = pred.sims.class.inc, aes(x=year, fill = Forecast.type))+
@@ -621,9 +623,7 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
   #                      expand = c(0, 0))+
   #   theme_bw()+theme(panel.grid = element_blank())
   # 
-  write.csv(pred.sims.class.inc, paste0("scenarios/tree_", m,"_", axis.name.inc, "_", scenario,"_",output.base.name,"_scenario_preds", ".csv"))
-  write.csv(pred.sims.class, paste0("scenarios/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_scenario_preds", ".csv"))
-  }
+   # }
   
 }
 plot.future.forecast.clim.dbh.scenario(m = 43,  scenario = "rcp26",  print = TRUE)
@@ -632,10 +632,10 @@ plot.future.forecast.clim.dbh.scenario(m = 43,  scenario = "rcp60",  print = TRU
 plot.future.forecast.clim.dbh.scenario(m = 43,  scenario = "rcp85",  print = TRUE)
 
 
-plot.future.forecast.clim.dbh.scenario(m = 1,  scenario = "rcp26",  print = TRUE)
-plot.future.forecast.clim.dbh.scenario(m = 1,  scenario = "rcp45",  print = TRUE)
-plot.future.forecast.clim.dbh.scenario(m = 1,  scenario = "rcp60",  print = TRUE)
-plot.future.forecast.clim.dbh.scenario(m = 1,  scenario = "rcp85",  print = TRUE)
+plot.future.forecast.clim.dbh.scenario(m = 360,  scenario = "rcp26",  print = TRUE)
+plot.future.forecast.clim.dbh.scenario(m = 360,  scenario = "rcp45",  print = TRUE)
+plot.future.forecast.clim.dbh.scenario(m = 360,  scenario = "rcp60",  print = TRUE)
+plot.future.forecast.clim.dbh.scenario(m = 360,  scenario = "rcp85",  print = TRUE)
 treeds <- 1:515
 lapply(treeds, function(x){plot.future.forecast.clim.dbh.scenario(m = x, scenario = "rcp26")})
 lapply(treeds, function(x){plot.future.forecast.clim.dbh.scenario(m = x, scenario = "rcp45")})
@@ -648,39 +648,418 @@ lapply(treeds, function(x){plot.future.forecast.clim.dbh.scenario(m = x, scenari
 # read in all and find the difference between each scenario
 #---------------------------------------------------------------------------------------------
 increment.projs <- read.csv("scenarios/tree_1_Increment_rcp26_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv")
+# make a function that reads in the filename and gets either the difference or the % difference over time
 
-low.est <- increment.projs %>% select( year, Low, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Low, drop = TRUE)
-median.est <- increment.projs %>% select( year, Median, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Median, drop = TRUE)
-high.est <- increment.projs %>% select( year, High, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, High, drop = TRUE)
 
-low.est$DBH.change.diff <- low.est$`No Climate Change + DBH change`- low.est$`No Climate Change + no DBH change`  
-low.est$climate.change.diff <- low.est$`Climate change only`- low.est$`No Climate Change + no DBH change`  
-low.est$climate.change.DBH.change.diff <- low.est$`Climate change + DBH change`- low.est$`No Climate Change + no DBH change`  
+inc.differences <- function(filename, type = "diff"){
+  increment.projs <- read.csv(filename)
+  
+      low.est <- increment.projs %>% select( year, Low, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Low, drop = TRUE)
+      median.est <- increment.projs %>% select( year, Median, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Median, drop = TRUE)
+      high.est <- increment.projs %>% select( year, High, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, High, drop = TRUE)
+      
+      low.est$DBH.change.diff <- low.est$`No Climate Change + DBH change`- low.est$`No Climate Change + no DBH change`  
+      low.est$climate.change.diff <- low.est$`Climate change only`- low.est$`No Climate Change + no DBH change`  
+      low.est$climate.change.DBH.change.diff <- low.est$`Climate change + DBH change`- low.est$`No Climate Change + no DBH change`  
+      
+      # percent change in low estimate
+      low.est$DBH.change.diff.pct <- ((low.est$`No Climate Change + DBH change`- low.est$`No Climate Change + no DBH change`)  /low.est$`No Climate Change + no DBH change`)*100
+      low.est$climate.change.diff.pct <- ((low.est$`Climate change only`- low.est$`No Climate Change + no DBH change`)  /low.est$`No Climate Change + no DBH change`)*100
+      low.est$climate.change.DBH.change.diff.pct <- ((low.est$`Climate change + DBH change`- low.est$`No Climate Change + no DBH change`)  /low.est$`No Climate Change + no DBH change`)*100
+      
+      
+      median.est$DBH.change.diff <- median.est$`No Climate Change + DBH change`- median.est$`No Climate Change + no DBH change`  
+      median.est$climate.change.diff <- median.est$`Climate change only`- median.est$`No Climate Change + no DBH change`  
+      median.est$climate.change.DBH.change.diff <- median.est$`Climate change + DBH change`- median.est$`No Climate Change + no DBH change`  
+      
+      
+      # percent change in median estimate
+      median.est$DBH.change.diff.pct <- ((median.est$`No Climate Change + DBH change`- median.est$`No Climate Change + no DBH change`)  /median.est$`No Climate Change + no DBH change`)*100
+      median.est$climate.change.diff.pct <- ((median.est$`Climate change only`- median.est$`No Climate Change + no DBH change`)  /median.est$`No Climate Change + no DBH change`)*100
+      median.est$climate.change.DBH.change.diff.pct <- ((median.est$`Climate change + DBH change`- median.est$`No Climate Change + no DBH change`)  /median.est$`No Climate Change + no DBH change`)*100
+      
+      
+      high.est$DBH.change.diff <- high.est$`No Climate Change + DBH change`- high.est$`No Climate Change + no DBH change`  
+      high.est$climate.change.diff <- high.est$`Climate change only`- high.est$`No Climate Change + no DBH change`  
+      high.est$climate.change.DBH.change.diff <- high.est$`Climate change + DBH change`- high.est$`No Climate Change + no DBH change`  
+      
+      # percent change in high estimate
+      high.est$DBH.change.diff.pct <- ((high.est$`No Climate Change + DBH change`- high.est$`No Climate Change + no DBH change`)  /high.est$`No Climate Change + no DBH change`)*100
+      high.est$climate.change.diff.pct <- ((high.est$`Climate change only`- high.est$`No Climate Change + no DBH change`)  /high.est$`No Climate Change + no DBH change`)*100
+      high.est$climate.change.DBH.change.diff.pct <- ((high.est$`Climate change + DBH change`- high.est$`No Climate Change + no DBH change`)  /high.est$`No Climate Change + no DBH change`)*100
+      
+      
+      # reformat dataframes so it is easy to plot with ggplot
+      low.est.df <- low.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
+      median.est.df <- median.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
+      high.est.df <- high.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
+      
+      low.est.df$CI <- "low"
+      median.est.df$CI <- "median"
+      high.est.df$CI <- "high"
+      
+      low.est.df.m <- reshape2::melt(low.est.df, id.vars = c("CI", "year"))
+      median.est.df.m <- reshape2::melt(median.est.df, id.vars = c("CI", "year"))
+      high.est.df.m <- reshape2::melt(high.est.df, id.vars = c("CI", "year"))
+      
+      diff.df <- rbind(low.est.df.m, median.est.df.m, high.est.df.m)
+      
+      diff.spread <- diff.df%>% spread(value = value, key = CI, drop = TRUE)
+      
+      
+      # do the same reformatting for the pct change:
+      low.est.df.pct <- low.est[,c("year", "DBH.change.diff.pct", "climate.change.diff.pct", "climate.change.DBH.change.diff.pct")]
+      median.est.df.pct <- median.est[,c("year", "DBH.change.diff.pct", "climate.change.diff.pct", "climate.change.DBH.change.diff.pct")]
+      high.est.df.pct <- high.est[,c("year", "DBH.change.diff.pct", "climate.change.diff.pct", "climate.change.DBH.change.diff.pct")]
+      
+      low.est.df.pct$CI <- "low"
+      median.est.df.pct$CI <- "median"
+      high.est.df.pct$CI <- "high"
+      
+      low.est.df.pct.m <- reshape2::melt(low.est.df.pct, id.vars = c("CI", "year"))
+      median.est.df.pct.m <- reshape2::melt(median.est.df.pct, id.vars = c("CI", "year"))
+      high.est.df.pct.m <- reshape2::melt(high.est.df.pct, id.vars = c("CI", "year"))
+      
+      diff.df.pct <- rbind(low.est.df.pct.m, median.est.df.pct.m, high.est.df.pct.m)
+      
+      diff.pct.spread <- diff.df.pct %>% spread(value = value, key = CI, drop = TRUE)
+      
+      if(type == "diff"){
+        diff.spread
+      }else{
+        diff.pct.spread
+      }
 
-median.est$DBH.change.diff <- median.est$`No Climate Change + DBH change`- median.est$`No Climate Change + no DBH change`  
-median.est$climate.change.diff <- median.est$`Climate change only`- median.est$`No Climate Change + no DBH change`  
-median.est$climate.change.DBH.change.diff <- median.est$`Climate change + DBH change`- median.est$`No Climate Change + no DBH change`  
+}
 
-high.est$DBH.change.diff <- high.est$`No Climate Change + DBH change`- high.est$`No Climate Change + no DBH change`  
-high.est$climate.change.diff <- high.est$`Climate change only`- high.est$`No Climate Change + no DBH change`  
-high.est$climate.change.DBH.change.diff <- high.est$`Climate change + DBH change`- high.est$`No Climate Change + no DBH change`  
+# specify colors
+my_cols <- c("#1b9e77",
+  #"#7570b3",
+  "#d95f02",
+              "black") # black for only dbh chnage
+             #) # orange for only climate change
+             
+            # )#, # teal for climate + dbh change
+             #"grey")
 
-low.est.df <- low.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
-median.est.df <- median.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
-high.est.df <- high.est[,c("year", "DBH.change.diff", "climate.change.diff", "climate.change.DBH.change.diff")]
+inc.differences(full.inc.2.6.files[1], "diff")
+# use this function to create a list of % differences from all trees
+# rcp2.6 increments
+inc.2.6.files <- list.files(path = "scenarios", pattern ="Increment_rcp26_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.2.6.files <- paste0("scenarios/", inc.2.6.files)
 
-low.est.df$CI <- "low"
-median.est.df$CI <- "median"
-high.est.df$CI <- "high"
+list.of.pct.diffs <- lapply(full.inc.2.6.files, FUN = function(x){inc.differences(filename = x,"percent")})
+df.of.pct.diffs <- do.call(rbind, list.of.pct.diffs)
 
-low.est.df.m <- reshape2::melt(low.est.df, id.vars = c("CI", "year"))
-median.est.df.m <- reshape2::melt(median.est.df, id.vars = c("CI", "year"))
-high.est.df.m <- reshape2::melt(high.est.df, id.vars = c("CI", "year"))
+mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(high.avg = mean(high, na.rm = TRUE), 
+                                                           low.avg = mean(low, na.rm = TRUE), 
+                                                           median.avg = mean(median, na.rm = TRUE), 
+                                                           
+                                                           high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
+                                                           low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
+                                                           median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                           
+                                                           high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
+                                                           low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
+                                                           median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
 
-diff.df <- rbind(low.est.df.m, median.est.df.m, high.est.df.m)
 
-diff.spread <- diff.df%>% spread(value = value, key = CI, drop = TRUE)
+mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
+                              ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
+                                     ifelse(mean.pct.diffs$variable %in% "climate.change.DBH.change.diff.pct", "Climate change + DBH change",NA)))
+mean.pct.diffs.2.6 <- mean.pct.diffs 
+diff_pct_plot.26 <- ggplot(data = mean.pct.diffs, aes(x=year, fill = scen))+
+  geom_ribbon(aes(ymin=low.avg, ymax=high.avg), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+geom_line(aes(x = year, y = median.avg, color = scen))+
+  ylab("Mean % Change in Increment")+
+  xlab("Year")+theme_bw()+ylim(-145, 0)+
+  scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
 
+diff_pct_plot.26 
+
+
+# rcp4.5 increments
+inc.4.5.files <- list.files(path = "scenarios", pattern ="Increment_rcp45_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.4.5.files <- paste0("scenarios/", inc.4.5.files)
+
+list.of.pct.diffs <- lapply(full.inc.4.5.files, FUN = function(x){inc.differences(filename = x,"percent")})
+df.of.pct.diffs <- do.call(rbind, list.of.pct.diffs)
+
+mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(high.avg = mean(high, na.rm = TRUE), 
+                                                                             low.avg = mean(low, na.rm = TRUE), 
+                                                                             median.avg = mean(median, na.rm = TRUE), 
+                                                                             
+                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             
+                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
+
+mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
+                              ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
+                                     ifelse(mean.pct.diffs$variable %in% "climate.change.DBH.change.diff.pct", "Climate change + DBH change",NA)))
+
+mean.pct.diffs.4.5 <- mean.pct.diffs 
+diff_pct_plot.45 <- ggplot(data = mean.pct.diffs, aes(x=year, fill = scen))+
+  geom_ribbon(aes(ymin=low.avg, ymax=high.avg), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+geom_line(aes(x = year, y = median.avg, color = scen))+
+  ylab("Mean % Change in Increment")+
+  xlab("Year")+theme_bw()+ylim(-145, 0)+
+  scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
+
+diff_pct_plot.45 
+
+
+# rcp6.0 increments
+inc.6.0.files <- list.files(path = "scenarios", pattern ="Increment_rcp60_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.6.0.files <- paste0("scenarios/", inc.6.0.files)
+
+list.of.pct.diffs <- lapply(full.inc.6.0.files, FUN = function(x){inc.differences(filename = x,"percent")})
+df.of.pct.diffs <- do.call(rbind, list.of.pct.diffs)
+
+mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(high.avg = mean(high, na.rm = TRUE), 
+                                                                             low.avg = mean(low, na.rm = TRUE), 
+                                                                             median.avg = mean(median, na.rm = TRUE), 
+                                                                             
+                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             
+                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
+
+
+mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
+                              ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
+                                     ifelse(mean.pct.diffs$variable %in% "climate.change.DBH.change.diff.pct", "Climate change + DBH change",NA)))
+mean.pct.diffs.6.0 <- mean.pct.diffs 
+diff_pct_plot.60 <- ggplot(data = mean.pct.diffs, aes(x=year, fill = scen))+
+  geom_ribbon(aes(ymin=low.avg, ymax=high.avg), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+geom_line(aes(x = year, y = median.avg, color = scen))+
+  ylab("Mean % Change in Increment")+
+  xlab("Year")+theme_bw()+ylim(-145, 0)+
+  scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
+
+diff_pct_plot.60
+
+# rcp8.5 increments
+inc.8.5.files <- list.files(path = "scenarios", pattern ="Increment_rcp85_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.8.5.files <- paste0("scenarios/", inc.8.5.files)
+
+list.of.pct.diffs <- lapply(full.inc.8.5.files, FUN = function(x){inc.differences(filename = x,"percent")})
+df.of.pct.diffs <- do.call(rbind, list.of.pct.diffs)
+
+mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(high.avg = mean(high, na.rm = TRUE), 
+                                                                             low.avg = mean(low, na.rm = TRUE), 
+                                                                             median.avg = mean(median, na.rm = TRUE), 
+                                                                             
+                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             
+                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
+
+
+mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
+                              ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
+                                     ifelse(mean.pct.diffs$variable %in% "climate.change.DBH.change.diff.pct", "Climate change + DBH change",NA)))
+mean.pct.diffs.8.5 <- mean.pct.diffs 
+diff_pct_plot.85 <- ggplot(data = mean.pct.diffs, aes(x=year, fill = scen))+
+  geom_ribbon(aes(ymin=low.avg, ymax=high.avg), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+geom_line(aes(x = year, y = median.avg, color = scen))+
+  ylab("Mean % Change in Increment")+
+  xlab("Year")+theme_bw()+ylim(-145, 0)+
+  scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
+
+diff_pct_plot.85
+
+
+diff.legend<- get_legend(diff_pct_plot.26)
+
+png(height = 5, width = 12, units = "in", res = 300, "Percent_difference_climate_dbh_increment_allrcps.png")
+plot_grid(
+plot_grid(diff_pct_plot.26+theme(legend.position = "none"), 
+          diff_pct_plot.45+theme(legend.position = "none"), 
+          diff_pct_plot.60+theme(legend.position = "none"),
+          diff_pct_plot.85+theme(legend.position = "none"), ncol = 4,labels = "AUTO", align = "hv"),
+diff.legend, ncol = 1, rel_heights = c(1, 0.25))
+dev.off()
+
+#------------------------------------------------------------------------------------------------
+# summaries to get values to report in manuscript
+#------------------------------------------------------------------------------------------------
+mean.pct.diffs.8.5 %>% group_by(scen) %>% summarise(mean.change = mean(median.avg),
+                                                    ci.lo.change = min(low.avg),
+                                                    ci.hi.change = max(high.avg))
+mean.pct.diffs.6.0 %>% group_by(scen) %>% summarise(mean.change = mean(median.avg),
+                                                    ci.lo.change = min(low.avg),
+                                                    ci.hi.change = max(high.avg))
+
+
+mean.pct.diffs.4.5 %>% group_by(scen) %>% summarise(mean.change = mean(median.avg),
+                                                    ci.lo.change = min(low.avg),
+                                                    ci.hi.change = max(high.avg))
+
+mean.pct.diffs.2.6 %>% group_by(scen) %>% summarise(mean.change = mean(median.avg),
+                                                    ci.lo.change = min(low.avg),
+                                                    ci.hi.change = max(high.avg))
+
+
+
+#------------------------------------------------------------------------------------------------
+#  Summarise the # of increments decreasing below zero
+#------------------------------------------------------------------------------------------------
+increments <- function(filename){
+  increment.projs <- read.csv(filename)
+  increment.projs$neg.growth.low <- ifelse(increment.projs$Low < 0, 1, 0)
+  increment.projs$neg.growth.median <- ifelse(increment.projs$Median < 0, 1,0)
+  increment.projs$neg.growth.high <- ifelse(increment.projs$High < 0, 1,0)
+  
+  increment.projs
+}
+
+
+inc.2.6.files <- list.files(path = "scenarios", pattern ="Increment_rcp26_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.2.6.files <- paste0("scenarios/", inc.2.6.files)
+
+list.of.incs <- lapply(full.inc.2.6.files, FUN = increments)
+df.of.incs <- do.call(rbind, list.of.incs)
+length(list.of.incs[[3]]$year)
+# add list of trees
+df.of.incs$treenum <- rep(1:515, each = 328)
+df.of.incs$treenum <- rep(1:515, each = 328)
+#df.of.incs$treenum <- 320
+neg.growth.sum.26 <- df.of.incs %>% group_by(treenum, Forecast.type) %>% summarise(n.years.negative.growth.low = sum(neg.growth.low), 
+                                                                                   n.years.negative.growth.med  = sum(neg.growth.median ),
+                                                                                   n.years.negative.growth.high  = sum(neg.growth.high ))
+
+summary(neg.growth.sum.26)
+neg.growth.sum.26$low.index <- ifelse(neg.growth.sum.26$n.years.negative.growth.low >= 1, 1,0)
+neg.growth.sum.26$med.index <- ifelse(neg.growth.sum.26$n.years.negative.growth.med >= 1, 1,0)
+neg.growth.sum.26$high.index <- ifelse(neg.growth.sum.26$n.years.negative.growth.high >= 1, 1,0)
+
+# want a sum
+neg.growth.summary.2.6 <- neg.growth.sum.26 %>% group_by(Forecast.type) %>% summarise(n.trees.low = sum(low.index, na.rm = TRUE),
+                                                            n.trees.med = sum(med.index, na.rm = TRUE),
+                                                            n.trees.high = sum(high.index, na.rm = TRUE))
+
+# for 4.5 
+
+inc.4.5.files <- list.files(path = "scenarios", pattern ="Increment_rcp45_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.4.5.files <- paste0("scenarios/", inc.4.5.files)
+
+list.of.incs <- lapply(full.inc.4.5.files, FUN = increments)
+df.of.incs <- do.call(rbind, list.of.incs)
+length(list.of.incs[[3]]$year)
+# add list of trees
+df.of.incs$treenum <- rep(1:515, each = 328)
+df.of.incs$treenum <- rep(1:515, each = 328)
+#df.of.incs$treenum <- 320
+neg.growth.sum.45 <- df.of.incs %>% group_by(treenum, Forecast.type) %>% summarise(n.years.negative.growth.low = sum(neg.growth.low), 
+                                                                                   n.years.negative.growth.med  = sum(neg.growth.median ),
+                                                                                   n.years.negative.growth.high  = sum(neg.growth.high ))
+
+summary(neg.growth.sum.45)
+neg.growth.sum.45$low.index <- ifelse(neg.growth.sum.45$n.years.negative.growth.low >= 1, 1,0)
+neg.growth.sum.45$med.index <- ifelse(neg.growth.sum.45$n.years.negative.growth.med >= 1, 1,0)
+neg.growth.sum.45$high.index <- ifelse(neg.growth.sum.45$n.years.negative.growth.high >= 1, 1,0)
+
+# want a sum
+neg.growth.summary.4.5 <- neg.growth.sum.45 %>% group_by(Forecast.type) %>% summarise(n.trees.low = sum(low.index, na.rm = TRUE),
+                                                            n.trees.med = sum(med.index, na.rm = TRUE),
+                                                            n.trees.high = sum(high.index, na.rm = TRUE))
+
+
+# for 6.0
+
+inc.6.0.files <- list.files(path = "scenarios", pattern ="Increment_rcp60_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.6.0.files <- paste0("scenarios/", inc.6.0.files)
+
+list.of.incs <- lapply(full.inc.6.0.files, FUN = increments)
+df.of.incs <- do.call(rbind, list.of.incs)
+length(list.of.incs[[3]]$year)
+# add list of trees
+df.of.incs$treenum <- rep(1:515, each = 328)
+df.of.incs$treenum <- rep(1:515, each = 328)
+#df.of.incs$treenum <- 320
+neg.growth.sum.60 <- df.of.incs %>% group_by(treenum, Forecast.type) %>% summarise(n.years.negative.growth.low = sum(neg.growth.low), 
+                                                                                   n.years.negative.growth.med  = sum(neg.growth.median ),
+                                                                                   n.years.negative.growth.high  = sum(neg.growth.high ))
+
+summary(neg.growth.sum.60)
+neg.growth.sum.60$low.index <- ifelse(neg.growth.sum.60$n.years.negative.growth.low >= 1, 1,0)
+neg.growth.sum.60$med.index <- ifelse(neg.growth.sum.60$n.years.negative.growth.med >= 1, 1,0)
+neg.growth.sum.60$high.index <- ifelse(neg.growth.sum.60$n.years.negative.growth.high >= 1, 1,0)
+
+# want a sum
+neg.growth.summary.6.0<- neg.growth.sum.60 %>% group_by(Forecast.type) %>% summarise(n.trees.low = sum(low.index, na.rm = TRUE),
+                                                            n.trees.med = sum(med.index, na.rm = TRUE),
+                                                            n.trees.high = sum(high.index, na.rm = TRUE))
+
+
+# for 8.5:
+inc.8.5.files <- list.files(path = "scenarios", pattern ="Increment_rcp85_SDI_SI.norand.X.nadapt.5000_scenario_preds.csv" )
+full.inc.8.5.files <- paste0("scenarios/", inc.8.5.files)
+
+list.of.incs <- lapply(full.inc.8.5.files, FUN = increments)
+df.of.incs <- do.call(rbind, list.of.incs)
+length(list.of.incs[[3]]$year)
+# add list of trees
+df.of.incs$treenum <- rep(1:515, each = 328)
+#df.of.incs$treenum <- 320
+neg.growth.sum.85 <- df.of.incs %>% group_by(treenum, Forecast.type) %>% summarise(n.years.negative.growth.low = sum(neg.growth.low), 
+                                                                                   n.years.negative.growth.med  = sum(neg.growth.median ),
+                                                                                   n.years.negative.growth.high  = sum(neg.growth.high ))
+
+summary(neg.growth.sum.85)
+neg.growth.sum.85$low.index <- ifelse(neg.growth.sum.85$n.years.negative.growth.low >= 1, 1,0)
+neg.growth.sum.85$med.index <- ifelse(neg.growth.sum.85$n.years.negative.growth.med >= 1, 1,0)
+neg.growth.sum.85$high.index <- ifelse(neg.growth.sum.85$n.years.negative.growth.high >= 1, 1,0)
+
+# want a sum
+neg.growth.summary.8.5 <- neg.growth.sum.85 %>% group_by(Forecast.type) %>% summarise(n.trees.low = sum(low.index, na.rm = TRUE),
+                                                            n.trees.med = sum(med.index, na.rm = TRUE),
+                                                            n.trees.high = sum(high.index, na.rm = TRUE))
+
+
+# make a figure with this?
+
+neg.growth.summary.2.6$rcp <- "rcp2.6"
+neg.growth.summary.4.5$rcp <- "rcp4.5"
+neg.growth.summary.6.0$rcp <- "rcp6.0"
+neg.growth.summary.8.5$rcp <- "rcp8.5"
+
+
+neg.growth.summary.all <- rbind(neg.growth.summary.2.6, neg.growth.summary.4.5, neg.growth.summary.6.0, neg.growth.summary.8.5)
+
+neg.growth.sub <- neg.growth.summary.all %>% filter(Forecast.type %in% "Climate change + DBH change")
+colnames(neg.growth.sub)[2:5] <- c("2.5% CI below zero", 
+                                   "50% CI below zero",
+                                   "97.5% CI below zero",
+                                   "scenario")
+
+
+neg.growth.sub.m <- reshape2::melt(neg.growth.sub, id.vars = c("scenario", "Forecast.type"))
+neg.growth.sub.m
+
+
+col.pal <- c("#0571b0",
+             "#92c5de",
+              "#f4a582",
+               "#ca0020")
+
+png(height = 4, width = 6, units = "in", res = 300, "barplot_n_trees_with_neg_growth.png")
+ggplot(neg.growth.sub.m, aes(variable,  value, fill = scenario, group = scenario))+
+  geom_bar(stat = "identity", position = "dodge")+scale_fill_manual(values = col.pal)+
+  theme_bw(base_size = 12)+xlab("")+ylab("Number of trees")+
+  theme(panel.grid = element_blank())
+dev.off()
+
+
+#------------------------------------------------------------------------------------------------
+# PLOTS of PCT change
+#------------------------------------------------------------------------------------------------
 
 my_cols <- c("#1b9e77",
              "#d95f02",
@@ -696,3 +1075,11 @@ diff_plot <- ggplot(data = diff.spread, aes(x=year, fill = variable))+
   scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
 
 diff_plot 
+
+diff_pct_plot <- ggplot(data = diff.pct.spread, aes(x=year, fill = variable))+
+  geom_ribbon(aes(ymin=low, ymax=high), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+geom_line(aes(x = year, y = median, color = variable))+
+  ylab("Change in Increment")+
+  xlab("Year")+theme_bw()+
+  scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
+  
+diff_pct_plot 

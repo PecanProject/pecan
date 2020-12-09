@@ -6,11 +6,18 @@
 # 2. Parameter Uncertainty
 # 3. Process Uncertainty
 # 4. Driver uncertainty (?)
-
+library(tidyverse)
+library(psych)
+library(gridExtra)
+library(pryr)
+library(cowplot)
 stage2 = FALSE
+output.base.name <- "SDI_SI.norand.X.nadapt.5000"
 
 # assuming that we already ran the conditional_effects_mcmc_plots script, and that output.base.name is in our env
 jags.comb.params <- readRDS(file=paste0("IGF",output.base.name,".rds"))
+jags.comb.params <- readRDS(file=paste0("/home/rstudio/data/IGFFull.model.validation.nadapt5000.rds"))
+
 out <- as.matrix(jags.comb.params)
 summary(out)
 betas <- out[,grep(pattern = "beta",colnames(out))]
@@ -25,7 +32,7 @@ alphas <- out[,grep(pattern = "alpha_PLOT",colnames(out))]
 betaXplots <- out[,grep(pattern = "betaX_PLOT",colnames(out))]
 
 # get the estimated x values for each tree/plot:
-xval.ests<- readRDS(paste0(output.base.name,"_estimated_xvals.RDS"))
+xval.ests<- readRDS(paste0("/home/rstudio/data/IGF_xvals_",output.base.name,".rds"))
 x.mat <- as.matrix(xval.ests)
 x.ci      <- apply(x.mat , 2, quantile, c(0.025, 0.5, 0.975))
 x.ci[, "x[1,24]"]
