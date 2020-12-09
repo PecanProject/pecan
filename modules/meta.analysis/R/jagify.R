@@ -47,7 +47,7 @@ jagify <- function(result, use_ghs = TRUE) {
                          "ghs", "treatment_id", "site", "trt_name")) # original versions of greenhouse, treatment_id, site_id, and name
   
   #order by site_id and trt_id, but make sure "control" is the first trt of each site
-  uniq <- setdiff(unique(r $trt_id), "control")
+  uniq <- setdiff(unique(r$trt_id), "control")
   r$trt_id <- factor(r$trt_id, levels = c("control", uniq[order(uniq)]))
   r <- r[order(r$site_id, r$trt_id), ]
   
