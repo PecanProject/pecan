@@ -247,17 +247,17 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
         valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
       }
       
-      utils::globalVariables(
-        'constants.tobit2space',
-        'data.tobit2space',
-        'inits.tobit2space',
-        'tobit2space_pred',
-        'conf_tobit2space',
-        'samplerNumberOffset_tobit2space',
-        'Rmcmc_tobit2space',
-        'Cmodel_tobit2space',
-        'Cmcmc_tobit2space'
-      )
+      # utils::globalVariables(c(
+      #    'constants.tobit2space',
+      #   'data.tobit2space',
+      #    'inits.tobit2space',
+      #    'tobit2space_pred',
+      #    'conf_tobit2space',
+      #    'samplerNumberOffset_tobit2space',
+      #    'Rmcmc_tobit2space',
+      #    'Cmodel_tobit2space',
+      #    'Cmcmc_tobit2space'
+      #  ))
       
     }else{
       
@@ -365,7 +365,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     )) %>%
     as.matrix()
   
-  rownames(interval) <- names(obs.mean[[t]])
+  rownames(interval) <- names(input.vars)
   
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
@@ -529,17 +529,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
-    utils::globalVariables(
-      'constants.tobit',
-      'data.tobit',
-      'inits.tobit',
-      'model_pred',
-      'conf',
-      'samplerNumberOffset',
-      'Rmcmc',
-      'Cmodel',
-      'Cmcmc'
-    )
+  
     
   }else{
     Cmodel$y.ind <- y.ind
