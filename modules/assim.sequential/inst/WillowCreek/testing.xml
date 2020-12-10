@@ -24,7 +24,7 @@
     <min_value>0</min_value>
     <max_value>9999</max_value>
     <variable.name>
-     <variable.name>LAI</variable.name>
+     <variable.name>Qle</variable.name>
     </variable.name>
   </file>
   </inputs>
@@ -36,10 +36,12 @@
     <max_value>9999</max_value>
     <scaling_factor>1000000000</scaling_factor>
    </variable>
-    <variable>
-    <variable.name>LAI</variable.name>
+   <variable>
+    <variable.name>Qle</variable.name>
+    <unit>mW m-2</unit>
     <min_value>0</min_value>
     <max_value>9999</max_value>
+    <scaling_factor>100</scaling_factor>
    </variable>
   </state.variables>
   <forecast.time.step>year</forecast.time.step>

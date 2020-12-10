@@ -502,6 +502,9 @@ settings$host$tunnel <- '/tmp/tunnel'
 settings$model$binary = "/usr2/postdoc/istfer/SIPNET/1023/sipnet"
 
 
+source('/fs/data3/kzarada/pecan/modules/assim.sequential/R/Nimble_codes.R')
+
+
 if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
 debugonce(PEcAn.assim.sequential::sda.enkf)
 
