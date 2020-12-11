@@ -468,7 +468,7 @@ model{
   } else {
     nchain <- 3
     for (i in seq_len(nchain)) {
-      y.samp <- sample(data$y, length(data$y), replace = TRUE)
+      y.samp <- sample(as.matrix(data$y), length(data$y), replace = TRUE)
       z0ragged <- z0 # lines for z0ragged come from mikes "fix" to help with tree w/no cores
       for(j in 1:data$ni){ # 1: number of individuals
         # this creates z0ragged, where we only have z0 for trees w/ cores during the time period of the cores &
