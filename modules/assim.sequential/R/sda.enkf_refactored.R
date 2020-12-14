@@ -448,7 +448,8 @@ sda.enkf <- function(settings,
       
       
       
-      wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
+      if(is.null(outconfig$samples$met$ids){wts <- unlist(weight_list[[t]])}else{
+        (wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])}
       
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
