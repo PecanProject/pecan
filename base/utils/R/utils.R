@@ -210,11 +210,11 @@ summarize.result <- function(result) {
     dplyr::group_by(citation_id, site_id, trt_id,
                     control, greenhouse, date, time,
                     cultivar_id, specie_id) %>%
-    dplyr::summarize(
-      n = length(n),
-      mean = mean(mean),
+    dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(n) == 1, "none", "SE"),
-      stat = stats::sd(mean) / sqrt(length(n))
+      stat = stats::sd(mean) / sqrt(length(n)),
+      n = length(n),
+      mean = mean(mean)
     ) %>%
     dplyr::ungroup()
   ans2 <- result %>%

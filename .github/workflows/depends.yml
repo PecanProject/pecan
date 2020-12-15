@@ -34,7 +34,7 @@ jobs:
       - name: github branch
         run: |
           BRANCH=${GITHUB_REF##*/}
-          echo "::set-env name=GITHUB_BRANCH::${BRANCH}"
+          echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
 
           tags="R${{ matrix.R }}"
           if [ "${{ matrix.R }}" == "${{ env.SUPPORTED }}" ]; then
@@ -44,7 +44,7 @@ jobs:
               tags="${tags},develop"
             fi
           fi
-          echo "::set-env name=TAG::${tags}"
+          echo "TAG=${tags}" >> $GITHUB_ENV
 
       # this will publish to the actor (person) github packages
       - name: Publish to GitHub

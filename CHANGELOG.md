@@ -37,6 +37,7 @@ This is a major change:
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
 - gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
 - ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
+- fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
 
 ### Changed
 
@@ -56,7 +57,8 @@ This is a major change:
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 - data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519). 
 - Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
--Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
+- Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
+- Default behavior for `stop_on_error` is now `TRUE` for non-ensemble runs; i.e., workflows that run only one model simulation (or omit the `ensemble` XML group altogether) will fail if the model run fails. For ensemble runs, the old behavior is preserved; i.e., workflows will continue even if one of the model runs failed. This behavior can also be manually controlled by setting the new `run -> stop_on_error` XML tag to `TRUE` or `FALSE`.
 
 ### Added
 
