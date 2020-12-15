@@ -205,7 +205,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
                                            pf = rwish_chol(1,df = ncol(X)+1,
-                                                           cholesky = chol(solve(stats::cov(X)))))
+                                                           cholesky = chol(solve(Pf))))
       #ptm <- proc.time()
       
       tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
