@@ -31,6 +31,7 @@ Imports:
     PEcAn.remote,
     purrr,
     RCurl,
+    rlang,
     stringi,
     udunits2 (>= 0.11),
     XML
