@@ -203,6 +203,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @return result with replicate observations summarized
 ##' @export summarize.result
 ##' @usage summarize.result(result)
+##' @importFrom rlang .data
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
