@@ -42,6 +42,7 @@ This is a major change:
 
 ### Changed
 
+- Removed old api, now split into rpecanapi and apps/api.
 - Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
 - Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
