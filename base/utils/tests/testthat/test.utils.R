@@ -70,7 +70,9 @@ test_that("summarize.result works appropriately", {
                            n = 1,
                            mean = sqrt(1:10),
                            stat = NA,
-                           statname = NA
+                           statname = NA,
+                           name = NA,
+                           treatment_id = NA
   )
   # check that individual means produced for distinct sites
   expect_that(summarize.result(testresult)$mean, equals(testresult$mean)) 
