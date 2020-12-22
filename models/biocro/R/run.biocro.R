@@ -9,6 +9,7 @@
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
+#' @importFrom rlang .data
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
 
