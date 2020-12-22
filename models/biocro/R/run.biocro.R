@@ -118,9 +118,13 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .tbl = hourly_grp,
       .vars = c(tavg = "Temp"),
       .fun = mean))
-    daily.results.inter <- dplyr::select(daily.results.initial, year...1, doy...2, Stem, Leaf, Root, AboveLitter, BelowLitter, 
-           Rhizome, Grain, LAI, tmax, SoilEvaporation, CanopyTrans, precip,
-           tmin, tavg)
+    daily.results.inter <- dplyr::select(daily.results.initial, .data$year...1, .
+                                         data$doy...2, .data$Stem, .data$Leaf, 
+                                         .data$Root, .data$AboveLitter, .data$BelowLitter, 
+                                         .data$Rhizome, .data$Grain, .data$LAI, 
+                                         .data$tmax, .data$SoilEvaporation, 
+                                         .data$CanopyTrans, .data$precip,
+                                         .data$tmin, .data$tavg)
     daily.results <- dplyr::rename(daily.results.inter, 
                                    year = year...1, doy = doy...2)
   # bind_cols on 4 tables leaves 3 sets of duplicate year and day columns.
@@ -146,10 +150,11 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .tbl = daily_grp,
       .vars = c(mat = "Temp"),
       .fun = mean))
-  annual.results.inter <- dplyr::select(annual.results.initial, year...1, Stem, 
-                                        Leaf, Root, AboveLitter, BelowLitter, 
-                                        Rhizome, Grain, 
-                                        SoilEvaporation, CanopyTrans, map, mat)
+  annual.results.inter <- dplyr::select(annual.results.initial, .data$year...1, 
+                                        .data$Stem, .data$Leaf, .data$Root, 
+                                        .data$AboveLitter, .data$BelowLitter, 
+                                        .data$Rhizome, .data$Grain, .data$SoilEvaporation, 
+                                        .data$CanopyTrans, .data$map, .data$mat)
   annual.results <- dplyr::rename(annual.results.inter, year = year...1)
   col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
                  "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
