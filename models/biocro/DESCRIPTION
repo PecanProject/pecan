@@ -21,7 +21,8 @@ Imports:
     lubridate (>= 1.7.0),
     data.table,
     dplyr,
-    XML
+    XML, 
+    rlang
 Suggests:
     BioCro,
     testthat (>= 2.0.0),
