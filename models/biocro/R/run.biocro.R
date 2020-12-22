@@ -119,8 +119,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .tbl = hourly_grp,
       .vars = c(tavg = "Temp"),
       .fun = mean))
-    daily.results.inter <- dplyr::select(daily.results.initial, .data$year...1, .
-                                         data$doy...2, .data$Stem, .data$Leaf, 
+    daily.results.inter <- dplyr::select(daily.results.initial, .data$year...1, 
+                                         .data$doy...2, .data$Stem, .data$Leaf, 
                                          .data$Root, .data$AboveLitter, .data$BelowLitter, 
                                          .data$Rhizome, .data$Grain, .data$LAI, 
                                          .data$tmax, .data$SoilEvaporation, 
