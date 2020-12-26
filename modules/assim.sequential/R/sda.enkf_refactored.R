@@ -113,7 +113,7 @@ sda.enkf <- function(settings,
                                                               start.time = start.cut, 
                                                               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3, tz="UTC"),
                                                               inputs =  settings$run$inputs$met$path[[i]],
-                                                              overwrite=F)) 
+                                                              overwrite=T)) 
     }
   }
   if (control$debug) browser()
@@ -149,8 +149,8 @@ sda.enkf <- function(settings,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   #The aqq and bqq are shape parameters estimated over time for the proccess covariance. #see GEF help
-  aqq         <- list()
-  bqq         <- list()
+  aqq         <- NULL
+  bqq         <- numeric(nt + 1)
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
@@ -211,7 +211,7 @@ sda.enkf <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
     }
     
-    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + 1 #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
@@ -350,25 +350,22 @@ sda.enkf <- function(settings,
     }
     
     #----chaning the extension of nc files to a more specific date related name
-    purrr::walk(
-      list.files(
-        path = file.path(settings$outdir, "out"),
-        "*.nc$",
-        recursive = TRUE,
-        full.names = TRUE),
-      function(.x){
-        file.rename(.x ,
-                    file.path(dirname(.x),
-                              paste0(gsub(" ", "", as.character(names(obs.mean)[t])),
-                                     ".nc"))
-                    )
-      })
+   files <-  list.files(
+      path = file.path(settings$outdir, "out"),
+      "*.nc$",
+      recursive = TRUE,
+      full.names = TRUE)
+   files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
+    
+    
+   file.rename(files, 
+               file.path(dirname(files), 
+                  paste0("SDA_", basename(files), "_", gsub(" ", "", names(obs.mean)[t]), ".nc") ) )
+    
     #--- Reformating X
     X <- do.call(rbind, X)
     
-    FORECAST[[t]] <- X
-    mu.f <- colMeans(X)
-    Pf <- cov(X)
+
     
     if(sum(X,na.rm=T) == 0){
       logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
@@ -408,8 +405,7 @@ sda.enkf <- function(settings,
       R <- as.matrix(obs.cov[[t]][choose.cov,choose.cov])
       R[is.na(R)]<-0.1
       
-      if (control$debug)
-        browser()
+      if (control$debug) browser()
       
       # making the mapping matrix
       #TO DO: doesn't work unless it's one to one
@@ -425,11 +421,18 @@ sda.enkf <- function(settings,
         X.new<-enkf.params[[t-1]]$X.new
       }
       
-      if(!exists('Cmcmc_tobit2space') | !exists('Cmcmc')) {
-        recompile = TRUE
+      if(!exists('Cmcmc_tobit2space')) {
+        recompileTobit = TRUE
       }else{
-        recompile = FALSE
+        recompileTobit = FALSE
       }
+      
+      if(!exists('Cmcmc')) {
+        recompileGEF = TRUE
+      }else{
+        recompileGEF = FALSE
+      }
+      
       
       
       wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
@@ -441,13 +444,15 @@ sda.enkf <- function(settings,
                                        Observed=list(R=R, Y=Y),
                                        H=H,
                                        extraArg=list(aqq=aqq, bqq=bqq, t=t,
-                                                     recompile=recompile,
+                                                     recompileTobit=recompileTobit,
+                                                     recompileGEF=recompileGEF,
                                                      wts = wts),
                                        nt=nt,
                                        obs.mean=obs.mean,
                                        obs.cov=obs.cov)
       
       #Reading back mu.f/Pf and mu.a/Pa
+      FORECAST[[t]] <- X
       #Forecast
       mu.f <- enkf.params[[t]]$mu.f
       Pf <- enkf.params[[t]]$Pf
@@ -557,11 +562,11 @@ sda.enkf <- function(settings,
   ### time series plots                                                 ###
   ###-------------------------------------------------------------------###----- 
   if(control$TimeseriesPlot) post.analysis.ggplot(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS,plot.title=control$plot.title)
-  if(control$TimeseriesPlot) PEcAn.assim.sequential:::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
+  if(control$TimeseriesPlot) PEcAn.assim.sequential::post.analysis.ggplot.violin(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS)
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
   ###-------------------------------------------------------------------###----
-  if(control$BiasPlot)   PEcAn.assim.sequential:::postana.bias.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
+  if(control$BiasPlot)   PEcAn.assim.sequential::postana.bias.plotting.sda(settings,t,obs.times,obs.mean,obs.cov,obs,X,FORECAST,ANALYSIS)
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------###----- 

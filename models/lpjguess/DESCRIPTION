@@ -19,9 +19,9 @@ Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: LPJ-GUESS model
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

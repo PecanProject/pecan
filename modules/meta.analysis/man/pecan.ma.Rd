@@ -4,10 +4,17 @@
 \alias{pecan.ma}
 \title{Trait Meta-analysis}
 \usage{
-pecan.ma(trait.data, prior.distns, taupriors, j.iter, outdir,
-  random = FALSE, overdispersed = TRUE, logfile = file.path(outdir,
-  "meta-analysis.log)"), verbose = TRUE,
-  madata_file = file.path(outdir, "madata.Rdata"))
+pecan.ma(
+  trait.data,
+  prior.distns,
+  taupriors,
+  j.iter,
+  outdir,
+  random = FALSE,
+  overdispersed = TRUE,
+  logfile = file.path(outdir, "meta-analysis.log)"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{trait.data}{list of \code{data.frame}s, one per trait for which
@@ -31,9 +38,6 @@ by call to \code{\link[PEcAn.DB:query.priors]{PEcAn.DB::query.priors()}}}
 \code{NULL}, only print output to console.}
 
 \item{verbose}{Logical. If \code{TRUE} (default), print progress messages.}
-
-\item{madata_file}{Path to file for storing copy of data used in
-meta-analysis. If \code{NULL}, don't store at all.}
 }
 \value{
 four chains with 5000 total samples from posterior

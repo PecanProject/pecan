@@ -15,6 +15,8 @@ All functions pertaining to Parameter Data Assimilation are housed within: **pec
 
 For a detailed usage of the module, please see the vignette under **pecan/modules/assim.batch/vignettes**.
 
+Hierarchical version of the PDA is also implemented, for more details, see the `MultiSitePDAVignette` [package vignette](https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/vignettes/MultiSitePDAVignette.Rmd) and function-level documentation.
+
 #### **pda.mcmc.R**
 This is the main PDA code. It performs Bayesian MCMC on model parameters by proposing parameter values, running the model, calculating a likelihood (between model output and supplied observations), and accepting or rejecting the proposed parameters (Metropolis algorithm). Additional notes:
 

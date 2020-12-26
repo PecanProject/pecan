@@ -2,10 +2,10 @@
 
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
-$db_bety_hostname="postgres";
-$db_bety_username="bety";
-$db_bety_password="bety";
-$db_bety_database="bety";
+$db_bety_hostname=getenv('PGHOST', true) ?: "postgres";
+$db_bety_username=getenv('BETYUSER', true) ?: "bety";
+$db_bety_password=getenv('BETYPASSWORD', true) ?: "bety";
+$db_bety_database=getenv('BETYDATABASE', true) ?: "bety";
 
 # Information to connect to the FIA database
 # leave this blank if you do not have the FIA database installed.
@@ -26,9 +26,6 @@ $Rbinary="/usr/bin/R";
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
-# google map key
-$googleMapKey="AIzaSyDBBrRM8Ygo-wGAnubrtVGZklK3bmXlUPI";
-
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
@@ -39,7 +36,7 @@ $min_run_level=2;
 $min_delete_level=2;
 
 # Used for authentication, needs to be same as ruby
-$REST_AUTH_SITE_KEY="thisisnotasecret";
+$REST_AUTH_SITE_KEY=getenv('SECRET_KEY_BASE', true) ?: "thisisnotasecret";
 $REST_AUTH_DIGEST_STRETCHES =10;
 
 # anonymous access level

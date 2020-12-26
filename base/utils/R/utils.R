@@ -19,7 +19,7 @@
 ##'
 ##' @title MstMIP variable
 ##' @export
-##' @param name name of variable
+##' @param name of variable
 ##' @param lat latitude if dimension requests it
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
@@ -27,12 +27,12 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
-  if (nrow(var) == 0) {
-    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(var) == 0) {
+  if (nrow(nc_var) == 0) {
+    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
+    if (nrow(nc_var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
@@ -45,7 +45,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
   }
 
   for (i in 1:4) {
-    vd <- var[[paste0("dim", i)]]
+    vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
       dims[[length(dims) + 1]] <- lon
     } else if (vd == "lat" && !is.na(lat)) {
@@ -62,9 +62,9 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       }
     }
   }
-  ncvar <- ncdf4::ncvar_def(name, as.character(var$Units), dims, -999)
-  if (var$Long.name != "na") {
-    ncvar$longname <- as.character(var$Long.name)
+  ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
+  if (nc_var$Long.name != "na") {
+    ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
 } # mstimipvar
@@ -93,7 +93,7 @@ left.pad.zeros <- function(num, digits = 5) {
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 ##' @export
-##' @author <unknown>
+##' @author unknown
 zero.truncate <- function(y) {
   y[y < 0 | is.na(y)] <- 0
   return(y)
@@ -203,25 +203,30 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @return result with replicate observations summarized
 ##' @export summarize.result
 ##' @usage summarize.result(result)
+##' @importFrom rlang .data
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
     dplyr::filter(n == 1) %>%
-    dplyr::group_by(citation_id, site_id, trt_id,
-                    control, greenhouse, date, time,
-                    cultivar_id, specie_id) %>%
-    dplyr::summarize(
-      n = length(n),
-      mean = mean(mean),
+    dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
+                    .data$control, .data$greenhouse, .data$date, .data$time,
+                    .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
+    dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(n) == 1, "none", "SE"),
-      stat = stats::sd(mean) / sqrt(length(n))
+      stat = stats::sd(mean) / sqrt(length(n)),
+      n = length(n),
+      mean = mean(mean)
     ) %>%
     dplyr::ungroup()
   ans2 <- result %>%
     dplyr::filter(n != 1) %>%
     # ANS: Silence factor to character conversion warning
     dplyr::mutate(statname = as.character(statname))
-  return(dplyr::bind_rows(ans1, ans2))
+  if (nrow(ans2) > 0) {
+    dplyr::bind_rows(ans1, ans2)
+  } else {
+    return(ans1)
+  }
 } # summarize.result
 
 
@@ -319,7 +324,7 @@ pdf.stats <- function(distn, A, B) {
     norm = B ^ 2,
     f = ifelse(B > 4,
                2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-               var(stats::rf(1e+05, A, B))))
+               stats::var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -488,7 +493,7 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' @author David LeBauer
 temp.settings <- function(settings.txt) {
   temp <- tempfile()
-  on.exit(unlink(temp))
+  on.exit(unlink(temp), add = TRUE)
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)
@@ -512,7 +517,7 @@ temp.settings <- function(settings.txt) {
 ##' @author David LeBauer
 tryl <- function(FUN) {
   out <- tryCatch(FUN, error = function(e) e)
-  ans <- !any(class(out) == "error")
+  ans <- !inherits(out, "error")
   return(ans)
 } # tryl
 #--------------------------------------------------------------------------------------------------#
@@ -651,10 +656,7 @@ convert.expr <- function(expression) {
 ##' @examples
 ##' \dontrun{
 ##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
-##' }
 ##'
-##' @examples
-##' \dontrun{
 ##' download.file("
 ##'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
 ##'   "~/pres.sfc.2000.nc")
@@ -703,7 +705,7 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
+retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
   attempts = 0
   retval = try(eval(expr))
   while (isError(retval)) {

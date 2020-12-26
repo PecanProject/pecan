@@ -34,7 +34,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   var.names <- var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   
@@ -124,7 +124,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
@@ -221,7 +221,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
 
   #Defining some colors
   generate_colors_sda()
-  t1         <- 1
+  t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -293,14 +293,13 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   generate_colors_sda()
 
   #---
-  library(corrplot)
   pdf('SDA/process.var.plots.pdf')
   
   cor.mat <- cov2cor(aqq[t,,] / bqq[t])
   colnames(cor.mat) <- colnames(X)
   rownames(cor.mat) <- colnames(X)
   par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-  corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+  corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
   
   par(mfrow=c(1,1))   
   plot(as.Date(obs.times[t1:t]), bqq[t1:t],
@@ -315,12 +314,10 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
 
 post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-  t1         <- 1
+  t1 <- 1
   #Defining some colors
   ready.OBS<-NULL
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   #Analysis & Forcast cleaning and STAT
@@ -425,11 +422,9 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
 ##' @export
 post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS, plot.title=NULL){
 
-
+  t1 <- 1 
   #Defining some colors
   generate_colors_sda()
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
@@ -455,7 +450,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
-      purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
+      purrr::map2_df(sqrt(one.day.data$covs %>% purrr::map( ~ diag(.x)) %>% unlist), one.day.data$means,
                      function(sd,mean){
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
@@ -514,6 +509,13 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 ##' @rdname interactive.plotting.sda
 ##' @export
 post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+
+  if (!requireNamespace("ggrepel", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Package `ggrepel` not found, but needed by",
+      "PEcAn.assim.sequential::post.analysis.multisite.ggplot.",
+      "Please install it and try again.")
+  }
   
   # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
   # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
@@ -556,12 +558,9 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     obs.mean[name] = data_mean
     obs.cov[name] = data_cov
   }
-  
-
-  if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
 
   #Defining some colors
-  t1         <- 1
+  t1 <- 1
   generate_colors_sda()
   varnames <- settings$state.data.assimilation$state.variable
   #just a check
@@ -810,3 +809,5 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   
   
 }
+
+

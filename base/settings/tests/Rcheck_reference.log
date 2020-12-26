@@ -18,13 +18,7 @@
 * checking whether package ‘PEcAn.settings’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Malformed Description field: should contain one or more complete sentences.
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... NOTE
 Non-standard file/directory found at top level:
   ‘examples’
@@ -39,10 +33,8 @@ Non-standard file/directory found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' import not declared from: ‘purrr’
-Packages in Depends field not imported from:
-  ‘methods’ ‘PEcAn.DB’
+* checking dependencies in R code ... NOTE
+Package in Depends field not imported from: ‘methods’
   These packages need to be imported from (in the NAMESPACE file)
   for when this namespace is loaded but not attached.
 * checking S3 generic/method consistency ... WARNING
@@ -55,11 +47,6 @@ listToXml:
   function(x, ...)
 listToXml.default:
   function(item, tag)
-
-printAll:
-  function(x)
-printAll.MultiSettings:
-  function(multiSettings)
 
 update:
   function(object, ...)
@@ -79,84 +66,27 @@ The argument of a replacement function which corresponds to the right
 hand side must be named ‘value’.
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-check.bety.version: no visible global function definition for ‘tail’
 check.ensemble.settings: no visible binding for global variable
   ‘startdate’
 check.ensemble.settings: no visible binding for global variable
   ‘enddate’
-check.settings: no visible global function definition for
-  ‘remote.execute.cmd’
-loadPath.sitePFT: no visible global function definition for
-  ‘read.table’
-loadPath.sitePFT: no visible global function definition for ‘%>%’
-site.pft.link.settings: no visible global function definition for ‘%>%’
-site.pft.link.settings: no visible global function definition for
-  ‘setNames’
 site.pft.link.settings: no visible binding for global variable ‘.’
-site.pft.linkage: no visible global function definition for ‘%>%’
-site.pft.linkage : <anonymous>: no visible global function definition
-  for ‘%>%’
-site.pft.linkage : <anonymous>: no visible global function definition
-  for ‘setNames’
-update.settings: no visible binding for global variable ‘null’
 Undefined global functions or variables:
-  . %>% enddate null read.table remote.execute.cmd setNames startdate
-  tail
-Consider adding
-  importFrom("stats", "setNames")
-  importFrom("utils", "read.table", "tail")
-to your NAMESPACE file.
+  . enddate startdate
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'createMultiSiteSettings.Rd':
-  \examples lines wider than 100 characters:
-             prerun = "module load udunits R/R-3.0.0_gnu-4.4.6", dbfiles = "/projectnb/dietzelab/pecan.data/input", 
-             modellauncher = structure(list(binary = "/usr2/postdoc/rykelly/pecan/utils/modellauncher/modellauncher", 
-         "output")), lu = structure(list(id = "294", path = "/projectnb/dietzelab/EDI/ed_inputs/glu/"), .Names = c("id", 
-         "path")), soil = structure(list(id = "297", path = "/projectnb/dietzelab/EDI/faoOLD/FAO_"), .Names = c("id", 
-         "path")), thsum = structure(list(id = "295", path = "/projectnb/dietzelab/EDI/ed_inputs/"), .Names = c("id", 
-         "path")), veg = structure(list(id = "296", path = "/projectnb/dietzelab/EDI/oge2OLD/OGE2_"), .Names = c("id", 
-
-Rd file 'createSitegroupMultiSettings.Rd':
-  \examples lines wider than 100 characters:
-             prerun = "module load udunits R/R-3.0.0_gnu-4.4.6", dbfiles = "/projectnb/dietzelab/pecan.data/input", 
-             modellauncher = structure(list(binary = "/usr2/postdoc/rykelly/pecan/utils/modellauncher/modellauncher", 
-         "output")), lu = structure(list(id = "294", path = "/projectnb/dietzelab/EDI/ed_inputs/glu/"), .Names = c("id", 
-         "path")), soil = structure(list(id = "297", path = "/projectnb/dietzelab/EDI/faoOLD/FAO_"), .Names = c("id", 
-         "path")), thsum = structure(list(id = "295", path = "/projectnb/dietzelab/EDI/ed_inputs/"), .Names = c("id", 
-         "path")), veg = structure(list(id = "296", path = "/projectnb/dietzelab/EDI/oge2OLD/OGE2_"), .Names = c("id", 
-
-These lines will be truncated in the PDF manual.
+* checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
-  ‘as.MultiSettings’ ‘as.Settings’ ‘expandMultiSettings’
-  ‘is.MultiSettings’ ‘is.Settings’ ‘listToXml’ ‘printAll’
-  ‘settingNames’
+  ‘expandMultiSettings’ ‘listToXml’ ‘printAll’ ‘settingNames’
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'MultiSettings'
-  ‘...’
-
-Duplicated \argument entries in documentation object 'SafeList':
-  ‘x’
-
 Undocumented arguments in documentation object 'addSecrets'
   ‘force’
-
-Undocumented arguments in documentation object 'check.bety.version'
-  ‘dbcon’
-Documented arguments not in \usage in documentation object 'check.bety.version':
-  ‘settings’
-
-Undocumented arguments in documentation object 'check.database'
-  ‘database’
-Documented arguments not in \usage in documentation object 'check.database':
-  ‘settings’
 
 Undocumented arguments in documentation object 'check.model.settings'
   ‘dbcon’
@@ -176,14 +106,6 @@ Undocumented arguments in documentation object 'clean.settings'
 Undocumented arguments in documentation object 'fix.deprecated.settings'
   ‘force’
 
-Undocumented arguments in documentation object 'papply'
-  ‘...’
-Documented arguments not in \usage in documentation object 'papply':
-  ‘\code{...}’
-
-Documented arguments not in \usage in documentation object 'read.settings':
-  ‘outputfile’
-
 Undocumented arguments in documentation object 'update.settings'
   ‘force’
 
@@ -192,13 +114,10 @@ entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'getRunSettings':
-  ‘templateSettings’ ‘siteId’
-
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 6 WARNINGs, 4 NOTEs
+Status: 4 WARNINGs, 3 NOTEs

@@ -4,8 +4,12 @@
 \alias{download.thredds.AGB}
 \title{download.thredds.AGB}
 \usage{
-download.thredds.AGB(outdir = NULL, site_ids, run_parallel = FALSE,
-  ncores = NULL)
+download.thredds.AGB(
+  outdir = NULL,
+  site_ids,
+  run_parallel = FALSE,
+  ncores = NULL
+)
 }
 \arguments{
 \item{outdir}{Where to place output}
@@ -21,6 +25,14 @@ data.frame summarize the results of the function call
 }
 \description{
 download.thredds.AGB
+}
+\examples{
+\dontrun{
+outdir <- "~/scratch/abg_data/"
+results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
+           site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
+           run_parallel = TRUE, ncores = 8)
+}
 }
 \author{
 Bailey Morrison

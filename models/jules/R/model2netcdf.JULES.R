@@ -32,7 +32,7 @@ model2netcdf.JULES <- function(outdir) {
                 row.names = TRUE,
                 quote = FALSE)
     
-    vars <- ncdf4.helpers::nc.get.variable.list(nc)
+    vars <- names(nc[["var"]])
     # Check that frac is reported
     if("frac_grid" %in% vars){
       frac <- ncdf4::ncvar_get(nc, "frac_grid")
@@ -40,11 +40,11 @@ model2netcdf.JULES <- function(outdir) {
       PEcAn.logger::logger.warn("Surface type fraction is not an output and thus other outputs may not be parseable")
     }
     
-    base_dims <- ncdf4.helpers::nc.get.dim.names(nc, "GPP") # This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
+    base_dims <- vapply(nc$var[["GPP"]]$dim, `[[`, character(1), "name")# This isn't the best example, except that GPP is the default with read.output (and it is not reported by surface type)
     for(i in seq_along(vars)){
       var <- vars[i]
       nonstd_var <- nrow(PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == var),]) == 0  
-      dims <- ncdf4.helpers::nc.get.dim.names(nc, var)
+      dims <- vapply(nc$var[["GPP"]]$dim, `[[`, character(1), "name")
       diff_dims <- setdiff(dims,base_dims)
       if(length(diff_dims) > 0){# ie more than just x, y, time
         PEcAn.logger::logger.warn("Variable", vars[i], "has additional dimension", diff_dims, "attempting to aggregate and/or select appropriate data")
@@ -78,7 +78,7 @@ model2netcdf.JULES <- function(outdir) {
         ncdf4::nc_close(nc)
         nc <- ncdf4::nc_open(fname, write = TRUE)
         # Check did the variable get deleted 
-        if(!(var %in% ncdf4.helpers::nc.get.variable.list(nc))){
+        if (!(var %in% names(nc[["var"]]))) {
           PEcAn.logger::logger.debug(var, "successfully removed from", fname)
         }
         dim = list(time = nc$dim$time, x = nc$dim$x, y = nc$dim$y)

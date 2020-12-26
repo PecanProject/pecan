@@ -19,9 +19,7 @@
 * checking whether package ‘PEcAn.MAAT’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -86,4 +84,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 2 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTE

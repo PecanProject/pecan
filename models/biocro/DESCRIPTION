@@ -21,7 +21,8 @@ Imports:
     lubridate (>= 1.7.0),
     data.table,
     dplyr,
-    XML
+    XML, 
+    rlang
 Suggests:
     BioCro,
     testthat (>= 2.0.0),
@@ -30,9 +31,9 @@ Suggests:
     RPostgreSQL
 Remotes:
     github::ebimodeling/biocro
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

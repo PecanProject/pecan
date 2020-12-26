@@ -31,6 +31,7 @@ Imports:
     PEcAn.remote,
     purrr,
     RCurl,
+    rlang,
     stringi,
     udunits2 (>= 0.11),
     XML
@@ -50,9 +51,9 @@ Suggests:
     sp,
     testthat (>= 2.0.0),
     xtable
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)

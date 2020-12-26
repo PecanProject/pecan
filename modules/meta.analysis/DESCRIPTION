@@ -31,12 +31,11 @@ Imports:
     PEcAn.settings,
     rjags
 Suggests:
-    testthat (>= 1.0.2),
-    PEcAn.priors
+    testthat (>= 1.0.2)
 SystemRequirements: JAGS
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)

@@ -47,9 +47,16 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.ED2)
-model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
-" | R --vanilla
+  Rscript \
+    -e "library(PEcAn.ED2)" \
+    -e "model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)"
+  STATUS=$?
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN model2netcdf.ED2\nLogfile is located at '@OUTDIR@'/logfile.txt"
+  	echo "************************************************* End Log $TIMESTAMP"
+    echo ""
+    exit $STATUS
+  fi
 fi
 
 # copy readme with specs to output

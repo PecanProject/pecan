@@ -40,6 +40,12 @@ pecan_path <- get_arg(argv, "--pecandir", getwd())
 output_folder <- get_arg(argv, "--outdir", "batch_test_output")
 outfile <- get_arg(argv, "--outfile", "test_result_table.csv")
 ##################################################
+# Establish database connection based on config.php
+php_file <- file.path(pecan_path, "web", "config.php")
+stopifnot(file.exists(php_file))
+config.list <- PEcAn.utils::read_web_config(php_file)
+bety <- PEcAn.DB::betyConnect(php_file)
+
 # Create outfile directory if it doesn't exist
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
 input_table <- read.csv(input_table_file, stringsAsFactors = FALSE) %>%
@@ -49,6 +55,56 @@ input_table <- read.csv(input_table_file, stringsAsFactors = FALSE) %>%
                   format(as.Date(start_date), "%Y-%m"),
                   format(as.Date(end_date), "%Y-%m"),
                   met, site_id, "test_runs", sep = "_")
+    outdir = NA_character_,
+    workflow_complete = NA,
+    has_jobsh = NA,
+    model_output_raw = NA,
+    model_output_processed = NA
+  )
+
+for (i in seq_len(nrow(input_table))) {
+  table_row <- input_table[i, ]
+
+  # Get model ID
+  model <- table_row$model
+  revision <- table_row$revision
+  message("Model: ", shQuote(model))
+  message("Revision: ", shQuote(revision))
+  model_df <- tbl(bety, "models") %>%
+    filter(model_name == !!model,
+           revision == !!revision) %>%
+    collect()
+  if (nrow(model_df) == 0) {
+    message("No models found with name ", model,
+	    " and revision ", revision, ".\n",
+	    "Moving on to next row.")
+    next
+  } else if (nrow(model_df) > 1) {
+    print(model_df)
+    message("Multiple models found with name ", model,
+	    " and revision ", revision, ".\n",
+	    "Moving on to next row.")
+    next
+  } else {
+    model_id <- model_df$id
+  }
+
+  pft <- table_row$pft
+  if (is.na(pft)) pft <- NULL
+
+  # Run test
+  raw_result <- create_execute_test_xml(
+    model_id = model_id,
+    met = table_row$met,
+    site_id = table_row$site_id,
+    pft = pft,
+    start_date = table_row$start_date,
+    end_date = table_row$end_date,
+    dbfiles_folder = dbfiles_folder,
+    pecan_path = pecan_path,
+    user_id = user_id,
+    ensemble_size = table_row$ensemble_size,
+    sensitivity = table_row$sensitivity
   )
 #----------------------- Parallel Distribution of jobs
 seq_len(nrow(input_table)) %>%

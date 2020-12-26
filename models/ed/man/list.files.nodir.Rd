@@ -2,18 +2,25 @@
 % Please edit documentation in R/other.helpers.ED2.R
 \name{list.files.nodir}
 \alias{list.files.nodir}
-\title{List only files in a directory}
+\title{List only files in a directory
+
+Mostly useful when \code{recursive} and \code{full.names} are both FALSE:
+The current implementation sets \code{full.names} internally, and for recursive
+listings \code{list.files(..., include.dirs = FALSE)} is equivalent and faster.}
 \usage{
 list.files.nodir(path, ...)
 }
 \arguments{
-\item{path}{a character vector of full path names; the default
-    corresponds to the working directory, \code{\link{getwd}()}.  Tilde
-    expansion (see \code{\link{path.expand}}) is performed.  Missing
-    values will be ignored.}
+\item{path}{directory to list}
+
+\item{...}{arguments passed on to base::list.files}
 }
 \description{
 List only files in a directory
+
+Mostly useful when \code{recursive} and \code{full.names} are both FALSE:
+The current implementation sets \code{full.names} internally, and for recursive
+listings \code{list.files(..., include.dirs = FALSE)} is equivalent and faster.
 }
 \author{
 Alexey Shiklomanov

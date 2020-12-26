@@ -6,6 +6,24 @@ documentclass: book
 biblio-style: apalike
 link-citations: yes
 author: "By: PEcAn Team"
+output:
+  bookdown::gitbook:
+    lib_dir: assets
+    split_by: section
+    config:
+      toolbar:
+        position: static
+  bookdown::pdf_book:
+    keep_tex: yes
+  bookdown::epub_book:
+    toc: true
+  bookdown::html_book:
+    css: toc.css
+always_allow_html: true
+#output:
+#  html_document:
+#    toc: true
+#    toc_float: true
 ---
 
 # Welcome {-}
@@ -26,7 +44,7 @@ knitr::include_graphics(rep("figures/PecanLogo.png"))
 
 [PEcAn Website](http://pecanproject.github.io/)
 
-[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE)
+[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ)
 
 [Github Repository](https://github.com/PecanProject/pecan)
 

@@ -4,8 +4,12 @@
 \alias{EDR.preprocess.history}
 \title{Preprocess history file for EDR}
 \usage{
-EDR.preprocess.history(history.path, output.path, datetime,
-  history.prefix = "history")
+EDR.preprocess.history(
+  history.path,
+  output.path,
+  datetime,
+  history.prefix = "history"
+)
 }
 \arguments{
 \item{history.path}{Path to directory containing history file.}

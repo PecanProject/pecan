@@ -1,4 +1,4 @@
-### Thredds Setup 
+## Thredds Setup
 
 Installing and configuring Thredds for PEcAn
 authors - Rob Kooper
@@ -9,8 +9,6 @@ authors - Rob Kooper
 ### Install the Tomcat 8 and Thredds webapp
 
 The Tomcat 8 server can be installed from the default Ubuntu repositories. The thredds webapp will be downloaded and installed from unidata.
-
-#### Ubuntu
 
 First step is to install Tomcat 8 and configure it. The flag `-Dtds.content.root.path` should point to the location of where the thredds folder is located. This needs to be writeable by the user for tomcat. `-Djava.security.egd` is a special flag to use a different random number generator for tomcat. The default would take to long to generate a random number.
 

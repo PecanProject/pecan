@@ -12,7 +12,7 @@
 
 
 #'
-#' @return
+#' @return list of dataframes
 #' @export
 #'
 met2CF.ERA5<- function(lat,

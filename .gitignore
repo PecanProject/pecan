@@ -96,3 +96,6 @@ docker-compose.override.yml
 
 # dont check in modellauncher binaries
 contrib/modellauncher/modellauncher
+
+# don't checkin renv
+/renv/

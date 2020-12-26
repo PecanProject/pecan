@@ -8,16 +8,20 @@ set -e
     travis_time_start "dependency_generate" "Generate PEcAn package dependencies"
     Rscript scripts/generate_dependencies.R
     travis_time_end
+    check_git_clean
 )
 
-# INSTALL SPECIFIC DBPLYR AND LATEST RGDAL
+# DUMP PACKAGE VERSIONS
 (
-    travis_time_start "pecan_install_dbplyr" "Installing dbplyr version 1.3.0 see #2349"
-    # fix for #2349
-    Rscript -e 'devtools::install_version("dbplyr", version = "1.3.0", repos = "http://cran.us.r-project.org")'
-    Rscript -e 'install.packages("rgdal")' # yes, this is supposed to happen automatically but... doesn't
+    travis_time_start "installed_packages" \
+        "Version info of all installed R packages, for debugging"
+    Rscript -e 'op <- options(width = 1000)' \
+        -e 'pkgs <- as.data.frame(installed.packages())' \
+        -e 'cols <- c("Package", "Version", "MD5sum", "Built", "LibPath")' \
+        -e 'print(pkgs[order(pkgs$Package), cols], row.names = FALSE)' \
+        -e 'options(op)'
     travis_time_end
-)  
+)
 
 # COMPILE PECAN
 (
@@ -27,6 +31,7 @@ set -e
     # More debugging needed.
     NCPUS=2 make -j1
     travis_time_end
+    check_git_clean
 )
 
 
@@ -35,14 +40,15 @@ set -e
     travis_time_start "pecan_make_test" "Testing PEcAn"
     make test
     travis_time_end
+    check_git_clean
 )
-
 
 # INSTALLING PECAN (compile, intall, test, check)
 (
     travis_time_start "pecan_make_check" "Checking PEcAn"
     REBUILD_DOCS=FALSE RUN_TESTS=FALSE make check
     travis_time_end
+    check_git_clean
 )
 
 
@@ -51,15 +57,5 @@ set -e
     travis_time_start "integration_test" "Testing Integration using simple PEcAn workflow"
     ./tests/integration.sh travis
     travis_time_end
+    check_git_clean
 )
-
-# CHECK FOR CHANGES TO DOC/DEPENDENCIES
-if [[ `git status -s` ]]; then
-    echo -e "\nThese files were changed by the build process:";
-    git status -s;
-    echo "Have you run devtools::check and commited any updated Roxygen outputs?";
-    echo -e "travis_fold:start:gitdiff\nFull diff:\n";
-    git diff;
-    echo -e "travis_fold:end:gitdiff\n\n";
-    exit 1;
-fi

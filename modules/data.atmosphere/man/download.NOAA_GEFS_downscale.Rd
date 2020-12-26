@@ -4,15 +4,22 @@
 \alias{download.NOAA_GEFS_downscale}
 \title{Downscale NOAA GEFS Weather Data}
 \usage{
-download.NOAA_GEFS_downscale(outfolder, lat.in, lon.in, sitename,
-  start_date = Sys.time(), end_date = (as.POSIXct(start_date, tz =
-  "UTC") + lubridate::days(16)), overwrite = FALSE, verbose = FALSE,
-  ...)
+download.NOAA_GEFS_downscale(
+  outfolder,
+  lat.in,
+  lon.in,
+  site_id,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
-\item{sitename}{The unique ID given to each site. This is used as part of the file name.}
+\item{site_id}{The unique ID given to each site. This is used as part of the file name.}
 
 \item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
 
@@ -63,7 +70,10 @@ June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 
 \examples{
 \dontrun{
- download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
+ download.NOAA_GEFS(outfolder="~/Working/results", 
+      lat.in= 45.805925, 
+      lon.in = -90.07961, 
+      site_id = 676)
 }
 
 }

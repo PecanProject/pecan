@@ -56,95 +56,95 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
   if (is.null(variable)) {
     PEcAn.logger::logger.severe("No variables for ensemble analysis!")
   }
-  
-  # Only handling one variable at a time for now
-  if (length(variable) > 1) {
-    variable <- variable[1]
-    PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
-                       variable, ")"))
-  }
 
-  cflux <- c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp", "DOC_flux", "Fire_flux") #converted to gC/m2/s
-  wflux <- c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
-
-  
-  variables <- convert.expr(variable)
-  variable.ens <- variables$variable.eqn
-  variable.fn <- variables$variable.drv
-  
-  print(paste("----- Variable: ", variable.fn, sep = ""))
-
-  #units <- lapply(variable, function(x) { paste0(x, " (", mstmipvar(x, silent=TRUE)$units, ")") })
-  units <- paste0(variable.fn, " (", mstmipvar(variable.fn, silent=TRUE)$units, ")")
-
-  ### Load parsed model results
-  fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr = FALSE,
-    ensemble.id = ensemble.id, variable = variable.fn, start.year = start.year, end.year = end.year)
-  
-  load(fname)
-
-  my.dat = unlist(ensemble.output)
-  if(is.null(my.dat) | all(is.na(my.dat))){
-    PEcAn.logger::logger.warn("no data in ensemble.output")
-    return()
-  }
-  
-  ### ------------------- Start ensemble analysis -------------------
-  ensemble.results <- list()
-  if (is.null(settings$run$site$name)) {
-    print("----- Running ensemble analysis -----")
-  } else {
-    print(paste("----- Running ensemble analysis for site: ", settings$run$site$name))
-  }
-  
-  ## Generate ensemble figure
-  fname <- ensemble.filename(settings, "ensemble.analysis", "pdf", 
-                             all.var.yr = FALSE, 
-                             ensemble.id = ensemble.id, 
-                             variable = variable.fn, 
-                             start.year = start.year, 
-                             end.year = end.year)
-  
-  pdf(file = fname, width = 13, height = 6)
-  par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))  # B, L, T, R
-  
-  hist(my.dat,xlab=units,
-       main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
-  box(lwd = 2.2)
-  
-  boxplot(my.dat,ylab=units,
-          boxwex=0.6,col="grey85", cex.axis=1.1,range=2,
-          pch=21,cex=1.4, bg="black",cex.lab=1.5)
-  box(lwd=2.2)
-  
-  dev.off()
-  
-  print("----- Done!")
-  print(" ")
-  print("-----------------------------------------------")
-  print(" ")
-  print(" ")
-  
-  ### Plot ensemble time-series
-  if (!is.na(plot.timeseries)) {
-    fname <- ensemble.filename(settings, "ensemble.ts", "pdf",
-                               all.var.yr = FALSE, 
-                               ensemble.id = ensemble.id, 
-                               variable = variable.fn,
-                               start.year = start.year, 
-                               end.year = end.year)
-    
-    pdf(fname, width = 12, height = 9)
-    ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings), ...)
-    dev.off()
-    
-    fname <- ensemble.filename(settings, "ensemble.ts.analysis", "Rdata", 
-                               all.var.yr = FALSE, 
-                               ensemble.id = ensemble.id,
-                               variable = variable.fn, 
-                               start.year = start.year, 
-                               end.year = end.year)
-    save(ensemble.ts.analysis, file = fname)
+  variables <- variable
+  if (length(variables) >= 1) {
+    for(variable in variables) {
+      PEcAn.logger::logger.warn(paste0("Currently performing ensemble analysis on variable ", 
+                                       variable))
+      
+      cflux <- c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp", "DOC_flux", "Fire_flux") #converted to gC/m2/s
+      wflux <- c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
+      
+      variables <- convert.expr(variable)
+      variable.ens <- variables$variable.eqn
+      variable.fn <- variables$variable.drv
+      
+      print(paste("----- Variable: ", variable.fn, sep = ""))
+      
+      #units <- lapply(variable, function(x) { paste0(x, " (", mstmipvar(x, silent=TRUE)$units, ")") })
+      units <- paste0(variable.fn, " (", mstmipvar(variable.fn, silent=TRUE)$units, ")")
+      
+      ### Load parsed model results
+      fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr = FALSE,
+                                 ensemble.id = ensemble.id, variable = variable.fn, start.year = start.year, end.year = end.year)
+      
+      load(fname)
+      
+      my.dat = unlist(ensemble.output)
+      if(is.null(my.dat) | all(is.na(my.dat))){
+        PEcAn.logger::logger.warn("no data in ensemble.output")
+        return()
+      }
+      
+      ### ------------------- Start ensemble analysis -------------------
+      ensemble.results <- list()
+      if (is.null(settings$run$site$name)) {
+        print("----- Running ensemble analysis -----")
+      } else {
+        print(paste("----- Running ensemble analysis for site: ", settings$run$site$name))
+      }
+      
+      ## Generate ensemble figure
+      fname <- ensemble.filename(settings, "ensemble.analysis", "pdf", 
+                                 all.var.yr = FALSE, 
+                                 ensemble.id = ensemble.id, 
+                                 variable = variable.fn, 
+                                 start.year = start.year, 
+                                 end.year = end.year)
+      
+      pdf(file = fname, width = 13, height = 6)
+      par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))  # B, L, T, R
+      
+      hist(my.dat,xlab=units,
+           main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
+      box(lwd = 2.2)
+      
+      boxplot(my.dat,ylab=units,
+              boxwex=0.6,col="grey85", cex.axis=1.1,range=2,
+              pch=21,cex=1.4, bg="black",cex.lab=1.5)
+      box(lwd=2.2)
+      
+      dev.off()
+      
+      print("----- Done!")
+      print(" ")
+      print("-----------------------------------------------")
+      print(" ")
+      print(" ")
+      
+      ### Plot ensemble time-series
+      if (!is.na(plot.timeseries)) {
+        fname <- ensemble.filename(settings, "ensemble.ts", "pdf",
+                                   all.var.yr = FALSE, 
+                                   ensemble.id = ensemble.id, 
+                                   variable = variable.fn,
+                                   start.year = start.year, 
+                                   end.year = end.year)
+        
+        pdf(fname, width = 12, height = 9)
+        ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings, variable = variable), ...)
+        dev.off()
+        
+        fname <- ensemble.filename(settings, "ensemble.ts.analysis", "Rdata", 
+                                   all.var.yr = FALSE, 
+                                   ensemble.id = ensemble.id,
+                                   variable = variable.fn, 
+                                   start.year = start.year, 
+                                   end.year = end.year)
+        save(ensemble.ts.analysis, file = fname)
+      }
+    }
   }
 } # run.ensemble.analysis
 
@@ -186,30 +186,19 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   if (is.null(start.year) | is.null(end.year)) {
     PEcAn.logger::logger.severe("No years given for ensemble analysis!")
   }
-  
+
   if (is.null(variable)) {
-    if ("variable" %in% names(settings$ensemble)) {
-      var <- which(names(settings$ensemble) == "variable")
-      for (i in seq_along(var)) {
-        variable[i] <- settings$ensemble[[var[i]]]
-      }
-    }
-  }
-  if (is.null(variable)) {
-    PEcAn.logger::logger.severe("No variables for ensemble analysis!")
+    PEcAn.logger::logger.severe("No variables for ensemble time series analysis!")
   }
   
   # Only handling one variable at a time for now
-  if (length(variable) > 1) {
-    variable <- variable[1]
-    PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
-                       variable, ")"))
-  }
+  PEcAn.logger::logger.warn(paste0("Currently performing ensemble time series analysis on variable ", 
+                                     variable, ")"))
   
   variables <- PEcAn.utils::convert.expr(variable)
   variable.ens <- variables$variable.eqn
   variable.fn <- variables$variable.drv
-
+  
   print(paste("----- Variable: ", variable.fn, sep=""))
   print("----- Reading ensemble output ------")
   
@@ -219,13 +208,13 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   ### and ensemble analysis combined.
   if (!is.null(ensemble.id)) {
     fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata",
-                               ensemble.id = ensemble.id, 
-                               all.var.yr = TRUE)
+                                            ensemble.id = ensemble.id, 
+                                            all.var.yr = TRUE)
   } else if (!is.null(settings$ensemble$ensemble.id)) {
     ensemble.id <- settings$ensemble$ensemble.id
     fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata",
-                               ensemble.id = ensemble.id, 
-                               all.var.yr = TRUE)
+                                            ensemble.id = ensemble.id, 
+                                            all.var.yr = TRUE)
   } else {
     fname <- file.path(settings$outdir, "samples.Rdata")
   }
@@ -243,7 +232,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   
   expr <- variable.ens$expression
   variables <- variable.ens$variables
-
+  
   ## read ensemble output
   # Leaving list output even though only one variable allowed for now. Will improve backwards compatibility and maybe help in the future.
   ensemble.ts <- vector("list", length(variables)) 
@@ -263,32 +252,32 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     
     # derivation
     newrun <- eval(parse(text = expr))
-
+    
     if(is.null(newrun)){
-     # run failed
-     # skip to next
+      # run failed
+      # skip to next
       next
     }
     
     for(j in seq_along(variable.fn)){
-        
+      
       if(is.null(ensemble.ts[[1]])){ # dimensions of the sublist matrix hasn't been declared yet
         ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun))
       }
       
       ensemble.ts[[j]][as.numeric(row),] <- newrun
-    
+      
     }    
   }
-
+  
   names(ensemble.ts) <- variable.fn
   # BMR 10/16/13 Save this variable now to operate later on
   fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.ts", "Rdata",
-                             all.var.yr = FALSE, 
-                             ensemble.id = ensemble.id, 
-                             variable = variable, 
-                             start.year = start.year, 
-                             end.year = end.year)
+                                          all.var.yr = FALSE, 
+                                          ensemble.id = ensemble.id, 
+                                          variable = variable, 
+                                          start.year = start.year, 
+                                          end.year = end.year)
   
   save(ensemble.ts, file = fname)
   return(ensemble.ts)

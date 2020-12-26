@@ -1,17 +1,19 @@
 button.btn.btn-default.action-button {
-display:inline-block;
-padding:0.7em 1.7em;
-margin:0 0.3em 0.3em 0;
-border-radius:0.2em;
-box-sizing: border-box;
-text-decoration:none;
-font-family:'Roboto',sans-serif;
-font-weight:400;
-color:#FFFFFF;
-background-color:#3cb0fd;
-box-shadow:inset 0 -0.6em 1em -0.35em rgba(0,0,0,0.17),inset 0 0.6em 2em -0.3em rgba(255,255,255,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12);
-text-align:center;
-position:relative;
+  display: inline-block;
+  padding: 0.7em 1.7em;
+  margin: 0 0.3em 0.3em 0;
+  border-radius: 0.2em;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: #3cb0fd;
+  box-shadow: inset 0 -0.6em 1em -0.35em rgba(0, 0, 0, 0.17),
+    inset 0 0.6em 2em -0.3em rgba(255, 255, 255, 0.15),
+    inset 0 0 0em 0.05em rgba(255, 255, 255, 0.12);
+  text-align: center;
+  position: relative;
 }
 
 button.btn.btn-default.action-button:hover {
@@ -24,22 +26,19 @@ button.btn.btn-default.action-button:hover {
   text-decoration: none;
 }
 
-
-
-
-
-
-  table.dataTable tr.selected td, table.dataTable td.selected {
-                    background-color: #2F373E !important;
-                    color: white;
-                    border-style: solid;
-                    border-color: white;
-                    border: 2px;
-                 }
- table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
-                   background-color: #2F373E !important;
-                    color: white !important;
-                    border-style: solid;
-                    border-color: white;
-                    border: 2px;
-                  }
+table.dataTable tr.selected td,
+table.dataTable td.selected {
+  background-color: #2f373e !important;
+  color: white;
+  border-style: solid;
+  border-color: white;
+  border: 2px;
+}
+table.dataTable.hover tbody tr:hover,
+table.dataTable.display tbody tr:hover {
+  background-color: #2f373e !important;
+  color: white !important;
+  border-style: solid;
+  border-color: white;
+  border: 2px;
+}

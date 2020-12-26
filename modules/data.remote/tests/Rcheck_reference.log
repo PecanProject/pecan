@@ -20,8 +20,6 @@
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... NOTE
-License components with restrictions not permitted:
-  FreeBSD + file LICENSE
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
@@ -84,8 +82,7 @@ Undefined global functions or variables:
 Consider adding
   importFrom("utils", "download.file", "write.csv")
 to your NAMESPACE file.
-* checking Rd files ... WARNING
-checkRd: (7) extract.LandTrendr.AGB.Rd:33-55: Tag \dontrun not recognized
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... NOTE
 Rd file 'call_MODIS.Rd':
@@ -113,4 +110,4 @@ Extensions’ manual.
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
 * DONE
-Status: 3 WARNINGs, 3 NOTEs
+Status: 2 WARNINGs, 3 NOTEs

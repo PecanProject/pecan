@@ -13,8 +13,6 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
     PEcAn.logger::logger.error("Must specify input id or format id")
   }
 
-  con <- bety$con
-
   # get input info either form input.id or format.id, depending which is provided
   # defaults to format.id if both provided
   # also query site information (id/lat/lon) if an input.id
@@ -27,9 +25,9 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
   if (is.na(format.id)) {
     f <- PEcAn.DB::db.query(
         query = paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),
-        con = con
+        con = bety
       )
-    site.id <- PEcAn.DB::db.query(query = paste("SELECT site_id from inputs where id =", input.id), con = con)
+    site.id <- PEcAn.DB::db.query(query = paste("SELECT site_id from inputs where id =", input.id), con = bety)
     if (is.data.frame(site.id) && nrow(site.id)>0) {
       site.id <- site.id$site_id
       site.info <-
@@ -38,17 +36,17 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
             "SELECT id, time_zone, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",
             site.id
           ),
-          con = con
+          con = bety
         )
       site.lat <- site.info$lat
       site.lon <- site.info$lon
       site.time_zone <- site.info$time_zone
     }
   } else {
-    f <- PEcAn.DB::db.query(query = paste("SELECT * from formats where id = ", format.id), con = con)
+    f <- PEcAn.DB::db.query(query = paste("SELECT * from formats where id = ", format.id), con = bety)
   }
 
-  mimetype <- PEcAn.DB::db.query(query = paste("SELECT * from  mimetypes where id = ", f$mimetype_id), con = con)[["type_string"]]
+  mimetype <- PEcAn.DB::db.query(query = paste("SELECT * from  mimetypes where id = ", f$mimetype_id), con = bety)[["type_string"]]
   f$mimetype <- utils::tail(unlist(strsplit(mimetype, "/")),1)
 
   # get variable names and units of input data
@@ -56,7 +54,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
     query = paste(
       "SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id
     ),
-    con = con
+    con = bety
   )
 
   if(all(!is.na(var.ids))){
@@ -84,7 +82,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
       vars_bety[i, (ncol(vars_bety) - 1):ncol(vars_bety)] <-
         as.matrix(PEcAn.DB::db.query(
           query = paste("SELECT name, units from variables where id = ", fv$variable_id[i]),
-          con = con
+          con = bety
         ))
     }
 

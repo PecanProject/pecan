@@ -4,9 +4,19 @@
 \alias{dbfile.input.check}
 \title{Check for a file in the input/dbfiles tables}
 \usage{
-dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = PEcAn.remote::fqdn(),
-  exact.dates = FALSE, pattern = NULL, return.all = FALSE)
+dbfile.input.check(
+  siteid,
+  startdate = NULL,
+  enddate = NULL,
+  mimetype,
+  formatname,
+  parentid = NA,
+  con,
+  hostname = PEcAn.remote::fqdn(),
+  exact.dates = FALSE,
+  pattern = NULL,
+  return.all = FALSE
+)
 }
 \arguments{
 \item{siteid}{the id of the site that this data is applicable to}

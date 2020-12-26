@@ -4,8 +4,14 @@
 \alias{get.trait.data}
 \title{Get trait data from the database.}
 \usage{
-get.trait.data(pfts, modeltype, dbfiles, database, forceupdate,
-  trait.names = NULL)
+get.trait.data(
+  pfts,
+  modeltype,
+  dbfiles,
+  database,
+  forceupdate,
+  trait.names = NULL
+)
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}

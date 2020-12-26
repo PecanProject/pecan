@@ -76,7 +76,6 @@ raw_met <- PEcAn.data.atmosphere::download.CRUNCEP(
   outfolder = file.path(rundir, "raw_met"),
   start_date = start_date,
   end_date = start_date,
-  site_id = NULL,
   lat.in = latitude,
   lon.in = longitude
 )

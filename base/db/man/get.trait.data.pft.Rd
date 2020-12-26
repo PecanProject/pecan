@@ -4,8 +4,14 @@
 \alias{get.trait.data.pft}
 \title{Get trait data from the database for a single PFT}
 \usage{
-get.trait.data.pft(pft, modeltype, dbfiles, dbcon, trait.names,
-  forceupdate = FALSE)
+get.trait.data.pft(
+  pft,
+  modeltype,
+  dbfiles,
+  dbcon,
+  trait.names,
+  forceupdate = FALSE
+)
 }
 \arguments{
 \item{pft}{list of settings for the pft whose traits to retrieve. See details}
