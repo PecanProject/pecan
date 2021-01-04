@@ -1,6 +1,6 @@
 #' @title Downscale spline to hourly
 #' @param df, dataframe of data to be downscales
-#' @param varName, variable names to be downscaled  
+#' @param VarNames, variable names to be downscaled  
 #' @param hr, hour to downscale to- default is 1
 #' @return A dataframe of downscaled state variables
 #' @author Laura Puckett
