@@ -116,7 +116,7 @@ wanted <- c(
 'tibble',
 'tictoc',
 'tidyr',
-'tidyselect'
+'tidyselect',
 'tidyverse',
 'tools',
 'traits',
