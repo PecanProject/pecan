@@ -1,7 +1,8 @@
 #' @title Downscale spline to hourly
-#' @return A dataframe of downscaled state variables
 #' @param df, dataframe of data to be downscales
-#' @noRd
+#' @param varName, variable names to be downscaled  
+#' @param hr, hour to downscale to- default is 1
+#' @return A dataframe of downscaled state variables
 #' @author Laura Puckett
 #' @export
 #'
@@ -37,7 +38,8 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
 #' @param df, data frame of variables
 #' @param lat, lat of site
 #' @param lon, long of site
-#' @noRd
+#' @param hr, hour to downscale to- default is 1
+#' 
 #' @return ShortWave.ds
 #' @author Laura Puckett
 #' @export
@@ -91,9 +93,10 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
 
 
 #' @title Downscale repeat to hourly
-#' @return A dataframe of downscaled data
 #' @param df, dataframe of data to be downscaled (Longwave)
-#' @noRd
+#' @param varName, variable names to be downscaled  
+#' @param hr, hour to downscale to- default is 1 
+#' @return A dataframe of downscaled data
 #' @author Laura Puckett
 #' @export
 #'
@@ -144,13 +147,12 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
 
 
 #' @title Calculate potential shortwave radiation
-#' @return vector of potential shortwave radiation for each doy
 #'
 #' @param doy, day of year in decimal
 #' @param lon, longitude
 #' @param lat, latitude
-#' @return `numeric(1)`
-#' @noRd
+#' @return vector of potential shortwave radiation for each doy
+#'
 #' @author Quinn Thomas
 #' @export
 #'
