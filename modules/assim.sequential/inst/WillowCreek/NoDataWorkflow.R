@@ -50,50 +50,50 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
 
 
-all.previous.sims <- list.dirs(outputPath, recursive = F)
-if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
-  
-  tryCatch({
-    # Looking through all the old simulations and find the most recent
-    all.previous.sims <- all.previous.sims %>%
-      map(~ list.files(path = file.path(.x, "SDA"))) %>%
-      setNames(all.previous.sims) %>%
-      discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
-    
-    last.sim <-
-      names(all.previous.sims) %>%
-      map_chr( ~ strsplit(.x, "_")[[1]][5]) %>%
-      map_dfr(~ db.query(
-        query = paste("SELECT * FROM workflows WHERE id =", .x),
-        con = con
-      ) %>%
-        mutate(ID=.x)) %>%
-      mutate(start_date = as.Date(start_date)) %>%
-      arrange(desc(start_date), desc(ID)) %>%
-      head(1)
-    # pulling the date and the path to the last SDA
-    restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
-    sda.start <- last.sim$start_date + lubridate::days(1)
-  },
-  error = function(e) {
-    restart.path <- NULL
-    sda.start <- Sys.Date() - 1
-    PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
-  })
-  
-  # if there was no older sims
-  if (is.na(sda.start))
-    sda.start <- Sys.Date() - 9
-}
-#sda.start <- Sys.Date()
-sda.end <- sda.start + lubridate::days(5)
+# all.previous.sims <- list.dirs(outputPath, recursive = F)
+# if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
+#   
+#   tryCatch({
+#     # Looking through all the old simulations and find the most recent
+#     all.previous.sims <- all.previous.sims %>%
+#       map(~ list.files(path = file.path(.x, "SDA"))) %>%
+#       setNames(all.previous.sims) %>%
+#       discard( ~ !"sda.output.Rdata" %in% .x) # I'm throwing out the ones that they did not have a SDA output
+#     
+#     last.sim <-
+#       names(all.previous.sims) %>%
+#       map_chr( ~ strsplit(.x, "_")[[1]][5]) %>%
+#       map_dfr(~ db.query(
+#         query = paste("SELECT * FROM workflows WHERE id =", .x),
+#         con = con
+#       ) %>%
+#         mutate(ID=.x)) %>%
+#       mutate(start_date = as.Date(start_date)) %>%
+#       arrange(desc(start_date), desc(ID)) %>%
+#       head(1)
+#     # pulling the date and the path to the last SDA
+#     restart.path <-grep(last.sim$ID, names(all.previous.sims), value = T)
+#     sda.start <- last.sim$start_date + lubridate::days(1)
+#   },
+#   error = function(e) {
+#     restart.path <- NULL
+#     sda.start <- Sys.Date() - 1
+#     PEcAn.logger::logger.warn(paste0("There was a problem with finding the last successfull SDA.",conditionMessage(e)))
+#   })
+#   
+#   # if there was no older sims
+#   if (is.na(sda.start))
+#     sda.start <- Sys.Date() - 9
+# }
+sda.start <- Sys.Date()
+sda.end <- sda.start + lubridate::days(3)
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Download met and flux ------------------------------
 #-----------------------------------------------------------------------------------------------
 
 
 # Finding the right end and start date
-met.start <- Sys.Date()
+met.start <- sda.start - lubridate::days(2)
 met.end <- met.start + lubridate::days(16)
 
 

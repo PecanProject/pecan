@@ -21,7 +21,7 @@ plan(multisession)
 
 outputPath <- "/projectnb/dietzelab/kzarada/US_WCr_SDA_output/"
 nodata <- FALSE #use this to run SDA with no data
-restart <- FALSE #flag to start from previous run or not
+restart <- TRUE #flag to start from previous run or not
 days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
 setwd(outputPath)
 options(warn=-1)
@@ -88,7 +88,7 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
     sda.start <- Sys.Date() - 9
 }
 #to manually change start date 
-sda.start <- Sys.Date()
+#sda.start <- Sys.Date()
 sda.end <- sda.start + lubridate::days(5)
 
 # Finding the right end and start date

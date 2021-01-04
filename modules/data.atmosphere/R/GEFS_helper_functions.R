@@ -481,7 +481,7 @@ process_gridded_noaa_download <- function(lat_list,
       
       
       #Write netCDF
-      noaaGEFSpoint::write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
+      PEcAn.data.atmosphere::write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
       
       if(downscale){
         #Downscale the forecast from 6hr to 1hr
@@ -502,7 +502,7 @@ process_gridded_noaa_download <- function(lat_list,
         results_list[[ens]] <- results
         
         #Run downscaling
-        noaaGEFSpoint::temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
+        temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
       }
       
       
@@ -619,7 +619,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
     dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
   
   #Write netCDF
-  noaaGEFSpoint::write_noaa_gefs_netcdf(df = forecast_noaa_ds,
+  PEcAn.data.atmosphere::write_noaa_gefs_netcdf(df = forecast_noaa_ds,
                                         ens = ens,
                                         lat = lat.in,
                                         lon = lon.in,
@@ -719,51 +719,6 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
   
 }
 
-#' Cosine of solar zenith angle
-#'
-#' For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
-#'
-#' @author Alexey Shiklomanov
-#' @param doy Day of year
-#' @param lat Latitude
-#' @param lon Longitude
-#' @param dt Timestep
-#' @noRd
-#' @param hr Hours timestep
-#' @return `numeric(1)` of cosine of solar zenith angle
-#' @export
-cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
-  et <- equation_of_time(doy)
-  merid  <- floor(lon / 15) * 15
-  merid[merid < 0] <- merid[merid < 0] + 15
-  lc     <- (lon - merid) * -4/60  ## longitude correction
-  tz     <- merid / 360 * 24  ## time zone
-  midbin <- 0.5 * dt / 86400 * 24  ## shift calc to middle of bin
-  t0   <- 12 + lc - et - tz - midbin  ## solar time
-  h    <- pi/12 * (hr - t0)  ## solar hour
-  dec  <- -23.45 * pi / 180 * cos(2 * pi * (doy + 10) / 365)  ## declination
-  cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
-  cosz[cosz < 0] <- 0
-  return(cosz)
-}
-
-#' Equation of time: Eccentricity and obliquity
-#'
-#' For description of calculations, see https://en.wikipedia.org/wiki/Equation_of_time#Calculating_the_equation_of_time
-#'
-#' @author Alexey Shiklomanov
-#' @param doy Day of year
-#' @noRd
-#' @return `numeric(1)` length of the solar day, in hours.
-
-equation_of_time <- function(doy) {
-  stopifnot(doy <= 366)
-  f      <- pi / 180 * (279.5 + 0.9856 * doy)
-  et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 *
-               sin(4 * f) - 429.3 * cos(f) - 2 *
-               cos(2 * f) + 19.3 * cos(3 * f)) / 3600  # equation of time -> eccentricity and obliquity
-  return(et)
-}
 
 #' @title Downscale repeat to hourly
 #' @return A dataframe of downscaled data
