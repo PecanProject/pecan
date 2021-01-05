@@ -187,7 +187,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param model_name_ds Name of downscale file name
 #' @param model_name_raw Name of raw file name
 #' @param output_directory Output directory 
-#'
+#' @importFrom rlang .data 
 #' @return List
 #'
 #'
@@ -452,10 +452,10 @@ process_gridded_noaa_download <- function(lat_list,
       
       forecast_noaa_ens <- forecast_noaa %>%
         dplyr::filter(NOAA.member == ens) %>%
-        dplyr::filter(!is.na(air_temperature))
+        dplyr::filter(!is.na(.data$air_temperature))
       
       end_date <- forecast_noaa_ens %>%
-        dplyr::summarise(max_time = max(time))
+        dplyr::summarise(max_time = max(.data$time))
       
       results = data.frame(
         file = "",                            #Path to the file (added in loop below).
@@ -575,7 +575,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
     dplyr::mutate(relative_humidity = qair2rh(qair = forecast_noaa_ds$specific_humidity,
                                               temp = forecast_noaa_ds$air_temperature,
                                               press = forecast_noaa_ds$air_pressure)) %>%
-    dplyr::mutate(relative_humidity = relative_humidity,
+    dplyr::mutate(relative_humidity = .data$relative_humidity,
                   relative_humidity = ifelse(relative_humidity > 1, 0, relative_humidity))
   
   # convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
@@ -615,7 +615,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
   
   #Make sure var names are in correct order
   forecast_noaa_ds <- forecast_noaa_ds %>%
-    dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
+    dplyr::select(.data$time, tidyselect::all_of(cf_var_names), .data$NOAA.member)
   
   #Write netCDF
   write_noaa_gefs_netcdf(df = forecast_noaa_ds,

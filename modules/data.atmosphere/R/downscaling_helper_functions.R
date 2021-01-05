@@ -53,7 +53,7 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
   
   t0 <- min(df$time)
   df <- df %>%
-    dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
+    dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air) %>%
     dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
     dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
