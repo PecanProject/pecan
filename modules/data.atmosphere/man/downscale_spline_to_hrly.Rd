@@ -9,9 +9,9 @@ downscale_spline_to_hrly(df, VarNames, hr = 1)
 \arguments{
 \item{df, }{dataframe of data to be downscales}
 
-\item{hr, }{hour to downscale to- default is 1}
+\item{VarNames, }{variable names to be downscaled}
 
-\item{varName, }{variable names to be downscaled}
+\item{hr, }{hour to downscale to- default is 1}
 }
 \value{
 A dataframe of downscaled state variables
