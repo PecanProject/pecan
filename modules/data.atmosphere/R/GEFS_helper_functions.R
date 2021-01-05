@@ -202,7 +202,8 @@ process_gridded_noaa_download <- function(lat_list,
                                           model_name_ds,
                                           model_name_raw,
                                           output_directory){
-  
+  #binding variables 
+  NOAA.member <- NULL
   extract_sites <- function(ens_index, hours_char, hours, cycle, site_id, lat_list, lon_list, working_directory){
     
     site_length <- length(site_id)
@@ -575,7 +576,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
                                               temp = forecast_noaa_ds$air_temperature,
                                               press = forecast_noaa_ds$air_pressure)) %>%
     dplyr::mutate(relative_humidity = .data$relative_humidity,
-                  relative_humidity = ifelse(relative_humidity > 1, 0, relative_humidity))
+                  relative_humidity = ifelse(.data$relative_humidity > 1, 0, .data$relative_humidity))
   
   # convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
   if("surface_downwelling_longwave_flux_in_air" %in% cf_var_names){

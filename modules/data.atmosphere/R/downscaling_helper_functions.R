@@ -80,13 +80,13 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
   }
   
   ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(time)) %>%
-    dplyr::mutate(doy = lubridate::yday(time) + hour/(24/hr))%>%
+    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
+    dplyr::mutate(doy = lubridate::yday(.data$time) + hour/(24/hr))%>%
     dplyr::mutate(rpot = downscale_solar_geom(doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by(.data$group_6hr) %>%
     dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
     dplyr::ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
+    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (.data$surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
     dplyr::select(.data$time,.data$surface_downwelling_shortwave_flux_in_air)
   
   return(ShortWave.ds)
