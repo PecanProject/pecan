@@ -203,18 +203,19 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @return result with replicate observations summarized
 ##' @export summarize.result
 ##' @usage summarize.result(result)
+##' @importFrom rlang .data
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
     dplyr::filter(n == 1) %>%
-    dplyr::group_by(citation_id, site_id, trt_id,
-                    control, greenhouse, date, time,
-                    cultivar_id, specie_id) %>%
-    dplyr::summarize(
-      n = length(n),
-      mean = mean(mean),
+    dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
+                    .data$control, .data$greenhouse, .data$date, .data$time,
+                    .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
+    dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(n) == 1, "none", "SE"),
-      stat = stats::sd(mean) / sqrt(length(n))
+      stat = stats::sd(mean) / sqrt(length(n)),
+      n = length(n),
+      mean = mean(mean)
     ) %>%
     dplyr::ungroup()
   ans2 <- result %>%

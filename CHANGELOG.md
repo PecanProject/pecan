@@ -37,9 +37,12 @@ This is a major change:
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
 - gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
 - ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
+- fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
+- ensure that control treatments always receives the random effect index of 1; rename madata.Rdata to jagged.data.Rdata and include database ids and names useful for calculating parameter estimates by treatment (#2756)
 
 ### Changed
 
+- Removed old api, now split into rpecanapi and apps/api.
 - Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
 - Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).

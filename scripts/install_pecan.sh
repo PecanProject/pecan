@@ -496,7 +496,6 @@ if [ ! -e ${HOME}/pecan/web/config.php ]; then
   sed -e "s#browndog_url=.*#browndog_url=\"${BROWNDOG_URL}\";#" \
       -e "s#browndog_username=.*#browndog_username=\"${BROWNDOG_USERNAME}\";#" \
       -e "s#browndog_password=.*#browndog_password=\"${BROWNDOG_PASSWORD}\";#" \
-      -e "s#googleMapKey=.*#googleMapKey=\"${GOOGLE_MAP_KEY}\";#" \
       -e "s/carya/$USER/g" ${HOME}/pecan/web/config.example.php > ${HOME}/pecan/web/config.php
 fi
 
