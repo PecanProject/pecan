@@ -23,7 +23,7 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
   noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days, tz = "UTC"))
   
   for(Var in 1:length(VarNames)){
-    curr_data <- spline(x = df$days_since_t0, y = unlist(df[VarNames[Var]]), method = "fmm", xout = interp.df.days)$y
+    curr_data <- stats::spline(x = df$days_since_t0, y = unlist(df[VarNames[Var]]), method = "fmm", xout = interp.df.days)$y
     noaa_data_interp <- cbind(noaa_data_interp, curr_data)
   }
   
@@ -158,7 +158,7 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
 #'
 downscale_solar_geom <- function(doy, lon, lat) {
   
-  dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
+  dt <- stats::median(diff(doy)) * 86400 # average number of seconds in time interval
   hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
   
   ## calculate potential radiation
