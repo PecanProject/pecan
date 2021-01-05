@@ -3,6 +3,7 @@
 #' @param VarNames, variable names to be downscaled  
 #' @param hr, hour to downscale to- default is 1
 #' @return A dataframe of downscaled state variables
+#' @importFrom rlang .data 
 #' @author Laura Puckett
 #' @export
 #'
@@ -13,10 +14,10 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
   # Creator: Laura Puckett, December 16 2018
   # --------------------------------------
   # @param: df, a dataframe of debiased 6-hourly forecasts
-  
+  time <- NULL
   t0 = min(df$time)
   df <- df %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days"))
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days"))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
@@ -39,7 +40,7 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
 #' @param lat, lat of site
 #' @param lon, long of site
 #' @param hr, hour to downscale to- default is 1
-#' 
+#' @importFrom rlang .data 
 #' @return ShortWave.ds
 #' @author Laura Puckett
 #' @export
@@ -47,13 +48,14 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
 #'
 
 downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
+
   ## downscale shortwave to hourly
   
   t0 <- min(df$time)
   df <- df %>%
     dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
-    dplyr::mutate(lead_var = dplyr::lead(surface_downwelling_shortwave_flux_in_air, 1))
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
+    dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
@@ -81,11 +83,11 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
     dplyr::mutate(hour = lubridate::hour(time)) %>%
     dplyr::mutate(doy = lubridate::yday(time) + hour/(24/hr))%>%
     dplyr::mutate(rpot = downscale_solar_geom(doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by(group_6hr) %>%
+    dplyr::group_by(.data$group_6hr) %>%
     dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
     dplyr::ungroup() %>%
     dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
-    dplyr::select(time,surface_downwelling_shortwave_flux_in_air)
+    dplyr::select(.data$time,.data$surface_downwelling_shortwave_flux_in_air)
   
   return(ShortWave.ds)
   
@@ -97,19 +99,22 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
 #' @param varName, variable names to be downscaled  
 #' @param hr, hour to downscale to- default is 1 
 #' @return A dataframe of downscaled data
+#' @importFrom rlang .data 
 #' @author Laura Puckett
 #' @export
 #'
 
 downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
   
+  #bind variables 
+  lead_var <- time <- NULL 
   #Get first time point
   t0 <- min(df$time)
   
   df <- df %>%
     dplyr::select("time", all_of(varName)) %>%
     #Calculate time difference
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
     #Shift valued back because the 6hr value represents the average over the
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
@@ -136,7 +141,7 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
   }
   
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", lead_var) %>%
+  data.hrly <- data.hrly %>% dplyr::select("time", .data$lead_var) %>%
     dplyr::arrange(time)
   
   names(data.hrly) <- c("time", varName)
