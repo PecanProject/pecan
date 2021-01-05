@@ -43,6 +43,7 @@ Imports:
     REddyProc,
     reshape2,
     rgdal,
+    rlang (>= 0.2.0),
     rnoaa,
     sp,
     stringr (>= 1.1.0),
@@ -60,8 +61,7 @@ Suggests:
     foreach,
     parallel,
     progress,
-    reticulate,
-    rlang (>= 0.2.0)
+    reticulate
 Remotes:
     github::ropensci/geonames,
     github::ropensci/nneo
