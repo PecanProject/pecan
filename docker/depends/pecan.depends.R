@@ -101,6 +101,7 @@ wanted <- c(
 'RPostgreSQL',
 'Rpreles',
 'RSQLite',
+'R.utils',
 'sf',
 'SimilarityMeasures',
 'sirt',
