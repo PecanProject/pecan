@@ -148,20 +148,19 @@ sda.particle <- function(model) {
   }
   
   ## Weighted distributions
-  library(plotrix)
   for (i in c(2, 3)) {
-    weighted.hist(ensp.conv[[i]][, nt], wc[, nt]/sum(wc[, nt]), main = names(ensp.all)[i])
+    plotrix::weighted.hist(ensp.conv[[i]][, nt], wc[, nt]/sum(wc[, nt]), main = names(ensp.all)[i])
   }
   
   # for(i in c(1,2,4,5)){
   for (i in c(2, 3)) {
     if (i == 5) {
-      weighted.hist(ensp.conv[[i]][, nt], 
+      plotrix::weighted.hist(ensp.conv[[i]][, nt], 
                     wc[, nt]/sum(wc[, nt]), 
                     main = names(ensp.all)[i], 
                     col = 2)
     } else {
-      weighted.hist(ensp.conv[[i]][, nt],
+      plotrix::weighted.hist(ensp.conv[[i]][, nt],
                     wc[, nt]/sum(wc[, nt]),
                     main = names(ensp.all)[i], 
                     xlim = range(ensp.conv[[i]][, nt]) * c(0.9, 1.1), 
@@ -172,7 +171,7 @@ sda.particle <- function(model) {
   
   for (i in c(2, 3)) {
     h <- hist(ensp.conv[[i]][, nt], plot = FALSE)
-    w <- weighted.hist(ensp.conv[[i]][, nt], wc[, nt] / sum(wc[, nt]), plot = FALSE, breaks = h$breaks)
+    w <- plotrix::weighted.hist(ensp.conv[[i]][, nt], wc[, nt] / sum(wc[, nt]), plot = FALSE, breaks = h$breaks)
     dx <- diff(h$breaks)[1]
     plot(w$mids - dx/2, 
          w$density/dx, 

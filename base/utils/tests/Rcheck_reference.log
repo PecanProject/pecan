@@ -73,14 +73,6 @@ run.write.configs: no visible binding for global variable ‘sa.samples’
 run.write.configs: no visible binding for global variable
   ‘ensemble.samples’
 summarize.result: no visible binding for global variable ‘n’
-summarize.result: no visible binding for global variable ‘citation_id’
-summarize.result: no visible binding for global variable ‘site_id’
-summarize.result: no visible binding for global variable ‘trt_id’
-summarize.result: no visible binding for global variable ‘control’
-summarize.result: no visible binding for global variable ‘greenhouse’
-summarize.result: no visible binding for global variable ‘time’
-summarize.result: no visible binding for global variable ‘cultivar_id’
-summarize.result: no visible binding for global variable ‘specie_id’
 summarize.result: no visible binding for global variable ‘statname’
 Undefined global functions or variables:
   . citation_id control cultivar_id ensemble.samples

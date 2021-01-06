@@ -70,7 +70,7 @@ jobs:
         if: github.event_name == 'push' && github.repository == env.MASTER_REPO
         run: |
           echo "${INPUT_PASSWORD}" | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
-          repo=$(echo ${{ github.repository }} | tr 'A-Z' 'a-z')
+          repo=$(echo ${{ github.repository_owner }} | tr 'A-Z' 'a-z')
           for image in $(docker image ls pecan/*:github --format "{{ .Repository }}"); do
             for v in ${PECAN_TAGS}; do
               docker tag ${image}:github ${INPUT_REGISTRY}/${repo}/${image#pecan/}:${v}
@@ -79,9 +79,9 @@ jobs:
           done
           docker logout
         env:
-          INPUT_REGISTRY: docker.pkg.github.com
-          INPUT_USERNAME: ${{ github.actor }}
-          INPUT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_REGISTRY: ghcr.io
+          INPUT_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          INPUT_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
 
       # push all images to dockerhub
       - name: Publish to DockerHub

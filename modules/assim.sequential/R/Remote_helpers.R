@@ -70,7 +70,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
 #'
 #' @export
 #' @return This function returns a list of two pieces of information. One the remote path that SDA is running and the PID of the active run.
-#' @example 
+#' @examples 
 #' \dontrun{
 #'  # This example can be found under inst folder in the package
 #'  library(PEcAn.all)
@@ -443,7 +443,7 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
 #' @export 
 #'
 #' 
-#' @example 
+#' @examples  
 #' \dontrun{
 #'  library(tictoc)
 #'  tic("Analysis")
@@ -460,7 +460,7 @@ alltocs <-function(fname="tocs.csv") {
         get(".tictoc", envir = baseenv())) %>%
       seq_along() %>%
       map_dfr(function(x) {
-        s <- toc(quiet = T, log = T)
+        s <- tictoc::toc(quiet = T, log = T)
         dfout <- data.frame(
           Task = s$msg %>%  as.character(),
           TimeElapsed = round(s$toc - s$tic, 1),

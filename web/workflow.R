@@ -116,7 +116,18 @@ if ((length(which(commandArgs() == "--advanced")) != 0)
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = FALSE)
+  stop_on_error <- as.logical(settings[[c("run", "stop_on_error")]])
+  if (length(stop_on_error) == 0) {
+    # If we're doing an ensemble run, don't stop. If only a single run, we
+    # should be stopping.
+    if (is.null(settings[["ensemble"]]) ||
+          as.numeric(settings[[c("ensemble", "size")]]) == 1) {
+      stop_on_error <- TRUE
+    } else {
+      stop_on_error <- FALSE
+    }
+  }
+  PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = stop_on_error)
   PEcAn.utils::status.end()
 }
 
