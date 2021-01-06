@@ -2,8 +2,7 @@
 % Please edit documentation in R/rabbitmq.R
 \name{rabbitmq_parse_uri}
 \alias{rabbitmq_parse_uri}
-\title{parse the RabbiMQ URI. This will parse the uri into smaller pieces that can
-be used to talk to the rest endpoint for RabbitMQ.}
+\title{parse the RabbiMQ URI.}
 \usage{
 rabbitmq_parse_uri(uri, prefix = "", port = 15672)
 }
@@ -19,6 +18,6 @@ a list that contains the url to the mangement interface, username
 password and vhost.
 }
 \description{
-parse the RabbiMQ URI. This will parse the uri into smaller pieces that can
-be used to talk to the rest endpoint for RabbitMQ.
+This will parse the uri into smaller pieces that can be used to talk to the
+rest endpoint for RabbitMQ.
 }

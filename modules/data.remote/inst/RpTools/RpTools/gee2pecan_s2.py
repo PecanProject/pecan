@@ -10,6 +10,7 @@ Module to retrieve Sentinel-2 data from Google Earth Engine (GEE).
 
 
 """
+import time
 import sys
 import os
 import ee
@@ -19,7 +20,7 @@ import geopandas as gpd
 import numpy as np
 import xarray as xr
 from functools import reduce
-from gee_utils import calc_ndvi
+from RpTools.gee_utils import calc_ndvi
 
 ee.Initialize()
 
@@ -120,7 +121,7 @@ class AOI:
         Name of the area.
     geometry : str
         Geometry of the area of interest e.g. from geopandas.
-        Currently only polygons tested. The default is None.
+        Currently only polygons tested. Ayush: modified to work with Point type. The default is None.
     coordinate_list : list, optional
         List of coordinates of a polygon
         (loop should be closed). Computed from geometry if not
@@ -144,7 +145,7 @@ class AOI:
     __init__
     """
 
-    def __init__(self, name, geometry=None, coordinate_list=None, tile=None):
+    def __init__(self, name, geometry=None, geometry_type=None, coordinate_list=None, tile=None):
         """.
 
         Parameters
@@ -153,7 +154,8 @@ class AOI:
             Name of the area.
         geometry : geometry in wkt, optional
             Geometry of the area of interest e.g. from geopandas.
-            Currently only polygons tested. The default is None.
+            Currently only polygons tested. Ayush: modified to work with Point type The default is None.
+        geometry_type: type of geometry, Polygon or Point. The default is None.  
         coordinate_list : list, optional
             List of coordinates of a polygon
             (loop should be closed). Computed from geometry if not
@@ -171,12 +173,20 @@ class AOI:
         if not geometry and not coordinate_list:
             sys.exit("AOI has to get either geometry or coordinates as list!")
         elif geometry and not coordinate_list:
-            coordinate_list = list(geometry.exterior.coords)
+            if geometry.type == "Polygon":
+                coordinate_list = list(geometry.exterior.coords)
+                for i in range(len(coordinate_list)):
+                    coordinate_list[i] = coordinate_list[i][0:2]
+            else:
+                lon = float(geometry.x)
+                lat = float(geometry.y)
+                coordinate_list = [(lon, lat)]
         elif coordinate_list and not geometry:
             geometry = None
 
         self.name = name
         self.geometry = geometry
+        self.geometry_type = geometry.type
         self.coordinate_list = coordinate_list
         self.qi = None
         self.data = None
@@ -208,8 +218,7 @@ def ee_get_s2_quality_info(AOIs, req_params):
         AOIs = list([AOIs])
 
     features = [
-        ee.Feature(ee.Geometry.Polygon(a.coordinate_list), {"name": a.name})
-        for a in AOIs
+        ee.Feature(ee.Geometry.Polygon(a.coordinate_list), {"name": a.name}) if a.geometry_type == "Polygon" else ee.Feature(ee.Geometry.Point(a.coordinate_list[0][0], a.coordinate_list[0][1]), {"name": a.name}) for a in AOIs
     ]
     feature_collection = ee.FeatureCollection(features)
 
@@ -354,10 +363,16 @@ def ee_get_s2_data(AOIs, req_params, qi_threshold=0, qi_filter=s2_filter1):
         full_assetids = "COPERNICUS/S2_SR/" + filtered_qi["assetid"]
         image_list = [ee.Image(asset_id) for asset_id in full_assetids]
         crs = filtered_qi["projection"].values[0]["crs"]
-        feature = ee.Feature(
-            ee.Geometry.Polygon(a.coordinate_list),
+        if a.geometry_type == "Polygon":
+            feature = ee.Feature(
+                ee.Geometry.Polygon(a.coordinate_list),
+                {"name": a.name, "image_list": image_list},
+            )
+        else:
+            feature = ee.Feature(
+            ee.Geometry.Point(a.coordinate_list[0][0], a.coordinate_list[0][1]),
             {"name": a.name, "image_list": image_list},
-        )
+            )
 
         features.append(feature)
 
@@ -584,11 +599,8 @@ def s2_data_to_xarray(aoi, request_params, convert_to_reflectance=True):
 
     #  1D data
     list_vars = [
-        "assetid",
-        "productid",
         "sun_azimuth",
         "sun_zenith",
-        "system_index",
         "view_azimuth",
         "view_zenith",
     ]
@@ -757,7 +769,7 @@ def xr_dataset_to_timeseries(xr_dataset, variables):
     return df
 
 
-def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
+def gee2pecan_s2(geofile, outdir, filename, start, end, scale, qc):
     """ 
     Downloads Sentinel 2 data from gee and saves it in a netCDF file at the specified location.
     
@@ -766,6 +778,8 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     geofile (str) -- path to the file containing the name and coordinates of ROI, currently tested with geojson. 
     
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
+    
+    filename (str) -- filename of the output file
   
     start (str) -- starting date of the data request in the form YYYY-MM-DD
     
@@ -777,8 +791,8 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
         
     Returns
     -------
-    Nothing:
-            output netCDF is saved in the specified directory.
+    Absolute path to the output file.
+    output netCDF is saved in the specified directory.
             
     Python dependencies required: earthengine-api, geopandas, pandas, netCDF4, xarray      
     """
@@ -795,7 +809,7 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     ee_get_s2_quality_info(area, request)
 
     # get the final data
-    ee_get_s2_data(area, request, qi_threshold=qi_threshold)
+    ee_get_s2_data(area, request, qi_threshold=qc)
 
     # convert dataframe to an xarray dataset, used later for converting to netCDF
     s2_data_to_xarray(area, request)
@@ -803,5 +817,15 @@ def gee2pecan_s2(geofile, outdir, start, end, scale, qi_threshold):
     # if specified output directory does not exist, create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
+    timestamp = time.strftime("%y%m%d%H%M%S")
+    save_path = os.path.join(
+        outdir,
+        filename
+        + "_"
+        + timestamp
+        + ".nc",
+    )
 
-    area.data.to_netcdf(os.path.join(outdir, area.name + "_bands.nc"))
+    area.data.to_netcdf(save_path)
+
+    return os.path.abspath(save_path)

@@ -37,7 +37,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=traefik"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /traefik"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip: /traefik"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -50,6 +50,7 @@ services:
 
   # webserver to handle access to data
   minio:
+    user: "${UID:-1001}:${GID:-1001}"
     image: minio/minio:latest
     command: server /data
     restart: unless-stopped
@@ -62,12 +63,13 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=minio"
       - "traefik.port=9000"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/minio/"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/minio/"
     volumes:
       - pecan:/data
 
   # THREDDS data server
   thredds:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/thredds:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -77,7 +79,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/thredds"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/thredds"
       - "traefik.backend=thredds"
 
   # ----------------------------------------------------------------------
@@ -100,7 +102,7 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=rabbitmq"
       - "traefik.port=15672"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rabbitmq"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/rabbitmq"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
     volumes:
       - rabbitmq:/var/lib/rabbitmq
@@ -135,7 +137,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/bety/"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/bety/"
       - "traefik.backend=bety"
 
   # ----------------------------------------------------------------------
@@ -151,11 +153,12 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=rstudio"
       - "traefik.port=80"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/rstudio"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/rstudio"
       - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
 
   rstudio:
     image: pecan/base:${PECAN_VERSION:-latest}
+    command: /work/rstudio.sh
     restart: unless-stopped
     networks:
       - pecan
@@ -163,12 +166,16 @@ services:
       - rabbitmq
       - postgres
     environment:
+      - KEEP_ENV=RABBITMQ_URI RABBITMQ_PREFIX RABBITMQ_PORT FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
       - USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
-    entrypoint: /init
+      - USERID=${UID:-1001}
+      - GROUPID=${GID:-1001}
     volumes:
       - pecan:/data
       - rstudio:/home
@@ -185,11 +192,12 @@ services:
       - pecan
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/"
       - "traefik.backend=docs"
 
   # PEcAn web front end, this is just the PHP code
   web:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -198,12 +206,14 @@ services:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
+      - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
     depends_on:
        - postgres
        - rabbitmq
     labels:
+      - "traefik.port=8080"
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/pecan/"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/pecan/"
       - "traefik.backend=pecan"
     volumes:
       - pecan:/data
@@ -211,6 +221,7 @@ services:
 
   # PEcAn model monitor
   monitor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -224,19 +235,22 @@ services:
        - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/monitor/"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip:/monitor/"
       - "traefik.backend=monitor"
     volumes:
       - pecan:/data
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
        - postgres
@@ -250,6 +264,7 @@ services:
 
   # PEcAn basgra model runner
   basgra:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -263,6 +278,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -276,6 +292,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -289,6 +306,7 @@ services:
 
   # PEcAn MAESPA model runner
   maespa:
+    user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -315,14 +333,14 @@ services:
       - "traefik.enable=true"
       - "traefik.backend=dbsync"
       - "traefik.port=3838"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip:/dbsync/"
-
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip:/dbsync/"
 
   # ----------------------------------------------------------------------
   # PEcAn API
   # ----------------------------------------------------------------------
   api:
     image: pecan/api:${PECAN_VERSION:-latest}
+    user: "${UID:-1001}:${GID:-1001}"
     networks:
       - pecan
     environment:
@@ -332,9 +350,10 @@ services:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - DATA_DIR=${DATA_DIR:-/data/}
       - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
+      - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefix:/api"
+      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/api"
       - "traefik.backend=api"
       - "traefik.port=8000"
     depends_on:

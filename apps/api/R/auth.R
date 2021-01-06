@@ -25,19 +25,16 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* Check if the encrypted password for the user is valid
 #* @param username Username
 #* @param crypt_pass Encrypted password
+#* @param dbcon Database connection object. Default is global database pool.
 #* @return TRUE if encrypted password is correct, else FALSE
 #* @author Tezan Sahu
-validate_crypt_pass <- function(username, crypt_pass) {
+validate_crypt_pass <- function(username, crypt_pass, dbcon = global_db_pool) {
 
-  dbcon <- PEcAn.DB::betyConnect()
-  
   res <- tbl(dbcon, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
     collect()
 
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(res) == 1) {
     return(res$id)
   }
