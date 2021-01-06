@@ -69,6 +69,7 @@ jagify: no visible binding for global variable ‘n’
 jagify: no visible binding for global variable ‘site_id’
 jagify: no visible binding for global variable ‘greenhouse’
 jagify: no visible binding for global variable ‘citation_id’
+jagify: no visible binding for global variable ‘name’
 pecan.ma: no visible global function definition for ‘stem’
 pecan.ma: no visible global function definition for ‘window’
 pecan.ma.summary: no visible global function definition for
