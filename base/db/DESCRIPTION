@@ -57,7 +57,6 @@ Imports:
     ncdf4,
     purrr,
     rlang,
-    R.utils,
     tibble,
     tidyr,
     udunits2
@@ -65,6 +64,7 @@ Suggests:
     RPostgreSQL,
     RPostgres,
     RSQLite,
+    R.utils,
     bit64,
     data.table,
     here,
