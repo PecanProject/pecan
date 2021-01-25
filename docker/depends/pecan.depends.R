@@ -101,7 +101,6 @@ wanted <- c(
 'rjags',
 'rjson',
 'rlang',
-'rnoaa',
 'RPostgres',
 'RPostgreSQL',
 'Rpreles',
