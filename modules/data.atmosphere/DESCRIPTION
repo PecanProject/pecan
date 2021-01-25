@@ -49,7 +49,6 @@ Imports:
     testthat (>= 2.0.0),
     tibble,
     tidyr,
-    tidyselect,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
