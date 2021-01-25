@@ -59,6 +59,7 @@ Suggests:
     foreach,
     parallel,
     progress,
+    tidyselect,
     reticulate
 Remotes:
     github::ropensci/geonames,
