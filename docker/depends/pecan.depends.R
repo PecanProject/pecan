@@ -87,6 +87,7 @@ wanted <- c(
 'progress',
 'purrr',
 'pwr',
+'R.utils',
 'randtoolbox',
 'raster',
 'rcrossref',
