@@ -44,7 +44,6 @@ Imports:
     reshape2,
     rgdal,
     rlang (>= 0.2.0),
-    rnoaa,
     sp,
     stringr (>= 1.1.0),
     testthat (>= 2.0.0),
