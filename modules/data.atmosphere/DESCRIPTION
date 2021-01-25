@@ -22,7 +22,6 @@ Imports:
     data.table,
     dplyr,
     geonames (> 0.998),
-    ggplot2,
     glue,
     httr,
     jsonlite,
@@ -45,10 +44,9 @@ Imports:
     rgdal,
     rlang (>= 0.2.0),
     sp,
-    stringr (>= 1.1.0),
     testthat (>= 2.0.0),
-    tibble,
-    tidyr,
+    tidyverse,
+    tidyselect,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
@@ -59,7 +57,6 @@ Suggests:
     foreach,
     parallel,
     progress,
-    tidyselect,
     reticulate
 Remotes:
     github::ropensci/geonames,
