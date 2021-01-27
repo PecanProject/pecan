@@ -30,7 +30,8 @@ Imports:
     reshape2,
     dbplyr,
     SimilarityMeasures,
-    zoo
+    zoo,
+    stringr
 Suggests:
     PEcAn.data.land,
     testthat (>= 2.0.0)

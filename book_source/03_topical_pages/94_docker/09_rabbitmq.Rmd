@@ -2,42 +2,25 @@
 
 This section provides additional details about how PEcAn uses RabbitMQ to manage communication between its Docker containers.
 
-In PEcAn, we use the Python [`pika`](http://www.rabbitmq.com/tutorials/tutorial-one-python.html) client to post and retrieve messages from RabbitMQ.
-As such, every Docker container that communicates with RabbitMQ contains two Python scripts: `sender.py` and `reciever.py`.
-Both are located in the `docker` directory in the PEcAn source code root.
+In PEcAn, we use the Python [`pika`](http://www.rabbitmq.com/tutorials/tutorial-one-python.html) client to retrieve messages from RabbitMQ. The PEcAn.remote library has convenience functions that wrap the API to post and read messages. The executor and models use the python version of the RabbitMQ scripts to retrieve messages, and launch the appropriate code.
 
-### Producer -- `sender.py` {#rabbitmq-basics-sender}
+### Producer -- `PEcAn.remote::rabbitmq_post_message` {#rabbitmq-basics-sender}
 
-The `sender.py` script is in charge of posting messages to RabbitMQ.
-In the RabbitMQ documentation, it is known as a "producer".
-It runs once for every message posted to RabbitMQ, and then immediately exits (unlike the `receiver.py`, which runs continuously -- see [below](#rabbitmq-basics-receiver)).
+The `PEcAn.remote::rabbitmq_post_message` function allows you to post messages to RabbitMQ from R. In the RabbitMQ documentation, it is known as a "producer". It takes the body of the message to be posted and will return any output generated when the message is posted to the approriate queue.
 
-Its usage is as follows:
+The function has three required arguments and two optional ones:
 
-```bash
-python3 sender.py <URI> <queue> <message>
-```
+- `uri` -- This is the URI used to connect to RabbitMQ, it will have the form `amqp://username:password\@server:5672/vhost`. Most containers will have this injected using the environment variable `RABBITMQ_URI`.
+- `queue` -- The queue to post the message on, this is either `pecan` for a workflow to be exected, the name of the model and version to be executed, for example `SIPNET_r136`.
+- `message` -- The actual message to be send, this is of type list and will be converted to a json string representation.
+- `prefix` -- The code will talk to the rest api, this is the prefix of the rest api. In the case of the default docker-compse file, this will be `/rabbitmq` and will be injected as `RABBITMQ_PREFIX`.
+- `port` -- The code will talk to the rest api, this is the port of the rest api. In the case of the default docker-compse file, this will be `15672` and will be injected as `RABBITMQ_PORT`.
 
-The arguments are:
-
-- `<URI>` -- The unique identifier of the RabbitMQ instance, similar to a URL.
-The format is `amqp://username:password@host/vhost`.
-By default, this is `amqp://guest:guest@rabbitmq/%2F` (the `%2F` here is the hexadecimal encoding for the `/` character).
-
-- `<queue>` -- The name of the queue on which to post the message.
-
-- `<message>` -- The contents of the message to post, in JSON format.
-A typical message posted by PEcAn looks like the following:
-  
-  ```json
-  { "folder" : "/path/to/PEcAn_WORKFLOWID", "workflow" : "WORKFLOWID" }
-  ```
-  
-The `PEcAn.remote::start_rabbitmq` function is a wrapper for this script that provides an easy way to post a `folder` message to RabbitMQ from R.
+The `PEcAn.remote::start_rabbitmq` function is a wrapper for this function that provides an easy way to post a `folder` message to RabbitMQ.
 
 ### Consumer -- `receiver.py` {#rabbitmq-basics-receiver}
 
-Unlike `sender.py`, `receiver.py` runs like a daemon, constantly listening for messages.
+The `receiver.py` script runs like a daemon, constantly listening for messages.
 In the RabbitMQ documentation, it is known as a "consumer".
 In PEcAn, you can tell that it is ready to receive messages if the corresponding logs (e.g. `docker-compose logs executor`) show the following message:
 

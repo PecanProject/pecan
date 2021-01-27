@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<MERRA>
+<scale>regional</scale>
+<format>
+  <id>33</id>
+  <name>CF Meteorology</name>
+  <mimetype>application/x-netcdf</mimetype>
+  <inputtype>nc</inputtype>
+</format>
+</MERRA>

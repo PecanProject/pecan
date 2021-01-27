@@ -142,6 +142,8 @@ extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, lat.in
         v.nldas <- paste(var$NLDAS.name[v])
         v.cf    <- paste(var$CF.name   [v])
         
+        if(!v.nldas %in% names(dap_file$var) & v.cf %in% names(dap_file$var)) v.nldas <- v.cf
+        
         # Variables have different dimensions (which is a pain in the butt)
         # so we need to check to see whether we're pulling 4 dimensions or just 3
         if(dap_file$var[[v.nldas]]$ndims == 4){

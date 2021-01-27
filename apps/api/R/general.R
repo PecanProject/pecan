@@ -10,7 +10,7 @@ ping <- function(req){
 #* Function to get the status & basic information about the Database Host
 #* @return Details about the database host
 #* @author Tezan Sahu
-status <- function() {
+status <- function(dbcon = global_db_pool) {
   
   ## helper function to obtain environment variables
   get_env_var = function (item, default = "unknown") {
@@ -18,7 +18,6 @@ status <- function() {
     if (value == "") default else value
   }
   
-  dbcon <- PEcAn.DB::betyConnect()
   res <- list(host_details = PEcAn.DB::dbHostInfo(dbcon))
   res$host_details$authentication_required = get_env_var("AUTH_REQ")
   

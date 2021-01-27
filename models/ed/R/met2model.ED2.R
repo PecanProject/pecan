@@ -49,13 +49,13 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive = TRUE, showWarnings = FALSE)
 
-  dm <- c(0, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
-  dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
-  mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
-
 
   day2mo <- function(year, day, leap_year) {
+    # DOY corresponding to start of each month without a leap year...
+    dm <- c(0, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
+    # ...and with a leap year
+    dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
     mo <- rep(NA, length(day))
     if (!leap_year) {
       mo <- findInterval(day, dm)
@@ -131,17 +131,22 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       flat <- nc$dim[[1]]$vals[1]
     }
     if (is.na(lat)) {
-      lat <- flat
+      # Have to `drop` here because NetCDF returns a length-1 array, not a
+      # scalar. This causes `non-conforming array` errors in the
+      # `cos_solar_zenith_angle` function later when trying to add these to
+      # scalars. `drop` simplifies away any length-1 dimensions.
+      lat <- drop(flat)
     } else if (lat != flat) {
       PEcAn.logger::logger.warn("Latitude does not match that of file", lat, "!=", flat)
     }
 
     flon <- try(ncdf4::ncvar_get(nc, "longitude"), silent = TRUE)
     if (!is.numeric(flon)) {
-      flat <- nc$dim[[2]]$vals[1]
+      flon <- nc$dim[[2]]$vals[1]
     }
     if (is.na(lon)) {
-      lon <- flon
+      # See above comment re: `drop`
+      lon <- drop(flon)
     } else if (lon != flon) {
       PEcAn.logger::logger.warn("Longitude does not match that of file", lon, "!=", flon)
     }
@@ -149,9 +154,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## determine GMT adjustment lst <- site$LST_shift[which(site$acro == froot)]
 
     ## extract variables
-    lat  <- eval(parse(text = lat))
-    lon  <- eval(parse(text = lon))
-    sec  <- nc$dim$time$vals
+    tdays  <- nc$dim$time$vals
     Tair <- ncdf4::ncvar_get(nc, "air_temperature")
     Qair <- ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
     U    <- try(ncdf4::ncvar_get(nc, "eastward_wind"),  silent = TRUE)
@@ -176,16 +179,36 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     useCO2 <- is.numeric(CO2)
 
     ## convert time to seconds
-    sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    sec <- udunits2::ud.convert(tdays, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
     ncdf4::nc_close(nc)
 
-    dt <- PEcAn.utils::seconds_in_year(year, leap_year) / length(sec)
+    # `dt` is the met product time step in seconds. We calculate it here as
+    # `sec[i] - sec[i-1]` for all `[i]`. For a properly formatted product, the
+    # timesteps should be regular, so there is a single, constant difference. If
+    # that's not the case, we throw an informative warning and try to round
+    # instead (as some met products will not always have neat time steps).
+    #
+    # `drop` here simplifies length-1 arrays to vectors. Without it, R will
+    # later throw an error about "non-conformable arrays" when trying to add a
+    # length-1 array to a vector.
+    dt <- drop(unique(diff(sec)))
+    if (length(dt) > 1) {
+      dt_old <- dt
+      dt <- drop(round(mean(diff(sec))))
+      PEcAn.logger::logger.warn(paste0(
+        "Time step (`dt`) is not uniform! Identified ",
+        length(dt_old), " unique time steps. ",
+        "`head(dt)` (in seconds): ",
+        paste(utils::head(dt_old), collapse = ", "),
+        " Using the rounded mean difference as the time step: ", dt
+      ))
+    }
 
     toff <- -as.numeric(lst) * 3600 / dt
 
     ## buffer to get to GMT
-    slen <- seq_along(SW)
+    slen <- seq_along(sec)
     Tair <- c(rep(Tair[1], toff), Tair)[slen]
     Qair <- c(rep(Qair[1], toff), Qair)[slen]
     U  <- c(rep(U[1], toff), U)[slen]
@@ -198,58 +221,37 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       CO2 <- c(rep(CO2[1], toff), CO2)[slen]
     }
 
-    ## build time variables (year, month, day of year)
-    skip <- FALSE
-    nyr <- floor(length(sec) * dt / 86400 / 365)
-    yr   <- NULL
-    doy  <- NULL
-    hr   <- NULL
-    asec <- sec
-    for (y in seq(year, year + nyr - 1)) {
-      diy <- PEcAn.utils::days_in_year(y, leap_year)
-      ytmp <- rep(y, udunits2::ud.convert(diy / dt, "days", "seconds"))
-      dtmp <- rep(seq_len(diy), each = day_secs / dt)
-      if (is.null(yr)) {
-        yr  <- ytmp
-        doy <- dtmp
-        hr  <- rep(NA, length(dtmp))
-      } else {
-        yr  <- c(yr, ytmp)
-        doy <- c(doy, dtmp)
-        hr  <- c(hr, rep(NA, length(dtmp)))
-      }
-      rng <- length(doy) - length(ytmp):1 + 1
-      if (!all(rng >= 0)) {
-        skip <- TRUE
-        PEcAn.logger::logger.warn(year, " is not a complete year and will not be included")
-        break
-      }
-      asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng]   <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
-    }
-    mo <- day2mo(yr, doy, leap_year)
-    if (length(yr) < length(sec)) {
-      rng <- (length(yr) + 1):length(sec)
-      if (!all(rng >= 0)) {
-        skip <- TRUE
-        PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
-        break
-      }
-      yr[rng]  <- rep(y + 1, length(rng))
-      doy[rng] <- rep(1:366, each = day_secs / dt)[1:length(rng)]
-      hr[rng]  <- rep(seq(0, length = day_secs / dt, by = dt / day_secs * 24), 366)[1:length(rng)]
-    }
-    if (skip) {
-      print("Skipping to next year")
-      next
+    # We need to figure out the local solar zenith angle to estimate the
+    # potential radiation. For that, we need the Julian Date (`doy`) and local
+    # time in hours (`hr`).
+
+    # First, calculate `doy`. Use `floor(tdays) + 1` here because, e.g., 6am on
+    # January 1 corresponds to "0.25 days since YYYY-01-01", but this is DOY 1,
+    # not 0.  Similarly, 6pm on December 31 is "364.75 days since YYYY-01-01",
+    # but this is DOY 365, not 364.
+    doy <- floor(tdays) + 1
+    
+    invalid_doy <- doy < 1 | doy > PEcAn.utils::days_in_year(year, leap_year)
+    if (any(invalid_doy)) {
+      PEcAn.logger::logger.severe(paste0(
+        "Identified at least one invalid day-of-year (`doy`). ",
+        "PEcAn met standard uses days since start of year as its time unit, ",
+        "so this suggests a problem with the input met file. ",
+        "Invalid values are: ", paste(doy[invalid_doy], collapse = ", "), ". ",
+        "Source file is: ", normalizePath(ncfile)
+      ))
     }
 
-
+    # Local time in hours (`hr`) is just the fractional part of the "Days since
+    # YYYY-01-01" value x 24. So we calculate it here using mod division.
+    # (e.g., 12.5 days %% 1 = 0.5 day; 0.5 day x 24 = 12 hours)
+    hr <- (tdays %% 1) * 24
+    
     ## calculate potential radiation in order to estimate diffuse/direct
     cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
     rpot <- 1366 * cosz
-    rpot <- rpot[1:length(SW)]
+    rpot <- rpot[seq_along(tdays)]
 
     SW[rpot < SW] <- rpot[rpot < SW]  ## ensure radiation < max
     ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
@@ -278,59 +280,57 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       co2A <- CO2 * 1e+06  # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
     }
 
-    ## create directory if(system(paste('ls',froot),ignore.stderr=TRUE)>0)
-    ## system(paste('mkdir',froot))
+    # Next, because ED2 stores values in monthly HDF5 files, we need to
+    # calculate the month corresponding to each DOY.
+    mo <- day2mo(year, doy, leap_year)
 
-    ## write by year and month
-    for (y in year + 1:nyr - 1) {
-      sely <- which(yr == y)
-      for (m in unique(mo[sely])) {
-        selm <- sely[which(mo[sely] == m)]
-        mout <- paste(met_folder, "/", y, month[m], ".h5", sep = "")
-        if (file.exists(mout)) {
-          if (overwrite) {
-            file.remove(mout)
-            ed_met_h5 <- hdf5r::H5File$new(mout)
-          } else {
-            PEcAn.logger::logger.warn("The file already exists! Moving to next month!")
-            next
-          }
-        } else {
+    # Now, write these monthly outputs for the current year
+    for (m in unique(mo)) {
+      selm <- which(mo == m)
+      mout <- file.path(met_folder, paste0(year, month[m], ".h5"))
+      if (file.exists(mout)) {
+        if (overwrite) {
+          file.remove(mout)
           ed_met_h5 <- hdf5r::H5File$new(mout)
+        } else {
+          PEcAn.logger::logger.warn("The file already exists! Moving to next month!")
+          next
         }
-        dims  <- c(length(selm), 1, 1)
-        nbdsf <- array(nbdsfA[selm], dim = dims)
-        nddsf <- array(nddsfA[selm], dim = dims)
-        vbdsf <- array(vbdsfA[selm], dim = dims)
-        vddsf <- array(vddsfA[selm], dim = dims)
-        prate <- array(prateA[selm], dim = dims)
-        dlwrf <- array(dlwrfA[selm], dim = dims)
-        pres  <- array(presA[selm], dim = dims)
-        hgt   <- array(hgtA[selm], dim = dims)
-        ugrd  <- array(ugrdA[selm], dim = dims)
-        vgrd  <- array(vgrdA[selm], dim = dims)
-        sh    <- array(shA[selm], dim = dims)
-        tmp   <- array(tmpA[selm], dim = dims)
-        if (useCO2) {
-          co2 <- array(co2A[selm], dim = dims)
-        }
-        ed_met_h5[["nbdsf"]] <- nbdsf
-        ed_met_h5[["nddsf"]] <- nddsf
-        ed_met_h5[["vbdsf"]] <- vbdsf
-        ed_met_h5[["vddsf"]] <- vddsf
-        ed_met_h5[["prate"]] <- prate
-        ed_met_h5[["dlwrf"]] <- dlwrf
-        ed_met_h5[["pres"]] <- pres
-        ed_met_h5[["hgt"]] <- hgt
-        ed_met_h5[["ugrd"]] <- ugrd
-        ed_met_h5[["vgrd"]] <- vgrd
-        ed_met_h5[["sh"]] <- sh
-        ed_met_h5[["tmp"]] <- tmp
-        if (useCO2) {
-          ed_met_h5[["co2"]] <- co2
-        }
-        ed_met_h5$close_all()
+      } else {
+        ed_met_h5 <- hdf5r::H5File$new(mout)
       }
+      dims  <- c(length(selm), 1, 1)
+      nbdsf <- array(nbdsfA[selm], dim = dims)
+      nddsf <- array(nddsfA[selm], dim = dims)
+      vbdsf <- array(vbdsfA[selm], dim = dims)
+      vddsf <- array(vddsfA[selm], dim = dims)
+      prate <- array(prateA[selm], dim = dims)
+      dlwrf <- array(dlwrfA[selm], dim = dims)
+      pres  <- array(presA[selm], dim = dims)
+      hgt   <- array(hgtA[selm], dim = dims)
+      ugrd  <- array(ugrdA[selm], dim = dims)
+      vgrd  <- array(vgrdA[selm], dim = dims)
+      sh    <- array(shA[selm], dim = dims)
+      tmp   <- array(tmpA[selm], dim = dims)
+      if (useCO2) {
+        co2 <- array(co2A[selm], dim = dims)
+      }
+      ed_met_h5[["nbdsf"]] <- nbdsf
+      ed_met_h5[["nddsf"]] <- nddsf
+      ed_met_h5[["vbdsf"]] <- vbdsf
+      ed_met_h5[["vddsf"]] <- vddsf
+      ed_met_h5[["prate"]] <- prate
+      ed_met_h5[["dlwrf"]] <- dlwrf
+      ed_met_h5[["pres"]] <- pres
+      ed_met_h5[["hgt"]] <- hgt
+      ed_met_h5[["ugrd"]] <- ugrd
+      ed_met_h5[["vgrd"]] <- vgrd
+      ed_met_h5[["sh"]] <- sh
+      ed_met_h5[["tmp"]] <- tmp
+      if (useCO2) {
+        ed_met_h5[["co2"]] <- co2
+      }
+      ed_met_h5$close_all()
     }
 
     ## write DRIVER file
@@ -341,10 +341,6 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       update_frequency = dt,
       flag = 1
     )
-    # if (!useCO2) {
-    #   metvar_table[metvar_table$variable == "co2",
-    #                c("update_frequency", "flag")] <- list(380, 4)
-    # }
 
     if (!useCO2) {
       metvar_table_vars <- metvar_table[metvar_table$variable !=  "co2",]  ## CO2 optional in ED2

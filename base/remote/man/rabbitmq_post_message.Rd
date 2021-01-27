@@ -2,9 +2,7 @@
 % Please edit documentation in R/rabbitmq.R
 \name{rabbitmq_post_message}
 \alias{rabbitmq_post_message}
-\title{Post message to RabbitMQ. This will submit a message to RabbitMQ, if the
-queue does not exist it will be created. The message will be converted to
-a json message that is submitted.}
+\title{Post message to RabbitMQ.}
 \usage{
 rabbitmq_post_message(uri, queue, message, prefix = "", port = 15672)
 }
@@ -23,9 +21,9 @@ rabbitmq_post_message(uri, queue, message, prefix = "", port = 15672)
 the result of the post if message was send, or NA if it failed.
 }
 \description{
-Post message to RabbitMQ. This will submit a message to RabbitMQ, if the
-queue does not exist it will be created. The message will be converted to
-a json message that is submitted.
+This will submit a message to RabbitMQ, if the queue does not exist it will
+be created. The message will be converted to a json message that is
+submitted.
 }
 \author{
 Alexey Shiklomanov, Rob Kooper

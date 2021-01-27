@@ -4,8 +4,7 @@
 
 # Don't use X11 for rgl
 Sys.setenv(RGL_USE_NULL = TRUE)
-rlib_user = Sys.getenv('R_LIBS_USER')
-rlib = ifelse(rlib_user == '', '/usr/local/lib/R/site-library', rlib_user)
+rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
 Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
@@ -25,6 +24,7 @@ wanted <- c(
 'BioCro',
 'bit64',
 'coda',
+'corrplot',
 'data.table',
 'dataone',
 'datapack',
@@ -37,10 +37,12 @@ wanted <- c(
 'foreach',
 'fs',
 'furrr',
+'future',
 'geonames',
 'getPass',
 'ggmap',
 'ggplot2',
+'ggrepel',
 'glue',
 'graphics',
 'grDevices',
@@ -62,6 +64,7 @@ wanted <- c(
 'maps',
 'maptools',
 'MASS',
+'Matrix',
 'mclust',
 'MCMCpack',
 'methods',
@@ -75,6 +78,7 @@ wanted <- c(
 'neonUtilities',
 'nimble',
 'nneo',
+'optparse',
 'parallel',
 'plotrix',
 'plyr',
@@ -83,6 +87,7 @@ wanted <- c(
 'progress',
 'purrr',
 'pwr',
+'R.utils',
 'randtoolbox',
 'raster',
 'rcrossref',
