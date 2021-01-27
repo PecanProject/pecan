@@ -42,6 +42,7 @@ This is a major change:
 
 ### Changed
 
+- Removed deprecated mstmip_vars and mstmip_local; now all functions use the combined standard_vars.csv  
 - Removed old api, now split into rpecanapi and apps/api.
 - Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
 - Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
