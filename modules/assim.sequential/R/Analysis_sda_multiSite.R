@@ -92,7 +92,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
   } 
   #Loading nimbles functions
-  if (!exists('GEF.MultiSite.Nimble')) PEcAn.assim.sequential:::load_nimble()
+  #if (!exists('GEF.MultiSite.Nimble')) load_nimble()  
   #load_nimble()
   #Forecast inputs 
   Q <- Forecast$Q # process error

@@ -77,9 +77,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   traits <- names(trait.data.check)
   
   # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
-  if (!is.logical(forceupdate)) {
-    forceupdate <- FALSE
-  }
+  forceupdate <- isTRUE(as.logical(forceupdate))
   
   # check to see if we need to update
   if (!forceupdate) {
@@ -141,10 +139,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           existing_membership <- utils::read.csv(
             need_paths[["pft_membership"]],
             # Columns are: id, genus, species, scientificname
-            # Need this so NA values are
+            # Need this so NA values are formatted consistently
             colClasses = c("double", "character", "character", "character"),
             stringsAsFactors = FALSE,
-            na.strings = ""
+            na.strings = c("", "NA")
           )
           diff_membership <- symmetric_setdiff(
             existing_membership,
@@ -275,7 +273,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     
     PEcAn.logger::logger.info(
       "\n Number of observations per trait for PFT ", shQuote(pft[["name"]]), ":\n",
-      PEcAn.logger::print2string(trait_counts, n = Inf),
+      PEcAn.logger::print2string(trait_counts, n = Inf, na.print = ""),
       wrap = FALSE
     )
   } else {

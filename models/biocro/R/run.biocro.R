@@ -9,6 +9,7 @@
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perennial grass. Only used with BioCro 0.9; ignored when using later versions.
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
+#' @importFrom rlang .data
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
 
@@ -100,7 +101,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   # with bare variable names, but this way works and ensures that
   # `R CMD check` doesn't complain about undefined variables.
   hourly_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = c("year", "doy"))
-  daily.results <- dplyr::bind_cols(
+  daily.results.initial <- dplyr::bind_cols(
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
@@ -118,6 +119,15 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .tbl = hourly_grp,
       .vars = c(tavg = "Temp"),
       .fun = mean))
+    daily.results.inter <- dplyr::select(daily.results.initial, .data$year...1, 
+                                         .data$doy...2, .data$Stem, .data$Leaf, 
+                                         .data$Root, .data$AboveLitter, .data$BelowLitter, 
+                                         .data$Rhizome, .data$Grain, .data$LAI, 
+                                         .data$tmax, .data$SoilEvaporation, 
+                                         .data$CanopyTrans, .data$precip,
+                                         .data$tmin, .data$tavg)
+    daily.results <- dplyr::rename(daily.results.inter, 
+                                   year = .data$year...1, doy = .data$doy...2)
   # bind_cols on 4 tables leaves 3 sets of duplicate year and day columns.
   # Let's drop these.
   col_order <- c("year", "doy", "Stem", "Leaf", "Root",
@@ -127,7 +137,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   daily.results <- daily.results[, col_order]
   
   daily_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = "year")
-  annual.results <- dplyr::bind_cols(
+  annual.results.initial <- dplyr::bind_cols(
     dplyr::summarize_at(
       .tbl = daily_grp,
       .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
@@ -141,6 +151,12 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .tbl = daily_grp,
       .vars = c(mat = "Temp"),
       .fun = mean))
+  annual.results.inter <- dplyr::select(annual.results.initial, .data$year...1, 
+                                        .data$Stem, .data$Leaf, .data$Root, 
+                                        .data$AboveLitter, .data$BelowLitter, 
+                                        .data$Rhizome, .data$Grain, .data$SoilEvaporation, 
+                                        .data$CanopyTrans, .data$map, .data$mat)
+  annual.results <- dplyr::rename(annual.results.inter, year = .data$year...1)
   col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
                  "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
                  "map", "mat")

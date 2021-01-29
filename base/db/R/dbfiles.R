@@ -79,16 +79,18 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   inputid <- NULL
   if (nrow(existing.input) > 0) {
     # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
-    startdate <- lubridate::force_tz(time = lubridate::as_date(startdate), tzone = 'UTC')
-    enddate <- lubridate::force_tz(time = lubridate::as_date(enddate), tzone = 'UTC')
+    if(!is.null(startdate)){ startdate <- lubridate::force_tz(time = lubridate::as_date(startdate), tzone = 'UTC')}
+    if(!is.null(enddate)){enddate <- lubridate::force_tz(time = lubridate::as_date(enddate), tzone = 'UTC')}
     existing.input$start_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$start_date), tzone = 'UTC')
     existing.input$end_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$end_date), tzone = 'UTC')
     
     for (i in seq_len(nrow(existing.input))) {
       existing.input.i <- existing.input[i,]
-      if (existing.input.i$start_date == startdate && existing.input.i$end_date == enddate) {
+      if (is.na(existing.input.i$start_date) && is.null(startdate)) {
         inputid <- existing.input.i[['id']]
-        break
+      }else if(existing.input.i$start_date == startdate && existing.input.i$end_date == enddate){
+        inputid <- existing.input.i[['id']]
+        
       }
     }
     
@@ -109,12 +111,22 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   if (is.null(inputid)) {
     # Either there was no existing input, or there was but the dates don't match and
     # allow.conflicting.dates==TRUE. So, insert new input record.
-    if (parent == "") {
+    # adding is.null(startdate) to add inputs like soil that don't have dates
+    if(parent == "" && is.null(startdate)) { 
+      cmd <- paste0("INSERT INTO inputs ",
+                    "(site_id, format_id, name) VALUES (",
+                    siteid, ", ", formatid, ", '", name, 
+                    "'",") RETURNING id")
+    } else if(parent == "" && !is.null(startdate)) { 
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, start_date, end_date, name) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name,
                     "') RETURNING id")
-    } else {
+    }else if(is.null(startdate)){
+      cmd <- paste0("INSERT INTO inputs ",
+                    "(site_id, format_id, name, parent_id) VALUES (",
+                    siteid, ", ", formatid, ", '", name, "',", parentid, ") RETURNING id")
+    }else {
       cmd <- paste0("INSERT INTO inputs ",
                     "(site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
                     siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id")
@@ -123,7 +135,15 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     inserted.id <-db.query(query = cmd, con = con)
     name.s <- name
 
-    inputid <- db.query(
+    if(is.null(startdate)){
+      inputid <- db.query(
+        query = paste0(
+          "SELECT id FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid),
+        con = con
+      )$id
+      
+    }else{inputid <- db.query(
       query = paste0(
         "SELECT id FROM inputs WHERE site_id=", siteid,
         " AND format_id=", formatid,
@@ -132,7 +152,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         "'" , parent, ";"
       ),
       con = con
-    )$id
+    )$id}
   }else{
     inserted.id <- data.frame(id=inputid) # in the case that inputid is not null then this means that there was an exsiting input
   }
@@ -150,7 +170,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname)
   
-  if (nrow(dbfile) > 0 ) {
+  if (nrow(dbfile) > 0 & !ens) {
    
     if (nrow(dbfile) > 1) {
       print(dbfile)
@@ -158,7 +178,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       dbfile <- dbfile[nrow(dbfile),]
     }
     
-    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path ) {
+    if (dbfile$file_name != in.prefix || dbfile$file_path != in.path && !ens) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",
@@ -642,3 +662,239 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
     invisible(NA)
   }
 }
+
+
+
+##' 
+##' This function will move dbfiles - clim or nc -  from one location 
+##' to another on the same machine and update BETY
+##' 
+##' @name dbfile.move
+##' @title Move files to new location 
+##' @param old.dir directory with files to be moved
+##' @param new.dir directory where files should be moved 
+##' @param file.type what type of files are being moved
+##' @param siteid needed to register files that arent already in BETY
+##' @param register if file isn't already in BETY, should it be registered? 
+##' @return print statement of how many files were moved, registered, or have symbolic links
+##' @export
+##' @author kzarada
+##' @examples
+##' \dontrun{
+##'   dbfile.move(
+##'   old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676", 
+##'   new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
+##'   file.type= clim, 
+##'   siteid = 676, 
+##'   register = TRUE
+##'   )
+##' }
+
+
+dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = FALSE ){  
+  
+  
+  #create nulls for file movement and error info 
+  error = 0
+  files.sym = 0
+  files.changed = 0 
+  files.reg = 0 
+  files.indb = 0 
+  
+  #check for file type and update to make it *.file type 
+  if(file.type != "clim" | file.type != "nc"){ 
+    PEcAn.logger::logger.error('File type not supported by move at this time. Currently only supports NC and CLIM files')
+    error = 1
+  }
+  file.pattern = paste0("*.", file.type)
+  
+  
+  
+  #create new directory if it doesn't exist
+  if(!dir.exists(new.dir)){ 
+    dir.create(new.dir)}
+  
+  
+  # check to make sure both directories exist 
+  if(!dir.exists(old.dir)){ 
+    PEcAn.logger::logger.error('Old File directory does not exist. Please enter valid file path')
+    error = 1}
+  
+  if(!dir.exists(new.dir)){ 
+    PEcAn.logger::logger.error('New File directory does not exist. Please enter valid file path')
+    error = 1}
+  
+  if(basename(new.dir) != basename(old.dir)){ 
+    PEcAn.logger::logger.error('Basenames of files do not match')
+  }
+  
+  #list files in the old directory
+  old.files <- list.files(path= old.dir, pattern = file.pattern)
+  
+  #check to make sure there are files 
+  if(length(old.files) == 0){ 
+    PEcAn.logger::logger.warn('No files found')
+    error = 1 
+  }
+  
+  #create full file path 
+  full.old.file = file.path(old.dir, old.files)
+  
+  
+  ### Get BETY information ###
+  bety <- dplyr::src_postgres(dbname   = 'bety', 
+                              host     = 'psql-pecan.bu.edu', 
+                              user     = 'bety', 
+                              password = 'bety')
+  con <- bety$con
+  
+  #get matching dbfiles from BETY 
+  dbfile.path = dirname(full.old.file)
+  dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
+    dplyr::filter(file_name %in% basename(full.old.file)) %>% 
+    dplyr::filter(file_path %in% dbfile.path)
+  
+  
+  #if there are matching db files
+  if(dim(dbfiles)[1] > 0){
+    
+    # Check to make sure files line up 
+    if(dim(dbfiles)[1] != length(full.old.file)) { 
+      PEcAn.logger::logger.warn("Files to be moved don't match up with BETY files, only moving the files that match")
+      
+      #IF DB FILES AND FULL FILES DONT MATCH, remove those not in BETY - will take care of the rest below 
+      index = which(basename(full.old.file) %in% dbfiles$file_name)
+      index1 = seq(1, length(full.old.file))
+      check <- index1[-which(index1 %in% index)]
+      full.old.file <- full.old.file[-check]
+      
+      #record the number of files that are being moved 
+      files.changed = length(full.old.file)
+      
+    }
+    
+    #Check to make sure the files line up 
+    if(dim(dbfiles)[1] != length(full.old.file)) { 
+      PEcAn.logger::logger.error("Files to be moved don't match up with BETY files, canceling move")
+      error = 1 
+    } 
+    
+    
+    #Make sure the files line up 
+    dbfiles <- dbfiles[order(dbfiles$file_name),]
+    full.old.file <- sort(full.old.file)
+    
+    #Record number of files moved and changed in BETY
+    files.indb = dim(dbfiles)[1]
+    
+    #Move files and update BETY
+    if(error == 0) {
+      for(i in 1:length(full.old.file)){
+        fs::file_move(full.old.file[i], new.dir)
+        db.query(paste0("UPDATE dbfiles SET file_path= '", new.dir, "' where id=", dbfiles$id[i]), con)
+      } #end i loop 
+    } #end error if statement 
+    
+    
+    
+  } #end dbfile loop 
+  
+  
+  #if there are files that are in the folder but not in BETY, we can either register them or not 
+  if (dim(dbfiles)[1] == 0 | files.changed > 0){ 
+    
+    #Recheck what files are in the directory since others may have been moved above 
+    old.files <- list.files(path= old.dir, pattern = file.pattern)
+    
+    #Recreate full file path 
+    full.old.file = file.path(old.dir, old.files)
+    
+    
+    #Error check again to make sure there aren't any matching dbfiles 
+    dbfile.path = dirname(full.old.file)
+    dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
+      dplyr::filter(file_name %in% basename(full.old.file)) %>% 
+      dplyr::filter(file_path %in% dbfile.path)
+    
+    if(dim(dbfiles)[1] > 0){ 
+      PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling link or registration")
+      error = 1
+    }
+    
+    
+    if(error == 0 & register == TRUE){
+      
+      #Record how many files are being registered to BETY 
+      files.reg= length(full.old.file)
+      
+      for(i in 1:length(full.old.file)){
+        
+        file_path = dirname(full.old.file[i])
+        file_name = basename(full.old.file[i])
+        
+        if(file.type == "nc"){mimetype = "application/x-netcdf"
+        formatname ="CF Meteorology application" }
+        else if(file.type == "clim"){mimetype = 'text/csv'
+        formatname = "Sipnet.climna"}
+        else{PEcAn.logger::logger.error("File Type is currently not supported")} 
+        
+        
+        dbfile.input.insert(in.path = file_path,
+                            in.prefix = file_name,
+                            siteid = siteid,
+                            startdate = NULL,
+                            enddate = NULL,
+                            mimetype = mimetype,
+                            formatname = formatname,
+                            parentid=NA,
+                            con = con, 
+                            hostname=PEcAn.remote::fqdn(),
+                            allow.conflicting.dates=FALSE,
+                            ens=FALSE) 
+      }#end i loop 
+    } #end error loop 
+    
+  } #end register == TRUE 
+  
+  if(error == 0 & register == FALSE){
+    #Create file path for symbolic link 
+    full.new.file = file.path(new.dir, old.files)
+    
+    #Record number of files that will have a symbolic link made 
+    files.sym = length(full.new.file)
+    
+    #Line up files 
+    full.new.file = sort(full.new.file)
+    full.old.file <- sort(full.old.file)
+    
+    #Check to make sure the files are the same length 
+    if(length(full.new.file) != length(full.old.file)) { 
+      
+      PEcAn.logger::logger.error("Files to be moved don't match up with BETY. Canceling Move")
+      error = 1
+    }
+    
+    #Move file and create symbolic link if there are no errors 
+    
+    if(error ==0){
+      for(i in 1:length(full.old.file)){
+        fs::file_move(full.old.file[i], new.dir)
+        R.utils::createLink(link = full.old.file[i], target = full.new.file[i])
+      }#end i loop 
+    } #end error loop 
+    
+  } #end Register == FALSE
+  
+  
+  if(error > 0){ 
+    PEcAn.logger::logger.error("There was an error, files were not moved or linked")
+    
+  }
+  
+  if(error == 0){
+    
+    PEcAn.logger::logger.info(paste0(files.changed + files.indb, " files were moved and updated on BETY,  ", files.sym, " were moved and had a symbolic link created, and ", files.reg , " files were moved and then registered in BETY"))
+    
+  }
+  
+}  #end dbfile.move()

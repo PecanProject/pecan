@@ -258,7 +258,7 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
                              ens=.x))
   
   out.ense <- out.ense %>%
-    setNames(rep("path", length(out.ense)))
+    stats::setNames(rep("path", length(out.ense)))
   
   return(out.ense)
 }
@@ -298,10 +298,10 @@ EPA_ecoregion_finder <- function(Lat, Lon){
     ) %>%
     sf::st_transform("+proj=longlat +datum=WGS84")
   
-  sp::proj4string(U.S.SB.sp) <- sp::proj4string(as_Spatial(L1))
+  sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
   # finding the code for each site
-  over.out.L1 <- sp::over(U.S.SB.sp, as_Spatial(L1))
-  over.out.L2 <- sp::over(U.S.SB.sp, as_Spatial(L2))
+  over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))
+  over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
   
   return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
 }
