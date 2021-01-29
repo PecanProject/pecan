@@ -4,7 +4,7 @@
 \alias{get.sample}
 \title{Get Samples}
 \usage{
-get.sample(prior, n)
+get.sample(prior, n, p = NULL)
 }
 \arguments{
 \item{prior}{data.frame with distn, parama, paramb}
