@@ -27,7 +27,7 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
   dims <- list()
   
   if (nrow(nc_var) == 0) {
