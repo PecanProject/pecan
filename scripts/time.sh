@@ -11,6 +11,10 @@ if [ "$TRAVIS" == "true" ]; then
     travis_time_start "${FOLD_NAME}" "${FOLD_NAME}"
     "$@"
     travis_time_end
+elif [ -n "$GITHUB_WORKFLOW" ]; then
+    echo "::group::${FOLD_NAME}"
+    "$@"
+    echo "::endgroup::"
 else
     time "$@"
 fi
