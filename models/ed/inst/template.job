@@ -1,5 +1,9 @@
 #!/bin/bash -l
 
+# create output folder
+mkdir -p "@OUTDIR@"
+@SCRATCH_MKDIR@
+
 # redirect output
 exec 3>&1
 exec &>> "@OUTDIR@/logfile.txt"
@@ -9,10 +13,6 @@ echo "Logging on "$TIMESTAMP
 
 # host specific setup
 @HOST_SETUP@
-
-# create output folder
-mkdir -p "@OUTDIR@"
-@SCRATCH_MKDIR@
 
 # @REMOVE_HISTXML@ : tag to remove "history.xml" on remote for restarts, commented out on purpose
 
