@@ -105,9 +105,6 @@ jobs:
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
-    - name: Manually update rlang and testthat (HACK)
-      run: Rscript -e 'remotes::install_github("r-lib/testthat@v3.0.1")'
-
     # initialize database
     - name: db setup
       uses: docker://pecan/db:ci
@@ -154,9 +151,6 @@ jobs:
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-
-    - name: Manually install latest testthat (HACK)
-      run: Rscript -e 'remotes::install_github("r-lib/testthat@v3.0.1")'
 
     # run PEcAn checks
     - name: check
