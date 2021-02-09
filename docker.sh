@@ -94,6 +94,11 @@ EOF
     esac
 done
 
+# pass github workflow
+if [ -n "$GITHUB_WORKFLOW" ]; then
+    GITHUB_WORKFLOW_ARG="--build-arg GITHUB_WORKFLOW=${GITHUB_WORKFLOW}"
+fi
+
 # information for user before we build things
 echo "# ----------------------------------------------------------------------"
 echo "# Building PEcAn"
@@ -116,7 +121,7 @@ echo "# ----------------------------------------------------------------------"
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
         --pull \
-        --build-arg R_VERSION=${R_VERSION} \
+        --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
 else
@@ -143,7 +148,7 @@ for x in base web docs; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
@@ -156,7 +161,7 @@ done
 for x in models executor data thredds monitor rstudio-nginx check; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         docker/$x
 done
 
@@ -164,7 +169,7 @@ done
 for x in dbsync; do
     ${DEBUG} docker build \
         --tag pecan/shiny-$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         shiny/$x
 done
 
@@ -177,7 +182,7 @@ for version in BASGRA_N_v1.0; do
     ${DEBUG} docker build \
         --tag pecan/model-basgra-$(echo $version | tr '[A-Z]' '[a-z]'):${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/basgra
 done
 
@@ -186,7 +191,7 @@ for version in 0.95; do
     ${DEBUG} docker build \
         --tag pecan/model-biocro-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/biocro
 done
 
@@ -195,7 +200,7 @@ for version in 2.2.0; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg BINARY_VERSION="2.2" \
         models/ed
 done
@@ -205,7 +210,7 @@ for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-maespa-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/maespa
 done
 
@@ -214,7 +219,7 @@ for version in git r136; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/sipnet
 done
 
@@ -222,11 +227,11 @@ done
 # PEcAn Apps
 # --------------------------------------------------------------------------------
 
-# build API
+# build apps
 for x in api; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
