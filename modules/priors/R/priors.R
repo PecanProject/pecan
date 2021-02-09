@@ -186,6 +186,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @title Get Samples
 ##' @param prior data.frame with distn, parama, paramb
 ##' @param n number of samples to return
+##' @param p probability vector, pre-generated upstream to be used in the quantile function
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
 ##' @export
