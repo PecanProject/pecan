@@ -357,21 +357,21 @@ if [ -z "${R_LIBS_USER}" ]; then
       ;;
   esac
 fi
-echo 'if(!"devtools" %in% installed.packages()) install.packages("devtools", repos="http://cran.rstudio.com/")' | R --vanilla
-echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", configure.args=c(udunits2="--with-udunits2-include=/usr/include/udunits2"), repo="http://cran.rstudio.com")'  | R --vanilla
+echo 'if(!"devtools" %in% installed.packages()) install.packages("devtools")' | R --vanilla
+echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", configure.args=c(udunits2="--with-udunits2-include=/usr/include/udunits2"))'  | R --vanilla
 
 # packages for BrownDog shiny app
-echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet", repos="http://cran.rstudio.com/")' | R --vanilla
-echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO", repos="http://cran.rstudio.com/")' | R --vanilla
+echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet")' | R --vanilla
+echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO")' | R --vanilla
 
 # packages for other shiny apps
-echo 'if(!"DT" %in% installed.packages()) install.packages("DT", repos="http://cran.rstudio.com/")' | R --vanilla
+echo 'if(!"DT" %in% installed.packages()) install.packages("DT")' | R --vanilla
 
-#echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
-echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
+#echo 'update.packages(ask=FALSE)' | sudo R --vanilla
+echo 'x <- rownames(old.packages(); update.packages(ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
 
-#echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | R --vanilla
-echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | R --vanilla
+#echo 'update.packages(ask=FALSE)' | R --vanilla
+echo 'x <- rownames(old.packages()); update.packages(ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | R --vanilla
 
 echo "######################################################################"
 echo "ED"
@@ -479,7 +479,7 @@ echo "######################################################################"
 echo "PECAN"
 echo "######################################################################"
 
-echo 'if(!"rgl" %in% installed.packages()) install.packages("rgl", repos="http://cran.rstudio.com/")' | R --vanilla
+echo 'if(!"rgl" %in% installed.packages()) install.packages("rgl")' | R --vanilla
 
 if [ ! -e ${HOME}/pecan ]; then
   cd
@@ -622,12 +622,12 @@ echo "######################################################################"
 echo "SHINY SERVER"
 echo "######################################################################"
 if [ "${SHINY_SERVER}" != "" -a $( uname -m ) == "x86_64" ]; then
-  sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'), repos='https://cran.rstudio.com/')\""
+  sudo su - -c "R -e \"install.packages(c('rmarkdown', 'shiny'))\""
 
   R -e "install.packages(c('https://www.bioconductor.org/packages/release/bioc/src/contrib/BiocGenerics_0.28.0.tar.gz', 'http://www.bioconductor.org/packages/release/bioc/src/contrib/graph_1.60.0.tar.gz'), repos=NULL)"
   R -e "devtools::install_github('duncantl/CodeDepends')"
   #R -e "devtools::install_github('OakleyJ/SHELF')"
-  R -e "install.packages(c('shinythemes', 'shinytoastr', 'plotly'), repos='https://cran.rstudio.com/')"
+  R -e "install.packages(c('shinythemes', 'shinytoastr', 'plotly'))"
 
   cd 
 
@@ -731,8 +731,8 @@ echo "######################################################################"
 echo "PalEON"
 echo "######################################################################"
 if [ "$SETUP_PALEON" != "" ]; then
-  echo 'if(!"neotoma" %in% installed.packages()) install.packages("neotoma", repos="http://cran.rstudio.com/")' | R --vanilla
-  echo 'if(!"R2jags" %in% installed.packages()) install.packages("R2jags", repos="http://cran.rstudio.com/")' | R --vanilla
+  echo 'if(!"neotoma" %in% installed.packages()) install.packages("neotoma")' | R --vanilla
+  echo 'if(!"R2jags" %in% installed.packages()) install.packages("R2jags")' | R --vanilla
 
   if [ ! -e ${HOME}/Camp2016 ]; then
     cd
