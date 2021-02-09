@@ -25,8 +25,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - 3.6.3
-          - 4.0.2
+          - "4.0.2"
+          - "4.0.3"
 
     steps:
       - uses: actions/checkout@v2
