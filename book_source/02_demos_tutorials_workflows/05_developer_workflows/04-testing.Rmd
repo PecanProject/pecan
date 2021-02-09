@@ -130,12 +130,24 @@ All our GitHub Actions builds run in a containers using different versions of R 
 
 Each build starts by launching a separate clean virtual machine for each R version and performs roughly the following actions on all of them:
 * Compile the source code in the container
+   - Installs all the R packages that are declared as dependencies in any PEcAn package, as computed by `scripts/generate_dependencies.R`.
+   - This will also check to see if any files have been modified during this step
 * Run the tests inside the container, and checks to see if they all pass
   - This will also check to see if any files have been modified during this step
 * Run the doxygen command inside the container
   - This will also check to see if any files have been modified during this step
 * Run the check command inside the container, and checks if there are any new warnings and/or errors
+  - Runs package unit tests (the same ones you run locally with `make test` or `devtools::test(pkgname)`).  
+    - As discussed in [Unit testing](#developer-testing-unit), these tests should run quickly and test individual components in relative isolation. 
+    - Any test that calls the `skip_on_ci` function will be skipped. This is useful for tests that need to run for a very long time (e.g. large data product downloads) or require resources that aren't available on Travis (e.g. specific models), but be sure to run these tests locally before pushing your code! 
   - This will also check to see if any files have been modified during this step
+    - Any ERROR in the check output will stop the build immediately.  
+    - If there are no ERRORs, any WARNINGs or NOTEs are compared against a stored historic check result in `<package>/tests/Rcheck_reference.log`. If the package has no stored reference result, all WARNINGs and NOTEs are considered newly added and reported as build failures. 
+    - If all messages from the current built were also present in the reference result, the check passes. If any messages are newly added, a build failure is reported. 
+    - Each line of the check log is considered a separate message, and the test requires exact matching, so a change from `Undocumented arguments in documentation object 'foo': 'x'` to `Undocumented arguments in documentation object 'foo': 'x', 'y'` will be counted as a new warning... and you should fix both of them while you're at it! 
+    - The idea here is to enforce good coding practice and catch likely errors in all new code while recognizing that we have a lot of legacy code whose warnings need to be fixed as we have time rather than all at once. 
+    - As we fix historic warnings, we will revoke their grandfathered status by removing them from the stored check results, so that they will break the build if they reappear.  
+    - If your PR reports a failure in pre-existing code that you think ought to be grandfathered, please fix it as part of your PR anyway. It's frustrating to see tests complain about code you didn't touch, but the failures all need to be cleaned up eventually and it's likely easier to fix the error than to figure out how to re-ignore it.  
 * Run a simple integration test using SIPNET model
 * Create the docker images
   - Once your PR is merged, it will push them to DockerHub and github container repository.
