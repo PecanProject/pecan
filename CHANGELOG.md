@@ -87,6 +87,7 @@ This is a major change:
 
 ### Removed
 
+- Removed travis integration
 - Removed the sugarcane and db folders from web, this removes the simple DB editor in the web folder. (#2532)
 - Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
