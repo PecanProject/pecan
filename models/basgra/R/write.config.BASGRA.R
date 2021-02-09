@@ -429,6 +429,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   # overwrite initial values with previous time steps
   # as model2netcdf is developed, some or all of these can be dropped?
+  last_vals <- c()
   last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
   
   if(file.exists(last_states_file)){

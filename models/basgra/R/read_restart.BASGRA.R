@@ -16,11 +16,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   # maybe have some checks here to make sure the first run is actually ran for the period you requested
     
   # Read ensemble output
-  ens <- read.output(runid = runid, 
-                     outdir = file.path(outdir, runid), 
-                     start.year = lubridate::year(stop.time), 
-                     end.year = lubridate::year(stop.time),
-                     variables = var.names)
+  ens <- PEcAn.utils::read.output(runid = runid,
+                                  outdir = file.path(outdir, runid), 
+                                  start.year = lubridate::year(stop.time), 
+                                  end.year = lubridate::year(stop.time),
+                                  variables = var.names)
   
   last <- length(ens[[1]])
   
