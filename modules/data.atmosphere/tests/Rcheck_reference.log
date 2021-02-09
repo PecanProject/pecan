@@ -9,7 +9,7 @@
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
-Imports includes 36 non-default packages.
+Imports includes 37 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
