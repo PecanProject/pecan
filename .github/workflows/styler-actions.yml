@@ -19,7 +19,7 @@ jobs:
       - uses: r-lib/actions/setup-r@master
       - name: Install styler
         run: |
-          Rscript -e 'install.packages("styler", repos = "cloud.r-project.org")'
+          Rscript -e 'install.packages("styler")'
       - name: run styler
         shell: bash
         env:

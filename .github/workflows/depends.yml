@@ -13,20 +13,19 @@ on:
 env:
   # official supported version of R
   SUPPORTED: 4.0.2
-  MASTER_REPO: PecanProject/pecan
   DOCKERHUB_ORG: pecan
 
 jobs:
   depends:
-    if: github.repository == env.MASTER_REPO
+    if: github.repository == 'PecanProject/pecan'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - 3.6.3
-          - 4.0.2
+          - "4.0.2"
+          - "4.0.3"
 
     steps:
       - uses: actions/checkout@v2
