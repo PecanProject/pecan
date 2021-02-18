@@ -27,7 +27,7 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
   if (nrow(nc_var) == 0) {
@@ -207,21 +207,21 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
-    dplyr::filter(n == 1) %>%
+    dplyr::filter(.data$n == 1) %>%
     dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
                     .data$control, .data$greenhouse, .data$date, .data$time,
                     .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
-      statname = dplyr::if_else(length(n) == 1, "none", "SE"),
+      .data$statname = dplyr::if_else(length(n) == 1, "none", "SE"),
       stat = stats::sd(mean) / sqrt(length(n)),
-      n = length(n),
+      .data$n = length(n),
       mean = mean(mean)
     ) %>%
     dplyr::ungroup()
   ans2 <- result %>%
-    dplyr::filter(n != 1) %>%
+    dplyr::filter(.data$n != 1) %>%
     # ANS: Silence factor to character conversion warning
-    dplyr::mutate(statname = as.character(statname))
+    dplyr::mutate(.data$statname = as.character(.data$statname))
   if (nrow(ans2) > 0) {
     dplyr::bind_rows(ans1, ans2)
   } else {
