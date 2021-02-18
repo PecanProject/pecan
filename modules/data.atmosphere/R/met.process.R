@@ -201,17 +201,13 @@ met.process <- function(site, input_met, start_date, end_date, model,
       dbparms=dbparms
     )
     
-    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS_downscale", "MERRA")) {
+    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS", "MERRA")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
-    } else if (met %in% c("NOAA_GEFS")) { # Can sometimes have missing values, so the gapfilling step is required.
-      cf.id <- raw.id
-      input_met$id <-raw.id
-      stage$met2cf <- FALSE
-    }
+    } 
   }else if (stage$local){ # In parallel to download met module this needs to check if the files are already downloaded or not 
 
     db.file <- PEcAn.DB::dbfile.input.check(
