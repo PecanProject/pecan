@@ -18,6 +18,7 @@ Imports:
     ncdf4,
     PEcAn.DB,
     PEcAn.logger,
+    PEcAn.photosynthesis,
     PEcAn.remote,
     PEcAn.settings,
     PEcAn.utils,
