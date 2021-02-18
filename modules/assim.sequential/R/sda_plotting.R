@@ -88,7 +88,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
            xlab = "Year", 
            ylab = ylab.names[grep(colnames(X)[i], var.names)], 
            main = colnames(X)[i])
-      PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]),
+      ciEnvelope(as.Date(obs.times[t1:t]),
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
                  col = alphagreen)
@@ -108,11 +108,11 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
     }
     
     # forecast
-    PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
+    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
     lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
     
     # analysis
-    PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
+    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
     lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
     #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
   }
@@ -190,7 +190,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
     
     # observation / data
     if (i<=ncol(X)) { #
-      PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]), 
+     ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
                  col = alphagreen)
@@ -200,11 +200,11 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
     }
     
     # forecast
-    PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue') #alphablue
+    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue') #alphablue
     lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2) #"darkblue"
     
     # analysis
-    PEcAn.photosynthesis::ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink) #alphapink
+    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink) #alphapink
     lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
     
     legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
@@ -252,7 +252,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", 
          ylab = "Error", 
          main = paste(colnames(X)[i], " Error = Forecast - Data"))
-    PEcAn.photosynthesis::ciEnvelope(rev(t1:t), 
+    ciEnvelope(rev(t1:t), 
                rev(Xci[, 1] - unlist(Ybar[, i])), 
                rev(Xci[, 2] - unlist(Ybar[, i])),
                col = alphabrown)
@@ -271,7 +271,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
-    PEcAn.photosynthesis::ciEnvelope(rev(t1:t), 
+  ciEnvelope(rev(t1:t), 
                rev(Xbar - XaCI[, 1]), 
                rev(Xbar - XaCI[, 2]), 
                col = alphapurple)
