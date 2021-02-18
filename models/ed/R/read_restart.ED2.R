@@ -58,9 +58,9 @@ read_restart.ED2 <- function(outdir,
     if (var_name == "AGB.pft") {
       perpft <- TRUE
       forecast_tmp                        <- switch(perpft+1, sum(histout$AGB, na.rm = TRUE), histout$AGB) # kgC/m2
+      names(forecast_tmp)                 <- switch(perpft + 1, "AGB", paste0(pft_names))
       forecast[[length(forecast)+1]]      <- udunits2::ud.convert(forecast_tmp, "kg/m^2", "Mg/ha") # conv to MgC/ha 
-      names(forecast)[[length(forecast)]]   <- switch(perpft+1, "AGB", paste0("AGB.", pft_names))
-      
+      names(forecast)[length(forecast)]   <- "AGB.pft"
     }
     
     if (var_name == "TotLivBiom") {
