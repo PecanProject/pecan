@@ -7,6 +7,7 @@ Authors@R: c(person("Istem", "Fer", email = "istem.fer@fmi.fi", role = c("aut", 
 Description: This module provides functions to link the BASGRA model to PEcAn.
 Imports:
     PEcAn.logger,
+    PEcAn.data.atmosphere,
     PEcAn.utils (>= 1.4.8),
     lubridate,
     ncdf4,

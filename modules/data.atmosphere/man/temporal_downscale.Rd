@@ -2,7 +2,7 @@
 % Please edit documentation in R/GEFS_helper_functions.R
 \name{temporal_downscale}
 \alias{temporal_downscale}
-\title{Downscale NOAA GEFS frin 6hr to 1hr}
+\title{Downscale NOAA GEFS from 6hr to 1hr}
 \usage{
 temporal_downscale(input_file, output_file, overwrite = TRUE, hr = 1)
 }
@@ -19,7 +19,7 @@ temporal_downscale(input_file, output_file, overwrite = TRUE, hr = 1)
 None
 }
 \description{
-Downscale NOAA GEFS frin 6hr to 1hr
+Downscale NOAA GEFS from 6hr to 1hr
 }
 \author{
 Quinn Thomas

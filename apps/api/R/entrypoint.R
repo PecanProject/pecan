@@ -8,17 +8,18 @@ source("auth.R")
 source("general.R")
 
 # Set up the global database pool
-.bety_params <- PEcAn.DB::get_postgres_envvars(
-  host = "localhost",
-  dbname = "bety",
-  user = "bety",
-  password = "bety",
-  driver = "Postgres"
-)
-
-.bety_params$driver <- NULL
-.bety_params$drv <- RPostgres::Postgres()
-global_db_pool <- do.call(pool::dbPool, .bety_params)
+#.bety_params <- PEcAn.DB::get_postgres_envvars(
+#  host = "localhost",
+#  dbname = "bety",
+#  user = "bety",
+#  password = "bety",
+#  driver = "Postgres"
+#)
+#
+#.bety_params$driver <- NULL
+#.bety_params$drv <- RPostgres::Postgres()
+#global_db_pool <- do.call(pool::dbPool, .bety_params)
+global_db_pool <- PEcAn.DB::betyConnect()
 
 root <- plumber::Plumber$new()
 root$setSerializer(plumber::serializer_unboxed_json())

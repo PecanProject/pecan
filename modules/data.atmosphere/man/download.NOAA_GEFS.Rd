@@ -20,21 +20,23 @@ download.NOAA_GEFS(
 \arguments{
 \item{site_id}{The unique ID given to each site. This is used as part of the file name.}
 
+\item{sitename}{Site name}
+
+\item{username}{username from pecan workflow}
+
+\item{lat.in}{site latitude in decimal degrees}
+
+\item{lon.in}{site longitude in decimal degrees}
+
 \item{outfolder}{Directory where results should be written}
 
-\item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
+\item{start_date, }{Range of dates/times to be downloaded (default assumed to be time that function is run)}
+
+\item{end_date, }{end date for range of dates to be downloaded (default 16 days from start_date)}
 
 \item{downscale}{logical, assumed True. Indicated whether data should be downscaled to hourly}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
-
-\item{lat}{site latitude in decimal degrees}
-
-\item{lon}{site longitude in decimal degrees}
-
-\item{verbose}{logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.}
-
-\item{...}{Other arguments, currently ignored}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each

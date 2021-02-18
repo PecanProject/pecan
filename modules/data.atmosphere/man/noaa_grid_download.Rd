@@ -15,10 +15,22 @@ noaa_grid_download(
 )
 }
 \arguments{
-\item{output_directory}{}
+\item{lat_list}{lat for site}
+
+\item{lon_list}{long for site}
+
+\item{forecast_time}{start hour of forecast}
+
+\item{forecast_date}{date for forecast}
+
+\item{model_name_raw}{model name for directory creation}
+
+\item{output_directory}{output directory}
+
+\item{end_hr}{end hr to determine how many hours to download}
 }
 \value{
-
+NA
 }
 \description{
 Download gridded forecast in the box bounded by the latitude and longitude list

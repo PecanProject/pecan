@@ -172,8 +172,9 @@ insert.workflow <- function(workflowList, dbcon = global_db_pool){
   # NOTE: Have to "checkout" a connection from the pool here to work with
   # dbSendStatement and friends. We make sure to return the connection when the
   # function exits (successfully or not).
-  con <- pool::poolCheckout(dbcon)
-  on.exit(pool::poolReturn(con), add = TRUE)
+  #con <- pool::poolCheckout(dbcon)
+  #on.exit(pool::poolReturn(con), add = TRUE)
+  con <- dbcon
 
   insert_query <- glue::glue(
     "INSERT INTO workflows ",
@@ -260,8 +261,9 @@ insert.attribute <- function(workflowList, dbcon = global_db_pool){
   # Insert properties into attributes table
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
-  con <- pool::poolCheckout(dbcon)
-  on.exit(pool::poolReturn(con), add = TRUE)
+  # con <- pool::poolCheckout(dbcon)
+  # on.exit(pool::poolReturn(con), add = TRUE)
+  con <- dbcon
   res <- DBI::dbSendStatement(con,
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))
