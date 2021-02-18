@@ -28,6 +28,7 @@ generate_colors_sda <-function(){
 ##' @param FORECAST dataframe of state variables for each ensemble
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
+##' @import PEcAn.photosynthesis
 ##' @export
 
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
@@ -118,6 +119,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 }
 
 ##' @rdname interactive.plotting.sda
+##' @import PEcAn.photosynthesis
 ##' @export
 
 postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
@@ -214,6 +216,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 }
 
 ##' @rdname interactive.plotting.sda
+##' @import PEcAn.photosynthesis
 ##' @export
 
 postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
