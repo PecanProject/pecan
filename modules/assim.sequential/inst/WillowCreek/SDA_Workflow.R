@@ -21,7 +21,7 @@ plan(multisession)
 
 outputPath <- "/projectnb/dietzelab/kzarada/US_WCr_SDA_output/"
 nodata <- FALSE #use this to run SDA with no data
-restart <- TRUE #flag to start from previous run or not
+restart <- FALSE#flag to start from previous run or not
 days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
 setwd(outputPath)
 options(warn=-1)
@@ -88,7 +88,7 @@ if (length(all.previous.sims) > 0 & !inherits(con, "try-error")) {
     sda.start <- Sys.Date() - 9
 }
 #to manually change start date 
-#sda.start <- Sys.Date()
+sda.start <- Sys.Date() - lubridate::days(15)
 sda.end <- sda.start + lubridate::days(5)
 
 # Finding the right end and start date
@@ -286,68 +286,125 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 # Do conversions
 
 ######### Check for input files and insert paths #############
-#   con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-#   
-#   input_check <- PEcAn.DB::dbfile.input.check(
-#     siteid=settings$run$site$id %>% as.character(),
-#     startdate = settings$run$start.date %>% as.Date,
-#     enddate = settings$run$end.date %>% as.Date,
-#     parentid = NA,
-#     mimetype="application/x-netcdf",
-#     formatname="CF Meteorology",
-#     con,
-#     hostname = PEcAn.remote::fqdn(),
-#     exact.dates = TRUE,
-#     pattern = "NOAA_GEFS_downscale",
-#     return.all=TRUE
-#   ) 
-#   
-# clim_check = list() 
-# for(i in 1:length(input_check$id)){
-#   clim_check[[i]] = file.path(PEcAn.DB::dbfile.input.check(
-#   siteid=settings$run$site$id %>% as.character(),
-#   startdate = settings$run$start.date %>% as.Date,
-#   enddate = settings$run$end.date %>% as.Date,
-#   parentid = input_check$container_id[i],
-#   mimetype="text/csv",
-#   formatname="Sipnet.climna",
-#   con,
-#   hostname = PEcAn.remote::fqdn(),
-#   exact.dates = TRUE,
-#   pattern = "NOAA_GEFS_downscale",
-#   return.all=TRUE
-#   )$file_path, PEcAn.DB::dbfile.input.check(
-#     siteid=settings$run$site$id %>% as.character(),
-#     startdate = settings$run$start.date %>% as.Date,
-#     enddate = settings$run$end.date %>% as.Date,
-#     parentid = input_check$container_id[i],
-#     mimetype="text/csv",
-#     formatname="Sipnet.climna",
-#     con,
-#     hostname = PEcAn.remote::fqdn(),
-#     exact.dates = TRUE,
-#     pattern = "NOAA_GEFS_downscale",
-#     return.all=TRUE
-#   )$file_name)} 
-#   
-#   #If INPUTS already exsits, add id and met path to settings file 
-#   
-#   if(length(input_check$id) > 0){
-#     index_id = list() 
-#     index_path = list()
-#     for(i in 1:length(input_check$id)){
-#       index_id[[i]] = as.character(dbfile.id(type = "Input", 
-#                                              file = file.path(input_check$file_path, 
-#                                                               input_check$file_name)[i], con = con))#get ids as list
-#       
-#     }#end i loop for making lists 
-#     names(index_id) = sprintf("id%s",seq(1:length(input_check$id))) #rename list 
-#     names(clim_check) = sprintf("path%s",seq(1:length(input_check$id)))
-#     
-#     settings$run$inputs$met$id = index_id
-#     settings$run$inputs$met$path = clim_check
-#   }
+  con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
+#checks for .nc files for NOAA GEFS
+  input_check <- PEcAn.DB::dbfile.input.check(
+    siteid=settings$run$site$id %>% as.character(),
+    startdate = settings$run$start.date %>% as.Date,
+    enddate = settings$run$end.date %>% as.Date,
+    parentid = NA,
+    mimetype="application/x-netcdf",
+    formatname="CF Meteorology",
+    con,
+    hostname = PEcAn.remote::fqdn(),
+    exact.dates = TRUE,
+    pattern = "NOAA_GEFS",
+    return.all=TRUE
+  )
+ 
+#new NOAA GEFS files were going through gapfilled so the parent
+#files of the clim files were the CF_gapfilled nc files
+  input_check_2 <- list()
+  
+  for(i in 1:length(input_check$id)){
+  input_check_2[i] <- PEcAn.DB::dbfile.input.check(
+    siteid=settings$run$site$id %>% as.character(),
+    startdate = settings$run$start.date %>% as.Date,
+    enddate = settings$run$end.date %>% as.Date,
+    parentid = input_check$container_id[i],
+    mimetype="application/x-netcdf",
+    formatname="CF Meteorology",
+    con,
+    hostname = PEcAn.remote::fqdn(),
+    exact.dates = TRUE,
+    pattern = "NOAA_GEFS",
+    return.all=TRUE
+  )$container_id
+  }
+
+#this  if statement deals with the NOAA GEFS files that 
+#were gapfilled, and allows for us to find the clim files of the ones that weren't
+#the problem here is that when we get GEFS nc files -> clim files, 
+#the GEFS nc files are the parent ids for finding the clim files 
+#but with GEFS nc -> gapfilled nc -> clim, the gapfilled files are the parent ids for the clim files 
+if(length(input_check_2)>1){
+input_check_2 = unlist(input_check_2)
+
+clim_check = list()
+for(i in 1:length(input_check$id)){
+  clim_check[[i]] = file.path(PEcAn.DB::dbfile.input.check(
+  siteid=settings$run$site$id %>% as.character(),
+  startdate = settings$run$start.date %>% as.Date,
+  enddate = settings$run$end.date %>% as.Date,
+  parentid = input_check_2[i],
+  mimetype="text/csv",
+  formatname="Sipnet.climna",
+  con,
+  hostname = PEcAn.remote::fqdn(),
+  exact.dates = TRUE,
+  pattern = "NOAA_GEFS",
+  return.all=TRUE
+  )$file_path, PEcAn.DB::dbfile.input.check(
+    siteid=settings$run$site$id %>% as.character(),
+    startdate = settings$run$start.date %>% as.Date,
+    enddate = settings$run$end.date %>% as.Date,
+    parentid = input_check_2[i],
+    mimetype="text/csv",
+    formatname="Sipnet.climna",
+    con,
+    hostname = PEcAn.remote::fqdn(),
+    exact.dates = TRUE,
+    pattern = "NOAA_GEFS",
+    return.all=TRUE
+  )$file_name)}}else{
+    for(i in 1:length(input_check$id)){
+      clim_check[[i]] = file.path(PEcAn.DB::dbfile.input.check(
+        siteid=settings$run$site$id %>% as.character(),
+        startdate = settings$run$start.date %>% as.Date,
+        enddate = settings$run$end.date %>% as.Date,
+        parentid = input_check$container_id[i],
+        mimetype="text/csv",
+        formatname="Sipnet.climna",
+        con,
+        hostname = PEcAn.remote::fqdn(),
+        exact.dates = TRUE,
+        pattern = "NOAA_GEFS",
+        return.all=TRUE
+      )$file_path, PEcAn.DB::dbfile.input.check(
+        siteid=settings$run$site$id %>% as.character(),
+        startdate = settings$run$start.date %>% as.Date,
+        enddate = settings$run$end.date %>% as.Date,
+        parentid = input_check$container_id[i],
+        mimetype="text/csv",
+        formatname="Sipnet.climna",
+        con,
+        hostname = PEcAn.remote::fqdn(),
+        exact.dates = TRUE,
+        pattern = "NOAA_GEFS",
+        return.all=TRUE
+      )$file_name)}
+  }#end if/else look for making clim file paths 
+
+  #If INPUTS already exists, add id and met path to settings file
+
+  if(length(input_check$id) > 0){
+    index_id = list()
+    index_path = list()
+    for(i in 1:length(input_check$id)){
+      index_id[[i]] = as.character(dbfile.id(type = "Input",
+                                             file = file.path(input_check$file_path,
+                                                              input_check$file_name)[i], con = con))#get ids as list
+
+    }#end i loop for making lists
+    names(index_id) = sprintf("id%s",seq(1:length(input_check$id))) #rename list
+    names(clim_check) = sprintf("path%s",seq(1:length(input_check$id)))
+
+    settings$run$inputs$met$id = index_id
+    settings$run$inputs$met$path = clim_check
+  }
+
+#still want to run this to get the IC files 
 settings <- PEcAn.workflow::do_conversions(settings)          #end if loop for existing inputs  
 
  # if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
