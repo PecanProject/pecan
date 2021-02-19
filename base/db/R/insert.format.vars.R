@@ -48,7 +48,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
   }
 
   # Test if format name already exists
-  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(.data$id, .data$name) %>% dplyr::filter(.data$name %in% !!format_name) %>% .data$collect()
+  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(.data$id, .data$name) %>% dplyr::filter(.data$name %in% !!format_name) %>% dplyr::collect()
   name_test_df <- as.data.frame(name_test)
   if(!is.null(name_test_df[1,1])){
     PEcAn.logger::logger.error(
