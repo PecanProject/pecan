@@ -35,6 +35,7 @@ Imports:
 Suggests:
     PEcAn.data.land,
     testthat (>= 2.0.0)
+    bd
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
