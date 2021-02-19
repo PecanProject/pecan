@@ -8,11 +8,13 @@ run_BASGRA(
   run_met,
   run_params,
   site_harvest,
+  site_fertilize,
   start_date,
   end_date,
   outdir,
   sitelat,
-  sitelon
+  sitelon,
+  co2_file = NULL
 )
 }
 \arguments{
@@ -21,6 +23,8 @@ run_BASGRA(
 \item{run_params}{parameter vector}
 
 \item{site_harvest}{path to harvest file}
+
+\item{site_fertilize}{path to fertilizer application file}
 
 \item{start_date}{start time of the simulation}
 
@@ -31,6 +35,8 @@ run_BASGRA(
 \item{sitelat}{latitude of the site}
 
 \item{sitelon}{longitude of the site}
+
+\item{co2_file}{path to daily atmospheric CO2 concentration file, optional, defaults to 350 ppm when missing}
 }
 \description{
 BASGRA wrapper function. Runs and writes model outputs in PEcAn standard.

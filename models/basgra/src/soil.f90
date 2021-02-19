@@ -109,11 +109,11 @@ end Subroutine O2fluxes
 
 Subroutine N_fert(year,doy,DAYS_FERT,NFERTV, Nfert)
   integer                  :: year,doy,i
-  integer,dimension(100,2) :: DAYS_FERT
-  real   ,dimension(100  ) :: NFERTV
+  integer,dimension(300,2) :: DAYS_FERT
+  real   ,dimension(300  ) :: NFERTV
   real                     :: Nfert
   Nfert   = 0
-  do i=1,100    
+  do i=1,300    
     if ( (year==DAYS_FERT (i,1)) .and. (doy==DAYS_FERT (i,2)) ) then
       Nfert   = NFERTV (i)
 	end if
@@ -122,15 +122,15 @@ end Subroutine N_fert
 
 Subroutine N_dep(year,doy,DAYS_NDEP,NDEPV, Ndep)
   integer                  :: year,doy,j
-  integer,dimension(100,2) :: DAYS_NDEP
-  real   ,dimension(100  ) :: NDEPV
+  integer,dimension(300,2) :: DAYS_NDEP
+  real   ,dimension(300  ) :: NDEPV
   integer                  :: idep
   real                     :: NDEPV_interval,t
-  real   ,dimension(100)   :: tNdep
+  real   ,dimension(300)   :: tNdep
   real                     :: Ndep
   t     = year           + (doy           -0.5)/366
   tNdep = DAYS_NDEP(:,1) + (DAYS_NDEP(:,2)-0.5)/366
-  do j = 2,100
+  do j = 2,300
    if ( (tNdep(j-1)<t) .and. (tNdep(j)>=t) ) idep = j-1
   end do
   NDEPV_interval = NDEPV(idep+1) - NDEPV(idep)
