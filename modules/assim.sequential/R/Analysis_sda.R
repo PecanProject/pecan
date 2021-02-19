@@ -237,7 +237,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
       
       #restarting at good initial conditions is somewhat important here
-      Cmodel_tobit2space <- compileNimble(tobit2space_pred, showCompilerOutput = TRUE)
+      Cmodel_tobit2space <- compileNimble(tobit2space_pred)
       Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
       
       for(i in seq_along(X)) {
@@ -246,18 +246,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
         ## indicator variable is set to 0, which specifies *not* to sample
         valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
       }
-      
-      # utils::globalVariables(c(
-      #    'constants.tobit2space',
-      #   'data.tobit2space',
-      #    'inits.tobit2space',
-      #    'tobit2space_pred',
-      #    'conf_tobit2space',
-      #    'samplerNumberOffset_tobit2space',
-      #    'Rmcmc_tobit2space',
-      #    'Cmodel_tobit2space',
-      #    'Cmcmc_tobit2space'
-      #  ))
       
     }else{
       

@@ -125,7 +125,6 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   #Defining some colors
   generate_colors_sda()
   t1 <- 1
-  #ylab.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "unit")
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
@@ -143,8 +142,9 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
     if (is.na(x)) {
       rep(NA, length(names.y))
-    }else{
-    sqrt(diag(x))}
+    } else {
+    sqrt(diag(x))
+    }
   })))
   
   Ybar[is.na(Ybar)]<-0

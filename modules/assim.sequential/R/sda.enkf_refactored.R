@@ -292,11 +292,12 @@ sda.enkf <- function(settings,
       #---------------- setting up the restart argument
       
       if(exists('new.state')){ #Has the analysis been run? Yes, then restart from analysis.
-       
-        if(t == 2){start.time = lubridate::ymd_hms(settings$run$start.date, truncated = 3)}else
-          if(t != 2){start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3)}
-
-        
+          
+        if (t == 2) {
+            start.time = lubridate::ymd_hms(settings$run$start.date, truncated = 3)
+          } else {
+            start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3)
+          }
          restart.arg<-list(runid = run.id, 
                           start.time = start.time,
                           stop.time = lubridate::ymd_hms(obs.times[t], truncated = 3), 
@@ -311,9 +312,11 @@ sda.enkf <- function(settings,
       }
       
        if(t == 1){
-       config.settings = settings 
-       config.settings$run$end.date = format(lubridate::ymd_hms(obs.times[t], truncated = 3), "%Y/%m/%d")} 
-       if(t != 1){config.settings = settings}
+          config.settings = settings 
+          config.settings$run$end.date = format(lubridate::ymd_hms(obs.times[t], truncated = 3), "%Y/%m/%d")
+          } else {
+          config.settings = settings
+          }
        
       
       
@@ -452,9 +455,11 @@ sda.enkf <- function(settings,
       }
       
       
-      
-      if(is.null(outconfig$samples$met$ids)){wts <- unlist(weight_list[[t]])}else{
-        wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])}
+      if (is.null(outconfig$samples$met$ids)) {
+        wts <- unlist(weight_list[[t]])
+      } else {
+        wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
+      }
       
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
