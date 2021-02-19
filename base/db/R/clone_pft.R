@@ -45,7 +45,7 @@ clone_pft <- function(parent.pft.name,
   new.pft <- (parent.pft
     %>% dplyr::select(-.data$id, -.data$created_at, -.data$updated_at)
     %>% dplyr::mutate(
-      .data$name = !!new.pft.name,
+      name = !!new.pft.name,
       definition = !!new.pft.definition,
       parent_id = !!parent.pft$id))
 
@@ -73,7 +73,7 @@ clone_pft <- function(parent.pft.name,
   }
   new_members <- (dplyr::tbl(con, member_tbl)
     %>% dplyr::filter(.data$pft_id == !!parent.pft$id)
-    %>% dplyr::mutate(.data$pft_id = !!new.pft$id)
+    %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 
@@ -88,7 +88,7 @@ clone_pft <- function(parent.pft.name,
 
   new_priors <- (dplyr::tbl(con, "pfts_priors")
     %>% dplyr::filter(.data$pft_id == !!parent.pft$id)
-    %>% dplyr::mutate(.data$pft_id = !!new.pft$id)
+    %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
 
