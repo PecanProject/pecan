@@ -40,7 +40,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     fcn <- match.fun(fcn1)
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
-  } else if (!exists(fcn1) & !exists(fcn2) & require(bd)) { 
+  } else if (!exists(fcn1) & !exists(fcn2) & requireNamespace(bd, quietly = TRUE)) { 
     #To Do: call to DAP to see if conversion to csv is possible
     #Brown Dog API call through BDFiddle, requires username and password
     key   <- BrownDog::get_key("https://bd-api.ncsa.illinois.edu",username,password)
