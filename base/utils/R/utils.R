@@ -212,7 +212,7 @@ summarize.result <- function(result) {
                     .data$control, .data$greenhouse, .data$date, .data$time,
                     .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
-      .data$statname = dplyr::if_else(length(n) == 1, "none", "SE"),
+    statname = dplyr::if_else(length(.data$n) == 1, "none", "SE"),
       stat = stats::sd(mean) / sqrt(length(n)),
       .data$n = length(n),
       mean = mean(mean)
