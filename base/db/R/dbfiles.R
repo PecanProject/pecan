@@ -751,8 +751,8 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
   #get matching dbfiles from BETY
   dbfile.path = dirname(full.old.file)
   dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
-    dplyr::filter(file_name %in% basename(full.old.file)) %>%
-    dplyr::filter(file_path %in% dbfile.path)
+    dplyr::filter(.data$file_name %in% basename(full.old.file)) %>%
+    dplyr::filter(.data$file_path %in% dbfile.path)
 
 
   #if there are matching db files
@@ -813,8 +813,8 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
     #Error check again to make sure there aren't any matching dbfiles
     dbfile.path = dirname(full.old.file)
     dbfiles <- dplyr::tbl(con, "dbfiles") %>% dplyr::collect() %>%
-      dplyr::filter(file_name %in% basename(full.old.file)) %>%
-      dplyr::filter(file_path %in% dbfile.path)
+      dplyr::filter(.data$file_name %in% basename(full.old.file)) %>%
+      dplyr::filter(.data$file_path %in% dbfile.path)
 
     if(dim(dbfiles)[1] > 0){
       PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling link or registration")
