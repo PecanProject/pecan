@@ -47,8 +47,8 @@ query.traits <- function(ids, priors, con,
              %>% dplyr::inner_join(dplyr::tbl(con, "variables"), by = c("variable_id" = "id"))
              %>% dplyr::filter(
                (!!id_type %in% ids),
-               (.data$name %in% !!priors)) # TODO: use .data$name when filter supports it
-             %>% dplyr::distinct(.data$name) # TODO: use .data$name when distinct supports it
+               (.data$name %in% !!priors)) 
+             %>% dplyr::distinct(.data$name) 
              %>% dplyr::collect())
 
   if (nrow(traits) == 0) {
