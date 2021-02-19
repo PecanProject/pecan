@@ -31,6 +31,7 @@ jobs:
       matrix:
         R:
           - "4.0.2"
+          - "4.0.3"
 
     env:
       NCPUS: 2
@@ -76,6 +77,7 @@ jobs:
       matrix:
         R:
           - "4.0.2"
+          - "4.0.3"
 
     services:
       postgres:
@@ -128,6 +130,7 @@ jobs:
       matrix:
         R:
           - "4.0.2"
+          - "4.0.3"
 
     env:
       NCPUS: 2
@@ -173,6 +176,7 @@ jobs:
       matrix:
         R:
           - "4.0.2"
+          - "4.0.3"
 
     services:
       postgres:

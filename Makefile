@@ -81,7 +81,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 include Makefile.depends
 
-#SETROPTIONS = "options(Ncpus = ${NCPUS}, repos = 'https://cran.rstudio.com')"
 SETROPTIONS = "options(Ncpus = ${NCPUS})"
 
 clean:
@@ -90,39 +89,39 @@ clean:
 	find models/basgra/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
+	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
 	echo `date` > $@
 
 .install/roxygen2: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2')"
+	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2')"
 	echo `date` > $@
 
 .install/testthat: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat')"
+	+ ./scripts/time.sh "testthat ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('testthat', quietly = TRUE)) install.packages('testthat')"
 	echo `date` > $@
 
 .install/mockery: | .install
-	+ ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery')"
+	+ ./scripts/time.sh "mockery ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery')"
 	echo `date` > $@
 
 # HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
 # When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} \
+depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
 	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
 	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
-install_R_pkg = ./scripts/time.sh "${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
-check_R_pkg = ./scripts/time.sh "${1}" Rscript scripts/check_with_errors.R $(strip $(1))
+install_R_pkg = ./scripts/time.sh "install ${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
+check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 
 # Would use devtools::test(), but devtools 2.2.1 hardcodes stop_on_failure=FALSE
 # To work around this, we reimplement about half of test() here :(
-test_R_pkg = ./scripts/time.sh "${1}" Rscript \
+test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "if (length(list.files('$(strip $(1))/tests/testthat', 'test.*.[rR]')) == 0) {" \
 	-e		"print('No tests found'); quit('no') }" \
 	-e "env <- devtools::load_all('$(strip $(1))', quiet = TRUE)[['env']]" \
 	-e "testthat::test_dir('$(strip $(1))/tests/testthat', env = env," \
 	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
-doc_R_pkg = ./scripts/time.sh "${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
+doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
 

@@ -19,7 +19,7 @@ Contains
 Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
                              GSTUB,HARVLA,HARVLV,HARVPH,HARVRE,HARVST,HARVTILG2)
   integer :: doy,year
-  integer,dimension(100,2) :: DAYS_HARVEST
+  integer,dimension(300,2) :: DAYS_HARVEST
   real    :: CLV, CRES, CST, LAI, PHEN, TILG1, TILG2, TILV
   real    :: GSTUB, HARVLV, HARVLA, HARVRE, HARVTILG2, HARVST, HARVPH
   real    :: CLAI, HARVFR, TV1
@@ -27,7 +27,7 @@ Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV,
  
   HARV   = 0
   NOHARV = 1
-  do i=1,100    
+  do i=1,300    
     if ( (year==DAYS_HARVEST(i,1)) .and. (doy==DAYS_HARVEST(i,2)) ) then
       HARV   = 1
       NOHARV = 0	
