@@ -83,11 +83,11 @@ query.pft_cultivars <- function(pft, modeltype = NULL, con) {
       suffix = c("", ".cvpft"))
     %>% dplyr::inner_join(
       dplyr::tbl(con, "cultivars"),
-      by = c(".data$cultivar_id" = "id"),
+      by = c("cultivar_id" = "id"),
       suffix = c("", ".cv"))
     %>% dplyr::inner_join(
-      dplyr::tbl(con, ".data$species"),
-      by=c(".data$specie_id" = "id"),
+      dplyr::tbl(con, "species"),
+      by=c("specie_id" = "id"),
       suffix=c("", ".sp"))
     %>% dplyr::select(
       id = .data$cultivar_id,
