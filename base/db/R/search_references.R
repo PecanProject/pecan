@@ -32,7 +32,7 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
     return(tibble::tibble(query = query))
   }
   crdata <- crsearch[["data"]] %>%
-    dplyr::mutate(.data$score = as.numeric(.data$score)) %>%
+    dplyr::mutate(score = as.numeric(.data$score)) %>%
     dplyr::filter(.data$score > !!min_score)
   if (nrow(crdata) < 1) {
     PEcAn.logger::logger.info(
@@ -54,12 +54,12 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
   proc_search <- crdata %>%
     dplyr::mutate(
       # Get the first author only -- this is the BETY format
-      .data$author_family = purrr::map(.data$author, list("family", 1)),
-      .data$author_given = purrr::map(.data$author, list("given", 1)),
-      .data$author = paste(.data$author_family, .data$author_given, sep = ", "),
+    author_family = purrr::map(.data$author, list("family", 1)),
+    author_given = purrr::map(.data$author, list("given", 1)),
+    author = paste(.data$author_family, .data$author_given, sep = ", "),
       year = gsub("([[:digit:]]{4}).*", "\\1", .data$issued) %>% as.numeric(),
       query = query,
-      .data$score = as.numeric(.data$score)
+     score = as.numeric(.data$score)
     )
   use_cols <- keep_cols[keep_cols %in% colnames(proc_search)]
   dplyr::select(proc_search, !!!use_cols)
