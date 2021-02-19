@@ -170,8 +170,8 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           PEcAn.logger::logger.debug("Checking if priors have changed")
           existing_prior <- PEcAn.utils::load_local(need_paths[["priors"]])[["prior.distns"]]
           diff_prior <- symmetric_setdiff(
-            dplyr::as_tibble(prior.distns, rownames = ".data$trait"),
-            dplyr::as_tibble(existing_prior, rownames = ".data$trait")
+            dplyr::as_tibble(prior.distns, rownames = "trait"),
+            dplyr::as_tibble(existing_prior, rownames = "trait")
           )
           if (nrow(diff_prior) > 0) {
             PEcAn.logger::logger.error(
@@ -197,9 +197,9 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           } else if (length(trait.data.check) == 0) {
             PEcAn.logger::logger.warn("New and existing trait data are both empty. Skipping this check.")
           } else {
-            current_traits <- dplyr::bind_rows(trait.data.check, .id = ".data$trait") %>%
+            current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
               dplyr::select(-mean, -.data$stat)
-            existing_traits <- dplyr::bind_rows(existing_trait_data, .id = ".data$trait") %>%
+            existing_traits <- dplyr::bind_rows(existing_trait_data, .id = "trait") %>%
               dplyr::select(-mean, -.data$stat)
             diff_traits <- symmetric_setdiff(current_traits, existing_traits)
             if (nrow(diff_traits) > 0) {
@@ -274,7 +274,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
 
   if (length(trait.data) > 0) {
     trait_counts <- trait.data %>%
-      dplyr::bind_rows(.id = ".data$trait") %>%
+      dplyr::bind_rows(.id = "trait") %>%
       dplyr::count(.data$trait)
 
     PEcAn.logger::logger.info(
