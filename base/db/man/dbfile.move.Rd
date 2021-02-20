@@ -21,16 +21,16 @@ dbfile.move(old.dir, new.dir, file.type, siteid = NULL, register = FALSE)
 print statement of how many files were moved, registered, or have symbolic links
 }
 \description{
-This function will move dbfiles - clim or nc -  from one location 
+This function will move dbfiles - clim or nc -  from one location
 to another on the same machine and update BETY
 }
 \examples{
 \dontrun{
   dbfile.move(
-  old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676", 
+  old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676",
   new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
-  file.type= clim, 
-  siteid = 676, 
+  file.type= clim,
+  siteid = 676,
   register = TRUE
   )
 }
