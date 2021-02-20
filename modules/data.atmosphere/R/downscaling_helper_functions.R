@@ -80,7 +80,7 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
   }
 
   ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::.data$hour(.data$time)) %>%
+    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
     dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
     dplyr::mutate(rpot = downscale_solar_geom(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by(.data$group_6hr) %>%
