@@ -269,7 +269,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
           url,
           robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
-          .data$flx = FALSE,
+          flx = FALSE,
           pb = pb
         )
       )
