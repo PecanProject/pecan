@@ -43,7 +43,7 @@ download.NARR_site <- function(outfolder,
   date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   narr_byyear <- narr_data %>%
-    dplyr::mutate(year = lubridate::.data$year(datetime)) %>%
+    dplyr::mutate(year = lubridate::year(datetime)) %>%
     dplyr::group_by(.data$year) %>%
     tidyr::nest()
 
@@ -73,7 +73,7 @@ download.NARR_site <- function(outfolder,
 
   narr_proc <- result_full %>%
     dplyr::mutate(
-      data_nc = purrr::map2(.data$data, file, prepare_narr_year, lat = lat, lon = lon)
+      data_nc = purrr::map2(.data$data, .data$file, prepare_narr_year, lat = lat, lon = lon)
     )
 
   results <- dplyr::select(result_full, -.data$data)
@@ -225,7 +225,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     PEcAn.logger::logger.info("Downloading in parallel")
     flx_df$flx <- TRUE
     sfc_df$flx <- FALSE
-    get_dfs <- dplyr::bind_rows(.data$flx_df, sfc_df)
+    get_dfs <- dplyr::bind_rows(flx_df, sfc_df)
     cl <- parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl)
     get_dfs$data <- foreach::`%dopar%`(
@@ -296,7 +296,7 @@ post_process <- function(dat) {
   dat %>%
     tidyr::unnest(data) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(datetime = .data$startdate + lubridate::.data$dhours(.data$dhours)) %>%
+    dplyr::mutate(datetime = .data$startdate + lubridate::dhours(.data$dhours)) %>%
     dplyr::select(-.data$startdate, -.data$dhours) %>%
     dplyr::select(datetime, dplyr::everything()) %>%
     dplyr::select(-url, url)
@@ -322,13 +322,13 @@ generate_narr_url <- function(dates, flx) {
   )
   tibble::tibble(date = dates) %>%
     dplyr::mutate(
-      year = lubridate::.data$year(date),
-     month = lubridate::.data$month(date),
-      daygroup = daygroup(date, .data$flx)
+      year = lubridate::year(.data$date),
+     month = lubridate::month(.data$date),
+      daygroup = daygroup(.data$date, .data$flx)
     ) %>%
-    dplyr::group_by(.data$year, .data$month, daygroup) %>%
+    dplyr::group_by(.data$year, .data$month, .data$daygroup) %>%
     dplyr::summarize(
-      startdate = min(date),
+      startdate = min(.data$date),
       url = sprintf(
         "%s/%d/NARR%s_%d%02d_%s.tar",
         base_url,
@@ -336,11 +336,11 @@ generate_narr_url <- function(dates, flx) {
         tag,
         unique(.data$year),
         unique(.data$month),
-        unique(daygroup)
+        unique(.data$daygroup)
       )
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(.data$startdate, url)
+    dplyr::select(.data$startdate, .data$url)
 }
 
 #' Assign daygroup tag for a given date
@@ -382,12 +382,12 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   if (dhours[1] == 3) dhours <- dhours - 3
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
-    narr_vars %>% dplyr::select(variable = .data$NARR_name, unit = units),
+    narr_vars %>% dplyr::select(variable = .data$NARR_name, unit = .data$units),
     read_narr_var,
     nc = nc, xy = xy, flx = flx, pb = pb
   )
   names(result) <- narr_vars$CF_name
-  dplyr::bind_cols(dhours = .data$dhours, result)
+  dplyr::bind_cols(dhours = dhours, result)
 }
 
 #' Read a specific variable from a NARR NetCDF file
