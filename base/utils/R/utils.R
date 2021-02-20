@@ -27,7 +27,7 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+ nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
   if (nrow(nc_var) == 0) {
@@ -213,7 +213,7 @@ summarize.result <- function(result) {
                     .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(.data$n) == 1, "none", "SE"),
-      stat = stats::.data$sd(.data$mean) / sqrt(length(.data$n)),
+      stat = stats::sd(.data$mean) / sqrt(length(.data$n)),
       n = length(.data$n),
       mean = mean(mean)
     ) %>%
