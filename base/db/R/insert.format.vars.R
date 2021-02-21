@@ -124,7 +124,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     ###  udunit tests ###
     for(i in 1:nrow(formats_variables)){
       u1 <- formats_variables[1,"unit"]
-      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id, units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(units)
+      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id, units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
 
       if(!udunits2::ud.is.parseable(u1)){
         PEcAn.logger::logger.error(
