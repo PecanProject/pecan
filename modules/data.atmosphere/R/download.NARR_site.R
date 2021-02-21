@@ -323,7 +323,7 @@ generate_narr_url <- function(dates, flx) {
   tibble::tibble(date = dates) %>%
     dplyr::mutate(
       year = lubridate::year(.data$date),
-     month = lubridate::month(.data$date),
+      month = lubridate::month(.data$date),
       daygroup = daygroup(.data$date, .data$flx)
     ) %>%
     dplyr::group_by(.data$year, .data$month, .data$daygroup) %>%
