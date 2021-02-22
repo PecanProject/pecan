@@ -158,7 +158,11 @@ jobs:
     # HACK: Temporary fix for GH actions issue that coda and mvtnorm installed via R4.0.3
     - name: Install coda and mvtnorm from source
       run: |
-        Rscript -e 'remotes::install_github("cran/coda")' -e 'remotes::install_github("cran/mvtnorm")' -e 'remotes::install_github("cran/XML")'
+        Rscript \
+          -e 'remotes::install_github("cran/coda")' \
+          -e 'remotes::install_github("cran/mvtnorm")' \
+          -e 'remotes::install_github("cran/XML")' \
+          -e 'remotes::install_github("cran/rjags")'
 
     # run PEcAn checks
     - name: check
