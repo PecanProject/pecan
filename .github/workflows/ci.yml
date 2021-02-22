@@ -155,14 +155,16 @@ jobs:
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
-    # HACK: Temporary fix for GH actions issue that coda and mvtnorm installed via R4.0.3
-    - name: Install coda and mvtnorm from source
+    # HACK: Temporary fix for GH actions issue that some packages are installed via R4.0.3
+    - name: Re-install problematic packages from source
       run: |
         Rscript \
           -e 'remotes::install_github("cran/coda")' \
           -e 'remotes::install_github("cran/mvtnorm")' \
           -e 'remotes::install_github("cran/XML")' \
-          -e 'remotes::install_github("cran/rjags")'
+          -e 'remotes::install_github("cran/rjags")' \
+          -e 'remotes::install_github("cran/ggmap")' \
+          -e 'remotes::install_github("cran/gridExtra")'
 
     # run PEcAn checks
     - name: check
