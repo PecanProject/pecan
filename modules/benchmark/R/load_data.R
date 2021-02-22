@@ -31,7 +31,6 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
   }
   
- 
   # Determine the function that should be used to load the data
   mimetype <- gsub("-", "_", format$mimetype)
   fcn1 <- paste0("load_", format$file_name)
@@ -141,4 +140,3 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   return(out)
 } # load_data
-
