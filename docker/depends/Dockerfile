@@ -42,5 +42,14 @@ COPY pecan.depends.R /
 RUN  Rscript -e "install.packages(c('devtools'))" \
   && Rscript -e "devtools::install_version('roxygen2', '7.0.2')" \
   && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
+# These 6 packages are not cached correctly for some reason, so we need to
+# install them from source by hand.
+  && Rscript \
+    -e 'remotes::install_github("cran/coda")' \
+    -e 'remotes::install_github("cran/mvtnorm")' \
+    -e 'remotes::install_github("cran/XML")' \
+    -e 'remotes::install_github("cran/rjags")' \
+    -e 'remotes::install_github("cran/ggmap")' \
+    -e 'remotes::install_github("cran/gridExtra")' \
   && rm -rf /tmp/*
 
