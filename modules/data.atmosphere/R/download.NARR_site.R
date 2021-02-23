@@ -1,4 +1,4 @@
-#' Download NARR time series for a single site
+=#' Download NARR time series for a single site
 #'
 #' @param outfolder Target directory for storing output
 #' @param start_date Start date for met data
@@ -86,7 +86,7 @@ download.NARR_site <- function(outfolder,
 #' @param file Full path to target file
 #' @param lat_nc `ncdim` object for latitude
 #' @param lon_nc `ncdim` object for longitude
-#' @param verbose
+#' @param verbose logical: ask`ncdf4` functions to be very chatty while they work?
 #' @return List of NetCDF variables in data. Creates NetCDF file containing
 #' data as a side effect
 prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
@@ -294,7 +294,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
 #' @param dat Nested `tibble` from mapped call to [get_narr_url]
 post_process <- function(dat) {
   dat %>%
-    tidyr::unnest(data) %>%
+    tidyr::unnest(.data$data) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(datetime = .data$startdate + lubridate::dhours(.data$dhours)) %>%
     dplyr::select(-.data$startdate, -.data$dhours) %>%
