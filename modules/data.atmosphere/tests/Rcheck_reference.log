@@ -417,9 +417,6 @@ Argument items with no description in Rd object 'met.process.stage':
 Argument items with no description in Rd object 'met_temporal_downscale.Gaussian_ensemble':
   ‘in.path’ ‘in.prefix’
 
-Argument items with no description in Rd object 'prepare_narr_year':
-  ‘verbose’
-
 Argument items with no description in Rd object 'split_wind':
   ‘start_date’ ‘end_date’
 
