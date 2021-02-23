@@ -49,8 +49,40 @@ library(tidync)
 # 1. Read in the lat long data we need to extract climate data over
 #------------------------------------------------------------------
 
+AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+
+### merge together three diameter columns
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$DIA), AZ.PIPO$DBH, AZ.PIPO$DIA) # replace missing data with DBH recorded from core mounts (DBH)
+
+### filter out those cases where DIA is NA...no size information
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$DIA),] # 793 trees
+### filter out cases where covariate data are missing (SICOND and SDI)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$COND_SICOND),] # 643 trees...~150 missing SICOND. Justin suggests they may be PJ (will never have SICOND)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
+
+### problem: in minority of cases, the difference between MEASYEAR and DateEnd is other than 0 or 1
+### filter out those cases
+temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
+temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
+
+
+
+
+# we want to format the rest of the data like we have temp2
+
+
+### read in function that creates jags objects from above data
+source("modules/data.land/R/BuildJAGSdataobject.R")
+pipo.cores.ll <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966, forecast = TRUE, standardize.cov = FALSE)
+data <- pipo.cores.ll$data
+z0 <- pipo.cores.ll$z0
+cov.data <-pipo.cores.ll$cov.data
+time_data <- pipo.cores.ll$time_data
+
+
 # read in the data set that has the lat long of the plots/cores we want to extract projections from
-pipo.cores.ll <- readRDS("jags.new.data.basic.rds") # read in my list with covariate data
+#pipo.cores.ll <- readRDS("jags.new.data.basic.rds") # read in my list with covariate data
 cov.data.ll <- pipo.cores.ll$cov.data # the covariate data with lat long 
 
 coordinates(cov.data.ll) <- ~  LON + LAT
@@ -118,9 +150,16 @@ extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){
       }
         
         rast.stack <- stack(rlist)
-        #plot(rast.stack[[9]]) # can plot for sanity
+        #plot(rast.stack[[10]]) # can plot for sanity
         #plot(cov.data.ll, add = TRUE)
+        #States <- raster::getData("GADM", country = "United States", level = 1)
+       
         
+        # make NH polygon
+        #NH <- States[States$NAME_1 == "Arizona",]
+        
+        # plot a single polygon
+        #plot(NH, add = TRUE)
         #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") ) # dont recommend trying to change projections of the rasters, it will take much much longer to run this
        
          extracted.pts <- data.frame(raster::extract(rast.stack, cov.data.ll))
@@ -130,12 +169,12 @@ extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){
          
          colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(2018:2099, each = 12), "_", rep(1:12, 82) ) # note may need to change this to make more customizable
          extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
-         extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
+         extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value) # set NA values
          ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
          # I use yearly ppt, but we could make a different summary of interest here
           yearly.ppt <- ext.sep %>% dplyr::group_by(lat, lon, climate, year) %>% dplyr::summarise(year.ppt = sum(value)) 
         yearly.ppt
-
+ #ggplot(yearly.ppt, aes(x = year, y = year.ppt))+geom_point() 
   
 }
 
@@ -200,8 +239,8 @@ extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){
   }
   
   rast.stack <- stack(rlist)
-  #plot(rast.stack[[9]])
-  #plot(cov.data.ll, add = TRUE)
+  plot(rast.stack[[9]])
+  plot(cov.data.ll, add = TRUE)
   
   #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") )
   # extracted.pts <- list()
@@ -220,7 +259,8 @@ extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){
     dplyr::summarise(tmax.fall.spr = mean((value), na.rm = TRUE)) # some of the models project tmemparatures will be ~200 deg Farenheight ???
   yearly.tmax
   
-  
+  #hist(yearly.tmax$tmax.fall.spr)
+  #ggplot(yearly.tmax, aes(x = as.numeric(year), y = tmax.fall.spr ))+geom_point()+stat_smooth()
 }
 
 # open all the ncs 
@@ -234,17 +274,31 @@ system.time(
   }
 )
 
-# convert to df
-all.tmax.df <- do.call(rbind, all.future.tmax)
-all.ppt.df <- do.call(rbind, all.future.ppt)
-
+# get the projection names
 # because the projection labels were not working for this, I need to read in a text file with all the projection names:
 proj <- read.delim("hydro5/Projections5.txt", header = FALSE)
 #proj.tas <- read.delim("bcsd5/Projections5.txt", header = FALSE)
 
 #add the projection names to the tmax and ppt data frames
-all.tmax.df$proj <- rep(proj$V1, sapply(all.future.tmax , nrow))
-all.ppt.df$proj <- rep(proj$V1, sapply(all.future.ppt , nrow))
+
+for( i in seq_along(all.future.ppt)){
+  
+  all.future.tmax[[i]]$proj <- rep(proj[i,], nrow(all.future.tmax[[i]]))
+  
+}
+
+for( i in seq_along(all.future.ppt)){
+  
+  all.future.ppt[[i]]$proj <- rep(proj[i,], nrow(all.future.ppt[[i]]))
+  
+}
+# convert to df
+all.tmax.df <- do.call(rbind, all.future.tmax)
+all.ppt.df <- do.call(rbind, all.future.ppt)
+
+
+#all.tmax.df$proj <- rep(proj$V1, sapply(all.future.tmax , nrow))
+#all.ppt.df$proj <- rep(proj$V1, sapply(all.future.ppt , nrow))
 
 ppt.models <- all.ppt.df %>% tidyr::separate(proj, sep = -5, into = c("modelrun", "rcp")) #%>% 
   #tidyr::separate(modelrun, sep = "-", into = c("model", "run"))
@@ -265,8 +319,37 @@ future.climate.ts <- future.climate.ts %>% dplyr::select(-climate.x, -climate.y)
 pipo.cores.ll$cov.data
 pipo.cores.ll$future.climate.ts <- future.climate.ts
 
-saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climatev3.rds")
+# make plots of individual future climate models:
 
+
+
+
+saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climatev4.rds")
+
+
+
+
+
+pipo.cores.ll <- readRDS( "pipo.cores.with.downscaled.hydro.ppt.climatev3.rds")
+head(pipo.cores.ll)
+head(pipo.cores.ll$future.climate.ts)
+clim.ts.df <- pipo.cores.ll$future.climate.ts
+clim.ts.df$tmax.fall.spr[is.nan(clim.ts.df$tmax.fall.spr)] <- NA
+
+head(clim.ts.df)
+
+head(future.climate.ts)
+
+ll.df <- unique(future.climate.ts[,c("lat", "lon")])
+test.df<- future.climate.ts %>% filter(lat %in% ll.df[2,]$lat & lon %in% ll.df[2,]$lon)
+test.df$year <- as.numeric(test.df$year)
+ggplot(test.df, aes(year, year.ppt, color = modelrun))+geom_line()+facet_wrap(~rcp)
+ggplot(test.df, aes(year, tmax.fall.spr, color = modelrun))+geom_line()+facet_wrap(~rcp)
+
+
+prev.df<- clim.ts.df  %>% filter(lat %in% ll.df[1,]$lat & lon %in% ll.df[1,]$lon)
+prev.df$year <- as.numeric(prev.df$year)
+ggplot(prev.df, aes(year, tmax.fall.spr, color = modelrun))+geom_line()+facet_wrap(~rcp)
 
 
 

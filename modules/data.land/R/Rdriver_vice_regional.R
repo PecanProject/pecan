@@ -2,6 +2,11 @@
 #library(DBI)
 library(dplyr)
 library(ggplot2)
+#library(sp)
+#library(sf)
+library(tidyr)
+
+
 # note that this script uses temp2 and Tree2Tree.incored.plots dataframes from the Rdriver.R script
 
 #if(!exists("/Users/kah/Documents/docker_pecan/pecan/InWeUS_FIA/AZ_COND.csv")){
@@ -21,16 +26,14 @@ library(ggplot2)
 # 
 
 # read in the non-AZ points:
-library(tidyr)
-library(ggplot2)
-library(dplyr)
 
-setwd("/home/rstudio")
+
+#setwd("/home/rstudio")
 full.clim.data <- read.csv("data/pipo_all_tmean_ppt_v4.csv")
 region.rwl <- read.csv("data/trees-rwl-1-31-17.csv") # note that this data is has all RWLS in columsn and a year column
 region.ll <- read.csv("data/locs-env-1-31-17.csv")
 
-head(region.ll)
+head(region.rwl)
 
 
 # # not sure if these are actually all matching properly.
@@ -152,7 +155,7 @@ temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 
 ### read in function that creates jags objects from above data
-source("pecan/modules/data.land/R/BuildJAGSdataobject.R")
+source("modules/data.land/R/BuildJAGSdataobject.R")
 #jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
@@ -176,15 +179,50 @@ data$r_dbh <- 256
 pipo.ll <- region.ll %>% filter(SPCD == 122)
 pipo.ll <- pipo.ll[!is.na(pipo.ll$SICOND),]
 pipo.ll <- pipo.ll[!is.na(pipo.ll$DIA),]
+pipo.ll <- pipo.ll[!is.na(pipo.ll$DIA),]
+
 
 cov.data.az <- cov.data
 cov.data.az$STATECD <- 4
-cov.data.az.sub <- cov.data.az[,c("STATECD","PLOT","TREE","SICOND", "ELEV" , "SLOPE","ASPECT" )]
-cov.data.iw.sub <- pipo.ll[,c("STATECD", "PLOT","TREE","SICOND", "ELEV" , "SLOPE","ASPECT" )]
+cov.data.az.sub <- cov.data.az[,c("LAT","LON","STATECD","PLOT","TREE","SICOND", "ELEV" , "SLOPE","ASPECT" )]
+cov.data.iw.sub <- pipo.ll[,c("LAT","LON","STATECD", "PLOT","TREE","SICOND", "ELEV" , "SLOPE","ASPECT" )]
 cov.data.az.sub$PLOT <- as.character(cov.data.az.sub$PLOT)
 cov.data.iw.sub$PLOT <- as.character(cov.data.iw.sub$PLOT)
 cov.data.region <- rbind(cov.data.az.sub, cov.data.iw.sub)
 
+cov.data.full <- cov.data.region
+
+cov.data.full.p <- cov.data.full[!is.na(cov.data.full$LAT),]
+
+#------------------------------------------------------------------------------------
+# Get ecoregion information
+#------------------------------------------------------------------------------------
+# eco.regions.l2 <- readOGR("data/na_cec_eco_l2/NA_CEC_Eco_Level2.shp")
+# ## convert it to 'sf'
+# 
+# latlong = "+init=epsg:4326"
+# 
+# eco = st_as_sf(eco.regions.l2)
+# p = st_as_sf(cov.data.full.p, crs = latlong)
+# 
+# 
+# p.ll <- st_set_crs(x = p, value = latlong)
+# eco.ll <- st_transform(eco, crs = latlong)
+# 
+# eco.p = st_intersection( p.ll, eco.ll)
+# eco.p
+# 
+# 
+# unique(eco.p$NA_L2NAME)
+# 
+# 
+# # plot with sf is easy, but takes some time
+# #plot(eco.p["NA_L2NAME"])
+# eco.df <- st_set_geometry(eco.p, NULL)
+
+eco.df <- readRDS( "data/all_region_covariates_with_ecoregions_v1.rds")
+
+cov.data.region <- eco.df
 cov.data.full <- cov.data.region
 
 pipo.ll$series
@@ -226,12 +264,9 @@ pipo.ll.dia <- pipo.ll %>% select(series, DBH_cm, last_growth)
 
 # now rearrange so that each row is a tree and each column is a year from 1966-2010
 spread.dia.mat <- pipo.ll.dia %>% filter(series %in% unique(pipo.ll$series)) %>% group_by(series) %>% tidyr::spread(last_growth, DBH_cm) %>% ungroup()
-cols.nams <- names(spread.dia.mat)
 spread.dia.mat <- data.frame(spread.dia.mat)
 # now rearrange the rows so they are ordered the same as pipo.ll and cov.data.iw.sub
 ordered.dia.mat <- spread.dia.mat[order(match(spread.dia.mat[,"series"], pipo.ll[,"series"])),]
-colnames(ordered.dia.mat) <- cols.nams
-
 
 df <- ordered.dia.mat[,2:length(ordered.dia.mat)]
 colnms <- colnames(z)
@@ -239,11 +274,14 @@ rownms <- rownames(df)
 #rownames(df) <- c("1", "3", "4", "5")
 
 Missing <- setdiff(colnms, names(df))
-df[,Missing] <- NA
+df[Missing] <- NA
 df <- df[colnms]
 
 
 z.new <- rbind(z, df)
+
+# make z0 for the out of state data
+head(pipo.ll.dia)
 
 
 # now align the climate datasets:
@@ -321,13 +359,8 @@ time_data$wintP.wateryr <- rbind(time_data$wintP.wateryr, as.matrix(wintP.watery
 time_data$tmax.AprMayJun <- rbind(time_data$tmax.AprMayJun, as.matrix(tmax.AprMayJun))
 time_data$TMAX <- rbind(time_data$TMAX, as.matrix(TMAX))
 
-# use time_data TMAX and wintP.Wayteryr columns to get mean annual temperature and mean annual max T
 
-MAT <- rowMeans(time_data$TMAX)
-MAP <- rowMeans(time_data$wintP.wateryr)
 
-cov.data.region$MAT <- MAT
-cov.data.region$MAP <- MAP
 # scale climate variables
 
 
@@ -346,29 +379,94 @@ standardize.vector <- function(x){
 time_data$TMAX.scaled <- standardize.mat(time_data$TMAX)
 time_data$tmax.fallspr.scaled <- standardize.mat(time_data$tmax.fallspr)
 time_data$wateryr.scaled <- standardize.mat(time_data$wintP.wateryr)
+time_data$tmax.AprMayJun.scaled <- standardize.mat(time_data$tmax.AprMayJun)
+# get index with climate variables:
+keeps <- !is.na(rowMeans(time_data$TMAX.scaled, na.rm = TRUE))
 
+# use time_data TMAX and wintP.Wayteryr columns to get mean annual temperature and mean annual max T
+
+MAT <- rowMeans(time_data$TMAX)
+MAP <- rowMeans(time_data$wintP.wateryr)
+
+cov.data.region$MAT <- MAT[keeps]
+cov.data.region$MAP <- MAP[keeps]
 
 # scale the plot level variables (just SICOND, MAT, and MAP)
 cov.data.full.scaled <- cov.data.region %>% mutate_at(standardize.vector, .vars = c("SICOND", "MAT", "MAP"))
 
 
+
 # for some reason we have one tree with all NA values for y
 y.new.nona <- y.new[!is.na(rowMeans(y.new, na.rm=TRUE)),]
 
-data$y <- y.new
+data$y <- y.new.nona
 data$z <- z.new
-data$time <- 1966:2018
-cov.data <- cov.data.full
 
-source("pecan/modules/data.land/R/InventoryGrowthFusion_unif.R") 
-cov.data.full.scaled$PLOT.STATE <- as.numeric(as.character(paste0(cov.data.full.scaled$PLOT, cov.data.full.scaled$STATECD)))
+
+
+cov.data <- cov.data.full[keeps,]
+
+time_data$tmax.AprMayJun.scaled <- time_data$tmax.AprMayJun.scaled[keeps,]
+time_data$wateryr.scaled <- time_data$wateryr.scaled[keeps,]
+data$y <- data$y[keeps,]
+data$z <- data$z[keeps,]
+y.new <- y.new[keeps,]
+z.new <- z.new[keeps,]
+
+data$time <- 1966:2018
+data$ni <- nrow(data$z)
+
+data$startyr <- rep(1, nrow(data$z))
+data$startyr2 <- rep(2, nrow(data$z))
+data$nt2 <- rep(45, nrow(data$z))
+data$endyr <- rep(45, nrow(data$z))
+
+states <- unique(cov.data$STATECD)
+data$states <- states
+data$STATECD <- cov.data.full.scaled$STATECD
+#time_data
+
+# make STATE its own thing from 1:states
+#state.tbl <- data.frame(STATECD = states, 
+#                       state = 1:6)
+eco.region.tbl <- data.frame(NA_L2NAME = unique(cov.data.full.scaled$NA_L2NAME),
+                             ECOCODE = 1:5)
+
+#cov.data.full.scaled2 <- merge(state.tbl, cov.data.full.scaled, by = "STATECD")
+cov.data.full.scaled2 <- merge(eco.region.tbl, cov.data.full.scaled, by = "NA_L2NAME")
+
+data$state <- cov.data.full.scaled2$state
+data$ECOCODE <- cov.data.full.scaled2$ECOCODE
+
+# create a z0:
+#if(is.null(z0)){
+z0 <- t(apply(data$y, 1, function(y) {
+  -rev(cumsum(rev(y)))
+})) + data$z[, ncol(data$z)]
+#} 
+
+
+source("pecan/modules/data.land/R/InventoryGrowthFusion_unif_state_rdm.R") 
+cov.data.full.scaled2$PLOT.STATE <- as.numeric(as.character(paste0(cov.data.full.scaled2$PLOT, cov.data.full.scaled2$STATECD)))
 # linear model with DBH^2 removed for Precipitation + Tmax and 500 cores
-ppt.noX2 <- InventoryGrowthFusion_norm(data=data, cov.data=cov.data.full.scaled, time_data=time_data,
-                                       n.iter=40000, z0=z0, scale.state = 30,
-                                       n.chunk=100, save.state=TRUE, random="(1|PLOT.STATE[i])",rand.X =FALSE,
-                                       fixed = "~ X + X^2 + SICOND + MAP + MAT +  SICOND*X + X*tmax.fallspr.scaled[t] + X*wateryr.scaled[t]",
-                                       time_varying = "wateryr.scaled + SICOND*wateryr.scaled[t] + tmax.fallspr.scaled + SICOND*tmax.fallspr.scaled[t]  + tmax.fallspr.scaled[t]*wateryr.scaled[t] + MAP*wateryr.scaled[t] + MAT*wateryr.scaled[t]+ MAP*tmax.fallspr.scaled[t] + MAT*tmax.fallspr.scaled[t] ",
-                                       burnin_plot=FALSE, save.jags = "Regional_model_scaled.txt", model.name = "Regional_model_scaled", 
-                                       output.folder = "IGF_PIPO_region/", breakearly = FALSE)
+data$S <- length(unique(data$state))
+data$E <- length(unique(data$ECOCODE))
+ppt.noX2 <- InventoryGrowthFusion_norm(data=data, 
+                                       cov.data=cov.data.full.scaled2, 
+                                       time_data=time_data,
+                                       n.iter=40000, 
+                                       z0=NULL, # may need to create and specify z0
+                                       scale.state = 30,
+                                       n.chunk=100, 
+                                       save.state=TRUE, 
+                                       random="(1|PLOT.STATE[i])", 
+                                       rand.X =FALSE,
+                                       fixed = "~ X + X^2 + SICOND",
+                                       time_varying = "wateryr.scaled + tmax.AprMayJun.scaled + tmax.AprMayJun.scaled[t]*wateryr.scaled[t]",
+                                       burnin_plot=FALSE, 
+                                       save.jags = "Regional_model_tmax_AMJ_scaled_state_rdm_unifprior_noint_NOMUHYPER.txt", 
+                                       model.name = "Regional_model_tmax_AMJ_scaled_state_rdm2_unifprior_noint_NOMUHYPER", 
+                                       output.folder = "IGF_PIPO_region/", 
+                                       breakearly = FALSE)
 
 
