@@ -1,4 +1,4 @@
-=#' Download NARR time series for a single site
+#' Download NARR time series for a single site
 #'
 #' @param outfolder Target directory for storing output
 #' @param start_date Start date for met data
