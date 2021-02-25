@@ -85,17 +85,27 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         sec <- nc$dim$time$vals
         sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
         
-        dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+        dt <- diff(sec)[1]
         tstep <- round(86400 / dt)
         dt <- 86400 / tstep
         
         ind <- rep(simdays, each = tstep)
         
+        if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
+          #this should always be the case, but just in case
+          origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
+          ydays <- lubridate::yday(origin_dt + sec)
+
+        }else{
+          PEcAn.logger::logger.error("Check units of time in the weather data.")
+        }
+
+        
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         # temporary hack, not sure if it will generalize with other data products
         # function might need a splitting arg
-        gr  <- gr[nc$dim$time$vals %in% simdays] 
+        gr  <- gr[ydays %in% simdays] 
         
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
