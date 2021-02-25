@@ -34,8 +34,6 @@ Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV,
       NOHARV = 0	
       TEMPOP  = DAYS_HARVEST(i,3) 
       CLAIV = TEMPOP * 0.1
-      print *, 'The CLAIV is:', CLAIV
-      print *, 'The LAI is:', LAI
 	end if
   end do
   FRACTV = (TILV+TILG1) / (TILV+TILG1+TILG2)
