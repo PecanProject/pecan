@@ -63,7 +63,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       
       
       NDAYS          <- length(simdays)
-      NWEATHER       <- as.integer(8)
+      NWEATHER       <- as.integer(9)
       matrix_weather <- matrix( 0., nrow = NDAYS, ncol = NWEATHER )
       
       
@@ -110,7 +110,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-        Tair   <- Tair[nc$dim$time$vals %in% simdays]
+        Tair   <- Tair[ydays %in% simdays]
         Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
         
         
@@ -120,7 +120,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
         
         RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
-        RH <- RH[nc$dim$time$vals %in% simdays]
+        RH <- RH[ydays %in% simdays]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
         
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
@@ -128,19 +128,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
-        Rain  <- Rain[nc$dim$time$vals %in% simdays]
+        Rain  <- Rain[ydays %in% simdays]
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- round(raini, digits = 2) # precipitation (mm d-1)	
         
         U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
         V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
         if(is.numeric(U) & is.numeric(V)){
-          U  <- U[nc$dim$time$vals %in% simdays]
-          V  <- V[nc$dim$time$vals %in% simdays]
+          U  <- U[ydays %in% simdays]
+          V  <- V[ydays %in% simdays]
           ws <- sqrt(U ^ 2 + V ^ 2)      
         }else{
           ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
-          ws <- ws[nc$dim$time$vals %in% simdays]
+          ws <- ws[ydays %in% simdays]
           if (is.numeric(ws)) {
             PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
           }else{
@@ -150,6 +150,18 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         
         matrix_weather[ ,8] <- round(tapply(ws, ind, mean,  na.rm = TRUE), digits = 2) # mean wind speed (m s-1)			
+        
+        # CO2
+        co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+        if(is.numeric(co2)){
+          co2 <- co2[ydays %in% simdays] / 1e-06 # ppm
+          co2 <- round(tapply(co2, ind, mean, na.rm = TRUE), digits = 2) 
+        }else{
+          co2 <- NA
+        }
+        
+        # This is new BASGRA code that can be passed CO2 cals
+        matrix_weather[ ,9] <- co2
         
         ncdf4::nc_close(nc)
       } else {
@@ -172,7 +184,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                 "simulation days. Limiting the run to the first ", NMAXDAYS, "days of the requested period.")
     }else{
       # append zeros at the end
-      matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 8 ))
+      matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 9 ))
     }
     
     return(matrix_weather)
@@ -252,8 +264,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   
   NDAYS <- as.integer(sum(matrix_weather[,1] != 0))
   
-  matrix_weather <- cbind( matrix_weather, matrix_weather[,8]) #add a col
-  if(!is.null(co2_file)){
+  if(!is.null(co2_file)){ # if a separate co2 file was passed use that
     co2val <- utils::read.table(co2_file, header=TRUE, sep = ",")
     
     weird_line <- which(!paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]) %in% paste0(co2val[,1], co2val[,2]))
@@ -262,7 +273,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       NDAYS <- NDAYS-length(weird_line)
     }
     matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]),3]
-  }else{
+  }else if(all(is.na(matrix_weather[1:NDAYS,9]))){ # this means there were no CO2 in the netcdf as well
     PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 350 ppm.")
     matrix_weather[1:NDAYS,9] <- 350
   }
