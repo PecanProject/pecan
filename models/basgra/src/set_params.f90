@@ -17,7 +17,7 @@ FRTILGI	   = pa(8)
 LT50I      = pa(9)
 
 ! Process parameters 
-CLAIV     = pa(10)	   
+! CLAIV     = pa(10)	   
 COCRESMX  =	pa(11)
 CSTAVM	  = pa(12)
 DAYLB	  =	pa(13)  

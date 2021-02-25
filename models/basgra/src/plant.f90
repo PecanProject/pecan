@@ -19,18 +19,23 @@ Contains
 Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
                              GSTUB,HARVLA,HARVLV,HARVPH,HARVRE,HARVST,HARVTILG2)
   integer :: doy,year
-  integer,dimension(300,2) :: DAYS_HARVEST
+  integer,dimension(300,3) :: DAYS_HARVEST
   real    :: CLV, CRES, CST, LAI, PHEN, TILG1, TILG2, TILV
   real    :: GSTUB, HARVLV, HARVLA, HARVRE, HARVTILG2, HARVST, HARVPH
-  real    :: CLAI, HARVFR, TV1
-  integer :: HARV,i
+  real    :: CLAIV, CLAI, HARVFR, TV1
+  integer :: HARV,TEMPOP, i
  
   HARV   = 0
   NOHARV = 1
+  CLAIV  = 0  
   do i=1,300    
     if ( (year==DAYS_HARVEST(i,1)) .and. (doy==DAYS_HARVEST(i,2)) ) then
       HARV   = 1
       NOHARV = 0	
+      TEMPOP  = DAYS_HARVEST(i,3) 
+      CLAIV = TEMPOP * 0.1
+      print *, 'The CLAIV is:', CLAIV
+      print *, 'The LAI is:', LAI
 	end if
   end do
   FRACTV = (TILV+TILG1) / (TILV+TILG1+TILG2)

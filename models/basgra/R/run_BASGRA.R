@@ -34,7 +34,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
   
-
+  if(co2_file == "NULL") co2_file <- NULL
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
@@ -295,26 +295,23 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
   calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
   
-  days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 2)
+  days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 3)
   # read in harvest days
   h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
-  days_harvest[1:nrow(h_days),] <- h_days[,1:2]
-
-  days_harvest <- as.integer(days_harvest)
+  days_harvest[1:nrow(h_days),1:2] <- h_days[,1:2]
   
   # This is a management specific parameter
+  # CLAIV is used to determine LAI remaining after harvest
+  # I modified BASGRA code to use different values for different harvests
   # I'll pass it via harvest file as the 3rd column
-  # even though it won't change from harvest to harvest, it may change from run to run
   # but just in case users forgot to add the third column to the harvest file:
-  if(ncol(h_days) > 2){
-    run_params[names(run_params) == "CLAIV"]     <- h_days[1,3]
-    run_params[names(run_params) == "TRANCO"]    <- h_days[1,4]
-    run_params[names(run_params) == "SLAMAX"]    <- h_days[1,5]
-    run_params[names(run_params) == "FSOMFSOMS"] <- h_days[1,6]
+  if(ncol(h_days) == 3){
+    days_harvest[1:nrow(h_days),3] <- h_days[,3]*10 # as.integer
   }else{
-    PEcAn.logger::logger.info("CLAIV, TRANCO, SLAMAX not provided via harvest file. Using defaults.")
+    PEcAn.logger::logger.info("CLAIV not provided via harvest file. Using defaults.")
+    days_harvest[1:nrow(h_days),3] <- run_params[names(run_params) == "CLAIV"] 
   }
-  
+  days_harvest <- as.integer(days_harvest)
   
   # run  model
   output <- .Fortran('BASGRA',

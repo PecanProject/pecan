@@ -23,7 +23,7 @@ use soil
 use plant
 implicit none
 
-integer, dimension(300,2) :: DAYS_HARVEST
+integer, dimension(300,3) :: DAYS_HARVEST
 real                      :: PARAMS(140)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
