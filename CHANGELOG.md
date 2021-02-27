@@ -7,7 +7,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-### Due to dependencies, PEcAn is now using R 4.0.2 for Docker images.
+### Due to dependencies, PEcAn is now using R 4.0.3 for Docker images.
 
 This is a major change:
 
