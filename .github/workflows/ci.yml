@@ -30,7 +30,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
+          - "4.0.3"
+          - "4.0.4"
 
     env:
       NCPUS: 2
@@ -75,7 +76,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
+          - "4.0.3"
+          - "4.0.4"
 
     services:
       postgres:
@@ -105,9 +107,6 @@ jobs:
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
-    - name: Manually update rlang and testthat (HACK)
-      run: Rscript -e 'remotes::install_github("r-lib/testthat@v3.0.1")'
-
     # initialize database
     - name: db setup
       uses: docker://pecan/db:ci
@@ -130,7 +129,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
+          - "4.0.3"
+          - "4.0.4"
 
     env:
       NCPUS: 2
@@ -155,9 +155,6 @@ jobs:
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
-    - name: Manually install latest testthat (HACK)
-      run: Rscript -e 'remotes::install_github("r-lib/testthat@v3.0.1")'
-
     # run PEcAn checks
     - name: check
       run: make -j1 check
@@ -178,7 +175,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
+          - "4.0.3"
+          - "4.0.4"
 
     services:
       postgres:

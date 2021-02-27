@@ -136,20 +136,26 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
         } else {
           # Check if PFT membership has changed
           PEcAn.logger::logger.debug("Checking if PFT membership has changed.")
+          if (pfttype == "plant") {
+            # Columns are: id, genus, species, scientificname
+            colClass = c("double", "character", "character", "character")
+          } else if (pfttype == "cultivar") {
+            # Columns are: id, specie_id, genus, species, scientificname, cultivar
+            colClass = c("double", "double", "character", "character", "character", "character")
+            }
           existing_membership <- utils::read.csv(
             need_paths[["pft_membership"]],
-            # Columns are: id, genus, species, scientificname
             # Need this so NA values are formatted consistently
-            colClasses = c("double", "character", "character", "character"),
+            colClasses = colClass,
             stringsAsFactors = FALSE,
             na.strings = c("", "NA")
-          )
+            )
           diff_membership <- symmetric_setdiff(
             existing_membership,
             pft_members,
             xname = "existing",
             yname = "current"
-          )
+            )
           if (nrow(diff_membership) > 0) {
             PEcAn.logger::logger.error(
               "\n PFT membership has changed. \n",

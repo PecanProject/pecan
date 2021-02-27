@@ -111,7 +111,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, scrambling = 3, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
@@ -146,12 +146,22 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       
       # meaning we want to keep MCMC samples together
       if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
-        # TODO: for now we are sampling row numbers uniformly
-        # stop if other methods were requested 
-        if(method != "uniform"){
-          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
+        if (method == "halton") {
+          same.i <- round(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "sobol") {
+          same.i <- round(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "torus") {
+          same.i <- round(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "lhc") {
+          same.i <- round(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))
+        } else if (method == "uniform") {
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        } else {
+          PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+          # uniform random
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
         }
-        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        
       }
       
       for (trait.i in seq(pft.samples[[pft.i]])) {

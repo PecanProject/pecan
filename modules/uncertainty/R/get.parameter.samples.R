@@ -130,11 +130,30 @@ get.parameter.samples <- function(settings,
     }
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
+    if (ens.sample.method == "halton") {
+      q_samples <- randtoolbox::halton(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "sobol") {
+      q_samples <- randtoolbox::sobol(n = samples.num, dim = length(priors), scrambling = 3)
+    } else if (ens.sample.method == "torus") {
+      q_samples <- randtoolbox::torus(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "lhc") {
+      q_samples <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(priors), nrow = 2)), samples.num)
+    } else if (ens.sample.method == "uniform") {
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                               samples.num, 
+                               length(priors))
+    } else {
+      PEcAn.logger::logger.info("Method ", ens.sample.method, " has not been implemented yet, using uniform random sampling")
+      # uniform random
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                          samples.num, 
+                          length(priors))
+    }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
         samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } else {
-        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
+        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
