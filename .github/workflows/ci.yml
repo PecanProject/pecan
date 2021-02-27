@@ -30,8 +30,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
           - "4.0.3"
+          - "4.0.4"
 
     env:
       NCPUS: 2
@@ -76,8 +76,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
           - "4.0.3"
+          - "4.0.4"
 
     services:
       postgres:
@@ -129,8 +129,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
           - "4.0.3"
+          - "4.0.4"
 
     env:
       NCPUS: 2
@@ -175,8 +175,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
           - "4.0.3"
+          - "4.0.4"
 
     services:
       postgres:
