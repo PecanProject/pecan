@@ -12,7 +12,7 @@ on:
 
 env:
   # official supported version of R
-  SUPPORTED: 4.0.2
+  SUPPORTED: 4.0.3
   DOCKERHUB_ORG: pecan
 
 jobs:
@@ -24,8 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.2"
           - "4.0.3"
+          - "4.0.4"
 
     steps:
       - uses: actions/checkout@v2
