@@ -66,7 +66,9 @@ files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
 	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
 	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
-install_R_pkg = ./scripts/time.sh "install ${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
+install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
+	-e ${SETROPTIONS} \
+	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "devtools::test('$(strip $(1))'," \
