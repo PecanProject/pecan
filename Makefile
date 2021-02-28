@@ -44,6 +44,29 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
+SETROPTIONS = "options(Ncpus = ${NCPUS})"
+
+### Macros
+
+# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
+# When these are fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
+	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
+	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
+install_R_pkg = ./scripts/time.sh "install ${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
+check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
+
+# Would use devtools::test(), but devtools 2.2.1 hardcodes stop_on_failure=FALSE
+# To work around this, we reimplement about half of test() here :(
+test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
+	-e "if (length(list.files('$(strip $(1))/tests/testthat', 'test.*.[rR]')) == 0) {" \
+	-e		"print('No tests found'); quit('no') }" \
+	-e "env <- devtools::load_all('$(strip $(1))', quiet = TRUE)[['env']]" \
+	-e "testthat::test_dir('$(strip $(1))/tests/testthat', env = env," \
+	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
+
+doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
+
 .PHONY: all install check test document shiny
 
 all: install document
@@ -81,8 +104,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 include Makefile.depends
 
-SETROPTIONS = "options(Ncpus = ${NCPUS})"
-
 clean:
 	rm -rf .install .check .test .doc
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
@@ -103,25 +124,6 @@ clean:
 .install/mockery: | .install
 	+ ./scripts/time.sh "mockery ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery')"
 	echo `date` > $@
-
-# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
-# When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
-	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
-	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
-install_R_pkg = ./scripts/time.sh "install ${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
-check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
-
-# Would use devtools::test(), but devtools 2.2.1 hardcodes stop_on_failure=FALSE
-# To work around this, we reimplement about half of test() here :(
-test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
-	-e "if (length(list.files('$(strip $(1))/tests/testthat', 'test.*.[rR]')) == 0) {" \
-	-e		"print('No tests found'); quit('no') }" \
-	-e "env <- devtools::load_all('$(strip $(1))', quiet = TRUE)[['env']]" \
-	-e "testthat::test_dir('$(strip $(1))/tests/testthat', env = env," \
-	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
-
-doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
 
