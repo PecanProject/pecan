@@ -68,15 +68,10 @@ depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
 	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript -e ${SETROPTIONS} -e "devtools::install('$(strip $(1))', upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
-
-# Would use devtools::test(), but devtools 2.2.1 hardcodes stop_on_failure=FALSE
-# To work around this, we reimplement about half of test() here :(
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
-	-e "if (length(list.files('$(strip $(1))/tests/testthat', 'test.*.[rR]')) == 0) {" \
-	-e		"print('No tests found'); quit('no') }" \
-	-e "env <- devtools::load_all('$(strip $(1))', quiet = TRUE)[['env']]" \
-	-e "testthat::test_dir('$(strip $(1))/tests/testthat', env = env," \
-	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
+	-e "devtools::test('$(strip $(1))'," \
+	-e "stop_on_failure = TRUE," \
+	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
 doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
 
