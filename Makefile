@@ -48,6 +48,19 @@ SETROPTIONS = "options(Ncpus = ${NCPUS})"
 
 ### Macros
 
+# Generates a list of all files and subdirectories at any depth inside its argument
+recurse_dir = $(foreach d, $(wildcard $1*), $(call recurse_dir, $d/) $d)
+
+# Filters a list from recurse_dir to remove paths that are directories
+# Caveat: Really only removes *direct parents* of other paths *in the list*:
+# 	$(call drop_dirs,a a/b a/b/c) => 'a/b/c',
+# 	but $(call drop_dirs,a a/b d d/e/f) => 'a/b d d/e/f'
+# For output from recurse_dir this removes all dirs, but in other cases beware.
+drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
+
+# Generates a list of regular files at any depth inside its argument
+files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
+
 # HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
 # When these are fixed, can go back to simple `dependencies = TRUE`
 depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
@@ -66,6 +79,9 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e 		"stop_on_failure = TRUE, stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
 doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
+
+
+### Rules
 
 .PHONY: all install check test document shiny
 
@@ -128,24 +144,24 @@ clean:
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
-.doc/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+.doc/%: $$(call files_in_dir, %) | $$(@D)
 	+ $(call depends_R_pkg, $(subst .doc/,,$@))
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 
-.install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/% | $$(@D)
+.install/%: $$(call files_in_dir, %) .doc/% | $$(@D)
 	+ $(call install_R_pkg, $(subst .install/,,$@))
 	echo `date` > $@
 
-.check/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+.check/%: $$(call files_in_dir, %) | $$(@D)
 	+ $(call check_R_pkg, $(subst .check/,,$@))
 	echo `date` > $@
 
-.test/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+.test/%: $$(call files_in_dir, %) | $$(@D)
 	$(call test_R_pkg, $(subst .test/,,$@))
 	echo `date` > $@
 
 # Install dependencies declared by Shiny apps
-.shiny_depends/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
+.shiny_depends/%: $$(call files_in_dir, %) | $$(@D)
 	Rscript scripts/install_shiny_deps.R $(subst .shiny_depends/,shiny/,$@)
 	echo `date` > $@
