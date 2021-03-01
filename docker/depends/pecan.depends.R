@@ -23,6 +23,7 @@ wanted <- c(
 'binaryLogic',
 'BioCro',
 'bit64',
+'BrownDog',
 'coda',
 'corrplot',
 'data.table',
