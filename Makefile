@@ -46,6 +46,7 @@ ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
 SETROPTIONS = "options(Ncpus = ${NCPUS})"
 
+
 ### Macros
 
 # Generates a list of all files and subdirectories at any depth inside its argument
@@ -77,6 +78,8 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 
 doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
 
+depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
+
 
 ### Rules
 
@@ -93,8 +96,6 @@ shiny: $(SHINY_I)
 # Render the PEcAn bookdown documentation
 book:
 	cd ./book_source && make build
-
-depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 # Make the timestamp directories if they don't exist yet
 .doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
