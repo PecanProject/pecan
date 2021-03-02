@@ -13,12 +13,7 @@
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
 * checking for hidden files and directories ... OK
-* checking for portable file names ... WARNING
-Found the following files with non-portable file names:
-  code/Sunny.preliminary.code/C3 photomodel.r
-  code/Sunny.preliminary.code/C3 Species.csv
-These are not fully portable file names.
-See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
 * checking whether package ‘PEcAn.photosynthesis’ can be installed ... OK
@@ -108,4 +103,4 @@ Files in the 'vignettes' directory but no files in 'inst/doc':
 Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... NONE
 * DONE
-Status: 3 WARNINGs, 4 NOTEs
+Status: 2 WARNINGs, 4 NOTEs
