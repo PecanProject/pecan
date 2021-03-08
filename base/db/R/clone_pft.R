@@ -2,8 +2,8 @@
 ##'
 ##' Creates a new pft that is a duplicate of an existing pft,
 ##' including relationships with priors, species, and cultivars (if any) of the existing pft.
-##' This function mimics the 'clone pft' button in the PFTs record view page in the 
-##' BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to 
+##' This function mimics the 'clone pft' button in the PFTs record view page in the
+##' BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to
 ##' clone the cultivar associations.
 ##'
 ##' @param parent.pft.name name of PFT to duplicate
@@ -35,7 +35,7 @@ clone_pft <- function(parent.pft.name,
   on.exit(db.close(con), add = TRUE)
 
   parent.pft <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!parent.pft.name)
+    %>% dplyr::filter(.data$name == !!parent.pft.name)
     %>% dplyr::collect())
 
   if (nrow(parent.pft) == 0) {
@@ -43,7 +43,7 @@ clone_pft <- function(parent.pft.name,
   }
 
   new.pft <- (parent.pft
-    %>% dplyr::select(-id, -created_at, -updated_at)
+    %>% dplyr::select(-.data$id, -.data$created_at, -.data$updated_at)
     %>% dplyr::mutate(
       name = !!new.pft.name,
       definition = !!new.pft.definition,
@@ -58,8 +58,8 @@ clone_pft <- function(parent.pft.name,
     row.names = FALSE)
 
   new.pft$id <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!new.pft.name)
-    %>% dplyr::pull(id))
+    %>% dplyr::filter(.data$name == !!new.pft.name)
+    %>% dplyr::pull(.data$id))
 
 
   # PFT members are stored in different tables depending on pft_type.
@@ -72,7 +72,7 @@ clone_pft <- function(parent.pft.name,
     member_tbl <- "pfts_species"
   }
   new_members <- (dplyr::tbl(con, member_tbl)
-    %>% dplyr::filter(pft_id == !!parent.pft$id)
+    %>% dplyr::filter(.data$pft_id == !!parent.pft$id)
     %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
@@ -87,7 +87,7 @@ clone_pft <- function(parent.pft.name,
   }
 
   new_priors <- (dplyr::tbl(con, "pfts_priors")
-    %>% dplyr::filter(pft_id == !!parent.pft$id)
+    %>% dplyr::filter(.data$pft_id == !!parent.pft$id)
     %>% dplyr::mutate(pft_id = !!new.pft$id)
     %>% dplyr::distinct()
     %>% dplyr::collect())
