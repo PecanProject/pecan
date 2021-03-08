@@ -274,8 +274,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     }
     matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]),3]
   }else if(all(is.na(matrix_weather[1:NDAYS,9]))){ # this means there were no CO2 in the netcdf as well
-    PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 350 ppm.")
-    matrix_weather[1:NDAYS,9] <- 350
+    PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 400 ppm.")
+    matrix_weather[1:NDAYS,9] <- 400
   }
 
   
