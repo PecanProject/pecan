@@ -24,10 +24,14 @@
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
 #' \dontrun{
-#' bety <- dplyr::src_postgres(dbname = 'bety',
-#'                        user = 'bety',
-#'                        password = 'bety',
-#'                        host = 'localhost')
+#' bety <- DBI::dbConnect(
+#'   Rpostgres::Postgres(),
+#'   dbname = 'bety',
+#'   user = 'bety',
+#'   password = 'bety',
+#'   host = 'localhost'
+#' )
+#' con <- bety
 #' input_codes <- c('ACRU', 'PIMA', 'TSCA')
 #' format_name <- 'usda'
 #' match_species_id(input_codes = input_codes,
