@@ -20,10 +20,13 @@ test_that("Species matching works", {
       return(dat_merge)
   }
 
-  bety <- dplyr::src_postgres(dbname = 'bety',
-                                user = 'bety',
-                                password = 'bety')
-
+  bety <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    dbname = 'bety',
+    user = 'bety',
+    password = 'bety'
+  )
+con <- bety
   test_merge(c('ACRU', 'TSCA'), 'usda', bety)
   test_merge(c(316, 261), 'fia', bety)
   test_merge(c('Acer rubrum', 'Tsuga canadensis'), 'latin_name', bety)
