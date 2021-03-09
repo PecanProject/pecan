@@ -44,7 +44,8 @@ library(reshape2)
 library(ncdf4) # a must have package for opening netcdfs
 library(lubridate)
 library(tidync)
-
+library(dplyr)
+library(tidyverse)
 #------------------------------------------------------------------
 # 1. Read in the lat long data we need to extract climate data over
 #------------------------------------------------------------------
@@ -101,9 +102,9 @@ plot(cov.data.ll)
 #------------------------------------------------------------------
 
 # list all the netcdfs
-hydro.files <- list.files("hydro5/", pattern = ".nc")
+hydro.files <- list.files("hydro5_1950_2099/", pattern = ".nc")
 
-hydro.ncs <- paste0(getwd(),"/hydro5/", hydro.files)
+hydro.ncs <- paste0(getwd(),"/hydro5_1950_2099/", hydro.files)
 
 # for the precipitation:
 x <- hydro.ncs[1]
@@ -132,7 +133,9 @@ x <- hydro.ncs[1]
   
   
   rlist <- list()
-  
+  nyears <- nmonths/12
+  startyr <- 1950
+  endyr <- 1950+(nyears-1)
   # this function takes a given projection, makes a raster stack where each raster is a month for a given climate model run projection
   # and extracts the monthly time series for each lat long point of interest, then summs across year to get a data frame of
   #  columns: lat   lon climate year  year.ppt
@@ -150,7 +153,7 @@ extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){
       }
         
         rast.stack <- stack(rlist)
-        #plot(rast.stack[[10]]) # can plot for sanity
+        #plot(rast.stack[[100]]) # can plot for sanity
         #plot(cov.data.ll, add = TRUE)
         #States <- raster::getData("GADM", country = "United States", level = 1)
        
@@ -167,7 +170,7 @@ extract.yearly.ppt  <- function(proj , ppt, cov.data.ll , nmonths ){
          extracted.pts$lat <-ll.data$LAT # get the lat and long
          extracted.pts$lon <-ll.data$LON
          
-         colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(2018:2099, each = 12), "_", rep(1:12, 82) ) # note may need to change this to make more customizable
+         colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(startyr:endyr, each = 12), "_", rep(1:12, nyears) ) # note may need to change this to make more customizable
          extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
          extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value) # set NA values
          ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
@@ -226,13 +229,15 @@ nmonths <- dim(Tmax)[3] # 3rd dimension is the number of months in the downscale
 nc_close(nc)
 Tmax[,,,1]
 rlist <- list()
-
+nyears <- nmonths/12
+startyr <- 1950
+endyr <- 1950+(nyears-1)
 
 # created a second function because I want to summarise the temp data in a different way
 extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){ 
   
   # make a raster for each month
-  for(i in 1:984){
+  for(i in 1:nmonths){
     rlist[[i]] <- raster(as.matrix(Tmax[,,i,proj]), xmn = min(lon), xmx = max(lon), 
                          ymn = min(lat) , ymx = max(lat), 
                          crs = CRS('+init=epsg:4269'))
@@ -249,7 +254,7 @@ extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){
   ll.data <- as.data.frame(cov.data.ll)
   extracted.pts$lat <-ll.data$LAT # get the lat and long
   extracted.pts$lon <-ll.data$LON
-  colnames(extracted.pts)[1:984] <- paste0("tmax_", rep(2018:2099, each = 12), "_", rep(1:12, 82) )
+  colnames(extracted.pts)[1:nmonths] <- paste0("tmax_", rep(startyr:endyr, each = 12), "_", rep(1:12, nyrears) )
   extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
   extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
   ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
@@ -276,7 +281,7 @@ system.time(
 
 # get the projection names
 # because the projection labels were not working for this, I need to read in a text file with all the projection names:
-proj <- read.delim("hydro5/Projections5.txt", header = FALSE)
+proj <- read.delim("hydro5_1950_2099/Projections5.txt", header = FALSE)
 #proj.tas <- read.delim("bcsd5/Projections5.txt", header = FALSE)
 
 #add the projection names to the tmax and ppt data frames
@@ -324,13 +329,13 @@ pipo.cores.ll$future.climate.ts <- future.climate.ts
 
 
 
-saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climatev4.rds")
+saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climate_1950_2099_v4.rds")
 
 
 
 
 
-pipo.cores.ll <- readRDS( "pipo.cores.with.downscaled.hydro.ppt.climatev3.rds")
+pipo.cores.ll <- readRDS( "pipo.cores.with.downscaled.hydro.ppt.climate_1950_2099_v4.rds")
 head(pipo.cores.ll)
 head(pipo.cores.ll$future.climate.ts)
 clim.ts.df <- pipo.cores.ll$future.climate.ts
@@ -351,5 +356,176 @@ prev.df<- clim.ts.df  %>% filter(lat %in% ll.df[1,]$lat & lon %in% ll.df[1,]$lon
 prev.df$year <- as.numeric(prev.df$year)
 ggplot(prev.df, aes(year, tmax.fall.spr, color = modelrun))+geom_line()+facet_wrap(~rcp)
 
+
+#------------------------------------------------------------------
+# Read in the historical runs for CMIP5 downscaled models
+#------------------------------------------------------------------
+
+# list all the netcdfs
+hydro.obs.files <- list.files("hydro_obs5/", pattern = ".nc")
+
+hydro.obs.ncs <- paste0(getwd(),"/hydro_obs5/", hydro.obs.files)
+
+# for the precipitation:
+x <- hydro.obs.ncs[1]
+
+
+# open the netcdf
+nc <- nc_open(x)
+variableofinterest <- names(nc$var)[3] # get the variable of interest
+ppt <- ncvar_get(nc,variableofinterest) # this extracts a 4 dimensional array of data
+# 3 Dimensional array:
+# dim 1: long
+# dim 2: lat
+# dim 3: time in months (jan 1950 - Dec 1999)
+
+lat <- ncvar_get(nc,names(nc$var)[2]) # get lat
+lon <- ncvar_get(nc, names(nc$var)[1]) # get long
+nc.time <- ncvar_get(nc, "time") # get long
+#projection <- ncvar_get(nc, "projection") # cant get the dimvar, but metadata has info on projections
+
+
+dim(ppt)# look at the dimensions
+nmonths <- dim(ppt)[3] # 3rd dimension is the number of months in the downscaled projections
+nTmax <- dim(ppt)
+nc_close(nc) # close the netcdf file when you are done extracting
+
+
+
+
+
+
+extract.historical.ppt  <- function( ppt, cov.data.ll , nmonths ){ 
+  rlist <- list()
+  # make a raster for each month 
+  for(m in 1:nmonths){ 
+    rlist[[m]] <- raster(as.matrix(ppt[,,m]), xmn = min(lon), xmx = max(lon), 
+                         ymn = min(lat) , ymx = max(lat), 
+                         crs = CRS('+init=epsg:4269'))
+  }
+  
+  rast.stack <- stack(rlist)
+  #plot(rast.stack[[50]]) # can plot for sanity
+  #plot(cov.data.ll, add = TRUE)
+  #States <- raster::getData("GADM", country = "United States", level = 1)
+  
+  
+  # make NH polygon
+  #NH <- States[States$NAME_1 == "Arizona",]
+  
+  # plot a single polygon
+  #plot(NH, add = TRUE)
+  #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") ) # dont recommend trying to change projections of the rasters, it will take much much longer to run this
+  
+  extracted.pts <- data.frame(raster::extract(rast.stack, cov.data.ll))
+  ll.data <- as.data.frame(cov.data.ll)
+  extracted.pts$lat <-ll.data$LAT # get the lat and long
+  extracted.pts$lon <-ll.data$LON
+  
+  colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(1950:1999, each = 12), "_", rep(1:12, 50) ) # note may need to change this to make more customizable
+  extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
+  extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value) # set NA values
+  ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
+  # I use yearly ppt, but we could make a different summary of interest here
+  yearly.ppt <- ext.sep %>% dplyr::group_by(lat, lon, climate, year) %>% dplyr::summarise(year.ppt = sum(value)) 
+  yearly.ppt
+  #ggplot(yearly.ppt, aes(x = year, y = year.ppt))+geom_point() 
+  
+}
+
+
+historical.ppt <- extract.historical.ppt(ppt, cov.data.ll, nmonths)
+
+
+#------------------------------------------------
+# for temperature just use the second netcdf in our downloaded package.
+
+# open the netcdf
+
+x <- hydro.obs.ncs[2]
+
+
+# open the netcdf
+nc <- nc_open(x)
+variableofinterest <- names(nc$var)[3] # get the variable of interest
+tmax <- ncvar_get(nc,variableofinterest) # this extracts a 4 dimensional array of data
+# 3 Dimensional array:
+# dim 1: long
+# dim 2: lat
+# dim 3: time in months (jan 1950 - Dec 1999)
+
+lat <- ncvar_get(nc,names(nc$var)[2]) # get lat
+lon <- ncvar_get(nc, names(nc$var)[1]) # get long
+nc.time <- ncvar_get(nc, "time") # get long
+#projection <- ncvar_get(nc, "projection") # cant get the dimvar, but metadata has info on projections
+
+
+dim(tmax)# look at the dimensions
+nmonths <- dim(tmax)[3] # 3rd dimension is the number of months in the downscaled projections
+nTmax <- dim(tmax)
+nc_close(nc) # close the netcdf file when you are done extracting
+
+
+
+
+# created a second function because I want to summarise the temp data in a different way
+extract.obs.tmax  <- function(Tmax, cov.data.ll, nmonths ){ 
+  
+  # make a raster for each month
+  for(i in 1:nmonths){
+    rlist[[i]] <- raster(as.matrix(tmax[,,i]), xmn = min(lon), xmx = max(lon), 
+                         ymn = min(lat) , ymx = max(lat), 
+                         crs = CRS('+init=epsg:4269'))
+  }
+  
+  rast.stack <- stack(rlist)
+  plot(rast.stack[[9]])
+  plot(cov.data.ll, add = TRUE)
+  
+  #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") )
+  # extracted.pts <- list()
+  extracted.pts <- data.frame(raster::extract(rast.stack, cov.data.ll))
+  
+  ll.data <- as.data.frame(cov.data.ll)
+  extracted.pts$lat <-ll.data$LAT # get the lat and long
+  extracted.pts$lon <-ll.data$LON
+  colnames(extracted.pts)[1:nmonths] <- paste0("tmax_", rep(1950:1999, each = 12), "_", rep(1:12, 50) )
+  extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
+  extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
+  ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
+  
+  # get the equivalent of our spring-fall tmax
+  yearly.tmax <- ext.sep %>% dplyr::group_by(lat, lon, climate, year) %>% dplyr::filter(month %in% c("5", "6", "7", "8", "9", "10")) %>% 
+    dplyr::summarise(tmax.fall.spr = mean((value), na.rm = TRUE)) # some of the models project tmemparatures will be ~200 deg Farenheight ???
+  yearly.tmax
+  
+  #hist(yearly.tmax$tmax.fall.spr)
+  #ggplot(yearly.tmax, aes(x = as.numeric(year), y = tmax.fall.spr, color = lat ))+geom_point()+stat_smooth()+theme(legend.position = "none")
+}
+
+ 
+
+all.obs.tmax <- extract.obs.tmax(Tmax = tmax, cov.data.ll = cov.data.ll, nmonths = nmonths)
+
+# ------------------------------------------------------------------------------------------
+# Compare the time series of climate from CMIP5 models at each site to the observed values
+# ------------------------------------------------------------------------------------------
+
+head(cov.data.ll)
+head(time_data)
+
+tmax.fall.spr <- time_data$tmax.fallspr
+cov.data.ll.df <- as.data.frame(cov.data.ll)
+
+tmax.fall.spr$lat <- cov.data.ll.df$LAT
+tmax.fall.spr$lon <- cov.data.ll.df$LON
+
+colnames(tmax.fall.spr)[1:53] <- 1966:2018
+tmax.fall.spr.obs <- melt(tmax.fall.spr, id.vars = c("lat", "lon"))
+colnames(tmax.fall.spr.obs) <- c("lat", "lon", "year", "PRISM")
+
+colnames(all.obs.tmax) <- c("lat", "lon", "year", "Historical_sim")
+
+obs.tmax <- left_join(tmax.fall.spr.obs, all.obs.tmax, by = c("lat", "lon"))
 
 
