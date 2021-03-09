@@ -44,10 +44,15 @@ Parses species codes in input data and matches them with the BETY species ID.
 }
 \examples{
 \dontrun{
-bety <- dplyr::src_postgres(dbname = 'bety',
-                       user = 'bety',
-                       password = 'bety',
-                       host = 'localhost')
+bety <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname = 'bety',
+  user = 'bety',
+  password = 'bety',
+  host = 'localhost'
+)
+con <- bety
+
 input_codes <- c('ACRU', 'PIMA', 'TSCA')
 format_name <- 'usda'
 match_species_id(input_codes = input_codes,
