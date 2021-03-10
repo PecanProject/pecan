@@ -65,7 +65,7 @@ query.pft_species <- function(pft, modeltype = NULL, con) {
 query.pft_cultivars <- function(pft, modeltype = NULL, con) {
 
   pft_tbl <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name == !!pft, pft_type == "cultivar"))
+    %>% dplyr::filter(.data$name == !!pft, .data$pft_type == "cultivar"))
 
   if (!is.null(modeltype)) {
     pft_tbl <- (pft_tbl
@@ -73,7 +73,7 @@ query.pft_cultivars <- function(pft, modeltype = NULL, con) {
         dplyr::tbl(con, "modeltypes"),
         by = c("modeltype_id" = "id"),
         suffix = c("", ".mt"))
-      %>% dplyr::filter(name.mt == !!modeltype))
+      %>% dplyr::filter(.data$name.mt == !!modeltype))
   }
 
   (pft_tbl
@@ -90,12 +90,12 @@ query.pft_cultivars <- function(pft, modeltype = NULL, con) {
       by=c("specie_id" = "id"),
       suffix=c("", ".sp"))
     %>% dplyr::select(
-      id = cultivar_id,
-      specie_id,
-      genus,
-      species,
-      scientificname,
-      cultivar = name.cv)
+      id = .data$cultivar_id,
+      .data$specie_id,
+      .data$genus,
+      .data$species,
+      .data$scientificname,
+      cultivar = .data$name.cv)
     %>% dplyr::collect())
 }
 
