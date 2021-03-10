@@ -254,7 +254,7 @@ extract.yearly.tmax  <- function(proj,Tmax, cov.data.ll, nmonths ){
   ll.data <- as.data.frame(cov.data.ll)
   extracted.pts$lat <-ll.data$LAT # get the lat and long
   extracted.pts$lon <-ll.data$LON
-  colnames(extracted.pts)[1:nmonths] <- paste0("tmax_", rep(startyr:endyr, each = 12), "_", rep(1:12, nyrears) )
+  colnames(extracted.pts)[1:nmonths] <- paste0("tmax_", rep(startyr:endyr, each = 12), "_", rep(1:12, nyears) )
   extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
   extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
   ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
@@ -332,7 +332,7 @@ pipo.cores.ll$future.climate.ts <- future.climate.ts
 saveRDS(pipo.cores.ll, "pipo.cores.with.downscaled.hydro.ppt.climate_1950_2099_v4.rds")
 
 
-
+head(pipo.cores.ll)
 
 
 pipo.cores.ll <- readRDS( "pipo.cores.with.downscaled.hydro.ppt.climate_1950_2099_v4.rds")
@@ -357,156 +357,6 @@ prev.df$year <- as.numeric(prev.df$year)
 ggplot(prev.df, aes(year, tmax.fall.spr, color = modelrun))+geom_line()+facet_wrap(~rcp)
 
 
-#------------------------------------------------------------------
-# Read in the historical runs for CMIP5 downscaled models
-#------------------------------------------------------------------
-
-# list all the netcdfs
-hydro.obs.files <- list.files("hydro_obs5/", pattern = ".nc")
-
-hydro.obs.ncs <- paste0(getwd(),"/hydro_obs5/", hydro.obs.files)
-
-# for the precipitation:
-x <- hydro.obs.ncs[1]
-
-
-# open the netcdf
-nc <- nc_open(x)
-variableofinterest <- names(nc$var)[3] # get the variable of interest
-ppt <- ncvar_get(nc,variableofinterest) # this extracts a 4 dimensional array of data
-# 3 Dimensional array:
-# dim 1: long
-# dim 2: lat
-# dim 3: time in months (jan 1950 - Dec 1999)
-
-lat <- ncvar_get(nc,names(nc$var)[2]) # get lat
-lon <- ncvar_get(nc, names(nc$var)[1]) # get long
-nc.time <- ncvar_get(nc, "time") # get long
-#projection <- ncvar_get(nc, "projection") # cant get the dimvar, but metadata has info on projections
-
-
-dim(ppt)# look at the dimensions
-nmonths <- dim(ppt)[3] # 3rd dimension is the number of months in the downscaled projections
-nTmax <- dim(ppt)
-nc_close(nc) # close the netcdf file when you are done extracting
-
-
-
-
-
-
-extract.historical.ppt  <- function( ppt, cov.data.ll , nmonths ){ 
-  rlist <- list()
-  # make a raster for each month 
-  for(m in 1:nmonths){ 
-    rlist[[m]] <- raster(as.matrix(ppt[,,m]), xmn = min(lon), xmx = max(lon), 
-                         ymn = min(lat) , ymx = max(lat), 
-                         crs = CRS('+init=epsg:4269'))
-  }
-  
-  rast.stack <- stack(rlist)
-  #plot(rast.stack[[50]]) # can plot for sanity
-  #plot(cov.data.ll, add = TRUE)
-  #States <- raster::getData("GADM", country = "United States", level = 1)
-  
-  
-  # make NH polygon
-  #NH <- States[States$NAME_1 == "Arizona",]
-  
-  # plot a single polygon
-  #plot(NH, add = TRUE)
-  #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") ) # dont recommend trying to change projections of the rasters, it will take much much longer to run this
-  
-  extracted.pts <- data.frame(raster::extract(rast.stack, cov.data.ll))
-  ll.data <- as.data.frame(cov.data.ll)
-  extracted.pts$lat <-ll.data$LAT # get the lat and long
-  extracted.pts$lon <-ll.data$LON
-  
-  colnames(extracted.pts)[1:nmonths] <- paste0("ppt_", rep(1950:1999, each = 12), "_", rep(1:12, 50) ) # note may need to change this to make more customizable
-  extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
-  extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value) # set NA values
-  ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
-  # I use yearly ppt, but we could make a different summary of interest here
-  yearly.ppt <- ext.sep %>% dplyr::group_by(lat, lon, climate, year) %>% dplyr::summarise(year.ppt = sum(value)) 
-  yearly.ppt
-  #ggplot(yearly.ppt, aes(x = year, y = year.ppt))+geom_point() 
-  
-}
-
-
-historical.ppt <- extract.historical.ppt(ppt, cov.data.ll, nmonths)
-
-
-#------------------------------------------------
-# for temperature just use the second netcdf in our downloaded package.
-
-# open the netcdf
-
-x <- hydro.obs.ncs[2]
-
-
-# open the netcdf
-nc <- nc_open(x)
-variableofinterest <- names(nc$var)[3] # get the variable of interest
-tmax <- ncvar_get(nc,variableofinterest) # this extracts a 4 dimensional array of data
-# 3 Dimensional array:
-# dim 1: long
-# dim 2: lat
-# dim 3: time in months (jan 1950 - Dec 1999)
-
-lat <- ncvar_get(nc,names(nc$var)[2]) # get lat
-lon <- ncvar_get(nc, names(nc$var)[1]) # get long
-nc.time <- ncvar_get(nc, "time") # get long
-#projection <- ncvar_get(nc, "projection") # cant get the dimvar, but metadata has info on projections
-
-
-dim(tmax)# look at the dimensions
-nmonths <- dim(tmax)[3] # 3rd dimension is the number of months in the downscaled projections
-nTmax <- dim(tmax)
-nc_close(nc) # close the netcdf file when you are done extracting
-
-
-
-
-# created a second function because I want to summarise the temp data in a different way
-extract.obs.tmax  <- function(Tmax, cov.data.ll, nmonths ){ 
-  
-  # make a raster for each month
-  for(i in 1:nmonths){
-    rlist[[i]] <- raster(as.matrix(tmax[,,i]), xmn = min(lon), xmx = max(lon), 
-                         ymn = min(lat) , ymx = max(lat), 
-                         crs = CRS('+init=epsg:4269'))
-  }
-  
-  rast.stack <- stack(rlist)
-  plot(rast.stack[[9]])
-  plot(cov.data.ll, add = TRUE)
-  
-  #tmax.rast.ll <- projectRaster(tmax.rast, crs =CRS("+init=epsg:4326") )
-  # extracted.pts <- list()
-  extracted.pts <- data.frame(raster::extract(rast.stack, cov.data.ll))
-  
-  ll.data <- as.data.frame(cov.data.ll)
-  extracted.pts$lat <-ll.data$LAT # get the lat and long
-  extracted.pts$lon <-ll.data$LON
-  colnames(extracted.pts)[1:nmonths] <- paste0("tmax_", rep(1950:1999, each = 12), "_", rep(1:12, 50) )
-  extracted.pts.m <- melt(extracted.pts, id.vars = c("lat", "lon"))
-  extracted.pts.m$value <- ifelse(extracted.pts.m$value >= 1e+20, NA, extracted.pts.m$value)
-  ext.sep <- extracted.pts.m %>% tidyr::separate(variable, sep = "_", into = c("climate", "year", "month"))
-  
-  # get the equivalent of our spring-fall tmax
-  yearly.tmax <- ext.sep %>% dplyr::group_by(lat, lon, climate, year) %>% dplyr::filter(month %in% c("5", "6", "7", "8", "9", "10")) %>% 
-    dplyr::summarise(tmax.fall.spr = mean((value), na.rm = TRUE)) # some of the models project tmemparatures will be ~200 deg Farenheight ???
-  yearly.tmax
-  
-  #hist(yearly.tmax$tmax.fall.spr)
-  #ggplot(yearly.tmax, aes(x = as.numeric(year), y = tmax.fall.spr, color = lat ))+geom_point()+stat_smooth()+theme(legend.position = "none")
-}
-
- 
-
-all.obs.tmax <- extract.obs.tmax(Tmax = tmax, cov.data.ll = cov.data.ll, nmonths = nmonths)
-
 # ------------------------------------------------------------------------------------------
 # Compare the time series of climate from CMIP5 models at each site to the observed values
 # ------------------------------------------------------------------------------------------
@@ -522,10 +372,82 @@ tmax.fall.spr$lon <- cov.data.ll.df$LON
 
 colnames(tmax.fall.spr)[1:53] <- 1966:2018
 tmax.fall.spr.obs <- melt(tmax.fall.spr, id.vars = c("lat", "lon"))
-colnames(tmax.fall.spr.obs) <- c("lat", "lon", "year", "PRISM")
+colnames(tmax.fall.spr.obs) <- c("lat", "lon", "year", "PRISM_fall_spr_tmax")
 
-colnames(all.obs.tmax) <- c("lat", "lon", "year", "Historical_sim")
 
-obs.tmax <- left_join(tmax.fall.spr.obs, all.obs.tmax, by = c("lat", "lon"))
+# get water year precip:
+wateryr_ppt <- time_data$wintP.wateryr
+cov.data.ll.df <- as.data.frame(cov.data.ll)
+
+wateryr_ppt$lat <- cov.data.ll.df$LAT
+wateryr_ppt$lon <- cov.data.ll.df$LON
+
+colnames(wateryr_ppt)[1:53] <- 1966:2018
+wateryr_ppt.obs <- melt(wateryr_ppt, id.vars = c("lat", "lon"))
+colnames(wateryr_ppt.obs) <- c("lat", "lon", "year", "PRISM_ppt")
+
+# join the prism  historical climates
+obs.climate <- left_join(wateryr_ppt.obs, tmax.fall.spr.obs, by = c("lat", "lon", "year"))
+
+
+# join the observed climate to the cmip5 dataframe by lat, lon, year & plot the difference:
+
+fut.past.compare <- left_join(clim.ts.df, obs.climate, by = c("lat", "lon", "year"))
+
+ggplot(fut.past.compare, aes(PRISM_ppt, year.ppt))+geom_point()+facet_wrap(~rcp)
+
+fut.past.compare$time_period <- ifelse(fut.past.compare$year < 1965, "1950-1964", 
+                                       ifelse(fut.past.compare$year >= 1965 & fut.past.compare$year < 2018, "1965-2018", 
+                                              ifelse(fut.past.compare$year >= 2018 & fut.past.compare$year < 2049, "2019-2049", 
+                                                     ifelse(fut.past.compare$year >= 2050 & fut.past.compare$year < 2075, "2050-2074", "2075-2099" ))))
+
+
+fut.past.compare$ppt.diff <- fut.past.compare$PRISM_ppt - fut.past.compare$year.ppt
+fut.past.compare$tmax.diff <- fut.past.compare$PRISM_fall_spr_tmax - fut.past.compare$tmax.fall.spr
+
+ts.site.means <- fut.past.compare %>% group_by(lat, lon, rcp, modelrun, time_period ) %>% summarise(ppt.obs = mean(PRISM_ppt, na.rm = TRUE), 
+                                                                               tmax.obs = mean(PRISM_fall_spr_tmax, na.rm = TRUE), 
+                                                                               ppt.fut = mean(year.ppt, na.rm = TRUE), 
+                                                                               tmax.fut = mean(tmax.fall.spr, na.rm = TRUE), 
+                                                                               avg.tmax.diff = mean(tmax.diff, na.rm =TRUE), 
+                                                                               avg.ppt.diff = mean(ppt.diff, na.rm =TRUE))
+
+
+
+ggplot(ts.site.means %>% filter(time_period %in% c("1965-2018")), aes(avg.tmax.diff, fill= rcp))+geom_histogram()+facet_wrap(~rcp)+xlab("tmax obs - tmax fut")+geom_vline(xintercept = 0)
+ggplot(ts.site.means %>% filter(time_period %in% c("1965-2018")), aes(avg.ppt.diff, fill= rcp))+geom_histogram()+facet_wrap(~rcp)+xlab("ppt obs - ppt fut")+geom_vline(xintercept = 0)
+
+
+# Adjust the values of future climate so that all future model run means for historic period match the means for each site, 
+
+# get the mean difference just for 1965-2018
+ts.site.means.1965.2018 <- ts.site.means %>% filter(time_period %in% c("1965-2018")) %>% select(lat, lon, rcp, modelrun, avg.tmax.diff, avg.ppt.diff)
+
+fut.past.means.compare <- left_join(fut.past.compare, ts.site.means.1965.2018, by =c("lat", "lon", "rcp", "modelrun"))
+fut.corr <- fut.past.means.compare
+fut.corr$ppt.corrected <- fut.corr$year.ppt + fut.corr$avg.ppt.diff
+fut.corr$tmax.corrected <- fut.corr$tmax.fall.spr + fut.corr$avg.tmax.diff
+
+
+
+test.df <- fut.corr %>% filter(lat %in% ll.df[120,]$lat & lon %in% ll.df[120,]$lon)
+test.df$year <- as.numeric(test.df$year)
+
+ggplot()+geom_line(data = test.df, aes(year, tmax.corrected, color = modelrun))+
+  geom_line(data = test.df, aes(year, PRISM_fall_spr_tmax), color = "black")+facet_wrap(~rcp)
+
+
+ggplot()+geom_line(data = test.df, aes(year, ppt.corrected, color = modelrun))+
+  geom_line(data = test.df, aes(year, PRISM_ppt), color = "black")+facet_wrap(~rcp)
+
+
+# okay lets save the future climate with the matched means:
+
+saveRDS(fut.corr, "full_time_mean_corrected_CMIP5_model_timeseries.RDS")
+
+fut.corr.sub <- fut.corr %>% filter(year >=2018) %>% select(lat, lon, year, rcp, modelrun, ppt.corrected, tmax.corrected)
+
+saveRDS(fut.corr.sub, "pipo.cores.ds.mean.correct.climate_2018_2099.RDS")
+
 
 
