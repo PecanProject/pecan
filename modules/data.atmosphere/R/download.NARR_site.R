@@ -324,7 +324,7 @@ generate_narr_url <- function(dates, flx) {
     dplyr::mutate(
       year = lubridate::year(.data$date),
       month = lubridate::month(.data$date),
-      daygroup = daygroup(.data$date, .data$flx)
+      daygroup = daygroup(.data$date, flx)
     ) %>%
     dplyr::group_by(.data$year, .data$month, .data$daygroup) %>%
     dplyr::summarize(
