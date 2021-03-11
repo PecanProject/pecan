@@ -344,7 +344,7 @@ generate_narr_url <- function(dates, flx) {
 }
 
 #' Assign daygroup tag for a given date
-daygroup <- function(date, .data$flx) {
+daygroup <- function(date, flx) {
   mday <- lubridate::mday(date)
   mmax <- lubridate::days_in_month(date)
   if (flx) {
