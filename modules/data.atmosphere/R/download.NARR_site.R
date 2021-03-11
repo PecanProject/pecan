@@ -228,6 +228,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     get_dfs <- dplyr::bind_rows(flx_df, sfc_df)
     cl <- parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl)
+    flx <- NULL
     get_dfs$data <- foreach::`%dopar%`(
       foreach::foreach(
         url = get_dfs$url, flx = get_dfs$flx,
