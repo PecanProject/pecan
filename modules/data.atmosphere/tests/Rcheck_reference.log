@@ -156,7 +156,6 @@ extract.nc.ERA5 : <anonymous>: no visible binding for global variable
   ‘.’
 get_NARR_thredds: no visible binding for global variable ‘latitude’
 get_NARR_thredds: no visible binding for global variable ‘longitude’
-get_NARR_thredds: no visible binding for global variable ‘flx’
 get_narr_url: no visible binding for global variable ‘NARR_name’
 get.cruncep: no visible binding for global variable ‘Lat’
 get.cruncep: no visible binding for global variable ‘lati’
@@ -424,7 +423,7 @@ Argument items with no description in Rd object 'split_wind':
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
 * checking data for ASCII and uncompressed saves ... WARNING
-  
+
   Note: significantly better compression could be obtained
         by using R CMD build --resave-data
                              old_size new_size compress
