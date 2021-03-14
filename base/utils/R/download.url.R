@@ -23,16 +23,16 @@
 download.url <- function(url, file, timeout = 600, .opts = list(), retry404 = TRUE) {
   dir.create(basename(file), recursive = TRUE)
   count <- 0
-  while (!RCurl::url.exists(url, .opts = .opts) && count < timeout) {
+  while (!curl::curl_fetch_memory(url, handle = curl::new_handle(nobody = 1)) && count < timeout) {
     count <- count + 1
     Sys.sleep(1)
   }
   if (count >= timeout) {
     return(NA)
   }
-  f <- RCurl::CFILE(file, mode = "wb")
-  RCurl::curlPerform(url = url, writedata = f@ref, .opts = .opts)
-  RCurl::close(f)
+  f <- open(file, mode = "wb")
+  curl::curl_download(url, file, handle = curl::new_handle(.list = .opts))
+  close(f)
   
   return(file)
 } # download.url
