@@ -72,8 +72,7 @@ run.write.configs: no visible binding for global variable
 run.write.configs: no visible binding for global variable ‘sa.samples’
 run.write.configs: no visible binding for global variable
   ‘ensemble.samples’
-summarize.result: no visible binding for global variable ‘n’
-summarize.result: no visible binding for global variable ‘statname’
+
 Undefined global functions or variables:
   . citation_id control cultivar_id ensemble.samples
   get.parameter.samples greenhouse id median n nr runs.samples
@@ -219,5 +218,3 @@ Status: 5 WARNINGs, 5 NOTEs
 See
   ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck/00check.log’
 for details.
-
-
