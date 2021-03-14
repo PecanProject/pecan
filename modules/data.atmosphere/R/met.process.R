@@ -531,7 +531,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
   result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
-                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+                     fileData = curl::curl_upload('pecan.xml'), .opts = curloptions)
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
   downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
