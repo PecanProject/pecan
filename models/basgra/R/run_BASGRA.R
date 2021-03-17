@@ -73,7 +73,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       matrix_weather[ ,1] <- rep(year, NDAYS) # year
       matrix_weather[ ,2] <- simdays
       
-      old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
+      if(grepl(year, basename(file_path))){
+        # we probably have a (near-term) forecast met
+        old.file <- file_path
+      }else{
+        old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
+      }
+      
       
       if (file.exists(old.file)) {
         
