@@ -30,6 +30,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                        sitelat, sitelon, co2_file = NULL){
   
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
+  if(lubridate::hour(start_date) == 23){ 
+    # could be made more sophisticated but if it is specified to the hour this is probably coming from SDA
+    start_date <- lubridate::ceiling_date(start_date, "day")
+  }
   end_date    <- as.POSIXlt(end_date, tz = "UTC")
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
