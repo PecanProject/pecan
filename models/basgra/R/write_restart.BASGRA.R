@@ -48,6 +48,7 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   PEcAn.logger::logger.info(runid)
   PEcAn.logger::logger.info(analysis.save.mat)
   
+  settings$run$inputs$met <- inputs$met
   do.call(write.config.BASGRA, args = list(defaults     = NULL,
                                            trait.values = new.params,
                                            settings = settings,
