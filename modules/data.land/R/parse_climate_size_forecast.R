@@ -304,7 +304,9 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
   
   future.proj <- unique(ens.means[ens.means$id == m & ens.means$rcp == scenario, ])
   proj.ordered <- future.proj[order(future.proj$year),]
-  
+  # now filter for the full ensemble
+  future.ens <- clim.ts.df.full[clim.ts.df.full$id == m & clim.ts.df.full$rcp == scenario,]
+  ens.proj.ordered <-  future.ens[order( future.ens$year),]
   #---------------------------------------------------------------------------
   ##  Uncertainty from Initial conditions AND parameters uncertainty but means drawn from past climate recycled
   #---------------------------------------------------------------------------
@@ -384,33 +386,57 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
   inc.ic.param.past.nodbh <- apply(na.omit(inc), 2,function(x){quantile(x, c(0.025, 0.25, 0.5, 0.975), na.rm = TRUE)})
   
   
-  #---------------------------------------------------------------------------
-  ##  Uncertainty from Initial conditions AND parameters uncertainty AND future Driver uncertainty
-  #---------------------------------------------------------------------------
   
   # use all of the parameter MCMCS:
   
-  # 
-  # just use the ensemble means (w.out driver uncertainty)
-  ppt <- tmax <- SDI <- SICOND <-matrix(NA, nrow =length((length(betas[,"betaSDI"])-3299) : length(betas[,"betaSDI"])), ncol = 82 )
-  for(i in 1:82){
+  ppt <- tmax <- SDI <-SICOND <- matrix(NA, nrow =1000, ncol = 82 )
+  yeardf<- 2018:2099
+  
+  # want to sample 1 of the 21-31 models (not all models have all RCP scenarios) for each new sample:
+  models <- unique(ens.proj.ordered$modelrun)
+  sample.model <- sample(models, size = length(models), replace= FALSE)
+  
+  
+  # for(i in 1:1000){
+  #   
+  #   ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+  #   ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
+  #   
+  #   # just sample from the distribution of climate:
+  #   ppt[i,] <- ens.proj.yr$ppt.scale
+  #   tmax[i,] <- ens.proj.yr$tmax.scaled
+  #   
+  #   #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+  #   #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+  #   SDI[i,]<- rep(cov.data[m, ]$SDI, 82)
+  #   SICOND[i,]<- rep(cov.data[m, ]$SICOND, 82)
+  #   df <- data.frame(ppt, tmax, SDI, SICOND)
+  #   df
+  # }
+  get.ens.df <- function(i){
     
-    ppt[,i]<- rnorm(n = length((length(betas[,"betaSDI"])-3299) : length(betas[,"betaSDI"])) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
-    tmax[,i]<- rnorm(n = length((length(betas[,"betaSDI"])-3299) : length(betas[,"betaSDI"])) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
-    SDI[,i]<- rep(cov.data[m, ]$SDI, length((length(betas[,"betaSDI"])-3299) : length(betas[,"betaSDI"])))
-    SICOND[,i]<- rep(cov.data[m, ]$SICOND, length((length(betas[,"betaSDI"])-3299) : length(betas[,"betaSDI"])))
+    ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+    ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
+    
+    # # just sample from the distribution of climate:
+    # ppt <- ens.proj.yr$ppt.scale
+    # tmax <- ens.proj.yr$tmax.scaled
+    # 
+    # #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+    # #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+    # SDI<- rep(cov.data[m, ]$SDI, 82)
+    # SICOND<- rep(cov.data[m, ]$SICOND, 82)
+    df <- data.frame(ppt = ens.proj.yr$ppt.scale, 
+                     tmax = ens.proj.yr$tmax.scaled, 
+                     SDI =  rep(cov.data[m, ]$SDI, 82), 
+                     SICOND =  rep(cov.data[m, ]$SDI, 82), 
+                     i = i, 
+                     year = ens.proj.yr$year)
+    df
   }
   
-  
-  covariates <- list()
-  covariates$SDI <- SDI
-  covariates$ppt <- ppt
-  covariates$tmax <- tmax
-  covariates$SICOND <- SICOND
-  
-  #covariates <- list(SDI, ppt, tmax)
-  
-  
+  ens.samps <- lapply(1:length(models), get.ens.df)
+  ens.samps.df <- do.call(rbind, ens.samps)
   
   time_steps <- 82
   nMCMC <- length(x.mat[,paste0("x[1,",jags.new$data$nt,"]")])
@@ -418,18 +444,18 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
   inc <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                                ppt = covariates$ppt[,t], 
-                                                                                                                                                                                tmax = covariates$tmax[,t],
-                                                                                                                                                                                SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates =  data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                                 ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                                 tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                                 SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")]
       
     }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                             ppt = covariates$ppt[,t], 
-                                                                                                                                             tmax = covariates$tmax[,t],
-                                                                                                                                             SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                             ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                             tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                             SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -455,18 +481,18 @@ plot.future.forecast.clim.dbh.scenario <- function(m,  scenario = "rcp26",  prin
   inc <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.no.change.dbh(x = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], x.dbh = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                                                                                                     ppt = covariates$ppt[,t], 
-                                                                                                                                                                                                                                                     tmax = covariates$tmax[,t],
-                                                                                                                                                                                                                                                     SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.no.change.dbh(x = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], x.dbh = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                                                                                                     ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                                                                                                     tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                                                                                                     SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")]
       
     }else{
-      dbh.pred <- iterate_statespace.no.change.dbh(x = forecast[,t-1],x.dbh = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                                                                 ppt = covariates$ppt[,t], 
-                                                                                                                                                                                                                 tmax = covariates$tmax[,t],
-                                                                                                                                                                                                                 SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.no.change.dbh(x = forecast[,t-1],x.dbh = x.mat[,paste0("x[", m,",", jags.new$data$nt,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                                                                 ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                                                                 tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                                                                 SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -660,6 +686,9 @@ filename <- "scenarios/tree_1_Increment_rcp26_SDI_SI.norand.X.nadapt.5000_scenar
 
 inc.differences <- function(filename, type = "diff"){
   increment.projs <- read.csv(filename)
+  ggplot()+geom_line(data = increment.projs, aes(x = year, y = Median, color = Forecast.type))+
+    geom_ribbon(data = increment.projs, aes(x = year, ymin = Low, ymax = High, fill = Forecast.type), alpha = 0.5)
+  
   
   low.est <- increment.projs %>% select( year, Low, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Low, drop = TRUE)
   median.est <- increment.projs %>% select( year, Median, Forecast.type)%>% group_by(year) %>% spread( Forecast.type, Median, drop = TRUE)
@@ -764,19 +793,20 @@ df.of.pct.diffs$runid <- rep(1:515, sapply(list.of.pct.diffs , nrow))
 
 get.ids.large <- df.of.pct.diffs %>% filter(median > 250)
 
+hist(df.of.pct.diffs$median)
+
 mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(high.avg = mean(high, na.rm = TRUE), 
                                                                              low.avg = mean(low, na.rm = TRUE), 
                                                                              median.avg = mean(median, na.rm = TRUE), 
                                                                              midpt.avg = mean (midpt, na.rm =TRUE),
                                                                              
-                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
-                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
-                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             high.lo.ci = quantile(high, 0.05, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.05, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.05, na.rm = TRUE),
                                                                              
-                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
-                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
-                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
-
+                                                                             high.hi.ci = quantile(high, 0.95, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.95, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.95, na.rm = TRUE))
 
 mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
                               ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
@@ -791,7 +821,7 @@ diff_pct_plot.26 <- ggplot(data = mean.pct.diffs.2.6, aes(x=year, fill = scen))+
   geom_ribbon(aes(ymin=median.lo.ci, ymax=median.hi.ci), color = "grey", alpha = 0.5)+geom_hline(aes(yintercept = 0), linetype = "dashed", color = "grey")+
   geom_line(data = mean.pct.diffs.2.6,aes(x = year, y = med.line, color = scen))+
   ylab("Mean % Change in Increment")+
-  xlab("Year")+theme_bw()+#+ylim(-145, 0)+
+  xlab("Year")+theme_bw()+
   scale_fill_manual(values = my_cols, name = NULL)+ scale_color_manual(values = my_cols, name = NULL)+ theme( panel.grid = element_blank())#+facet_wrap(~Forecast.type, ncol = 1, scales = "free_y")
 
 diff_pct_plot.26 
@@ -808,14 +838,13 @@ mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(hig
                                                                              low.avg = mean(low, na.rm = TRUE), 
                                                                              median.avg = mean(median, na.rm = TRUE), 
                                                                              
-                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
-                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
-                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             high.lo.ci = quantile(high, 0.05, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.05, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.05, na.rm = TRUE),
                                                                              
-                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
-                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
-                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
-
+                                                                             high.hi.ci = quantile(high, 0.95, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.95, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.95, na.rm = TRUE))
 mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
                               ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
                                      ifelse(mean.pct.diffs$variable %in% "climate.change.DBH.change.diff.pct", "Climate change + DBH change",NA)))
@@ -847,14 +876,13 @@ mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(hig
                                                                              low.avg = mean(low, na.rm = TRUE), 
                                                                              median.avg = mean(median, na.rm = TRUE), 
                                                                              
-                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
-                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
-                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             high.lo.ci = quantile(high, 0.05, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.05, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.05, na.rm = TRUE),
                                                                              
-                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
-                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
-                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
-
+                                                                             high.hi.ci = quantile(high, 0.95, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.95, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.95, na.rm = TRUE))
 
 mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
                               ifelse(mean.pct.diffs$variable %in% "climate.change.diff.pct", "Climate change only",
@@ -887,13 +915,13 @@ mean.pct.diffs <- df.of.pct.diffs %>% group_by(year, variable) %>% summarise(hig
                                                                              low.avg = mean(low, na.rm = TRUE), 
                                                                              median.avg = mean(median, na.rm = TRUE), 
                                                                              
-                                                                             high.lo.ci = quantile(high, 0.025, na.rm = TRUE), 
-                                                                             low.lo.ci = quantile(low, 0.025, na.rm = TRUE), 
-                                                                             median.lo.ci = quantile(median, 0.025, na.rm = TRUE),
+                                                                             high.lo.ci = quantile(high, 0.05, na.rm = TRUE), 
+                                                                             low.lo.ci = quantile(low, 0.05, na.rm = TRUE), 
+                                                                             median.lo.ci = quantile(median, 0.05, na.rm = TRUE),
                                                                              
-                                                                             high.hi.ci = quantile(high, 0.975, na.rm = TRUE), 
-                                                                             low.hi.ci = quantile(low, 0.975, na.rm = TRUE), 
-                                                                             median.hi.ci = quantile(median, 0.975, na.rm = TRUE))
+                                                                             high.hi.ci = quantile(high, 0.95, na.rm = TRUE), 
+                                                                             low.hi.ci = quantile(low, 0.95, na.rm = TRUE), 
+                                                                             median.hi.ci = quantile(median, 0.95, na.rm = TRUE))
 
 
 mean.pct.diffs$scen <- ifelse(mean.pct.diffs$variable %in% "DBH.change.diff.pct", "DBH change only",
@@ -920,10 +948,10 @@ diff.legend<- get_legend(diff_pct_plot.26)
 
 png(height = 5, width = 12, units = "in", res = 300, "Median_Percent_difference_climate_dbh_increment_allrcps.png")
 plot_grid(
-  plot_grid(diff_pct_plot.26+theme(legend.position = "none")+ylim(-285, 20), 
-            diff_pct_plot.45+theme(legend.position = "none")+ylim(-285, 20), 
-            diff_pct_plot.60+theme(legend.position = "none")+ylim(-285, 20),
-            diff_pct_plot.85+theme(legend.position = "none")+ylim(-285, 20), ncol = 4,labels = "AUTO", align = "hv"),
+  plot_grid(diff_pct_plot.26+theme(legend.position = "none")+ylim(-285, 110), 
+            diff_pct_plot.45+theme(legend.position = "none")+ylim(-285, 110), 
+            diff_pct_plot.60+theme(legend.position = "none")+ylim(-285, 110),
+            diff_pct_plot.85+theme(legend.position = "none")+ylim(-285, 110), ncol = 4,labels = "AUTO", align = "hv"),
   diff.legend, ncol = 1, rel_heights = c(1, 0.25))
 dev.off()
 

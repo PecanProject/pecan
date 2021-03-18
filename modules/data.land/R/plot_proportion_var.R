@@ -8,12 +8,12 @@
 # 4. Driver uncertainty (?)
 
 stage2 = FALSE
-output.base.name <- "SDI_SI.norand.X.nadapt.5000"
+output.base.name <- "SDI_SI.norand.X.resampled"
 setwd("/home/rstudio")
 
 # assuming that we already ran the conditional_effects_mcmc_plots script, and that output.base.name is in our env
-jags.comb.params <- readRDS(file=paste0("data/IGF",output.base.name,".rds"))
-jags.comb.params <- readRDS(url("https://de.cyverse.org/dl/d/FCC8972B-4F82-4BF5-9689-905B0B63E50F/IGFSDI_noSI.rand.X.nadapt.5000.rds"))
+#jags.comb.params <- readRDS(file=paste0("data/IGF",output.base.name,".rds"))
+#jags.comb.params <- readRDS(url("https://de.cyverse.org/dl/d/FCC8972B-4F82-4BF5-9689-905B0B63E50F/IGFSDI_noSI.rand.X.nadapt.5000.rds"))
 jags.comb.params <- readRDS(file=paste0("/home/rstudio/data/IGFFull.model.validation.nadapt5000.rds"))
 
 
@@ -1730,9 +1730,9 @@ clim.ts.df$tmax.scaled <-(clim.ts.df$tmax.fall.spr-mean(as.matrix(clim.data$tmax
 
 rm(tmax.fallspr)
 climate.ensemble.means <- clim.ts.df %>% group_by(lat, lon, year, rcp) %>% 
-  dplyr::summarise(mean.tmax.fs = quantile(tmax.scaled, na.rm = TRUE, 0.5), 
+  dplyr::summarise(mean.tmax.fs = mean(tmax.scaled, na.rm = TRUE), 
                    SD.tmax = var(tmax.scaled, na.rm = TRUE),
-                   mean.ppt = quantile(ppt.scale, na.rm = TRUE, 0.5), 
+                   mean.ppt = mean(ppt.scale, na.rm = TRUE), 
                    SD.ppt = sd(ppt.scale, na.rm = TRUE),
                    n = n()) 
 hist(climate.ensemble.means$mean.ppt )
@@ -1762,8 +1762,10 @@ set.seed (11)
 
 
 
-
+#--------------------------------------------------------------------------------------------------
 # function for partitioning uncertinaty into driver, IC, random effects, parameter error, and process error
+#--------------------------------------------------------------------------------------------------
+
 plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario = "rcp26", type = "dbh", print =TRUE, Xplot = FALSE){
   #-----------------------------------------------------------------------
   # Partitioning uncertainty
@@ -1857,6 +1859,7 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   # filter out for the means
   future.proj <- ens.means[ens.means$id == m & ens.means$rcp == scenario, ]
   proj.ordered <- future.proj[order(future.proj$year),]
+  
   
   # now filter for the full ensemble
   future.ens <- clim.ts.df.full[clim.ts.df.full$id == m & clim.ts.df.full$rcp == scenario,]
@@ -2034,6 +2037,8 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   #proj.ordered <- future.proj[order(future.proj$year),]
   
   # just use the ensemble means (w.out driver uncertainty)
+  
+  
   ppt <- proj.ordered$mean.ppt
   tmax <- proj.ordered$mean.tmax.fs
   #ppt <- time_data$wintP.wateryr[m,]
@@ -2073,16 +2078,54 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   
   # 
   # just use the ensemble means (w.out driver uncertainty)
-  ppt <- tmax <- SDI <-SICOND <- matrix(NA, nrow =length(7501:15300), ncol = 82 )
-  for(i in 1:82){
+  ppt <- tmax <- SDI <-SICOND <- matrix(NA, nrow =1000, ncol = 82 )
+  yeardf<- 2018:2099
+  
+  # want to sample 1 of the 21-31 models (not all models have all RCP scenarios) for each new sample:
+  models <- unique(ens.proj.ordered$modelrun)
+  sample.model <- sample(models, size = length(models), replace= FALSE)
+  
+  
+  # for(i in 1:1000){
+  #   
+  #   ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+  #   ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
+  #   
+  #   # just sample from the distribution of climate:
+  #   ppt[i,] <- ens.proj.yr$ppt.scale
+  #   tmax[i,] <- ens.proj.yr$tmax.scaled
+  #   
+  #   #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+  #   #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+  #   SDI[i,]<- rep(cov.data[m, ]$SDI, 82)
+  #   SICOND[i,]<- rep(cov.data[m, ]$SICOND, 82)
+  #   df <- data.frame(ppt, tmax, SDI, SICOND)
+  #   df
+  # }
+  get.ens.df <- function(i){
     
-    ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
-    tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
-    SDI[,i]<- rep(cov.data[m, ]$SDI, length(7501:15300))
-    SICOND[,i]<- rep(cov.data[m, ]$SICOND, length(7501:15300))
+    ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+    ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
     
+    # # just sample from the distribution of climate:
+    # ppt <- ens.proj.yr$ppt.scale
+    # tmax <- ens.proj.yr$tmax.scaled
+    # 
+    # #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+    # #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+    # SDI<- rep(cov.data[m, ]$SDI, 82)
+    # SICOND<- rep(cov.data[m, ]$SICOND, 82)
+    df <- data.frame(ppt = ens.proj.yr$ppt.scale, 
+                     tmax = ens.proj.yr$tmax.scaled, 
+                     SDI =  rep(cov.data[m, ]$SDI, 82), 
+                     SICOND =  rep(cov.data[m, ]$SDI, 82), 
+                     i = i, 
+                     year = ens.proj.yr$year)
+    df
   }
   
+  ens.samps <- lapply(1:length(models), get.ens.df)
+  ens.samps.df <- do.call(rbind, ens.samps)
   # for(i in 2018:2099){
   # 
   #   
@@ -2096,11 +2139,11 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   #tmax <- time_data$tmax.fallspr[m,]
   #SDI <- rep(cov.data[m, ]$SDI, length(ppt))
   #x <- x.mat[,"x[1,53]"]
-  covariates <- list()
-  covariates$SDI <- SDI
-  covariates$ppt <- ppt
-  covariates$tmax <- tmax
-  covariates$SICOND <- SICOND
+  # covariates <- list()
+  # covariates$SDI <- SDI
+  # covariates$ppt <- ppt
+  # covariates$tmax <- tmax
+  # covariates$SICOND <- SICOND
   #covariates <- list(SDI, ppt, tmax)
   
   
@@ -2111,18 +2154,18 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   inc <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", 53,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                  ppt = covariates$ppt[,t], 
-                                                                                                                                                                  tmax = covariates$tmax[,t],
-                                                                                                                                                                  SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", 53,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                  ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                  tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                  SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", 53,"]")]
       
     }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                             ppt = covariates$ppt[,t], 
-                                                                                                                                             tmax = covariates$tmax[,t],
-                                                                                                                                             SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                             ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                             tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                             SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -2151,17 +2194,17 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", 53,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev,SDinc = Sdevinc,  covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                                      ppt = covariates$ppt[,t], 
-                                                                                                                                                                                      tmax = covariates$tmax[,t], 
-                                                                                                                                                                                      SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", 53,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev,SDinc = Sdevinc,  covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                                      ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                                      tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                                      SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", 53,"]")]
     }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, SDinc = Sdevinc,covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                ppt = covariates$ppt[,t], 
-                                                                                                                                                                tmax = covariates$tmax[,t],
-                                                                                                                                                                SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, SDinc = Sdevinc,covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -2228,10 +2271,10 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   
   
   predY_plot <- ggplot(data = pred.sims.class, aes(x=year, fill = uncertainty))+
-    geom_ribbon(aes(ymin=Low, ymax=High), color = "grey")+
+    geom_ribbon(aes(ymin=Low, ymax=High))+
     ylab(axis.name)+
     xlab("Year")+theme_bw()+
-    scale_fill_manual(values = my_cols, name = NULL)+ theme(legend.position = "none", panel.grid = element_blank())+ylim(-10, 1)
+    scale_fill_manual(values = my_cols, name = NULL)+ theme(legend.position = "none", panel.grid = element_blank())#+ylim(-10, 1)
   
   predY_plot
   
@@ -2270,6 +2313,9 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   write.csv(variance.df, paste0("variance_partitioning/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_proportion", ".csv"))
   write.csv(pred.sims.class, paste0("variance_partitioning/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_totalunc", ".csv"))
   
+  #write.csv(variance.df, paste0("variance_partitioning/tree_", m,"_", "Diameter", "_", scenario,"_",output.base.name,"_proportion", ".csv"))
+  #write.csv(pred.sims.class, paste0("variance_partitioning/tree_", m,"_", "Diameter", "_", scenario,"_",output.base.name,"_totalunc", ".csv"))
+  
   if(print == TRUE){
     if(prop == TRUE){
       prop.var
@@ -2281,11 +2327,15 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
     cat(m)
   }
 }
-tree.1 <- plot.prop.variance.future.forecast.driver(m = 1, prop = TRUE, scenario = "rcp26", type = "ringwidth", print = TRUE)
-tree1.dbh <- plot.prop.variance.future.forecast.driver(m = 12, prop = TRUE, scenario = "rcp26", type = "dbh", print = TRUE)
+system.time(tree.1 <- plot.prop.variance.future.forecast.driver(m = 1, prop = TRUE, scenario = "rcp26", type = "ringwidth", print = TRUE))
+
+tree1.dbh <- plot.prop.variance.future.forecast.driver(m = 12, prop = FALSE, scenario = "rcp26", type = "dbh", print = TRUE)
 
 tree1.dbh.tot <- plot.prop.variance.future.forecast.driver(m = 1, prop = FALSE, scenario = "rcp26", type = "dbh", print = TRUE)
 tree1.inc.tot <- plot.prop.variance.future.forecast.driver(m = 1, prop = FALSE, scenario = "rcp26", type = "ringwidth", print = TRUE)
+tree1.inc.tot <- plot.prop.variance.future.forecast.driver(m = 1, prop = FALSE, scenario = "rcp85", type = "ringwidth", print = TRUE)
+tree1.inc.tot <- plot.prop.variance.future.forecast.driver(m = 1, prop = TRUE, scenario = "rcp85", type = "dbh", print = TRUE)
+tree12.inc.tot <- plot.prop.variance.future.forecast.driver(m = 12, prop = FALSE, scenario = "rcp85", type = "dbh", print = TRUE)
 
 #treeds <- c(1:38, 43:54)
 treeds <- c(1:515)
@@ -2365,7 +2415,7 @@ inc.prop.85 <- do.call(rbind, inc.prop.list.85)
 
 inc.prop.all <- rbind(inc.prop, inc.prop.45, inc.prop.60, inc.prop.85)
 saveRDS(inc.prop.all, paste0("inc.prop.all_",output.base.name, ".RDS"))
-inc.prop.all <- readRDS( paste0("inc.prop.all_",output.base.name, ".RDS"))
+#inc.prop <- read.csv("variance_partitioning/tree_100_Increment_rcp26_proportion.csv")
 
 
 inc.prop.wide <- inc.prop.all %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
@@ -2383,9 +2433,9 @@ inc.prop.long <- inc.prop.wide %>% group_by(period, year, treeid, x, rcp) %>% se
                                                                                      -`Plot random effect`, -`Process Error`) %>%
   gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #inc.prop.wide <- reshape2::melt(inc.prop.wide)
-rcp.inc.prop <- inc.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value), 
-                                                                                   ci.lo = quantile(value, 0.025), 
-                                                                                   ci.hi = quantile(value, 0.975)) 
+rcp.inc.prop <- inc.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm = TRUE), 
+                                                                                   ci.lo = quantile(value, 0.025, na.rm=TRUE), 
+                                                                                   ci.hi = quantile(value, 0.975, na.rm =TRUE)) 
 rcp.inc.prop$Uncertainty <- factor(rcp.inc.prop$Uncertainty , levels = c("ProcessError", 
                                                                          "DriverUnc", 
                                                                          "PlotrandUnc", 
@@ -2423,14 +2473,11 @@ my_cols <- c("#1b9e77",
 increment.unc.summary.prop <- ggplot(rcp.inc.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
   ylab("Proportion of Uncertainty\n in Increment")+xlab("RCP Scenario")+scale_fill_manual(values = my_cols, name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
-
+increment.unc.summary.prop
 
 png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name,  paste0("_Proportion_increment_unc_proportion_all_rcp_all_time",output.base.name,".png")))
 increment.unc.summary.prop
 dev.off()
-
-
-# get example tree by year 
 
 
 #------------------------------------------------------------------------------------------
@@ -2761,7 +2808,7 @@ prop.inc <- plot.prop.variance.future.forecast.driver(m = 400, prop = TRUE, scen
 total.inc <- plot.prop.variance.future.forecast.driver(m = 400, prop = FALSE, scenario = "rcp26", type = "ringwidth")
 prop.dbh <- plot.prop.variance.future.forecast.driver(m = 400, prop = TRUE, scenario = "rcp26", type = "dbh")
 total.dbh <- plot.prop.variance.future.forecast.driver(m = 400, prop = FALSE, scenario = "rcp26", type = "dbh")
-legend.colors <- get_legend(prop.inc)
+legend.colors <- cowplot::get_legend(prop.inc)
 
 
 png(height = 6, width = 10, units = "in", res = 300, "Uncertainty_partition_tree_400.png")
@@ -2873,7 +2920,7 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   # now filter for the full ensemble
   future.ens <- clim.ts.df.full[clim.ts.df.full$id == m & clim.ts.df.full$rcp == scenario,]
   ens.proj.ordered <-  future.ens[order( future.ens$year),]
-  #
+  sample.model <- unique(ens.proj.ordered$modelrun)
   
   #---------------------------------------------------------------------------
   ##  breaking down total Driver uncertainty
@@ -2882,21 +2929,42 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   
   # Include all driver uncertainty: Both Temperature and Precipitation uncertainty:
   ppt <- tmax <- SDI <-SICOND <- matrix(NA, nrow =length(7501:15300), ncol = 82 )
-  for(i in 1:82){
+  #for(i in 1:82){
+  
+  #   ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+  #   tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+  #   SDI[,i]<- rep(cov.data[m, ]$SDI, length(7501:15300))
+  #   SICOND[,i]<- rep(cov.data[m, ]$SICOND, length(7501:15300))
+  #   
+  # }
+  # 
+  get.ens.df <- function(i){
     
-    ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
-    tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
-    SDI[,i]<- rep(cov.data[m, ]$SDI, length(7501:15300))
-    SICOND[,i]<- rep(cov.data[m, ]$SICOND, length(7501:15300))
+    ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+    ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
     
+    # # just sample from the distribution of climate:
+    # ppt <- ens.proj.yr$ppt.scale
+    # tmax <- ens.proj.yr$tmax.scaled
+    # 
+    # #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+    # #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+    # SDI<- rep(cov.data[m, ]$SDI, 82)
+    # SICOND<- rep(cov.data[m, ]$SICOND, 82)
+    df <- data.frame(ppt = ens.proj.yr$ppt.scale, 
+                     tmax = ens.proj.yr$tmax.scaled, 
+                     SDI =  rep(cov.data[m, ]$SDI, 82), 
+                     SICOND =  rep(cov.data[m, ]$SDI, 82), 
+                     i = i, 
+                     year = ens.proj.yr$year)
+    df
   }
   
+  ens.samps <- lapply(1:length(sample.model), get.ens.df)
+  ens.samps.df <- do.call(rbind, ens.samps)
   
-  covariates <- list()
-  covariates$SDI <- SDI
-  covariates$ppt <- ppt
-  covariates$tmax <- tmax
-  covariates$SICOND <- SICOND
+  
+  
   
   #covariates <- list(SDI, ppt, tmax)
   time_steps <- 82
@@ -2905,18 +2973,18 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   inc <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                        ppt = covariates$ppt[,t], 
-                                                                                                                                                                        tmax = covariates$tmax[,t],
-                                                                                                                                                                        SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                        ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                        tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                        SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", 53,"]")]
       
     }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                             ppt = covariates$ppt[,t], 
-                                                                                                                                             tmax = covariates$tmax[,t],
-                                                                                                                                             SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                             ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                             tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                             SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -2935,21 +3003,45 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   
   # 
   # including precipitation uncertainty, but no temperature uncertainty
-  tmax <- SDI <- matrix(NA, nrow =length(7501:15300), ncol = 82 )
-  for(i in 1:82){
-    # use the same value for the previous iterations
-    #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
-    tmax[,i]<- rep( proj.ordered[i,]$mean.tmax.fs, length(7501:15300))
-    SDI[,i]<- rep(cov.data[m, ]$SDI, length(7501:15300))
-    SICOND[,i]<- rep(cov.data[m, ]$SICOND, length(7501:15300))
+  # tmax <- SDI <- matrix(NA, nrow =length(7501:15300), ncol = 82 )
+  # for(i in 1:82){
+  #   # use the same value for the previous iterations
+  #   #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+  #   tmax[,i]<- rep( proj.ordered[i,]$mean.tmax.fs, length(7501:15300))
+  #   SDI[,i]<- rep(cov.data[m, ]$SDI, length(7501:15300))
+  #   SICOND[,i]<- rep(cov.data[m, ]$SICOND, length(7501:15300))
+  # }
+  # 
+  get.ens.df <- function(i){
+    
+    ens.proj.yr <- ens.proj.ordered %>% filter(modelrun %in% sample.model[i])
+    ens.proj.yr <- ens.proj.yr [!duplicated(ens.proj.yr),]
+    
+    # # just sample from the distribution of climate:
+    # ppt <- ens.proj.yr$ppt.scale
+    # tmax <- ens.proj.yr$tmax.scaled
+    # 
+    # #ppt[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.ppt, sd = proj.ordered[i,]$SD.ppt)
+    # #tmax[,i]<- rnorm(n = length(7501:15300) , mean = proj.ordered[i,]$mean.tmax.fs, sd = proj.ordered[i,]$SD.tmax)
+    # SDI<- rep(cov.data[m, ]$SDI, 82)
+    # SICOND<- rep(cov.data[m, ]$SICOND, 82)
+    df <- data.frame(ppt = ens.proj.yr$ppt.scale,  
+                     tmax = proj.ordered$mean.tmax.fs,
+                     SDI =  rep(cov.data[m, ]$SDI, 82), 
+                     SICOND =  rep(cov.data[m, ]$SDI, 82), 
+                     i = i, 
+                     year = ens.proj.yr$year)
+    df
   }
   
+  ens.samps <- lapply(1:length(sample.model), get.ens.df)
+  ens.samps.df <- do.call(rbind, ens.samps)
   
-  covariates <- list()
-  covariates$SDI <- SDI
-  covariates$ppt <- ppt
-  covariates$tmax <- tmax
-  covariates$SICOND <- SICOND
+  #covariates <- list()
+  # covariates$SDI <- SDI
+  # covariates$ppt <- ppt
+  # covariates$tmax <- tmax
+  # covariates$SICOND <- SICOND
   
   #covariates <- list(SDI, ppt, tmax)
   
@@ -2960,18 +3052,18 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   inc <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
   for(t in 1:time_steps){
     if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                                                        ppt = covariates$ppt[,t], 
-                                                                                                                                                                        tmax = covariates$tmax[,t],
-                                                                                                                                                                        SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates =  data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                                                         ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                                                         tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                                                         SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-x.mat[,paste0("x[", m,",", 53,"]")]
       
     }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = data.frame(SDI = covariates$SDI[,t], 
-                                                                                                                                             ppt = covariates$ppt[,t], 
-                                                                                                                                             tmax = covariates$tmax[,t],
-                                                                                                                                             SICOND = covariates$SICOND[,t]))
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates =  data.frame(SDI = ens.samps.df %>% filter(year == t + 2017) %>% select(SDI), 
+                                                                                                                                              ppt = ens.samps.df %>% filter(year == t + 2017) %>% select(ppt), 
+                                                                                                                                              tmax = ens.samps.df %>% filter(year == t + 2017) %>% select(tmax), 
+                                                                                                                                              SICOND = ens.samps.df %>% filter(year == t + 2017) %>% select(SICOND)))
       forecast[,t] <- dbh.pred
       inc[,t]<- forecast[,t]-forecast[,t-1]
       
@@ -2989,7 +3081,7 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
     V.pred.sim     <- rbind(variance.ppt.driver, variancetotal.driver)
     V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
     
-    pred.sims     <- data.frame(Precipitation.0 =forecast.ppt.driver[1,],
+    pred.sims     <- data.frame(Precipitation.0 = forecast.ppt.driver[1,],
                                 Temperature.0 = forecast.all.driver[1,],
                                 Precipitation.100 =forecast.ppt.driver[5,],
                                 Temperature.100 =forecast.all.driver[5,],
@@ -3080,6 +3172,8 @@ plot.prop.variance.driver <- function(m, prop =TRUE, scenario = "rcp26", type = 
   }
 }
 
+plot.prop.variance.driver(m = 222, prop = TRUE, scenario = "rcp26", type = "ringwidth", print = TRUE, Xplot = FALSE)
+plot.prop.variance.driver(m = 1, prop = TRUE, scenario = "rcp26", type = "ringwidth", print = TRUE, Xplot = FALSE)
 
 # run this and save outputs for all the trees
 
@@ -3102,14 +3196,6 @@ for(k in treeds){
   plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp45", type = "dbh", print = FALSE, Xplot = FALSE)
 }
 
-# rcp 6.0
-for(k in treeds){
-  plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp60", type = "ringwidth", print = FALSE, Xplot = FALSE)
-}
-
-for(k in treeds){
-  plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp60", type = "dbh", print = FALSE, Xplot = FALSE)
-}
 
 # rcp 8.5
 for(k in treeds){
@@ -3119,6 +3205,16 @@ for(k in treeds){
 for(k in treeds){
   plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp85", type = "dbh", print = FALSE, Xplot = FALSE)
 }
+
+# rcp 6.0
+for(k in treeds){
+  plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp60", type = "ringwidth", print = FALSE, Xplot = FALSE)
+}
+
+for(k in treeds){
+  plot.prop.variance.driver(m = k, prop = TRUE, scenario = "rcp60", type = "dbh", print = FALSE, Xplot = FALSE)
+}
+
 #---------------------------------------------------------------------------------------
 # read all of these values in and make an average plot of them
 #------------------------------------------------------------------------------------------
@@ -3193,7 +3289,7 @@ rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels
 Increment.unc.summary.prop <- ggplot(rcp.inc.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
   ylab("Proportion of Uncertainty\n in Increment")+xlab("RCP Scenario")+scale_fill_manual(values = c("#b2182b", "#2166ac"), name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
-
+Increment.unc.summary.prop 
 
 png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name, "_Proportion_Increment_unc_proportion_driver_unc_rcp_all_time.png"))
 Increment.unc.summary.prop
@@ -3269,7 +3365,7 @@ Diameter.unc.summary.prop <- ggplot(rcp.dbh.proportion.summary, aes(x = rcp , y 
   ylab("Proportion of Uncertainty\n in Diameter")+xlab("RCP Scenario")+scale_fill_manual(values = c("#b2182b", "#2166ac"), name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
 
-
+Diameter.unc.summary.prop
 png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name, "_Proportion_Diameter_unc_proportion_driver_unc_rcp_all_time.png"))
 Diameter.unc.summary.prop
 dev.off()
@@ -4004,7 +4100,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
     xlab("Year")+theme_bw()+
     scale_fill_manual(values = my_cols, name = NULL)+ theme(legend.position = "none", panel.grid = element_blank())
   
-  
+  predY_plot 
   
   
   # 
@@ -4056,6 +4152,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
     cat(m)
   }
 }
+plot.prop.parameter.variance(m = 100, prop = TRUE, scenario = "rcp26", type = "ringwidth", print = TRUE, Xplot = FALSE)
 
 
 treeds <- c(1:515)
@@ -4344,11 +4441,6 @@ Diameter.unc.summary.prop
 dev.off()
 
 
-Diameter.unc.summary.prop.facet <- ggplot(rcp.dbh.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
-  ylab("Proportion of Uncertainty\n in Diameter")+xlab("RCP Scenario")+scale_fill_manual(values = my_cols, name = NULL)+
-  theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
-
-
 png(height = 6, width = 7, units = "in", res = 300, paste0("both_uncertainty_prop_summary_parameters",output.base.name,".png"))
 #cowplot::plot_grid(
 cowplot::plot_grid(increment.unc.summary.prop, Diameter.unc.summary.prop, ncol = 1, align = "hv", labels = "AUTO")#, #Uncertainty.legend,ncol = 2, rel_widths = c(1, 0.05))
@@ -4591,8 +4683,7 @@ png(height = 6, width = 7, units = "in", res = 300, paste0("both_uncertainty_par
 cowplot::plot_grid(increment.unc.summary.tot, Diameter.unc.summary.tot, ncol = 1, align = "hv", labels = "AUTO")#, #Uncertainty.legend,ncol = 2, rel_widths = c(1, 0.05))
 dev.off()
 
-# make plots of parameter and driver uncertainty for the manuscript:
-increment.unc.summary.prop
+
 
 #-----------------------------------------------------------------------------------------------
 # summarise to see how many trees are increasing in increment over time, decreasing, or staying constant
@@ -4660,6 +4751,8 @@ plot.prop.parameter.variance(m = 8, prop = FALSE, scenario = "rcp60", type = "ri
 plot.prop.parameter.variance(m = 30,  scenario = "rcp60", type = "dbh")+ggtitle(paste0("Contribution to  Driver Uncertainty in DBH for Tree",i))
 plot.prop.parameter.variance(m = 30,  scenario = "rcp60", type = "ringwidth")+ggtitle(paste0("Contribution to  Driver Uncertainty in DBH for Tree",i))
 
+
+
 #------------------------------------------------------------------------------------
 # Make figures for the paper
 #------------------------------------------------------------------------------------
@@ -4671,6 +4764,8 @@ my_cols <- c("#1b9e77",
              "black",
              "#7570b3",
              "grey")
+
+output.base.name <- "SDI_SI.norand.X.resampled"
 
 # make the pretty uncertainty plots
 inc.prop.all <- readRDS(paste0("inc.prop.all_",output.base.name, ".RDS"))
@@ -4689,9 +4784,9 @@ inc.prop.long <- inc.prop.wide %>% dplyr::group_by(period, year, treeid, x, rcp)
                                                                                                    -`Plot random effect`, -`Process Error`) %>%
   gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #inc.prop.wide <- reshape2::melt(inc.prop.wide)
-rcp.inc.prop <- inc.prop.long %>% dplyr::group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value),
-                                                                                          ci.lo = quantile(value, 0.025),
-                                                                                          ci.hi = quantile(value, 0.975))
+rcp.inc.prop <- inc.prop.long %>% dplyr::group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm =TRUE),
+                                                                                          ci.lo = quantile(value, 0.025, na.rm =TRUE),
+                                                                                          ci.hi = quantile(value, 0.975, na.rm =TRUE))
 rcp.inc.prop$Uncertainty <- factor(rcp.inc.prop$Uncertainty , levels = c("ProcessError",
                                                                          "DriverUnc",
                                                                          "PlotrandUnc",
@@ -4723,6 +4818,7 @@ rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels
 increment.unc.summary.prop <- ggplot(rcp.inc.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
   ylab("Proportion of Uncertainty\n in Increment")+xlab("RCP Scenario")+scale_fill_manual(values = my_cols, name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
+increment.unc.summary.prop
 
 #------------------------------------------------------------------------------------------
 #  Summarise the tree ring Diameter proportion of uncertainty
@@ -4746,9 +4842,9 @@ dbh.prop.long <- dbh.prop.wide %>% dplyr::group_by(period, year, treeid, x, rcp)
                                                                                                    -`Plot random effect`, -`Process Error`) %>%
   gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #dbh.prop.wide <- reshape2::melt(dbh.prop.wide)
-rcp.dbh.prop <- dbh.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value),
-                                                                                   ci.lo = quantile(value, 0.025),
-                                                                                   ci.hi = quantile(value, 0.975))
+rcp.dbh.prop <- dbh.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm =TRUE),
+                                                                                   ci.lo = quantile(value, 0.025, na.rm = TRUE),
+                                                                                   ci.hi = quantile(value, 0.975, na.rm = TRUE))
 rcp.dbh.prop$Uncertainty <- factor(rcp.dbh.prop$Uncertainty , levels = c("ProcessError",
                                                                          "DriverUnc",
                                                                          "PlotrandUnc",
@@ -4784,6 +4880,7 @@ Uncertainty.legend<- cowplot::get_legend(increment.unc.summary.prop)
 
 increment.unc.summary.prop
 Diameter.unc.summary.prop
+
 png(height = 6, width = 7, units = "in", res = 300, paste0("both_uncertainty_prop_summary_",output.base.name,".png"))
 #cowplot::plot_grid(
 cowplot::plot_grid(increment.unc.summary.prop, Diameter.unc.summary.prop, ncol = 1, align = "hv", labels = "AUTO")#, #Uncertainty.legend,ncol = 2, rel_widths = c(1, 0.05))
@@ -4858,7 +4955,7 @@ predY_plot.dbh.8 <- ggplot(data = pred.sims.class, aes(x=year, fill = uncertaint
 
 predY_plot.dbh.8
 no.leg <- theme(legend.position = "none")
-legend.unc <- get_legend(prop.var.dbh.8)
+legend.unc <- cowplot::get_legend(prop.var.dbh.8)
 
 png(height = 6, width = 10, units = "in", res = 300, "example_tree_forecasts_rcp45_w_summary_prop_unc.png")
 cowplot::plot_grid(
@@ -4931,10 +5028,14 @@ Uncertainty.table <- data.frame(Uncertainty = c("DBH",
 
 rcp.dbh.proportion.summary <- merge(rcp.dbh.prop, Uncertainty.table, by = "Uncertainty")
 
-rcp.dbh.proportion.summary$Unc <- factor(rcp.dbh.proportion.summary$Unc , levels = rev(c( "Tree Size",
-                                                                                          "Stand Density Index",
-                                                                                          
+rcp.dbh.proportion.summary$Unc <- factor(rcp.dbh.proportion.summary$Unc , levels = rev(c( "Stand Density Index",
+                                                                                          "Tree Size",
                                                                                           "Precipitation", 
+                                                                                          
+                                                                                          
+                                                                                          
+                                                                                          
+                                                                                          
                                                                                           "Temperature",
                                                                                           "Precipitation & Temperature Interaction",
                                                                                           "Site Index",
@@ -4953,7 +5054,7 @@ param_cols <- c("#7fc97f",
 rcp.dbh.proportion.summary %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 prop.var.param.dbh  <- ggplot(rcp.dbh.proportion.summary, aes(x=year, fill = Unc))+
-  geom_ribbon(aes(ymin=0, ymax=mean), color = "black")+
+  geom_ribbon(aes(ymin=0, ymax=mean), color = NA)+
   ylab(paste("% of parameter variance \n for", "Diameter"))+
   xlab("Year")+
   scale_fill_manual(values = param_cols, name = NULL)+#, 
@@ -4996,29 +5097,31 @@ Uncertainty.table <- data.frame(Uncertainty = c("DBH",
 
 rcp.dbh.proportion.summary.all <- merge(rcp.dbh.prop.all, Uncertainty.table, by = "Uncertainty")
 
-rcp.dbh.proportion.summary.all$Unc <- factor(rcp.dbh.proportion.summary.all$Unc , levels = rev(c( "Tree Size",
-                                                                                                  "Stand Density Index",
-                                                                                                  
-                                                                                                  "Precipitation", 
-                                                                                                  "Temperature",
-                                                                                                  "Precipitation & Temperature Interaction",
-                                                                                                  "Site Index",
-                                                                                                  "Other two-way interactions", 
-                                                                                                  "Plot random effects")))
+rcp.dbh.proportion.summary.all$Unc <- factor(rcp.dbh.proportion.summary.all$Unc , levels = rev(c( 
+  "Stand Density Index",
+  "Tree Size",
+  "Precipitation", 
+  "Temperature",
+  "Precipitation & Temperature Interaction",
+  "Site Index",
+  "Other two-way interactions", 
+  "Plot random effects")))
 
 
 param_cols <- c("#7fc97f",
                 "#beaed4",
                 "#fdc086",
+                
                 "#ffff99",
-                "#386cb0",
                 "#f0027f",
+                "#386cb0",
+                
                 "#bf5b17",
                 "#666666")
 rcp.dbh.proportion.summary.all %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 prop.var.param.dbh.all  <- ggplot(rcp.dbh.proportion.summary.all, aes(x=year, fill = Unc))+
-  geom_ribbon(aes(ymin=0, ymax=mean), color = "black")+
+  geom_ribbon(aes(ymin=0, ymax=mean))+
   ylab(paste("% of parameter variance \n for", "Diameter"))+
   xlab("Year")+
   scale_fill_manual(values = param_cols, name = NULL)+#, 
@@ -5052,7 +5155,7 @@ inc.prop.long <- inc.prop.wide %>% group_by(period, year, treeid, x, rcp) %>% #s
   #      -`PrecipxTmax`, -`SICOND`, -`all other 2-way interactions`, -`plot random effect`) %>%
   tidyr::gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #inc.prop.wide <- reshape2::melt(inc.prop.wide)
-rcp.inc.prop <- inc.prop.long %>% group_by(year, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm = TRUE), 
+rcp.inc.prop <- inc.prop.long %>% group_by(year, Uncertainty, rcp) %>% summarise(mean = median(value, na.rm = TRUE), 
                                                                                  ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                  ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
 # rcp.inc.prop$Uncertainty <- factor(rcp.inc.prop$Uncertainty , levels = c("incUnc", 
@@ -5066,50 +5169,52 @@ rcp.inc.prop <- inc.prop.long %>% group_by(year, Uncertainty, rcp) %>% summarise
 #                                                                          "TwoWayInteractions", 
 #                                                                          "PlotrandUnc"))
 
-Uncertainty.table <- data.frame(Uncertainty = c("inc", 
-                                                "Precip" , 
-                                                "Tmax",
-                                                "PrecipxTmax" , 
-                                                
-                                                "SDI" , 
-                                                "SICOND",
-                                                
-                                                "all other 2-way interactions", 
-                                                "plot random effect"),
-                                Unc = c("Tree Size", 
-                                        "Precipitation", 
-                                        "Temperature", 
-                                        "Precipitation & Temperature Interaction", 
-                                        "Stand Density Index", 
-                                        "Site Index", 
-                                        "Other two-way interactions", 
-                                        "Plot random effects"))
+Uncertainty.table.dbh <- data.frame(Uncertainty = c("DBH", 
+                                                    "Precip" , 
+                                                    "Tmax",
+                                                    "PrecipxTmax" , 
+                                                    
+                                                    "SDI" , 
+                                                    "SICOND",
+                                                    
+                                                    "all other 2-way interactions", 
+                                                    "plot random effect"),
+                                    Unc = c("Tree Size", 
+                                            "Precipitation", 
+                                            "Temperature", 
+                                            "Precipitation & Temperature Interaction", 
+                                            "Stand Density Index", 
+                                            "Site Index", 
+                                            "Other two-way interactions", 
+                                            "Plot random effects"))
 
 
-rcp.inc.proportion.summary <- merge(rcp.inc.prop, Uncertainty.table, by = "Uncertainty")
+rcp.inc.proportion.summary <- merge(rcp.inc.prop, Uncertainty.table.dbh, by = "Uncertainty")
 
-rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = rev(c( "Tree Size",
-                                                                                          "Stand Density Index",
-                                                                                          "Precipitation", 
-                                                                                          "Temperature",
-                                                                                          "Precipitation & Temperature Interaction",
-                                                                                          "Site Index",
-                                                                                          "Other two-way interactions", 
-                                                                                          "Plot random effects")))
+rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = rev(c("Stand Density Index",
+                                                                                         "Tree Size",
+                                                                                         "Precipitation", 
+                                                                                         "Temperature",
+                                                                                         "Precipitation & Temperature Interaction",
+                                                                                         "Site Index",
+                                                                                         "Other two-way interactions", 
+                                                                                         "Plot random effects")))
 
 
 param_cols <- c("#7fc97f",
                 "#beaed4",
                 "#fdc086",
+                
                 "#ffff99",
-                "#386cb0",
                 "#f0027f",
+                "#386cb0",
+                
                 "#bf5b17",
                 "#666666")
 rcp.inc.proportion.summary %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 prop.var.param.inc  <- ggplot(rcp.inc.proportion.summary, aes(x=year, fill = Unc))+
-  geom_ribbon(aes(ymin=0, ymax=mean), color = "black")+
+  geom_ribbon(aes(ymin=0, ymax=mean))+
   ylab(paste("% of parameter variance \n for", "Increment"))+
   xlab("Year")+
   scale_fill_manual(values = param_cols, name = NULL)+#, 
@@ -5120,28 +5225,27 @@ prop.var.param.inc  <- ggplot(rcp.inc.proportion.summary, aes(x=year, fill = Unc
 prop.var.param.inc
 
 # average across all the rcps:
-rcp.inc.prop.all <- inc.prop.long %>% group_by(year, Uncertainty) %>% summarise(mean = mean(value, na.rm = TRUE), 
+rcp.inc.prop.all <- inc.prop.long %>% group_by(year, Uncertainty) %>% summarise(mean = median(value, na.rm = TRUE), 
                                                                                 ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                 ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
 
 rcp.inc.proportion.summary.all <- merge(rcp.inc.prop.all, Uncertainty.table, by = "Uncertainty")
 
-rcp.inc.proportion.summary.all$Unc <- factor(rcp.inc.proportion.summary.all$Unc , levels = rev(c( "Tree Size",
-                                                                                                  "Stand Density Index",
-                                                                                                  
-                                                                                                  "Precipitation", 
-                                                                                                  "Temperature",
-                                                                                                  "Precipitation & Temperature Interaction",
-                                                                                                  "Site Index",
-                                                                                                  "Other two-way interactions", 
-                                                                                                  "Plot random effects")))
+rcp.inc.proportion.summary.all$Unc <- factor(rcp.inc.proportion.summary.all$Unc , levels = rev(c("Stand Density Index",
+                                                                                                 "Tree Size",
+                                                                                                 "Precipitation", 
+                                                                                                 "Temperature",
+                                                                                                 "Precipitation & Temperature Interaction",
+                                                                                                 "Site Index",
+                                                                                                 "Other two-way interactions", 
+                                                                                                 "Plot random effects")))
 
 
 
 rcp.inc.proportion.summary.all %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 prop.var.param.inc.all  <- ggplot(rcp.inc.proportion.summary.all, aes(x=year, fill = Unc))+
-  geom_ribbon(aes(ymin=0, ymax=mean), color = "black")+
+  geom_ribbon(aes(ymin=0, ymax=mean))+
   ylab(paste("% of parameter variance \n for", "Increment"))+
   xlab("Year")+
   scale_fill_manual(values = param_cols, name = NULL)+#, 
@@ -5156,7 +5260,7 @@ prop.var.param.inc.all
 #------------------------------------------------
 # Make the same plots but for the drivers
 #------------------------------------------------
-variance.df <- readRDS("inc.prop.driver_SDI_SI.norand.X.nadapt.5000.RDS")
+variance.df <- readRDS("inc.prop.driver_SDI_SI.norand.X.resampled.RDS")
 variance.df$simtype <- factor(variance.df$simtype, levels = c("Temperature Uncertainty", "Precipitation Uncertainty"))
 
 inc.prop.wide <- variance.df %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
@@ -5211,7 +5315,7 @@ prop.var.driver.unc.all
 
 
 #------------------------------------------------
-variance.df<- readRDS("dbh.prop.driverSDI_SI.norand.X.nadapt.5000.RDS")
+variance.df<- readRDS("dbh.prop.driverSDI_SI.norand.X.resampled.RDS")
 variance.df$simtype <- factor(variance.df$simtype, levels = c("Temperature Uncertainty", "Precipitation Uncertainty"))
 
 dbh.prop.wide <- variance.df %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
@@ -5264,9 +5368,9 @@ prop.var.driver.unc.dbh.all <- ggplot(rcp.dbh.prop.all, aes(x=year, fill = Uncer
                      expand = c(0, 0))+
   theme_bw()+theme(panel.grid=element_blank())
 prop.var.driver.unc.dbh.all
-
-driver.leg <- get_legend(prop.var.driver.unc + theme(legend.position = "bottom", legend.direction = "horizontal"))
-param.leg <- get_legend(prop.var.param.dbh + theme(legend.position = "bottom", legend.direction = "horizontal"))
+library(cowplot)
+driver.leg <- get_legend(prop.var.driver.unc.all + theme(legend.position = "bottom", legend.direction = "horizontal"))
+param.leg <- get_legend(prop.var.param.dbh.all + theme(legend.position = "bottom", legend.direction = "horizontal"))
 
 # make one really big figure:
 png(height = 12, width = 9, units = "in", res = 300, "driver_and_parameter_prop_unc_figure.png")
@@ -5280,8 +5384,8 @@ cowplot::plot_grid(prop.var.driver.unc + no.leg,
 dev.off()
 
 
-driver.leg.vert <- get_legend(prop.var.driver.unc )
-param.leg.vert <- get_legend(prop.var.param.dbh )
+driver.leg.vert <- get_legend(prop.var.driver.unc.all )
+param.leg.vert <- get_legend(prop.var.param.dbh.all )
 
 
 # figure with averages across RCPS
@@ -5294,3 +5398,4 @@ cowplot::plot_grid(plot_grid(prop.var.driver.unc.all + no.leg,
                    param.leg,
                    ncol = 1, rel_heights   = c(1,0.1,1, 0.28))
 dev.off()
+
