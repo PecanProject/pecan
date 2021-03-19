@@ -56,6 +56,16 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("Qle")
   }
   
+  if ("SoilResp" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilResp[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("SoilResp")
+  }
+  
+  if ("CropYield" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$CropYield[last]  # kg DM m-2 TODO: check PEcAn standard units if DM is OK
+    names(forecast[[length(forecast)]]) <- c("CropYield")
+  }
+  
   PEcAn.logger::logger.info(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)
