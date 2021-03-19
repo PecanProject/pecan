@@ -38,6 +38,12 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("slow_soil_pool_carbon_content")
   }
   
+  if ("CropYield" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$CropYield
+    if (new.state$CropYield < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("CropYield")
+  }
+  
   if (!is.null(analysis.save) && length(analysis.save) > 0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
