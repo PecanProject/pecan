@@ -59,7 +59,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
   if(all(!is.na(var.ids))){
     # Need to subset the formats table
-    fv <- fv %>% dplyr::filter(variable_id %in% !!var.ids | storage_type != "")
+    fv <- fv %>% dplyr::filter(.data$variable_id %in% !!var.ids | .data$storage_type != "")
     if(dim(fv)[1] == 0){
       PEcAn.logger::logger.error("None of your requested variables are available")
     }
@@ -169,36 +169,36 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 ##' Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
 ##'
 ##' @param vars_bety data frame with variable names and units
-##' @export 
+##' @export
 ##'
 ##' @author Betsy Cowdery
 
 bety2pecan <- function(vars_bety){
-  
-  # This needs to be moved to lazy load 
-  bety_mstmip <- utils::read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
+
+  # This needs to be moved to lazy load
+  bety_mstmip <- utils::read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"),
                           header = T, stringsAsFactors = FALSE)
-  
+
   vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)
-  
+
   vars_full$pecan_name <- vars_full$mstmip_name
   vars_full$pecan_units <- vars_full$mstmip_units
   ind <- is.na(vars_full$pecan_name)
   vars_full$pecan_name[ind] <- vars_full$bety_name[ind]
   vars_full$pecan_units[ind] <- vars_full$bety_units[ind]
-  
+
   dups <- unique(vars_full$pecan_name[duplicated(vars_full$pecan_name)])
-  
+
   if("NEE" %in% dups){
     # This is a hack specific to Ameriflux!
-    # It ultimately needs to be generalized, perhaps in a better version of 
+    # It ultimately needs to be generalized, perhaps in a better version of
     # bety2pecan that doesn't use a lookup table
     # In Ameriflux FC and NEE can map to NEE in mstmip/pecan standard
     # Thus if both are reported in the data, both will be converted to NEE
-    # which creates a conflict. 
+    # which creates a conflict.
     # Here we go back to the bety name to determine which of those is NEE
     # The variable that is not NEE in bety (assuming it's FC) is discarded.
-    
+
     keep <- which(vars_full$bety_name[which(vars_full$pecan_name == "NEE")] == "NEE")
     if(length(keep) == 1){
       discard <- vars_full$bety_name[which(vars_full$pecan_name == "NEE")][-keep]
