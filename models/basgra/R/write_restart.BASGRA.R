@@ -39,9 +39,9 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("CropYield" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$CropYield
-    if (new.state$CropYield < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("CropYield")
+     analysis.save[[length(analysis.save) + 1]] <- new.state$CropYield
+     if (new.state$CropYield < 0) analysis.save[[length(analysis.save)]] <- 0
+     names(analysis.save[[length(analysis.save)]]) <- c("CropYield")
   }
   
   if (!is.null(analysis.save) && length(analysis.save) > 0){

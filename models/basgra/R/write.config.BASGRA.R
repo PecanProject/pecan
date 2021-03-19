@@ -278,7 +278,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("CropYield"  %in% ic.names) {
-      run_params[names(run_params) == "YIELDI"] <- IC$CropYield
+       run_params[names(run_params) == "YIELDI"] <-  udunits2::ud.convert(IC$CropYield, "kg", "g")
     }
     
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){

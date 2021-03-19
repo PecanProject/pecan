@@ -62,8 +62,8 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("CropYield" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$CropYield[last]  # kg DM m-2 TODO: check PEcAn standard units if DM is OK
-    names(forecast[[length(forecast)]]) <- c("CropYield")
+   forecast[[length(forecast) + 1]] <- ens$CropYield[last]  # kg DM m-2 TODO: check PEcAn standard units if DM is OK
+   names(forecast[[length(forecast)]]) <- c("CropYield")
   }
   
   PEcAn.logger::logger.info(runid)
