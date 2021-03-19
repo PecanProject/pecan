@@ -46,6 +46,16 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
+  if ("NEE" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$NEE[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("NEE")
+  }
+  
+  if ("Qle" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$Qle[last]  # W m-2
+    names(forecast[[length(forecast)]]) <- c("Qle")
+  }
+  
   PEcAn.logger::logger.info(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)
