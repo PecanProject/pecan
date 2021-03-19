@@ -269,13 +269,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "LOG10LAII"] <- IC$LAI
     }
     
-    
     if ("fast_soil_pool_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
     }
     
     if ("slow_soil_pool_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+    }
+    
+    if ("CropYield"  %in% ic.names) {
+      run_params[names(run_params) == "YIELDI"] <- IC$CropYield
     }
     
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
@@ -434,6 +437,9 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   if(file.exists(last_states_file)){
     
+    # TODO: certain variables should be thrown into the state matrix in SDA together
+    # but in case someone forgot to do so, make sure those missing values are passed from where we left off here
+    
     load(last_states_file)
     
     # LOG10CLVI  = pa(1)
@@ -484,7 +490,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     #run_params[names(run_params) == "PHENCR"] <- last_vals[names(last_vals) == "PHENCR"]
     
     run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
-    run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"]
+    #run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"] #SDA handles this now
     run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
     
     run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
