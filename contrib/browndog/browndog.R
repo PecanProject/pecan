@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-library(RCurl)
+library(curl)
 
 ##' Try and download a file.
 ##'
@@ -29,9 +29,8 @@ download.browndog <- function(url, file, timeout = 60, .opts = list()) {
   if (count >= timeout) {
     return(NA)
   }
-  f <- CFILE(file, mode = "wb")
-  curlPerform(url = url, writedata = f@ref, .opts = .opts)
-  RCurl::close(f)
+  curl::curl_download(url, f@ref, handle = curl::new_handle(.opts = .opts))
+  
   
   return(file)
 }  # download.browndog
@@ -59,7 +58,11 @@ xmldata <- paste0("<input>",
 
 # post to browndog
 curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-result <- postForm(paste0(browndog, output, "/"), fileData = fileUpload("pecan.xml", xmldata, "text/xml"), 
-  .opts = curloptions)
+h <- new_handle()
+handle_setform(h,
+  paste0(browndog, output, "/"),
+  fileData = curl::form_file(curl::curl_upload(pecan.xml, url))
+)
+result <- curl_fetch_memory(url, handle = h)  
 url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
 download.browndog(url, outputfile, 120, curloptions)
