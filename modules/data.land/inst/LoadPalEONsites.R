@@ -4,7 +4,7 @@
 
 user.id = 1000000001  ## replace with your own personal user.id
 
-library("RCurl")
+library("curl")
 library("XML")
 library(PEcAn.DB)
 
