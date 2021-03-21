@@ -38,7 +38,7 @@ Imports:
     purrr,
     rjags,
     rlang,
-    RCurl,
+    curl,
     RPostgreSQL,
     sf,
     sirt,
