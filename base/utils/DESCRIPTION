@@ -30,7 +30,7 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     purrr,
-    RCurl,
+    curl,
     rlang,
     stringi,
     udunits2 (>= 0.11),
