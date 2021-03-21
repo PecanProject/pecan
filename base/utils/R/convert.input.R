@@ -636,7 +636,11 @@ convert.input <-
     }
     
     # post zipped file to Brown Dog
-    html <- curl::form_file(url, type = "___")
+    h <- new_handle()
+    handle_setform(h,
+    fileData = curl::form_file(curl::curl_upload(zipfile))
+    )
+    html <- curl::curl_fetch_memory(url, handle = h)
     link <- XML::getHTMLLinks(html)
     file.remove(zipfile)
     
