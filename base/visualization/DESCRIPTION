@@ -31,7 +31,7 @@ Imports:
     PEcAn.logger,
     PEcAn.utils,
     plyr (>= 1.8.4),
-    RCurl,
+    curl,
     reshape2,
     stringr(>= 1.1.0)
 Suggests:
