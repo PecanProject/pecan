@@ -638,7 +638,7 @@ convert.input <-
     # post zipped file to Brown Dog
     h <- new_handle()
     handle_setform(h,
-    fileData = curl::form_file(curl::curl_upload(zipfile))
+    fileData = curl::form_file(curl::curl_upload(zipfile, url))
     )
     html <- curl::curl_fetch_memory(url, handle = h)
     link <- XML::getHTMLLinks(html)
