@@ -186,7 +186,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' or list and it can return either a random sample of length n OR a sample from a quantile specified as p
 ##' @title Get Samples
 ##' @param prior data.frame with distn, parama, and optionally paramb.
-##' @param n number of samples to return from a random sample of the rdistn family of functions (e.g. qnorm)
+##' @param n number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)
 ##' @param p vector of quantiles from which to sample the distribution; typically pre-generated upstream
 ##' in the workflow to be used by the qdist family of functions (e.g. qnorm)
 ##' @return vector with n random samples from prior
