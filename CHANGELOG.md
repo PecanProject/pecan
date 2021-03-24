@@ -65,6 +65,7 @@ This is a major change:
 
 ### Added
 
+- BioCro can export Aboveground Biomass (#2790)
 - Functionality for generating the same ensemble parameter sets with randtoolbox functions.
 - Functionality for joint sampling from the posteriors using randtoolbox functions.
 - BASGRA-SDA couplers.
