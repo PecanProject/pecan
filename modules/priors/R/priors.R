@@ -188,7 +188,7 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @param prior data.frame with distn, parama, and optionally paramb.
 ##' @param n number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)
 ##' @param p vector of quantiles from which to sample the distribution; typically pre-generated upstream
-##' in the workflow to be used by the qdist family of functions (e.g. qnorm)
+##' in the workflow to be used by the qdistn family of functions (e.g. qnorm)
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
 ##' @examples
