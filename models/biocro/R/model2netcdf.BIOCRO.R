@@ -64,6 +64,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TotLivBiom = PEcAn.utils::to_ncvar("TotLivBiom", dims),
                  root_carbon_content = PEcAn.utils::to_ncvar("root_carbon_content", dims),
                  AbvGrndWood = PEcAn.utils::to_ncvar("AbvGrndWood", dims),
+                 AGB = PEcAn.utils::to_ncvar("AGB", dims),
                  Evap = PEcAn.utils::to_ncvar("Evap", dims),
                  TVeg = PEcAn.utils::to_ncvar("TVeg", dims),
                  LAI = PEcAn.utils::to_ncvar("LAI", dims))
@@ -75,11 +76,12 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
       root_carbon_content = k * Root,
       AbvGrndWood = k * Stem,
+      AGB =  k * (Leaf + Stem + Grain),
       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       LAI = LAI))
     
-    total_biomass <- with(result_yeari, 
+    total_biomass <- with(result_yeari, # this is for calculating NPP and includes litter
                           k * (Leaf + Root + Stem + Rhizome + Grain + AboveLitter + BelowLitter))
     delta_biomass <- udunits2::ud.convert(c(0, diff(total_biomass)), "kg/m2/h", "kg/m2/s")
     delta_biomass[delta_biomass < 0] <- 0
