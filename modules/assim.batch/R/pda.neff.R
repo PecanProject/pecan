@@ -100,7 +100,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs, length(obs), replace=TRUE)
-      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE)) 
+      init[[i]] <- list(tau_add=1/stats::nc_var(diff(y.samp), na.rm=TRUE)) 
     }
     
     j.model   <- rjags::jags.model(file     = textConnection(HLModel),
@@ -144,8 +144,8 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     init <- list()
     for(i in 1:nchain){
       y.samp    <- sample(obs,length(obs),replace=TRUE)
-      init[[i]] <- list(tau_add=1/stats::var(diff(y.samp), na.rm=TRUE), 
-                        tau_obs=1/stats::var(diff(y.samp), na.rm=TRUE))
+      init[[i]] <- list(tau_add=1/stats::nc_var(diff(y.samp), na.rm=TRUE), 
+                        tau_obs=1/stats::nc_var(diff(y.samp), na.rm=TRUE))
     }
     
     j.model   <- rjags::jags.model(file     = textConnection(GaussianModel),
