@@ -53,12 +53,20 @@ jobs:
         run: Rscript scripts/generate_dependencies.R
       - id: file_changes
         uses: trilom/file-changes-action@v1.2.3
+      - id: doc_all
+        name: check whether documenting all packages or only changed ones
+        if: startsWith(github.event.comment.body, '/document all_packages')
+        shell: bash
+        run: |
+          DESCS=$(find * -name DESCRIPTION | tr '\n' ' ')
+          echo "::set-output name=descriptions::${DESCS}"
       - name : make
         shell: bash
         env:
           FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
+          EXTRA_FILES: ${{ steps.doc_all.outputs.descriptions }}
         run: |
-          echo ${FILES} \
+          echo ${FILES} ${EXTRA_FILES} \
           | tr ' ' '\n' \
           | grep -e base -e models -e modules \
           | cut -d / -f 1-2 \
