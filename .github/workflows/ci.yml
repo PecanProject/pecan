@@ -11,11 +11,9 @@ on:
 
   pull_request:
 
-  workflow_run:
-    workflows:
-      - Commands
+  issue_comment:
     types: 
-      - completed
+      - created
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
@@ -26,6 +24,7 @@ jobs:
   # R BUILD
   # ----------------------------------------------------------------------
   build:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     strategy:
@@ -67,6 +66,7 @@ jobs:
   # R TEST
   # ----------------------------------------------------------------------
   test:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     strategy:
@@ -115,6 +115,7 @@ jobs:
   # R CHECK
   # ----------------------------------------------------------------------
   check:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     strategy:
@@ -163,6 +164,7 @@ jobs:
   # SIPNET TESTS
   # ----------------------------------------------------------------------
   sipnet:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     strategy:

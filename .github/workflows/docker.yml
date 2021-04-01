@@ -21,11 +21,9 @@ on:
 
   pull_request:
 
-  workflow_run:
-    workflows:
-      - Commands
+  issue_comment:
     types: 
-      - completed
+      - created
 
 # Certain actions will only run when this is the master repo.
 env:
@@ -34,6 +32,7 @@ env:
 
 jobs:
   docker:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     steps:
