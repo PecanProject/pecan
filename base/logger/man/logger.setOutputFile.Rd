@@ -10,7 +10,8 @@ logger.setOutputFile(filename)
 \item{filename}{the file to send the log messages to (or NA to not write to file)}
 }
 \description{
-The name of the file where the logging information should be written to.
+The name of the file where the logging information should be written to. To
+disable writing to a file set this to NA.
 }
 \examples{
 \dontrun{
