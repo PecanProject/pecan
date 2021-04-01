@@ -22,7 +22,7 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
-    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0.00001
     names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
