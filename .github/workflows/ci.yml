@@ -13,8 +13,7 @@ on:
 
   workflow_run:
     workflows:
-      - style
-      - document
+      - Commands
     types: 
       - completed
 
