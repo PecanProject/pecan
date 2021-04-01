@@ -21,6 +21,13 @@ on:
 
   pull_request:
 
+  workflow_run:
+    workflows:
+      - style
+      - document
+    types: 
+      - completed
+
 # Certain actions will only run when this is the master repo.
 env:
   MASTER_REPO: PecanProject/pecan

@@ -275,7 +275,8 @@ logger.setUseConsole <- function(console, stderr = TRUE) {
 
 ##' Configure logging output filename.
 ##' 
-##' The name of the file where the logging information should be written to.
+##' The name of the file where the logging information should be written to. To
+##' disable writing to a file set this to NA.
 ##'
 ##' @param filename the file to send the log messages to (or NA to not write to file)
 ##' @export
