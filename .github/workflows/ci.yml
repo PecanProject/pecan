@@ -170,8 +170,6 @@ jobs:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-    env:
-
     container: 
       image: pecan/depends:R${{ matrix.R }}
 
