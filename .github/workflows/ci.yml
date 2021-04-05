@@ -17,8 +17,7 @@ on:
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
-  LC_ALL: C
-  R_ENCODING_LOCALES: "latin1=en_US:latin2=pl_PL:UTF-8=en_US.UTF-8:latin9=fr_FR.iso885915@euro"
+  LC_ALL: en_US.UTF-8
   NCPUS: 2
   PGHOST: postgres
   CI: true
