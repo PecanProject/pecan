@@ -17,6 +17,10 @@ on:
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: C
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
 
 jobs:
 
@@ -33,11 +37,6 @@ jobs:
         R:
           - "4.0.3"
           - "4.0.4"
-
-    env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -81,11 +80,6 @@ jobs:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-    env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
-
     container: 
       image: pecan/depends:R${{ matrix.R }}
 
@@ -126,9 +120,6 @@ jobs:
           - "4.0.4"
 
     env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
       _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
@@ -180,9 +171,6 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
