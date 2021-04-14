@@ -1,0 +1,131 @@
+---
+title: "Observation Error & Two Stage Modelling"
+author: "Kelly Heilman"
+date: "12/11/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rjags)
+library(psych)
+library(tidyr)
+library(tidyverse)
+```
+
+
+#### **Goal:** 
+Estimate uncertainty around tree ring observation measurements to allows us to set informative priors on tree ring increment uncertainty in the larger tree ring state-space model. 
+
+#### **Design:** 
+Ecological Forecasting seminar participants each measured up to 10 *Pinus Ponderosa* cores sampled throughout Arizona. For now, we work with the remeasurements that are correctly dated from 9 of the 10 remeasurements.
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 1. Selected cores remeasured by multiple observers", out.width = '50%', out.height='50%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/selected_remeasurements_by_core.png"))
+```
+
+##### **Estimating with simple model of tree growth:** 
+
+**Process model:**
+Each increment measurement $i$ are represented by $measurements_i$
+
+$$ measurements_i \sim normal(inc_i, \tau_{add})$$
+And $inc_i$ is modeled with an intercept $\mu$, a year random effect $year_t$, a tree random effect $tree_j$, and an observer random effect $observer_o$ 
+
+$$ inc_i = \mu + year_t +observer_o + tree_j $$
+
+**Random Effects:**
+$$ 
+year_{t} \sim dnorm(0,tau_{year})\\
+observer_{o} \sim dnorm(0,tau_{obs})\\
+tree_{j} \sim dnorm(0,tau_{tree})\\
+$$
+**Priors:**
+$$
+tau_{obs} \sim gamma(0.001, 1)\\
+tau_{tree} \sim gamma(1,1)\\
+tau_{year} \sim gamma(1,0.1)\\
+mu \sim normal(0.5, 0.5)\\
+$$
+
+#### When we run the model and add observers or additional cores, our estimate of $\tau_{obs}$ does not measurably improve. 
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 2. Tau_obs estimated with increase the # of cores (left), or increasing # of observers (right)", out.width = '50%', out.height='50%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/tau_obs_simple.3obs.9cores.png", "/Users/kah/Documents/docker_pecan/pecan/measurementerror/tau_obs_simple.1core_9obs.png"))
+```
+
+
+#### This model does a good job parsing effects on tree growth (and is likely useful for the observation error analysis), but I am not 100% convinced that the random effect of tau_obs is the right "observation error" that we should use as a prior in the model. 
+
+
+##### **Estimating with full state space Model:** 
+
+**DBH data model:**
+Diameter measurements in tree $i$ at time $t$ are represented by $z_{i,t}$, and are normally distributed around the true diameter mean $x_{i,t}$ with precision $tau_{dbh}$. 
+
+$$ z_{i,t} \sim normal(x_{i,t}, \tau_{dbh})$$
+
+**Increment data model:**
+Annual growth measurements in each tree and time point were remeasured by multiple observers $o$. Thus tree increment in tree $i$ at time $t$ by observer $o$ is represented by by $y_{i,t, o}$. Observations of increments $y_{i,t, o}$ are normally distributed around the true increment mean $y_{i,t}$ with precision $tau_{inc}$. Thus, $tau_{inc}$ is informed by multiple observations of each tree ring. 
+
+
+$$y_{i, t, o} \sim normal(inc_{i,t},\tau_{inc})\\
+inc_{i,t} = x_{i,t} - x_{i,t-1}$$
+
+**Process model:**
+This process model is simplified version of the full AZ pipo model and is the basic model in Mike Dietze's Ecological Forcasting exercise. 
+
+$$x_{i,t} \sim normal(DBHnew_{i,t} , \tau_{add})\\
+DBHnew_{i,t} = x_{i, t-1} + mu + year_{t}$$
+
+**Priors:**
+Priors are mostly non-informative:
+$$ tau_{DBH} \sim gamma(16, 8)\\
+tau_{inc} \sim gamma(0.001, 1)\\
+tau_{add} \sim gamma(1,1)\\
+tau_{year} \sim gamma(1,0.1)\\
+mu \sim normal(0.5, 0.5)\\
+year_{t} ~ dnorm(0,tau_{year})$$
+
+#### Increasing the number of cores measureed by a small # of observers results in higher $tau_{obs}$
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Tau_inc of state space model estimated when you increase # observers (left) or # of cores (right)", out.width = '50%', out.height='50%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/tau_obs_one_core_9_observers.png", "/Users/kah/Documents/docker_pecan/pecan/measurementerror/tau_obs_3observers_8cores.png"))
+```
+
+
+## Two Stage Modelling
+#### **Goal:** reduce convergence issues by first estimating paramters for the trees where we have both increment cores & DBH meausrements, then using the posteriors as priors in a second step of modelling.
+
+#### **Options for informative priors:**
+1. Use informative priors for all parameters
+2. Use informative priors for all time-varying parameters + plot random effects, uninformative priors for all other parameters
+3. Use informative priors for all parameters, but increase the variance (decrease tau) of non-time varying paramters
+
+#### **Results:**
+TLDR: When we use informative priors for all parameters, the model works okay for + 200 additional DBH measurements, but is more difficult when we have 1000+ additional DBH meausurements (both models run for 40,000 iterations)
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 4. Stage two model with 200 additional DBH measurements traceplots (left) & the differences between priors & posteriors (right) ", out.width = '50%', out.height='50%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/test.stage2model.inform.all.200._traceplots.png", "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/test.stage2model.inform.all.200._priors_posteriors.png"))
+```
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 5. Stage two model with 1000 additional DBH measurements traceplots (left) & the differences between priors & posteriors (right) ", out.width = '50%', out.height='50%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/test.stage2model.inform.all.1000._traceplots.png", "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/test.stage2model.inform.all.1000._priors_posteriors.png"))
+```
+
+
+### Next steps:
+#### Main PIPO model paper
+1. Try running for more iterations
+2. Increase variance on some of the informative priors
+3. Quantify what # of additional DBH measurements is "too much"
+4. Compare to Kalman Filter
+
+#### Observation error manuscript
+1. Decide which obs error priors we will use
+2. Test models with simulated dataset
+
+
+

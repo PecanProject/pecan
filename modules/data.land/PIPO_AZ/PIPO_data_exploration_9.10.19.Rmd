@@ -1,0 +1,544 @@
+---
+title: "PIPO data exploration"
+output:
+  pdf_document: default
+  html_document: default
+date: "September 10, 2019"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(corrplot)
+library(Hmisc) # You need to download it first.
+library(maps)
+library(sp)
+library(rgeos)
+library(cowplot)
+library(kableExtra, quietly = TRUE)
+library(knitr)
+```
+
+# Initial data exploration for Arizona Pinus Ponderosa data
+
+
+```{r, echo = FALSE }
+AZ.PIPO <- read.delim("/Users/kah/Documents/docker_pecan/pecan/FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+
+### merge together three diameter columns
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$DIA), AZ.PIPO$DBH, AZ.PIPO$DIA) # replace missing data with DBH recorded from core mounts (DBH)
+
+### filter out those cases where DIA is NA...no size information
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$DIA),] # 793 trees
+### filter out cases where covariate data are missing (SICOND and SDI)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$COND_SICOND),] # 643 trees...~150 missing SICOND. Justin suggests they may be PJ (will never have SICOND)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
+
+### problem: in minority of cases, the difference between MEASYEAR and DateEnd is other than 0 or 1
+### filter out those cases
+temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
+temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
+
+
+# lets explore the tree ring data:
+
+
+### read in function that creates jags objects from above data
+source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/BuildJAGSdataobject.R")
+#jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
+# if you don't have trees without cores, use the following line
+# or you wish to not include trees without cores
+jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+data <- jags.stuff$data
+z0 <- jags.stuff$z0
+cov.data <- jags.stuff$cov.data
+time_data <- jags.stuff$time_data
+
+data$a_dbh <- 512
+data$r_dbh <- 256
+
+test.melt <- melt(time_data)
+colnames(test.melt) <- c("TreeID", "YearID", "Value", "Climate")
+
+
+clim.spread <- test.melt %>% group_by(TreeID, YearID) %>% spread(Climate, Value)
+# each climate variable has 45 years (columns) & 544 cores (rows)
+
+
+
+```
+
+# Climate Data: which aspects of climate are correlated?
+
+Most of the climate parameters are correlated. Monthly temperatures are strongly positively correlated with each other, while monthly precipitation have weak, mostly positive correlations to one another. 
+
+Seasonal parameters currently used in the models are wintP.JJ (total precipitation from January - July) and tmax.JanA (average Maximum monthly temperature between January and August). These variables are strongly negatively correlated with each other.
+
+```{r, echo=FALSE}
+# generate correlation coefficiencts for all unique aspects of climate:
+X <- cor(clim.spread[,3:length(clim.spread)])
+
+#corrplot(X, method = "square")
+corrplot(X, method = "square", type = "upper")
+res1 <- cor.mtest(X, conf.level = .95)
+```
+
+
+```{r, echo=FALSE}
+# make full corrplot with significance:
+#corrplot(X, p.mat = res1$p, method = "square", type = "upper", insig = "label_sig", pch.cex = 1)
+
+
+
+```
+
+# Timeseries of standardized climate variables & tree ring increment
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+
+year.df <- data.frame(YearID = unique(clim.spread$YearID),
+                      year = 1966:2010)
+
+clim.spread <- left_join(clim.spread, year.df, by = "YearID")
+
+
+# plot timeseries of the two climate variables used in the current model:
+
+#ggplot(clim.spread, aes(year, wintP.JJ, group = TreeID))+geom_line(color = "black", alpha = 0.1)+theme_bw()
+#ggplot(clim.spread, aes(year, tmax.JanA, group = TreeID))+geom_line(color = "black", alpha = 0.1)+theme_bw()
+
+# get medians & quantiles to overlay across
+quants.wintP.JJ.med <- clim.spread %>% group_by(year) %>% summarise(wintP.JJ.med = quantile(wintP.JJ, 0.5),
+                                             wintP.JJ.lo = quantile(wintP.JJ, 0.025), 
+                                             wintP.JJ.hi = quantile(wintP.JJ, 0.975), 
+                                             wintP.JJ.sd = sd(wintP.JJ))
+
+quants.tmax.JanA.med <- clim.spread %>% group_by(year) %>% summarise(tmax.JanA.med = quantile(tmax.JanA, 0.5),
+                                                                    tmax.JanA.lo = quantile(tmax.JanA, 0.025), 
+                                                                    tmax.JanA.hi = quantile(tmax.JanA, 0.975), 
+                                                                    tmax.JanA.sd = sd(tmax.JanA))
+
+quants.tmax.forsummer <- clim.spread %>% group_by(year) %>% summarise(tmax.forsummer.med = quantile(tmax.AprMayJun, 0.5),
+                                                                    tmax.forsummer.lo = quantile(tmax.AprMayJun, 0.025), 
+                                                                    tmax.forsummer.hi = quantile(tmax.AprMayJun, 0.975), 
+                                                                    tmax.forsummer.sd = sd(tmax.AprMayJun))
+
+
+quants.tmax.monsoon <- clim.spread %>% group_by(year) %>% summarise(tmax.monsoon.med = quantile(tmax.monsoon, 0.5),
+                                                                    tmax.monsoon.lo = quantile(tmax.monsoon, 0.025), 
+                                                                    tmax.monsoon.hi = quantile(tmax.monsoon, 0.975), 
+                                                                    tmax.monsoon.sd = sd(tmax.monsoon))
+
+
+quants.precip.wateryr <- clim.spread %>% group_by(year) %>% summarise(pr.wateryr.med = quantile(wintP.wateryr, 0.5),
+                                                                    pr.wateryr.lo = quantile(wintP.wateryr, 0.025), 
+                                                                    pr.wateryr.hi = quantile(wintP.wateryr, 0.975), 
+                                                                    pr.wateryr.sd = sd(wintP.wateryr))
+
+wintP.JJ <- ggplot()+geom_line(data = clim.spread, aes(year, wintP.JJ, group = TreeID),color = "black", alpha = 0.1)+theme_bw()+
+  geom_line(data = quants.wintP.JJ.med, aes(year, wintP.JJ.med), color = "blue")+geom_polygon()+ylab("Precip \n Jan - Jul")
+
+Tmax.JanA  <- ggplot()+geom_line(data = clim.spread, aes(year, tmax.JanA, group = TreeID),color = "black", alpha = 0.1)+theme_bw()+
+  geom_line(data = quants.precip.wateryr, aes(year, pr.JanA.med), color = "red")+ylab("Tmax \n Jan - Aug")
+
+# plot water year precipitation:
+Pr.wateryr  <- ggplot()+geom_line(data = clim.spread, aes(year, wintP.wateryr, group = TreeID),color = "black", alpha = 0.1)+theme_bw()+
+  geom_line(data = quants.precip.wateryr, aes(year, pr.wateryr.med), color = "red")+ylab("Precip \n Water year")
+
+
+# plot Tmax Arid Foresummer
+
+Tmax.aridforesummer  <- ggplot()+geom_line(data = clim.spread, aes(year, tmax.AprMayJun, group = TreeID),color = "black", alpha = 0.1)+theme_bw()+
+  geom_line(data = quants.tmax.forsummer, aes(year, tmax.forsummer.med ), color = "red")+ylab("Tmax \n Apr - Jun")
+
+# plot monsoon temperatures
+
+Tmax.monsoon  <- ggplot()+geom_line(data = clim.spread, aes(year, tmax.monsoon, group = TreeID),color = "black", alpha = 0.1)+theme_bw()+
+  geom_line(data = quants.tmax.monsoon, aes(year, tmax.monsoon.med ), color = "red")+ylab("Tmax \n Jul - Sept")
+
+# Visualize TRW data:
+#length(unique(clim.spread$TreeID)) # 544
+
+trw <- melt(data$y)
+colnames(trw) <- c("TreeID", "year", "Width")
+
+dbh <- melt(data$z)
+colnames(dbh) <- c("TreeID", "year", "DBH")
+
+# plot ring widths:
+#ggplot(trw, aes(Year, Width, group = TreeID))+geom_line(color = "black", alpha = 0.1)+theme_bw()
+# 1989+1990 have v small growth for most cores in AZ
+
+
+quants.trw.med <- trw %>% group_by(year) %>% summarise(trw.med = quantile(Width, 0.5, na.rm = TRUE),
+                                                                    trw.lo = quantile(Width, 0.025, na.rm = TRUE), 
+                                                                    trw.hi = quantile(Width, 0.975, na.rm = TRUE), 
+                                                                    trw.sd = sd(Width, na.rm = TRUE))
+
+
+TRW.series <- ggplot()+geom_line(data = trw, aes(year, Width, group = TreeID),color = "black", alpha = 0.1, na.rm=TRUE)+theme_bw()+
+  geom_line(data = quants.trw.med, aes(year, trw.med), color = "red", na.rm=TRUE)+ylab("Increment")
+
+
+#TRW.series
+plot_grid(Tmax.aridforesummer, Tmax.monsoon, Pr.wateryr, TRW.series,  ncol = 1)
+```
+
+
+Monsoon Temperature, Arid Foresummer temperature, and Water year are all fairly correlated with one another. 
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+forsummer.monsoon  <- ggplot()+geom_point(data = clim.spread, aes(tmax.monsoon, tmax.AprMayJun), color = "black", alpha = 0.5)+theme_bw()+ylab("Tmax \n Apr - Jun")+ xlab("Tmax \n July - Sept")
+
+
+forsummer.watryr  <- ggplot()+geom_point(data = clim.spread, aes(wintP.wateryr, tmax.AprMayJun), color = "black", alpha = 0.5)+theme_bw()+ylab("Tmax \n Apr - Jun")+ xlab("Water Year Precipitation")
+
+monsoon.watryr  <- ggplot()+geom_point(data = clim.spread, aes(wintP.wateryr, tmax.monsoon), color = "black", alpha = 0.5)+theme_bw()+ylab("Tmax \n July - Sept")+ xlab("Water Year Precipitation")
+
+
+plot_grid(forsummer.monsoon, forsummer.watryr, monsoon.watryr,  ncol = 3)
+```
+
+# Which climatic variables have the strongest correlations with Ponderosa Pine growth in Arizona?
+### Overall, correlations of increments to climate are smaller than climate to climate correlations
+### This is just a correlation of all increments to all climates
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+
+# generate individual correlation coefficients for all tree cores and all climate variables:
+
+#Y <- cor(clim.spread[,3:length(clim.spread)])
+
+trw.clim <- left_join(clim.spread, trw, by = c("TreeID", "year"))
+corr.data <- trw.clim[,3:length(trw.clim)]
+corr.data <- corr.data %>% dplyr::select(-year)
+Y <- cor(na.omit(corr.data))
+
+corrplot(Y, method = "square", type = "upper") 
+
+#correlations are not super high when we look at all the data across arizona--not too surprising 
+```
+
+## Individual growth correlations 
+
+###There is alot of spread in terms of the climate parameter, direction, & magnitudes of climate sensitivy across PIPO in Arizona.
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+# lets do individual correlations for each tree:
+
+trw.test <- trw.clim %>% group_by(TreeID) %>% dplyr::select(-YearID) #%>% spread(TreeID, Width)
+
+trw.nona <- trw.test[!is.na(trw.test$Width),]
+
+# creat a function to do the correlation on a given TREEID (x) then apply:
+correlate.rwi <- function(treeid){
+  
+  test.nona <- trw.nona[trw.nona$TreeID %in% treeid, ] # select 1 the tree of choice
+  
+  
+  # if for some reason Width is not numeric, make it numeric
+  if(!is.numeric(test.nona$Width)){
+  test.nona$Width <- as.numeric(test.nona$Width)
+  }
+  
+  # here we do the correlations
+ # corM <- cor(test.nona$Width, test.nona[, colnames(test.nona)[2:32]], use = "pairwise.complete")
+  
+ 
+  cor.mat <- rcorr( as.matrix(test.nona[, c("Width", colnames(test.nona)[2:36])]), type="pearson") 
+  cor.mat.df <- data.frame(climate = colnames(test.nona)[2:36],
+                           coef = cor.mat$r[2:36,1], 
+                           p = cor.mat$P[2:36,1])
+  #cat("*")
+  cor.mat.df
+}
+
+
+names <- as.list(as.character(unique(trw.nona$TreeID))) # get names of unique trees to apply function over
+
+ppt.cors <- lapply(names, correlate.rwi)
+
+names(ppt.cors) <- unique(trw.nona$TreeID)
+
+ppt.cors.df <- do.call(rbind, ppt.cors) # takes a minute
+
+ppt.cors.df$TreeID <- rep(names(ppt.cors), sapply(ppt.cors, nrow)) # add the site names
+
+# lets visualize the individual correlations:
+#ggplot(ppt.cors.df, aes(climate, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_violin(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()
+
+
+clim.trans <- data.frame(climate = unique(ppt.cors.df$climate),
+           clim = c(rep("PPT", 12), rep("TMAX", 19), rep("PPT", 4)), 
+           month = c("Apr", "Aug", "Dec", "Feb", "Jan", "Jul", "Jun", "Mar", "May", "Nov", "Oct", "Sep",
+                    "year", "AprMayJun","fall","fall_spr", "Jan_Aug", "Mar_Jul", "JulAugSep",
+                     "Apr", "Aug", "Dec", "Feb", "Jan", "Jul", "Jun", "Mar", "May", "Nov", "Oct", "Sep",
+                     "Jan_Jul", "Nov_Mar", "Nov_Aug", "water_yr"))
+
+
+ppt.cors.df<- left_join(ppt.cors.df, clim.trans, by = "climate")
+
+ppt.cors.df$month_ordered <- factor(ppt.cors.df$month, levels= c("Jan", "Feb", "Mar", "Apr", "May","Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "AprMayJun","fall","fall_spr", "Jan_Aug", "Mar_Jul", "JulAugSep","year","Jan_Jul", "Nov_Mar", "Nov_Aug", "water_yr"))
+
+
+ppt.violin <- ggplot(ppt.cors.df[ppt.cors.df$clim %in% "PPT",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_violin(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Precipitation")
+
+
+tmax.violin <- ggplot(
+  ppt.cors.df[ppt.cors.df$clim %in% "TMAX",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_violin(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Maximum Temperature")
+
+#plot_grid(ppt.violin, tmax.violin, ncol = 1)
+
+```
+
+# Boxplots of individual climate correlations
+
+```{r, echo = FALSE}
+
+ppt.box <- ggplot(ppt.cors.df[ppt.cors.df$clim %in% "PPT",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Precipitation")
+
+
+tmax.box <- ggplot(ppt.cors.df[ppt.cors.df$clim %in% "TMAX",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Maximum Temperature")
+
+#png(height = 6, width = 6, units = "in", res = 300, "boxplot_climate_correlations.png")
+plot_grid(ppt.box, tmax.box, ncol = 1, labels = "AUTO")
+#dev.off()
+```
+
+#### Tree ring widths are highly variable, but have fairly negative responses to Tmax during the Arid Foresummer (Apr - Jun) and Monsoon (Jul - Sept). 
+
+
+# visualizing the standardized plot level data
+```{r, echo = FALSE}
+
+# get site lat longs:
+plot.data.unscaled <- data.frame(LON = temp2$PLOT_LON,
+           LAT = temp2$PLOT_LAT, 
+           ELEV = temp2$PLOT_ELEV,
+           SDI = temp2$SDI, 
+           SICOND = temp2$COND_SICOND, 
+           TreeID = as.character(1:544),
+           SLOPE = cov.data$SLOPE, 
+           ASPECT = cov.data$ASPECT, 
+           
+           STAGE2 = cov.data$STAGE2, 
+           STAGE3 = cov.data$STAGE3, 
+           STDAGE = cov.data$STDAGE, 
+           TRTCD1 = temp2$COND_TRTCD1, 
+           DSTRBCD1 = temp2$COND_DSTRBCD1, 
+           DSTRBCD2 = temp2$COND_DSTRBCD2,
+           DSTRBCD3 = temp2$COND_DSTRBCD3)
+
+
+
+
+all_states <- map_data("state")
+states <- subset(all_states, region %in% c(  'arizona') )
+coordinates(all_states)<-~long+lat
+class(all_states)
+mapdata <- data.frame(states)
+
+SDI.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SDI), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+SICOND.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SICOND), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+ELEV.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = ELEV), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+ASPECT.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = ASPECT), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+SLOPE.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SLOPE), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+STDAGE.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = STDAGE), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+plot_grid(ELEV.map, SDI.map, SICOND.map, ncol = 3)
+
+```
+
+
+```{r, echo = FALSE}
+
+ppt.cors.std.df <- left_join(ppt.cors.df, plot.data.unscaled, by = "TreeID")
+ 
+#  ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+#   
+# ## same thing but for the water year
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = TRTCD1))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+
+```
+
+## There could be some spatial differences in climate sensitivity, but it does not look very strong here
+```{r, echo = FALSE}
+
+ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(LON, LAT, color = coef), size = 0.25)+scale_color_gradientn(colors = c("red", "white", "blue"))+ggtitle("Precipitation")
+
+ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun" ,], aes(LON, LAT, color = coef), size = 0.25)+scale_color_gradientn(colors = c("red", "white", "blue"))+ggtitle("Maximum Arid foresummer Temperature")
+
+```
+# Exploration of Disturbances, treatments, and slope and aspect. 
+
+```{r, echo = FALSE}
+
+DSTRBCD1.table <- data.frame(DSTRBCD1 = c(0,10, 20, 30, 40, 50, 60, 80),
+                             Disturbance = c("No Disturbance",
+                                             "Insect", 
+                                             "Disease", 
+                                             "Fire", 
+                                             "Animal", 
+                                             "Weather", 
+                                             "Vegetation (suppression, vines)", 
+                                             "Human"))
+
+plot.data.unscaled <- merge(plot.data.unscaled, DSTRBCD1.table)
+
+disturbs1 <- plot.data.unscaled %>% group_by(DSTRBCD1, Disturbance) %>% summarise(n = n())
+disturbs2 <- plot.data.unscaled %>% group_by(DSTRBCD2) %>% summarise(n = n())
+kable(disturbs1)
+kable(disturbs2)
+```
+
+# Fire is the most common disturbance, showing up in close to half of the plots in AZ!
+# Most of the plots also show evidence of thinning!
+
+```{r, echo = FALSE}
+
+TRTCD1.table <- data.frame(TRTCD1 = c(0,10),
+                             Treatment = c("No Treatment",
+                                             "Thinning"))
+
+plot.data.unscaled <- merge(plot.data.unscaled, TRTCD1.table, by = "TRTCD1")
+
+treatments <- plot.data.unscaled %>% group_by(TRTCD1, Treatment) %>% summarise(n = n())
+
+kable(treatments)
+```
+
+# do these treatments and disturbances have any direct relationship to climate sensitivity?
+```{r, echo = FALSE}
+
+#colnames(ppt.cors.std.df)
+cors <- merge(ppt.cors.std.df,  DSTRBCD1.table, by = "DSTRBCD1")
+
+#ggplot()+geom_boxplot(data = cors[cors$clim %in% "TMAX",], aes(Disturbance, coef))+facet_wrap(~month_ordered)+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(cors[cors$climate %in% c("tmax.monsoon", "tmax.AprMayJun"),], aes(Disturbance, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Maximum Temperature")+facet_wrap(~month_ordered)
+
+ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(Disturbance, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Precipitation")#+facet_wrap(~month_ordered)
+
+
+ggplot(cors[cors$climate %in% c("tmax.monsoon", "tmax.AprMayJun"),], aes(TRTCD1, coef, color = p < 0.05, group = TRTCD1))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("TRTCD1")+facet_wrap(~month_ordered)
+
+ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(TRTCD1, coef, color = p < 0.05, group = TRTCD1))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("TRTCD1")#+facet_wrap(~month_ordered)
+
+```
+
+Many of the trees (but not all) with low climate correlations are those that have evidence of thinning. 
+
+
+# Do correlations vary by site conditions or stand age?
+The correlation coefficinets don't show any strong direct relationships with tree correlations. 
+```{r, echo = FALSE, }
+# 
+# #ppt.cors.std.df <- left_join(ppt.cors.df, plot.data.unscaled, by = "TreeID")
+#  
+# t.1 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+# t.2 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+# t.3 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+# t.4 <-   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+# t.5 <-   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+# 
+#   plot_grid(t.1, t.2, t.3, t.4, t.5, ncol = 2)
+#   
+# ## same thing but for the water year
+# p.1 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+# p.2 <-    ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#  p.3 <-  ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+# p.4 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+# p.5 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = TRTCD1))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+#   
+# plot_grid(p.1, p.2, p.3, p.4, p.5, ncol = 2)
+  
+  
+
+# color by disturbance codes: 
+#   
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+#   
+# ## same thing but for the water year
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(SDI, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = Disturbance))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+
+```
+
+
+## KAH Working hypotheses for the models:
+
+1. Thinning alleviates some water and light competition and should reduce climate sensitivity and/or interact with climate.
+2. Slope and Aspect should modify climate sensitivity, such that there is an interaction effect.
+3. Older trees are more climate sensitive.
+4. Water year precipitation will have the strongest positive correlation with tree growth
+5. Effects of Precipitation (time varying) will be strongest during drought years
+6. Lagged effects of droughts (?) may play a role. We likely don't want to complicate initially, but add to the list of "drought" items to consider.
+
+
+##KAH questions & issues:
+1. Working with Martin to set up a docker container to run jags
+2. Model runs on my computer, but crashes between 100% done and actually finishing.
+3. How useful will the time varying betas for climate be if we want to forecast into the future?
+4. CCR (crown cover ratio) and CCCD (crown cover code) are missing from the AZ_PIPO data. Is there a workflow I can use to go back to the plot level data to get these variables? Or do I need to start back at the FIA data (version?).

@@ -1,0 +1,122 @@
+---
+title: 'Growth Fusion update: Stage 1 Fire Disturbance & Stage 2 Options'
+author: "Kelly Heilman"
+date: "1/21/2020"
+
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(fig.path='figure/graphics-', 
+                 cache.path='cache/graphics-', 
+                 fig.align='center',
+                 external=TRUE,
+                 echo=TRUE,
+                 warning=FALSE,
+                 fig.pos='H'
+                )
+library(rjags)
+library(psych)
+library(tidyr)
+library(tidyverse)
+```
+
+### **Overview**
+#### Inventory Growth Fusion Stage 1:
+  1. Adding Disturbance Effects
+  2. Adding DBH^2 term back into the model
+
+#### Inventory Growth Fusion Stage 2:
+  3. Adding all DBH measurements (5794 new trees with 2 dbh measurements)
+  4. Strong informative priors for time varing factors
+
+#### Future Climate Scenario data sources
+
+
+### **Inventory Growth Fusion Stage 1: With Disturbance effects** 
+Added "time since fire" as a time-varying effect + all pairwise interactions into the Stage 1 model. If no disturbance recorded, we set time since disturbance to 51 years @ 2010 (this is 1 year more than the max time since disturbance for all plots with fire recorded)
+
+#### **Traceplots from stage 1 model with disturbance** 
+Run with only trees with cores and dbh measurements
+40,000 iterations
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 1. Traceplots for full Stage1 model with disturbance", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Full.model.stg1.distrubtime_v2_traceplots.png")
+```
+
+#### **Effects of Time Since Fire Disturbance**
+Time Since Fire disturbance has a very small net effect on growth. However, there are significant interactions with temperature, stand density index, Site index, and DBH that result in differences in tree growth. Most interesting: Interactions between time since fire and climate. More recently burned plots show decreased sensitivity to temperature and precipitation.
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 2. Main Effects on tree growth", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Full_effects_Full.model.stg1.distrubtime_v2.png")
+```
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Interaction Effects on tree growth", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Full_interaction_effects_Full.model.stg1.distrubtime_v2.png")
+```
+
+
+
+##### **Some notes/issues about fire disturbance in the model:**
+1. We have negative time since distrubance in the plots before the fire disturbance is recorded
+2. If there is no fire disturbance in the plots, the time since disturbance is always 51 (this should be more ecologically reasonable)
+3. Convergence could be better--perhaps addresssing 1 & 2 above will help.
+
+
+#### **Inventory Growth Fusion Stage 1: adding DBH^2 term back into the model** 
+##### **Traceplots from stage 1 model with DBH^2** 
+Run with only trees with cores and dbh measurements
+20,000 iterations as a test case
+DBH convergence is not great here...but running with more iterations should help.
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 4. Traceplots for full Stage1 model with X^2 term", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Full_stage1v2_wX2_traceplots.png")
+```
+
+
+#### **Stage 2 model:**
+Overview of ways that I have tried to break the model so far:
+1. Adding all DBH measurements (5794 new trees with 2 dbh measurements)
+2. Strong informative priors for time varing factors
+
+
+##### **1. Stage 2 model: All DBH measurements**
+This model did not finish running and timed out after 3 days
+It did get to 14,400 iterations, but did not converge:
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 5. Traceplots for the full Stage2 model with 5794 trees", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/stage2v3informall.5794.full.model_traceplots.png")
+```
+
+##### **2. Strong Informative Priors for stage2:** 
+To make time varying priors ver strong, we model with a uniform distribution based on posterior estimates from stage 1
+
+$$ beta_{Precip} \sim uniform(min(beta_{precip_{stage1}}), max(beta_{precip_{stage1}})$$
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 6. Traceplots for the full Stage2 model with 1000 trees and strong informative time-varying priors", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/stage2v3very_strong_time.1000.full.model_traceplots.png")
+```
+
+##### **Distribution of stage1 outputs used to select priors & posterior estimates**
+Specifying a uniform distrubution for all the time-varying paramters seems to result in very narry posteriors, but Temp and Precip effects may be trading off in this case.
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 7. Posterior and prior distributions for the full Stage2 model with 1000 trees and strong informative time-varying priors", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/stage2v3very_strong_time.1000.full.model_priors_posteriors.png")
+```
+
+
+
+#### **Future Climate estimates**
+CMIP5:
+Downscaled CMIP5 projections for RCP2.6, RCP4.0, RCP6.5, RCP8.6 for a range of climate models
+https://gdo-dcp.ucllnl.org/downscaled_cmip_projections/dcpInterface.html 
+I have worked with model outputs from this website before & they are easily downloadable, and okay to work with.
+
+CMIP6:
+https://pcmdi.llnl.gov/CMIP6/
+Not sure how usable/user friendly the climate model outputs are right now.
+
+#### **Next Steps**
+1. STAGE 1: Include both DBH and Fire 
+2. STAGE 2: Estimate with DBH and Fire (1000 + DBH cores)
+3. Running STAGE 2 w/ all trees for longer -- possibly on VM
+4. Analysis of climate data
