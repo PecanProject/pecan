@@ -338,6 +338,7 @@ head(pipo.cores.ll)
 pipo.cores.ll <- readRDS( "pipo.cores.with.downscaled.hydro.ppt.climate_1950_2099_v4.rds")
 head(pipo.cores.ll)
 head(pipo.cores.ll$future.climate.ts)
+future.climate.ts  <- pipo.cores.ll$future.climate.ts
 clim.ts.df <- pipo.cores.ll$future.climate.ts
 clim.ts.df$tmax.fall.spr[is.nan(clim.ts.df$tmax.fall.spr)] <- NA
 
@@ -364,7 +365,7 @@ ggplot(prev.df, aes(year, tmax.fall.spr, color = modelrun))+geom_line()+facet_wr
 head(cov.data.ll)
 head(time_data)
 
-tmax.fall.spr <- time_data$tmax.fallspr
+tmax.fall.spr <- as.data.frame(time_data$tmax.fallspr)
 cov.data.ll.df <- as.data.frame(cov.data.ll)
 
 tmax.fall.spr$lat <- cov.data.ll.df$LAT
@@ -421,14 +422,48 @@ ggplot(ts.site.means %>% filter(time_period %in% c("1965-2018")), aes(avg.ppt.di
 # Adjust the values of future climate so that all future model run means for historic period match the means for each site, 
 
 # get the mean difference just for 1965-2018
-ts.site.means.1965.2018 <- ts.site.means %>% filter(time_period %in% c("1965-2018")) %>% select(lat, lon, rcp, modelrun, avg.tmax.diff, avg.ppt.diff)
+ts.site.means.1965.2018 <- ts.site.means %>% filter(time_period %in% c("1965-2018")) %>% dplyr::select(lat, lon, rcp, modelrun, avg.tmax.diff, avg.ppt.diff)
 
 fut.past.means.compare <- left_join(fut.past.compare, ts.site.means.1965.2018, by =c("lat", "lon", "rcp", "modelrun"))
 fut.corr <- fut.past.means.compare
 fut.corr$ppt.corrected <- fut.corr$year.ppt + fut.corr$avg.ppt.diff
+fut.corr$ppt.corrected <- ifelse(fut.corr$ppt.corrected < 0, 0, fut.corr$ppt.corrected)
 fut.corr$tmax.corrected <- fut.corr$tmax.fall.spr + fut.corr$avg.tmax.diff
 
+ggplot()+geom_line(data = test.df, aes(year, tmax.corrected, color = modelrun))+
+  geom_line(data = test.df, aes(year, PRISM_fall_spr_tmax), color = "black")+facet_wrap(~rcp)
 
+
+
+fut.corr.sub <- fut.corr 
+fut.corr.sub$rcp2 <- ifelse(fut.corr.sub$time_period %in% c("1950-1964", "1965-2018"), "historical", fut.corr.sub$rcp) 
+
+
+color.scheme <- c("#d7191c",
+                  "#fdae61",
+                  "#ffffbf",
+                  "#abd9e9",
+                  "#2c7bb6")
+
+temp.boxes <- ggplot()+geom_boxplot(data = fut.corr.sub, aes(time_period, tmax.corrected, fill = rcp2), outlier.alpha = 0.1)+
+  scale_fill_manual(values = rev(color.scheme))+theme_bw(base_size = 12)+
+  ylab("Spring - Fall Max. Temperature")+xlab("Time Period")+theme(panel.grid = element_blank(), legend.title = element_blank())
+
+ppt.boxes <- ggplot()+geom_boxplot(data = fut.corr.sub, aes(time_period, ppt.corrected, fill = rcp2),  outlier.alpha = 0.1)+
+  scale_fill_manual(values = rev(color.scheme))+theme_bw(base_size = 12)+
+  ylab("Total Precipitation")+xlab("Time Period")+theme(panel.grid = element_blank(), legend.title = element_blank())
+
+
+rcp.legend <- cowplot::get_legend(ppt.boxes)
+
+png(height = 4, width = 10, units = "in", res = 300, "paper_figures/future_mean_corrected_climate_summary.png")
+cowplot::plot_grid(
+  ppt.boxes+theme(legend.position = "none"), 
+  temp.boxes+theme(legend.position = "none"),
+  rcp.legend, 
+  ncol = 3, rel_widths = c(1,1,0.2),labels = c("A", "B", ""), label_fontface = "plain"
+)
+dev.off()
 
 test.df <- fut.corr %>% filter(lat %in% ll.df[120,]$lat & lon %in% ll.df[120,]$lon)
 test.df$year <- as.numeric(test.df$year)
@@ -444,7 +479,7 @@ ggplot()+geom_line(data = test.df, aes(year, ppt.corrected, color = modelrun))+
 # okay lets save the future climate with the matched means:
 
 saveRDS(fut.corr, "full_time_mean_corrected_CMIP5_model_timeseries.RDS")
-
+fut.corr <- readRDS( "full_time_mean_corrected_CMIP5_model_timeseries.RDS")
 fut.corr.sub <- fut.corr %>% filter(year >=2018) %>% select(lat, lon, year, rcp, modelrun, ppt.corrected, tmax.corrected)
 
 saveRDS(fut.corr.sub, "pipo.cores.ds.mean.correct.climate_2018_2099.RDS")
