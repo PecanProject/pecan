@@ -31,8 +31,8 @@ library(cowplot)
 #####################################################################################
 # 2. Plot Effects for Water Year Precip full model
 #####################################################################################
-file.base.name <- "SDI_noSI_no_plot_random_effects5000."
-output.base.name <- "SDI_noSI_no_plot_random_effects5000"
+file.base.name <- "SDI_SI.norand.X.resampled."
+output.base.name <- "SDI_SI.norand.X.resampled"
 stage2 <- TRUE
 workingdir <- "/home/rstudio/"
 climate <- "wintP.wateryr"
@@ -79,6 +79,10 @@ for(i in 1:3){
 jags.comb <- as.mcmc.list(jags.comb)
 #save(jags.comb,file="IGF.waterYear.PPT.RData")
 saveRDS(jags.comb,file=paste0("IGF",output.base.name,".rds"))
+
+# if jags.comb does not exist
+jags.comb <- readRDS(file=paste0("IGF",output.base.name,".rds"))
+jags.comb <- readRDS(file=paste0("/home/rstudio/data/IGFFull.model.validation.nadapt5000.rds"))
 
 # check for convergence via gelman-rubin
 gelman.diag(jags.comb)
@@ -413,7 +417,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
         betas[j,"betaX_SICOND"]*xseq*SI+
@@ -467,7 +471,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIseq + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -517,7 +521,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIseq + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
         betas[j,"betaX_SICOND"]*Xhl[1]*SI+
@@ -536,7 +540,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIseq + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
+        betas[j,"betaSICOND_SDIseq"]*SDIseq*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
         betas[j,"betaX_SICOND"]*Xhl[2]*SI+
@@ -598,7 +602,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
         betas[j,"betaSICOND"]*SIseq + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SIseq +  
+        betas[j,"betaSICOND_SDI"]*SDI*SIseq +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
         betas[j,"betaX_SICOND"]*x*SIseq+
@@ -642,7 +646,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
         betas[j,"betaSICOND"]*SIseq + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
         betas[j,"betaX_SICOND"]*Xhl[1]*SIseq+
@@ -662,7 +666,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
         betas[j,"betaSICOND"]*SIseq + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
         betas[j,"betaX_SICOND"]*Xhl[2]*SIseq+
@@ -681,7 +685,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI*wateryrP + 
         betas[j,"betaSICOND"]*SIseq + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIseq*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIseq*wateryrP + 
         betas[j,"betaX_SICOND"]*x*SIseq+
@@ -721,6 +725,98 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     si.DBH.Effect.gg.rug <-  si.DBH.Effect.gg + geom_rug(data = SI.m, aes(value), size = 0.05)
     
+    # ## SI x SDI
+    incSISDIlo <- matrix(NA,ns,length(SDIseq))
+    incSISDImed <- matrix(NA,ns,length(SDIseq))
+    incSISDIhi <- matrix(NA,ns,length(SDIseq))
+    
+    for(k in seq_along(i)){
+      j <- i[k]
+      incSISDIlo[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*x*x +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SIhl[1] + 
+        betas[j,"betaSICOND_SDI"]*SDIseq*SIhl[1] +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[1]*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SIhl[1]+
+        betas[j,"betaX_SDI"]*x*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+      
+      
+      incSISDIhi[k,] <- B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*x*x +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SIhl[2] + 
+        betas[j,"betaSICOND_SDI"]*SDIseq*SIhl[2] +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SIhl[2]*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SIhl[2]+
+        betas[j,"betaX_SDI"]*x*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+      
+      incSISDImed[k,] <-B0[j]+ 
+        betas[j,"betaX"]*x + 
+        betas[j,"betaX2"]*(x)*x +
+        betas[j,"betaSDI"]*SDIseq + 
+        betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wateryrP + 
+        betas[j,"betaSICOND"]*SI + 
+        betas[j,"betaSICOND_SDI"]*SDIseq*SI +  
+        betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
+        betas[j,"betaSICOND_wintP.wateryr"]*SI*wateryrP + 
+        betas[j,"betaX_SICOND"]*x*SI+
+        betas[j,"betaX_SDI"]*x*SDIseq  + 
+        betas[j,"betaX_wintP.wateryr"]*x*wateryrP +
+        betas[j,"betawintP.wateryr"]*wateryrP + 
+        # temperature
+        betas[j,"betaX_tmax.fallspr"]*x*sprfallTmax +
+        betas[j,"betatmax.fallspr"]*sprfallTmax + 
+        betas[j,"betaSDI_tmax.fallspr"]*SDI*sprfallTmax +
+        betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wateryrP 
+    }
+    
+    CIsisdil <- apply(incSISDIlo,2,quantile,c(0.025,0.5,0.975))
+    CIsisdih <- apply(incSISDIhi,2,quantile,c(0.025,0.5,0.975))
+    CIsisdim <- apply(incSISDImed,2,quantile,c(0.025,0.5,0.975))
+    
+    SI.SDI.Effect %<a-% {
+      plot(SIseq.real,CIsisdim[2,],ylim=c(0,max(CIsi)),type='l',lwd=3,xlab="Site Index",ylab="Diameter Increment (cm)",cex.lab=1.5)
+      #ciEnvelope(SIseq,CIsi[1,],CIsi[3,],col = "lightgrey")
+      lines(SIseq.real,CIsisdil[2,],lwd=3,col="blue")
+      lines(SIseq.real,CIsisdih[2,],lwd=3,col="red")
+      legend("bottomright",legend=c("small","mean","large"),col=c("blue",1,2),lwd=3,cex=1)
+    }
+    
+    
+    # same but ggplot and prettier:
+    si.low <- reshape2::melt(CIsisdil) %>% spread(Var1, value) %>% add_column(`Stand Density` = "Low", si = SIseq.real)
+    si.high <- reshape2::melt(CIsisdih) %>% spread(Var1, value) %>% add_column(`Stand Density` ="High", si = SIseq.real)
+    si.mid <- reshape2::melt(CIsisdim) %>% spread(Var1, value)%>% add_column(`Stand Density` = "Medium", si = SIseq.real)
+    
+    all.si <- rbind(si.low, si.high, si.mid)
+    
+    si.SDI.Effect.gg <- ggplot()+geom_ribbon(data = all.si, aes(si, ymin = `2.5%`, ymax = `97.5%`, fill = `Stand Density`), alpha = 0.5)+
+      geom_line(data = all.si, aes(si, y = `50%`, color = `Stand Density`))+ylab("Predicted Growth")+xlab("Site Index")+theme_bw()+
+      theme(panel.grid = element_blank())
+    
+    si.SDI.Effect.gg.rug <-  si.SDI.Effect.gg + geom_rug(data = SI.m, aes(value), size = 0.05)
+    
     
     ## wintP
     clim.data <- readRDS("PRISM_non_scaled.rds")
@@ -738,7 +834,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -781,7 +877,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIhl[1] + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -800,7 +896,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIhl[2] + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -852,7 +948,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
         betas[j,"betaX_SICOND"]*Xhl[1]*SI+
@@ -871,7 +967,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI* wintPseq + 
         betas[j,"betaX_SICOND"]*Xhl[2]*SI+
@@ -921,7 +1017,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SIhl[1] + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIhl[1]* wintPseq + 
         betas[j,"betaX_SICOND"]*x*SIhl[1]+
@@ -941,7 +1037,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SIhl[2] + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*sprfallTmax + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIhl[2]* wintPseq + 
         betas[j,"betaX_SICOND"]*x*SIhl[2]+
@@ -980,57 +1076,6 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     Precipitation.SI.Effect.gg.rug <-   Precipitation.SI.Effect.gg + geom_rug(data = ppt.m, aes(x = value), size = 0.05)
     
-    # 
-    # 
-    # 
-    # ## SI X SDI
-    # 
-    # incSDI_SIlo <- matrix(NA,ns,length(SDIseq))
-    # incSDI_SIhi <- matrix(NA,ns,length(SDIseq))
-    # 
-    # for(k in seq_along(i)){
-    #   j <- i[k]
-    #   incSDI_SIlo[k,] <- B0[j] + betas[j,"betaSDI"]*SDIseq + betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wintP + 
-    #     betas[j,"betaSICOND"]*SIhl[1] + betas[j,"betaSICOND_SDI"]*SDIseq*SIhl[1] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + betas[j,"betaX"]*x[1] + 
-    #     betas[j,"betaX_SDI"]*x[1]*SDIseq + betas[j,"betaX_SICOND"]*x[1]*SIhl[1] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x[1]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[1]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDIseq*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    #   
-    #   incSDI_SIhi[k,] <- B0[j] + betas[j,"betaSDI"]*SDIseq + betas[j,"betaSDI_wintP.wateryr"]*SDIseq*wintP + 
-    #     betas[j,"betaSICOND"]*SIhl[2] + betas[j,"betaSICOND_SDI"]*SDIseq*SIhl[2] + 
-    #     betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + betas[j,"betaX"]*x[1] + 
-    #     betas[j,"betaX_SDI"]*x[1]*SDIseq + betas[j,"betaX_SICOND"]*x[1]*SIhl[2] + betas[j,"betaX_wintP.wateryr"]*x[1]*wintP +
-    #     betas[j,"betawintP.wateryr"]*wintP+
-    #     # temperature
-    #     betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*sprfallTmax + betas[j,"betaX_tmax.fallspr"]*x[1]*sprfallTmax +
-    #     betas[j,"betatmax.fallspr"]*sprfallTmax + betas[j,"betaSDI_tmax.fallspr"]*SDIseq*sprfallTmax +
-    #     betas[j,"betatmax.fallspr_wintP.wateryr"]*sprfallTmax*wintP +
-    #     # time since fire
-    #     betas[j,"betaSICOND_TimeSinceFIRE"]*SIhl[2]*timesinceFire + betas[j,"betaX_TimeSinceFIRE"]*x[1]*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE"]*timesinceFire + betas[j,"betaSDI_TimeSinceFIRE"]*SDIseq*timesinceFire +
-    #     betas[j,"betaTimeSinceFIRE_wintP.wateryr"]*timesinceFire*wintP + betas[j,"betaTimeSinceFIRE_tmax.fallspr"]*timesinceFire*sprfallTmax
-    #   
-    # }
-    # CISDISIlo <- apply(incSDI_SIlo,2,quantile,c(0.025,0.5,0.975))
-    # CISDISIhi <- apply(incSDI_SIhi,2,quantile,c(0.025,0.5,0.975))
-    # 
-    # SDI.SI.Effect %<a-% {
-    #   plot(SDIseq.real,CISDISIhi[2,],ylim=c(0,max(CISDISIhi[2,])),type='l',lwd=3,xlab="Stand Density Index",ylab="Diameter Increment (cm)",cex.lab=1.5, col = "purple")
-    #   # #PEcAn.visualization::ciEnvelope(wintPseq,CIwintP[1,],CIwintP[3,],col = "purple")
-    #   lines(SDIseq.real,CISDISIlo[2,],lwd=2,col="grey")
-    #   #lines(wintPseq.real,CIwintPSIhi[2,],lwd=2,col="purple")
-    #   legend("bottomleft",legend=c("low SI","high SI"),col=c("grey", "purple"),lwd=3)
-    # }
-    # 
     
     # Temperature effect
     
@@ -1099,7 +1144,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIhl[1] + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIhl[1]* wintP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -1119,7 +1164,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDIhl[2] + 
         betas[j,"betaSDI_wintP.wateryr"]*SDIhl[2]* wintP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -1173,7 +1218,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
         betas[j,"betaX_SICOND"]*Xhl[1]*SI+
@@ -1192,7 +1237,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintP + 
         betas[j,"betaX_SICOND"]*Xhl[2]*SI+
@@ -1244,7 +1289,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
         betas[j,"betaSICOND"]*SIhl[1] + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIhl[1]*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIhl[1]*wintP + 
         betas[j,"betaX_SICOND"]*x*SIhl[1]+
@@ -1264,7 +1309,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintP + 
         betas[j,"betaSICOND"]*SIhl[2] + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SIhl[2]*tmaxseq + 
         betas[j,"betaSICOND_wintP.wateryr"]*SIhl[2]*wintP + 
         betas[j,"betaX_SICOND"]*x*SIhl[2]+
@@ -1322,7 +1367,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmaxhl[1] + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -1341,7 +1386,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
         betas[j,"betaSDI"]*SDI + 
         betas[j,"betaSDI_wintP.wateryr"]*SDI* wintPseq + 
         betas[j,"betaSICOND"]*SI + 
-        #betas[j,"betaSICOND_SDI"]*SDI*SI +  
+        betas[j,"betaSICOND_SDI"]*SDI*SI +  
         betas[j,"betaSICOND_tmax.fallspr"]*SI*sprfallTmaxhl[2] + 
         betas[j,"betaSICOND_wintP.wateryr"]*SI*wintPseq + 
         betas[j,"betaX_SICOND"]*x*SI+
@@ -1493,6 +1538,7 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     
     png(height = 8, width =13, units = "in", res = 200, paste0(workingdir,"/", "Interaction_effects_ggplots_rugs_",output.base.name,".png"))
     plot_grid(
+      
       SDI.DBH.effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
       Precipitation.DBH.Effect.gg.rug + ylim(0,0.55)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.2, 0.2)), 
       Precipitation.SI.Effect.gg.rug+ ylim(0,0.55)  + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.2, 0.2)), 
@@ -1509,60 +1555,48 @@ png(height = 10, width = 8, units = "in", res = 200, paste0(workingdir,output.ba
     dev.off()
     
     
+    # make one big figure
+    png(height = 10, width =11, units = "in", res = 300, paste0(workingdir,"/", "Interaction_effects_ggplots_rugs_",output.base.name,".png"))
+    plot_grid(
+      SDI.effect.gg.rug + ylim(0,0.6) + ylab("Diameter Increment (cm)"), 
+      SI.effect.gg.rug + ylim(0,0.6)+ ylab("Diameter Increment (cm)"), 
+      tmax.Effect.gg.rug+ ylim(0,0.6)+ ylab("Diameter Increment (cm)"), 
+      wintP.Effect.gg.rug+ ylim(0,0.6)+ ylab("Diameter Increment (cm)"), 
+      Size.effect.gg.rug+ ylim(0,0.6)+ ylab("Diameter Increment (cm)"), 
+      
+      #SIxTemp
+      Tmax.SI.Effect.gg.rug +theme_bw(base_size = 10)+ ylim(0,0.6) + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      #SIxPPT
+      Precipitation.SI.Effect.gg.rug +theme_bw(base_size = 10)+ ylim(0,0.6)  + scale_fill_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101")) + scale_color_manual(values = c('High'="#5e3c99", 'Medium'="grey", 'Low'="#e66101"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),   
+      
+      #SIxSDI
+      si.SDI.Effect.gg.rug+theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      #SDIxtemp
+      tmax.SDI.Effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      #SDIxPPT
+      sdi.Precip.Effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0, 0.6)+ scale_fill_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a")) + scale_color_manual(values = c('High'="#018571", 'Medium'="grey", 'Low'="#a6611a"))+xlab("Water Year Precipitation (mm)")+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),   
+      
+      #DBHxPPT
+      Precipitation.DBH.Effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      #DBHxtemp
+      Tmax.DBH.Effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()), 
+      
+      #DBHxSDI
+      SDI.DBH.effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      #DBHxSI
+      si.DBH.Effect.gg.rug  +theme_bw(base_size = 10)+  ylim(0,0.6)+ scale_fill_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b")) + scale_color_manual(values = c('Large'="#4dac26", 'Medium'="grey", 'Small'="#d01c8b"))+theme(legend.position = c(0.39, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()), 
+      #PPTxtemp
+      Precipitation.tmax.Effect.gg.rug  +theme_bw(base_size = 10)+ ylim(0,0.6)+ scale_fill_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0")) + scale_color_manual(values = c('High'="#ca0020", 'Medium'="grey", 'Low'="#0571b0"))+theme(legend.position = c(0.32, 0.2))+ ylab("Diameter Increment (cm)")+ theme(legend.background = element_blank(), panel.grid = element_blank()),  
+      
+      ncol = 5, align = "hv", labels = "AUTO", label_fontface = "plain"
+    )
     
-    # plot out the taus:
-    out.taus <- out[,c("tau_inc", "tau_PLOT", "tau_dbh", "tau_add")]
-    out.taus.m <- reshape2::melt(out.taus)
-    tau.summary<- out.taus.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
-                                                              ci.low = quantile(value, 0.025, na.rm=TRUE),
-                                                              ci.high = quantile(value, 0.975, na.rm=TRUE),)
     
-    
-    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_precision_plots.png"))
-    ggplot()+geom_errorbar(data = tau.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
-      geom_point(data = tau.summary, aes(x = Var2, y = median))+ylab("Posterior Precision")+xlab("")+theme_bw()
     dev.off()
-    
-    out.taus.m$sigma <- 1/sqrt(out.taus.m$value)
-    sigma.summary<- out.taus.m %>% group_by(Var2) %>% summarise(median = quantile(sigma, 0.5, na.rm=TRUE), 
-                                                                ci.low = quantile(sigma, 0.025, na.rm=TRUE),
-                                                                ci.high = quantile(sigma, 0.975, na.rm=TRUE),)
-    
-    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_sigma_plots.png"))
-    ggplot()+geom_errorbar(data = sigma.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
-      geom_point(data = sigma.summary, aes(x = Var2, y = median))+ylab("Posterior Sigma")+xlab("")+theme_bw()
-    dev.off()
-    
-    # plot up all the betas
-    betas.m <- reshape2::melt(betas)
-    beta.summary<- betas.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
-                                                            ci.low = quantile(value, 0.025, na.rm=TRUE),
-                                                            ci.high = quantile(value, 0.975, na.rm=TRUE),)
-    
-    
-    
-    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_beta_plots.png"))
-    ggplot()+geom_errorbar(data = beta.summary, aes(x = Var2, ymin = ci.low, ymax = ci.high), width = 0.1)+
-      geom_point(data = beta.summary, aes(x = Var2, y = median))+ylab("Posterior Fixed Effects")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    dev.off()
-    
-    stage1.ests <-as.matrix(posterior.ests) 
-    # get the priors for the stage2 model--ie the posteriors for stage 1:
-    s1.taus <- stage1.ests[,c("tau_inc", "tau_PLOT", "tau_dbh", "tau_add")]
-    s1.taus.m <- reshape2::melt(s1.taus)
-    prior.tau.summary<- s1.taus.m %>% group_by(Var2) %>% summarise(median = quantile(value, 0.5, na.rm=TRUE), 
-                                                                   ci.low = quantile(value, 0.025, na.rm=TRUE),
-                                                                   ci.high = quantile(value, 0.975, na.rm=TRUE),)
-    
-    prior.tau.summary$model <- "Stage 1"
-    tau.summary$model <- "Stage 2"
-    
-    both.taus <- rbind(prior.tau.summary, tau.summary)
-    
-    png(height = 4, width = 6, units = "in", res = 200, paste0(output.base.name, "_posterior_taus_stage1_stage2_plots.png"))
-    ggplot()+geom_errorbar(data = both.taus, aes(x = Var2, ymin = ci.low, ymax = ci.high, color = model), width = 0.1)+
-      geom_point(data =both.taus, aes(x = Var2, y = median, color = model))+ylab("Posterior Precisions")+xlab("")+theme_bw()+theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    dev.off()
-    
     
     
