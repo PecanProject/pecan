@@ -225,76 +225,78 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
                                con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL, return.all=FALSE) {
-
-
-
+  
+  
   hostname <- default_hostname(hostname)
-
+  
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
   if (is.null(mimetypeid)) {
     return(invisible(data.frame()))
   }
-
+  
   # find appropriate format
   formatid <- get.id(table = 'formats', colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
-
+  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
-
+  
   # setup parent part of query if specified
   if (is.na(parentid)) {
     parent <- ""
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input
   if (exact.dates) {
-    inputs <- db.query(
-      query = paste0(
-        "SELECT * FROM inputs WHERE site_id=", siteid,
-        " AND format_id=", formatid,
-        " AND start_date='", startdate,
-        "' AND end_date='", enddate,
-        "'", parent
-      ),
-      con = con
-    )#[['id']]
-  } else {
-    inputs <- db.query(
-      query = paste0(
-        "SELECT * FROM inputs WHERE site_id=", siteid,
-        " AND format_id=", formatid,
-        parent
-      ),
-      con = con
-    )#[['id']]
+    if(!is.null(enddate)){
+      inputs <- db.query(
+        query = paste0(
+          "SELECT * FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid,
+          " AND start_date='", startdate,
+          "' AND end_date='", enddate,
+          "'", parent
+        ),
+        con = con
+      )
+    } else{
+      inputs <- db.query(
+        query = paste0(
+          "SELECT * FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid,
+          " AND start_date='", startdate,
+          "'", parent
+        ),
+        con = con
+      )
+    }
   }
-
+  
   if (is.null(inputs) | length(inputs$id) == 0) {
     return(data.frame())
   } else {
-
+    
     if (!is.null(pattern)) {
       ## Case where pattern is not NULL
       inputs <- inputs[grepl(pattern, inputs$name),]
     }
-
+    
     ## parent check when NA
-    if (is.na(parentid)) {
-      inputs <- inputs[is.na(inputs$parent_id),]
-    }
-
+    # if (is.na(parentid)) {
+    #   inputs <- inputs[is.na(inputs$parent_id),]
+    # }
+    
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
       print(inputs)
-         #   ni = length(inputs$id)
-         #   dbfile = list()
-         #   for(i in seq_len(ni)){
-         #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
-         # }
-
+      #   ni = length(inputs$id)
+      #   dbfile = list()
+      #   for(i in seq_len(ni)){
+      #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
+      # }
+      
       dbfile <-
         dbfile.check(
           type = 'Input',
@@ -304,8 +306,8 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
           machine.check = TRUE,
           return.all = return.all
         )
-
-
+      
+      
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures a empty data.frame is returned
@@ -313,15 +315,15 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
         PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
-
+      
       return(dbfile)
     } else if (length(inputs$id) == 0) {
-
+      
       # need this third case here because prent check above can return an empty inputs
       return(data.frame())
-
+      
     }else{
-
+      
       PEcAn.logger::logger.warn("Found possible matching input. Checking if its associate files are on host machine")
       print(inputs)
       dbfile <- dbfile.check(
@@ -332,7 +334,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
         machine.check = TRUE,
         return.all = return.all
       )
-
+      
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures an empty data.frame is returned
@@ -340,9 +342,9 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
         PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
-
+      
       return(dbfile)
-
+      
     }
   }
 }
