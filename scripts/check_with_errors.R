@@ -92,6 +92,9 @@ if (!file.exists(old_file)) {
     quit("no")
 }
 
+## temporary fix to bug in rcmdcheck https://github.com/r-lib/rcmdcheck/issues/140
+Sys.setlocale('LC_ALL','C')
+
 old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
