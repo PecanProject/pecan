@@ -13,8 +13,7 @@ lapply(c(
 'ebimodeling/biocro',
 'MikkoPeltoniemi/Rpreles',
 'ropensci/geonames',
-'ropensci/nneo',
-'r-lib/processx'  
+'ropensci/nneo'  
 ), remotes::install_github, lib = rlib)
 
 # install all packages (depends, imports, suggests)
