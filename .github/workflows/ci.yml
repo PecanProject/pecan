@@ -37,11 +37,6 @@ jobs:
       NCPUS: 2
       PGHOST: postgres
       CI: true
-      _R_CHECK_LENGTH_1_CONDITION_: true
-      _R_CHECK_LENGTH_1_LOGIC2_: true
-      # Avoid compilation check warnings that come from the system Makevars
-      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -88,11 +83,6 @@ jobs:
       NCPUS: 2
       PGHOST: postgres
       CI: true
-      _R_CHECK_LENGTH_1_CONDITION_: true
-      _R_CHECK_LENGTH_1_LOGIC2_: true
-      # Avoid compilation check warnings that come from the system Makevars
-      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -141,6 +131,8 @@ jobs:
       # Avoid compilation check warnings that come from the system Makevars
       # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
       _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
+      # Keep R checks from trying to consult the very flaky worldclockapi.com
+      _R_CHECK_SYSTEM_CLOCK_: 0
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -187,11 +179,6 @@ jobs:
       NCPUS: 2
       PGHOST: postgres
       CI: true
-      _R_CHECK_LENGTH_1_CONDITION_: true
-      _R_CHECK_LENGTH_1_LOGIC2_: true
-      # Avoid compilation check warnings that come from the system Makevars
-      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
