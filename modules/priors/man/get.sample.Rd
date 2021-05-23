@@ -9,10 +9,10 @@ get.sample(prior, n = NULL, p = NULL)
 \arguments{
 \item{prior}{data.frame with distn, parama, and optionally paramb.}
 
-\item{n}{number of samples to return from a random sample of the rdistn family of functions (e.g. qnorm)}
+\item{n}{number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)}
 
 \item{p}{vector of quantiles from which to sample the distribution; typically pre-generated upstream
-in the workflow to be used by the qdist family of functions (e.g. qnorm)}
+in the workflow to be used by the qdistn family of functions (e.g. qnorm)}
 }
 \value{
 vector with n random samples from prior
