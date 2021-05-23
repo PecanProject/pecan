@@ -1,63 +1,81 @@
 <?xml version="1.0"?>
 <pecan>
  <state.data.assimilation>
-  <process.variance>FALSE</process.variance>
+  <process.variance>TRUE</process.variance>
   <sample.parameters>TRUE</sample.parameters>
+  <adjustment>TRUE</adjustment>
   <data>
    <format_id>1000000040</format_id>
    <input.id>1000013298</input.id>
   </data>
+   <inputs>
+   <file>
+    <input.id>1000013298</input.id>
+    <operator>direct</operator>
+    <min_value>-9999</min_value>
+    <max_value>9999</max_value>
+    <variable.name>
+     <variable.name>NEE</variable.name>
+    </variable.name>
+   </file>
+   <file>
+    <input.id>1000013298</input.id>
+    <operator>direct</operator>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+    <variable.name>
+     <variable.name>Qle</variable.name>
+    </variable.name>
+  </file>
+  </inputs>
   <state.variables>
    <variable>
     <variable.name>NEE</variable.name>
-    <unit>MgC/ha/yr</unit>
+    <unit>umol C m-2 s-1</unit>
     <min_value>-9999</min_value>
     <max_value>9999</max_value>
+    <scaling_factor>1000000000</scaling_factor>
    </variable>
    <variable>
     <variable.name>Qle</variable.name>
-    <unit>MW/m2</unit>
-    <min_value>-9999</min_value>
+    <unit>mW m-2</unit>
+    <min_value>0</min_value>
     <max_value>9999</max_value>
+    <scaling_factor>100</scaling_factor>
    </variable>
    <variable>
+    <variable.name>AbvGrndWood</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+    <variable>
+    <variable.name>LAI</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+    <variable>
     <variable.name>TotSoilCarb</variable.name>
-    <unit>KgC/m^2</unit>
     <min_value>0</min_value>
     <max_value>9999</max_value>
   </variable>
   <variable>
    <variable.name>SoilMoistFrac</variable.name>
-   <unit>m/m</unit>
     <min_value>0</min_value>
     <max_value>1</max_value>
   </variable>
   <variable>
-    <variable.name>Litter</variable.name>
-    <unit>gC/m^2</unit>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-  </variable>
-  <variable>
-  <variable.name>SWE</variable.name>
-  <unit>kg/m^2</unit>
-  <min_value>0</min_value>
-  <max_value>9999</max_value>
-  </variable>
-  <variable>
-  <variable.name>litter_carbon_content</variable.name>
-  <unit>kgC/m2</unit>
-  <min_value>0</min_value>
-  <max_value>9999</max_value>
+   <variable.name>litter_carbon_content</variable.name>
+   <min_value>0</min_value>
+   <max_value>9999</max_value>
   </variable>
   </state.variables>
   <forecast.time.step>year</forecast.time.step>
   <start.date>2017-01-01</start.date>
   <end.date>2018-11-05</end.date>
-  <n.ensemble>1</n.ensemble>
+  <n.ensemble>50</n.ensemble>
  </state.data.assimilation>
  <info>
-  <notes></notes>
+  <notes>LE fix</notes>
   <userid>-1</userid>
   <username></username>
   <date>2019/01/04 10:19:35 +0000</date>
@@ -71,7 +89,7 @@
    <driver>PostgreSQL</driver>
    <write>TRUE</write>
   </bety>
-  <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
+  <dbfiles>/projectnb/dietzelab/pecan.data/dbfiles/</dbfiles>
  </database>
  <pfts>
    <pft>
@@ -79,7 +97,7 @@
    <constants>
     <num>1</num>
    </constants>
-   <posteriorid>1000016041</posteriorid>
+   <posteriorid>1000012409</posteriorid>
   </pft>
  </pfts>
  <meta.analysis>
@@ -87,7 +105,7 @@
   <random.effects>FALSE</random.effects>
  </meta.analysis>
  <ensemble>
-  <size>200</size>
+  <size>50</size>
   <variable>NEE</variable>
   <start.year>2018</start.year>
   <end.year>2018</end.year>
@@ -98,11 +116,14 @@
    <met>
     <method>sampling</method>
    </met>
+   <poolinitcond>
+     <method>sampling</method>
+   </poolinitcond>
   </samplingspace>
  </ensemble>
  <model>
-  <id>10</id>
-    <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
+  <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
+  <id>1000000030</id>
  </model>
  <run>
   <site>
@@ -111,6 +132,9 @@
    <met.end>2018-09-23</met.end>
   </site>
   <inputs>
+   <poolinitcond>
+    <source>BADM</source>
+   </poolinitcond>
    <met>
     <source>NOAA_GEFS</source>
     <output>SIPNET</output>
@@ -119,7 +143,7 @@
   <start.date>2018-12-05</start.date>
   <end.date>2018-12-20</end.date>
  </run>
- <host>
-  <name>localhost</name>
- </host>
+  <host>
+     <name>localhost</name>
+  </host>
 </pecan>
