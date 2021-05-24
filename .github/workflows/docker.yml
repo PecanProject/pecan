@@ -22,7 +22,7 @@ on:
   pull_request:
 
   issue_comment:
-    types: 
+    types:
       - created
 
 # Certain actions will only run when this is the master repo.
