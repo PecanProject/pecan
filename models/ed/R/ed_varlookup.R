@@ -27,6 +27,11 @@ ed.var <- function(varname) {
                type = 'co', units = "kgC/plant", 
                drelated = NULL, 
                expr    = "AGB_CO")                                           
+  } else if(varname == "AGB.pft") {
+    out = list(readvar =  c("AGB_CO"), #until I change BLEAF keeper to be annual work with total AGB
+               type = 'co', units = "kgC/plant", 
+               drelated = NULL, 
+               expr    = "AGB_CO")                                           
   } else if(varname == "leaf_carbon_content") {
     out = list(readvar = "BLEAF", 
                type = 'co', units = "kgC/plant", 
