@@ -162,7 +162,7 @@ legend("topleft",legend=c("1:1","regression"),lwd=2,col=2:3,lty=1:2)
 summary(bias.fit)
 RMSE = sqrt(mean((pmean-dat$Photo)^2))
 RMSE
-R2 = 1-RMSE^2/var(dat$Photo)
+R2 = 1-RMSE^2/nc_var(dat$Photo)
 R2
 confint(bias.fit)
 ```
