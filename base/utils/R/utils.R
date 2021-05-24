@@ -324,7 +324,7 @@ pdf.stats <- function(distn, A, B) {
     norm = B ^ 2,
     f = ifelse(B > 4,
                2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-               stats::var(stats::rf(1e+05, A, B))))
+               ncdf4::nc_var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
