@@ -129,6 +129,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   Pf = stats::cov(X) # Cov Forecast - Goes into tobit2space as initial condition but is re-estimated in tobit space
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   
+  diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
+  
   #Observed inputs
   R <- try(solve(Observed$R), silent = F) #putting solve() here so if not invertible error is before compiling tobit2space #sfsmisc::posdefify(
   Y <- Observed$Y
@@ -199,13 +201,13 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                 nu_0 = ncol(X)+1,
                                 wts = wts*nrow(X), #sigma x2 max Y
                                 Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
-      
+    
       inits.tobit2space <- function() list(muf = rmnorm_chol(1,colMeans(X),
                                                              chol(diag(ncol(X))*100)),
-                                  pf = rwish_chol(1,df = ncol(X)+1,
-                                                  cholesky = chol(solve(stats::cov(X)))))
-      
+                                           pf = rwish_chol(1,df = ncol(X)+1,
+                                                           cholesky = chol(solve(Pf))))
       #ptm <- proc.time()
+      
       tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
                                        constants = constants.tobit2space, inits = inits.tobit2space(),
                                        name = 'space')
@@ -244,18 +246,6 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
         ## indicator variable is set to 0, which specifies *not* to sample
         valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
       }
-      
-      utils::globalVariables(
-        'constants.tobit2space',
-        'data.tobit2space',
-        'inits.tobit2space',
-        'tobit2space_pred',
-        'conf_tobit2space',
-        'samplerNumberOffset_tobit2space',
-        'Rmcmc_tobit2space',
-        'Cmodel_tobit2space',
-        'Cmcmc_tobit2space'
-      )
       
     }else{
       
@@ -363,7 +353,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     )) %>%
     as.matrix()
   
-  rownames(interval) <- names(obs.mean[[t]])
+  rownames(interval) <- names(input.vars)
   
   #### These vectors are used to categorize data based on censoring 
   #### from the interval matrix
@@ -527,17 +517,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
     }
     
-    utils::globalVariables(
-      'constants.tobit',
-      'data.tobit',
-      'inits.tobit',
-      'model_pred',
-      'conf',
-      'samplerNumberOffset',
-      'Rmcmc',
-      'Cmodel',
-      'Cmcmc'
-    )
+  
     
   }else{
     Cmodel$y.ind <- y.ind
