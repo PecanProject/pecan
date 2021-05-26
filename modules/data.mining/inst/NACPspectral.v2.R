@@ -81,7 +81,7 @@ for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
         if (is.nan(ybar)) {
             ybar <- NA
         } else {
-            ysd <- sqrt(nc_var(y, na.rm = TRUE))
+            ysd <- sqrt(stats::var(y, na.rm = TRUE))
         }
         if (is.nan(ysd)) {
           ysd <- NA
@@ -97,7 +97,7 @@ for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
     if (is.nan(NEEt.bar)) {
         NEEt.bar <- NA
     } else {
-        NEEt.sd <- sqrt(nc_var(dat$NEE_FILLED, na.rm = TRUE))
+        NEEt.sd <- sqrt(stats::var(dat$NEE_FILLED, na.rm = TRUE))
     }
     NEEt.norm <- (dat$NEE_FILLED - NEEt.bar)/NEEt.sd
     ## normalize model
@@ -106,7 +106,7 @@ for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
     if (is.nan(NEEm.bar)) {
         NEEm.bar <- NA
     } else {
-        NEEm.sd <- sqrt(nc_var(dat[, k], na.rm = TRUE))
+        NEEm.sd <- sqrt(stats::var(dat[, k], na.rm = TRUE))
     }
     NEEm.norm <- (dat[, k] - NEEm.bar)/NEEm.sd
     y <- NEEm.norm - NEEt.norm  ## calc residuals of normalized
