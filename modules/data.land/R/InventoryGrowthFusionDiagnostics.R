@@ -127,13 +127,13 @@ InventoryGrowthFusionDiagnostics <- function(model.out, combined) {
   if (length(vars) > 1 & length(vars) < 10) {
     pairs(out[, vars])
   }
-
+  
   if("deviance" %in% colnames(out)){
     hist(out[,"deviance"])
     vars <- c(vars,which(colnames(out)=="deviance"))
   }
   
-    
+  
   ## rebuild coda for just vars
   var.out <- as.mcmc.list(lapply(model.out,function(x){ x[,vars]}))
   
@@ -146,31 +146,31 @@ InventoryGrowthFusionDiagnostics <- function(model.out, combined) {
   ### raftery
   raftery.diag(var.out)
   
-#  mu <- out[,c(grep("mu", colnames(out)))]
+  #  mu <- out[,c(grep("mu", colnames(out)))]
   
-#  ppt.betas <- out[,c(grep("betappt", colnames(out)))]
-#  par(mfrow = c(4, 3))
-#  for (curr.month in month.abb) {
-#    curr.beta <- grep(pattern = curr.month, x = colnames(ppt.betas))
-#    hist(ppt.betas[, curr.beta], main = colnames(ppt.betas)[curr.beta])
-#  }
+  #  ppt.betas <- out[,c(grep("betappt", colnames(out)))]
+  #  par(mfrow = c(4, 3))
+  #  for (curr.month in month.abb) {
+  #    curr.beta <- grep(pattern = curr.month, x = colnames(ppt.betas))
+  #    hist(ppt.betas[, curr.beta], main = colnames(ppt.betas)[curr.beta])
+  #  }
   
-#  tmax.betas <- out[,c(grep("betatmax", colnames(out)))]
-#  par(mfrow = c(4, 3))
-#  for (curr.month in month.abb) {
-#    curr.beta <- grep(pattern = curr.month, x = colnames(tmax.betas))
-#    hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
-#  }
-
-#  wintP.JJ.beta <- out[,"betawintP.JJ"]
-#  tmax.JanA.beta <- out[,"betatmax.JanA"]
-#  hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
-#  hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
+  #  tmax.betas <- out[,c(grep("betatmax", colnames(out)))]
+  #  par(mfrow = c(4, 3))
+  #  for (curr.month in month.abb) {
+  #    curr.beta <- grep(pattern = curr.month, x = colnames(tmax.betas))
+  #    hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
+  #  }
+  
+  #  wintP.JJ.beta <- out[,"betawintP.JJ"]
+  #  tmax.JanA.beta <- out[,"betatmax.JanA"]
+  #  hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
+  #  hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
   
   par(mfrow = c(2, 2))
-#  for (i in 1:2){ # SDI, SI
-#    hist(betas[,i], main = colnames(betas)[i])
-#  }   
+  #  for (i in 1:2){ # SDI, SI
+  #    hist(betas[,i], main = colnames(betas)[i])
+  #  }   
   
   SDI.beta <- out[,c(grep("betaSDI", colnames(out)))]
   SICOND.beta <- out[,c(grep("betaSICOND", colnames(out)))]
@@ -182,7 +182,7 @@ InventoryGrowthFusionDiagnostics <- function(model.out, combined) {
   hist(X.beta, main = "tree size")
   hist(X2.beta, main = "quadratic tree size")  
   
-### interaction effects
+  ### interaction effects
   X.SDI.int <- out[,"betaX_SDI"]
   X.SI.int <- out[,"betaX_SICOND"]  
   X.wintP.int <- out[,"betaX_wintP.JJ"]

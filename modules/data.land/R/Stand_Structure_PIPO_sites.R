@@ -1,6 +1,6 @@
  # analysis of the other trees in our FIA plots
 # are most PIPO trees in releatively homogenous pipo plots, or are they mixed?
-
+install.packages("rFIA")
 library(rFIA)
 library(dplyr)
 library(here)

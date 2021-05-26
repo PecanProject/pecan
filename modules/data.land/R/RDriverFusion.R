@@ -8,9 +8,31 @@
 
 ### prep data files into jags objects
 setwd("/home/rstudio/pecan/")
-
+library(readxl)
 ### load in the data for trees with increment cores (and 1 or 2 DBH measurements)
 AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+
+
+AZ.PIPO.all <- AZ.PIPO[, c("CountyNo", "PlotNo", "SubplotNo", "TreeNo")]
+AZ.PIPO.xlx <- read_xlsx("FIA_inc_data/AZ-PIPO-T1-T2-6-29-17.xlsx")
+colnames(AZ.PIPO.xlx)
+colnames(AZ.PIPO.all) <- c("COUNTYCD", "T1_PLOT", "T1_SUBP", "T1_TREE")
+
+
+test <- merge(AZ.PIPO.all, AZ.PIPO.xlx, by = c("COUNTYCD", "T1_PLOT", "T1_SUBP", "T1_TREE"), all.x = TRUE)
+full.nodup <- test[!duplicated(test),]
+
+write.table(full.nodup [,1:8], "AZ_PIPO_TREE_CN_full_list_v1.txt")
+
+
+colnames(AZ.cn.dia) <- c("COUNTYCD", "T1_PLOT", "T1_SUBP", "T1_TREE", "DBH", "T1_TRE_CN", "T1_MEASYR", "DateEnd"  )
+test.subset <- merge(AZ.cn.dia[,c("COUNTYCD", "T1_PLOT", "T1_SUBP", "T1_TREE", "DIA"  )], full.nodup, by = c("COUNTYCD", "T1_PLOT", "T1_SUBP", "T1_TREE"))
+
+AZ.PIPO.no.dup <- test.subset[!duplicated(test.subset),]
+write.table(AZ.PIPO.no.dup[,1:8], "AZ_PIPO_TREE_CN_reduced_list_v1.txt")
+
+
+
 
 ### merge together three diameter columns
 AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
@@ -26,6 +48,8 @@ AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
 ### filter out those cases
 temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
+AZ.cn.dia <- newtemp2[,c("CountyNo", "PlotNo", "SubplotNo", "TreeNo", "DBH","T1_TRE_CN", "T1_MEASYR", "DateEnd")]
+AZ.cn.dia
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
 Tree2Tree <- read.csv("FIA_inc_data/Tree2Tree.csv", stringsAsFactors = F)
@@ -37,6 +61,8 @@ Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
 ### eliminate those cases without SI (SDI seems to always be there)
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SICOND),]
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
+
+
 
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
