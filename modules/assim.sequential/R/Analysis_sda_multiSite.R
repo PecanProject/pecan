@@ -104,7 +104,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   R <- Observed$R
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / nc_var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
