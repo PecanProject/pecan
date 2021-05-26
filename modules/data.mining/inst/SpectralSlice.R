@@ -48,7 +48,7 @@ NEEt.sd  <- NA
 if (is.nan(NEEt.bar)) {
   NEEt.bar <- NA
 } else {
-  NEEt.sd <- sqrt(nc_var(NEEt, na.rm = TRUE))
+  NEEt.sd <- sqrt(stats::var(NEEt, na.rm = TRUE))
 }
 NEEt.norm <- (NEEt - NEEt.bar) / NEEt.sd
 ## normalize model
@@ -57,7 +57,7 @@ NEEm.sd <- NA
 if (is.nan(NEEm.bar)) {
   NEEm.bar <- NA
 } else {
-  NEEm.sd <- sqrt(nc_var(NEEm, na.rm = TRUE))
+  NEEm.sd <- sqrt(stats::var(NEEm, na.rm = TRUE))
 }
 NEEm.norm <- (NEEm - NEEm.bar) / NEEm.sd
 y <- NEEm.norm - NEEt.norm  ## calc residuals of normalized
