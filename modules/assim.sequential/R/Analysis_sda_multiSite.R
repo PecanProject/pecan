@@ -484,7 +484,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     if (q.type == single.q){ #if it's a gamma case
       
       aqq[1, 1, t + 1] <- mean(mq)
-      bqq[t + 1] <- nc_var(mq  %>%  as.numeric())
+      bqq[t + 1] <- stats::var(mq  %>%  as.numeric())
       
     } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,
