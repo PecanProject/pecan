@@ -166,12 +166,12 @@ cov.data$PLOT <- as.numeric(as.character(cov.data$PLOT))
 
 # Model 1: null model with just X and X^2 as covariates
 model1 <- InventoryGrowthFusion_norm(data=data, cov.data=cov.data, time_data=time_data,
-                                       n.iter=40000, z0=z0, scale.state = 30,
-                                       n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
-                                       fixed = "~ X + X^2",
-                                       time_varying = NULL,
-                                       burnin_plot=FALSE, save.jags = "Null.model.txt", model.name = "Null.model", 
-                                       output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+                                     n.iter=40000, z0=z0, scale.state = 30,
+                                     n.chunk=100, save.state=TRUE, random="(1|PLOT[i])",
+                                     fixed = "~ X + X^2",
+                                     time_varying = NULL,
+                                     burnin_plot=FALSE, save.jags = "Null.model.txt", model.name = "Null.model", 
+                                     output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
 # Model 2: model with plot random interecept and slope on X^2 
 model2 <- InventoryGrowthFusion_norm(data=data, cov.data=cov.data, time_data=time_data,
@@ -214,12 +214,16 @@ model5 <- InventoryGrowthFusion_norm(data=data, cov.data=cov.data, time_data=tim
 # Stage 2 model with trees with dbh measurements, but no tree cores
 # --------------------------------------------------------------
 # 1. get out data for the second stage (trees w/out cores)
-jags.stuff.stage2 <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree.incored.plots, stage.2 =TRUE, rnd.subset = 200, trunc.yr = 1966)
+jags.stuff.stage2 <- buildJAGSdataobject(temp2 = newtemp2, Tree2Tree = Tree2Tree.incored.plots, stage.2 =TRUE, rnd.subset = 1000, trunc.yr = 1966)
 saveRDS(jags.stuff.stage2, "jags.data.200.stage2.rds")
 
 # 2. Read in posterior estimates of the inventory growth fusion model parameters
-posterior.ests <- readRDS("/home/rstudio/INV_FIA_DATA/data/IGFPPT.noX2.tau.norm.129_0.0128.rds")
+posterior.ests <- readRDS("data/IGFFull.model.validation.nadapt5000.rds")
+out <- as.matrix(posterior.ests)
+betas <-out[,grep(pattern = "beta",colnames(out))]
+taus <-out[,grep(pattern = "tau",colnames(out))]
 
+posterior.ests <- cbind(betas, taus)
 library(coda)
 means <- apply(as.matrix(posterior.ests), 2, mean)
 vars <- apply(as.matrix(posterior.ests), 2, var)
@@ -232,7 +236,7 @@ posterior.summary <- data.frame(means = apply(as.matrix(posterior.ests), 2, mean
 posterior.summary$parameter <- rownames(posterior.summary)
 
 # 3. Run InventoryGrowthFusion_stage_2.R 
-source("modules/data.land/R/InventoryGrowthFusion_stage_2.R") 
+source("pecan/modules/data.land/R/Inventory_Growth_Fusion_stage_2_mvn.R") 
 
 
 stage.2.out <- InventoryGrowthFusion_stage2(data=jags.stuff.stage2$data, 
@@ -246,11 +250,11 @@ stage.2.out <- InventoryGrowthFusion_stage2(data=jags.stuff.stage2$data,
                                             n.chunk=100, 
                                             save.state=TRUE, 
                                             random="(1|PLOT[i])",
-                                            fixed = "~ X + SICOND + SDI + SDI*X + SICOND*X + X*wintP.wateryr[t] + SICOND*SDI",
-                                            time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t]",
+                                            fixed = "~ X + X^2 + SDI + SICOND + SDI*X + SICOND*X + X*tmax.fallspr[t] + X*wintP.wateryr[t]",
+                                            time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t] + tmax.fallspr + SDI*tmax.fallspr[t] + SICOND*tmax.fallspr[t] + tmax.fallspr[t]*wintP.wateryr[t]",
                                             burnin_plot=FALSE, 
-                                            save.jags = "test.stage2non_inform.site.200.txt", 
-                                            model.name = "test.stage2model_non_inform.site.200", 
+                                            save.jags = "stage2_model5_mvn.site.200.txt", 
+                                            model.name = "stage2_model5_mvn.site.200", 
                                             output.folder = "/home/rstudio/IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
 
