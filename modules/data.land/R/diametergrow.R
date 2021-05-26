@@ -53,7 +53,7 @@ diametergrow <- function(diameters, increment, survival = NULL) {
       wi <- which(is.finite(dcens[i, ]), arr.ind = TRUE)
       xi <- time[wi] - wf + 1  # recenter to first year
       yi <- dcens[i, wi]
-      intercept <- mean(yi) - mean(xi) * (stats::cov(xi, yi) / ncdf4::nc_var(xi))
+      intercept <- mean(yi) - mean(xi) * (stats::cov(xi, yi) / stats::var(xi))
       
       ## modification: if only one census, assume mean increment
       if (length(xi) == 1) {
