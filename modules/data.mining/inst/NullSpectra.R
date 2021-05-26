@@ -94,7 +94,7 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
   if (is.nan(NEEt.bar)) {
     NEEt.bar <- NA
   } else {
-    NEEt.sd <- sqrt(nc_var(fdat[, 5], na.rm = TRUE))
+    NEEt.sd <- sqrt(stats::var(fdat[, 5], na.rm = TRUE))
   }
   NEEt.norm <- (fdat[, 5] - NEEt.bar)/NEEt.sd
 
@@ -104,7 +104,7 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
   if (is.nan(NEEp.bar)) {
     NEEp.bar <- NA
   } else {
-    NEEp.sd <- sqrt(nc_var(dat[, i], na.rm = TRUE))
+    NEEp.sd <- sqrt(stats::var(dat[, i], na.rm = TRUE))
   }
   NEEp.norm <- (dat[, i] - NEEp.bar)/NEEp.sd  ###########
   y <- NEEp.norm - NEEt.norm  ## calc residuals of normalized
