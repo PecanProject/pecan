@@ -1,6 +1,9 @@
 # script to partition out uncertainty in future forecasts:
+# Author: Kelly Heilman
+# Date: Oct 2020
 
-# basic idea: 
+
+# This script partitions the forecasts into different sources of uncertainty.
 # Use posteriors to forecast:
 # 1. Initial Condition Uncertainty
 # 2. Parameter Uncertainty
@@ -13,7 +16,6 @@ setwd("/home/rstudio")
 
 # assuming that we already ran the conditional_effects_mcmc_plots script, and that output.base.name is in our env
 #jags.comb.params <- readRDS(file=paste0("data/IGF",output.base.name,".rds"))
-#jags.comb.params <- readRDS(url("https://de.cyverse.org/dl/d/FCC8972B-4F82-4BF5-9689-905B0B63E50F/IGFSDI_noSI.rand.X.nadapt.5000.rds"))
 jags.comb.params <- readRDS(file=paste0("/home/rstudio/data/IGFFull.model.validation.nadapt5000.rds"))
 
 
@@ -70,1640 +72,9 @@ clim.na$cov.data$tmax.85.2020s.stand <-(clim.na$cov.data$tmax85.2020s-mean(as.ma
 cov.data$MAP.85.2020s.stand <- clim.na$cov.data$MAP.85.2020s.stand 
 cov.data$tmax.85.2020s.stand <-clim.na$cov.data$tmax.85.2020s.stand 
 
-#-----------------------------------------------------------------------
-# Partitioning uncertainty
-#-----------------------------------------------------------------------
-# # Create a function for our process model (linear state space model)
-# 
-# 
-# 
-# 
-# 
-# plot.prop.variance <- function(m){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace <- function( x = x.mat[,"x[1,45]"], m = 1, betas.all, alpha, SDinc, covariates) {
-#     
-#     j <- 1
-#     
-#     # alpha <- alphas[j, alphaplotid] 
-#     # bSDI <- betas[j,"betaSDI"]
-#     # bSDI_ppt <- betas[j,"betaSDI_wintP.wateryr"]
-#     # bX <-  betas[j,"betaX"]
-#     # bX2 <- betas[j,"betaX2"]
-#     # bX_SDI <- betas[j,"betaX_SDI"]
-#     # bX_ppt <- betas[j,"betaX_wintP.wateryr"]
-#     # bppt <- betas[j,"betawintP.wateryr"]
-#     # btmax <- betas[j,"betatmax.fallspr"] 
-#     # bX_tmax <- betas[j,"betaX_tmax.fallspr"]
-#     # bSDI_tmax <- betas[j,"betaSDI_tmax.fallspr"]
-#     # btmax_ppt <- betas[j,"betatmax.fallspr_wintP.wateryr"]
-#     # 
-#     
-#     # pseudocode for now
-#     tree.growth <- alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     ypred <- rnorm(length(tree.growth), tree.growth, SDinc) 
-#     
-#     ypred
-#   }
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   
-#   test <- iterate_statespace(x = x.mat[,"x[1,45]"], m = 1, betas.all = betas.all, alpha, SDinc = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDinc = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = 1, betas.all = betas.all, alpha = alpha, SDinc = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_inc"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[",m,",", t,"]")], m = m, betas.all = betas.all, alpha, SDinc = Sdev, covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   
-#   predY_plot <- ggplot(data=pred.sims, aes(x=year))+
-#     geom_ribbon(aes(ymin=IPP.0, ymax=IPP.100), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=IP.0, ymax=IP.100), fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=I.0, ymax=I.100), fill=my_cols[1])+
-#     ylab("Predicted Tree Growth")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   ####
-#   var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   #my_cols <- c("black", "grey55", "grey70")
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters), fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#     ylab("Percent of uncertainty")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   ##  For presentations
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   tmpvar <- var_rel_preds
-#   colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   var2 <- tmpvar %>%
-#     gather(simtype, variance, -x)
-#   
-#   ggplot(var2, aes(x=x, fill = simtype))+
-#     geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#     ylab("Percentage of total variance (%)")+
-#     xlab("Year")+
-#     scale_fill_manual(values = my_cols, name = NULL, 
-#                       labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#                        expand = c(0, 0))+
-#     theme_bw()
-#   
-#   
-# }
-# plot.prop.variance (m=515)
-# 
-# 
-# plot.increment.variance <- function(m){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace <- function( x = x.mat[,"x[1,45]"], m = m, betas.all, alpha, SDinc, covariates) {
-#     
-#     j <- 1
-#     
-#     # alpha <- alphas[j, alphaplotid] 
-#     # bSDI <- betas[j,"betaSDI"]
-#     # bSDI_ppt <- betas[j,"betaSDI_wintP.wateryr"]
-#     # bX <-  betas[j,"betaX"]
-#     # bX2 <- betas[j,"betaX2"]
-#     # bX_SDI <- betas[j,"betaX_SDI"]
-#     # bX_ppt <- betas[j,"betaX_wintP.wateryr"]
-#     # bppt <- betas[j,"betawintP.wateryr"]
-#     # btmax <- betas[j,"betatmax.fallspr"] 
-#     # bX_tmax <- betas[j,"betaX_tmax.fallspr"]
-#     # bSDI_tmax <- betas[j,"betaSDI_tmax.fallspr"]
-#     # btmax_ppt <- betas[j,"betatmax.fallspr_wintP.wateryr"]
-#     # 
-#     
-#     # pseudocode for now
-#     tree.growth <- alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     ypred <- rnorm(length(tree.growth), tree.growth, SDinc) 
-#     
-#     ypred
-#   }
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-# 
-#   
-#   
-#   
-#   
-#  # test <- iterate_statespace(x = x.mat[,"x[1,45]"], m = 1, betas.all = betas.all, alpha, SDinc = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDinc = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDinc = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_inc"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[",m,",", t,"]")], m = m, betas.all = betas.all, alpha, SDinc = Sdev, covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   pred.sims.m <- reshape2::melt(pred.sims, id.vars = "year")
-#   pred.sims.m$simtype <- ifelse(pred.sims.m$variable %in% c("IPP.0", "IPP.100"), "IPP", 
-#                                 ifelse(pred.sims.m$variable %in% c("IP.0", "IP.100"), "IP", "I"))
-#                                       
-#   pred.sims.m$cat <- ifelse(pred.sims.m$variable %in% c("IPP.0", "IP.0", "I.0"), "lo", "hi")
-#   pred.sims.by <- pred.sims.m %>% select(-variable) %>% group_by(year, simtype) %>% spread(key = cat, value = value)
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   pred.sims.by$simtype <- factor(pred.sims.by$simtype, levels = c(  "IPP","IP", "I") )
-#   
-#   predY_plot <- ggplot(data=pred.sims.by, aes(x=year))+
-#     geom_ribbon(data=pred.sims.by, aes(ymin=lo, ymax=hi, fill=simtype))+
-#        scale_fill_manual(values = my_cols, name = NULL, 
-#                          labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     ylab("Predicted Tree Growth")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   predY_plot
-#   
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   # ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   # ####
-#   # var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   # var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   # #my_cols <- c("black", "grey55", "grey70")
-#   # my_cols <- c("#1b9e77",
-#   #              "#d95f02",
-#   #              "#7570b3")
-#   # variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters), fill=my_cols[2])+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#   #   ylab("Percent of uncertainty")+
-#   #   xlab("Year")+
-#   #   #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#   #   #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#   #   scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#   #   theme_bw()
-#   # 
-#   # variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   # ##  For presentations
-#   # 
-#   # my_cols <- c("#1b9e77",
-#   #              "#d95f02",
-#   #              "#7570b3")
-#   # tmpvar <- var_rel_preds
-#   # colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   # var2 <- tmpvar %>%
-#   #   gather(simtype, variance, -x)
-#   
-#   # ggplot(var2, aes(x=x, fill = simtype))+
-#   #   geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#   #   ylab("Percentage of total variance (%)")+
-#   #   xlab("Year")+
-#   #   scale_fill_manual(values = my_cols, name = NULL, 
-#   #                     labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#   #   scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#   #                      expand = c(0, 0))+
-#   #   theme_bw()
-#   # 
-#   
-# }
-# plot.increment.variance (m=300)
-# 
-# for(i in 1:10){
-# cowplot::plot_grid(plot.increment.variance (m=100) + theme(legend.position = "none"), plot.prop.variance(m = 100)+ theme(legend.position = "none"), ncol = 1)
-# }
-# 
-# 
-# #------------------------------------------------
-# # same but for DBH:
-# #------------------------------------------------
-# 
-# plot.prop.variance.dbh <- function(m){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace.dbh <- function( x = x.mat[,"x[1,45]"], m = m, betas.all, alpha, SDdbh, covariates) {
-#     
-#     j <- 1
-#     
-#     # alpha <- alphas[j, alphaplotid] 
-#     # bSDI <- betas[j,"betaSDI"]
-#     # bSDI_ppt <- betas[j,"betaSDI_wintP.wateryr"]
-#     # bX <-  betas[j,"betaX"]
-#     # bX2 <- betas[j,"betaX2"]
-#     # bX_SDI <- betas[j,"betaX_SDI"]
-#     # bX_ppt <- betas[j,"betaX_wintP.wateryr"]
-#     # bppt <- betas[j,"betawintP.wateryr"]
-#     # btmax <- betas[j,"betatmax.fallspr"] 
-#     # bX_tmax <- betas[j,"betaX_tmax.fallspr"]
-#     # bSDI_tmax <- betas[j,"betaSDI_tmax.fallspr"]
-#     # btmax_ppt <- betas[j,"betatmax.fallspr_wintP.wateryr"]
-#     # 
-#     
-#     # pseudocode for now
-#     dbh.new <-x + alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     xpred <- rnorm(length(dbh.new), dbh.new, SDdbh) 
-#     
-#     xpred
-#   }
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   
-#   test <- iterate_statespace.dbh(x = x.mat[,"x[1,45]"], m = m, betas.all = betas.all, alpha, SDdbh = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#     forecast[,t] <- dbh.pred
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_dbh"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[",m,",", t,"]")], m = m, betas.all = betas.all, alpha, SDdbh = Sdev, covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   
-#   predY_plot <- ggplot(data=pred.sims, aes(x=year))+
-#     geom_ribbon(aes(ymin=IPP.0, ymax=IPP.100), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=I.0, ymax=I.100), fill=my_cols[1])+
-#     geom_ribbon(aes(ymin=IP.0, ymax=IP.100), fill=my_cols[2])+
-#     
-#     ylab("Predicted DBH")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   ####
-#   var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   #my_cols <- c("black", "grey55", "grey70")
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters), fill=my_cols[2])+
-#     
-#     ylab("Percent of uncertainty")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   ##  For presentations
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   tmpvar <- var_rel_preds
-#   colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   var2 <- tmpvar %>%
-#     gather(simtype, variance, -x)
-#   
-#   var2$simtype <- factor(var2$simtype, levels = c("BvarIPD", "DvarI", "CvarIP"))
-#   ggplot(var2, aes(x=x, fill = simtype))+
-#     geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#     ylab("Percentage of total variance (%)")+
-#     xlab("Year")+
-#     scale_fill_manual(values = my_cols, name = NULL, 
-#                       labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#                        expand = c(0, 0))+
-#     theme_bw()
-#   
-#   
-# }
-# plot.prop.variance.dbh (m=400)
-# 
-# plot.dbh.variance <- function(m){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace <- function( x = x.mat[,"x[1,45]"], m = m, betas.all, alpha, SDdbh, covariates) {
-#     
-#     j <- 1
-#     
-#     
-#     
-#     # pseudocode for now
-#     dbh.new <- x + alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     xpred <- rnorm(length(dbh.new), dbh.new, SDdbh) 
-#     
-#     xpred
-#   }
-#   
-#   
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   
-#   # test <- iterate_statespace(x = x.mat[,"x[1,45]"], m = 1, betas.all = betas.all, alpha, SDinc = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all.mcmc <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_dbh"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     inc.pred <- iterate_statespace(x = x.mat[,paste0("x[",m,",", t,"]")], m = m, betas.all = betas.all.mcmc, alpha, SDdbh = Sdev, covariates[t,])
-#     forecast[,t] <- inc.pred
-#   }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   pred.sims.m <- reshape2::melt(pred.sims, id.vars = "year")
-#   pred.sims.m$simtype <- ifelse(pred.sims.m$variable %in% c("IPP.0", "IPP.100"), "IPP", 
-#                                 ifelse(pred.sims.m$variable %in% c("IP.0", "IP.100"), "IP", "I"))
-#   
-#   pred.sims.m$cat <- ifelse(pred.sims.m$variable %in% c("IPP.0", "IP.0", "I.0"), "lo", "hi")
-#   pred.sims.by <- pred.sims.m %>% select(-variable) %>% group_by(year, simtype) %>% spread(key = cat, value = value)
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   pred.sims.by$simtype <- factor(pred.sims.by$simtype, levels = c(  "IPP","IP", "I") )
-#   
-#   predY_plot <- ggplot(data=pred.sims.by, aes(x=year))+
-#     geom_ribbon(data=pred.sims.by, aes(ymin=lo, ymax=hi, fill=simtype))+
-#     scale_fill_manual(values = my_cols, name = NULL, 
-#                       labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     ylab("Predicted Tree Growth")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   predY_plot
-#   
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   # ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   # ####
-#   # var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   # var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   # #my_cols <- c("black", "grey55", "grey70")
-#   # my_cols <- c("#1b9e77",
-#   #              "#d95f02",
-#   #              "#7570b3")
-#   # variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters), fill=my_cols[2])+
-#   #   geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#   #   ylab("Percent of uncertainty")+
-#   #   xlab("Year")+
-#   #   #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#   #   #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#   #   scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#   #   theme_bw()
-#   # 
-#   # variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   # ##  For presentations
-#   # 
-#   # my_cols <- c("#1b9e77",
-#   #              "#d95f02",
-#   #              "#7570b3")
-#   # tmpvar <- var_rel_preds
-#   # colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   # var2 <- tmpvar %>%
-#   #   gather(simtype, variance, -x)
-#   
-#   # ggplot(var2, aes(x=x, fill = simtype))+
-#   #   geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#   #   ylab("Percentage of total variance (%)")+
-#   #   xlab("Year")+
-#   #   scale_fill_manual(values = my_cols, name = NULL, 
-#   #                     labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#   #   scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#   #                      expand = c(0, 0))+
-#   #   theme_bw()
-#   # 
-#   
-# }
-# plot.dbh.variance (m=400)
-# cowplot::plot_grid(plot.dbh.variance (m=100) + theme(legend.position = "none"), plot.prop.variance.dbh(m = 100)+ theme(legend.position = "none"), ncol = 1)
-# 
-# 
-# 
-# #------------------------------------------------
-# # set up to forecast through time from just the X initial condiation
-# #------------------------------------------------
-# # this is important for when we start to forecast with climate drivers
-# plot.prop.variance.dbh.forecast <- function(m, prop =TRUE){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace.dbh <- function( x = x.mat[,"x[1,45]"], m = m, betas.all, alpha, SDdbh, covariates) {
-#     
-#     j <- 1
-#     
-#     # alpha <- alphas[j, alphaplotid] 
-#     # bSDI <- betas[j,"betaSDI"]
-#     # bSDI_ppt <- betas[j,"betaSDI_wintP.wateryr"]
-#     # bX <-  betas[j,"betaX"]
-#     # bX2 <- betas[j,"betaX2"]
-#     # bX_SDI <- betas[j,"betaX_SDI"]
-#     # bX_ppt <- betas[j,"betaX_wintP.wateryr"]
-#     # bppt <- betas[j,"betawintP.wateryr"]
-#     # btmax <- betas[j,"betatmax.fallspr"] 
-#     # bX_tmax <- betas[j,"betaX_tmax.fallspr"]
-#     # bSDI_tmax <- betas[j,"betaSDI_tmax.fallspr"]
-#     # btmax_ppt <- betas[j,"betatmax.fallspr_wintP.wateryr"]
-#     # 
-#     
-#     # pseudocode for now
-#     dbh.new <-x + alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     xpred <- rnorm(length(dbh.new), dbh.new, SDdbh) 
-#     
-#     xpred
-#   }
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.point <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   
-#   test <- iterate_statespace.dbh(x = x.mat[,"x[1,45]"], m = m, betas.all = betas.point, alpha, SDdbh = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#     dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.point, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#     forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.point, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#       dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }  }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_dbh"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#       dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }  }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   
-#   predY_plot <- ggplot(data=pred.sims, aes(x=year))+
-#     geom_ribbon(aes(ymin=IPP.0, ymax=IPP.100), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=IP.0, ymax=IP.100), fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=I.0, ymax=I.100), fill=my_cols[1])+
-#     
-#     
-#     ylab("Predicted DBH")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   ####
-#   var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   #my_cols <- c("black", "grey55", "grey70")
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters),fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#      
-#     
-#     ylab("Percent of uncertainty")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   ##  For presentations
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   tmpvar <- var_rel_preds
-#   colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   var2 <- tmpvar %>%
-#     gather(simtype, variance, -x)
-#   
-#   #var2$simtype <- factor(var2$simtype, levels = c("BvarIPD", "DvarI", "CvarIP"))
-#   prop.var <- ggplot(var2, aes(x=x, fill = simtype))+
-#     geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#     ylab("Percentage of total variance (%)")+
-#     xlab("Year")+
-#     scale_fill_manual(values = my_cols, name = NULL, 
-#                       labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#                        expand = c(0, 0))+
-#     theme_bw()
-#   
-#   if(prop == TRUE){
-#    prop.var
-#   }else{
-#     predY_plot
-#   }
-# }
-# 
-# plot.prop.variance.dbh.forecast(2, prop =TRUE)
-# plot.prop.variance.dbh.forecast(2, prop =FALSE)
-# 
-# plot.prop.variance.inc.forecast <- function(m, prop =TRUE){
-#   #-----------------------------------------------------------------------
-#   # Partitioning uncertainty
-#   #-----------------------------------------------------------------------
-#   # Create a function for our process model (linear state space model)
-#   
-#   iterate_statespace.dbh <- function( x = x.mat[,"x[1,45]"], m = m, betas.all, alpha, SDdbh, covariates) {
-#     
-#     j <- 1
-#     
-#     # alpha <- alphas[j, alphaplotid] 
-#     # bSDI <- betas[j,"betaSDI"]
-#     # bSDI_ppt <- betas[j,"betaSDI_wintP.wateryr"]
-#     # bX <-  betas[j,"betaX"]
-#     # bX2 <- betas[j,"betaX2"]
-#     # bX_SDI <- betas[j,"betaX_SDI"]
-#     # bX_ppt <- betas[j,"betaX_wintP.wateryr"]
-#     # bppt <- betas[j,"betawintP.wateryr"]
-#     # btmax <- betas[j,"betatmax.fallspr"] 
-#     # bX_tmax <- betas[j,"betaX_tmax.fallspr"]
-#     # bSDI_tmax <- betas[j,"betaSDI_tmax.fallspr"]
-#     # btmax_ppt <- betas[j,"betatmax.fallspr_wintP.wateryr"]
-#     # 
-#     
-#     # pseudocode for now
-#     tree.growth <- alpha + betas.all$b0 + 
-#       betas.all$bSDI*covariates$SDI + 
-#       betas.all$bSDI_ppt*covariates$SDI*covariates$ppt + 
-#       betas.all$bX*(x-30) + 
-#       betas.all$bX2*(x-30)*(x-30) + 
-#       betas.all$bX_SDI*(x-30)*covariates$SDI + 
-#       betas.all$bX_ppt*covariates$ppt*(x-30) + 
-#       betas.all$bppt*covariates$ppt + 
-#       betas.all$btmax*covariates$tmax + 
-#       betas.all$bX_tmax*(x-30)*covariates$tmax + 
-#       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-#       betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
-#     #tree.growth
-#     
-#     
-#     # Stochastic process model
-#     xpred <- rnorm(length(tree.growth), tree.growth, SDdbh) 
-#     
-#     xpred
-#   }
-#   alphaplotid <- paste0("alpha_PLOT[", cov.data[m,]$plotid, "]")
-#   
-#   alpha <- quantile(alphas[, alphaplotid],0.5)
-#   bSDI <- quantile(betas[,"betaSDI"],0.5)
-#   bSDI_ppt <- quantile(betas[,"betaSDI_wintP.wateryr"],0.5)
-#   bX <-  quantile(betas[,"betaX"],0.5)
-#   bX2 <- quantile(betas[,"betaX2"],0.5)
-#   bX_SDI <- quantile(betas[,"betaX_SDI"],0.5)
-#   bX_ppt <- quantile(betas[,"betaX_wintP.wateryr"],0.5)
-#   bppt <- quantile(betas[,"betawintP.wateryr"],0.5)
-#   btmax <- quantile(betas[,"betatmax.fallspr"] ,0.5)
-#   bX_tmax <- quantile(betas[,"betaX_tmax.fallspr"],0.5)
-#   bSDI_tmax <- quantile(betas[,"betaSDI_tmax.fallspr"],0.5)
-#   btmax_ppt <- quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5)
-#   b0 <- quantile(B0, 0.5)
-#   
-#   betas.point <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                             bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   #x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   
-#   test <- iterate_statespace.dbh(x = x.mat[,"x[1,45]"], m = m, betas.all = betas.point, alpha, SDdbh = 0, covariates[1,])
-#   #---------------------------------------------------------------------------
-#   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
-#   ##    the final year, but use mean parameter values and no process error.
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   
-#   # just for 1 tree
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#       dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.point, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.point, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }
-#   }
-#   varianceIC <- apply(forecast,2,var) # get variance from IC
-#   forecast.ic <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from Initial conditions AND parameters uncertainty
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   
-#   
-#   
-#   time_steps <- 45
-#   nMCMC <- length(x.mat[,"x[1,45]"])
-#   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
-#   
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#       dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }  }
-#   varianceIC_Parameters <- apply(forecast,2,var)
-#   forecast.ic.param <- apply(forecast, 2, quantile)
-#   
-#   #---------------------------------------------------------------------------
-#   ##  Uncertainty from IC AND parameters uncertainty AND process error
-#   #---------------------------------------------------------------------------
-#   # use all of the parameter MCMCS:
-#   alpha <- alphas[57001:60300, alphaplotid]
-#   bSDI <- betas[57001:60300,"betaSDI"]
-#   bSDI_ppt <- betas[57001:60300,"betaSDI_wintP.wateryr"]
-#   bX <-  betas[57001:60300,"betaX"]
-#   bX2 <- betas[57001:60300,"betaX2"]
-#   bX_SDI <- betas[57001:60300,"betaX_SDI"]
-#   bX_ppt <- betas[57001:60300,"betaX_wintP.wateryr"]
-#   bppt <- betas[57001:60300,"betawintP.wateryr"]
-#   btmax <- betas[57001:60300,"betatmax.fallspr"]
-#   bX_tmax <- betas[57001:60300,"betaX_tmax.fallspr"]
-#   bSDI_tmax <- betas[57001:60300,"betaSDI_tmax.fallspr"]
-#   btmax_ppt <- betas[57001:60300,"betatmax.fallspr_wintP.wateryr"]
-#   b0 <- B0[57001:60300]
-#   
-#   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bX, bX2, bX_SDI, bX_ppt, 
-#                           bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-#   
-#   SDI <- rep(cov.data[m, ]$SDI, 45)
-#   ppt <- time_data$wintP.wateryr[m,]
-#   tmax <- time_data$tmax.fallspr[m,]
-#   x <- x.mat[,"x[1,45]"]
-#   covariates <- data.frame(SDI, ppt, tmax)
-#   
-#   Sdev <- 1/quantile(out[,"tau_inc"], 0.5)
-#   
-#   
-#   for(t in 1:time_steps){
-#     if(t == 1){
-#       dbh.pred <- iterate_statespace.dbh(x = x.mat[,paste0("x[", m,",", t,"]")], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#     }else{
-#       dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = Sdev, covariates = covariates[t,])
-#       forecast[,t] <- dbh.pred
-#       
-#     }  }
-#   varianceIC_Parameters_process <- apply(forecast,2,var)
-#   forecast.ic.param.process <- apply(forecast, 2, quantile)
-#   
-#   
-#   # combine variances:
-#   V.pred.sim     <- rbind(varianceIC_Parameters_process,varianceIC_Parameters,varianceIC)
-#   V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
-#   
-#   # combine forecasts:
-#   pred.sims     <- data.frame(IPP.0 = forecast.ic.param.process[1,],
-#                               IP.0 =forecast.ic.param[1,],
-#                               I.0 =forecast.ic[1,],
-#                               IPP.100= forecast.ic.param.process[5,],
-#                               IP.100=forecast.ic.param[5,],
-#                               I.100=forecast.ic[5,],
-#                               year = 1:45)
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   
-#   predY_plot <- ggplot(data=pred.sims, aes(x=year))+
-#     geom_ribbon(aes(ymin=IPP.0, ymax=IPP.100), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=IP.0, ymax=IP.100), fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=I.0, ymax=I.100+0.001), fill=my_cols[1])+
-#     
-#     
-#     ylab("Predicted DBH")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     #scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   predY_plot
-#   # pred.sim.0rel <- apply(pred.sim.0,2,function(x) {x/max(x)})
-#   # 
-#   # pred.sim.75     <- rbind(forecast.ic.param.process[5,],
-#   #                          forecast.ic.param[5,],
-#   #                          forecast.ic[5,])
-#   # pred.sim.75rel <- apply(pred.sim.75,2,function(x) {x/max(x)})
-#   # 
-#   # plot(1:45, pred.sim.0[1,], type = "l")
-#   # lines(1:45, pred.sim.75[1,], col= "red")
-#   ####
-#   ####  PLOT THE FORECASTING UNCERTAINTY PARTITION -------------------------------
-#   ####
-#   var_rel_preds <- as.data.frame(t(V.pred.sim.rel*100))
-#   var_rel_preds$x <- 1:nrow(var_rel_preds)
-#   #my_cols <- c("black", "grey55", "grey70")
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   variance_plot <- ggplot(data=var_rel_preds, aes(x=x))+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters_process), fill=my_cols[3])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC_Parameters),fill=my_cols[2])+
-#     geom_ribbon(aes(ymin=0, ymax=varianceIC), fill=my_cols[1])+
-#     
-#     
-#     ylab("Percent of uncertainty")+
-#     xlab("Year")+
-#     #scale_x_continuous(breaks=seq(1,time_steps,by=1), 
-#     #                  labels=paste(seq(1,time_steps,by=1), "yrs"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"))+
-#     theme_bw()
-#   
-#   variance_plot 
-#   
-#   # now do this for all of the trees:
-#   
-#   
-#   
-#   
-#   ##  For presentations
-#   
-#   my_cols <- c("#1b9e77",
-#                "#d95f02",
-#                "#7570b3")
-#   tmpvar <- var_rel_preds
-#   colnames(tmpvar) <- c( "BvarIPD", "CvarIP", "DvarI", "x")
-#   var2 <- tmpvar %>%
-#     gather(simtype, variance, -x)
-#   
-#   #var2$simtype <- factor(var2$simtype, levels = c("BvarIPD", "DvarI", "CvarIP"))
-#   prop.var <- ggplot(var2, aes(x=x, fill = simtype))+
-#     geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
-#     ylab("Percentage of total variance (%)")+
-#     xlab("Year")+
-#     scale_fill_manual(values = my_cols, name = NULL, 
-#                       labels = c("Process error", "Parameter uncertainty", "Initial conditions"))+
-#     scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
-#                        expand = c(0, 0))+
-#     theme_bw()
-#   
-#   if(prop == TRUE){
-#     prop.var
-#   }else{
-#     predY_plot
-#   }
-# }
-# plot.prop.variance.inc.forecast(2, prop =TRUE)
-# plot.prop.variance.inc.forecast(2, prop =FALSE)
 
 #-------------------------------------------------------------------
-# set up to forecast through time from just the last X condiation
+# set up to forecast through time from just the last X condition
 # using future climate time series (2018-2099)
 # note that this version also includes driver uncertainty
 #-------------------------------------------------------------------
@@ -1879,10 +250,10 @@ plot.prop.variance.future.forecast.driver <- function(m, prop = TRUE, scenario =
   
   
   
-  #test <- iterate_statespace.dbh(x = x.mat[,"x[1,53]"], m = m, betas.all = betas.point, alpha, SDdbh = 0, covariates[1,], rw = type)
   #---------------------------------------------------------------------------
   ##  Initial condition uncertainty: make forecasts from all MCMC iterations of
   ##    the final year, but use mean parameter values and no process error.
+  #---------------------------------------------------------------------------
   time_steps <- length(ppt)
   nMCMC <- length(x.mat[,"x[1,53]"])
   forecast <- matrix(data = NA, nrow = nMCMC, ncol = time_steps)
@@ -2794,7 +1165,7 @@ png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name, "_t
 Diameter.unc.summary.tot
 dev.off()
 
-png(height = 6, width = 7, units = "in", res = 300, paste0("both_uncertainty_totals_summary_",output.base.name,".png"))
+png(height = 6, width = 7, units = "in", res = 300, paste0("both_uncertainty_totals_summary_all_",output.base.name,".png"))
 #cowplot::plot_grid(
 cowplot::plot_grid(increment.unc.summary.tot, Diameter.unc.summary.tot, ncol = 1, align = "hv", labels = "AUTO")#, #Uncertainty.legend,ncol = 2, rel_widths = c(1, 0.05))
 dev.off()
@@ -3639,7 +2010,8 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
       betas.all$btmax*covariates$tmax + 
       betas.all$bX_tmax*(x-30)*covariates$tmax + 
       betas.all$bSDI_tmax*covariates$SDI*covariates$tmax +
-      betas.all$btmax_ppt*covariates$tmax*covariates$ppt 
+      betas.all$btmax_ppt*covariates$tmax*covariates$ppt +
+      betas.all$bSDI_SI*covariates$SDI*covariates$SICOND
     #tree.growth
     
     
@@ -3728,12 +2100,12 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   btmax_ppt <- rep(quantile(betas[,"betatmax.fallspr_wintP.wateryr"],0.5), length(7501:15300))
   b0 <- rep(quantile(B0, 0.5), length(7501:15300))
   
-  
+  bSDI_SI <- rep(quantile(betas[,"betaSICOND_SDI"],0.5), length(7501:15300))
   
   bSDI <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI"]), sd = sd(betas[7501:15300,"betaSDI"]))
   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                           bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
   
   ppt <- proj.ordered$mean.ppt
@@ -3778,7 +2150,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   #bSDI <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI"]), sd = sd(betas[7501:15300,"betaSDI"]))
   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                           bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                          bppt, btmax, bX_tmax, bSDI_tmax,btmax_ppt, bSDI_SI)
   
   
   # ppt <- proj.ordered$mean.ppt
@@ -3814,7 +2186,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   bppt <-  rnorm(length(7501:15300), mean = betas[7501:15300,"betawintP.wateryr"], sd = sd(betas[7501:15300,"betawintP.wateryr"]))
   betas.all <-data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                         bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                         bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
   # ppt <- proj.ordered$mean.ppt
   # tmax <- proj.ordered$mean.tmax.fs
@@ -3848,7 +2220,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   btmax <-  rnorm(length(7501:15300), mean = betas[7501:15300,"betatmax.fallspr"], sd = sd(betas[7501:15300,"betatmax.fallspr"]))
   betas.all <-data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                         bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                         bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
   
   # ppt <- proj.ordered$mean.ppt
@@ -3886,7 +2258,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   btmax_ppt <-  rnorm(length(7501:15300), mean = betas[7501:15300,"betatmax.fallspr_wintP.wateryr"], sd = sd(betas[7501:15300,"betatmax.fallspr_wintP.wateryr"]))
   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                           bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
   # ppt <- proj.ordered$mean.ppt
   # tmax <- proj.ordered$mean.tmax.fs
@@ -3926,7 +2298,7 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   }
   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                           bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
   
   
@@ -3952,6 +2324,18 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   #---------------------------------------------------------------------------
   alpha = quantile(alphas[, alphaplotid],0.5)
   
+  
+  # other interactions:
+  # X_SDI #
+  # bSDI_wintP.wateryr #
+  # bSDI_tmax.fallspr#
+  # bSI_X 
+  # bSI_wintP.wateryr#
+  # bSI_tmax.fallspr#
+  # bSDI_SI
+  
+  
+  # for SDI_X interaction
   if("betaX_SDI" %in% colnames(betas) == FALSE ){
     bX_SDI <- rep(0, length(7501:15300))
   }else{
@@ -3959,52 +2343,83 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
     
   }
   
-  if("betaSICOND" %in% colnames(betas) == FALSE ){
-    #bSI <- rep(0, length(7501:15300))
-    bSI_X <- rep(0, length(7501:15300))
-    bSI_wintP.wateryr <- rep(0, length(7501:15300))
-    bSI_tmax.fallspr <- rep(0, length(7501:15300))
-  }else{
-    #bSI <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSICOND_wintP.wateryr"]))
-    bSI_X <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaX_SICOND"]), sd = sd(betas[7501:15300,"betaX_SICOND"]))
-    bSI_wintP.wateryr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSICOND_wintP.wateryr"]))
-    bSI_tmax.fallspr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaSICOND_tmax.fallspr"]))
-  }
+  # if("betaSICOND" %in% colnames(betas) == FALSE ){
+  #   #bSI <- rep(0, length(7501:15300))
+  #   bSI_X <- rep(0, length(7501:15300))
+  #   bSI_wintP.wateryr <- rep(0, length(7501:15300))
+  #   bSI_tmax.fallspr <- rep(0, length(7501:15300))
+  # }else{
+  #   #bSI <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSICOND_wintP.wateryr"]))
+  #   bSI_X <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaX_SICOND"]), sd = sd(betas[7501:15300,"betaX_SICOND"]))
+  #   bSI_wintP.wateryr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSICOND_wintP.wateryr"]))
+  #   bSI_tmax.fallspr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaSICOND_tmax.fallspr"]))
+  # }
+  # 
+  # 
+  # bSDI_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSDI_wintP.wateryr"]))
+  # bX_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaX_wintP.wateryr"]))
+  # bX_tmax <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaX_tmax.fallspr"]))
+  # bSDI_tmax <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaSDI_tmax.fallspr"]))
+  # b0 <- rnorm(length(7501:15300), mean = mean(B0[7501:15300]), sd = sd(B0[7501:15300]))
+  # 
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  varianceSDI.X.precip.tmax.sdix <- apply(forecast,2,var)
+  forecast.SDI.X.precip.tmax.sdix <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  varianceSDI.X.precip.tmax.sdix.inc <- apply(inc,2,var)
+  forecast.SDI.X.precip.tmax.sdix.inc  <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSDI_wintP.wateryr
+  #---------------------------------------------------------------------------
   
   bSDI_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSDI_wintP.wateryr"]))
-  bX_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaX_wintP.wateryr"]))
-  bX_tmax <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaX_tmax.fallspr"]))
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSDI_tmaxfallspr
+  #---------------------------------------------------------------------------
+  
   bSDI_tmax <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaSDI_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaSDI_tmax.fallspr"]))
-  b0 <- rnorm(length(7501:15300), mean = mean(B0[7501:15300]), sd = sd(B0[7501:15300]))
   
   betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
                           bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
-  
-  for(t in 1:time_steps){
-    if(t == 1){
-      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-      forecast[,t] <- dbh.pred
-      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
-    }else{
-      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
-      forecast[,t] <- dbh.pred
-      inc[,t] <- forecast[,t] - forecast[,t-1]
-    }  }
-  
-  varianceSDI.X.precip.tmax.int.two.way <- apply(forecast,2,var)
-  forecast.SDI.X.precip.tmax.int.two.way <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
-  
-  varianceSDI.X.precip.tmax.int.two.way.inc <- apply(inc,2,var)
-  forecast.SDI.X.precip.tmax.int.two.way.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
-  #---------------------------------------------------------------------------
-  # Uncertainty from all paramters (including alpha plot)
-  #---------------------------------------------------------------------------
-  alpha <- rnorm(length(7501:15300), mean = mean(alphas[7501:15300, alphaplotid]), sd = sd(alphas[7501:15300, alphaplotid]))
-  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
-                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
-                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt)
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
   for(t in 1:time_steps){
     if(t == 1){
       dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
@@ -4017,18 +2432,215 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
     }  }
   
   
-  varianceall.params <- apply(forecast,2,var)
-  forecastall.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  varianceSDI.X.precip.tmax.sdix.sdippt.sdi.tmax.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.tmax.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
   
   
-  varianceall.params.inc<- apply(inc,2,var)
-  forecastall.params.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  varianceSDI.X.precip.tmax.sdix.sdippt.tmax.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.tmax.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bX_tmax_fallspr
+  #---------------------------------------------------------------------------
+  # bX_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaX_wintP.wateryr"]))
+  bX_tmax <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaX_tmax.fallspr"]))
+  
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bX_ppt
+  #---------------------------------------------------------------------------
+  bX_ppt <- rnorm(length(7501:15300), mean = mean(betas[7501:15300,"betaX_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaX_wintP.wateryr"]))
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSI_ppt
+  #---------------------------------------------------------------------------
+  bSI_wintP.wateryr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_wintP.wateryr"]), sd = sd(betas[7501:15300,"betaSICOND_wintP.wateryr"]))
+  
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSI_tmax
+  #---------------------------------------------------------------------------
+  bSI_tmax.fallspr <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_tmax.fallspr"]), sd = sd(betas[7501:15300,"betaSICOND_tmax.fallspr"]))
+  
+  
+  
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  ##
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSI_X
+  #---------------------------------------------------------------------------
+  bSI_X <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaX_SICOND"]), sd = sd(betas[7501:15300,"betaX_SICOND"]))
+  
+  
+  
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  #
+  #---------------------------------------------------------------------------
+  # Uncertainty from  # bSDI_SI
+  #---------------------------------------------------------------------------
+  bSDI_SI <- rnorm(length(7501:15300),mean = mean(betas[7501:15300,"betaSICOND_SDI"]), sd = sd(betas[7501:15300,"betaX_SICOND"]))
+  
+  
+  
+  
+  betas.all <- data.frame(b0, bSDI, bSDI_ppt, bSI, bSI_tmax.fallspr, bSI_wintP.wateryr,
+                          bSI_X, bX, bX2, bX_SDI, bX_ppt, 
+                          bppt, btmax, bX_tmax, bSDI_tmax, btmax_ppt, bSDI_SI)
+  for(t in 1:time_steps){
+    if(t == 1){
+      dbh.pred <- iterate_statespace.dbh(x = mean(x.mat[,paste0("x[", m,",", 53,"]")]), m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - mean(x.mat[,paste0("x[", m,",", 53,"]")])
+    }else{
+      dbh.pred <- iterate_statespace.dbh(x = forecast[,t-1], m = m, betas.all = betas.all, alpha = alpha, SDdbh = 0, covariates = covariates[t,])
+      forecast[,t] <- dbh.pred
+      inc[,t] <- forecast[,t] - forecast[,t-1]
+    }  }
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.params <- apply(forecast,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.params <- apply(forecast, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.inc<- apply(inc,2,var)
+  forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.inc <- apply(inc, 2, function(x){quantile(x, na.rm=TRUE)})
+  
+  
+  
   #---------------------------------------------------------------------------------- 
   # combine variances:
   
   if(type == "dbh"){
-    V.pred.sim     <- rbind( varianceSDI, varianceSDI.X, varianceSDI.X.precip, varianceSDI.X.precip.tmax, 
-                             varianceSDI.X.precip.tmax.int, varianceSDI.X.precip.tmax.int.SICOND,varianceSDI.X.precip.tmax.int.two.way, varianceall.params)
+    V.pred.sim     <- rbind( varianceSDI, 
+                             varianceSDI.X, 
+                             varianceSDI.X.precip, 
+                             varianceSDI.X.precip.tmax, 
+                             varianceSDI.X.precip.tmax.int, 
+                             varianceSDI.X.precip.tmax.int.SICOND,
+                             varianceSDI.X.precip.tmax.sdix, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sdi.tmax.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.params, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.params)
     V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
     
     pred.sims     <- data.frame(SDI.0 =forecast.SDI[1,],
@@ -4037,8 +2649,16 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
                                 tmax.0 =forecast.SDI.X.precip.tmax[1,],
                                 PTint.0= forecast.SDI.X.precip.tmax.int[1,],
                                 SI.0 = forecast.SDI.X.precip.tmax.int.SICOND[1,],
-                                twoway.0 = forecast.SDI.X.precip.tmax.int.two.way[1,],
-                                all.0=forecastall.params[1,],
+                                SDIX.0 = forecast.SDI.X.precip.tmax.sdix[1,],
+                                SDIppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.params[1,],
+                                SDItmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.tmax.params[1,],
+                                Xtmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.params[1,],
+                                Xppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.params[1,],
+                                SIppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.params[1,],
+                                SItmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.params[1,],
+                                SIX.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.params[1,],
+                                SISDI.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.params[1,],
+                                
                                 
                                 SDI.100 =forecast.SDI[5,],
                                 X.100 = forecast.SDI.X[5,],
@@ -4046,14 +2666,35 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
                                 tmax.100 =forecast.SDI.X.precip.tmax[5,],
                                 PTint.100= forecast.SDI.X.precip.tmax.int[5,],
                                 SI.100 = forecast.SDI.X.precip.tmax.int.SICOND[5,],
-                                twoway.100 = forecast.SDI.X.precip.tmax.int.two.way[5,],
-                                all.100=forecastall.params[5,],
+                                SDIX.100 = forecast.SDI.X.precip.tmax.sdix[5,],
+                                SDIppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.params[5,],
+                                SDItmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.tmax.params[5,],
+                                Xtmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.params[5,],
+                                Xppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.params[5,],
+                                SIppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.params[5,],
+                                SItmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.params[5,],
+                                SIX.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.params[5,],
+                                SISDI.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.params[5,],
+                                
                                 year = 2018:2099)
     axis.name <- "diameter"
     
   }else{
-    V.pred.sim     <- rbind( varianceSDI.inc, varianceSDI.X.inc, varianceSDI.X.precip.inc, varianceSDI.X.precip.tmax.inc, 
-                             varianceSDI.X.precip.tmax.int.inc, varianceSDI.X.precip.tmax.int.inc.SICOND,varianceSDI.X.precip.tmax.int.two.way.inc, varianceall.params.inc)
+    V.pred.sim     <- rbind( varianceSDI.inc, 
+                             varianceSDI.X.inc, 
+                             varianceSDI.X.precip.inc, 
+                             varianceSDI.X.precip.tmax.inc, 
+                             varianceSDI.X.precip.tmax.int.inc, 
+                             varianceSDI.X.precip.tmax.int.inc.SICOND,
+                             varianceSDI.X.precip.tmax.sdix.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.tmax.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.inc, 
+                             varianceSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.inc) 
     V.pred.sim.rel <- apply(V.pred.sim,2,function(x) {x/max(x)})
     
     pred.sims     <- data.frame(SDI.0 =forecast.SDI.inc[1,],
@@ -4062,8 +2703,15 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
                                 tmax.0 =forecast.SDI.X.precip.tmax.inc[1,],
                                 PTint.0= forecast.SDI.X.precip.tmax.int.inc[1,],
                                 SI.0 = forecast.SDI.X.precip.tmax.int.inc.SICOND[1,],
-                                twoway.0 = forecast.SDI.X.precip.tmax.int.two.way.inc[1,],
-                                all.0=forecastall.params.inc[1,],
+                                SDIX.0 = forecast.SDI.X.precip.tmax.sdix.inc[1,],
+                                SDIppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.inc[1,],
+                                SDItmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.tmax.inc[1,],
+                                Xtmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.inc[1,],
+                                Xppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.inc[1,],
+                                SIppt.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.inc[1,],
+                                SItmax.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.inc[1,],
+                                SIX.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.inc[1,],
+                                SISDI.0 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.inc[1,],
                                 
                                 SDI.100 =forecast.SDI.inc[5,],
                                 X.100 = forecast.SDI.X.inc[5,],
@@ -4071,36 +2719,21 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
                                 tmax.100 =forecast.SDI.X.precip.tmax.inc[5,],
                                 PTint.100= forecast.SDI.X.precip.tmax.int.inc[5,],
                                 SI.100 = forecast.SDI.X.precip.tmax.int.inc.SICOND[5,],
-                                twoway.100 = forecast.SDI.X.precip.tmax.int.two.way.inc[5,],
-                                all.100=forecastall.params.inc[5,],
+                                SDIX.100 = forecast.SDI.X.precip.tmax.sdix.inc[5,],
+                                SDIppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.inc[5,],
+                                SDItmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.tmax.inc[5,],
+                                Xtmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.inc[5,],
+                                Xppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.inc[5,],
+                                SIppt.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.inc[5,],
+                                SItmax.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.inc[5,],
+                                SIX.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.inc[5,],
+                                SISDI.100 = forecastSDI.X.precip.tmax.sdix.sdippt.sditmax.xtmax.xppt.sippt.sitmax.six.sdisi.inc[5,],
+                                
                                 year = 2018:2099)
     axis.name <- "Increment"
     
   }
   
-  pred.sims.m <- reshape2::melt(pred.sims, id.vars = "year")
-  pred.sims.class <- pred.sims.m %>% separate(col = variable, sep = "[.]", into = c("unc","lo")) %>%
-    spread(key = lo, value = value)
-  colnames(pred.sims.class) <- c("year", "uncertainty", "Low", "High")
-  my_cols <- c("#7fc97f",
-               "#beaed4",
-               "#fdc086",
-               "#ffff99",
-               "#386cb0",
-               "#f0027f",
-               "#bf5b17",
-               "#666666")
-  
-  pred.sims.class$uncertainty <- factor(pred.sims.class$uncertainty, levels = c("all","twoway","SI","PTint", "tmax", "Precip", "X", "SDI"))
-  
-  
-  predY_plot <- ggplot(data = pred.sims.class, aes(x=year, fill = uncertainty))+
-    geom_ribbon(aes(ymin=Low, ymax=High), color = "grey")+
-    ylab(axis.name)+
-    xlab("Year")+theme_bw()+
-    scale_fill_manual(values = my_cols, name = NULL)+ theme(legend.position = "none", panel.grid = element_blank())
-  
-  predY_plot 
   
   
   # 
@@ -4118,13 +2751,28 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
   tmpvar <- var_rel_preds
   tmpvar$year <- 2018:2099
   colnames(tmpvar) <- c( "SDI","DBH","Precip",
-                         "Tmax", "PrecipxTmax", "SICOND", "all other 2-way interactions", "plot random effect","x", "year")
+                         "Tmax", "PrecipxTmax", "SICOND",
+                         "SDIxX",
+                         "SDIxPrecip",
+                         "SDIxTmax", 
+                         "XxTmax", 
+                         "XxPrecip",
+                         "SICONDxPrecip", 
+                         "SICONDxTMax", 
+                         "SICONDxX", 
+                         "SDIxSICOND"
+                         ,"x", "year")
   variance.df <- tmpvar %>%
     gather(simtype, variance, -x, -year)
   
-  variance.df$simtype <- factor(variance.df$simtype, levels = rev(c( "SDI","DBH", "Precip","Tmax",
-                                                                     "PrecipxTmax", "SICOND", "all other 2-way interactions", "plot random effect"))
-  )
+  #variance.df$simtype <- factor(variance.df$simtype, levels = rev(c( "SDI","DBH", "Precip","Tmax",
+  #                                                                  "PrecipxTmax", "SICOND", "all other 2-way interactions", "plot random effect"))
+  #)
+  
+  variance.df.summary <- variance.df %>% group_by(simtype) %>% summarise(mean.var = mean(variance))
+  
+  
+  variance.df$simtype <- factor(variance.df$simtype, levels = rev(variance.df.summary[order(variance.df.summary$mean.var),]$simtype))
   
   prop.var <- ggplot(variance.df, aes(x=year, fill = simtype))+
     geom_ribbon(aes(ymin=0, ymax=variance), color = "black")+
@@ -4135,10 +2783,45 @@ plot.prop.parameter.variance <- function(m, prop =TRUE, scenario = "rcp26", type
     scale_y_continuous(labels=paste0(seq(0,100,25),"%"),
                        expand = c(0, 0))+
     theme_bw()+theme(panel.grid = element_blank())
+  prop.var
   
   
-  write.csv(variance.df, paste0("variance_partitioning_parameter/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_proportion", ".csv"))
-  write.csv(pred.sims.class, paste0("variance_partitioning_parameter/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_totalunc", ".csv"))
+  pred.sims.m <- reshape2::melt(pred.sims, id.vars = "year")
+  pred.sims.class <- pred.sims.m %>% separate(col = variable, sep = "[.]", into = c("unc","lo")) %>%
+    spread(key = lo, value = value)
+  colnames(pred.sims.class) <- c("year", "uncertainty", "Low", "High")
+  my_cols <- c(
+    "#a6cee3",
+    "#1f78b4",
+    "#b2df8a",
+    "#33a02c",
+    "#fb9a99",
+    "#e31a1c",
+    "#fdbf6f",
+    "#ff7f00",
+    "#cab2d6",
+    "#6a3d9a",
+    "#ffff99",
+    "#b15928", 
+    "#8c510a", 
+    "#000000", 
+    "#969696")
+  
+  pred.sims.class$uncertainty <- factor(pred.sims.class$uncertainty, levels = c("SIX","SISDI","SItmax","SIppt", "Xppt",     
+                                                                                "Xtmax","SICOND", "SDItmax", "SDIX", "SDIppt",   
+                                                                                "PTint", "tmax", "Precip","X","SDI" ))
+  
+  
+  predY_plot <- ggplot(data = pred.sims.class, aes(x=year, fill = uncertainty))+
+    geom_ribbon(aes(ymin=Low, ymax=High), color = "grey")+
+    ylab(axis.name)+
+    xlab("Year")+theme_bw()+
+    scale_fill_manual(values = my_cols, name = NULL)+ theme(legend.position = "none", panel.grid = element_blank())
+  
+  predY_plot 
+  
+  write.csv(variance.df, paste0("variance_partitioning_parameter/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_all_int_proportion", ".csv"))
+  write.csv(pred.sims.class, paste0("variance_partitioning_parameter/tree_", m,"_", axis.name, "_", scenario,"_",output.base.name,"_all_int_totalunc", ".csv"))
   
   
   if(print == TRUE){
@@ -4205,20 +2888,20 @@ for(xy in treeds){
   df$rcp <- "rcp4.5"
   df.2[[xy]]<- df
 }
-inc.prop.list.2.6 <- lapply(treeds, function(xy){df <- read.csv(paste0("variance_partitioning_parameter/tree_", xy,"_Increment_rcp26_", output.base.name, "_proportion.csv"))
+inc.prop.list.2.6 <- lapply(treeds, function(xy){df <- read.csv(paste0("variance_partitioning_parameter/tree_", xy,"_Increment_rcp26_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- xy
 df$rcp <- "rcp2.6"
 df})
 inc.prop <- do.call(rbind, inc.prop.list.2.6)
 
 
-inc.prop.list.45 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp45_", output.base.name, "_proportion.csv"))
+inc.prop.list.45 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp45_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp4.5"
 df})
 inc.prop.45 <- do.call(rbind, inc.prop.list.45)
 
-inc.prop.list.60 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp60_", output.base.name, "_proportion.csv"))
+inc.prop.list.60 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp60_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp6.0"
 df})
@@ -4226,24 +2909,32 @@ inc.prop.60 <- do.call(rbind, inc.prop.list.60)
 
 
 
-inc.prop.list.85 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp85_", output.base.name, "_proportion.csv"))
+inc.prop.list.85 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_Increment_rcp85_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp8.5"
 df})
 inc.prop.85 <- do.call(rbind, inc.prop.list.85)
 
 inc.prop.all <- rbind(inc.prop, inc.prop.45, inc.prop.60, inc.prop.85)
-saveRDS(inc.prop.all, paste0("inc.prop.parameter_",output.base.name, ".RDS"))
+saveRDS(inc.prop.all, paste0("inc.prop.parameter_all_int",output.base.name, ".RDS"))
 #inc.prop <- read.csv("variance_partitioning_parameter/tree_100_Increment_rcp26_proportion.csv")
 
-my_cols <- c("#7fc97f",
-             "#beaed4",
-             "#fdc086",
-             "#ffff99",
-             "#386cb0",
-             "#f0027f",
-             "#bf5b17",
-             "#666666")
+my_cols <- c(
+  "#a6cee3",
+  "#1f78b4",
+  "#b2df8a",
+  "#33a02c",
+  "#fb9a99",
+  "#e31a1c",
+  "#fdbf6f",
+  "#ff7f00",
+  "#cab2d6",
+  "#6a3d9a",
+  "#ffff99",
+  "#b15928", 
+  "#7f2704", 
+  "#000000", 
+  "#969696")
 inc.prop.wide <- inc.prop.all %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
 inc.prop.wide$SDIUnc <-  inc.prop.wide$`SDI` 
 inc.prop.wide$DBHUnc <-  inc.prop.wide$`DBH` - inc.prop.wide$SDI 
@@ -4251,73 +2942,93 @@ inc.prop.wide$PrecipUnc <-  inc.prop.wide$`Precip`- inc.prop.wide$`DBH`
 inc.prop.wide$TmaxUnc <-  inc.prop.wide$`Tmax`- inc.prop.wide$`Precip`
 inc.prop.wide$PxTint <-  inc.prop.wide$`PrecipxTmax` - inc.prop.wide$`Tmax`
 inc.prop.wide$SICONDUnc <-  inc.prop.wide$`SICOND` - inc.prop.wide$`PrecipxTmax`
-inc.prop.wide$TwoWayInteractions <-  inc.prop.wide$`all other 2-way interactions` - inc.prop.wide$`SICOND`
+inc.prop.wide$SDIxXUnc <-  inc.prop.wide$`SDIxX` - inc.prop.wide$`SICOND`
+inc.prop.wide$SDIxPrecipUnc <-  inc.prop.wide$`SDIxPrecip` - inc.prop.wide$`SDIxX`
+inc.prop.wide$SDIxTmaxUnc <-  inc.prop.wide$`SDIxTmax` - inc.prop.wide$`SDIxPrecip`
+inc.prop.wide$DBHxTmaxUnc <-  inc.prop.wide$`XxTmax` - inc.prop.wide$`SDIxTmax`
+inc.prop.wide$DBHxPrecipUnc <-  inc.prop.wide$`XxPrecip` - inc.prop.wide$`XxTmax`
+inc.prop.wide$SICONDxPrecipUnc <-  inc.prop.wide$`SICONDxPrecip` - inc.prop.wide$`XxPrecip`
+inc.prop.wide$SICONDxTmaxUnc <-  inc.prop.wide$`SICONDxTMax` - inc.prop.wide$`SICONDxPrecip`
+inc.prop.wide$SICONDxDBHUnc <-  inc.prop.wide$`SICONDxX` - inc.prop.wide$`SICONDxTMax`
+inc.prop.wide$SDIxSICONDUnc <-  inc.prop.wide$`SDIxSICOND` - inc.prop.wide$`SICONDxX`
 
-inc.prop.wide$PlotrandUnc <-  inc.prop.wide$`plot random effect` - inc.prop.wide$`all other 2-way interactions`
+
+
+
 
 inc.prop.wide$period <- ifelse(inc.prop.wide$year >= 2075, "2075 - 2099", 
                                ifelse(inc.prop.wide$year >= 2050 & inc.prop.wide$year < 2075, "2050 - 2074", 
                                       ifelse(inc.prop.wide$year < 2050, "2019 - 2049", NA)))
 
 inc.prop.long <- inc.prop.wide %>% group_by(period, year, treeid, x, rcp) %>% select(-`SDI` , -`Precip`, -`Tmax`, - `DBH`,
-                                                                                     -`PrecipxTmax`, -`SICOND`, -`all other 2-way interactions`, -`plot random effect`) %>%
+                                                                                     -`PrecipxTmax`, -`SICOND`,
+                                                                                     -`SDIxX`, - `SDIxPrecip`,
+                                                                                     -`SDIxTmax`, -`XxTmax`,
+                                                                                     -`XxPrecip`, -`SICONDxPrecip`, 
+                                                                                     -`SICONDxTMax`, -`SICONDxX`, 
+                                                                                     -`SDIxSICOND`) %>%
   tidyr::gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #inc.prop.wide <- reshape2::melt(inc.prop.wide)
 rcp.inc.prop <- inc.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value), 
                                                                                    ci.lo = quantile(value, 0.025), 
                                                                                    ci.hi = quantile(value, 0.975)) 
-rcp.inc.prop$Uncertainty <- factor(rcp.inc.prop$Uncertainty , levels = c("DBHUnc", 
-                                                                         "PrecipUnc" , 
-                                                                         "TmaxUnc",
-                                                                         "PxTint" , 
-                                                                         
-                                                                         "SDIUnc" , 
-                                                                         "SICONDUnc",
-                                                                         
-                                                                         "TwoWayInteractions", 
-                                                                         "PlotrandUnc"))
 
-Uncertainty.table <- data.frame(Uncertainty = c("DBHUnc", 
-                                                "PrecipUnc" , 
-                                                "TmaxUnc",
-                                                "PxTint" , 
-                                                
+Uncertainty.table <- data.frame(Uncertainty = c("DBHUnc",
+                                                "DBHxPrecipUnc",
+                                                "DBHxTmaxUnc",
+                                                "PrecipUnc",       
+                                                "PxTint",
                                                 "SDIUnc" , 
-                                                "SICONDUnc",
-                                                
-                                                "TwoWayInteractions", 
-                                                "PlotrandUnc"),
+                                                "SDIxPrecipUnc" ,
+                                                "SDIxSICONDUnc" ,  
+                                                "SDIxTmaxUnc" ,
+                                                "SDIxXUnc" ,
+                                                "SICONDUnc" ,
+                                                "SICONDxDBHUnc" ,
+                                                "SICONDxPrecipUnc",
+                                                "SICONDxTmaxUnc",
+                                                "TmaxUnc" ),
                                 Unc = c("Tree Size", 
-                                        "Precipitation", 
-                                        "Temperature", 
+                                        "Tree Size x Precipitation", 
+                                        "Tree Size x Temperature", 
+                                        "Precipitation",
                                         "Precipitation & Temperature Interaction", 
                                         "Stand Density Index", 
+                                        "Stand Density Index x Precipitation", 
+                                        "Stand Density Index x Site Index", 
+                                        "Stand Density Index x Temperature", 
+                                        "Stand Density Index x Tree Size", 
                                         "Site Index", 
-                                        "Other two-way interactions", 
-                                        "Plot random effects"))
+                                        "Site Index x Tree Size", 
+                                        
+                                        
+                                        "Site Index x Precipitation", 
+                                        "Site Index x Temperature",
+                                        "Temperature"))
 
 
 rcp.inc.proportion.summary <- merge(rcp.inc.prop, Uncertainty.table, by = "Uncertainty")
 
-rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = c("Other two-way interactions", 
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     "Precipitation & Temperature Interaction", 
-                                                                                     
-                                                                                     "Tree Size",
-                                                                                     "Site Index",
-                                                                                     "Precipitation", 
-                                                                                     "Stand Density Index",
-                                                                                     "Temperature",
-                                                                                     "Plot random effects"))
-
+# rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = c("Other two-way interactions", 
+#                                                                                      
+#                                                                                      
+#                                                                                      
+#                                                                                      
+#                                                                                      "Precipitation & Temperature Interaction", 
+#                                                                                      
+#                                                                                      "Tree Size",
+#                                                                                      "Site Index",
+#                                                                                      "Precipitation", 
+#                                                                                      "Stand Density Index",
+#                                                                                      "Temperature",
+#                                                                                      "Plot random effects"))
+# 
 #ggplot( inc.prop.long, aes(x = rcp , y = value, fill = Uncertainty))+geom_boxplot()+facet_wrap(~period)
 increment.unc.summary.prop <- ggplot(rcp.inc.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
   ylab("Proportion of Uncertainty\n in Increment")+xlab("RCP Scenario")+scale_fill_manual(values = my_cols, name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
 
+increment.unc.summary.prop
 
 png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name,  paste0("_Proportion_increment_unc_proportion_parameters_rcp_all_time",output.base.name,".png")))
 increment.unc.summary.prop
@@ -4329,20 +3040,20 @@ dev.off()
 #------------------------------------------------------------------------------------------
 dbh.prop.list <- list()
 treeds <- c(1:515)
-dbh.prop.list.2.6 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp26_", output.base.name, "_proportion.csv"))
+dbh.prop.list.2.6 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp26_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp2.6"
 df})
 dbh.prop <- do.call(rbind, dbh.prop.list.2.6)
 
 
-dbh.prop.list.45 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp45_", output.base.name, "_proportion.csv"))
+dbh.prop.list.45 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp45_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp4.5"
 df})
 dbh.prop.45 <- do.call(rbind, dbh.prop.list.45)
 
-dbh.prop.list.60 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp60_", output.base.name, "_proportion.csv"))
+dbh.prop.list.60 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp60_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp6.0"
 df})
@@ -4350,7 +3061,7 @@ dbh.prop.60 <- do.call(rbind, dbh.prop.list.60)
 
 
 
-dbh.prop.list.85 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp85_", output.base.name, "_proportion.csv"))
+dbh.prop.list.85 <- lapply(treeds, function(x){df <- read.csv(paste0("variance_partitioning_parameter/tree_", x,"_diameter_rcp85_", output.base.name, "_all_int_proportion.csv"))
 df$treeid <- x
 df$rcp <- "rcp8.5"
 df})
@@ -4358,7 +3069,7 @@ dbh.prop.85 <- do.call(rbind, dbh.prop.list.85)
 
 dbh.prop.all <- rbind(dbh.prop, dbh.prop.45, dbh.prop.60, dbh.prop.85)
 
-saveRDS(dbh.prop.all, paste0("dbh.prop.parameter",output.base.name,".RDS"))
+saveRDS(dbh.prop.all, paste0("dbh.prop.parameter_all_int_",output.base.name,".RDS"))
 #dbh.prop <- read.csv("variance_partitioning_parameter/tree_100_Diameter_rcp26_proportion.csv")
 
 dbh.prop.wide <- dbh.prop.all %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
@@ -4368,74 +3079,74 @@ dbh.prop.wide$PrecipUnc <-  dbh.prop.wide$`Precip`- dbh.prop.wide$`DBH`
 dbh.prop.wide$TmaxUnc <-  dbh.prop.wide$`Tmax`- dbh.prop.wide$`Precip`
 dbh.prop.wide$PxTint <-  dbh.prop.wide$`PrecipxTmax` - dbh.prop.wide$`Tmax`
 dbh.prop.wide$SICONDUnc <-  dbh.prop.wide$`SICOND` - dbh.prop.wide$`PrecipxTmax`
-dbh.prop.wide$TwoWayInteractions <-  dbh.prop.wide$`all other 2-way interactions` - dbh.prop.wide$`SICOND`
-
-dbh.prop.wide$PlotrandUnc <-  dbh.prop.wide$`plot random effect` - dbh.prop.wide$`all other 2-way interactions`
+dbh.prop.wide$SDIxXUnc <-  dbh.prop.wide$`SDIxX` - dbh.prop.wide$`SICOND`
+dbh.prop.wide$SDIxPrecipUnc <-  dbh.prop.wide$`SDIxPrecip` - dbh.prop.wide$`SDIxX`
+dbh.prop.wide$SDIxTmaxUnc <-  dbh.prop.wide$`SDIxTmax` - dbh.prop.wide$`SDIxPrecip`
+dbh.prop.wide$DBHxTmaxUnc <-  dbh.prop.wide$`XxTmax` - dbh.prop.wide$`SDIxTmax`
+dbh.prop.wide$DBHxPrecipUnc <-  dbh.prop.wide$`XxPrecip` - dbh.prop.wide$`XxTmax`
+dbh.prop.wide$SICONDxPrecipUnc <-  dbh.prop.wide$`SICONDxPrecip` - dbh.prop.wide$`XxPrecip`
+dbh.prop.wide$SICONDxTmaxUnc <-  dbh.prop.wide$`SICONDxTMax` - dbh.prop.wide$`SICONDxPrecip`
+dbh.prop.wide$SICONDxDBHUnc <-  dbh.prop.wide$`SICONDxX` - dbh.prop.wide$`SICONDxTMax`
+dbh.prop.wide$SDIxSICONDUnc <-  dbh.prop.wide$`SDIxSICOND` - dbh.prop.wide$`SICONDxX`
 
 dbh.prop.wide$period <- ifelse(dbh.prop.wide$year >= 2075, "2075 - 2099", 
                                ifelse(dbh.prop.wide$year >= 2050 & dbh.prop.wide$year < 2075, "2050 - 2074", 
                                       ifelse(dbh.prop.wide$year < 2050, "2019 - 2049", NA)))
 
 dbh.prop.long <- dbh.prop.wide %>% group_by(period, year, treeid, x, rcp) %>% select(-`SDI` , -`Precip`, -`Tmax`, - `DBH`,
-                                                                                     -`PrecipxTmax`, -`SICOND`, -`all other 2-way interactions`, -`plot random effect`) %>%
+                                                                                     -`PrecipxTmax`, -`SICOND`,
+                                                                                     -`SDIxX`, - `SDIxPrecip`,
+                                                                                     -`SDIxTmax`, -`XxTmax`,
+                                                                                     -`XxPrecip`, -`SICONDxPrecip`, 
+                                                                                     -`SICONDxTMax`, -`SICONDxX`, 
+                                                                                     -`SDIxSICOND`) %>%
   tidyr::gather(Uncertainty, value ,-x, -year, -treeid, -period, -rcp)
 #dbh.prop.wide <- reshape2::melt(dbh.prop.wide)
-rcp.dbh.prop <- dbh.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm = TRUE), 
-                                                                                   ci.lo = quantile(value, 0.025, na.rm = TRUE), 
-                                                                                   ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
-rcp.dbh.prop$Uncertainty <- factor(rcp.dbh.prop$Uncertainty , levels = c("DBHUnc", 
-                                                                         "PrecipUnc" , 
-                                                                         "TmaxUnc",
-                                                                         "PxTint" , 
-                                                                         
-                                                                         "SDIUnc" , 
-                                                                         "SICONDUnc",
-                                                                         
-                                                                         "TwoWayInteractions", 
-                                                                         "PlotrandUnc"))
+rcp.dbh.prop <- dbh.prop.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value), 
+                                                                                   ci.lo = quantile(value, 0.025), 
+                                                                                   ci.hi = quantile(value, 0.975)) 
 
-Uncertainty.table <- data.frame(Uncertainty = c("DBHUnc", 
-                                                "PrecipUnc" , 
-                                                "TmaxUnc",
-                                                "PxTint" , 
-                                                
+Uncertainty.table <- data.frame(Uncertainty = c("DBHUnc",
+                                                "DBHxPrecipUnc",
+                                                "DBHxTmaxUnc",
+                                                "PrecipUnc",       
+                                                "PxTint",
                                                 "SDIUnc" , 
-                                                "SICONDUnc",
-                                                
-                                                "TwoWayInteractions", 
-                                                "PlotrandUnc"),
+                                                "SDIxPrecipUnc" ,
+                                                "SDIxSICONDUnc" ,  
+                                                "SDIxTmaxUnc" ,
+                                                "SDIxXUnc" ,
+                                                "SICONDUnc" ,
+                                                "SICONDxDBHUnc" ,
+                                                "SICONDxPrecipUnc",
+                                                "SICONDxTmaxUnc",
+                                                "TmaxUnc" ),
                                 Unc = c("Tree Size", 
-                                        "Precipitation", 
-                                        "Temperature", 
+                                        "Tree Size x Precipitation", 
+                                        "Tree Size x Temperature", 
+                                        "Precipitation",
                                         "Precipitation & Temperature Interaction", 
                                         "Stand Density Index", 
+                                        "Stand Density Index x Precipitation", 
+                                        "Stand Density Index x Site Index", 
+                                        "Stand Density Index x Temperature", 
+                                        "Stand Density Index x Tree Size", 
                                         "Site Index", 
-                                        "Other two-way interactions", 
-                                        "Plot random effects"))
+                                        "Site Index x Tree Size", 
+                                        
+                                        
+                                        "Site Index x Precipitation", 
+                                        "Site Index x Temperature",
+                                        "Temperature"))
 
 
 rcp.dbh.proportion.summary <- merge(rcp.dbh.prop, Uncertainty.table, by = "Uncertainty")
 
-rcp.dbh.proportion.summary$Unc <- factor(rcp.dbh.proportion.summary$Unc , levels = c("Other two-way interactions", 
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     "Precipitation & Temperature Interaction", 
-                                                                                     
-                                                                                     "Tree Size",
-                                                                                     "Site Index",
-                                                                                     "Precipitation", 
-                                                                                     "Stand Density Index",
-                                                                                     "Temperature",
-                                                                                     "Plot random effects"))
-
-#ggplot( dbh.prop.long, aes(x = rcp , y = value, fill = Uncertainty))+geom_boxplot()+facet_wrap(~period)
 Diameter.unc.summary.prop <- ggplot(rcp.dbh.proportion.summary, aes(x = rcp , y = mean, fill = Unc))+geom_bar(stat = "identity")+facet_wrap(~period)+
   ylab("Proportion of Uncertainty\n in Diameter")+xlab("RCP Scenario")+scale_fill_manual(values = my_cols, name = NULL)+
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
 
-
+Diameter.unc.summary.prop
 png(height = 4, width = 6, units = "in", res = 300, paste0(output.base.name,  paste0("_Proportion_Diameter_unc_proportion_parameters_rcp_all_time",output.base.name,".png")))
 Diameter.unc.summary.prop
 dev.off()
@@ -4447,7 +3158,7 @@ cowplot::plot_grid(increment.unc.summary.prop, Diameter.unc.summary.prop, ncol =
 dev.off()
 
 
-# kh left off here
+# leaving off here
 #--------------------------------------------------------------------------------------
 # Plot summaries of the total increment uncertainty summarised across all the trees
 #--------------------------------------------------------------------------------------
@@ -4511,36 +3222,48 @@ inc.tot.long <- inc.tot.wide %>% group_by(period, year, treeid,  rcp) %>% select
 rcp.inc.tot <- inc.tot.long %>% group_by(period, Uncertainty, rcp) %>% summarise(mean = mean(value, na.rm = TRUE), 
                                                                                  ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                  ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
-rcp.inc.tot$Uncertainty <- factor(rcp.inc.tot$Uncertainty , levels = c("Random Effects" ,
-                                                                       "All two way interactions" , 
-                                                                       "DBH"   , 
-                                                                       "Precipitation"  , 
-                                                                       "Temperature",
-                                                                       
-                                                                       "Precipitation Temperature Interaction", 
-                                                                       "Site Index" , 
-                                                                       "Stand Density Index"))
+# rcp.inc.tot$Uncertainty <- factor(rcp.inc.tot$Uncertainty , levels = c("Random Effects" ,
+#                                                                        "All two way interactions" , 
+#                                                                        "DBH"   , 
+#                                                                        "Precipitation"  , 
+#                                                                        "Temperature",
+#                                                                        
+#                                                                        "Precipitation Temperature Interaction", 
+#                                                                        "Site Index" , 
+#                                                                        "Stand Density Index"))
 
-Uncertainty.table <- data.frame(Uncertainty = c("Random Effects" ,
-                                                "All two way interactions" , 
-                                                "DBH"   , 
-                                                "Precipitation"  , 
-                                                "Temperature",
-                                                
-                                                "Precipitation Temperature Interaction", 
-                                                "Site Index" , 
-                                                "Stand Density Index"),
-                                Unc = c("Random Effects" ,
-                                        "All two way interactions" , 
-                                        "DBH"   , 
-                                        "Precipitation"  , 
-                                        "Temperature",
+Uncertainty.table <- data.frame(Uncertainty = c("DBHUnc",
+                                                "DBHxPrecipUnc",
+                                                "DBHxTmaxUnc",
+                                                "PrecipUnc",       
+                                                "PxTint",
+                                                "SDIUnc" , 
+                                                "SDIxPrecipUnc" ,
+                                                "SDIxSICONDUnc" ,  
+                                                "SDIxTmaxUnc" ,
+                                                "SDIxXUnc" ,
+                                                "SICONDUnc" ,
+                                                "SICONDxDBHUnc" ,
+                                                "SICONDxPrecipUnc",
+                                                "SICONDxTmaxUnc",
+                                                "TmaxUnc" ),
+                                Unc = c("Tree Size", 
+                                        "Tree Size x Precipitation", 
+                                        "Tree Size x Temperature", 
+                                        "Precipitation",
+                                        "Precipitation & Temperature Interaction", 
+                                        "Stand Density Index", 
+                                        "Stand Density Index x Precipitation", 
+                                        "Stand Density Index x Site Index", 
+                                        "Stand Density Index x Temperature", 
+                                        "Stand Density Index x Tree Size", 
+                                        "Site Index", 
+                                        "Site Index x Tree Size", 
                                         
-                                        "Precipitation Temperature Interaction", 
-                                        "Site Index" , 
-                                        "Stand Density Index"))
-
-
+                                        
+                                        "Site Index x Precipitation", 
+                                        "Site Index x Temperature",
+                                        "Temperature"))
 rcp.inc.totortion.summary <- merge(rcp.inc.tot, Uncertainty.table, by = "Uncertainty")
 rcp.inc.totortion.summary$Unc <- factor(rcp.inc.totortion.summary$Unc , levels  = c("All two way interactions", 
                                                                                     
@@ -4742,15 +3465,6 @@ ggplot(mean.growth.summary, aes(x = period, y = average.growth, fill = period)) 
   theme(panel.grid = element_blank(), axis.text.x = element_text(hjust = 1, angle = 45))
 dev.off()
 
-plot.prop.parameter.variance(m = 8, prop = TRUE, scenario = "rcp60", type = "dbh")#+ggtitle(paste0("Contribution to  Driver Uncertainty in DBH for Tree",i))
-plot.prop.parameter.variance(m = 8, prop = FALSE, scenario = "rcp60", type = "dbh")
-plot.prop.parameter.variance(m = 8, prop = TRUE, scenario = "rcp60", type = "ringwidth")
-plot.prop.parameter.variance(m = 8, prop = FALSE, scenario = "rcp60", type = "ringwidth")
-
-
-plot.prop.parameter.variance(m = 30,  scenario = "rcp60", type = "dbh")+ggtitle(paste0("Contribution to  Driver Uncertainty in DBH for Tree",i))
-plot.prop.parameter.variance(m = 30,  scenario = "rcp60", type = "ringwidth")+ggtitle(paste0("Contribution to  Driver Uncertainty in DBH for Tree",i))
-
 
 
 #------------------------------------------------------------------------------------
@@ -4820,6 +3534,8 @@ increment.unc.summary.prop <- ggplot(rcp.inc.proportion.summary, aes(x = rcp , y
   theme_bw(base_size = 12)+theme(axis.text.x = element_text(hjust = 1, angle = 45), panel.grid = element_blank())
 increment.unc.summary.prop
 
+
+rcp.inc.proportion.summary %>% filter()
 #------------------------------------------------------------------------------------------
 #  Summarise the tree ring Diameter proportion of uncertainty
 #--------------------------------------------------------------------------------------
@@ -4970,7 +3686,7 @@ dev.off()
 # Make the driver uncertainty and the parameter uncertainty summary proportion plots
 #-------------------------------------------------------------------------------------
 
-dbh.prop.all<- readRDS( paste0("dbh.prop.parameter",output.base.name,".RDS"))
+dbh.prop.all<- readRDS( paste0("dbh.prop.parameter_all_int_",output.base.name,".RDS"))
 #dbh.prop <- read.csv("variance_partitioning_parameter/tree_100_Diameter_rcp26_proportion.csv")
 
 dbh.prop.wide <- dbh.prop.all %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
@@ -5006,52 +3722,62 @@ rcp.dbh.prop <- dbh.prop.long %>% group_by(year, Uncertainty, rcp) %>% summarise
 #                                                                          "TwoWayInteractions", 
 #                                                                          "PlotrandUnc"))
 
-Uncertainty.table <- data.frame(Uncertainty = c("DBH", 
-                                                "Precip" , 
-                                                "Tmax",
-                                                "PrecipxTmax" , 
-                                                
-                                                "SDI" , 
-                                                "SICOND",
-                                                
-                                                "all other 2-way interactions", 
-                                                "plot random effect"),
-                                Unc = c("Tree Size", 
-                                        "Precipitation", 
-                                        "Temperature", 
-                                        "Precipitation & Temperature Interaction", 
-                                        "Stand Density Index", 
-                                        "Site Index", 
-                                        "Other two-way interactions", 
-                                        "Plot random effects"))
+Uncertainty.table.params <- data.frame(Uncertainty = c("DBH",
+                                                       "XxPrecip",
+                                                       "XxTmax",
+                                                       "Precip",       
+                                                       "PrecipxTmax",
+                                                       "SDI" , 
+                                                       "SDIxPrecip" ,
+                                                       "SDIxSICOND" ,  
+                                                       "SDIxTmax" ,
+                                                       "SDIxX" ,
+                                                       "SICOND" ,
+                                                       "SICONDxX" ,
+                                                       "SICONDxPrecip",
+                                                       "SICONDxTmax",
+                                                       "Tmax" ),
+                                       Unc = c("Tree Size", 
+                                               "Tree Size x Precipitation", 
+                                               "Tree Size x Temperature", 
+                                               "Precipitation",
+                                               "Precipitation & Temperature Interaction", 
+                                               "Stand Density Index", 
+                                               "Stand Density Index x Precipitation", 
+                                               "Stand Density Index x Site Index", 
+                                               "Stand Density Index x Temperature", 
+                                               "Stand Density Index x Tree Size", 
+                                               "Site Index", 
+                                               "Site Index x Tree Size", 
+                                               "Site Index x Precipitation", 
+                                               "Site Index x Temperature",
+                                               "Temperature"))
+
+rcp.dbh.proportion.summary <- merge(rcp.dbh.prop, Uncertainty.table.params, by = "Uncertainty")
+
+param_cols  <- c(
+  "#a6cee3",
+  "#1f78b4",
+  "#b2df8a",
+  "#33a02c",
+  "#fb9a99",
+  "#e31a1c",
+  "#fdbf6f",
+  "#ff7f00",
+  "#cab2d6",
+  "#6a3d9a",
+  "#ffff99",
+  "#b15928", 
+  "#7f2704", 
+  "#000000", 
+  "#969696")
+avgs.dbh.prop <- rcp.dbh.proportion.summary %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 
-rcp.dbh.proportion.summary <- merge(rcp.dbh.prop, Uncertainty.table, by = "Uncertainty")
+avgs.dbh.prop[order(avgs.dbh.prop$unc.mean),]$Unc
 
-rcp.dbh.proportion.summary$Unc <- factor(rcp.dbh.proportion.summary$Unc , levels = rev(c( "Stand Density Index",
-                                                                                          "Tree Size",
-                                                                                          "Precipitation", 
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          "Temperature",
-                                                                                          "Precipitation & Temperature Interaction",
-                                                                                          "Site Index",
-                                                                                          "Other two-way interactions", 
-                                                                                          "Plot random effects")))
+rcp.dbh.proportion.summary$Unc <- factor(rcp.dbh.proportion.summary$Unc , levels = rev(avgs.dbh.prop[order(avgs.dbh.prop$unc.mean),]$Unc))
 
-
-param_cols <- c("#7fc97f",
-                "#beaed4",
-                "#fdc086",
-                "#ffff99",
-                "#386cb0",
-                "#f0027f",
-                "#bf5b17",
-                "#666666")
-rcp.dbh.proportion.summary %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
 
 prop.var.param.dbh  <- ggplot(rcp.dbh.proportion.summary, aes(x=year, fill = Unc))+
   geom_ribbon(aes(ymin=0, ymax=mean), color = NA)+
@@ -5075,50 +3801,26 @@ rcp.dbh.prop.period <- dbh.prop.long %>% group_by( Uncertainty, period) %>% summ
                                                                                       ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                       ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
 
-Uncertainty.table <- data.frame(Uncertainty = c("DBH", 
-                                                "Precip" , 
-                                                "Tmax",
-                                                "PrecipxTmax" , 
-                                                
-                                                "SDI" , 
-                                                "SICOND",
-                                                
-                                                "all other 2-way interactions", 
-                                                "plot random effect"),
-                                Unc = c("Tree Size", 
-                                        "Precipitation", 
-                                        "Temperature", 
-                                        "Precipitation & Temperature Interaction", 
-                                        "Stand Density Index", 
-                                        "Site Index", 
-                                        "Other two-way interactions", 
-                                        "Plot random effects"))
 
+rcp.dbh.proportion.summary.all <- merge(rcp.dbh.prop.all, Uncertainty.table.params, by = "Uncertainty")
 
-rcp.dbh.proportion.summary.all <- merge(rcp.dbh.prop.all, Uncertainty.table, by = "Uncertainty")
-
-rcp.dbh.proportion.summary.all$Unc <- factor(rcp.dbh.proportion.summary.all$Unc , levels = rev(c( 
-  "Stand Density Index",
-  "Tree Size",
-  "Precipitation", 
-  "Temperature",
-  "Precipitation & Temperature Interaction",
-  "Site Index",
-  "Other two-way interactions", 
-  "Plot random effects")))
-
-
-param_cols <- c("#7fc97f",
-                "#beaed4",
-                "#fdc086",
-                
-                "#ffff99",
-                "#f0027f",
-                "#386cb0",
-                
-                "#bf5b17",
-                "#666666")
-rcp.dbh.proportion.summary.all %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
+rcp.dbh.proportion.summary.all$Unc <- factor(rcp.dbh.proportion.summary.all$Unc , levels = rev(avgs.dbh.prop[order(avgs.dbh.prop$unc.mean),]$Unc))
+param_cols  <- c(
+  "Stand Density Index x Site Index"="#a6cee3",
+  "Precipitation"="#1f78b4",
+  "Site Index x Precipitation"= "#b2df8a",
+  "Site Index"="#33a02c",
+  "Site Index x Temperature" = "#fb9a99",
+  "Temperature"="#e31a1c",
+  "Site Index x Tree Size"= "#fdbf6f",
+  "Tree Size x Temperature"="#ff7f00",
+  "Tree Size x Precipitation"="#cab2d6",
+  "Stand Density Index x Tree Size"= "#6a3d9a",
+  "Precipitation & Temperature Interaction"="#ffff99",
+  "Stand Density Index x Temperature"="#b15928", 
+  "Stand Density Index x Precipitation"= "#7f2704", 
+  "Stand Density Index"="#000000", 
+  "Tree Size"= "#969696")
 
 prop.var.param.dbh.all  <- ggplot(rcp.dbh.proportion.summary.all, aes(x=year, fill = Unc))+
   geom_ribbon(aes(ymin=0, ymax=mean))+
@@ -5133,19 +3835,10 @@ prop.var.param.dbh.all
 
 
 # Now make the same parameter plot for increment
-inc.prop.all<- readRDS( paste0("inc.prop.parameter_",output.base.name,".RDS"))
+inc.prop.all<- readRDS( paste0("inc.prop.parameter_all_int",output.base.name,".RDS"))
 #inc.prop <- read.csv("variance_partitioning_parameter/tree_100_Increment_rcp26_proportion.csv")
 
 inc.prop.wide <- inc.prop.all %>% select(-X,) %>% group_by(x,year, rcp) %>% spread(simtype, variance)
-# inc.prop.wide$SDIUnc <-  inc.prop.wide$`SDI` 
-# inc.prop.wide$incUnc <-  inc.prop.wide$`inc` - inc.prop.wide$SDI 
-# inc.prop.wide$PrecipUnc <-  inc.prop.wide$`Precip`- inc.prop.wide$`inc`
-# inc.prop.wide$TmaxUnc <-  inc.prop.wide$`Tmax`- inc.prop.wide$`Precip`
-# inc.prop.wide$PxTint <-  inc.prop.wide$`PrecipxTmax` - inc.prop.wide$`Tmax`
-# inc.prop.wide$SICONDUnc <-  inc.prop.wide$`SICOND` - inc.prop.wide$`PrecipxTmax`
-# inc.prop.wide$TwoWayInteractions <-  inc.prop.wide$`all other 2-way interactions` - inc.prop.wide$`SICOND`
-# 
-# inc.prop.wide$PlotrandUnc <-  inc.prop.wide$`plot random effect` - inc.prop.wide$`all other 2-way interactions`
 
 inc.prop.wide$period <- ifelse(inc.prop.wide$year >= 2075, "2075 - 2099", 
                                ifelse(inc.prop.wide$year >= 2050 & inc.prop.wide$year < 2075, "2050 - 2074", 
@@ -5158,60 +3851,17 @@ inc.prop.long <- inc.prop.wide %>% group_by(period, year, treeid, x, rcp) %>% #s
 rcp.inc.prop <- inc.prop.long %>% group_by(year, Uncertainty, rcp) %>% summarise(mean = median(value, na.rm = TRUE), 
                                                                                  ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                  ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
-# rcp.inc.prop$Uncertainty <- factor(rcp.inc.prop$Uncertainty , levels = c("incUnc", 
-#                                                                          "PrecipUnc" , 
-#                                                                          "TmaxUnc",
-#                                                                          "PxTint" , 
-#                                                                          
-#                                                                          "SDIUnc" , 
-#                                                                          "SICONDUnc",
-#                                                                          
-#                                                                          "TwoWayInteractions", 
-#                                                                          "PlotrandUnc"))
-
-Uncertainty.table.dbh <- data.frame(Uncertainty = c("DBH", 
-                                                    "Precip" , 
-                                                    "Tmax",
-                                                    "PrecipxTmax" , 
-                                                    
-                                                    "SDI" , 
-                                                    "SICOND",
-                                                    
-                                                    "all other 2-way interactions", 
-                                                    "plot random effect"),
-                                    Unc = c("Tree Size", 
-                                            "Precipitation", 
-                                            "Temperature", 
-                                            "Precipitation & Temperature Interaction", 
-                                            "Stand Density Index", 
-                                            "Site Index", 
-                                            "Other two-way interactions", 
-                                            "Plot random effects"))
 
 
-rcp.inc.proportion.summary <- merge(rcp.inc.prop, Uncertainty.table.dbh, by = "Uncertainty")
-
-rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = rev(c("Stand Density Index",
-                                                                                         "Tree Size",
-                                                                                         "Precipitation", 
-                                                                                         "Temperature",
-                                                                                         "Precipitation & Temperature Interaction",
-                                                                                         "Site Index",
-                                                                                         "Other two-way interactions", 
-                                                                                         "Plot random effects")))
+rcp.inc.proportion.summary <- merge(rcp.inc.prop, Uncertainty.table.params, by = "Uncertainty")
 
 
-param_cols <- c("#7fc97f",
-                "#beaed4",
-                "#fdc086",
-                
-                "#ffff99",
-                "#f0027f",
-                "#386cb0",
-                
-                "#bf5b17",
-                "#666666")
 rcp.inc.proportion.summary %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
+
+rcp.inc.proportion.summary$Unc <- factor(rcp.inc.proportion.summary$Unc , levels = rev(avgs.dbh.prop[order(avgs.dbh.prop$unc.mean),]$Unc))
+
+
+
 
 prop.var.param.inc  <- ggplot(rcp.inc.proportion.summary, aes(x=year, fill = Unc))+
   geom_ribbon(aes(ymin=0, ymax=mean))+
@@ -5229,20 +3879,17 @@ rcp.inc.prop.all <- inc.prop.long %>% group_by(year, Uncertainty) %>% summarise(
                                                                                 ci.lo = quantile(value, 0.025, na.rm = TRUE), 
                                                                                 ci.hi = quantile(value, 0.975, na.rm = TRUE)) 
 
-rcp.inc.proportion.summary.all <- merge(rcp.inc.prop.all, Uncertainty.table, by = "Uncertainty")
+rcp.inc.proportion.summary.all <- merge(rcp.inc.prop.all, Uncertainty.table.params, by = "Uncertainty")
 
-rcp.inc.proportion.summary.all$Unc <- factor(rcp.inc.proportion.summary.all$Unc , levels = rev(c("Stand Density Index",
-                                                                                                 "Tree Size",
-                                                                                                 "Precipitation", 
-                                                                                                 "Temperature",
-                                                                                                 "Precipitation & Temperature Interaction",
-                                                                                                 "Site Index",
-                                                                                                 "Other two-way interactions", 
-                                                                                                 "Plot random effects")))
+rcp.inc.proportion.summary.all$Unc <- factor(rcp.inc.proportion.summary.all$Unc , levels = rev(avgs.dbh.prop[order(avgs.dbh.prop$unc.mean),]$Unc))
 
 
 
-rcp.inc.proportion.summary.all %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
+mean.inc.count <- rcp.inc.proportion.summary.all %>% group_by(Unc)%>% summarise(unc.mean = mean(mean))
+
+mean.inc.count$tot.pcts <- c((lag(mean.inc.count$unc.mean, na.rm = TRUE) - mean.inc.count$unc.mean)[2:14], mean.inc.count$unc.mean[14]) 
+
+mean.inc.count[order(mean.inc.count$tot.pcts),]
 
 prop.var.param.inc.all  <- ggplot(rcp.inc.proportion.summary.all, aes(x=year, fill = Unc))+
   geom_ribbon(aes(ymin=0, ymax=mean))+
@@ -5313,7 +3960,9 @@ prop.var.driver.unc.all <- ggplot(rcp.inc.prop.all, aes(x=year, fill = Uncertain
   theme_bw()+theme(panel.grid=element_blank())
 prop.var.driver.unc.all
 
-
+rcp.inc.prop.all %>% group_by(Uncertainty)%>%summarise(mean.all = mean(mean), 
+                                                       ci.low = mean(ci.lo), 
+                                                       ci.high = mean(ci.hi))
 #------------------------------------------------
 variance.df<- readRDS("dbh.prop.driverSDI_SI.norand.X.resampled.RDS")
 variance.df$simtype <- factor(variance.df$simtype, levels = c("Temperature Uncertainty", "Precipitation Uncertainty"))
@@ -5368,12 +4017,17 @@ prop.var.driver.unc.dbh.all <- ggplot(rcp.dbh.prop.all, aes(x=year, fill = Uncer
                      expand = c(0, 0))+
   theme_bw()+theme(panel.grid=element_blank())
 prop.var.driver.unc.dbh.all
+
+rcp.dbh.prop.all %>% group_by(Uncertainty) %>% summarise(mean.1 = mean(mean), 
+                                                         ci.low = quantile(ci.lo, 0.025), 
+                                                         ci.high = quantile(ci.hi, 0.975))
+
 library(cowplot)
-driver.leg <- get_legend(prop.var.driver.unc.all + theme(legend.position = "bottom", legend.direction = "horizontal"))
-param.leg <- get_legend(prop.var.param.dbh.all + theme(legend.position = "bottom", legend.direction = "horizontal"))
+driver.leg <- get_legend(prop.var.driver.unc.all + theme(legend.position = "bottom", legend.direction = "horizontal") +guides(fill=guide_legend(nrow=5,byrow=TRUE))+ theme_bw(base_size = 10))
+param.leg <- get_legend(prop.var.param.dbh.all + theme(legend.position = "bottom", legend.direction = "horizontal")+guides(fill=guide_legend(nrow=5,byrow=TRUE))+ theme_bw(base_size = 10))
 
 # make one really big figure:
-png(height = 12, width = 9, units = "in", res = 300, "driver_and_parameter_prop_unc_figure.png")
+png(height = 12, width = 10, units = "in", res = 300, "driver_and_parameter_prop_unc_figure.png")
 cowplot::plot_grid(prop.var.driver.unc + no.leg, 
                    prop.var.driver.unc.dbh + no.leg, 
                    driver.leg,
@@ -5384,18 +4038,30 @@ cowplot::plot_grid(prop.var.driver.unc + no.leg,
 dev.off()
 
 
-driver.leg.vert <- get_legend(prop.var.driver.unc.all )
-param.leg.vert <- get_legend(prop.var.param.dbh.all )
+driver.leg.vert <- get_legend(prop.var.driver.unc.all +theme_bw(base_size = 8))
+param.leg.vert <- get_legend(prop.var.param.dbh.all +theme_bw(base_size = 8))
 
 
 # figure with averages across RCPS
-png(height = 6, width = 8, units = "in", res = 300, "driver_and_parameter_prop_unc_figure_averaged.png")
+png(height = 8, width = 8, units = "in", res = 300, "driver_and_parameter_prop_unc_figure_averaged.png")
 cowplot::plot_grid(plot_grid(prop.var.driver.unc.all + no.leg, 
                              prop.var.driver.unc.dbh.all + no.leg, ncol = 2, labels = c("A", "B"), label_fontface = "plain"), 
                    driver.leg,
                    plot_grid(prop.var.param.inc.all + no.leg, 
                              prop.var.param.dbh.all + no.leg,ncol = 2, labels = c("C", "D"), label_fontface = "plain"),
                    param.leg,
-                   ncol = 1, rel_heights   = c(1,0.1,1, 0.28))
+                   ncol = 1, rel_heights   = c(1,0.35,1, 0.8))
+dev.off()
+
+# figure with averages across RCPS
+png(height = 6, width = 9, units = "in", res = 300, "driver_and_parameter_prop_unc_figure_averaged_vertleg.png")
+cowplot::plot_grid(prop.var.driver.unc.all + no.leg, 
+                   prop.var.driver.unc.dbh.all + no.leg,
+                   driver.leg.vert,
+                   prop.var.param.inc.all + no.leg, 
+                   prop.var.param.dbh.all + no.leg,
+                   param.leg.vert,
+                   align = "hv",ncol = 3, labels = c("A", "B", " ", "C", "D", " "), label_fontface = "plain",
+                   rel_widths   = c(1,1, 0.5))
 dev.off()
 

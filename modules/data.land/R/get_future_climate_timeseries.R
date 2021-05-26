@@ -50,7 +50,7 @@ library(tidyverse)
 # 1. Read in the lat long data we need to extract climate data over
 #------------------------------------------------------------------
 
-AZ.PIPO <- read.delim("FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+AZ.PIPO <- read.delim("data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
 ### merge together three diameter columns
 AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees

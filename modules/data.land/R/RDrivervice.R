@@ -77,7 +77,7 @@ source("pecan/modules/data.land/R/BuildJAGSdataobject.R")
 
 # get all the data with cores set up for stage 1
 jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
-saveRDS(jags.stuff, "data/jags.data.basic.rds")
+
 
 saveRDS(jags.stuff, "jags.data.basic.rds")
 
@@ -125,25 +125,7 @@ z0 <- jags.new$z0
 cov.data <- jags.new$cov.data
 time_data <- jags.new$time_data
 
-cov.data$FIREYR1 <- ifelse(cov.data$DSTRBCD1 %in% "30", cov.data$DSTRBYR1, NA)
-cov.data$FIREYR2 <- ifelse(cov.data$DSTRBCD2 %in% "30", cov.data$DSTRBYR2, NA)
-cov.data$FIREYR3 <- ifelse(cov.data$DSTRBCD3 %in% "30", cov.data$DSTRBYR3, NA)
 
-View(cov.data[,c("FIREYR1", "FIREYR2", "FIREYR3")])
-
-cov.data$FIREYR <- ifelse(is.na(cov.data$FIREYR1) & is.na(cov.data$FIREYR2) & is.na(cov.data$FIREYR2), NA, 
-                          ifelse(is.na(cov.data$FIREYR1), cov.data$FIREYR2, cov.data$FIREYR1))
-
-
-# make a matrix with the DSTRBYR
-time_data$FIREYR  <- matrix(rep(cov.data$FIREYR, each = 45), nrow = 515 ,ncol = 45, byrow = TRUE) 
-
-# calculate time since Fire disturbance
-time_data$TimeSinceFIRE <-  matrix(rep(1966:2010, 515), nrow = 515 ,ncol = 45, byrow = TRUE) - time_data$FIREYR
-
-
-
-time_data$TimeSinceFIRE[is.na(time_data$TimeSinceFIRE)] <- 51
 data$a_dbh <- 512
 data$r_dbh <- 256
 
@@ -209,6 +191,15 @@ model5 <- InventoryGrowthFusion_norm(data=data, cov.data=cov.data, time_data=tim
                                      burnin_plot=FALSE, save.jags = "Fixed_interactions_site_quality.txt", model.name = "Fixed_interactions_site_quality", 
                                      output.folder = "IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
 
+# Workflow/analysis for the AZ PIPO data fusion analysis:
+# for each model we then run:
+
+
+# 1. conditional_effects_mcmc_plots_xscaled.R, which plots traceplots, interaction and main effects, and parameter correlations
+# 2. plot_held_out_dbh_stage1.R to run the model validation with held out diameters from the same dataset
+# 3. get_future_climate_timeseries.R this aggregates the climate data for making forecasts
+# 4. plot_proportion_var.R run future forecasts & partition uncertainty into components  
+# 5. parse_climate_size_forecast.R is the script that runs no dbh, dbh change, no climate change, climate change scenarios for the manuscript
 
 # --------------------------------------------------------------
 # Stage 2 model with trees with dbh measurements, but no tree cores
@@ -235,9 +226,36 @@ posterior.summary <- data.frame(means = apply(as.matrix(posterior.ests), 2, mean
                                 SD = apply(as.matrix(posterior.ests), 2, sd))
 posterior.summary$parameter <- rownames(posterior.summary)
 
-# 3. Run InventoryGrowthFusion_stage_2.R 
-source("pecan/modules/data.land/R/Inventory_Growth_Fusion_stage_2_mvn.R") 
 
+# 3. Run InventoryGrowthFusion_stage_2_mvn.R 
+source("pecan/modules/data.land/R/Inventory_Growth_Fusion_stage_2.R") 
+# this specifies informative normal priors for each parameter (except the plot random effects)
+
+stage.2.out <- InventoryGrowthFusion_stage2(data=jags.stuff.stage2$data, 
+                                            cov.data=jags.stuff.stage2$cov.data, 
+                                            time_data=jags.stuff.stage2$time_data,
+                                            posterior.estimates = posterior.summary, 
+                                            informative.time = TRUE, 
+                                            informative.site = FALSE,
+                                            n.iter=40000, 
+                                            z0=jags.stuff.stage2$z0,
+                                            n.chunk=100, 
+                                            save.state=TRUE, 
+                                            random="(1|PLOT[i])",
+                                            fixed = "~ X + X^2 + SDI + SICOND + SDI*X + SICOND*X + X*tmax.fallspr[t] + X*wintP.wateryr[t]",
+                                            time_varying = "wintP.wateryr + SDI*wintP.wateryr[t] + SICOND*wintP.wateryr[t] + tmax.fallspr + SDI*tmax.fallspr[t] + SICOND*tmax.fallspr[t] + tmax.fallspr[t]*wintP.wateryr[t]",
+                                            burnin_plot=FALSE, 
+                                            save.jags = "stage2_model5_mvn.site.200.txt", 
+                                            model.name = "stage2_model5_mvn.site.200", 
+                                            output.folder = "/home/rstudio/IGF_PIPO_AZ_mcmc/", breakearly = FALSE)
+
+
+
+# 4. Run InventoryGrowthFusion_stage_2_mvn.R 
+source("pecan/modules/data.land/R/Inventory_Growth_Fusion_stage_2_mvn.R") 
+# this specifies informative multivariate normal prior for all parameters (except the plot random effects)
+# note: InventoryGrowthFusion_stage_2_mvn.R currently just sets up the data and priors from the posterior estimates
+#       It doesnt yet automatically generate the multivariate prior. This was written manually in the jags files.
 
 stage.2.out <- InventoryGrowthFusion_stage2(data=jags.stuff.stage2$data, 
                                             cov.data=jags.stuff.stage2$cov.data, 
