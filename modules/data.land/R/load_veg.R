@@ -20,13 +20,13 @@ con <- bety
 
   # get machine id
   machine_id <- PEcAn.DB::get.id(table = "machines", colnames = "hostname",
-                       values = machine_host, con = bety$con)
+                       values = machine_host, con = con)
 
   # query data.path from source id [input id in BETY]
   query      <- paste0("SELECT * FROM dbfiles where container_id =  ", source_id,
                        "AND machine_id=", machine_id)
 
-  input_file <- PEcAn.DB::db.query(query, con = bety$con)
+  input_file <- PEcAn.DB::db.query(query, con = con)
   data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]]) #File path and file name of source file from bety
 
 
