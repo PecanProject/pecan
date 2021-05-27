@@ -44,7 +44,7 @@ calc_benchmark <- function(settings, bety) {
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
   # All benchmarking records for the given benchmarking ensemble id
-  bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
+  bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = id) %>%  
     left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
     filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
     select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
@@ -82,30 +82,22 @@ calc_benchmark <- function(settings, bety) {
     # but storage type column is empty and it should be because in load_netcdf we extract
     # the time from netcdf files using the time dimension we can remove time variables from
     # this format's related variables list or can hardcode 'time.row=NULL' in load_x_netcdf function
-    model <- as.data.frame(read.output(runid = basename(model_run), 
-                                       outdir = model_run, 
-                                       start.year = start_year, 
-                                       end.year = end_year,
-                                       c("time", model_vars)))
-    vars.used.index <- which(format$vars$pecan_name %in% names(model)[!names(model) == "time"])
-    
-    # We know that the model output time is days since the beginning of the year.
-    # Make a column of years to supplement the column of days of the year.
-    years <- start_year:end_year
-    Diff <- diff(model$time)
-    time_breaks = which(Diff < 0)
-    if(length(time_breaks) == 0 & length(years)>1){
-      ## continuous time
-      model$year <- rep(years,each=round(365/median(Diff)))
-      model$posix <- as.POSIXct(model$time*86400,origin=settings$run$start.date,tz="UTC")
-    } else {
-      n <- model$time[c(time_breaks, length(model$time))]
-      y <- c()
-      for (i in seq_along(n)) {
-        y <- c(y, rep(years[i], n[i]))
+    read.model <- read.output(runid = basename(model_run), 
+                              outdir = model_run, 
+                              start.year = start_year, 
+                              end.year = end_year,
+                              c("time", model_vars), dataframe = TRUE)
+    # This is not a good hack. I still don't know what I'm looking at and I should probably just do a point level run instead of grid?
+    if(settings$model$type == "JULES"){ 
+      for(name in setdiff(names(read.model), "time")){
+        if(length(dim(read.model[[name]]))==2){
+          read.model[[name]] <- colMeans(read.model[[name]])
+        } 
       }
-      model$year <- y
-    } 
+    }
+    
+    model <- read.model
+    vars.used.index <- which(format$vars$pecan_name %in% names(model)[!names(model) == "time"])
     model_full <- model
     
     # ---- CALCULATE BENCHMARK SCORES ---- #
@@ -113,6 +105,7 @@ calc_benchmark <- function(settings, bety) {
     results.list <- list()
     dat.list <- list()
     var.list <- c()
+    
     
     # Loop over benchmark ids
     for (i in seq_along(bm.ids)) {
@@ -127,7 +120,15 @@ calc_benchmark <- function(settings, bety) {
       obvs.calc[,var] <- as.numeric(obvs.calc[,var])
       model.calc <- model_full %>% select(., one_of(c("posix", var)))
       
+      # Check that the variables actually got loaded, otherwise don't send to calc_metrics
+
+      if(!(var %in% names(obvs.calc))|!(var %in% names(model.calc))){
+        logger.warn(paste0("Load did not work for ",var,". No metrics will be calculated."))
+        next
+      }
+      
       # TODO: If the scores have already been calculated, don't redo
+      ensemble.id = bm.ensemble$ensemble_id # this is just to make debugging easier
       
       out.calc_metrics <- calc_metrics(model.calc, 
                                        obvs.calc, 
@@ -135,7 +136,7 @@ calc_benchmark <- function(settings, bety) {
                                        metrics,
                                        start_year, end_year, 
                                        bm,
-                                       ensemble.id = bm.ensemble$ensemble_id,
+                                       ensemble.id,
                                        model_run)
       
       for(metric.id in metrics$id){
@@ -172,7 +173,12 @@ calc_benchmark <- function(settings, bety) {
     gridExtra::grid.table(do.call(rbind, results.list))
     dev.off()
     
-    names(dat.list) <- var.list
+    var.names <- c()
+    for(k in seq_along(dat.list)){
+      var.names <- c(var.names,unlist(strsplit(names(dat.list[[k]])[grep("[.]m", names(dat.list[[k]]))],"[.]"))[1]) # This is horrifying. Sorry future self. 
+    }
+    names(dat.list) <- var.names
+    
     results <- append(results, 
                       list(list(bench.results = do.call(rbind, results.list),
                                 data.path = data.path, 

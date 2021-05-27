@@ -26,7 +26,7 @@
 ##' @param verbose should the function be very verbose
 ##' @importFrom ncdf4 ncvar_get
 met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
-                            overwrite = FALSE, verbose = FALSE, ...) {
+                            overwrite = FALSE, verbose = FALSE, spin_nyear=NULL,spin_nsample=NULL,spin_resample=NULL, ...) {
   
   ## DALEC 1 driver format (.csv): Runday, Min temp (°C), Max temp (°C), Radiation (MJ d-1),
   ## Atmospheric CO2 (μmol mol-1), Day of year
@@ -41,10 +41,27 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   library(PEcAn.utils)
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
+  start_date_string <- as.character(strptime(start_date, "%Y-%m-%d"))
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
+  if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
+
+  if(!is.null(spin_nyear)){
+    ## if spinning up, extend processed met by resampling or cycling met
+    logger.info("Adding Spin-up met for DALEC")
+    spin_nyear <- as.numeric(spin_nyear)
+    spin_nsample <- as.numeric(spin_nsample)
+    spin_resample <- as.logical(spin_resample)
+    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,
+                                                  spin_nyear,spin_nsample,spin_resample)
+#    start_date <- as.POSIXlt(strftime(start_date, "%Y-%m-%d"), tz = "UTC")
+#    start_date <- strptime(paste0(start_year,"-01-01"),"%Y-%m-%d", tz = "UTC")
+    start_date_string <- paste0(lubridate::year(start_date),"-01-01") ## strptime can't parse negative years
+    logger.info("New Start Date",start_date_string)
+  }
+    
+  out.file <- paste0(in.prefix, start_date_string,".", 
                     strptime(end_date, "%Y-%m-%d"), 
-                    "dat", sep = ".")
+                    ".dat")
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
@@ -57,7 +74,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
-  
+
   if (file.exists(out.file.full) && !overwrite) {
     logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
@@ -84,8 +101,8 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     HydResist <- 1
     LeafWaterPot <- -0.8
     
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    
+    old.file <- file.path(in.path, paste(in.prefix, year, ".nc", sep = ""))
+    if(!file.exists(old.file)) PEcAn.utils::logger.error("file not found",old.file)
     ## open netcdf
     nc <- ncdf4::nc_open(old.file)
     
@@ -165,9 +182,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       out <- rbind(out, tmp)
     }
   }  ## end loop over years
-  
-  ## write output
-  write.table(out, out.file.full, quote = FALSE, sep = " ", row.names = FALSE, col.names = FALSE)
+    write.table(out, out.file.full, quote = FALSE, sep = " ", row.names = FALSE, col.names = FALSE)
   
   return(invisible(results))
   

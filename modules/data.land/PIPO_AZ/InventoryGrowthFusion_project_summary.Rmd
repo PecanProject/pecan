@@ -1,0 +1,496 @@
+---
+title: "Inventory Growth Fusion Outline"
+author: "Kelly Heilman"
+date: "5/4/2020"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+header-includes: \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+
+```
+
+### Fusing Tree Ring Increment Data with Forest Inventory Data
+**Goal**
+Leverage climate response information recorded in tree rings with long term plot level information from Forest Inventory Data to improve ecological forecasts.
+
+### The Data
+
+**Tree Rings**
+We use tree ring increments taken from Ponderosa Pine during Forest Inventory sampling in the mid 1990's. In Arizona we have 515 trees with increment cores spanning 1966-1996. These cores have at least 1 DBH measurement taken after the increment core was sampled.
+
+**Diameter at breast height (DBH)**
+We have repeat DBH measurements of trees sampled after the mid-1990's during repeat Forest Inventory and Analysis (FIA) surveys of the same plots & trees as our tree ring data. We have 515 trees that have at least both an increment core and at least 1 DBH measurement. We have 5794 trees with repeat DBH meausrements, but no tree ring data. 
+
+**Covariates**
+SDI: Stand Density Index, non-time varying, from FIA data
+Precip: Total Water Year Precipitaiton, time varying, from PRSIM data
+Tmax: Maximum Temperature average from Fall - Spring, from PRISM data
+X: DBH, time varying, we estimate within the state space model & also assess the effect 
+
+
+
+
+### The Bayesian State Space Model Framework: Two Stages
+**STAGE1:**
+Fit the state space model on trees where we have both tree ring increments & repeat diameter measurements. Estimate all parameters and estimate the state variable (x) from times t = 1966 to t = 2010
+
+**STAGE2:** Fit the model on trees where we only have DBH measurements. Leverage information from the trees where we do have tree ring increments by specifying the posterior estimates of model parameters as the priors using a multivariate normal distribution. Estimate all parameters and the state variable (x) from time t = 1996 to t = 2010. 
+
+
+#### **Model:** 
+
+**DBH data model:**
+Diameter measurements in tree $i$ at time $t$ are represented by $z_{i,t}$, and are normally distributed around the true diameter mean $x_{i,t}$ with precision $tau_{dbh}$. 
+
+$$ z_{i,t} \sim normal(x_{i,t}, \tau_{dbh})$$
+
+**Increment data model:**
+ Thus tree increment in tree $i$ at time $t$ is represented by by $y_{i,t}$. Observations of increments $y_{i,t}$ are normally distributed around the true increment mean $inc_{i,t}$ with precision $\tau_{inc}$. Whe have place an informative prior on $\tau_{inc}$, based on repeat measurements of increment cores by multiple observers. This informative prior reduces non-identifiability between $\tau_{inc}$ and $\tau_{add}$
+
+
+$$y_{i, t} \sim normal(inc_{i,t},\tau_{inc})\\
+inc_{i,t} = x_{i,t} - x_{i,t-1}$$
+
+**Process model:**
+This process model estimates the DBH at time $t$ for tree $i$ as a function of DBH at the previous time step $x_{i,t-1}$, an intecept $\mu$, plot random effects, fixed effects, and all interactions between the fixed effects. Note that when we are estimating the fixed effect of diameter on the change in growth, we scale $x_{i,t-1}$ by 30. This reduces posterior correlation between fixed effects and mu that was causing problems with model mixing. 
+
+$$x_{i,t} \sim normal(DBHnew_{i,t} , \tau_{add})\\$$
+
+$DBHnew_{i,t}$ = $x_{i, t-1}$ + mu + $\alpha_{plot}$ + $\beta_{x}$ + $\beta_{SDI}$
++ $\beta_{precip}$ + $\beta_{tmax}$ + $\beta_{x*SDI}$ + $\beta_{x*precip}$+ $\beta_{x*tmax}$ + $\beta_{SDI*precip}$ + $\beta_{SDI*tmax}$ + $\beta_{tmax*precip}$
+
+**Priors:**
+Priors are mostly non-informative:
+$$ tau_{DBH} \sim gamma(16, 8)\\
+\tau_{inc} \sim normal(91, 4.54)\\
+\tau_{add} \sim gamma(1,1)\\
+\tau_{PLOT} \sim gamma(1,0.1)\\
+\mu \sim normal(0.5, 0.5)\\
+\beta_{x} \sim normal(0, 0.001)\\
+\beta_{SDI} \sim normal(0, 0.001)\\
+\beta_{precip} \sim normal(0, 0.001)\\
+\beta_{tmax} \sim normal(0, 0.001)\\
+\beta_{x*SDI} \sim normal(0, 0.001)\\
+\beta_{x*precip} \sim normal(0, 0.001)\\
+\beta_{x*tmax} \sim normal(0, 0.001)\\
+\beta_{SDI*precip} \sim normal(0, 0.001)\\
+\beta_{SDI*tmax} \sim normal(0, 0.001)\\
+\beta_{precip*tmax} \sim normal(0, 0.001)$$
+
+
+Note that we also include a plot level random effect that modifies the intercept $\alpha_{plot}$. We are also working on including a plot level random effect that modifies the effect of DBH on the current year's growth. 
+
+
+### JAGS implementation of the STAGE1 model
+
+```{r  eval = FALSE  }
+
+TreeDataFusionMV = "model{
+
+  ### Loop over all individuals
+  for(i in 1:ni){
+  
+  #### Data Model: DBH
+  for(t in 1:nt){
+  z[i,t] ~ dnorm(x[i,t],tau_dbh)
+  }
+  
+  #### Data Model: growth
+  for(t in 2:nt){
+  inc[i,t] <- x[i,t]-x[i,t-1]
+  y[i,t] ~ dnorm(inc[i,t],tau_inc)
+  }
+  
+  #### Process Model
+  for(t in 2:nt){
+  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX_PLOT[PLOT[i]]*(x[i,t-1]-30) + betaX2*(x[i,t-1]-30)^2 + betaX_SDI*(x[i,t-1]-30)*SDI[i] + betaX_wintP.wateryr*(x[i,t-1]-30)*wintP.wateryr[i,t] + betaX_tmax.fallspr*(x[i,t-1]-30)*tmax.fallspr[i,t] + betaSDI*Xf[rep[i],1]  + betaSDI_wintP.wateryr*SDI[i]*wintP.wateryr[i,t]  + betaSDI_tmax.fallspr*SDI[i]*tmax.fallspr[i,t]  + betatmax.fallspr_wintP.wateryr*tmax.fallspr[i,t]*wintP.wateryr[i,t] + betawintP.wateryr*wintP.wateryr[i,t] + betatmax.fallspr*tmax.fallspr[i,t]
+  x[i,t]~dnorm(Dnew[i,t],tau_add)
+  }
+  
+  ## initial condition
+  x[i,1] ~ dnorm(x_ic,tau_ic)
+  }  ## end loop over individuals
+
+   for(k in 1:290){
+    alpha_PLOT[k] ~ dnorm(0,tau_PLOT)
+   betaX_PLOT[k] ~ dnorm(betaX,tau_PLOT_slope)
+    
+}
+
+  
+  #### Priors
+  tau_dbh ~ dgamma(a_dbh,r_dbh)
+  tau_inc ~ dnorm(a_inc,r_inc)
+  tau_add ~ dgamma(a_add,r_add)
+  mu ~ dnorm(0.5,0.5)
+  betaSDI~dnorm(0,0.001)
+  betaX ~dnorm(0,0.001)
+  betaX2 ~dnorm(0,0.001)
+  betaX_SDI ~dnorm(0,0.001)
+  betaX_wintP.wateryr ~dnorm(0,0.001)
+  betaX_tmax.fallspr ~dnorm(0,0.001)
+
+  betaSDI_wintP.wateryr~dnorm(0,0.001)
+  betaSDI_tmax.fallspr~dnorm(0,0.001)
+  betatmax.fallspr_wintP.wateryr~dnorm(0,0.001)
+  betawintP.wateryr~dnorm(0,0.001)
+  betatmax.fallspr~dnorm(0,0.001)
+  tau_PLOT ~ dgamma(1,0.1)
+  au_PLOT_slope ~ dgamma(1,0.1)
+ }"
+```
+
+
+### Running the model from R:
+ Note that the full code to write out the model is on github: "https://github.com/Kah5/pecan/blob/working/modules/data.land/R/InventoryGrowthFusion_unif.R"
+But the calls from rjags are specified below:
+
+```{r eval = FALSE }
+library(rjags)
+
+
+## SET JAGS initial conditions
+  init   <- list()
+  source("pecan/modules/data.land/R/mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
+  if(is.mcmc.list(restart)){
+    init <- mcmc.list2initIGF(restart)
+    nchain <- length(init)
+  } else {
+    nchain <- 3
+    for (i in seq_len(nchain)) {
+      y.samp <- sample(data$y, length(data$y), replace = TRUE)
+      z0ragged <- z0 # lines for z0ragged come from mikes "fix" to help with tree w/no cores
+      for(j in 1:data$ni){ # 1: number of individuals
+        # this creates z0ragged, where we only have z0 for trees w/ cores during the time period of the cores &
+        # we only have z0 for trees w/out cores after the time where we have DBH measurements.
+        # this could help with model fitting
+        if(data$startyr[j]>1){
+          z0ragged[j,1:(data$startyr[j]-1)] <- NA
+        }
+        if(data$endyr[j]<data$nt){
+          z0ragged[j,(data$endyr[j]+1):data$nt] <- NA
+        }
+      }
+      init[[i]] <- list(x = z0ragged, 
+                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_dbh = 1, 
+                        tau_inc = 90,
+                        tau_ind = 50, 
+                        tau_yr = 100,
+                        betaX2 = 0, 
+                        ind = rep(0, data$ni),  
+                        year = rep(0, data$nt))
+    }
+  }
+ print("COMPILE JAGS MODEL")    
+  j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
+  
+  if(n.burn > 0){
+    print("BURN IN")
+    jags.out <- coda.samples(model = j.model, 
+                             variable.names = burnin.variables, 
+                             n.iter = n.burn)
+    if (burnin_plot) {
+      plot(jags.out)
+    }
+  }
+  
+  print("RUN MCMC")
+  load.module("dic")
+  for(k in avail.chunks){
+    
+    ## determine whether to sample states
+    if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
+      vnames <- c("x",out.variables)   ## save x periodically (this actually always saves x, from my experience)
+    } else {
+      vnames <- out.variables
+    }
+    
+    ## sample chunk
+    jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    
+    ## save chunk
+    ofile <- paste0(output.folder, model.name ,".",k,".RData")
+    print(ofile)
+    save(jags.out,file=ofile)
+    
+    ## update restart
+    if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
+      ofile <- paste0(output.folder,"IGF",".",model.name,".","RESTART.RData")
+      jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
+      k_restart = k + 1  ## finished k, so would restart at k+1
+      save(jags.final,k_restart,file=ofile)
+    }
+    if(breakearly == TRUE){
+      ## check for convergence and break from loop early
+      D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
+      gbr <- coda::gelman.diag(D)$psrf[1,1]
+      trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
+      if(gbr < 1.005 & abs(trend) < 0.5) break
+    }
+  }
+  
+  print(paste("end of MCMC", Sys.time()))
+```
+
+### Stage 1 model convergence:
+Model parameters converge according to traceplots, but not all plot random effects have gelman-rubin stats <1.1, though most are close (Fig 1). We estimate reasonable effects for the model (Fig 2), and are doing *okay* at predicting tree growth & DBH (Fig 3), though we may be underestimating high growth and over estimating low growth (more on that later...)
+
+
+```{r echo=FALSE, fig.show='hold', fig.cap="Fig 1. Traceplots for full state-space model with informative uniform prior on tau_inc", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/X_X2_xscaled_traceplots_adapt10000_resized.png")
+```
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 2. Main effects plots for Stage 1 model", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Full_effects_X2_Xscaled_plotrand_slope100000nadapt.png"))
+```
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Posterior estimates of DBH and tree ring increment & Predicted tree ring increment vs Measured tree ring increment (within sample)", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c(  "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/X2_Xscaled_plotrand_slope_hyp_v4_pred_obs_all.png"))
+```
+
+### STAGE2 model: 
+Fitting state space model on trees with only repeat DBH measurements (no increment cores). 
+
+This uses the same model framework, but we specify informative priors for all parameters, and we only estimate over the time period where we have DBH measurements (1996-2010)
+
+#### JAGS implementation of the STAGE1 model
+
+```{r  eval = FALSE  }
+
+TreeDataFusionMVNpriors = "
+model{
+
+  ### Loop over all individuals
+  for(i in 1:ni){
+  
+  #### Data Model: DBH
+  for(t in 1:nt){
+  z[i,t] ~ dnorm(x[i,t],tau_dbh)
+  }
+  
+  #### Data Model: growth
+  for(t in 2:nt){
+  inc[i,t] <- x[i,t]-x[i,t-1]
+  y[i,t] ~ dnorm(inc[i,t],tau_inc)
+  }
+  
+  #### Process Model
+  for(t in 2:nt){
+  Dnew[i,t] <- x[i,t-1] + mu  + betaX*(x[i,t-1]-30) + betaX2*(x[i,t-1]-30)^2 + betaX_SDI*(x[i,t-1]-30)*SDI[i] + betaX_wintP.wateryr*(x[i,t-1]-30)*wintP.wateryr[i,t] + betaX_tmax.fallspr*(x[i,t-1]-30)*tmax.fallspr[i,t] + betaSDI*Xf[rep[i],1]  + betaSDI_wintP.wateryr*SDI[i]*wintP.wateryr[i,t]  + betaSDI_tmax.fallspr*SDI[i]*tmax.fallspr[i,t]  + betatmax.fallspr_wintP.wateryr*tmax.fallspr[i,t]*wintP.wateryr[i,t] + betawintP.wateryr*wintP.wateryr[i,t] + betatmax.fallspr*tmax.fallspr[i,t]
+  x[i,t]~dnorm(Dnew[i,t],tau_add)
+  }
+  
+  ## initial condition
+  x[i,1] ~ dnorm(x_ic,tau_ic)
+  }  ## end loop over individuals
+
+#### Normal priors for the taus
+  tau_dbh ~ dnorm(a_dbh,r_dbh)
+  tau_inc ~ dnorm(a_inc,r_inc)
+  tau_add ~ dnorm(a_add,r_add)
+  mu ~ dnorm(0.5,0.5)
+  
+  #### Multivariate normal Priors
+  all.params[1:11] ~ dmnorm(posterior.param.means[1:11], omega[1:11,1:11])
+  
+  omega <- inverse(sigma.posterior)
+  
+  # hacky specification of priors but it runs
+  betaSDI <- all.params[1]
+  betaSDI_tmax.fallspr <- all.params[2]
+  betaSDI_wintP.wateryr <- all.params[3]
+ 
+  betaX <- all.params[4]
+  betaX2 <- all.params[5]
+  betaX_SDI <- all.params[6]
+  
+  betaX_tmax.fallspr<- all.params[7]
+  betaX_wintP.wateryr <- all.params[8]
+  betatmax.fallspr <- all.params[9]
+  betatmax.fallspr_wintP.wateryr <- all.params[10]
+  betawintP.wateryr <- all.params[11]
+  
+  
+
+ }"
+```
+
+#### Running the STAGE2 model from R:
+ Note that the full code to write out the model is on github: "https://github.com/Kah5/pecan/blob/working/modules/data.land/R/InventoryGrowthFusion_unif.R"
+But the calls from rjags are specified below:
+
+```{r eval = FALSE }
+library(rjags)
+init   <- list()
+  source("pecan/modules/data.land/R/mcmc.list2initIGF.R") # use the new specific mcmc.list2initIGF.R
+  if(is.mcmc.list(restart)){
+    init <- mcmc.list2initIGF(restart)
+    nchain <- length(init)
+  } else {
+    nchain <- 3
+    for (i in seq_len(nchain)) {
+      y.samp <- sample(data$y, length(data$y), replace = TRUE)
+      z0ragged <- z0 # lines for z0ragged come from mikes "fix" to help with tree w/no cores
+      for(j in 1:data$ni){ # 1: number of individuals
+        # this creates z0ragged, where we only have z0 for trees w/ cores during the time period of the cores &
+        # we only have z0 for trees w/out cores after the time where we have DBH measurements.
+        # this could help with model fitting
+        if(data$startyr[j]>1){
+          z0ragged[j,1:(data$startyr[j]-1)] <- NA
+        }
+        if(data$endyr[j]<data$nt){
+          z0ragged[j,(data$endyr[j]+1):data$nt] <- NA
+        }
+      }
+      init[[i]] <- list(x = z0ragged, 
+                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_dbh = posterior.summary[posterior.summary$parameter %in% "tau_dbh",]$means, 
+                        tau_inc = posterior.summary[posterior.summary$parameter %in% "tau_inc",]$means,
+                        #tau_ind = posterior.summary[posterior.summary$parameter %in% "tau_inc",]$means, 
+                        #tau_yr = 100,
+                        #betaX2 = 0, 
+                        ind = rep(0, data$ni),  
+                        year = rep(0, data$nt))
+    }
+  }
+  
+  #-----------------------------------------------------------------------
+  # make sure we also use the values for informative normal priors on taus:
+  #-----------------------------------------------------------------------
+  data$a_add <- posterior.summary[posterior.summary$parameter %in% "tau_add",]$means
+  data$r_add <- 1/posterior.summary[posterior.summary$parameter %in% "tau_add",]$vars
+  
+  data$a_inc <- posterior.summary[posterior.summary$parameter %in% "tau_inc",]$means
+  data$r_inc <- 1/posterior.summary[posterior.summary$parameter %in% "tau_inc",]$vars
+  
+  data$a_dbh <- posterior.summary[posterior.summary$parameter %in% "tau_dbh",]$means
+  data$r_dbh <- 1/posterior.summary[posterior.summary$parameter %in% "tau_dbh",]$vars
+  
+  
+  
+  means <- apply(as.matrix(posterior.ests), 2, mean)
+  vars <- apply(as.matrix(posterior.ests), 2, var)
+  SD <- apply(as.matrix(posterior.ests), 2, sd)
+  
+  # generate data frame with a summary of the posterior estimates
+  posterior.summary <- data.frame(means = apply(as.matrix(posterior.ests), 2, mean),
+                                  vars = apply(as.matrix(posterior.ests), 2, var),
+                                  SD = apply(as.matrix(posterior.ests), 2, sd))
+  posterior.summary$parameter <- rownames(posterior.summary)
+  
+  
+  reduced <- posterior.ests[[1]]
+  
+  posterior.cov.matrix <- cov(posterior.ests[[1]]) # should use all the chains....
+  
+  posterior.mean.matrix <- colMeans(posterior.ests[[1]])
+  
+  # get only the params of interest:
+  posterior.mean.matrix <- posterior.mean.matrix [1:11]
+  posterior.cov.matrix <- posterior.cov.matrix [1:11, 1:11]
+  
+  posterior.mean.matrix <- posterior.mean.matrix[!names(posterior.mean.matrix) %in% c("mu", "deviance")]
+  posterior.cov.matrix <-posterior.cov.matrix [!rownames(posterior.cov.matrix) %in% c("mu", "deviance"),!colnames(posterior.cov.matrix) %in% c("mu", "deviance")]
+  
+  
+  posterior.prec.matrix <- 1/posterior.cov.matrix 
+  
+  data$posterior.param.means = c(posterior.mean.matrix)
+  data$sigma.posterior = posterior.cov.matrix
+  data$P <- length(colnames(data$sigma.posterior))
+  # test model:
+  
+  print("COMPILE JAGS MODEL")    
+  #j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
+  j.model <- jags.model(file = "stage2_tunc_infom_nvm.txt", data = data, inits = init, n.chains = 3)
+  
+  if(n.burn > 0){
+    print("BURN IN")
+    jags.out <- coda.samples(model = j.model, 
+                             variable.names = burnin.variables, 
+                             n.iter = n.burn)
+    if (burnin_plot) {
+      plot(jags.out)
+    }
+  }
+  
+  print("RUN MCMC")
+  load.module("dic")
+  for(k in avail.chunks){
+    
+    ## determine whether to sample states
+    if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
+      vnames <- c("x",out.variables)   ## save x periodically (this actually always saves x, from my experience)
+    } else {
+      vnames <- out.variables
+    }
+    
+    ## sample chunk
+    jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    
+    ## save chunk
+    ofile <- paste0(output.folder, model.name ,".",k,".RData")
+    print(ofile)
+    save(jags.out,file=ofile)
+    
+    ## update restart
+    if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
+      ofile <- paste0(output.folder,"IGF",".",model.name,".","RESTART.RData")
+      jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
+      k_restart = k + 1  ## finished k, so would restart at k+1
+      save(jags.final,k_restart,file=ofile)
+    }
+    if(breakearly == TRUE){
+      ## check for convergence and break from loop early
+      D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
+      gbr <- coda::gelman.diag(D)$psrf[1,1]
+      trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
+      if(gbr < 1.005 & abs(trend) < 0.5) break
+    }
+  }
+  
+  print(paste("end of MCMC", Sys.time()))
+  return(jags.out)
+```
+
+### Stage 2 model convergence
+When we fit stage 2 with 2000 trees with repeat dbh measurements, but not increment cores (out of 5794 such trees), we get reasonable convergence by traceplots (Fig 4). However as we scale up to include 5794 trees, we don't see good mixing and convergence, even after MCMC 60,000 iterations (Fig 5).
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 4. Traceplots for Stage2 w/ 2000 trees without increment cores", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c(  "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/X_X2_mvn_stage2_2000.png"))
+```
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 5. Traceplots for Stage2 w/ 5794 trees without increment cores", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c(  "/Users/kah/Documents/docker_pecan/pecantest.stage2.xscaled.5794.mvn_traceplots.png"))
+```
+
+### Current Workflow:
+Currently, these models are run using Cyverse in a VICE app with rstudio and jags. This has been helpful when testing out different models and debugging. However as model times are increasing, and as we settle on a working model, we may need to think about different computational options. 
+
+### Current Issues and potential solutions
+1. improving convergence in the stage 2 model
+  -parallelizing jags
+  -speed up mcmc sampling w/a different sampler
+  
+2. Overestimating low growth and underestimating high growth
+  -we may be underestimating climate sensitivity in stage one (?)
+  -are we missing the important climate variables?
+  
+3. Model speed:
+  - it talks ~6 hours to run the stage 1 model w/40,000 MCMC iterations
+  - it takes ~12 hours - several days to run stage 2, depending on how many trees we include
+
+### Scaling up to the Interior West
+Currently, we are reaching some convergence and computational limits within Arizona as we add data (5794 trees with ~13/15 unobserved data points), which suggests we will need to alter our approach as we scale out to the entire interior west. Perhaps this might involve fitting region specific models, switching to a KF for trees without increment cores, or some other clever way of adding more data.
+
+### Scaling up to plot biomass
+This is another type of scaling problem, where we will need to convert DBH to tree biomass, and also include biomass changes from other trees in the plot. Currently, this seems like less of a computational issue than scaling to the interior west. 
+
+

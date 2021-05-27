@@ -1,0 +1,69 @@
+---
+title: "Stage 1 Experimenting with non-identifiability"
+author: "Kelly Heilman"
+date: "2/13/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(fig.path='figure/graphics-', 
+                 cache.path='cache/graphics-', 
+                 fig.align='center',
+                 external=TRUE,
+                 echo=TRUE,
+                 warning=FALSE,
+                 fig.pos='H'
+                )
+library(rjags)
+library(psych)
+library(tidyr)
+library(tidyverse)
+```
+
+#### **Inventory Growth Fusion Stage 1:**
+
+Several posterior parameter correlations are driving some potential non-identifability--namely X, X2, any interaction between a fixed effect and X, and X and mu. So, we test to see whether more simified models fix this.
+
+1. No Site Index fixed effects
+2. No Site Index fixed effect, and no X interactions
+3. No Site Index fixed effects, Tree random intercept
+4. No Site Index fixed effects, Tree random intercept
+
+
+#### **Stage 1 with No Site Index fixed effects**
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 1. Traceplots for full Stage 1 model with no SI", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/stage1v2_wX2_noSI_traceplots.png")
+```
+
+#### **Stage 1 with no Site Index fixed effect, and no X2** 
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Posterior Parameter correlations for stage 2", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/stage1v2_noX2_noSI_traceplots.png")
+```
+
+#### **Stage 1 with tree level random effects**
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Posterior Parameter correlations for stage 2", fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Stage1_full_Tree_random_int_noSI_noint_traceplots.png")
+```
+
+
+#### **Posterior parameter correlation suggests that Mu & DBH effect are correlated**
+
+```{r echo=FALSE,fig.show='hold', fig.cap=" ", out.width = '100%', out.height='100%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Stage1_full_Tree_random_int_noSI_noint_posterior_param_cors.png")
+```
+
+#### **Basic Data Plots**
+```{r echo=FALSE,fig.show='hold', fig.cap=" ", out.width = '50%', out.height='40%', fig.align='center', fig.pos = "bottom"}
+knitr::include_graphics("/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/basic_DBH_tree_width_data_plots.png")
+```
+
+
+#### **Effects of Maximum liklihood models with tree random slopes for climate**
+
+#### **Next Steps**
+

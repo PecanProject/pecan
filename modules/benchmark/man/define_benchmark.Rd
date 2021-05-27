@@ -4,7 +4,7 @@
 \alias{define_benchmark}
 \title{Benchmark Definition: Retrieve or Create Bety Benchmarking Records}
 \usage{
-define_benchmark(bm.settings, bety)
+define_benchmark(settings, bety)
 }
 \arguments{
 \item{bm.settings}{settings list}

@@ -15,7 +15,7 @@ To learn about GitHub, it is worth taking some time to read through the [FAQ](ht
 
 ### Reporting a bug
 
-1. (For developers) work through debugging (see [debugging](debugging.md) wiki). 
+1. (For developers) work through debugging.
 2. Once you have identified a problem, that you can not resolve, you can write a bug report
 3. Write a bug report
 4. submit the bug report

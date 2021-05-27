@@ -22,5 +22,5 @@ none
 Writes config files for use with FATES.
 }
 \author{
-Mike Dietze
+Mike Dietze, Shawn Serbin
 }

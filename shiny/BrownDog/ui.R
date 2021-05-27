@@ -8,14 +8,13 @@ ui <- shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      selectInput("type", "Type", c("AmeriFlux", "FLUXNET", "NARR")),
-      uiOutput("agreementUI"),
+    uiOutput("typeSelector"),      
+    uiOutput("agreementUI"),
       textInput("start_date", "Start year", placehold="2001"),
       textInput("end_date", "End year", placehold="2001"),
       textInput("token", "BrownDog Token"),
       conditionalPanel(
-        condition = "input.token != ''",
-        selectInput("model", "Model", c("pecan.zip", "clim"))
+        condition = "input.token != ''", uiOutput("modelSelector")
       )
     ),
     mainPanel(

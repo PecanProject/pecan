@@ -30,7 +30,8 @@ Imports:
 Suggests:
     coda,
     MASS,
-    ncdf4
+    ncdf4,
+    testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

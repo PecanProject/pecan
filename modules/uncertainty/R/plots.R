@@ -37,7 +37,6 @@
 ##' do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
 plot_variance_decomposition <- function(plot.inputs, 
                                         fontsize = list(title = 18, axis = 14)) {
-  library(ggmap)
   theme_set(theme_classic() + theme(axis.text.x = element_text(size = fontsize$axis, vjust = -1),
                                     axis.text.y = element_blank(), axis.ticks = element_blank(), 
                                     axis.line = element_blank(), axis.title.x = element_blank(), 

@@ -67,3 +67,5 @@ samp_series <- invert.auto(observed = y,
                            save.samples = save.samples, 
                            parallel = FALSE)
 output_tests(samp_series)
+
+file.remove(fname_expect, save.samples)

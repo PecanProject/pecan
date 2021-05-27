@@ -14,7 +14,9 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     settings$run$inputs <- NULL  ## check for empty set
   }
   
-  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
+  dbfiles.local <- settings$database$dbfiles
+  dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
+  PEcAn.utils::logger.debug("do.conversion outdir",dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
@@ -23,6 +25,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
     
     input.tag <- names(settings$run$input)[i]
+    PEcAn.utils::logger.info("PROCESSING: ",input.tag)
     
     ic.flag <- fia.flag <- FALSE
     
@@ -49,10 +52,21 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       needsave <- TRUE
     }
     
+    # soil extraction
+    if(input.tag == "soil"){
+      settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles.local,overwrite=FALSE)
+      needsave <- TRUE
+      ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
+      ## because many models will read PEcAn standard in write.configs and write out into settings
+      ## which is done locally in rundir and then rsync'ed to remote
+      ## rather than having a model-format soils file that is processed remotely
+    }
+    
     # met conversion
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-      if (is.null(input$path) && (status.check(name) == 0)) {
+      if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
+        PEcAn.utils::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
@@ -64,14 +78,15 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
             browndog   = settings$browndog,
+            spin       = settings$spin,
             overwrite  = overwrite.met)
-        
+        PEcAn.utils::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
         needsave <- TRUE
       }
     }
   }
   if (needsave) {
-    saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+    XML::saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
     settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }

@@ -55,7 +55,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("AbvGrndWood" %in% variables) {
-    analysis.save[[2]] <- new.state$AbvGrndWood * 1000  #kgC/m2 -> g/m2 #no (1-.2-.2) because that's on sipnet side
+    analysis.save[[2]] <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")#no (1-.2-.2) because that's on sipnet side
     names(analysis.save[[2]]) <- c("plantWood")
   }
   

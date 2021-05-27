@@ -1,0 +1,1442 @@
+---
+title: "PIPO data exploration"
+output:
+  pdf_document: default
+  html_document: default
+date: "September 10, 2019"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(corrplot)
+library(Hmisc) # You need to download it first.
+library(maps)
+library(sp)
+library(rgeos)
+library(cowplot)
+library(kableExtra, quietly = TRUE)
+```
+
+# Initial data exploration for Arizona Pinus Ponderosa data
+
+
+```{r, echo = FALSE }
+AZ.PIPO <- read.delim("/Users/kah/Documents/docker_pecan/pecan/FIA_inc_data/AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
+
+### merge together three diameter columns
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
+AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$DIA), AZ.PIPO$DBH, AZ.PIPO$DIA) # replace missing data with DBH recorded from core mounts (DBH)
+
+### filter out those cases where DIA is NA...no size information
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$DIA),] # 793 trees
+### filter out cases where covariate data are missing (SICOND and SDI)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$COND_SICOND),] # 643 trees...~150 missing SICOND. Justin suggests they may be PJ (will never have SICOND)
+AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
+
+### problem: in minority of cases, the difference between MEASYEAR and DateEnd is other than 0 or 1
+### filter out those cases
+temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
+temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
+
+
+# lets explore the tree ring data:
+
+
+### read in function that creates jags objects from above data
+source("/Users/kah/Documents/docker_pecan/pecan/modules/data.land/R/BuildJAGSdataobject.R")
+#jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
+# if you don't have trees without cores, use the following line
+# or you wish to not include trees without cores
+jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
+data <- jags.stuff$data
+z0 <- jags.stuff$z0
+cov.data <- jags.stuff$cov.data
+time_data <- jags.stuff$time_data
+
+data$a_dbh <- 512
+data$r_dbh <- 256
+
+test.melt <- melt(time_data)
+colnames(test.melt) <- c("TreeID", "YearID", "Value", "Climate")
+
+
+clim.spread <- test.melt %>% group_by(TreeID, YearID) %>% spread(Climate, Value)
+# each climate variable has 45 years (columns) & 544 cores (rows)
+
+
+
+```
+
+
+# Timeseries of standardized climate variables & tree ring increment
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+
+year.df <- data.frame(YearID = unique(clim.spread$YearID),
+                      year = 1966:2010)
+
+clim.spread <- left_join(clim.spread, year.df, by = "YearID")
+
+
+# Visualize TRW data:
+#length(unique(clim.spread$TreeID)) # 544
+
+trw <- melt(data$y)
+colnames(trw) <- c("TreeID", "year", "Width")
+
+dbh <- melt(data$z)
+colnames(dbh) <- c("TreeID", "year", "DBH")
+
+dbh.tv <- melt(z0)
+colnames(dbh.tv) <- c("TreeID", "year", "DBH.est")
+
+
+# plot ring widths:
+#ggplot(trw, aes(Year, Width, group = TreeID))+geom_line(color = "black", alpha = 0.1)+theme_bw()
+# 1989+1990 have v small growth for most cores in AZ
+
+
+quants.trw.med <- trw %>% group_by(year) %>% summarise(trw.med = quantile(Width, 0.5, na.rm = TRUE),
+                                                                    trw.lo = quantile(Width, 0.025, na.rm = TRUE), 
+                                                                    trw.hi = quantile(Width, 0.975, na.rm = TRUE), 
+                                                                    trw.sd = sd(Width, na.rm = TRUE))
+
+
+TRW.series <- ggplot()+geom_line(data = trw, aes(year, Width, group = TreeID),color = "black", alpha = 0.1, na.rm=TRUE)+theme_bw()+
+  geom_line(data = quants.trw.med, aes(year, trw.med), color = "red", na.rm=TRUE)+ylab("Increment")
+
+```
+
+
+
+```{r,  echo=FALSE, message = FALSE, suppress.warnings = TRUE}
+# join the trw with the climate dataframe
+
+# read in non-scaled prism climate:
+prism.data <- readRDS("/Users/kah/Documents/docker_pecan/pecan/PRISM_non_scaled.rds")
+prism.melt <- melt(prism.data)
+colnames(prism.melt) <- c("TreeID", "YearID", "Value", "Unscaled_Climate")
+prism.spread <- prism.melt %>% group_by(TreeID, YearID) %>% spread(Unscaled_Climate, Value)
+
+mean.clim <- prism.spread %>% dplyr::group_by(TreeID)%>% dplyr::summarise(MAP = mean(wintP.wateryr),
+                                                 TMAXfall.spr.mean = mean(tmax.fallspr), 
+                                                 TMAX.mean = mean(TMAX))
+
+trw.clim <- merge(trw, clim.spread, by = c("TreeID", "year"))
+
+trw.dbh.clim <- merge(trw.clim, dbh, by = c("TreeID", "year"))
+
+trw.dbh.est.clim <- merge(trw.dbh.clim, dbh.tv, by = c("TreeID", "year"))
+
+trw.dbh.est.clim <- merge(trw.dbh.est.clim , mean.clim, by = "TreeID")
+
+plot.data.unscaled <- data.frame(LON = temp2$PLOT_LON,
+           LAT = temp2$PLOT_LAT, 
+           PLOT = cov.data$PLOT,
+           ELEV = temp2$PLOT_ELEV,
+           SDI = temp2$SDI, 
+           SICOND = temp2$COND_SICOND, 
+           TreeID = as.character(1:544),
+           SLOPE = cov.data$SLOPE, 
+           ASPECT = cov.data$ASPECT, 
+           
+           STAGE2 = cov.data$STAGE2, 
+           STAGE3 = cov.data$STAGE3, 
+           STDAGE = cov.data$STDAGE, 
+           TRTCD1 = temp2$COND_TRTCD1, 
+           DSTRBCD1 = temp2$COND_DSTRBCD1, 
+           DSTRBCD2 = temp2$COND_DSTRBCD2,
+           DSTRBCD3 = temp2$COND_DSTRBCD3)
+
+
+#Calculating solar variables and angles
+
+DOY <- 1:365
+
+solar <- Solar(DOY, Lat = 33.93097 , Lon=-109.756, SLon=0, DS=0, Elevation = 8400, Slope = 10, Aspect = 0)
+
+#Note: only the difference between Lon and SLon matters not each value
+
+par(mfrow=c(3,1))
+plot(DOY, solar$Altitude, ylim = c(-90,90))
+plot(DOY, solar$Azimuth, col= 'red')
+
+plot(DOY, solar$Sdiropen)
+lines(DOY, solar$Sdifopen, col='red')
+
+# for each row in plot.data.unscaled, generate Solar radiation caluclation:
+solar <- list()
+plot.data.unscaled$max.open.solar <- NA
+
+for(i in 1:length(plot.data.unscaled$LON)){
+  DOY <- 1:365
+
+solar[[i]] <- Solar(DOY, Lat = plot.data.unscaled[i,]$LAT , Lon=plot.data.unscaled[i,]$LON, SLon=0, DS=0, Elevation = plot.data.unscaled[i,]$ELEV, Slope = plot.data.unscaled[i,]$SLOPE, Aspect = plot.data.unscaled[i,]$ASPECT)
+plot.data.unscaled[i,]$max.open.solar <- max(solar[[i]]$Sopen, na.rm = TRUE)
+
+}
+
+# plot(DOY, solar[[1]]$Sopen)
+# lines(DOY, solar[[2]]$Sopen, col = "red")
+# lines(DOY, solar[[12]]$Sopen, col = "red")
+# lines(DOY, solar[[14]]$Sopen, col = "red")
+# lines(DOY, solar[[104]]$Sopen, col = "red")
+
+
+full.data <- merge(trw.dbh.est.clim, plot.data.unscaled, by = "TreeID")
+
+
+# the DBH measurements vs widths in that year show no relationship
+DBH.width <- ggplot(full.data, aes(DBH, Width))+geom_point()+stat_smooth()
+
+DBH.width.est <- ggplot(full.data, aes(DBH.est, Width, color = as.character(TreeID)))+geom_point()+stat_smooth(method = "gam",se = FALSE)+theme(legend.position ="none")
+
+
+ggplot(full.data, aes(DBH.est, Width, color = as.character(SICOND)))+geom_point()+stat_smooth(method = "gam",se = FALSE)+theme(legend.position ="none")
+
+ggplot(full.data, aes(DBH.est, Width, color = MAP))+geom_point(size = 0.5)+theme()+scale_color_gradient(low = "red", high = "blue")
+
+ggplot(full.data, aes(DBH.est, Width, color =TMAX.mean))+geom_point(size = 0.5)+theme()+scale_color_gradient(low = "red", high = "blue")
+# group into low medium and high siconde
+
+full.data$SI.group <- ifelse(full.data$SICOND <=35, "LOW SI (0-35)",
+                             ifelse(full.data$SICOND > 35 & full.data$SICOND <= 55, "MEDIUM SI (35-55)","HIGH SI (55-80)"))
+
+ggplot(full.data, aes(DBH.est, Width, color = SI.group))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~SI.group)
+
+png(height = 4, width = 8, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/basic_DBH_tree_width_data_plots.png")
+cowplot::plot_grid(DBH.width, DBH.width.est, ncol = 2)
+dev.off()
+
+
+full.data$MAP.group <- ifelse(full.data$MAP <=400, 1,
+                              ifelse(full.data$MAP > 400 & full.data$MAP <= 500, 2,
+                                     ifelse(full.data$MAP > 500 & full.data$MAP <= 600, 3,
+                                            ifelse(full.data$MAP > 600 & full.data$MAP <= 700, 4,
+                                                   ifelse(full.data$MAP > 700 & full.data$MAP <= 800, 5,
+                                                          ifelse(full.data$MAP > 800 & full.data$MAP <= 900, 6,7))))))
+
+
+hist(full.data$MAP.group)
+full.data$MAP.class <- ifelse(full.data$MAP.group %in% 1, "<=400",
+                              ifelse(full.data$MAP.group %in% 2, "400-500",
+                                     ifelse(full.data$MAP.group %in% 3, "500-600",  ifelse(full.data$MAP.group %in% 4, "600-700",
+                                                   ifelse(full.data$MAP.group %in% 5, "700-800",
+                                                          ifelse(full.data$MAP.group %in% 6, "800-900",">=900"))))))
+
+
+
+full.data$MAP.class <- factor(full.data$MAP.class, levels = c("<=400", "400-500", "500-600", "600-700", "700-800", "800-900", ">=900"))
+  
+png(height = 4, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_vs_DBH_byMAP.png")
+ggplot(full.data, aes(DBH.est, Width, color = MAP.class))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP.class, ncol =4)
+dev.off()
+
+ggplot(full.data, aes(DBH.est, Width, color = MAP, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~SI.group, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = MAP, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~DSTRBCD1, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = TMAX.mean, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~SI.group, ncol = 4)
+
+# find total change in DBH over time 
+
+delta.DBHs <- full.data %>% group_by(TreeID) %>% summarise(delta.DBH = max(DBH.est, na.mr = TRUE) - abs(min(DBH.est, na.rm = TRUE)), 
+                                                           avg.width = mean(Width, na.rm=TRUE), 
+                                                           sd.width = sd(Width, na.rm=TRUE))
+
+
+
+ggplot(delta.DBHs, aes(delta.DBH, sd.width))+geom_point()
+
+full.data <- merge(full.data, delta.DBHs, by = "TreeID")
+
+
+ggplot(full.data, aes(DBH.est, Width, color = delta.DBH, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~SI.group, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color =max.open.solar, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~SI.group, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = delta.DBH, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP.group, ncol = 4)
+
+full.data$MAP15 <- as.numeric(cut2(full.data$MAP, g=15))
+full.data$SI15 <- as.numeric(cut2(full.data$SI, g=15))
+full.data$ELEV10 <- as.numeric(cut2(full.data$ELEV, g=10))
+full.data$ELEV5 <- as.numeric(cut2(full.data$ELEV, g=5))
+
+
+
+ggplot(full.data, aes(DBH.est, Width, color = delta.DBH, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = SDI, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = SICOND, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = SLOPE, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = as.character(DSTRBCD1), group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+ggplot(full.data, aes(DBH.est, Width, color = max.open.solar, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+# stand density vs total change in dbh 
+# high stand density = little change in DBH, low stand density = high variability in dbh change over time
+
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/SDI_delta_DBH.png")
+ggplot(full.data, aes(SDI, delta.DBH, color = MAP))+geom_point( size = 1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SDI")+scale_color_gradientn(colours = pal)
+dev.off()
+
+ggplot(full.data, aes(SDI, delta.DBH, color =as.character(MAP15)))+geom_point( size = 0.5)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SDI")
+
+ggplot(full.data, aes(SICOND, delta.DBH, color = MAP))+geom_point()+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SICOND")+scale_color_gradientn(colours = pal)
+
+pal <- wes_palette("Zissou1", 100, type = "continuous")
+
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/MAP_delta_DBH.png")
+ggplot(full.data, aes(MAP, delta.DBH, color = MAP))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("MAP")+scale_color_gradientn(colours = pal)
+dev.off()
+
+
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/MAP_avg.width.png")
+ggplot(full.data, aes(MAP, avg.width, color = sd.width))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Average Ring Width")+xlab("MAP")
+dev.off()
+
+
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/MAT_avg.width.png")
+ggplot(full.data, aes(TMAX.mean, avg.width, color = sd.width))+geom_point(size = 0.5)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Average Ring Width")+xlab("TMAX normals")+scale_color_gradientn(colours = pal)
+dev.off()
+
+
+
+
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/MAT_MAP.png")
+ggplot(full.data, aes(TMAX.mean, MAP, color = avg.width))+geom_point()+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Average Ring Width")+xlab("TMAX normals")+scale_color_gradientn(colours = pal)  #+scale_color_viridis(option = "D")
+dev.off()
+
+png(height = 4, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_avg_MAP.png")
+ggplot(full.data, aes(MAP.class, Width, group = MAP.class, fill = MAP.group))+geom_boxplot()+theme_bw() + ylab("Tree Ring Width") + xlab("Mean annual precipitation (mm)")
+dev.off()
+
+
+
+full.data$FIREYR1 <- ifelse(full.data$DSTRBCD1 %in% "30", "Fire", NA)
+full.data$FIREYR2 <- ifelse(full.data$DSTRBCD2 %in% "30", "Fire", NA)
+full.data$FIREYR3 <- ifelse(full.data$DSTRBCD3 %in% "30", "Fire", NA)
+
+View(full.data[,c("FIREYR1", "FIREYR2", "FIREYR3")])
+
+full.data$FIRE.presence <- ifelse(is.na(full.data$FIREYR1) & is.na(full.data$FIREYR2) & is.na(full.data$FIREYR2), "none", 
+                          ifelse(is.na(full.data$FIREYR1), full.data$FIREYR2, full.data$FIREYR1))
+
+
+
+
+ggplot(full.data, aes(SICOND, delta.DBH, color = FIRE.presence))+geom_point()+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SICOND")
+
+ggplot(full.data, aes(SDI, delta.DBH, color = as.character(ELEV10)))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SDI")
+
+ggplot(full.data, aes(SDI, delta.DBH, color = as.character(ELEV5)))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+ylab("Total Change in DBH")+xlab("SDI")
+
+ggplot(full.data, aes(DBH.est, Width, color =as.character(ELEV5)), group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+
+png(height = 8, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_dbh_by_fire.png")
+ggplot(full.data, aes(DBH.est, Width, color = FIRE.presence, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)
+dev.off()
+
+
+png(height = 8, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_dbh_by_elev.png")
+ggplot(full.data, aes(DBH.est, Width, color = ELEV, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)+scale_color_gradientn(colours = pal) 
+dev.off()
+
+png(height = 8, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_dbh_by_SDI.png")
+ggplot(full.data, aes(DBH.est, Width, color = SDI, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)+scale_color_gradientn(colours = pal) 
+dev.off()
+
+
+
+png(height = 8, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_dbh_by_SDI.png")
+ggplot(full.data, aes(DBH.est, Width, color = SICOND, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)+scale_color_gradientn(colours = pal) 
+dev.off()
+
+
+
+png(height = 8, width = 8, units = "in", res = 300, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/Width_dbh_by_max.open.solar.png")
+ggplot(full.data, aes(DBH.est, Width, color = max.open.solar, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)+scale_color_gradientn(colours = pal) 
+dev.off()
+
+
+# lets get the slope and intercept of DBH vs witdth for all trees:
+ints.slopes <- list()
+for(i in 1:length(unique(full.data$TreeID))){
+  treeid <- unique(full.data$TreeID)
+  lm.summary<- summary(lm(Width ~ DBH.est,data = full.data[full.data$TreeID %in% treeid[i],]))
+  ints.slopes[[i]] <- data.frame(TreeID = treeid[i],
+             intercept = lm.summary$coefficients[1,1], 
+             slope = lm.summary$coefficients[2,1])
+  }
+ints.slopes.df <- do.call(rbind, ints.slopes)
+
+full.data <- merge(full.data, ints.slopes.df, by = "TreeID")
+
+
+# get slopes and intecepts for individual relationships between widht and cliamte
+clim.slopes <- list()
+for(i in 1:length(unique(full.data$TreeID))){
+  treeid <- unique(full.data$TreeID)
+  lm.summary<- summary(lm(Width ~ wintP.wateryr,data = full.data[full.data$TreeID %in% treeid[i],]))
+  lm.summary.tmax<- summary(lm(Width ~ tmax.fallspr,data = full.data[full.data$TreeID %in% treeid[i],]))
+  clim.slopes[[i]] <- data.frame(TreeID = treeid[i],
+             intercept.ppt = lm.summary$coefficients[1,1], 
+             slope.ppt = lm.summary$coefficients[2,1],
+             intercept.tmax = lm.summary.tmax$coefficients[1,1], 
+             slope.tmax = lm.summary.tmax$coefficients[2,1])
+  }
+clim.slopes.df <- do.call(rbind, clim.slopes)
+full.data <- merge(full.data, clim.slopes.df, by = "TreeID")
+
+ggplot(full.data, aes(intercept, avg.width, color = max.open.solar, group = TreeID))+geom_point(alpha = 0.25, size = 0.1)+stat_smooth(method = "gam",se = FALSE)+theme_bw()+facet_wrap(~MAP15, ncol = 4)+scale_color_gradientn(colours = pal) 
+
+
+ggplot(full.data, aes(MAP15, slope, fill = as.character(MAP15)))+geom_boxplot()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+
+ggplot(full.data, aes(MAP15, intercept, fill = as.character(MAP15)))+geom_boxplot()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+ggplot(full.data, aes(MAP, intercept))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+ggplot(full.data, aes(MAP, slope, color = FIRE.presence))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+# make plots for the slope 
+
+sl.elev.map<- ggplot(full.data, aes(ELEV, slope, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Elevation") + ylab("DBH-width slope")
+
+
+
+sl.map.si<- ggplot(full.data, aes(MAP, slope, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("MAP") + ylab("DBH-width slope")
+
+
+
+
+sl.map.sdi<- ggplot(full.data, aes(MAP, slope, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("MAP") + ylab("DBH-width slope")
+
+
+
+sl.sdi.map<- ggplot(full.data, aes(SDI, slope, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("SDI") + ylab("DBH-width slope")
+
+sl.si.map<- ggplot(full.data, aes(SICOND, slope, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("SICOND") + ylab("DBH-width slope")
+
+sl.map.tmax<- ggplot(full.data, aes(MAP, slope, color = TMAX.mean))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("MAP") + ylab("DBH-width slope")
+
+sl.sr.map<- ggplot(full.data, aes(max.open.solar, slope, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Open solar radiation") + ylab("DBH-width slope")
+
+# make plots for the intercept of the dbh-width lines
+int.elev.map <-ggplot(full.data, aes(ELEV, intercept, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Elevation") + ylab("DBH-width intercept")
+
+
+int.map.si <- ggplot(full.data, aes(MAP, intercept, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("MAP") + ylab("DBH-width intercept")
+
+int.map.tmax <-ggplot(full.data, aes(MAP, intercept, color =TMAX.mean))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("MAP") + ylab("DBH-width intercept")
+
+
+int.map.sdi <-ggplot(full.data, aes(MAP, intercept, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("MAP") + ylab("DBH-width intercept")
+
+
+int.sdi.map <-ggplot(full.data, aes(SDI, intercept, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("SDI") + ylab("DBH-width intercept")
+
+int.si.map <-ggplot(full.data, aes(SICOND, intercept, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("SICOND") + ylab("DBH-width intercept")
+
+
+int.sr.map <-ggplot(full.data, aes(max.open.solar, intercept, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("open solar radiation") + ylab("DBH-width intercept")
+
+
+png(height = 6, width = 16, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/dbh.est_width_intercepts_slopes.png")
+cowplot::plot_grid(int.map.sdi, int.map.si, int.elev.map, int.map.tmax, int.sr.map, 
+                  sl.map.sdi, sl.map.si,sl.elev.map, sl.map.tmax, sl.sr.map, ncol = 5)
+dev.off()
+
+
+# plot slope of climate sensitivity curves:
+ggplot(full.data, aes(MAP, slope.ppt, color = FIRE.presence))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+map.sdi <- ggplot(full.data, aes(MAP, slope.ppt, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree sensitivity to Preciptation (water year)")
+
+map.si <- ggplot(full.data, aes(MAP, slope.ppt, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree sensitivity to Preciptation (water year)")
+
+map.elev <- ggplot(full.data, aes(MAP, slope.ppt, color = ELEV))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree sensitivity to Preciptation (water year)")
+
+
+map.tmax <- ggplot(full.data, aes(MAP, slope.ppt, color = TMAX.mean))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree sensitivity to Preciptation (water year)")
+
+map.sr <- ggplot(full.data, aes(MAP, slope.ppt, color = max.open.solar))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("Precip normal (mm)") + ylab("Tree sensitivity to Preciptation (water year)")
+
+# now for temperature slopes
+ggplot(full.data, aes(TMAX.mean, slope.tmax, color = FIRE.presence))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+tmax.sdi <- ggplot(full.data, aes(TMAX.mean, slope.tmax, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree sensitivity to Tmax (fall-spring)")
+
+tmax.si <- ggplot(full.data, aes(TMAX.mean, slope.tmax, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree sensitivity to Tmax (fall-spring)")
+
+
+tmax.elev <- ggplot(full.data, aes(TMAX.mean, slope.tmax, color = ELEV))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree sensitivity to Tmax (fall-spring)")
+
+
+tmax.map <- ggplot(full.data, aes(TMAX.mean, slope.tmax, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree sensitivity to Tmax (fall-spring)")
+
+
+tmax.sr <- ggplot(full.data, aes(TMAX.mean, slope.tmax, color = max.open.solar))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree sensitivity to Tmax (fall-spring)")
+
+# plot these out:
+
+png(height = 6, width = 16, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/climate_sensitivity_slopes.png")
+cowplot::plot_grid(tmax.sdi, tmax.elev, tmax.map, tmax.si, tmax.sr, 
+                  map.sdi, map.elev, map.tmax, map.si, map.sr, ncol = 5)
+dev.off()
+
+
+## climate intercepts:
+
+
+# plot intercept of climate sensitivity curves:
+ggplot(full.data, aes(MAP, intercept.ppt, color = FIRE.presence))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+map.sdi <- ggplot(full.data, aes(MAP, intercept.ppt, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree intercept for Preciptation (water year)")
+
+map.si <- ggplot(full.data, aes(MAP, intercept.ppt, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree intercept for  Preciptation (water year)")
+
+map.elev <- ggplot(full.data, aes(MAP, intercept.ppt, color = ELEV))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree intercept for  Preciptation (water year)")
+
+
+map.tmax <- ggplot(full.data, aes(MAP, intercept.ppt, color = TMAX.mean))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("Precip normal (mm)") + ylab("Tree intercept for  Preciptation (water year)")
+
+map.sr <- ggplot(full.data, aes(MAP, intercept.ppt, color = max.open.solar))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal)  +xlab("Precip normal (mm)") + ylab("Tree intercept for  Preciptation (water year)")
+
+# now for temperature intercepts
+ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = FIRE.presence))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+tmax.sdi <- ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = SDI))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree intercept for  Tmax (fall-spring)")
+
+tmax.si <- ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = SICOND))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree intercept for  Tmax (fall-spring)")
+
+
+tmax.elev <- ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = ELEV))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree intercept for  Tmax (fall-spring)")
+
+
+tmax.map <- ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = MAP))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree intercept for  Tmax (fall-spring)")
+
+
+tmax.sr <- ggplot(full.data, aes(TMAX.mean, intercept.tmax, color = max.open.solar))+geom_point()+theme_bw()+geom_hline(yintercept = 0, color = "red", linetype = "dashed")+scale_color_gradientn(colours = pal) +xlab("TMAX normal (DegC)") + ylab("Tree intercept for  Tmax (fall-spring)")
+
+# plot these out:
+
+png(height = 6, width = 16, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/climate_sensitivity_intercepts.png")
+cowplot::plot_grid(tmax.sdi, tmax.elev, tmax.map, tmax.si, tmax.sr, 
+                  map.sdi, map.elev, map.tmax, map.si, map.sr, ncol = 5)
+dev.off()
+
+
+# calculated DBH vs ring widths:
+
+ggplot(full.data, aes(wintP.wateryr, Width))+geom_point()+stat_smooth()
+
+ggplot(full.data, aes(tmax.fallspr, Width))+geom_point()+stat_smooth()
+
+ggplot(full.data, aes(SDI, Width))+geom_point()+stat_smooth()
+
+ggplot(full.data, aes(SICOND, Width))+geom_point()+stat_smooth()
+
+ggplot(full.data, aes(DBH^2 , Width))+geom_point()+stat_smooth()
+
+full.data$DBH2.est <- full.data$DBH.est^2
+
+ggplot(data = full.data, aes(x = DBH.est, y = Width))+geom_point()+theme(legend.position = "none")
+
+
+# try with a glm
+summary(glm(Width ~ TreeID + DBH.est + wintP.wateryr + SDI + MAP + SICOND + tmax.fallspr,data = full.data))
+
+
+
+model.test <- lme4::lmer(Width ~ (1|PLOT) + DBH.est + DBH2.est + wintP.wateryr + SDI + SICOND + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr  + DBH.est:tmax.fallspr + SDI:wintP.wateryr+ SDI:tmax.fallspr + SICOND:SDI + MAP,
+            data= full.data,
+            REML=TRUE)
+
+summary(model.test)
+
+# cant fit the model with only a couple of DBH measurements, and the tree random effects
+# You get error message:
+# Error: number of observations (=90) <= number of random effects (=144) for term (1 + wintP.wateryr | PLOT); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+
+
+# so if we take DBH out, then we can fit it, because lmer omits 
+
+model.tree.noDBH <- lme4::lmer(Width ~   wintP.wateryr + (1|TreeID:wintP.wateryr) + tmax.fallspr + tmax.fallspr : wintP.wateryr + wintP.wateryr  + tmax.fallspr + SDI + SICOND,
+            data= full.data,
+            REML=TRUE)
+
+model.tree.noDBH 
+summary(model.tree.noDBH)
+
+# try with DBH
+# need to calculate dbh going back
+
+full.data.nona <- full.data[!is.na(full.data$Width),]
+
+model.tree.DBH <- lme4::lmer(Width ~ DBH.est  + wintP.wateryr + (1|TreeID:wintP.wateryr) + SDI + SICOND + tmax.fallspr + tmax.fallspr:wintP.wateryr + DBH.est:wintP.wateryr  + DBH.est:tmax.fallspr + SDI:wintP.wateryr+ SDI:tmax.fallspr + SICOND:SDI,
+            data= full.data.nona,
+            REML=TRUE)
+
+model.tree.DBH 
+
+full.data.nona$preds <- predict(model.tree.DBH)
+
+ggplot(full.data.nona, aes(preds, DBH.est))+geom_point()
+
+ggplot(full.data.nona, aes(DBH.est, preds))+geom_point()
+ggplot(full.data.nona, aes(wintP.wateryr, preds))+geom_point()
+
+# plot all random slopes
+ggplot(full.data.nona, aes(wintP.wateryr, preds, color = as.character(TreeID)))+theme(legend.position = "none")+stat_smooth(method = "lm", se = FALSE)
+
+# scale MAP and MAT:
+full.data$MAP.scale <- as.vector(scale(full.data$MAP))
+full.data$TMAX.scale <- as.vector(scale(full.data$TMAX.mean))
+
+# note in the model summary strong correlations between the intercept and the fixed effect of DBH
+
+# model 1: tree level randome intercept, no interactions
+tree.mod.1 <- lme4::lmer(Width ~ (1|PLOT) + DBH.est + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.1)
+car::vif(tree.mod.1)
+
+# model 1: tree level randome intercept, no interactions
+tree.mod.1.tree <- lme4::lmer(Width ~ (1|TreeID) + DBH.est + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.1.tree)
+car::vif(tree.mod.1.tree)
+
+tree.mod.2 <- lme4::lmer(Width ~(1|PLOT) + DBH.est + DBH.est^2+ wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr + DBH.est:SDI + DBH.est:tmax.fallspr + 
+                           SDI:wintP.wateryr + SDI:tmax.fallspr ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.2)
+car::vif(tree.mod.2)
+
+
+#Model 3: Tree level Random effect on DBH amd only climate interactions
+tree.mod.3 <- lme4::lmer(Width ~ DBH.est + (DBH.est|TreeID) + SDI + wintP.wateryr + tmax.fallspr + tmax.fallspr:wintP.wateryr,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.3)
+car::vif(tree.mod.3)
+
+tree.mod.3.uncorr <- lme4::lmer(Width ~ (1|TreeID) + (0+DBH.est|TreeID) + SDI + wintP.wateryr + tmax.fallspr + tmax.fallspr:wintP.wateryr,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.3.uncorr)
+car::vif(tree.mod.3.uncorr)
+#+ (1|Subject) + (0+Days|Subject),
+
+# Model 4: Tree level random effect on DBH & all interactions between fixed effects
+tree.mod.4 <- lme4::lmer(Width ~   (1+DBH.est|TreeID) + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr + DBH.est:SDI + DBH.est:tmax.fallspr + 
+                           SDI:wintP.wateryr + SDI:tmax.fallspr ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.4)
+
+
+# Model 5: Tree level random effect on DBH, but no random intercept & all interactions between fixed effects
+tree.mod.5 <- lme4::lmer(Width ~   (0+DBH.est|TreeID) + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr + DBH.est:SDI + DBH.est:tmax.fallspr + 
+                           SDI:wintP.wateryr + SDI:tmax.fallspr ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.5)
+
+
+# Model 6: Tree level random effect on DBH, &  random intercept, no SDI effect & all interactions between fixed effects
+tree.mod.6 <- lme4::lmer(Width ~   (0+DBH.est|TreeID) + wintP.wateryr  + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr +  DBH.est:tmax.fallspr 
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.6)
+
+tree.mod.7 <- lme4::lmer(Width ~ (1|TreeID)  + DBH.est + MAP+MAP:DBH.est+ wintP.wateryr  + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr +  DBH.est:tmax.fallspr 
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+mod.7.summary<- summary(tree.mod.7)
+
+
+tree.mod.8 <- lme4::lmer(Width ~ (1+DBH.est|SI.group) + wintP.wateryr  +SDI+ tmax.fallspr + tmax.fallspr : wintP.wateryr  
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.8)
+
+tree.mod.9 <- lme4::lmer(Width ~ (0+DBH.est|SI.group) + wintP.wateryr +SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.9)
+
+
+tree.mod.10 <- lme4::lmer(Width ~ (1|MAP.group) + DBH.est + wintP.wateryr  +SDI+ tmax.fallspr + tmax.fallspr : wintP.wateryr 
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.10)
+
+
+tree.mod.11 <- lme4::lmer(Width ~ (1|MAP.group) + DBH.est +  wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + DBH.est:wintP.wateryr + DBH.est:SDI + DBH.est:tmax.fallspr + 
+                           SDI:wintP.wateryr + SDI:tmax.fallspr 
+                           ,
+            data= full.data,
+            REML=FALSE)
+
+summary(tree.mod.11)
+car::vif(tree.mod.11)
+
+
+tree.mod.12 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + MAP.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr 
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.12)
+car::vif(tree.mod.12)
+
+tree.mod.13 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + MAP.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + MAP.scale:DBH.est + MAP.scale:wintP.wateryr
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.13)
+car::vif(tree.mod.13)
+
+# with TMAX normal as fixed effect
+tree.mod.14 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + TMAX.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr 
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.14)
+car::vif(tree.mod.14)
+
+tree.mod.15 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + TMAX.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + TMAX.scale:DBH.est + TMAX.scale:wintP.wateryr
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.15)
+car::vif(tree.mod.15)
+
+# with TMAX + MAP as fixed effects + interactions
+# with TMAX normal as fixed effect
+tree.mod.16 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + MAP.scale + TMAX.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + MAP.scale:TMAX.scale 
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.16)
+car::vif(tree.mod.16)
+
+tree.mod.17 <- lme4::lmer(Width ~  (1|TreeID)+DBH.est + MAP.scale + TMAX.scale + wintP.wateryr + SDI + tmax.fallspr + tmax.fallspr : wintP.wateryr + TMAX.scale:DBH.est + TMAX.scale:wintP.wateryr + MAP.scale:TMAX.scale 
+                           ,
+            data= full.data,
+            REML=TRUE)
+
+summary(tree.mod.17)
+car::vif(tree.mod.17)
+
+anova(tree.mod.1, tree.mod.2, tree.mod.3, tree.mod.3.uncorr, tree.mod.4, tree.mod.5, tree.mod.6, tree.mod.7, tree.mod.8, tree.mod.9, tree.mod.10, tree.mod.11)
+
+df <- data.frame(a = c("test", "test2", "test3"),
+                 b = c("1", "2", "3"))
+
+
+#### generate plots of the fixed effects and of the random slopes
+
+library(sjPlot)
+# plot the model estimates
+plot_model(tree.mod.1, pred.type = "fe")+theme_bw()
+
+# plots the interaction terms:
+plot_model(tree.mod.1, type = "int")
+
+# plots the random effects terms:
+plot_model(tree.mod.1, type = "re")
+
+
+#------------------Plot all fixed effects----------------------
+# for mod1
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod1.png")
+cowplot::plot_grid(plot_model(tree.mod.1, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.1, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.1, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.1, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+
+# main effects for model 2
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod2.png")
+cowplot::plot_grid(plot_model(tree.mod.2, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.2, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.2, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.2, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+
+# main effects for model 3
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod3.png")
+cowplot::plot_grid(plot_model(tree.mod.3, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.3, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.3, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 3)
+dev.off()
+
+# main effects for model 3 w uncorrelated errors
+png(height = 4, width = 6, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod3.uncorr.png")
+cowplot::plot_grid(plot_model(tree.mod.3.uncorr, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.3.uncorr, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.3.uncorr, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank()), ncol = 3)
+dev.off()
+
+
+# main effects for model 4
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod4.png")
+cowplot::plot_grid(plot_model(tree.mod.4, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.4, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.4, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.4, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+# main effects for model 5:
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod5.png")
+cowplot::plot_grid(plot_model(tree.mod.5, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.5, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.5, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.5, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod10.png")
+cowplot::plot_grid(plot_model(tree.mod.10, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.10, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.10, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.10, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod11.png")
+cowplot::plot_grid(plot_model(tree.mod.11, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.11, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.11, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.11, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_outputs_mod12.png")
+cowplot::plot_grid(plot_model(tree.mod.12, type = "eff")[[1]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.12, type = "eff")[[2]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.12, type = "eff")[[3]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.12, type = "eff")[[4]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6),
+                   plot_model(tree.mod.12, type = "eff")[[5]] + theme_bw()+theme(plot.title = element_blank())+ylim(0,0.6), ncol = 2)
+dev.off()
+
+#------------------Plot interaciton effects----------------------
+
+# plot interaction effects for model 1:
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_interaction_mod1.png")
+plot_model(tree.mod.1, type = "int")+theme_bw()+theme(plot.title = element_blank())
+dev.off()
+
+
+# plot interaction effects for model 2:
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_interaction_mod2.png")
+cowplot::plot_grid(plot_model(tree.mod.2, type = "int")[[1]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.2, type = "int")[[2]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.2, type = "int")[[3]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.2, type = "int")[[4]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.2, type = "int")[[5]] + theme_bw()+theme(plot.title = element_blank()),
+                   plot_model(tree.mod.2, type = "int")[[6]] + theme_bw()+theme(plot.title = element_blank()), ncol = 3)
+dev.off()
+
+# plot interaction effects for model 3:
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_interaction_mod3.png")
+plot_model(tree.mod.3, type = "int")+theme_bw()+theme(plot.title = element_blank())
+dev.off()
+
+png(height = 6, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_interaction_mod3.unocrr.png")
+plot_model(tree.mod.3.uncorr, type = "int")+theme_bw()+theme(plot.title = element_blank())
+dev.off()
+
+# there was an error for model 4 & 5 on the interaction plots????
+# -----------plot all correlations of fixed effects----------------------
+fixeff.corr <-function(mod,...)
+{
+  #require(GGally) # contains another correlation plot using ggplot2
+  require(lme4)
+
+  fixNames<-names(fixef(mod))
+
+  # Simon O'Hanlon's answer:
+  # so <- summary(mod)
+  # df<-as.matrix(so@vcov@factors$correlation) for version lme4<1.0
+  # df<-as.matrix(so$vcov@factors$correlation)  # lme4 >= 1.0
+
+  df<-as.matrix(cov2cor(vcov(mod))) #Ben Bolker's solution
+
+  rownames(df)<-fixNames
+  colnames(df)<-abbreviate(fixNames, minlength = 11)
+
+  colsc=c(rgb(241, 54, 23, maxColorValue=255), 'white', rgb(0, 61, 104, maxColorValue=255))
+  colramp = colorRampPalette(colsc, space='Lab')
+  colors = colramp(100)
+  cols=colors[((df + 1)/2) * 100]
+  # I'm using function my.plotcorr which you can download here:
+  # http://hlplab.wordpress.com/2012/03/20/correlation-plot-matrices-using-the-ellipse-library/
+  #my.plotcorr(df, col=cols, diag='none', upper.panel="number", mar=c(0,0.1,0,0),...)
+
+  # Another possibility is the corrplot package:
+   #cols <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7", 
+    #                            "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", "#053061"))
+   # require(corrplot,quiet=T)
+   # corrplot(df, col = colors)#type="upper", method="number", tl.pos='tl', tl.col='black', tl.cex=0.8, cl.pos='n', col=cols(50))
+  # corrplot(df,add=TRUE,  method='ellipse', type='lower', tl.pos='n', tl.col='black', cl.pos='n', col=cols(50), diag=FALSE)
+  df
+}
+
+
+
+c1 <- fixeff.corr(tree.mod.1)
+c1.tree <- fixeff.corr(tree.mod.1.tree)
+c2 <- fixeff.corr(tree.mod.2)
+c3 <- fixeff.corr(tree.mod.3)
+c3.unc <- fixeff.corr(tree.mod.3.uncorr)
+c4 <- fixeff.corr(tree.mod.4)
+c5 <- fixeff.corr(tree.mod.5)
+c6 <- fixeff.corr(tree.mod.6)
+c7 <- fixeff.corr(tree.mod.7)
+c8 <- fixeff.corr(tree.mod.8)
+c10 <- fixeff.corr(tree.mod.10)
+c11 <- fixeff.corr(tree.mod.11)
+
+library(corrplot)
+#corrplot::corrplot(X, method = "circle", type = "lower")
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod1.png")
+corrplot::corrplot.mixed(c1, lower.col = "black")
+dev.off()
+
+
+
+
+
+
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod2.png")
+corrplot::corrplot.mixed(c2, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod3.png")
+corrplot::corrplot.mixed(c3, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod3.unc.png")
+corrplot::corrplot.mixed(c3.unc, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod4.png")
+corrplot::corrplot.mixed(c4, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod5.png")
+corrplot::corrplot.mixed(c5, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod6.png")
+corrplot::corrplot.mixed(c6, lower.col = "black")
+dev.off()
+
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod8.png")
+corrplot::corrplot.mixed(c8, lower.col = "black")
+dev.off()
+
+
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod10.png")
+corrplot::corrplot.mixed(c10, lower.col = "black")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_fixed_eff_corrs_mod11.png")
+corrplot::corrplot.mixed(c11, lower.col = "black")
+dev.off()
+#------------------Plot all random effects----------------------
+# plots the random effects terms:
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_plot_random_effects_mod1.png")
+plot_model(tree.mod.1, type = "re")
+dev.off()
+
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_plot_random_effects_mod2.png")
+plot_model(tree.mod.2, type = "re")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_plot_random_effects_mod3.png")
+plot_model(tree.mod.3, type = "re")+facet_wrap(~ facet, scales = "free")
+dev.off()
+
+png(height = 6, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_plot_random_effects_mod4.png")
+plot_model(tree.mod.4, type = "re")+facet_wrap(~ facet, scales = "free")
+dev.off()
+
+
+
+
+# Now plot all of the radom effets and see how they vary with covariates, across space, over time.
+library(lme4)
+
+mod.3.allre <- ranef(tree.mod.3)
+mod.3.allre.unc <- ranef(tree.mod.3.uncorr)
+mod.4.allre <- ranef(tree.mod.4)
+mod.5.allre <- ranef(tree.mod.5)
+mod.8.allre <- ranef(tree.mod.8)
+
+mod3.re.df <- data.frame(mod.3.allre$TreeID)
+mod3.re.df$TreeID <- 1:544
+
+mod3.re.uncorr.df <- data.frame(mod.3.allre.unc$TreeID)
+mod3.re.uncorr.df$TreeID <- 1:544
+
+
+mod4.re.df <- data.frame(mod.4.allre$TreeID)
+mod4.re.df$TreeID <- 1:544
+
+mod5.re.df <- data.frame(mod.5.allre$TreeID)
+mod5.re.df$TreeID <- 1:544
+
+mod8.re.df <- data.frame(mod.8.allre$SI.group)
+mod8.re.df$SI.group <- c( "HIGH SI (55-80)",  "LOW SI (0-35)","MEDIUM SI (35-55)" )
+
+# get information from unique treeID's:
+unique.tree <- unique(full.data[,c("TreeID", "ELEV", "SDI", "SICOND", "SLOPE", "ASPECT", 
+                  "STAGE2", "STAGE3", "STDAGE", "TRTCD1","DSTRBCD1", "DSTRBCD2",
+                  "DSTRBCD3", "MAP", "TMAX.mean", "TMAXfall.spr.mean", "SI.group")])
+mod3.df <- merge(unique.tree, mod3.re.df, by = "TreeID")
+mod3.unc.df <- merge(unique.tree, mod3.re.uncorr.df, by = "TreeID")
+mod4.df <- merge(unique.tree, mod4.re.df, by = "TreeID")
+mod5.df <- merge(unique.tree, mod5.re.df, by = "TreeID")
+mod8.df <- merge(unique.tree, mod8.re.df, by = "TreeID")
+
+
+# note that the intercept and DBH randome effects strongly correlated
+a3 <- ggplot(mod3.df, aes(X.Intercept.,DBH.est))+geom_point()
+b3 <-ggplot(mod3.df, aes(ELEV,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+c3 <-ggplot(mod3.df, aes(SDI,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+d3 <-ggplot(mod3.df, aes(SICOND,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+e3 <-ggplot(mod3.df, aes(SLOPE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+f3 <-ggplot(mod3.df, aes(ASPECT,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+g3 <-ggplot(mod3.df, aes(STAGE2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+h3 <-ggplot(mod3.df, aes(STAGE3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+i3 <-ggplot(mod3.df, aes(STDAGE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+j3 <-ggplot(mod3.df, aes(TRTCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+k3 <-ggplot(mod3.df, aes(DSTRBCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+l3 <-ggplot(mod3.df, aes(DSTRBCD2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m3 <-ggplot(mod3.df, aes(MAP,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+stat_smooth(method = "lm")
+
+png(height = 14, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_covs_mod3.png")
+cowplot::plot_grid(a3, b3, c3, d3, e3, f3, g3, h3, i3, j3, k3, l3,m3,  ncol = 3)
+dev.off()
+
+
+b3.i<- ggplot(mod3.df, aes(ELEV,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+c3.i<- ggplot(mod3.df, aes(SDI,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+d3.i<- ggplot(mod3.df, aes(SICOND,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+e3.i<- ggplot(mod3.df, aes(SLOPE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+f3.i<- ggplot(mod3.df, aes(ASPECT,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+g3.i<- ggplot(mod3.df, aes(STAGE2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+h3.i<- ggplot(mod3.df, aes(STAGE3,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+i3.i<- ggplot(mod3.df, aes(STDAGE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+j3.i<- ggplot(mod3.df, aes(TRTCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+k3.i<- ggplot(mod3.df, aes(DSTRBCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+l3.i<- ggplot(mod3.df, aes(DSTRBCD2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+#m3<- ggplot(mod3.df, aes(DSTRBCD3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m3.i <- ggplot(mod3.df, aes(MAP,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+n3.i <- ggplot(mod3.df, aes(TMAX.mean,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+
+png(height = 13, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_intecept.cov_mod3.png")
+cowplot::plot_grid( b3.i, c3.i, d3.i, e3.i, f3.i, g3.i, h3.i, i3.i, j3.i, k3.i, l3.i,m3.i, n3.i,  ncol = 3)
+dev.off()
+
+
+# for the uncorrelated error structure:
+# note that the intercept and DBH randome effects strongly correlated
+a3 <- ggplot(mod3.unc.df, aes(X.Intercept.,DBH.est))+geom_point()
+b3 <-ggplot(mod3.unc.df, aes(ELEV,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+c3 <-ggplot(mod3.unc.df, aes(SDI,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+d3 <-ggplot(mod3.unc.df, aes(SICOND,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+e3 <-ggplot(mod3.unc.df, aes(SLOPE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+f3 <-ggplot(mod3.unc.df, aes(ASPECT,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+g3 <-ggplot(mod3.unc.df, aes(STAGE2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+h3 <-ggplot(mod3.unc.df, aes(STAGE3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+i3 <-ggplot(mod3.unc.df, aes(STDAGE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+j3 <-ggplot(mod3.unc.df, aes(TRTCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+k3 <-ggplot(mod3.unc.df, aes(DSTRBCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+l3 <-ggplot(mod3.unc.df, aes(DSTRBCD2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m3 <-ggplot(mod3.unc.df, aes(MAP,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+stat_smooth(method = "lm")
+
+png(height = 14, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_covs_mod3.unc.png")
+cowplot::plot_grid(a3, b3, c3, d3, e3, f3, g3, h3, i3, j3, k3, l3,m3,  ncol = 3)
+dev.off()
+
+
+b3.i<- ggplot(mod3.unc.df, aes(ELEV,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+c3.i<- ggplot(mod3.unc.df, aes(SDI,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+d3.i<- ggplot(mod3.unc.df, aes(SICOND,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+e3.i<- ggplot(mod3.unc.df, aes(SLOPE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+f3.i<- ggplot(mod3.unc.df, aes(ASPECT,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+g3.i<- ggplot(mod3.unc.df, aes(STAGE2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+h3.i<- ggplot(mod3.unc.df, aes(STAGE3,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+i3.i<- ggplot(mod3.unc.df, aes(STDAGE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+j3.i<- ggplot(mod3.unc.df, aes(TRTCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+k3.i<- ggplot(mod3.unc.df, aes(DSTRBCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+l3.i<- ggplot(mod3.unc.df, aes(DSTRBCD2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+#m3<- ggplot(mod3.unc.df, aes(DSTRBCD3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m3.i <- ggplot(mod3.unc.df, aes(MAP,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+n3.i <- ggplot(mod3.unc.df, aes(TMAX.mean,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+
+png(height = 13, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_intecept.cov_mod3.unc.png")
+cowplot::plot_grid( b3.i, c3.i, d3.i, e3.i, f3.i, g3.i, h3.i, i3.i, j3.i, k3.i, l3.i,m3.i, n3.i,  ncol = 3)
+dev.off()
+
+a4<- ggplot(mod4.df, aes(X.Intercept.,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+xlab("Tree Random Effect on Intercept")
+b4<- ggplot(mod4.df, aes(ELEV,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+c4<- ggplot(mod4.df, aes(SDI,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+d4<- ggplot(mod4.df, aes(SICOND,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+e4<- ggplot(mod4.df, aes(SLOPE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+f4<- ggplot(mod4.df, aes(ASPECT,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+g4<- ggplot(mod4.df, aes(STAGE2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+h4<- ggplot(mod4.df, aes(STAGE3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+i4<- ggplot(mod4.df, aes(STDAGE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+j4<- ggplot(mod4.df, aes(TRTCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+k4<- ggplot(mod4.df, aes(DSTRBCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+l4<- ggplot(mod4.df, aes(DSTRBCD2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+#m4<- ggplot(mod4.df, aes(DSTRBCD3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m4 <-ggplot(mod4.df, aes(MAP,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+stat_smooth(method = "lm")
+
+png(height = 14, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_cov_mod4.png")
+cowplot::plot_grid(a4, b4, c4, d4, e4, f4, g4, h4, i4, j4, k4, l4,m4,  ncol = 3)
+dev.off()
+
+b4.i<- ggplot(mod4.df, aes(ELEV,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+c4.i<- ggplot(mod4.df, aes(SDI,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+d4.i<- ggplot(mod4.df, aes(SICOND,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+e4.i<- ggplot(mod4.df, aes(SLOPE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+f4.i<- ggplot(mod4.df, aes(ASPECT,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+g4.i<- ggplot(mod4.df, aes(STAGE2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+h4.i<- ggplot(mod4.df, aes(STAGE3,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+i4.i<- ggplot(mod4.df, aes(STDAGE,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+j4.i<- ggplot(mod4.df, aes(TRTCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+k4.i<- ggplot(mod4.df, aes(DSTRBCD1,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+l4.i<- ggplot(mod4.df, aes(DSTRBCD2,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")
+#m4<- ggplot(mod4.df, aes(DSTRBCD3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m4.i <- ggplot(mod4.df, aes(MAP,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+n4.i <- ggplot(mod4.df, aes(TMAX.mean,X.Intercept.))+geom_point()+ylab("Tree Random Intercept")+stat_smooth(method = "lm")
+
+png(height = 14, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_intecept.cov_mod4.png")
+cowplot::plot_grid( b4.i, c4.i, d4.i, e4.i, f4.i, g4.i, h4.i, i4.i, j4.i, k4.i, l4.i,m4.i, n4.i,  ncol = 3)
+dev.off()
+
+
+# for Model 5
+
+a5<- ggplot(mod5.df, aes(X.Intercept.,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+xlab("Tree Random Effect on Intercept")
+b5<- ggplot(mod5.df, aes(ELEV,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+c5<- ggplot(mod5.df, aes(SDI,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+d5<- ggplot(mod5.df, aes(SICOND,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+e5<- ggplot(mod5.df, aes(SLOPE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+f5<- ggplot(mod5.df, aes(ASPECT,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+g5<- ggplot(mod5.df, aes(STAGE2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+h5<- ggplot(mod5.df, aes(STAGE3,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+i5<- ggplot(mod5.df, aes(STDAGE,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+j5<- ggplot(mod5.df, aes(TRTCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+k5<- ggplot(mod5.df, aes(DSTRBCD1,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+l5<- ggplot(mod5.df, aes(DSTRBCD2,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")
+m5 <-ggplot(mod5.df, aes(MAP,DBH.est))+geom_point()+ylab("Tree Random Effect on DBH")+stat_smooth(method = "lm")
+
+
+
+png(height = 14, width = 10, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_cov_mod5.png")
+cowplot::plot_grid( b5, c5, d5, e5, f5, g5, h5, i5, j5, k5, l5,m5,  ncol = 3)
+dev.off()
+
+png(height = 4, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/pecan/IGF_outputs/max_like_random_effects_cov_mod8.png")
+ggplot(mod8.re.df, aes(X.Intercept.,DBH.est, color = SI.group))+geom_point()+theme_bw()+ylab("SIgroup random Effect on DBH")+xlab("SIgroup random Effect on Intercept")
+dev.off()
+
+
+
+```
+
+# Boxplots of individual climate correlations
+
+```{r, echo = FALSE}
+
+ppt.box <- ggplot(ppt.cors.df[ppt.cors.df$clim %in% "PPT",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Precipitation")
+
+
+tmax.box <- ggplot(ppt.cors.df[ppt.cors.df$clim %in% "TMAX",], aes(month_ordered, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Maximum Temperature")
+
+plot_grid(ppt.box, tmax.box, ncol = 1)
+```
+
+#### Tree ring widths are highly variable, but have fairly negative responses to Tmax during the Arid Foresummer (Apr - Jun) and Monsoon (Jul - Sept). 
+
+
+# visualizing the standardized plot level data
+```{r, echo = FALSE}
+
+# get site lat longs:
+plot.data.unscaled <- data.frame(LON = temp2$PLOT_LON,
+           LAT = temp2$PLOT_LAT, 
+           ELEV = temp2$PLOT_ELEV,
+           SDI = temp2$SDI, 
+           SICOND = temp2$COND_SICOND, 
+           TreeID = as.character(1:544),
+           SLOPE = cov.data$SLOPE, 
+           ASPECT = cov.data$ASPECT, 
+           
+           STAGE2 = cov.data$STAGE2, 
+           STAGE3 = cov.data$STAGE3, 
+           STDAGE = cov.data$STDAGE, 
+           TRTCD1 = temp2$COND_TRTCD1, 
+           DSTRBCD1 = temp2$COND_DSTRBCD1, 
+           DSTRBCD2 = temp2$COND_DSTRBCD2,
+           DSTRBCD3 = temp2$COND_DSTRBCD3)
+
+
+
+
+all_states <- map_data("state")
+states <- subset(all_states, region %in% c(  'arizona') )
+coordinates(all_states)<-~long+lat
+class(all_states)
+mapdata <- data.frame(states)
+
+SDI.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SDI), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+SICOND.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SICOND), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+ELEV.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = ELEV), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+ASPECT.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = ASPECT), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+SLOPE.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = SLOPE), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+STDAGE.map <- ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = plot.data.unscaled, aes(LON, LAT, color = STDAGE), size = 0.5)+scale_color_gradientn(colors = c("red", "yellow", "blue"))+theme_bw()+coord_equal()+theme(legend.position = "bottom")
+
+plot_grid(ELEV.map, SDI.map, SICOND.map, ncol = 3)
+
+```
+
+
+```{r, echo = FALSE}
+
+ppt.cors.std.df <- left_join(ppt.cors.df, plot.data.unscaled, by = "TreeID")
+ 
+#  ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+#   
+# ## same thing but for the water year
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = TRTCD1))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+
+```
+
+## There could be some spatial differences in climate sensitivity, but it does not look very strong here
+```{r, echo = FALSE}
+
+ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = ppt.cors.std.df[ppt.cors.std.df$climate %in% "wintP.wateryr",], aes(LON, LAT, color = coef), size = 0.25)+scale_color_gradientn(colors = c("red", "white", "blue"))+ggtitle("Precipitation")
+
+ggplot()+ geom_polygon( data = mapdata, aes(group = group,x=long, y =lat),colour="white", fill = "grey")+geom_point(data = ppt.cors.std.df[ppt.cors.std.df$climate %in% "tmax.AprMayJun" ,], aes(LON, LAT, color = coef), size = 0.25)+scale_color_gradientn(colors = c("red", "white", "blue"))+ggtitle("Maximum Arid foresummer Temperature")
+
+```
+# Exploration of Disturbances, treatments, and slope and aspect. 
+
+```{r, echo = FALSE}
+
+DSTRBCD1.table <- data.frame(DSTRBCD1 = c(0,10, 20, 30, 40, 50, 60, 80),
+                             Disturbance = c("No Disturbance",
+                                             "Insect", 
+                                             "Disease", 
+                                             "Fire", 
+                                             "Animal", 
+                                             "Weather", 
+                                             "Vegetation (suppression, vines)", 
+                                             "Human"))
+
+plot.data.unscaled <- merge(plot.data.unscaled, DSTRBCD1.table)
+
+disturbs1 <- plot.data.unscaled %>% group_by(DSTRBCD1, Disturbance) %>% summarise(n = n())
+disturbs2 <- plot.data.unscaled %>% group_by(DSTRBCD2) %>% summarise(n = n())
+kable(disturbs1)
+kable(disturbs2)
+```
+
+# Fire is the most common disturbance, showing up in close to half of the plots in AZ!
+# Most of the plots also show evidence of thinning!
+
+```{r, echo = FALSE}
+
+TRTCD1.table <- data.frame(TRTCD1 = c(0,10),
+                             Treatment = c("No Treatment",
+                                             "Thinning"))
+
+plot.data.unscaled <- merge(plot.data.unscaled, TRTCD1.table, by = "TRTCD1")
+
+treatments <- plot.data.unscaled %>% group_by(TRTCD1, Treatment) %>% summarise(n = n())
+
+kable(treatments)
+```
+
+# do these treatments and disturbances have any direct relationship to climate sensitivity?
+```{r, echo = FALSE}
+
+#colnames(ppt.cors.std.df)
+cors <- merge(ppt.cors.std.df,  DSTRBCD1.table, by = "DSTRBCD1")
+
+#ggplot()+geom_boxplot(data = cors[cors$clim %in% "TMAX",], aes(Disturbance, coef))+facet_wrap(~month_ordered)+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(cors[cors$climate %in% c("tmax.monsoon", "tmax.AprMayJun"),], aes(Disturbance, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Maximum Temperature")+facet_wrap(~month_ordered)
+
+ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(Disturbance, coef, color = p < 0.05))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("Precipitation")+facet_wrap(~month_ordered)
+
+
+ggplot(cors[cors$climate %in% c("tmax.monsoon", "tmax.AprMayJun"),], aes(TRTCD1, coef, color = p < 0.05, group = TRTCD1))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("TRTCD1")+facet_wrap(~month_ordered)
+
+ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(TRTCD1, coef, color = p < 0.05, group = TRTCD1))+geom_jitter(size = 0.5)+scale_color_manual(values = c("grey", "black"))+geom_hline(aes(yintercept = 0), color = "red", linetype = "dashed")+geom_boxplot(color = "black", fill = "yellow",  alpha = 0.25)+theme_bw()+theme(axis.text.x = element_text(hjust = 1, angle = 45))+ylab("correlation coefficient")+ xlab("TRTCD1")+facet_wrap(~month_ordered)
+
+```
+
+Many of the trees (but not all) with low climate correlations are those that have evidence of thinning. 
+
+
+# Do correlations vary by site conditions or stand age?
+The correlation coefficinets don't show any strong direct relationships with tree correlations. 
+```{r, echo = FALSE}
+
+#ppt.cors.std.df <- left_join(ppt.cors.df, plot.data.unscaled, by = "TreeID")
+ 
+t.1 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# 
+ 
+t.2 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+t.3 <-  ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+  
+t.4 <-   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+t.5 <-   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+  
+
+  plot_grid(t.1, t.2, t.3, t.4, t.5, ncol = 2)
+  
+## same thing but for the water year
+p.1 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(SDI, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# 
+ 
+p.2 <-    ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+ p.3 <-  ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+  
+p.4 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = TRTCD1))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+ 
+p.5 <-   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = TRTCD1))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+  
+  
+plot_grid(p.1, p.2, p.3, p.4, p.5, ncol = 2)
+  
+  
+
+# color by disturbance codes: 
+#   
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(SDI, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(ASPECT, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE2, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STAGE3, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "tmax.AprMayJun",], aes(STDAGE, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+#   
+# ## same thing but for the water year
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(SDI, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+# # 
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(ASPECT, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE2, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STAGE3, coef, color = Disturbance))+geom_point()+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#  
+#   ggplot(cors[cors$climate %in% "wintP.wateryr",], aes(STDAGE, coef, color = Disturbance))+geom_point(size = 0.5)+ylab("Correlation Coefficient for \n Tmax Arid Foresummer")
+#   
+
+```
+
+
+## KAH Working hypotheses for the models:
+
+1. Thinning alleviates some water and light competition and should reduce climate sensitivity and/or interact with climate.
+2. Slope and Aspect should modify climate sensitivity, such that there is an interaction effect.
+3. Older trees are more climate sensitive.
+4. Water year precipitation will have the strongest positive correlation with tree growth
+5. Effects of Precipitation (time varying) will be strongest during drought years
+6. Lagged effects of droughts (?) may play a role. We likely don't want to complicate initially, but add to the list of "drought" items to consider.
+
+
+##KAH questions & issues:
+1. Working with Martin to set up a docker container to run jags
+2. Model runs on my computer, but crashes between 100% done and actually finishing.
+3. How useful will the time varying betas for climate be if we want to forecast into the future?
+4. CCR (crown cover ratio) and CCCD (crown cover code) are missing from the AZ_PIPO data. Is there a workflow I can use to go back to the plot level data to get these variables? Or do I need to start back at the FIA data (version?).

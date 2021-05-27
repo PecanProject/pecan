@@ -12,6 +12,6 @@ generate.noise <- function(n = 2101, sigma = 1e-04, fw = 201, fsd = 6) {
   f.in <- seq_len(fw)
   f.raw <- dnorm(f.in, median(f.in), fw / fsd)
   f <- f.raw * 1 / max(f.raw)
-  x <- filter(rnorm(n, 0, sigma), filter = f, circular = TRUE)
+  x <- stats::filter(rnorm(n, 0, sigma), filter = f, circular = TRUE)
   return(x)
 } # generate.noise

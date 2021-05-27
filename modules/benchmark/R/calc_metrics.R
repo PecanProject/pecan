@@ -18,6 +18,9 @@ calc_metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_ye
   dat <- align_data(model.calc, obvs.calc, var, start_year, end_year, 
                     align_method = "mean_over_larger_timestep")
   
+  # Make sure that anything that comes through align.data as NA doesn't get included. This is because there may be missing data. We may not want to do this automatically but rather have this as an option. 
+  # dat <- dat[apply(dat,1, function(x) all(!is.na(x))),]
+  
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = 3))
   colnames(results) <- c("metric", "variable", "score")
   results$metric <- metrics$name

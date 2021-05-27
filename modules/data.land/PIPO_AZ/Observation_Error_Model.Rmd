@@ -1,0 +1,276 @@
+---
+title: "Tree Ring Observation Error"
+author: "Kelly Heilman"
+date: "12/11/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rjags)
+library(psych)
+library(tidyr)
+library(tidyverse)
+```
+
+
+#### **Goal:** 
+Estimate uncertainty around tree ring observation measurements to allows us to set informative priors on tree ring increment uncertainty in the larger tree ring state-space model. 
+
+#### **Design:** 
+Ecological Forecasting seminar participants each measured up to 10 *Pinus Ponderosa* cores sampled throughout Arizona. For now, we work with the remeasurements that are correctly dated from 7 of the 10 remeasurements.
+
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 1. Selected cores remeasured by multiple observers", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/selected_remeasurements_by_core.png"))
+```
+
+
+##### **Model:** 
+
+**DBH data model:**
+Diameter measurements in tree $i$ at time $t$ are represented by $z_{i,t}$, and are normally distributed around the true diameter mean $x_{i,t}$ with precision $tau_{dbh}$. 
+
+$$ z_{i,t} \sim normal(x_{i,t}, \tau_{dbh})$$
+
+**Increment data model:**
+Annual growth measurements in each tree and time point were remeasured by multiple observers $o$. Thus tree increment in tree $i$ at time $t$ by observer $o$ is represented by by $y_{i,t, o}$. Observations of increments $y_{i,t, o}$ are normally distributed around the true increment mean $y_{i,t}$ with precision $tau_{inc}$. Thus, $tau_{inc}$ is informed by multiple observations of each tree ring. 
+
+
+$$y_{i, t, o} \sim normal(inc_{i,t},\tau_{inc})\\
+inc_{i,t} = x_{i,t} - x_{i,t-1}$$
+
+**Process model:**
+This process model is simplified version of the full AZ pipo model and is the basic model in Mike Dietze's Ecological Forcasting exercise. 
+
+$$x_{i,t} \sim normal(DBHnew_{i,t} , \tau_{add})\\
+DBHnew_{i,t} = x_{i, t-1} + mu + year_{t}$$
+
+**Priors:**
+Priors are mostly non-informative:
+$$ tau_{DBH} \sim gamma(16, 8)\\
+tau_{inc} \sim gamma(0.001, 1)\\
+tau_{add} \sim gamma(1,1)\\
+tau_{year} \sim gamma(1,0.1)\\
+mu \sim normal(0.5, 0.5)\\
+year_{t} ~ dnorm(0,tau_{year})$$
+
+
+**Jags Code for the model**
+```{r}
+# basic tree fusion model adapted from EF activities:
+multi.Tree.fusion.obs.error = "
+model{
+  
+# ### Loop over all individuals
+for(i in 1:ni){
+  
+  #### Data Model: DBH
+  for(t in 1:nt){
+    z[i,t] ~ dnorm(x[i,t],tau_dbh)
+  }
+  
+  #### Data Model: growth
+  
+  
+  for(t in 2:nt){ # loop over time
+    inc[i,t] <- x[i,t]-x[i,t-1]
+    
+    for(o in 1:num_obs){ # loop over multiple observations     
+    
+   y[i, t, o] ~ dnorm(inc[i,t], tau_inc)   # this is where the multiple observations come in
+  }
+  }
+  
+  
+  
+  #### Process Model
+  for(t in 2:nt){
+    Dnew[i,t] <- x[i,t-1] + mu + year[t]
+    x[i,t]~dnorm(Dnew[i,t],tau_add)
+  }
+  
+  
+  ## initial condition
+  x[i, 1] ~ dnorm(x_ic, tau_ic)
+  
+}  ## end loop over individuals
+  
+  ## year effects
+  for(t in 1:nt){
+    year[t] ~ dnorm(0,tau_yr)
+  }
+  
+  
+  #### Priors
+  tau_dbh ~ dgamma(a_dbh,r_dbh)
+  tau_inc ~ dgamma(a_inc,r_inc)
+  tau_add ~ dgamma(a_add,r_add)
+  tau_ind ~ dgamma(1,0.1)
+  tau_yr  ~ dgamma(1,0.1)
+  mu ~ dnorm(0.5,0.5)
+  
+  }"
+
+
+
+```
+
+
+
+#### Run the model with only one observation for each of the available cores
+This provides an estimate of $tau_{inc}$ before we constrain with multiple measurements:
+```{r, echo=FALSE}
+# read in the jags data:
+jags.data <- readRDS( "/Users/kah/Documents/docker_pecan/pecan/measurementerror/jags.data.rds")
+jags.y.array <- jags.data$y
+
+# remove remeasurements: 
+# all but core 4 have data for observer A, so remove all but A for these. 
+jags.y.array[2:6,,1:3] <- NA
+jags.y.array[3:6,,4] <- NA
+jags.y.array[2:6,,5:8] <- NA
+
+
+jags.data.one.obs <- jags.data
+jags.data.one.obs$y <- jags.y.array
+
+# run jags model:
+n.iter = 15000
+
+one.obs.model   <- jags.model (file = textConnection(multi.Tree.fusion.obs.error),
+                                 data = jags.data.one.obs,
+                                 #inits = init,
+                                 n.chains = 3)
+## burn-in
+jags.out.one.burn   <- coda.samples (model = one.obs.model,
+                            variable.names = c("tau_add","tau_dbh","tau_inc","mu","tau_yr"),
+                            n.iter = min(n.iter,2000))
+
+# draw samples
+jags.out.one   <- coda.samples (model = one.obs.model ,
+                            variable.names = c("tau_add","tau_dbh","tau_inc","mu","tau_yr"),
+                            n.iter = min(n.iter,15000))
+# get summary stats:
+plot(jags.out.one)
+#summary(jags.out.one[, "tau_inc"])
+#gelman.diag(jags.out.one)
+
+# also plot the posterior correlations
+# psych::pairs.panels(as.matrix(jags.out.one[, c( "mu", "tau_inc", "tau_add","tau_dbh", "tau_yr")]), 
+#                     method = "pearson", # correlation method
+#                     hist.col = "#00AFBB",
+#                     density = TRUE,  # show density plots
+#                     ellipses = TRUE # show correlation ellipses
+# )
+
+```
+
+
+
+#### Run the model with all available observations for each of the cores
+
+```{r, echo=FALSE}
+# read in the jags data:
+jags.data <- readRDS( "/Users/kah/Documents/docker_pecan/pecan/measurementerror/jags.data.rds")
+
+# run jags model:
+n.iter = 15000
+
+multi.obs.model   <- jags.model (file = textConnection(multi.Tree.fusion.obs.error),
+                                 data = jags.data,
+                                 #inits = init,
+                                 n.chains = 3)
+## burn-in
+jags.out.multi.burn   <- coda.samples (model = multi.obs.model,
+                            variable.names = c("tau_add","tau_dbh","tau_inc","mu","tau_yr"),
+                            n.iter = min(n.iter,2000))
+
+# draw samples
+jags.out.multi   <- coda.samples (model = multi.obs.model ,
+                            variable.names = c("tau_add","tau_dbh","tau_inc","mu","tau_yr"),
+                            n.iter = min(n.iter,15000))
+# get summary stats:
+plot(jags.out.multi)
+#summary(jags.out.multi[, "tau_inc"])
+#gelman.diag(jags.out.multi)
+
+# also plot the posterior correlations
+# psych::pairs.panels(as.matrix(jags.out.multi[, c( "mu", "tau_inc", "tau_add","tau_dbh", "tau_yr")]), 
+#                     method = "pearson", # correlation method
+#                     hist.col = "#00AFBB",
+#                     density = TRUE,  # show density plots
+#                     ellipses = TRUE # show correlation ellipses
+# )
+
+```
+
+
+#### Adding the multiple measurements of tree rings increases our estimates of $\tau_{inc}$ (and perhaps increases $\tau_{add}$). 
+```{r, echo=FALSE}
+jags.out.multi <- as.matrix(jags.out.multi)
+jags.out.one <- as.matrix(jags.out.one)
+
+one.m <- reshape2::melt(jags.out.one)
+colnames(one.m) <- c("mcmc", "parameter", "value")
+one.m$model <- "one observation"
+
+multi.m <- reshape2::melt(jags.out.multi)
+colnames(multi.m) <- c("mcmc", "parameter", "value")
+multi.m$model <- "multiple observations"
+
+both.models <- rbind(one.m, multi.m)
+
+both.summary <- both.models %>% group_by(model, parameter) %>% dplyr::summarise(mean = mean(value), 
+                                                         ci.lo = quantile(value, 0.025), 
+                                                         ci.hi = quantile(value, 0.975))
+
+
+#ggplot(both.summary, aes( parameter, mean, color = model))+geom_point()+geom_errorbar(aes(x = parameter, ymin = ci.lo, ymax = ci.hi, width = 0.1))
+
+
+both.summary$model <- factor(both.summary$model, c("one observation", "multiple observations"))
+ggplot(both.summary, aes( model, mean, color = model))+geom_point()+geom_errorbar(aes(x = model, ymin = ci.lo, ymax = ci.hi, width = 0.1))+facet_wrap(~ parameter, scales = "free_y")+theme_bw(base_size = 10)+theme(axis.text.x = element_text(angle = 45, hjust = 1))+xlab("Model")+ylab("Parameter estimates")
+```
+
+#### I then use the estimates of $\tau_{inc}$ to set a strong informative prior on $\tau_{inc}$ in the full state space model for Arizona *Pinus ponderosa*
+
+We can use a uniform prior bounded between 85 and 125:
+
+$$\tau_{inc} \sim uniform(85, 120)$$
+Or a normal prior with mean of 106 and variance of 8.4:
+$$\tau_{inc} \sim normal(106, 8.4)$$
+
+#### With the uniform prior, posterior estimates of $\tau_{inc}$ are skewed high (clumped around 115):
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 2. Traceplots for full state-space model with informative uniform prior on tau_inc", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/PPT.noX2.tau_unif_85_125_traceplots.png"))
+```
+
+#### With the normal prior, posterior estimates of $tau_{inc}$ are no longer skewed, and are tightly constrained around 106:
+```{r echo=FALSE,fig.show='hold', fig.cap="Fig 3. Traceplots for full state-space model with informative normal prior on tau_inc", out.width = '75%', out.height='100%', fig.align='center', fig.pos = "top"}
+knitr::include_graphics(c("/Users/kah/Documents/docker_pecan/pecan/measurementerror/PPT.noX2.tau.norm.106.8.5._traceplots.png"))
+```
+<br/><br/>
+<br/><br/>
+
+### Next steps:
+#### Small Observation Error paper:
+1. More measurements
+2. Quantify the # of samples needed to obtain a high/desired precision of increments
+3. Including observation error of multiple cores/tree. We don't have data on this, but could take from the literature (A. Dawson). 
+4. Very hard: including dating observation errors
+
+
+#### Main PIPO model paper
+1. Build the framework for Kalman filter Data assimilation of DBH measurements from trees w/out cores
+2. Get additional disturbance data? Or should this wait for the 2nd paper?
+3. Start outlining the AZ PIPO data assimilation manuscript
+
+
+
+# simple observation model:
+# assess prediction of models:
+1. simple model with random year, observer, tree effects
+2. simple model with random year, observer, tree effects and a DBH fixed effect
+3. simple state space model with prev years increment as a factor

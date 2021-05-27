@@ -6,13 +6,12 @@ Date: 2017-04-18
 Author: Shawn Serbin, Anthony Walker
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the MAAT to PEcAn.
-Depends:
-    PEcAn.utils,
-    ncdf4
 Imports:
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
+    udunits2 (>= 0.11),
+    XML
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: MAAT

@@ -4,7 +4,7 @@ Check MySQL --> PSQL Migration
 
 This script will compare tables before and after migration from MySQL to PSQL ([Redmine issue 1860](https://ebi-forecast.igb.illinois.edu/redmine/issues/1860))
 
-Note: For more information about accessing the database, see the [PEcAn settings wiki](https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#wiki-database_access).
+Note: For more information about accessing the database, see the [PEcAn settings wiki](https://pecanproject.github.io/pecan-documentation/master/pecan-xml-configuration.html#database-access).
 
 
 ```{r}

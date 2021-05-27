@@ -26,8 +26,11 @@ specified site ID. The resulting MultiSettings is thus identical to the input, e
 for each site in the vector of site IDs.
 }
 \examples{
+dontrun <- function() { ## Added by Alexey Shiklomanov so this doesn't run and break the build
+
 # This isn't necessarily a fully working settings object. Enough to get the idea though. 
 # Note it has a $run block with settings that will be shared across all sites
+
 template = Settings(
   list(info = structure(list(notes = NULL, userid = "1000000005", 
     username = "Ryan Kelly", date = "2016/07/13 13:23:46 -0400"), .Names = c("notes", 
@@ -92,7 +95,7 @@ multiRunSettings <- createSitegroupMultiSettings(template, sitegroupId = sitegro
 dir.create(outDir, showWarnings=F)
 write.settings(multiRunSettings, outputfile="pecan.xml")
 
-
+} # dontrun
 }
 \author{
 Ryan Kelly

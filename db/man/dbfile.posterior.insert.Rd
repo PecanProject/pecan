@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.posterior.insert(filename, pft, mimetype, formatname, con,
-  hostname = fqdn())
+  hostname = PEcAn.utils::fqdn())
 }
 \arguments{
 \item{filename}{the name of the file to be inserted}

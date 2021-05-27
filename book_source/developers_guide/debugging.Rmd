@@ -2,11 +2,6 @@
 
 How to identify the source of a problem.
 
-### Read Logger and Error messages
-
-See [[Logging]] wiki. 
-
-### `debugonce`
 
 ### Using `tests/workflow.R`
 

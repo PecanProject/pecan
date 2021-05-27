@@ -42,7 +42,7 @@ $folder = $workflow['folder'];
 $stmt->closeCursor();
 close_database();
 
-$exec = "R_LIBS_USER=\"$pecan_install\" $Rbinary CMD BATCH";
+$exec = "R_LIBS_USER=\"$R_library_path\" $Rbinary CMD BATCH";
 $path = "05-running.php?workflowid=$workflowid";
 if ($pecan_edit) {
   $path .= "&pecan_edit=pecan_edit";

@@ -1,0 +1,66 @@
+---
+title: "CMIP5 projection table"
+author: "Kelly Heilman"
+date: "10/27/2020"
+geometry: margin=0cm
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(kableExtra)
+library(tidyverse)
+```
+
+## Generate summary table for CMIP5 cliamte models used in this analysis.
+
+
+
+```{r, results="asis", echo=FALSE, message = FALSE, warnings = FALSE}
+# get a list of all the model runs and projections and separate based on rcp scenarios
+all.proj.names <- read.delim("/Users/kah/Documents/docker_pecan/pecan/bcsd5/Projections5.txt", header = FALSE)
+proj.allnum <- 1:length(all.proj.names$V1)
+# get the rcp values for all the projections
+all.proj.names$rcp <- substr(all.proj.names$V1, nchar(as.character(all.proj.names$V1))-4, nchar(as.character(all.proj.names$V1)))
+
+all.proj.names$proj.allnum <- 1:length(all.proj.names$V1)
+colnames(all.proj.names) <- c("Model", "rcp", "proj.allnum")
+all.proj.names$Model <- as.character(all.proj.names$Model)
+all.proj.names$model = substr(all.proj.names$Model, 1, nchar(all.proj.names$Model)-6)
+# 
+# some special cases wehre text nees to be removed:
+all.mods<- ifelse(all.proj.names$model %in% c("access1-3.1.rcp45   # only pr, tas (tasmin, tasmax not avai", "access1-3.1.rcp85   # only pr, tas (tasmin, tasmax not avai"),  "access1-3.1", 
+       ifelse(all.proj.names$model %in% c("fgoals-s2.2.rcp45   # only pr, tas (tasmin, tasmax not avai" , "fgoals-s2.2.rcp85   # only pr, tas (tasmin, tasmax not avai" ), "fgoals-s2.2",
+              ifelse(all.proj.names$model %in% c("noresm1-me.1.rcp26   # only pr, tas (tasmin, tasmax not avai", "noresm1-me.1.rcp45   # only pr, tas (tasmin, tasmax not avai", "noresm1-me.1.rcp60   # only pr, tas (tasmin, tasmax not avai", "noresm1-me.1.rcp85   # only pr, tas (tasmin, tasmax not avai"), "noresm1-me.1", 
+                     ifelse(all.proj.names$model %in% c("fgoals-s2.3.rcp85   # only pr, tas (tasmin, tasmax not avai" ), "fgoals-s2.3", all.proj.names$model))))
+
+
+
+# make sure rcps are normal too:
+all.rcps<- ifelse(all.proj.names$model %in% c("access1-3.1.rcp45   # only pr, tas (tasmin, tasmax not avai", "fgoals-s2.2.rcp45   # only pr, tas (tasmin, tasmax not avai", "noresm1-me.1.rcp45   # only pr, tas (tasmin, tasmax not avai") , "rcp45",
+       ifelse(all.proj.names$model %in% c( "fgoals-s2.2.rcp85   # only pr, tas (tasmin, tasmax not avai", "access1-3.1.rcp85   # only pr, tas (tasmin, tasmax not avai", "noresm1-me.1.rcp85   # only pr, tas (tasmin, tasmax not avai","fgoals-s2.3.rcp85   # only pr, tas (tasmin, tasmax not avai" ), "rcp85",
+              ifelse(all.proj.names$model %in% c("noresm1-me.1.rcp26   # only pr, tas (tasmin, tasmax not avai"), "rcp26", 
+                     ifelse(all.proj.names$model %in% c( "noresm1-me.1.rcp60   # only pr, tas (tasmin, tasmax not avai"), "rcp60", all.proj.names$rcp))))
+
+all.proj.names$model <- all.mods
+all.proj.names$rcp <- all.rcps
+
+future.tmax <- readRDS("/Users/kah/Documents/docker_pecan/pecan/pipo.cores.with.downscaled.hydro.ppt.climatev3.rds")
+projs.used <- unique(future.tmax$future.climate.ts$modelrun)
+
+projs.used.1 <- substr(projs.used, 1, nchar(projs.used)-1)
+
+future.projs <- all.proj.names %>% filter(model %in% projs.used.1) %>% dplyr::select(model, rcp)
+future.projs$value <- "x"
+fut.table<- future.projs %>% spread(rcp, value= value)
+fut.table$rcp26<- ifelse(is.na(fut.table$rcp26), " ", "x")
+fut.table$rcp45<- ifelse(is.na(fut.table$rcp45), " ", "x")
+fut.table$rcp60<- ifelse(is.na(fut.table$rcp60), " ", "x")
+fut.table$rcp85<- ifelse(is.na(fut.table$rcp85), " ", "x")
+
+kable(fut.table, "latex", align = c("l","c", "c", "c", "c"), booktabs = TRUE, caption = "CMIP5 downscaled model projections",digits = 3, linesep = "")%>%  kable_styling(font_size = 8)
+```
+

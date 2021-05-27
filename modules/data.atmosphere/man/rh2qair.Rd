@@ -8,9 +8,11 @@
 rh2qair(rh, T, press = 101325)
 }
 \arguments{
-\item{rh}{relative humidity (proportion, not %)}
+\item{rh}{relative humidity (proportion, not \%)}
 
 \item{T}{absolute temperature (Kelvin)}
+
+\item{press}{air pressure (Pascals)}
 }
 \description{
 converts relative humidity to specific humidity

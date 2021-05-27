@@ -1,0 +1,356 @@
+---
+title: "Uncertainty Types Table"
+author: "Kelly Heilman"
+date: "11/10/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+library(tidyverse)
+```
+```{r, echo = FALSE, message = FALSE, warnings = FALSE}
+Hypothesized_drivers <- c("Tree Size", 
+             "Precipitation",
+             "Temperature", 
+             "Competition", 
+             "Site Quality", 
+             
+             "Precipitation x Temperature", 
+             "Tree Size x Precipitation", 
+             "Tree Size x Temperature", 
+             "Tree Size x Competition", 
+             "Tree Size x Site Quality",
+             
+             
+             "Precipitation x Competition", 
+             "Precipitation x Site Quality", 
+             "Temperature x Competition", 
+             "Temperature x Site Quality", 
+             "Site Quality x Competition")
+
+citations <- c("Bowman et al. (2013)", 
+               "McCullough et al. (2017)", 
+               "McCullough et al. (2017)", 
+               "Buechling et al. (2017)",
+               " ",
+               
+              "McCullough et al. (2017)", 
+              " ", 
+              " ", 
+              " ", 
+              " ",
+              
+              "McCullough et al. (2017)", 
+              " ", 
+              " ", 
+              " ", 
+              " ")
+Predictions <- c("quadratic", 
+                 "+", 
+                 "-", 
+                 "-", 
+                 "+", 
+                 
+                 "+", 
+                 "+", 
+                 "+", 
+                 "-", 
+                 "-", 
+                 
+                 
+                 "+",
+                 "+",
+                 "-",
+                 "+",
+                 "+")
+Predictions1 <- c("Size related growth trends often present such that small trees have larger radial growth", 
+             "Precipitation generally has a positive effect on P. ponderosa growth", 
+             "Temperature can have a negative effect on tree growth, or a positive effect if growth is limited by cold conditions.", 
+             "Competition in dense forest stands can reduce annual tree growth. This is particularly common in P. ponderosa stands", 
+             "Site Quality differences can affect the maximum potential productivity of trees at a given site. This could be due to a variety of different site condtions, including favorable slope/aspect conditions, soil nutrients, and soil hydrology characteristics.", 
+             "Ecological interactions between all of the above drivers of radial tree growth are expected. For example, large trees and trees in dense stands may be more sensitive to climate. There are likely interactions between site quality and climate such that lower quality sites are more vulnerable to high temperatures and low precipitation.")
+
+
+# read in the estimates from model 3:
+posteriors <- readRDS("/Users/kah/Documents/docker_pecan/pecan/model_summary_outputs/IGFstage2_model3_5794.rds")
+library(rjags)
+out <- as.matrix(posteriors)
+
+betas <-out[,grep(pattern = "beta",colnames(out))]
+betas.df <- data.frame(betas)
+betas.random <- betas.df[, grep(patter = "betaX_PLOT", colnames(betas))]
+names.fixed <- names(betas.df)[!(names(betas.df) %in% colnames(betas.random))] # get the names of fixed effects
+betas.fixed <- betas.df[,names.fixed]
+
+betas.fixed.m <- reshape2::melt(betas.fixed)
+model.params <- betas.fixed.m %>% group_by(variable) %>% dplyr::summarise(median = quantile(value, 0.5), 
+                                                                   ci.lo = quantile(value, 0.025), 
+                                                                   ci.hi = quantile(value, 0.975))
+colnames(model.params)[1]<- c("Parameter")
+model.params$Hypothesized_drivers <- c("Competition", 
+                                       "Temperature x Competition", 
+                                       "Precipitation x Competition",
+                                       "Site Quality",
+                                       "Site Quality x Competition", 
+                                       "Temperature x Site Quality", 
+                                       "Precipitation x Site Quality", 
+                                       "Tree Size", 
+                                       "Tree Size^2",
+                                       "Tree Size x Competition", 
+                                       "Tree Size x Site Quality", 
+                                       "Tree Size x Temperature", 
+                                       "Tree Size x Precipitation", 
+                                       "Temperature"  , 
+                                       "Precipitation x Temperature", 
+                                       "Precipitation" )
+# just get the fixed effects:
+
+#model.params
+
+dbh.vals = (1:60)-30
+tree.size.effect <- dbh.vals*0.000001 + dbh.vals*model.params[model.params$Parameter %in% "betaX2",]$median
+
+#plot(1:60, tree.size.effect)
+#for(i in 1:unique(model.params$Hypothesized_drivers)){
+  
+make.circle.param.plots <- function(i){
+param.of.interest <- unique(model.params$Hypothesized_drivers)[i]
+  
+beta <- model.params %>% filter(Hypothesized_drivers %in% param.of.interest)
+
+circleFun <- function(center = c(0,0),diameter = 1, npoints = 100){
+    r = diameter / 2
+    tt <- seq(0,2*pi,length.out = npoints)
+    xx <- center[1] + r * cos(tt)
+    yy <- center[2] + r * sin(tt)
+    return(data.frame(x = xx, y = yy))
+}
+
+if(abs(beta$median) <= 0.01){
+  dat2 <- circleFun(c(0,0),1,npoints = 100)
+
+}else{
+dat2 <- circleFun(c(0,0),abs(beta$median)*100,npoints = 100)
+}
+beta$coloure <- ifelse(beta$median >=0 & beta$ci.lo >=0 & beta$ci.hi >=0, "positive", 
+                       ifelse(beta$median >=0 & beta$ci.lo < 0 & beta$ci.hi >= 0, "positive, ns", 
+                              ifelse(beta$median <=0 & beta$ci.lo <=0 & beta$ci.hi <=0, "negative", 
+                                     ifelse(beta$median <=0 & beta$ci.lo < 0 & beta$ci.hi >= 0, "negative, ns", NA))))
+dat2$coloure <- beta$coloure
+
+#d7191c
+#fdae61
+#abd9e9
+#2c7bb6
+values = c("positive" = "#2c7bb6", "positive, ns" = "#abd9e9", "negative, ns" = "#fdae61", "negative" = "#d7191c")
+
+color.df <- data.frame(x = 1:4, 
+           y = 1:4, 
+           color = c("positive", "positive, ns", "negative, ns", "negative"))
+
+color.df$color <- factor(color.df$color, levels = c("positive", "positive, ns", "negative, ns", "negative"))
+
+legend<- cowplot::get_legend(ggplot(color.df,aes(x,y, color = color)) + geom_point()+scale_color_manual(values = values)+theme_minimal()+theme(legend.position = "bottom", legend.direction = "horizontal", legend.title = element_blank()))
+
+png(height = 0.5, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/legend.all.points.png")
+cowplot::plot_grid(legend)
+dev.off()
+
+#@png(height = 2, width = 2, res = 200, units = "in", paste0("/Users/kah/Documents/docker_pecan/", beta$Hypothesized_drivers,".png"))
+img2 <- ggplot(dat2,aes(x,y, fill = coloure)) + geom_polygon()+scale_fill_manual(values = values)+ylim(-3, 3)+ xlim(-3, 3)+theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+
+#img2
+
+ggsave(img2, file=paste0("/Users/kah/Documents/docker_pecan/", beta$Hypothesized_drivers,".png"), width = 2, height = 2, units = "in")
+
+
+
+}
+
+lapply(1:16, make.circle.param.plots) # 
+
+growth <- data.frame(Hypotheses = Hypothesized_drivers, Prediction = Predictions, Citation = citations, `Estimated Effect` = "")
+
+list.of.plts <- paste0("/Users/kah/Documents/docker_pecan/",Hypothesized_drivers, ".png")
+
+kable(growth, "latex", align=c("c", "c", "c"), booktabs = T, caption = "Drivers of growth") %>%
+kable_styling() %>% column_spec(1:3, width = "2cm")%>% column_spec(1, bold = TRUE) %>% row_spec(5,hline_after = TRUE) %>% column_spec(4, image = spec_image(c(list.of.plts), width = 100, height = 100))#%>% kable_styling() %>%
+   # group_rows("Main Effects", 1, 5) %>%
+    #group_rows("Complex Interactions", 6, 8)
+
+```
+
+```{r, results="asis",  message = FALSE, warnings = FALSE}
+Uncertainty = c("Initial Conditions", "Parameter", "Driver", "Process")
+definition= c("Uncertainty arising from the fact that the true value of intial conditions is not known", "Uncertainty around the true value of parameters in the model", "Uncertainty in the covariate or driver data", "Uncertainty that is unexplained by the process model, or the residual unexplained variance")
+our.case = c("95% confidence intervals around DBH estimates at the beginning of our forecasts (year = 2018)", "95% confidence intervals around the plot random effects, fixed effects & interactions", "Uncertainty in the ensemble of projected future climate drivers", "Additive process error representated by $\\tau_{additive}$")
+
+#Relative_Uncertainty
+
+# plot up relative uncertinaty contribution here: https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf
+
+Unc.table <- data.frame( `Uncertainty Type` = Uncertainty, 
+            `Definition` = definition, 
+            `How it is applied here` = our.case, 
+            `Increment Uncertainty` = "", 
+            `Diameter Uncertainty` = "")
+
+
+
+
+
+Unc.table2 <- Unc.table
+
+# read in output of increment uncertainty:
+inc.prop.all <- readRDS("/Users/kah/Documents/docker_pecan/forecast_model3/inc.prop.all.RDS")
+#head(inc.prop.all)
+
+#inc.prop.all
+by.yr <- inc.prop.all %>% group_by(simtype, year) %>% dplyr::summarise(mean = mean(variance))
+avgs.unc.inc <- by.yr %>% group_by(simtype) %>% dplyr::summarise(avg = mean(mean))
+
+
+avgs.unc.inc$rel.unc.inc<-  avgs.unc.inc$avg 
+avgs.unc.inc[5,]$rel.unc.inc <-  avgs.unc.inc[5,]$avg - sum(avgs.unc.inc[1:4,]$avg) # claculate the process uncertainty
+colnames(avgs.unc.inc) <- c("simtype", "avg.unc", "rel.unc.inc")
+
+avgs.unc.inc.df <- data.frame(Uncertainty.Type = c("Driver", "Initial Conditions", "Parameter", "Process"),
+                              rel.unc.inc = as.numeric(c(avgs.unc.inc[1,]$rel.unc.inc,avgs.unc.inc[2,]$rel.unc.inc,  sum(avgs.unc.inc[3,]$rel.unc.inc),avgs.unc.inc[5,]$rel.unc.inc)))
+
+
+# get the diameter uncertainty:
+dbh.prop.all <- readRDS("/Users/kah/Documents/docker_pecan/forecast_model3/dbh.prop.all.RDS")
+#head(dbh.prop.all)
+
+#dbh.prop.all
+dbh.by.yr <- dbh.prop.all %>% group_by(simtype, year) %>% dplyr::summarise(mean = mean(variance))
+avgs.unc.dbh <- dbh.by.yr %>% group_by(simtype) %>% dplyr::summarise(avg = mean(mean))
+
+
+avgs.unc.dbh$rel.unc.dbh <-  avgs.unc.dbh$avg 
+avgs.unc.dbh[5,]$rel.unc.dbh <-  avgs.unc.dbh[5,]$avg - sum(avgs.unc.dbh[1,]$avg) # claculate the process uncertainty
+avgs.unc.dbh[1,]$rel.unc.dbh <- avgs.unc.dbh[1,]$avg - avgs.unc.dbh[4,]$avg
+avgs.unc.dbh[4,]$rel.unc.dbh <- avgs.unc.dbh[4,]$avg - sum(avgs.unc.dbh[3,]$avg)
+avgs.unc.dbh[3,]$rel.unc.dbh <- avgs.unc.dbh[3,]$avg - sum(avgs.unc.dbh[2,]$avg)
+
+
+colnames(avgs.unc.dbh) <- c("simtype", "avg.unc.dbh", "rel.unc.dbh")
+
+avgs.unc.dbh.df <- data.frame(Uncertainty.Type = c("Driver", "Initial Conditions", "Parameter", "Process"),
+                              rel.unc.dbh = as.numeric(c(avgs.unc.dbh[1,]$rel.unc.dbh,avgs.unc.dbh[2,]$rel.unc.dbh,  sum(avgs.unc.dbh[3,]$rel.unc.dbh),avgs.unc.dbh[5,]$rel.unc.dbh)))
+
+
+
+Unc.table2 <- merge(Unc.table2, avgs.unc.inc.df, by = "Uncertainty.Type")
+Unc.table2 <- merge(Unc.table2, avgs.unc.dbh.df, by = "Uncertainty.Type")
+
+#ggplot(Unc.table2 %>% filter(`Uncertainty Type` %in% "Initial Condtions"), aes(x = `Uncertainty Type`, y  = 1, size = 5))+geom_point()+ylim(0.95, 1.05)+theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+make.circle.unc.plots <- function(i,type = "inc"){
+param.of.interest <- unique(Unc.table2$Uncertainty.Type)[i]
+  
+beta <- Unc.table2 %>% filter(Uncertainty.Type %in% param.of.interest)
+
+circleFun <- function(center = c(0,0),diameter = 1, npoints = 100){
+    r = diameter / 2
+    tt <- seq(0,2*pi,length.out = npoints)
+    xx <- center[1] + r * cos(tt)
+    yy <- center[2] + r * sin(tt)
+    return(data.frame(x = xx, y = yy))
+}
+
+
+  if(type %in% "inc"){
+    if(abs(beta$rel.unc.inc) <= 0.01){
+  dat2 <- circleFun(c(0,0),1,npoints = 100)
+      }else{
+dat2 <- circleFun(c(0,0),abs(beta$rel.unc.inc),npoints = 100)
+  }}else{
+dat2 <- circleFun(c(0,0),abs(beta$rel.unc.dbh),npoints = 100)
+}
+
+color.df <- data.frame(Uncertainty.Type = unique(Unc.table2$Uncertainty.Type), coloure = c("#1b9e77",
+               "#d95f02",
+               "#7570b3", 
+               "grey"))
+beta <- merge(beta, color.df, by = "Uncertainty.Type")
+
+dat2$coloure <- beta$coloure
+dat2$Uncertainty.Type <- beta$Uncertainty.Type
+
+
+#d7191c
+#fdae61
+#abd9e9
+#2c7bb6
+#values = c("positive" = "#2c7bb6", "positive, ns" = "#abd9e9", "negative, ns" = "#fdae61", "negative" = "#d7191c")
+
+color.df$x <- 1:4 
+color.df$y <- 1:4
+color.df$color <- color.df$coloure
+
+#dat2
+
+#color.df$color <- factor(color.df$color, levels = c("positive", "positive, ns", "negative, ns", "negative"))
+
+legend <- cowplot::get_legend(ggplot(color.df,aes(x,y, color = color)) + geom_point()+scale_color_manual(values = c("Process"="#1b9e77", "Driver"="#d95f02", "Parameter"= "#7570b3", "Initial Conditions"="grey" ))+theme_minimal()+theme(legend.position = "bottom", legend.direction = "horizontal", legend.title = element_blank()))
+
+png(height = 0.5, width = 4, units = "in", res = 200, "/Users/kah/Documents/docker_pecan/legend.driver.unc.points.png")
+cowplot::plot_grid(legend)
+dev.off()
+
+#@png(height = 2, width = 2, res = 200, units = "in", paste0("/Users/kah/Documents/docker_pecan/", beta$Hypothesized_drivers,".png"))
+if(max(dat2$y) <=1 & type %in% "inc"){
+img2 <- ggplot(dat2,aes(x*2,y*2, fill = Uncertainty.Type)) + geom_polygon()+scale_fill_manual(values = c("Process"="#1b9e77", "Driver"="#d95f02", "Parameter"= "#7570b3", "Initial Conditions"="grey" ))+ylim(-3, 3)+ xlim(-3, 3)+
+  theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+
+
+}else{
+if(max(dat2$y) <=5 & type %in% "dbh"){
+img2 <- ggplot(dat2,aes(x*5,y*5, fill = Uncertainty.Type)) + geom_polygon()+scale_fill_manual(values = c("Process"="#1b9e77", "Driver"="#d95f02", "Parameter"= "#7570b3", "Initial Conditions"="grey" ))+ylim(-30, 30)+ xlim(-30, 30)+
+  theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+
+
+
+}else{
+  img2 <- ggplot(dat2,aes(x,y, fill = Uncertainty.Type)) + geom_polygon()+scale_fill_manual(values = c("Process"="#1b9e77", "Driver"="#d95f02", "Parameter"= "#7570b3", "Initial Conditions"="grey" ))+ylim(-30, 30)+ xlim(-30, 30)+
+  theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+}}
+#img2
+
+ggsave(img2, file=paste0("/Users/kah/Documents/docker_pecan/",type,"_", beta$Uncertainty.Type,".png"), width = 2, height = 2, units = "in")
+
+
+
+}
+
+# make the circles for increments
+lapply(1:4, function(x){make.circle.unc.plots(x, type = "inc")}) # 
+
+# make the circles for diameter
+lapply(1:4, function(x){make.circle.unc.plots(x, type = "dbh")}) # 
+
+# png(height = 2, width = 2, res = 200, units = "in", "/Users/kah/Documents/docker_pecan/large.circle.png")
+# img1 <- ggplot(dat,aes(x,y)) + geom_polygon()+ylim(-3, 3)+ xlim(-3, 3)+theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+# img1
+# dev.off()
+
+# png(height = 2, width = 2, res = 200, units = "in", "/Users/kah/Documents/docker_pecan/small.circle.png")
+# img2<- ggplot(dat2,aes(x,y)) + geom_polygon()+ylim(-3, 3)+ xlim(-3, 3)+theme_minimal()+theme(panel.grid = element_blank(), axis.text = element_blank(), axis.title = element_blank(), legend.position = "none")
+# 
+# img2
+# dev.off()
+
+
+colnames(Unc.table) <- c("Uncertainty Type", "Definition", "How it is applied here", "Increment Uncertainty", "Diameter Uncertainty")
+
+kable(Unc.table, format = "html", align=c("c", "c", "c"), booktabs = T, caption = "Types of Uncertainty") %>%
+kable_styling() %>% column_spec(1:3, width = "4cm")%>% column_spec(1, bold = TRUE) %>% row_spec(1:4,hline_after = TRUE) %>% column_spec(4, image = spec_image(c("/Users/kah/Documents/docker_pecan/inc_Initial Conditions.png", "/Users/kah/Documents/docker_pecan/inc_Parameter.png", "/Users/kah/Documents/docker_pecan/inc_Driver.png", "/Users/kah/Documents/docker_pecan/inc_Process.png"), width = 100, height = 100))%>% column_spec(5, image = spec_image(c("/Users/kah/Documents/docker_pecan/dbh_Initial Conditions.png", "/Users/kah/Documents/docker_pecan/dbh_Parameter.png", "/Users/kah/Documents/docker_pecan/dbh_Driver.png", "/Users/kah/Documents/docker_pecan/dbh_Process.png"), width = 100, height = 100))%>%column_spec(4:5, width = "2cm")%>% kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
+
+

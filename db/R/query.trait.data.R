@@ -19,7 +19,7 @@
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
 fetch.stats2se <- function(connection, query){
-  transformed <- transformstats(db.query(query, connection))
+  transformed <- PEcAn.utils::transformstats(db.query(query, connection))
   return(transformed)
 }
 ##==================================================================================================#
@@ -188,8 +188,8 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
     data$temp[is.na(data$temp)] <- missing.temp
     
     # Scale traits
-    data$mean <- arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
-    data$stat <- arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
+    data$mean <- PEcAn.utils::arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
+    data$stat <- PEcAn.utils::arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
 
     #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']

@@ -33,9 +33,22 @@
 write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
+  ### TO DO : needs to be vectorized to improve SDA speed for runs that are longer than 50 years
+  ### TO DO : distance matrix needs fixing
+  
   ### Removing negative numbers because biomass can't be negative ###
   new.state[new.state < 0] <- 0
   
+  names.keep <- names(new.state)
+  
+  new.state <- udunits2::ud.convert(as.matrix(new.state), "Mg/ha", "kg/m^2")
+  
+  names(new.state) <- names.keep
+  
+  if(sum(new.state)>1000) {
+    prop.stop <- new.state/sum(new.state)
+    new.state <- 1000 * prop.stop
+  }
   new.state.save <- new.state
   new.state <- new.state.save[grep("pft", names(new.state.save))]
   new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
@@ -140,12 +153,12 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     n.index <- c(n.index, rep(i, ntrees[i]))
   }
   
-  if(max(dbh) < 15){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
+  if(max(dbh) < 20){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
     large.trees <- which(dbh >= (max(dbh) / 1.05))
   }else{
-    large.trees <- which(dbh >= 15)
+    large.trees <- which(dbh >= 20)
   }
-  
+
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }
@@ -195,6 +208,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
       fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
     new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
+    if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
+      new.ntrees[s] = sample(size = 1, x = 50:150)
+    } 
   }
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -280,6 +296,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   dbh <- dbh.temp
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(15000)#hack
+  
+  nogro[nogro < (-2)] <- 1
   
   ntrees <- new.ntrees
   

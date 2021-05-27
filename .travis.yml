@@ -74,6 +74,7 @@ before_script:
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
   - psql -U postgres < bety.sql
+  - rm bety.sql
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
   - chmod +x documentation/tutorials/deploy.sh
@@ -81,12 +82,19 @@ before_script:
 script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
-  - echo 'Building PEcAn'
+  - echo 'Installing PEcAn packages'
   - make
-  - echo 'Testing PEcAn'
+  - echo 'Testing PEcAn packages'
   - make test
+  - make document
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
+  - if [[ `git status -s` ]]; then 
+      echo "These files were changed by the build process:";
+      git status -s;
+      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
+      exit 1; 
+    fi
   - set +e
 
 after_script:

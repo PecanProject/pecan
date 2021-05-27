@@ -157,6 +157,9 @@ $stmt->closeCursor();
 foreach($modeltypes as $type) {
   foreach($inputs as &$x) {
     if ($x['tag'] == "met") {
+      if (preg_match("UIUC Energy Farm", $siteinfo["sitename"])) {
+        $x['files'][] = array("id"=>"Clowder." . $type, "name"=>"Use Clowder-Geostreams");
+      }
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
       }

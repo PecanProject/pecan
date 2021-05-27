@@ -20,34 +20,80 @@
   </bety>
   <dbfiles>/fs/data2/output/fs/data1/pecan.data/dbfiles</dbfiles>
  </database>
- <benchmark>
+ <benchmarking>
    <settings.1>
      <ensemble_id>1000004796</ensemble_id>
-     <input_id>1000008121</input_id>
-     <variables>
-       <variable_id>411</variable_id> 
-       <variable_id>1000000046</variable_id>
-     </variables>
-     <metrics>
-       <metric_id>1000000003</metric_id> 
-       <metric_id>1000000004</metric_id> 
-     </metrics>
      <new_run>FALSE</new_run>
+     <benchmark>
+       <input_id>1000008121</input_id>
+       <variable_id>411</variable_id>
+       <metrics>
+         <metric_id>1000000001</metric_id> 
+         <metric_id>1000000002</metric_id> 
+         <metric_id>1000000003</metric_id> 
+         <metric_id>1000000004</metric_id> 
+         <metric_id>1000000005</metric_id> 
+         <metric_id>1000000006</metric_id>
+         <metric_id>1000000007</metric_id> 
+         <metric_id>1000000008</metric_id> 
+         <metric_id>1000000009</metric_id> 
+         <metric_id>1000000010</metric_id> 
+       </metrics>
+     </benchmark>
+     <benchmark>
+       <input_id>1000008121</input_id>
+       <variable_id>1000000046</variable_id>
+       <metrics>
+         <metric_id>1000000001</metric_id> 
+         <metric_id>1000000002</metric_id> 
+         <metric_id>1000000003</metric_id> 
+         <metric_id>1000000004</metric_id> 
+         <metric_id>1000000005</metric_id> 
+         <metric_id>1000000006</metric_id>
+         <metric_id>1000000007</metric_id> 
+         <metric_id>1000000008</metric_id> 
+         <metric_id>1000000009</metric_id> 
+         <metric_id>1000000010</metric_id>  
+       </metrics>
+     </benchmark>
    </settings.1>
    <settings.2>
      <ensemble_id>1000004806</ensemble_id>
-     <input_id>1000008119</input_id>
-     <variables>
-       <variable_id>411</variable_id> 
-       <variable_id>1000000046</variable_id>
-     </variables>
-     <metrics>
-       <metric_id>1000000003</metric_id> 
-       <metric_id>1000000005</metric_id>
-     </metrics>
      <new_run>FALSE</new_run>
+     <benchmark>
+       <input_id>1000008119</input_id>
+       <variable_id>411</variable_id>
+       <metrics>
+         <metric_id>1000000001</metric_id> 
+         <metric_id>1000000002</metric_id> 
+         <metric_id>1000000003</metric_id> 
+         <metric_id>1000000004</metric_id> 
+         <metric_id>1000000005</metric_id> 
+         <metric_id>1000000006</metric_id>
+         <metric_id>1000000007</metric_id> 
+         <metric_id>1000000008</metric_id> 
+         <metric_id>1000000009</metric_id> 
+         <metric_id>1000000010</metric_id>  
+       </metrics>
+     </benchmark>
+     <benchmark>
+       <input_id>1000008119</input_id>
+       <variable_id>1000000046</variable_id>
+       <metrics>
+         <metric_id>1000000001</metric_id> 
+         <metric_id>1000000002</metric_id> 
+         <metric_id>1000000003</metric_id> 
+         <metric_id>1000000004</metric_id> 
+         <metric_id>1000000005</metric_id> 
+         <metric_id>1000000006</metric_id>
+         <metric_id>1000000007</metric_id> 
+         <metric_id>1000000008</metric_id> 
+         <metric_id>1000000009</metric_id> 
+         <metric_id>1000000010</metric_id>  
+       </metrics>
+     </benchmark>
    </settings.2>
- </benchmark>
+ </benchmarking>
  <host>
   <name>localhost</name>
   <rundir>/fs/data3/ecowdery/benchmarking_tests/run</rundir>

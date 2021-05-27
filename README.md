@@ -18,7 +18,7 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/)for full documentation of the PEcAn Project.
+Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/) for full documentation of the PEcAn Project.
 
 ## Getting Started
 
@@ -49,7 +49,7 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 
 ## Acknowledgements
 
-The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
+The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA Terrestrial Ecosystems, the Energy Biosciences Institute, Department of Energy (ARPA-E awards #DE-AR0000594 and DE-AR0000598), and an Amazon AWS in Education Grant.
 
 Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation, NASA, or other federal agencies. PEcAn is a collaboration among research groups at the Department of Earth And Environment at Boston University, the Carl Woese Institute for Genomic Biology at the University of Illinois, the Image Spatial Data Analysis group at the National Center for Supercomputing Applications, the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison, and the Terrestrial Ecosystem Science & Technology group at Brookhaven National Lab.
 

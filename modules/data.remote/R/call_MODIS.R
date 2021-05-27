@@ -7,8 +7,35 @@
 ##' @param end    laste date in year and day-of-year. For example May 1 2010 would be 2010121
 ##' @param lat    Latitude of the pixel
 ##' @param lon    Longitude of the pixel
+##' 
+##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4
+##' 
+##' @examples 
+##' \donotrun{
+##' test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
+##' }
+##' 
 call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lon, size = 0, 
                        product = "MOD15A2", band = "Lai_1km", qc_band = NA, sd_band = NA) {
+  
+  library(MODISTools)
+  
+  dat <- MODISTools::GetSubset(Lat=lat, Long=lon, Product=product, Band=band, 
+                   StartDate=as.integer(start), EndDate=as.integer(end), KmAboveBelow=size, KmLeftRight=size)
+  if(!is.na(qc_band)){
+  qc <- MODISTools::GetSubset(Lat=lat, Long=lon, Product=product, Band=qc_band, 
+                               StartDate=as.integer(start), EndDate=as.integer(end), KmAboveBelow=size, KmLeftRight=size)
+  } else {
+    qc <- NULL
+  }
+  if(!is.na(sd_band)){
+    sd <- MODISTools::GetSubset(Lat=lat, Long=lon, Product=product, Band=sd_band, 
+                                StartDate=as.integer(start), EndDate=as.integer(end), KmAboveBelow=size, KmLeftRight=size)
+  } else {
+    sd <- NULL
+  }
+  
+  return(list(dat,qc,sd))
   
   library(rPython)
   
@@ -18,8 +45,8 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
   
   # Distance of the are both east-west and north-south from the center of the pixel.
   # Similarly to the file name, I've left it also easily inputtable.
-  kmNS <- size
-  kmWE <- size
+  kmNS <- as.integer(size)
+  kmWE <- as.integer(size)
   
   # Here it assigns the run directory and given variables values within python
   python.assign("cwd", getwd())
