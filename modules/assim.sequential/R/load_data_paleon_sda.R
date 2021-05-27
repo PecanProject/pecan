@@ -100,7 +100,7 @@ load_data_paleon_sda <- function(settings){
       if(any(var.names == 'AGB.pft')){
         spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
         pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
-                             con = bety$con, allow_missing = TRUE)
+                             con = con, allow_missing = TRUE)
         
         x <- paste0('AGB.pft.', pft_mat$pft)
         names(x) <- spp_id$input_code
