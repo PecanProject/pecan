@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -40,7 +40,7 @@ if ($authentication) {
     function validate() {
         $("#error").html("");
     }
-        
+
     function prevStep() {
         $("#formprev").submit();
         }
@@ -62,7 +62,7 @@ if ($authentication) {
             workflow creation process.</p>
 
             <label>Offline mode:</label>
-            <span id="error" class="small">This will disable Google Maps</span>
+            <span id="error" class="small">This will disable Maps</span>
             <input name="offline" id="offline" style="align: left" type="checkbox" value="offline">
             <div class="spacer"></div>
 
@@ -71,17 +71,10 @@ if ($authentication) {
             <span id="error" class="small">&nbsp;</span>
             <input id="prev" type="button" value="History" onclick="prevStep();" />
             <input id="next" type="button" value="Next" onclick="nextStep();" />
-            
+
             <div class="spacer"></div>
         </form>
-<?php whoami(); ?>  
-<p>
-  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
-<br>
-  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
-<br>
-  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
-</p>
+        <?php left_footer(); ?>
     </div>
     <div id="output">
         <h1>Introduction</h1>
@@ -89,7 +82,7 @@ if ($authentication) {
         PEcAn worklflow. You will be able to always go back to a
         previous step to change inputs. However once the model is
         running it will continue to run until it finishes. You will
-        be able to use the history button to jump to existing 
+        be able to use the history button to jump to existing
         executions of PEcAn.</p>
         <p>The following webpages will help to setup the PEcAn
         workflow. You will be asked the following questions:</p>
@@ -104,7 +97,7 @@ if ($authentication) {
         PEcAn will execute the workflow.</li>
         <li><b>Results</b> After execution of the PEcAn workflow you
         will be presented with a page showing the results of the
-        PEcAn workflow.</li> 
+        PEcAn workflow.</li>
         </ol>
     </div>
     <div id="footer"><?php echo get_footer(); ?></div>

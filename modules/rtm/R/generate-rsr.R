@@ -1,5 +1,5 @@
-#' @name rsr.from.fwhm
-#' @title Generate relative spectral response (RSR) matrix based on FWHM data
+#' Generate relative spectral response (RSR) matrix based on FWHM data
+#' 
 #' @param wavelength Vector of average band widths, as reported in FWHM data.
 #' @param fwhm Vector of full-width half maximum (FWHM) bandwidths, as reported 
 #' in FWHM data.
@@ -16,8 +16,8 @@ rsr.from.fwhm <- function(wavelength, fwhm) {
 } # rsr.from.fwhm
 
 
-#' @name trim.rsr
-#' @title Trim RSR matrix to wavelength limits
+#' Trim RSR matrix to wavelength limits
+#' 
 #' @param rsr RSR matrix
 #' @param wl.min Minimum wavelength (inclusive, default = 400)
 #' @param wl.max Maximum wavelength (inclusive, default = 2500)
@@ -32,9 +32,9 @@ trim.rsr <- function(rsr, wl.min = 400, wl.max = 2500) {
 } # trim.rsr
 
 
-#' @name generate.rsr.all
-#' @title Generate RSR matrices for all sensors and return as list
-#' @description Only needs to be called when updating these funcitons with new 
+#' Generate RSR matrices for all sensors and return as list
+#' 
+#' Only needs to be called when updating these funcitons with new 
 #' data
 generate.rsr.all <- function(path.to.licor = NULL) {
   data(raw.sensor.data)
@@ -68,8 +68,8 @@ generate.rsr.all <- function(path.to.licor = NULL) {
 } # generate.rsr.all
 
 
-#' @name read.rsr.folder
-#' @title Read and process RSR data from directory
+#' Read and process RSR data from directory
+#' 
 #' @param dir.path Directory containing RSR data
 #' @param type Type of sensor. Options are: landsat, avhrr
 read.rsr.folder <- function(dir.path, type) {
