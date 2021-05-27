@@ -27,7 +27,13 @@ load_data_paleon_sda <- function(settings){
   # library(plyr) #need to load to use .fnc below
   
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
-  bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
+  bety <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = d$host, 
+    user = d$user, 
+    password = d$password, 
+    dbname = d$dbname
+  )
   
   if(settings$host$name != 'localhost') PEcAn.logger::logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
