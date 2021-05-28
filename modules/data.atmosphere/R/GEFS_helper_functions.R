@@ -141,7 +141,8 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
         print(paste("Downloading", forecast_date, cycle))
         
         if(cycle == "00"){
-          hours <- c(seq(0, 240, 3),seq(246, min(end_hr, 384), 6))
+          hours <- c(seq(0, 240, 3),seq(246, 384, 6))
+          hours <- hours[hours<=end_hr]
         }else{
           hours <- c(seq(0, 240, 3),seq(246, min(end_hr, 840) , 6))
         }
