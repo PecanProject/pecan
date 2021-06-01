@@ -484,7 +484,8 @@ process_gridded_noaa_download <- function(lat_list,
       #Write netCDF
       if(!nrow(forecast_noaa_ens) == 0){      
         write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
-}else {next}
+      }else {results_list[[ens]] <- NULL 
+      next}
       
       if(downscale){
         #Downscale the forecast from 6hr to 1hr
@@ -511,6 +512,7 @@ process_gridded_noaa_download <- function(lat_list,
       
     }
   }
+  results_list <- results_list[!sapply(results_list, is.null)]
   return(results_list)
 } #process_gridded_noaa_download
 
