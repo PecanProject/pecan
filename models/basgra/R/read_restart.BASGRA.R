@@ -66,6 +66,42 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
    names(forecast[[length(forecast)]]) <- c("CropYield")
   }
   
+  if ("litter_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
+  }
+  
+  if ("stubble_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$stubble_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("stubble_carbon_content")
+  }
+  
+  if ("stem_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$stem_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("stem_carbon_content")
+  }
+  
+  if ("root_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$root_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("root_carbon_content")
+  }
+  
+  if ("reserve_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$reserve_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("reserve_carbon_content")
+  }
+  
+  if ("leaf_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("leaf_carbon_content")
+  }
+  
+  if ("dead_leaf_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$dead_leaf_carbon_content[last]  # kg C m-2
+    names(forecast[[length(forecast)]]) <- c("dead_leaf_carbon_content")
+  }
+  
+  
   PEcAn.logger::logger.info(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)

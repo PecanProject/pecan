@@ -44,6 +44,49 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
      names(analysis.save[[length(analysis.save)]]) <- c("CropYield")
   }
   
+  if ("litter_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$litter_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("litter_carbon_content")
+  }
+  
+  if ("stubble_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$stubble_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("stubble_carbon_content")
+  }
+  
+  if ("stem_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$stem_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("stem_carbon_content")
+  }
+  
+  if ("root_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$root_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("root_carbon_content")
+  }
+  
+  if ("reserve_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$reserve_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("reserve_carbon_content")
+  }
+  
+  if ("leaf_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$leaf_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("leaf_carbon_content")
+  }
+
+  if ("dead_leaf_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$dead_leaf_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("dead_leaf_carbon_content")
+  }
+  
+  
   if (!is.null(analysis.save) && length(analysis.save) > 0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))

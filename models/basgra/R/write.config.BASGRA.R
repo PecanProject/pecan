@@ -281,6 +281,35 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
        run_params[names(run_params) == "YIELDI"] <-  udunits2::ud.convert(IC$CropYield, "kg", "g")
     }
     
+    if ("litter_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CLITT0"] <-  udunits2::ud.convert(IC$litter_carbon_content, "kg", "g")
+    }
+    
+    if ("stubble_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSTUBI"] <-  udunits2::ud.convert(IC$stubble_carbon_content, "kg", "g")
+    }
+   
+    if ("stem_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSTI"] <-  udunits2::ud.convert(IC$stem_carbon_content, "kg", "g")
+    }
+    
+    if ("root_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
+    }
+
+    if ("reserve_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CRESI"] <-  udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
+    }
+    
+    if ("leaf_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CLVI"] <-  udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
+    }
+    
+    if ("dead_leaf_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CLVDI"] <-  udunits2::ud.convert(IC$dead_leaf_carbon_content, "kg", "g")
+    }
+
+
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
     
     IC.path <- settings$run$inputs$poolinitcond$path
@@ -442,17 +471,21 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     load(last_states_file)
     
+    # SDA handles this now
     # LOG10CLVI  = pa(1)
-    run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
+    # run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
     
+    # SDA handles this now
     # LOG10CRESI = pa(2)
-    run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
+    # run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
     
+    # SDA handles this now
     # LOG10CRTI  = pa(3)
-    run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
+    # run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
     
+    # SDA handles this now
     # CSTI	   = pa(4)
-    run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
+    # run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
     
     # LOG10LAII handled above
     
@@ -468,8 +501,9 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # LT50I      = pa(9)
     run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
     
+    # SDA handles this now
     # CLITT0    = pa( 82) ! (g C m-2)    Initial C in litter
-    run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
+    # run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
     
     # CSOM0     = pa( 83) ! (g C m-2)    Initial C in OM - handled above
     
@@ -489,9 +523,9 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     #run_params[names(run_params) == "PHENCR"] <- last_vals[names(last_vals) == "PHENCR"]
     
-    run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
+    #run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"] #SDA handles this now
     #run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"] #SDA handles this now
-    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
+    #run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"] #SDA handles this now
     
     run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
     
