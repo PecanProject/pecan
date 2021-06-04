@@ -27,7 +27,7 @@
 ## further modified by S. Serbin 09/2018
 ##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
-                             end_date, pft_names = NULL) {
+                             end_date, pft_names = NULL, settings = NULL) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -861,7 +861,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
 ##'
 ##' @export
-read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...){
+read_E_files <- function(settings, yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
@@ -1017,7 +1017,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
 
 ##' Function for put -E- values to nc_var list
 ##' @export
-put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...){
+put_E_values <- function(settings, yr, nc_var, out, lat, lon, begins, ends, pft_names, ...){
   
   s <- length(nc_var)
   
