@@ -38,53 +38,21 @@
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-clone_pft: no visible binding for global variable ‘name’
-clone_pft: no visible binding for global variable ‘id’
-clone_pft: no visible binding for global variable ‘created_at’
-clone_pft: no visible binding for global variable ‘updated_at’
-clone_pft: no visible binding for global variable ‘pft_id’
+
+
 db.exists: no visible binding for '<<-' assignment to ‘user.permission’
 db.exists: no visible binding for global variable ‘user.permission’
-dbfile.check: no visible binding for global variable ‘container_type’
-dbfile.check: no visible binding for global variable ‘container_id’
-dbfile.check: no visible binding for global variable ‘machine_id’
-dbfile.check: no visible binding for global variable ‘updated_at’
-dbHostInfo: no visible binding for global variable ‘sync_host_id’
-get_run_ids: no visible binding for global variable ‘run_id’
-get_users: no visible binding for global variable ‘id’
-get_workflow_ids: no visible binding for global variable ‘workflow_id’
-get.trait.data.pft: no visible binding for global variable ‘pft_id’
-get.trait.data.pft: no visible binding for global variable ‘created_at’
-get.trait.data.pft: no visible binding for global variable ‘stat’
-get.trait.data.pft: no visible binding for global variable ‘trait’
-insert.format.vars: no visible binding for global variable ‘id’
-insert.format.vars: no visible binding for global variable ‘name’
-insert.format.vars: no visible global function definition for ‘collect’
+
 load_data_single_run: no visible global function definition for
   ‘read.output’
 load_data_single_run: no visible binding for global variable ‘var_name’
 load_data_single_run: no visible binding for global variable ‘vals’
-load_data_single_run: no visible binding for global variable ‘posix’
 match_dbcols: no visible global function definition for ‘head’
 match_dbcols: no visible binding for global variable ‘.’
 match_dbcols: no visible binding for global variable ‘as’
-query_pfts: no visible binding for global variable ‘name’
-query.format.vars: no visible binding for global variable ‘variable_id’
-query.format.vars: no visible binding for global variable
-  ‘storage_type’
-query.pft_cultivars: no visible binding for global variable ‘name’
-query.pft_cultivars: no visible binding for global variable ‘pft_type’
-query.pft_cultivars: no visible binding for global variable ‘name.mt’
-query.pft_cultivars: no visible binding for global variable
-  ‘cultivar_id’
-query.pft_cultivars: no visible binding for global variable ‘specie_id’
-query.pft_cultivars: no visible binding for global variable ‘genus’
-query.pft_cultivars: no visible binding for global variable ‘species’
-query.pft_cultivars: no visible binding for global variable
-  ‘scientificname’
-query.pft_cultivars: no visible binding for global variable ‘name.cv’
+
 query.priors: no visible binding for global variable ‘settings’
-query.traits: no visible binding for global variable ‘name’
+
 rename_jags_columns: no visible binding for global variable ‘stat’
 rename_jags_columns: no visible binding for global variable ‘n’
 rename_jags_columns: no visible binding for global variable ‘trt_id’
@@ -93,19 +61,8 @@ rename_jags_columns: no visible binding for global variable
   ‘citation_id’
 rename_jags_columns: no visible binding for global variable
   ‘greenhouse’
-runs: no visible binding for global variable ‘folder’
-runs: no visible binding for global variable ‘id’
-runs: no visible binding for global variable ‘ensemble_id’
-search_reference_single: no visible binding for global variable ‘score’
-search_reference_single: no visible binding for global variable
-  ‘author’
-search_reference_single: no visible binding for global variable
-  ‘author_family’
-search_reference_single: no visible binding for global variable
-  ‘author_given’
-search_reference_single: no visible binding for global variable
-  ‘issued’
-workflows: no visible binding for global variable ‘workflow_id’
+
+
 Undefined global functions or variables:
   . as author author_family author_given citation_id collect
   container_id container_type created_at cultivar_id ensemble_id folder
@@ -181,5 +138,3 @@ Status: 2 WARNINGs, 2 NOTEs
 See
   ‘/tmp/RtmpcCXxhc/PEcAn.DB.Rcheck/00check.log’
 for details.
-
-
