@@ -1,6 +1,6 @@
 library(R2WinBUGS)
 library(BRugs)
-dat=read.csv("C3 Species.csv",header=T)
+dat=read.csv("C3_Species.csv",header=T)
 #dat2=read.csv('c3covariates.csv',header=T)
 
 my.model  = function(){

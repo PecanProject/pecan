@@ -39,8 +39,8 @@ RUN apt-get update \
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
 COPY pecan.depends.R /
-RUN  Rscript -e "install.packages(c('devtools'), repos = 'http://cran.rstudio.com')" \
-  && Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')" \
+RUN  Rscript -e "install.packages(c('devtools'))" \
+  && Rscript -e "devtools::install_version('roxygen2', '7.0.2')" \
   && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 
