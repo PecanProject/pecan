@@ -294,21 +294,37 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("root_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
     }
 
     if ("reserve_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CRESI"] <-  udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRESI"] <-  udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
     }
     
     if ("leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLVI"] <-  udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CLVI"] <-  udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
     }
     
     if ("dead_leaf_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "CLVDI"] <-  udunits2::ud.convert(IC$dead_leaf_carbon_content, "kg", "g")
     }
 
+    if ("nonelongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG1I"] <-  IC$nonelongating_generative_tiller
+    }
+
+    if ("elongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG2I"] <-  IC$elongating_generative_tiller
+    }
+
+    if ("nonelongating_vegetative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILVI"] <-  IC$nonelongating_vegetative_tiller
+    }
+
+    if ("phenological_stage"  %in% ic.names) {
+      run_params[names(run_params) == "PHENI"] <-  IC$phenological_stage
+    }
+    
 
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
     
@@ -433,11 +449,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   # TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
   # TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
   # TILV       = TILTOTI * (1. - FRTILGI)
-  tiltot_tmp <- run_params[names(run_params) == "TILTOTI"]
-  frtilg_tmp <- run_params[names(run_params) == "FRTILGI"]
-  run_params[names(run_params) == "TILG1I"] <- tiltot_tmp * frtilg_tmp * run_params[names(run_params) == "FRTILGG1I"]
-  run_params[names(run_params) == "TILG2I"] <- tiltot_tmp * frtilg_tmp * (1 - run_params[names(run_params) == "FRTILGG1I"])
-  run_params[names(run_params) == "TILVI"]  <- tiltot_tmp * (1 - frtilg_tmp)
+  #tiltot_tmp <- run_params[names(run_params) == "TILTOTI"]
+  #frtilg_tmp <- run_params[names(run_params) == "FRTILGI"]
+  #run_params[names(run_params) == "TILG1I"] <- tiltot_tmp * frtilg_tmp * run_params[names(run_params) == "FRTILGG1I"]
+  #run_params[names(run_params) == "TILG2I"] <- tiltot_tmp * frtilg_tmp * (1 - run_params[names(run_params) == "FRTILGG1I"])
+  #run_params[names(run_params) == "TILVI"]  <- tiltot_tmp * (1 - frtilg_tmp)
   
   #  WAL        = 1000. * ROOTDM * WCI
   run_params[names(run_params) == "WALI"]  <- 1000. * run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "WCI"]
@@ -489,11 +505,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     # LOG10LAII handled above
     
+    # SDA handles this now
     # PHENI	   = pa(6) 
-    run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
+    #run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
     
     # TILTOTI	   = pa(7) 
-    run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
+    # run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
     
     # FRTILGI	   = pa(8)
     #run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
@@ -543,9 +560,9 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # this is probably not changing
     #run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
     
-    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"]  #* run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"]  #* run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
+    #run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"]  #* run_params[names(run_params) == "TILTOTI"]
+    #run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"]  #* run_params[names(run_params) == "TILTOTI"]
+    #run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
     
     
     run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]

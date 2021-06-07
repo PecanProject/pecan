@@ -101,6 +101,25 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("dead_leaf_carbon_content")
   }
   
+  if ("nonelongating_generative_tiller" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$nonelongating_generative_tiller[last]  # m-2
+    names(forecast[[length(forecast)]]) <- c("nonelongating_generative_tiller")
+  }
+  
+  if ("elongating_generative_tiller" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$elongating_generative_tiller[last]  # m-2
+    names(forecast[[length(forecast)]]) <- c("elongating_generative_tiller")
+  }
+  
+  if ("nonelongating_vegetative_tiller" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$nonelongating_vegetative_tiller[last]  # m-2
+    names(forecast[[length(forecast)]]) <- c("nonelongating_vegetative_tiller")
+  } 
+  
+  if ("phenological_stage" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$phenological_stage[last]  
+    names(forecast[[length(forecast)]]) <- c("phenological_stage")
+  } 
   
   PEcAn.logger::logger.info(runid)
   

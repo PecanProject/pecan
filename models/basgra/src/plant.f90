@@ -174,7 +174,7 @@ Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
   GLVSI    = GLVSI  * fNgrowth
   GSTSI    = GSTSI  * fNgrowth
 
-  call Allocation(ALLOTOT,GRESSI, GRES,GRT,GLV,GST)
+  call Allocation(ALLOTOT,GRESSI,GRES,GRT,GLV,GST)
 end Subroutine Growth
 
    Subroutine Allocation(ALLOTOT,GRESSI, GRES,GRT,GLV,GST)
@@ -189,7 +189,6 @@ end Subroutine Growth
        ! Calculate amount of assimilates allocated to reserves    
        GRES   = min( ALLOTOT - ALLOSH, GRESSI)
      else
-     ! Situation 2: Storage has priority over shoot (autumn)
        ! Calculate amount of assimilates allocated to reserves
        GRES   = min( ALLOTOT, GRESSI )
        ! Calculate amount of assimilates allocated to shoot
