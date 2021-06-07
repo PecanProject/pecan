@@ -110,7 +110,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]],
                                outdir, start_date, end_date,
-                               pft_names)
+                               pft_names, settings)
     }
 
     # generate start/end dates for processing
@@ -142,7 +142,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]],
                      lat = lat, lon = lon, begins = begin_date,
-                     ends = ends, pft_names)
+                     ends = ends, pft_names, settings)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -861,7 +861,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
 ##'
 ##' @export
-read_E_files <- function(settings, yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...){
+read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, settings, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
@@ -1017,7 +1017,7 @@ read_E_files <- function(settings, yr, yfiles, efiles, outdir, start_date, end_d
 
 ##' Function for put -E- values to nc_var list
 ##' @export
-put_E_values <- function(settings, yr, nc_var, out, lat, lon, begins, ends, pft_names, ...){
+put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, settings, ...){
   
   s <- length(nc_var)
   
