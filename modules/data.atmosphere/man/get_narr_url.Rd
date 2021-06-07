@@ -11,7 +11,7 @@ get_narr_url(url, xy, flx, pb = NULL)
 
 \item{xy}{Vector length 2 containing NARR coordinates}
 
-\item{flx}{(Logical) If `TRUE`, format for `flx` variables. Otherwise, 
+\item{flx}{(Logical) If `TRUE`, format for `flx` variables. Otherwise,
 format for `sfc` variables. See [narr_flx_vars].}
 
 \item{pb}{Progress bar R6 object (default = `NULL`)}

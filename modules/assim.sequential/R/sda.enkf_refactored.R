@@ -121,6 +121,7 @@ sda.enkf <- function(settings,
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###----  
   obs.times <- names(obs.mean)
+  
   obs.times.POSIX <- lubridate::ymd_hms(obs.times)
   
   ### TO DO: Need to find a way to deal with years before 1000 for paleon ### need a leading zero
@@ -211,7 +212,7 @@ sda.enkf <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(assimyears[t],"/",files.last.sda)))
     }
     
-    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = t + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
+    if(length(FORECAST) == length(ANALYSIS) && length(FORECAST) > 0) t = 1 + length(FORECAST) #if you made it through the forecast and the analysis in t and failed on the analysis in t+1 so you didn't save t
     
   }else{
     t = 1
@@ -291,8 +292,14 @@ sda.enkf <- function(settings,
       #---------------- setting up the restart argument
       
       if(exists('new.state')){ #Has the analysis been run? Yes, then restart from analysis.
-        restart.arg<-list(runid = run.id, 
-                          start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3),
+          
+        if (t == 2) {
+            start.time = lubridate::ymd_hms(settings$run$start.date, truncated = 3)
+          } else {
+            start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3)
+          }
+         restart.arg<-list(runid = run.id, 
+                          start.time = start.time,
                           stop.time = lubridate::ymd_hms(obs.times[t], truncated = 3), 
                           settings = settings,
                           new.state = new.state, 
@@ -304,19 +311,28 @@ sda.enkf <- function(settings,
         restart.arg = NULL
       }
       
+       if(t == 1){
+          config.settings = settings 
+          config.settings$run$end.date = format(lubridate::ymd_hms(obs.times[t], truncated = 3), "%Y/%m/%d")
+          } else {
+          config.settings = settings
+          }
+       
+      
+      
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-      outconfig <- write.ensemble.configs(defaults = settings$pfts, 
+      outconfig <- write.ensemble.configs(defaults = config.settings$pfts, 
                                           ensemble.samples = ensemble.samples, 
-                                          settings = settings,
-                                          model = settings$model$type, 
-                                          write.to.db = settings$database$bety$write,
+                                          settings = config.settings,
+                                          model = config.settings$model$type, 
+                                          write.to.db = config.settings$database$bety$write,
                                           restart = restart.arg)
       
       save(outconfig, file = file.path(settings$outdir,"SDA", "outconfig.Rdata"))
       
       run.id <- outconfig$runs$id
       ensemble.id <- outconfig$ensemble.id
-      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the splitted met
+      if(t==1) inputs <- outconfig$samples$met # for any time after t==1 the met is the split met
       
       if(control$debug) browser()
       #-------------------------------------------- RUN
@@ -355,7 +371,7 @@ sda.enkf <- function(settings,
       "*.nc$",
       recursive = TRUE,
       full.names = TRUE)
-   files <-  files[grep(pattern = "SDA*", files, invert = TRUE)]
+   files <-  files[grep(pattern = "SDA*", basename(files), invert = TRUE)]
     
     
    file.rename(files, 
@@ -366,6 +382,10 @@ sda.enkf <- function(settings,
     X <- do.call(rbind, X)
     
 
+    #unit scaling if needed 
+    
+    X <-  rescaling_stateVars(settings, X, multiply = TRUE)
+    
     
     if(sum(X,na.rm=T) == 0){
       logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
@@ -397,8 +417,9 @@ sda.enkf <- function(settings,
       }
       # droping the ones that their means are zero 
       na.obs.mean <- which(is.na(unlist(obs.mean[[t]][choose])))
-      if (length(na.obs.mean) > 0)
-        choose <- choose [-na.obs.mean]
+      na.obs.cov <- which(is.na(unlist(obs.cov[[t]][choose])))
+      if (length(na.obs.mean) > 0) choose <- choose [-na.obs.mean]
+      if (length(na.obs.cov) > 0) choose.cov <- choose[-na.obs.cov]
       
       Y <- unlist(obs.mean[[t]][choose])
     
@@ -434,8 +455,11 @@ sda.enkf <- function(settings,
       }
       
       
-      
-      wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
+      if (is.null(outconfig$samples$met$ids)) {
+        wts <- unlist(weight_list[[t]])
+      } else {
+        wts <- unlist(weight_list[[t]][outconfig$samples$met$ids])
+      }
       
       #-analysis function
       enkf.params[[t]] <- Analysis.sda(settings,
@@ -541,6 +565,8 @@ sda.enkf <- function(settings,
     
     new.state  <- as.data.frame(analysis)
     ANALYSIS[[t]] <- analysis
+    FORECAST[[t]] <- X
+    
     
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
