@@ -125,8 +125,6 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   #Defining some colors
   generate_colors_sda()
   t1 <- 1
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
@@ -142,16 +140,17 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   Y.order <- sapply(colnames(FORECAST[[t]]),agrep,x=colnames(Ybar),max=2,USE.NAMES = F)%>%unlist
   Ybar <- Ybar[,Y.order]
   YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
-    if (is.null(x)) {
+    if (is.na(x)) {
       rep(NA, length(names.y))
-    }
+    } else {
     sqrt(diag(x))
+    }
   })))
   
   Ybar[is.na(Ybar)]<-0
   YCI[is.na(YCI)]<-0
   
-  YCI <- YCI[,Y.order]
+  YCI <- YCI[,c(Y.order)]
   
   
   
@@ -184,12 +183,12 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
          ylim = range(c(XaCI, Xci,Ybar[, 1]), na.rm = TRUE),
          type = "n", 
          xlab = "Year", 
-         ylab = ylab.names[grep(colnames(X)[i], var.names)],
+         #ylab = ylab.names[grep(colnames(X)[i], var.names)],
          main = colnames(X)[i])
     
     # observation / data
     if (i<=ncol(X)) { #
-      ciEnvelope(as.Date(obs.times[t1:t]), 
+     ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
                  col = alphagreen)
@@ -269,7 +268,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
-    ciEnvelope(rev(t1:t), 
+  ciEnvelope(rev(t1:t), 
                rev(Xbar - XaCI[, 1]), 
                rev(Xbar - XaCI[, 2]), 
                col = alphapurple)
