@@ -3,16 +3,20 @@
 #       EFI Forecasting Challenge 
 #
 ###############################################
-source('/projectnb/dietzelab/ahelgeso/EFI_Forecast_Scripts/half_hour_downscale.R')
+#set home directory as object (remember to change to your own directory before running this script)
+homedir <- "/projectnb/dietzelab/ahelgeso"
+
+source(file.path(homedir, 'pecan/scripts/half_hour_downscale.R')) #remember to change to where you store your pecan folder in your directory
 library(PEcAn.all)
 library(tidyverse)
 ########## Site Info ###########
 #read in .csv with site info
-setwd('/projectnb/dietzelab/ahelgeso/EFI_Forecast_Scripts/CSV')
-data_prep <- read.csv("data_prep_5_sites.csv")
-sitename <- data_prep$siteid_NEON2
-siteid <- data_prep$siteid_BETY2
-base_dir <- data_prep$base_dir
+setwd(file.path(homedir, 'EFI_Forecast_Scripts/CSV')) #remember to change to where you keep your dataprep .csv file with the site info
+data_prep <- read.csv("dataprep_10_sites.csv") #this .csv file contains the NEON site id, BETY site id, and location where you want the met data saved. Remember to change to fit your sites and file path before running the script
+data_prep <- filter(data_prep, met_download == "dataprep")
+sitename <- data_prep$siteid_NEON4
+siteid <- data_prep$siteid_BETY4
+base_dir <- data_prep$base_dir4
 
 #run info 
 start_date = format(Sys.Date()-1, "%Y-%m-%d")
@@ -114,19 +118,19 @@ for(h in 1:length(files)){
 
 ######### Get clim id's and paths #################
 
-index = PEcAn.DB::dbfile.input.check(
-  siteid= siteid[i] %>% as.character(),
-  startdate = start_date %>% as.Date,
-  enddate = end_date %>% as.Date,
-  parentid = NA,
-  mimetype="text/csv",
-  formatname="Sipnet.climna",
-  con,
-  hostname = PEcAn.remote::fqdn(),
-  pattern = "2021", 
-  exact.dates = TRUE,
-  return.all=TRUE
-)
+# index = PEcAn.DB::dbfile.input.check(
+#   siteid= siteid[i] %>% as.character(),
+#   startdate = start_date %>% as.Date,
+#   enddate = end_date %>% as.Date,
+#   parentid = NA,
+#   mimetype="text/csv",
+#   formatname="Sipnet.climna",
+#   con,
+#   hostname = PEcAn.remote::fqdn(),
+#   pattern = "2021", 
+#   exact.dates = TRUE,
+#   return.all=TRUE
+# )
 
 }
 
