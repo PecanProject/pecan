@@ -8,10 +8,14 @@ library("R.utils")
 library("dynutils")
 
 ###### Preping Workflow for regular SIPNET Run ##############
+#set home directory as object (remember to change to your own directory before running this script)
+homedir <- "/projectnb/dietzelab/ahelgeso"
+
+#Load site.xml and outputPath (i.e. where the model outputs will be stored) into args
 args = list()
-args$settings = "/projectnb/dietzelab/ahelgeso/Site_XMLS/los.xml"
+args$settings = file.path(homedir, "Site_XMLS/harvard.xml") #remember to change to where you store the site.xmls
 args$continue = TRUE
-outputPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Lost_Creek/"
+outputPath <- file.path(homedir, "Site_Outputs/Harvard/") #remember to change to where you want the model outputs saved
 
   
 if(!dir.exists(outputPath)){dir.create(outputPath, recursive = TRUE)}
@@ -20,8 +24,8 @@ setwd(outputPath)
 # Open and read in settings file for PEcAn run.
 settings <- PEcAn.settings::read.settings(args$settings)
 
-start_date <- as.Date('2021-06-01')
-end_date<- as.Date('2021-06-02')
+start_date <- as.Date('2021-06-02')
+end_date<- as.Date('2021-06-03')
 
 # Finding the right end and start date
 met.start <- start_date 
@@ -62,8 +66,6 @@ input_check <- PEcAn.DB::dbfile.input.check(
 )
 
 #If INPUTS already exists, add id and met path to settings file
-
-
 
 if(length(input_check$id) > 0){
   #met paths 
@@ -202,7 +204,7 @@ library("plotly")
 library("gganimate")
 library("thematic")
 thematic_on()
-source('/projectnb/dietzelab/ahelgeso/EFI_Forecast_Scripts/efi_data_process_v2.R')
+source(file.path(homedir, 'pecan/scripts/efi_data_process.R')) #remember to change to where you store your pecan folder in your directory
 #Load Output args
 site.num <- settings$run$site$id
 outdir <- outputPath
@@ -212,31 +214,34 @@ wid <- settings$workflow$id
 output_args = c(as.character(wid), site.num, outdir)
 
 data = efi.data.process(output_args)
+
 #Run SIPNET Outputs
-#To figure out the size for minutes
 data.final = data %>% 
   mutate(date = as.Date(date)) %>% 
   filter(date < end_date) %>% 
   arrange(ensemble, date) %>% 
-  mutate(time = as.POSIXct(paste(date,  Time,  minutes, sep = " "), format = "%Y-%m-%d %H %M")) %>% 
+  mutate(time = as.POSIXct(paste(date, Time, sep = " "), format = "%Y-%m-%d %H %M")) %>% 
   mutate(siteID = site.name,
          forecast = 1, 
          data_assimilation = 0, 
-         time = lubridate::force_tz(time, tz = "UTC")) 
+         time = lubridate::force_tz(time, tz = "UTC"))
+#re-order columns and delete unnecessary columns in data.final
+datacols <- c("date", "time", "siteID", "ensemble", "nee", "le", "vswc", "forecast", "data_assimilation")
+data.final = data.final[datacols]
 
 ############ Plots to check out reliability of forecast #########################
 
-ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
-  geom_line(aes(x = time, y = nee, color = ensemble))
-
-ggplot(data.final, aes(x = time, y = le, group = ensemble)) +
-  geom_line(aes(x = time, y = le, color = ensemble))
-
-ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
-  geom_line(aes(x = time, y = vswc, color = ensemble))
+# ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
+#   geom_line(aes(x = time, y = nee, color = ensemble))
+# 
+# ggplot(data.final, aes(x = time, y = le, group = ensemble)) +
+#   geom_line(aes(x = time, y = le, color = ensemble))
+# 
+# ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
+#   geom_line(aes(x = time, y = vswc, color = ensemble))
 
 ########### Export data.final  ###############
 
-write.csv(data.final, file = "[insert sitename].csv")
+write.csv(data.final, file = paste0(site.name, "-", start_date, "-", end_date, ".csv"))
 
 
