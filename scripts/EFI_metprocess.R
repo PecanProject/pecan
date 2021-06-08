@@ -3,22 +3,26 @@
 #       EFI Forecasting Challenge 
 #
 ###############################################
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/met.process.R')
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/download.raw.met.module.R')
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/GEFS_helper_functions.R')
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R')
+#set home directory as object (remember to change to your own directory before running this script)
+homedir <- "/projectnb/dietzelab/ahelgeso"
+
+source(file.path(homedir, 'pecan/modules/data.atmosphere/R/met.process.R')) #remember to change to where you store your pecan folder in your directory
+source(file.path(homedir, 'pecan/modules/data.atmosphere/R/download.raw.met.module.R')) #remember to change to where you store your pecan folder in your directory
+source(file.path(homedir, 'pecan/modules/data.atmosphere/R/GEFS_helper_functions.R')) #remember to change to where you store your pecan folder in your directory
+source(file.path(homedir, 'pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R')) #remember to change to where you store your pecan folder in your directory
 library(PEcAn.all)
 library(tidyverse)
 
 #read in .csv with site info 
-setwd("/projectnb/dietzelab/ahelgeso/EFI_Forecast_Scripts/CSV/")
-data_prep <- read.csv("data_prep_metprocess.csv")
+setwd(file.path(homedir, "EFI_Forecast_Scripts/CSV/")) #remember to change to where you keep your dataprep .csv file with the site info
+data_prep <- read.csv("dataprep_10_sites.csv") #this .csv file contains the sitename, BETY site id, location to store met files, model name, met source (from .xml), and the met output (from .xml) for each site you want to download met data
+data_prep <- filter(data_prep, met_download == "metprocess")
 sitename <- data_prep$site_name
-site_id <- data_prep$siteid_BETY3
+site_id <- data_prep$siteid_BETY4
 base_dir <- data_prep$base_dir
-model_name <- data_prep$model_name3
-met_source <- data_prep$input_met_source3
-met_output <- data_prep$input_met_output3
+model_name <- data_prep$model_name4
+met_source <- data_prep$input_met_source4
+met_output <- data_prep$input_met_output4
 
 #run info
 start_date = as.Date(format(Sys.Date(), "%Y-%m-%d"))
