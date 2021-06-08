@@ -36,7 +36,7 @@
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param downscale logical, assumed True. Indicated whether data should be downscaled to hourly
 ##' @param ...  Additional optional parameters
-##'  @export
+##' @export
 ##' 
 ##' @examples 
 ##' \dontrun{
