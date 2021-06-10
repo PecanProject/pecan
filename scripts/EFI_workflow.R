@@ -15,6 +15,9 @@ homedir <- "/projectnb/dietzelab/ahelgeso"
 args = list()
 args$settings = file.path(homedir, "Site_XMLS/harvard.xml") #remember to change to where you store the site.xmls
 args$continue = TRUE
+args$start_date = as.Date(format(Sys.Date()-2, "%Y-%m-%d"))
+args$end_date = as.Date(format(Sys.Date()-1, "%Y-%m-%d"))
+
 outputPath <- file.path(homedir, "Site_Outputs/Harvard/") #remember to change to where you want the model outputs saved
 
   
@@ -24,8 +27,8 @@ setwd(outputPath)
 # Open and read in settings file for PEcAn run.
 settings <- PEcAn.settings::read.settings(args$settings)
 
-start_date <- as.Date('2021-06-02')
-end_date<- as.Date('2021-06-03')
+start_date <- args$start_date
+end_date<- args$end_date
 
 # Finding the right end and start date
 met.start <- start_date 
