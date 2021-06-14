@@ -25,8 +25,8 @@ met_source <- data_prep$input_met_source4
 met_output <- data_prep$input_met_output4
 
 #run info
-start_date = as.Date(format(Sys.Date(), "%Y-%m-%d"))
-end_date = as.Date(format(Sys.Date()+1, "%Y-%m-%d"))
+start_date = as.Date(format(Sys.Date()-1, "%Y-%m-%d"))
+end_date = as.Date(format(Sys.Date(), "%Y-%m-%d"))
 host = list()
   host$name = "localhost"
 dbparms = list()
