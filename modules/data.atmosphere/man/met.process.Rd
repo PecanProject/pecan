@@ -37,15 +37,7 @@ met.process(
 
 \item{spin}{spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)}
 
-\item{overwrite}{Whether to force met.process to proceed.
-
-       `overwrite` may be a list with individual components corresponding to 
-       `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
-       the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
-       Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
-       *except* raw met downloads. I.e., it corresponds to:
-
-       list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+\item{overwrite}{Whether to force met.process to proceed.}
 }
 \description{
 met.process
