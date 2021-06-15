@@ -190,6 +190,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param model_name_raw Name of raw file name
 #' @param output_directory Output directory 
 #' @importFrom rlang .data 
+#' @export
 #' @return List
 #'
 #'
@@ -526,6 +527,7 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #' @importFrom rlang .data 
 #' @import tidyselect
+#' @export
 #' @author Quinn Thomas
 #'
 #'
@@ -646,6 +648,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 ##' @param cf_units vector of variable names in order they appear in df
 ##' @param output_file name, with full path, of the netcdf file that is generated
 ##' @param overwrite logical to overwrite existing netcdf file
+##' @export
 ##' @return NA
 ##'
 ##'
