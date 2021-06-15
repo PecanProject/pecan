@@ -11,7 +11,7 @@ library(PEcAn.all)
 library(tidyverse)
 ########## Site Info ###########
 #read in .csv with site info
-setwd(file.path(homedir, 'EFI_Forecast_Scripts/CSV')) #remember to change to where you keep your dataprep .csv file with the site info
+setwd(file.path(homedir, 'pecan/scripts/')) #remember to change to where you keep your dataprep .csv file with the site info
 data_prep <- read.csv("dataprep_10_sites.csv") #this .csv file contains the NEON site id, BETY site id, and location where you want the met data saved. Remember to change to fit your sites and file path before running the script
 data_prep <- filter(data_prep, met_download == "dataprep")
 sitename <- data_prep$siteid_NEON4
