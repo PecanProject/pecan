@@ -39,8 +39,7 @@ download.NOAA_GEFS(
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 
-\item{...}{Additional optional parameters
-@export}
+\item{...}{Additional optional parameters}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
