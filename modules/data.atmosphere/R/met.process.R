@@ -12,6 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
+##' @export
 ##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
