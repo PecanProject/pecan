@@ -6,7 +6,8 @@
 #' @param forecast_date date for forecast
 #' @param model_name_raw model name for directory creation
 #' @param end_hr end hr to determine how many hours to download
-#' @param output_directory output directory 
+#' @param output_directory output directory
+#' @export 
 #'
 #' @return NA
 #'
