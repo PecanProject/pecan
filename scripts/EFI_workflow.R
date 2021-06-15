@@ -13,7 +13,7 @@ homedir <- "/projectnb/dietzelab/ahelgeso"
 
 #Load site.xml and outputPath (i.e. where the model outputs will be stored) into args
 args = list()
-args$settings = file.path(homedir, "Site_XMLS/harvard.xml") #remember to change to where you store the site.xmls
+args$settings = file.path(homedir, "/pecan/base/settings/examples/Site_XMLS/harvard.xml") #remember to change to where you store the site.xmls
 args$continue = TRUE
 args$start_date = as.Date(format(Sys.Date()-2, "%Y-%m-%d"))
 args$end_date = as.Date(format(Sys.Date()-1, "%Y-%m-%d"))
