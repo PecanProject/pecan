@@ -6,15 +6,12 @@
 #set home directory as object (remember to change to your own directory before running this script)
 homedir <- "/projectnb/dietzelab/ahelgeso"
 
-source(file.path(homedir, 'pecan/modules/data.atmosphere/R/met.process.R')) #remember to change to where you store your pecan folder in your directory
 source(file.path(homedir, 'pecan/modules/data.atmosphere/R/download.raw.met.module.R')) #remember to change to where you store your pecan folder in your directory
-source(file.path(homedir, 'pecan/modules/data.atmosphere/R/GEFS_helper_functions.R')) #remember to change to where you store your pecan folder in your directory
-source(file.path(homedir, 'pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R')) #remember to change to where you store your pecan folder in your directory
 library(PEcAn.all)
 library(tidyverse)
 
 #read in .csv with site info 
-setwd(file.path(homedir, "EFI_Forecast_Scripts/CSV/")) #remember to change to where you keep your dataprep .csv file with the site info
+setwd(file.path(homedir, "pecan/scripts/")) #remember to change to where you keep your dataprep .csv file with the site info
 data_prep <- read.csv("dataprep_10_sites.csv") #this .csv file contains the sitename, BETY site id, location to store met files, model name, met source (from .xml), and the met output (from .xml) for each site you want to download met data
 data_prep <- filter(data_prep, met_download == "metprocess")
 sitename <- data_prep$site_name
