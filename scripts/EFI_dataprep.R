@@ -115,23 +115,6 @@ for(h in 1:length(files)){
   
 }
 
-
-######### Get clim id's and paths #################
-
-# index = PEcAn.DB::dbfile.input.check(
-#   siteid= siteid[i] %>% as.character(),
-#   startdate = start_date %>% as.Date,
-#   enddate = end_date %>% as.Date,
-#   parentid = NA,
-#   mimetype="text/csv",
-#   formatname="Sipnet.climna",
-#   con,
-#   hostname = PEcAn.remote::fqdn(),
-#   pattern = "2021", 
-#   exact.dates = TRUE,
-#   return.all=TRUE
-# )
-
 }
 
 
