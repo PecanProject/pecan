@@ -1,5 +1,13 @@
-#### need to create a graph funciton here to call with the args of start time 
+#### need to create a graph function here to call with the args of start time 
 
+#' EFI Data Process
+#'
+#' @param args completed forecast run settings file 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 efi.data.process <- function(args){ 
   start_date <- tryCatch(as.POSIXct(args[1]), error = function(e) {NULL} )
   if (is.null(start_date)) {
