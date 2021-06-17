@@ -11,16 +11,23 @@ library("dynutils")
 #set home directory as object (remember to change to your own directory before running this script)
 homedir <- "/projectnb/dietzelab/ahelgeso"
 
-#Load site.xml and outputPath (i.e. where the model outputs will be stored) into args
-args = list()
-args$settings = file.path(homedir, "/pecan/base/settings/examples/Site_XMLS/harvard.xml") #remember to change to where you store the site.xmls
-args$continue = TRUE
-args$start_date = as.Date(format(Sys.Date()-2, "%Y-%m-%d"))
-args$end_date = as.Date(format(Sys.Date()-1, "%Y-%m-%d"))
+#Load site.xml, start & end date, (with commandArgs) and outputPath (i.e. where the model outputs will be stored) into args
+tmp = commandArgs(trailingOnly = TRUE)
+args$settings = tmp[1]
+args$start_date = as.Date(tmp[2])
+if(length(args)>2){
+  args$end_date = as.Date(tmp[3])
+} else {
+  args$end_date = args$start_date + 35
+}
+
+if(length(args)>3){
+  args$continue = tmp[4]
+} else {
+  args$continue = TRUE
+}
 
 outputPath <- file.path(homedir, "Site_Outputs/Harvard/") #remember to change to where you want the model outputs saved
-
-  
 if(!dir.exists(outputPath)){dir.create(outputPath, recursive = TRUE)}
 setwd(outputPath)
 
