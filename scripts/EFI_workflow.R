@@ -1,3 +1,6 @@
+#You must run this script in the terminal using the code:
+#Rscript --vanilla EFI_workflow.R "[file path to site xml]" "[file path to output folder]" [start_date] 
+
 library("PEcAn.all")
 library("PEcAn.utils")
 library("RCurl")
@@ -11,25 +14,40 @@ library("dynutils")
 #set home directory as object (remember to change to your own directory before running this script)
 homedir <- "/projectnb/dietzelab/ahelgeso"
 
-#Load site.xml, start & end date, (with commandArgs) and outputPath (i.e. where the model outputs will be stored) into args
+#Load site.xml, start & end date, (with commandArgs specify args in terminal) and outputPath (i.e. where the model outputs will be stored) into args
 tmp = commandArgs(trailingOnly = TRUE)
+if(length(tmp)<3){
+  logger.severe("Missing required arguments")
+}
+args = list()
 args$settings = tmp[1]
-args$start_date = as.Date(tmp[2])
-if(length(args)>2){
-  args$end_date = as.Date(tmp[3])
+if(!file.exists(args$settings)){
+  logger.severe("Not a valid xml path")
+}
+args$outputPath = tmp[2]
+if(!isAbsolutePath(args$outputPath)){
+  logger.severe("Not a valid outputPath")
+}
+args$start_date = as.Date(tmp[3])
+if(is.na(args$start_date)){
+  logger.severe("No start date provided")
+}
+
+if(length(args)>3){
+  args$end_date = as.Date(tmp[4])
 } else {
   args$end_date = args$start_date + 35
 }
 
-if(length(args)>3){
-  args$continue = tmp[4]
+if(length(args)>4){
+  args$continue = tmp[5]
 } else {
   args$continue = TRUE
 }
 
-outputPath <- file.path(homedir, "Site_Outputs/Harvard/") #remember to change to where you want the model outputs saved
-if(!dir.exists(outputPath)){dir.create(outputPath, recursive = TRUE)}
-setwd(outputPath)
+
+if(!dir.exists(args$outputPath)){dir.create(args$outputPath, recursive = TRUE)}
+setwd(args$outputPath)
 
 # Open and read in settings file for PEcAn run.
 settings <- PEcAn.settings::read.settings(args$settings)
@@ -160,13 +178,13 @@ if (PEcAn.utils::status.check("OUTPUT") == 0) {
   PEcAn.utils::status.end()
 }
 
-# Run ensemble analysis on model output.
-if ("ensemble" %in% names(settings)
-    && PEcAn.utils::status.check("ENSEMBLE") == 0) {
-  PEcAn.utils::status.start("ENSEMBLE")
-  runModule.run.ensemble.analysis(settings, TRUE)
-  PEcAn.utils::status.end()
-}
+# # Run ensemble analysis on model output.
+# if ("ensemble" %in% names(settings)
+#     && PEcAn.utils::status.check("ENSEMBLE") == 0) {
+#   PEcAn.utils::status.start("ENSEMBLE")
+#   runModule.run.ensemble.analysis(settings, TRUE)
+#   PEcAn.utils::status.end()
+# }
 
 # Run state data assimilation
 if ("state.data.assimilation" %in% names(settings)) {
@@ -226,14 +244,14 @@ output_args = c(as.character(wid), site.num, outdir)
 data = efi.data.process(output_args)
 
 #Run SIPNET Outputs
-data.final = data %>% 
-  mutate(date = as.Date(date)) %>% 
-  filter(date < end_date) %>% 
-  arrange(ensemble, date) %>% 
-  mutate(time = as.POSIXct(paste(date, Time, sep = " "), format = "%Y-%m-%d %H %M")) %>% 
+data.final = data %>%
+  mutate(date = as.Date(date)) %>%
+  filter(date < end_date) %>%
+  arrange(ensemble, date) %>%
+  mutate(time = as.POSIXct(paste(date, Time, sep = " "), format = "%Y-%m-%d %H %M")) %>%
   mutate(siteID = site.name,
-         forecast = 1, 
-         data_assimilation = 0, 
+         forecast = 1,
+         data_assimilation = 0,
          time = lubridate::force_tz(time, tz = "UTC"))
 #re-order columns and delete unnecessary columns in data.final
 datacols <- c("date", "time", "siteID", "ensemble", "nee", "le", "vswc", "forecast", "data_assimilation")
@@ -243,10 +261,10 @@ data.final = data.final[datacols]
 
 # ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
 #   geom_line(aes(x = time, y = nee, color = ensemble))
-# 
+#
 # ggplot(data.final, aes(x = time, y = le, group = ensemble)) +
 #   geom_line(aes(x = time, y = le, color = ensemble))
-# 
+#
 # ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
 #   geom_line(aes(x = time, y = vswc, color = ensemble))
 
