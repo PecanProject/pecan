@@ -1,4 +1,15 @@
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/GEFS_helper_functions.R')
+#' @name half_hour_downscale
+#' @title half_hour_downscale
+#'
+#' @param input_file location of NOAAGEFS_1hr files
+#' @param output_file location where to store half_hour files
+#' @param overwrite whether to force hamf_hour_downscale to proceed
+#' @param hr set half hour
+#'
+#' @return
+#' @export
+#'
+#' @examples
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
   # open netcdf
