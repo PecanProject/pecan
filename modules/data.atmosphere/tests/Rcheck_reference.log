@@ -81,15 +81,7 @@ cfmet.downscale.subdaily: no visible binding for global variable
   ‘month’
 cfmet.downscale.subdaily: no visible binding for global variable ‘day’
 cfmet.downscale.subdaily: no visible binding for global variable ‘hour’
-check_met_input_file: no visible binding for global variable
-  ‘is_required’
-check_met_input_file: no visible binding for global variable
-  ‘cf_standard_name’
-check_met_input_file: no visible binding for global variable
-  ‘test_passed’
-check_met_input_file: no visible binding for global variable ‘test_raw’
 check_unit: no visible binding for global variable ‘cf_standard_name’
-col2ncvar: no visible binding for global variable ‘CF_name’
 debias.met.regression: no visible global function definition for ‘sd’
 debias.met.regression: no visible global function definition for
   ‘aggregate’
@@ -120,8 +112,6 @@ debias.met.regression: no visible binding for global variable ‘upr’
 debias.met.regression: no visible binding for global variable ‘obs’
 debias.met.regression: no visible binding for global variable ‘values’
 debias.met.regression: no visible binding for global variable ‘Year’
-download.NARR_site: no visible binding for global variable ‘year’
-download.NARR_site: no visible binding for global variable ‘data’
 download.NOAA_GEFS_downscale: no visible binding for global variable
   ‘timestamp’
 download.NOAA_GEFS_downscale: no visible binding for global variable
@@ -148,14 +138,6 @@ downscale_ShortWave_to_hrly : downscale_solar_geom: no visible global
 downscale_ShortWave_to_hrly: no visible binding for global variable
   ‘timestamp’
 downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘hour’
-downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘doy’
-downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘rpot’
-downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘avg.rpot’
-downscale_ShortWave_to_hrly: no visible binding for global variable
   ‘NOAA.member’
 downscale_spline_to_hourly : interpolate: no visible global function
   definition for ‘splinefun’
@@ -166,25 +148,14 @@ downscale_spline_to_hourly: no visible binding for global variable
   ‘dscale.member’
 downscale_spline_to_hourly: no visible global function definition for
   ‘:=’
-downscale_spline_to_hourly: no visible binding for global variable
-  ‘days’
 extract.local.CMIP5: no visible binding for global variable ‘GCM’
 extract.nc.ERA5 : <anonymous>: no visible global function definition
   for ‘setNames’
 extract.nc.ERA5: no visible global function definition for ‘setNames’
 extract.nc.ERA5 : <anonymous>: no visible binding for global variable
   ‘.’
-generate_narr_url: no visible binding for global variable ‘year’
-generate_narr_url: no visible binding for global variable ‘month’
-generate_narr_url: no visible binding for global variable ‘startdate’
-get_cf_variables_table: no visible binding for global variable ‘.attrs’
-get_cf_variables_table: no visible binding for global variable
-  ‘canonical_units’
-get_cf_variables_table: no visible binding for global variable
-  ‘description’
 get_NARR_thredds: no visible binding for global variable ‘latitude’
 get_NARR_thredds: no visible binding for global variable ‘longitude’
-get_NARR_thredds: no visible binding for global variable ‘flx’
 get_narr_url: no visible binding for global variable ‘NARR_name’
 get.cruncep: no visible binding for global variable ‘Lat’
 get.cruncep: no visible binding for global variable ‘lati’
@@ -227,9 +198,6 @@ model.train: no visible global function definition for ‘lm’
 model.train: no visible global function definition for ‘coef’
 model.train: no visible global function definition for ‘vcov’
 model.train: no visible global function definition for ‘resid’
-post_process: no visible binding for global variable ‘data’
-post_process: no visible binding for global variable ‘startdate’
-post_process: no visible binding for global variable ‘dhours’
 subdaily_pred: no visible global function definition for ‘model.matrix’
 Undefined global functions or variables:
   := . .attrs aggregate air_pressure air_temperature avg.rpot
@@ -447,9 +415,6 @@ Argument items with no description in Rd object 'met.process.stage':
 
 Argument items with no description in Rd object 'met_temporal_downscale.Gaussian_ensemble':
   ‘in.path’ ‘in.prefix’
-
-Argument items with no description in Rd object 'prepare_narr_year':
-  ‘verbose’
 
 Argument items with no description in Rd object 'split_wind':
   ‘start_date’ ‘end_date’
