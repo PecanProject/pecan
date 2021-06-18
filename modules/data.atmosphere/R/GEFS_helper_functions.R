@@ -648,10 +648,10 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 ##' @param cf_units vector of variable names in order they appear in df
 ##' @param output_file name, with full path, of the netcdf file that is generated
 ##' @param overwrite logical to overwrite existing netcdf file
-##' @export
+##' 
 ##' @return NA
 ##'
-##'
+##' @export
 ##' @author Quinn Thomas
 ##'
 ##'
