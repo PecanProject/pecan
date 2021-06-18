@@ -232,7 +232,6 @@ library("plotly")
 library("gganimate")
 library("thematic")
 thematic_on()
-source(file.path(homedir, 'pecan/scripts/efi_data_process.R')) #remember to change to where you store your pecan folder in your directory
 #Load Output args
 site.num <- settings$run$site$id
 outdir <- outputPath
