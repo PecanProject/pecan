@@ -5,7 +5,7 @@
 #' @param args completed forecast run settings file 
 #'
 #' @return
-#' @export
+#'
 #'
 #' @examples
 efi.data.process <- function(args){ 
