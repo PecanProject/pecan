@@ -1,6 +1,6 @@
 ##' @name met.process
 ##' @title met.process
-##' @export
+##' 
 ##'
 ##' @param site Site info from settings file
 ##' @param input_met Which data source to process. 
@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
-##' @export
+##' 
 ##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
@@ -21,7 +21,7 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
-##'
+##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
