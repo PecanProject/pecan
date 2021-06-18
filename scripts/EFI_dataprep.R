@@ -6,7 +6,6 @@
 #set home directory as object (remember to change to your own directory before running this script)
 homedir <- "/projectnb/dietzelab/ahelgeso"
 
-source(file.path(homedir, 'pecan/scripts/half_hour_downscale.R')) #remember to change to where you store your pecan folder in your directory
 library(PEcAn.all)
 library(tidyverse)
 ########## Site Info ###########
@@ -113,9 +112,9 @@ for(h in 1:length(files)){
   
   
   
-}
+} #closes files for loop
 
-}
+} #closes sitename for loop
 
 
 
