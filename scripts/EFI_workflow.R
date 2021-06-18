@@ -232,6 +232,7 @@ library("plotly")
 library("gganimate")
 library("thematic")
 thematic_on()
+source("/projectnb/dietzelab/ahelgeso/pecan/scripts/efi_data_process.R")
 #Load Output args
 site.num <- settings$run$site$id
 outdir <- outputPath
