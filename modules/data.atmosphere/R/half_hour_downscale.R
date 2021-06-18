@@ -7,8 +7,8 @@
 #' @param hr set half hour
 #'
 #' @return
+#' 
 #' @export
-#'
 #' @examples
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
