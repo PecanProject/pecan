@@ -8,6 +8,8 @@ homedir <- "/projectnb/dietzelab/ahelgeso"
 
 library(PEcAn.all)
 library(tidyverse)
+source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/download.NOAA_GEFS.R')
+source('/projectnb/dietzelab/ahelgeso/pecan/modules/data.atmosphere/R/download.raw.met.module.R')
 
 #read in .csv with site info 
 setwd(file.path(homedir, "pecan/scripts/")) #remember to change to where you keep your dataprep .csv file with the site info
