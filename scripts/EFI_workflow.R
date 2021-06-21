@@ -1,5 +1,5 @@
 #You must run this script in the terminal using the code:
-#Rscript --vanilla EFI_workflow.R "[file path to site xml]" "[file path to output folder]" [start_date] 
+#Rscript --vanilla EFI_workflow.R "[file path to site xml]" "[file path to output folder]" [start_date] [end_date]
 
 library("PEcAn.all")
 library("PEcAn.utils")
@@ -44,7 +44,6 @@ if(length(args)>4){
 } else {
   args$continue = TRUE
 }
-
 
 if(!dir.exists(args$outputPath)){dir.create(args$outputPath, recursive = TRUE)}
 setwd(args$outputPath)
@@ -235,7 +234,7 @@ thematic_on()
 source("/projectnb/dietzelab/ahelgeso/pecan/scripts/efi_data_process.R")
 #Load Output args
 site.num <- settings$run$site$id
-outdir <- outputPath
+outdir <- args$outputPath
 site.name <- settings$run$site$name
 wid <- settings$workflow$id
 
