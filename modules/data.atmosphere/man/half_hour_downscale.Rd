@@ -22,7 +22,8 @@ temporal_downscale_half_hour(
 \item{hr}{set half hour}
 }
 \value{
-
+A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+data frame contains information about one file.
 }
 \description{
 half_hour_downscale
