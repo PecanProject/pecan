@@ -64,7 +64,8 @@
 \item{Ens.Flag}{}
 }
 \value{
-
+A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+data frame contains information about one file.
 }
 \description{
 download.raw.met.module
