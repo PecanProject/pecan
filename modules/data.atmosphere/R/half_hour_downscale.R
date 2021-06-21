@@ -1,12 +1,15 @@
 #' @name half_hour_downscale
 #' @title half_hour_downscale
 #'
+#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+#' data frame contains information about one file.
+#'
 #' @param input_file location of NOAAGEFS_1hr files
 #' @param output_file location where to store half_hour files
 #' @param overwrite whether to force hamf_hour_downscale to proceed
 #' @param hr set half hour
 #'
-#' @return
+#' 
 #' 
 #' @export
 #' @examples
