@@ -21,7 +21,7 @@
 #' @param username database username
 #' @param overwrite whether to force download.raw.met.module to proceed
 #' @param dbparms database settings from settings file
-#' @param Ens.Flag 
+#' @param Ens.Flag default set to FALSE 
 #'
 #' 
 #' @export
