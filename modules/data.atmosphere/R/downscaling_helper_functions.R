@@ -141,8 +141,8 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
   }
 
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", .data$lead_var) %>%
-    dplyr::arrange(time)
+  data.hrly <- data.hrly %>% dplyr::select(.data$time, .data$lead_var) %>%
+    dplyr::arrange(data.$time)
 
   names(data.hrly) <- c("time", varName)
 
