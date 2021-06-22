@@ -54,6 +54,7 @@ match_dbcols: no visible binding for global variable ‘as’
 query.priors: no visible binding for global variable ‘settings’
 
 
+
 Undefined global functions or variables:
   . as author author_family author_given citation_id collect
   container_id container_type created_at cultivar_id ensemble_id folder
@@ -70,8 +71,9 @@ contains 'methods').
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... NOTE
-
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'get_workflow_ids'
   ‘all.ids’
 
