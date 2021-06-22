@@ -61,7 +61,7 @@
 
 \item{dbparms}{database settings from settings file}
 
-\item{Ens.Flag}{}
+\item{Ens.Flag}{default set to FALSE}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
