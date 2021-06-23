@@ -27,7 +27,7 @@
 ## further modified by S. Serbin 09/2018
 ##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
-                             end_date, pft_names = NULL, settings = NULL) {
+                             end_date, pfts, settings = NULL) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -110,7 +110,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]],
                                outdir, start_date, end_date,
-                               pft_names, settings)
+                               pfts, settings)
     }
 
     # generate start/end dates for processing
@@ -142,7 +142,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]],
                      lat = lat, lon = lon, begins = begin_date,
-                     ends = ends, pft_names, settings)
+                     ends = ends, pfts, settings)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -861,9 +861,17 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
 ##'
 ##' @export
-read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, settings, ...){
+read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
+                         pfts, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
+  
+  if(missing(outdir)) outdir <- settings$outdir
+  if(missing(start_date)) start_date <- settings$run$start.date
+  if(missing(end_date)) end_date <- settings$run$end.date
+  if(missing(pfts)) pfts <- settings$pfts
+  stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
+            !is.null(pfts))
   
   # there are multiple -E- files per year
   ysel <- which(yr == yfiles)
@@ -929,6 +937,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
   } # end ysel-loop
   
   # for now this function does not read any ED variable that has soil as a dimension
+  pft_names <- pfts$pft$name
   soil.check <- grepl("soil", pft_names)
   if (any(soil.check)) {
     # for now keep soil out
@@ -937,14 +946,14 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
   
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
-  pfts <- numeric(npft)
-  names(pfts) <- pft_names
+  pfts_nums <- numeric(npft)
+  names(pfts_nums) <- pft_names
   
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(settings$pfts, "[[", "name")
+  xml_pft_names <- lapply(pfts, "[[", "name")
   for (pft in pft_names) {
     which_pft <- which(xml_pft_names == pft)
-    xml_pft <- settings$pfts[[which_pft]]
+    xml_pft <- pfts[[which_pft]]
     if ("ed2_pft_number" %in% names(xml_pft)) {
       pft_number <- as.numeric(xml_pft$ed2_pft_number)
       if (!is.finite(pft_number)) {
@@ -956,7 +965,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     } else {
       pft_number <- pftmapping$ED[pftmapping$PEcAn == x]
     }
-    pfts[pft] <- pft_number
+    pfts_nums[pft] <- pft_number
   }
   
   out <- list()
@@ -985,7 +994,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
 
       for (k in 1:npft) {
-        ind <- (pft == pfts[k])
+        ind <- (pft == pfts_nums[k])
         
         if (any(ind)) {
           for (varname in varnames) {
@@ -1007,7 +1016,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     
   }
   
-  out$PFT <- pfts # will write this to the .nc file
+  out$PFT <- pfts_nums # will write this to the .nc file
   
   return(out)
   
@@ -1017,12 +1026,13 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
 
 ##' Function for put -E- values to nc_var list
 ##' @export
-put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pft_names, settings, ...){
+put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
   
   s <- length(nc_var)
   
   # even if this is a SA run for soil, currently we are not reading any variable that has a soil dimension
   # "soil" will be passed to read.output as pft.name from upstream, when it's not part of the attribute it will read the sum
+  pft_names <- pfts$pft$name
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
     # for now keep soil out
@@ -1167,6 +1177,7 @@ read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
   
   
   # for now this function does not read any ED variable that has soil as a dimension
+  pft_names <- pfts$pft$name
   soil.check <- grepl("soil", pft_names)
   if (any(soil.check)) {
     # for now keep soil out
