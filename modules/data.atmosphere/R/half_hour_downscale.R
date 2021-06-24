@@ -273,7 +273,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
 #' @export
 #'
 #'
-downscale_solar_geom_halfhour_halfhour <- function(doy, lon, lat) {
+downscale_solar_geom_halfhour <- function(doy, lon, lat) {
   
   dt <- stats::median(diff(doy)) * 86400 # average number of seconds in time interval
   hr <- (doy - floor(doy)) * 48 # hour of day for each element of doy
