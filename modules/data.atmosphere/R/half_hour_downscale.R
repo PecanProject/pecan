@@ -9,8 +9,6 @@
 #' @param overwrite whether to force hamf_hour_downscale to proceed
 #' @param hr set half hour
 #'
-#' 
-#' 
 #' @export
 #' 
 #' @examples
@@ -119,31 +117,29 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
   
 } #temporal_downscale
 
-#' @title Downscale spline to hourly
-#' @return A dataframe of downscaled state variables
-#' @param df, dataframe of data to be downscales
-#' @noRd
+
+#' @title Downscale spline to half hourly
+#' @param df dataframe of data to be downscales
+#' @param VarNames variable names to be downscaled
+#' @param hr hour to downscale to- default is 0.5
+#' @return A dataframe of half hourly downscaled state variables
+#' @importFrom rlang .data
 #' @author Laura Puckett
-#'
+#' @export
 #'
 
 downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
-  # --------------------------------------
-  # purpose: interpolates debiased forecasts from 6-hourly to hourly
-  # Creator: Laura Puckett, December 16 2018
-  # --------------------------------------
-  # @param: df, a dataframe of debiased 6-hourly forecasts
-  
+  time <- NULL
   t0 = min(df$time)
   df <- df %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days"))
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days"))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
   noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days, tz = "UTC"))
   
   for(Var in 1:length(VarNames)){
-    curr_data <- spline(x = df$days_since_t0, y = unlist(df[VarNames[Var]]), method = "fmm", xout = interp.df.days)$y
+    curr_data <- stats::spline(x = df$days_since_t0, y = unlist(df[VarNames[Var]]), method = "fmm", xout = interp.df.days)$y
     noaa_data_interp <- cbind(noaa_data_interp, curr_data)
   }
   
@@ -152,26 +148,27 @@ downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
   return(noaa_data_interp)
 }
 
-#' @title Downscale shortwave to hourly
+#' @title Downscale shortwave to half hourly
 #' @return A dataframe of downscaled state variables
-#'
-#' @param df, data frame of variables
-#' @param lat, lat of site
-#' @param lon, long of site
+#' 
+#' @param df data frame of variables
+#' @param lat lat of site
+#' @param lon long of site
+#' @param hr hour to downscale to- default is 1
+#' @importFrom rlang .data
 #' @return ShortWave.ds
-#' @noRd
 #' @author Laura Puckett
-#'
+#' @export
 #'
 
 downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
-  ## downscale shortwave to hourly
+  ## downscale shortwave to half hourly
   
   t0 <- min(df$time)
   df <- df %>%
     dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
-    dplyr::mutate(lead_var = dplyr::lead(surface_downwelling_shortwave_flux_in_air, 1))
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
+    dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
@@ -196,37 +193,41 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   }
   
   ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(time)) %>%
-    dplyr::mutate(doy = lubridate::yday(time) + hour/(24/hr))%>%
-    dplyr::mutate(rpot = downscale_solar_geom(doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by(group_6hr) %>%
-    dplyr::mutate(avg.rpot = mean(rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
+    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
+    dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
+    dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
+    dplyr::group_by(.data$group_6hr) %>%
+    dplyr::mutate(avg.rpot = mean(.data$rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
     dplyr::ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(avg.rpot > 0, rpot* (surface_downwelling_shortwave_flux_in_air/avg.rpot),0)) %>%
-    dplyr::select(time,surface_downwelling_shortwave_flux_in_air)
+    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
+    dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
   
   return(ShortWave.ds)
   
 }
 
 
-#' @title Downscale repeat to hourly
+#' @title Downscale repeat to half hourly
+#' @param df dataframe of data to be downscaled (Longwave)
+#' @param varName variable names to be downscaled
+#' @param hr hour to downscale to- default is 0.5
 #' @return A dataframe of downscaled data
-#' @param df, dataframe of data to be downscaled (Longwave)
-#' @noRd
+#' @importFrom rlang .data
 #' @author Laura Puckett
-#'
+#' @export
 #'
 
 downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   
+  #bind variables
+  lead_var <- time <- NULL
   #Get first time point
   t0 <- min(df$time)
   
   df <- df %>%
     dplyr::select("time", all_of(varName)) %>%
     #Calculate time difference
-    dplyr::mutate(days_since_t0 = difftime(.$time, t0, units = "days")) %>%
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
     #Shift valued back because the 6hr value represents the average over the
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
@@ -253,8 +254,8 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   }
   
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", lead_var) %>%
-    dplyr::arrange(time)
+  data.hrly <- data.hrly %>% dplyr::select("time", .data$lead_var) %>%
+    dplyr::arrange(.data$time)
   
   names(data.hrly) <- c("time", varName)
   
@@ -262,90 +263,23 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
 }
 
 #' @title Calculate potential shortwave radiation
-#' @return vector of potential shortwave radiation for each doy
 #'
 #' @param doy, day of year in decimal
 #' @param lon, longitude
 #' @param lat, latitude
-#' @return `numeric(1)`
+#' @return vector of potential shortwave radiation for each doy
+#' 
 #' @author Quinn Thomas
-#' @noRd
+#' @export
 #'
 #'
-downscale_solar_geom <- function(doy, lon, lat) {
+downscale_solar_geom_halfhour_halfhour <- function(doy, lon, lat) {
   
-  dt <- median(diff(doy)) * 86400 # average number of seconds in time interval
-  hr <- (doy - floor(doy)) * 48# hour of day for each element of doy
+  dt <- stats::median(diff(doy)) * 86400 # average number of seconds in time interval
+  hr <- (doy - floor(doy)) * 48 # hour of day for each element of doy
   
   ## calculate potential radiation
   cosz <- cos_solar_zenith_angle(doy, lat, lon, dt, hr)
   rpot <- 1366 * cosz
   return(rpot)
-}
-
-##' @title Write NOAA GEFS netCDF
-##' @param df data frame of meterological variables to be written to netcdf.  Columns
-##' must start with time with the following columns in the order of `cf_units`
-##' @param ens ensemble index used for subsetting df
-##' @param lat latitude in degree north
-##' @param lon longitude in degree east
-##' @param cf_units vector of variable names in order they appear in df
-##' @param output_file name, with full path, of the netcdf file that is generated
-##' @param overwrite logical to overwrite existing netcdf file
-##' @return NA
-##'
-##' @export
-##'
-##' @author Quinn Thomas
-##'
-##'
-
-write_noaa_gefs_netcdf <- function(df, ens = NA, lat, lon, cf_units, output_file, overwrite){
-  
-  if(!is.na(ens)){
-    data <- df
-    max_index <- max(which(!is.na(data$air_temperature)))
-    start_time <- min(data$time)
-    end_time <- data$time[max_index]
-    
-    data <- data %>% dplyr::select(-c("time", "NOAA.member"))
-  }else{
-    data <- df
-    max_index <- max(which(!is.na(data$air_temperature)))
-    start_time <- min(data$time)
-    end_time <- data$time[max_index]
-    
-    data <- df %>%
-      dplyr::select(-c("time"))
-  }
-  
-  diff_time <- as.numeric(difftime(df$time, df$time[1])) / (60 * 60)
-  
-  cf_var_names <- names(data)
-  
-  time_dim <- ncdf4::ncdim_def(name="time",
-                               units = paste("hours since", format(start_time, "%Y-%m-%d %H:%M")),
-                               diff_time, #GEFS forecast starts 6 hours from start time
-                               create_dimvar = TRUE)
-  lat_dim <- ncdf4::ncdim_def("latitude", "degree_north", lat, create_dimvar = TRUE)
-  lon_dim <- ncdf4::ncdim_def("longitude", "degree_east", lon, create_dimvar = TRUE)
-  
-  dimensions_list <- list(time_dim, lat_dim, lon_dim)
-  
-  nc_var_list <- list()
-  for (i in 1:length(cf_var_names)) { #Each ensemble member will have data on each variable stored in their respective file.
-    nc_var_list[[i]] <- ncdf4::ncvar_def(cf_var_names[i], cf_units[i], dimensions_list, missval=NaN)
-  }
-  
-  if (!file.exists(output_file) | overwrite) {
-    nc_flptr <- ncdf4::nc_create(output_file, nc_var_list, verbose = FALSE)
-    
-    #For each variable associated with that ensemble
-    for (j in 1:ncol(data)) {
-      # "j" is the variable number.  "i" is the ensemble number. Remember that each row represents an ensemble
-      ncdf4::ncvar_put(nc_flptr, nc_var_list[[j]], unlist(data[,j]))
-    }
-    
-    ncdf4::nc_close(nc_flptr)  #Write to the disk/storage
-  }
 }
