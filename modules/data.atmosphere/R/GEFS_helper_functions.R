@@ -508,7 +508,7 @@ process_gridded_noaa_download <- function(lat_list,
         results_list[[ens]] <- results
         
         #Run downscaling
-        temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
+        temporal_downscale_half_hour(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
       }
       
       
