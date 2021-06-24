@@ -2,7 +2,7 @@
 
 ## Removed
 
-* `rename_jags_columns()` has been removed from PEcAn.DB but is now available in package `PEcAn.MA` (#2805, @moki1202).
+* `rename_jags_columns()` has been removed from `PEcAn.DB` but is now available in package `PEcAn.MA` (#2805, @moki1202).
 
 
 # PEcAn.DB 1.7.1
