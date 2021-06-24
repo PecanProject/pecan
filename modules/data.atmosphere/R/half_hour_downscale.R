@@ -64,8 +64,8 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
     dplyr::mutate(relative_humidity = qair2rh(qair = forecast_noaa_ds$specific_humidity,
                                               temp = forecast_noaa_ds$air_temperature,
                                               press = forecast_noaa_ds$air_pressure)) %>%
-    dplyr::mutate(relative_humidity = relative_humidity,
-                  relative_humidity = ifelse(relative_humidity > 1, 0, relative_humidity))
+    dplyr::mutate(.data$relative_humidity = .data$relative_humidity,
+                  relative_humidity = ifelse(.data$relative_humidity > 1, 0, .data$relative_humidity))
   
   # convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
   if("surface_downwelling_longwave_flux_in_air" %in% cf_var_names){
