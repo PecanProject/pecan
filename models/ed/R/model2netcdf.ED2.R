@@ -963,7 +963,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
         )
       }
     } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == x]
+      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
     }
     pfts_nums[pft] <- pft_number
   }
