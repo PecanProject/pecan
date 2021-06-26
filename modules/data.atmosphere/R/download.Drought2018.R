@@ -11,6 +11,10 @@
 #' @param overwrite should existing files be overwritten. Default False.
 #' @return information about the output file
 #' @export
+#' @examples 
+#' \dontrun{
+#' download.Drought2018("FI-Sii", "/home/carya/pecan", "2016-01-01", "2018-01-01")
+#' }
 #' @author Ayush Prasad
 #' 
 download.Drought2018 <-
