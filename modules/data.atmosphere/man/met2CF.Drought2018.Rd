@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.Drought2018.R
 \name{met2CF.Drought2018}
 \alias{met2CF.Drought2018}
-\title{Convert variables from ICOS Drought 2018 product to CF format.}
+\title{Convert variables ICOS Drought 2018 variables to CF format.}
 \usage{
 met2CF.Drought2018(
   in.path,
@@ -46,5 +46,11 @@ Columns with NA for bety variable name are dropped.}
 information about the output file
 }
 \description{
-Convert variables from ICOS Drought 2018 product to CF format.
+Variables present in the output netCDF file:
+air_temperature, air_temperature, relative_humidity,
+specific_humidity, water_vapor_saturation_deficit,
+surface_downwelling_longwave_flux_in_air,
+surface_downwelling_shortwave_flux_in_air,
+surface_downwelling_photosynthetic_photon_flux_in_air, precipitation_flux,
+eastward_wind, northward_wind
 }

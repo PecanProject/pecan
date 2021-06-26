@@ -31,8 +31,6 @@ Link to the product: https://www.icos-cp.eu/data-products/YVR0-4898
 }
 \details{
 Variables present in the output CSV file: TA_F, SW_IN_F, LW_IN_F, VPD_F, PA_F, P_F, WS_F, WD, RH, PPFD_IN, CO2_F_MDS, TS_F_MDS_1, TS_F_MDS_2, NEE_VUT_REF, LE_F_MDS, RECO_NT_VUT_REF and GPP_NT_VUT_REF
-
-Compatible with FLUXNET 2015 format
 }
 \examples{
 download.Drought2018("FI-Sii", "/home/carya/pecan", "2016-01-01", "2018-01-01")

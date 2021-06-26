@@ -4,8 +4,6 @@
 #'
 #' Variables present in the output CSV file: TA_F, SW_IN_F, LW_IN_F, VPD_F, PA_F, P_F, WS_F, WD, RH, PPFD_IN, CO2_F_MDS, TS_F_MDS_1, TS_F_MDS_2, NEE_VUT_REF, LE_F_MDS, RECO_NT_VUT_REF and GPP_NT_VUT_REF
 #'
-#' Compatible with FLUXNET 2015 format
-#'
 #' @param sitename ICOS id of the site. Example - "BE-Bra"
 #' @param outfolder path to the directory where the output file is stored. If specified directory does not exists, it is created.
 #' @param start_date start date of the data request in the form YYYY-MM-DD
@@ -34,7 +32,9 @@ download.Drought2018 <-
     }
     
     if (as.Date(end_date) > as.Date("2018-12-31")) {
-      PEcAn.logger::logger.severe("End date should not exceed 2018-12-31")
+      PEcAn.logger::logger.severe(paste0(
+        "Requested end date ", as.Date(end_date), " exceeds Drought 2018 availability period"
+      ))
     }
     
     if (stage_download) {
@@ -146,7 +146,6 @@ download.Drought2018 <-
     results$mimetype[rows]   <- "text/csv"
     results$formatname[rows] <- "Drought2018_HH"
     
-    # return list of files downloaded
     return(results)
     
   }

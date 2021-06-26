@@ -1,4 +1,12 @@
-#' Convert variables from ICOS Drought 2018 product to CF format.
+#' Convert variables ICOS Drought 2018 variables to CF format. 
+#' 
+#' Variables present in the output netCDF file:
+#' air_temperature, air_temperature, relative_humidity,
+#' specific_humidity, water_vapor_saturation_deficit,
+#' surface_downwelling_longwave_flux_in_air,
+#' surface_downwelling_shortwave_flux_in_air,
+#' surface_downwelling_photosynthetic_photon_flux_in_air, precipitation_flux,
+#' eastward_wind, northward_wind
 #'
 #' @param in.path path to the input Drought 2018 CSV file
 #' @param in.prefix name of the input file
@@ -18,13 +26,27 @@
 #'   format$na.strings = list of missing values to convert to NA, such as -9999
 #'   format$skip = lines to skip excluding header
 #'   format$vars$column_number = Column number in CSV file (optional, will use header name first)
-#' Columns with NA for bety variable name are dropped. 
+#' Columns with NA for bety variable name are dropped.
 #' @param overwrite overwrite should existing files be overwritten. Default False.
 #' @return information about the output file
 #' @export
 #'
 
-met2CF.Drought2018 <- function(in.path, in.prefix, outfolder, start_date, end_date, format, overwrite = FALSE){
-  results <- PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder, start_date, end_date, format, overwrite = overwrite)
-  return(results)
-}
+met2CF.Drought2018 <-
+  function(in.path,
+           in.prefix,
+           outfolder,
+           start_date,
+           end_date,
+           format,
+           overwrite = FALSE) {
+    results <-
+      PEcAn.data.atmosphere::met2CF.csv(in.path,
+                                        in.prefix,
+                                        outfolder,
+                                        start_date,
+                                        end_date,
+                                        format,
+                                        overwrite = overwrite)
+    return(results)
+  }
