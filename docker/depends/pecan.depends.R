@@ -92,7 +92,7 @@ wanted <- c(
 'randtoolbox',
 'raster',
 'rcrossref',
-'RCurl',
+'curl',
 'REddyProc',
 'redland',
 'reshape',

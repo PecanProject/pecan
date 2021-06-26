@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 library("PEcAn.all")
 library("PEcAn.utils")
-library("RCurl")
+library("curl")
 library("REddyProc")
 library("tidyverse")
 library("furrr")

@@ -3,7 +3,7 @@ get.elevation <- function(lat, lon) {
 
   url  <- paste("http://www.earthtools.org/height", lat, lon, sep = "/")
   
-  page <- RCurl::getURL(url)
+  page <- curl::curl_download(url)
   ans  <- XML::xmlTreeParse(page, useInternalNodes = TRUE)
   heightNode <- XML::xpathApply(ans, "//meters")[[1]]
   return(as.numeric(XML::xmlValue(heightNode)))

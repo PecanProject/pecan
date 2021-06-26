@@ -611,8 +611,8 @@ convert.input <-
     curloptions <- c(curloptions, followlocation = TRUE)
     
     # check if we can do conversion
-    out.html <- RCurl::getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",
-                              browndog$inputtype), .opts = curloptions)
+    out.html <- curl::curl_download(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",
+                              browndog$inputtype), curloptions)
     if (outputtype %in% unlist(strsplit(out.html, "\n"))) {
       PEcAn.logger::logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
                         "through Brown Dog"))
@@ -636,7 +636,11 @@ convert.input <-
     }
     
     # post zipped file to Brown Dog
-    html <- RCurl::postForm(url, fileData = RCurl::fileUpload(zipfile), .opts = curloptions)
+    h <- new_handle()
+    handle_setform(h,
+    fileData = curl::form_file(curl::curl_upload(zipfile, url))
+    )
+    html <- curl::curl_fetch_memory(url, handle = h)
     link <- XML::getHTMLLinks(html)
     file.remove(zipfile)
     

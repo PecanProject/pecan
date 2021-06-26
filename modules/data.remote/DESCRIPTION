@@ -16,7 +16,7 @@ Imports:
     purrr,
     XML,
     raster,
-    RCurl,
+    curl,
     sp,
     MODISTools (>= 1.1.0),
     reticulate,

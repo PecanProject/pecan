@@ -39,7 +39,7 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    RCurl,
+    curl,
     REddyProc,
     reshape2,
     rgdal,

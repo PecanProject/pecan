@@ -34,8 +34,8 @@ salix <- salix.us[stand_age > 2,list(lat = mean(lat), lon = mean(lon), yield = m
 
 ```{r}
 
-require(RCurl)
-file.url <- getURL("https://www.betydb.org/miscanthusyield.csv", 
+require(curl)
+file.url <- curl_download("https://www.betydb.org/miscanthusyield.csv", 
                    ssl.verifypeer = FALSE)
 mxg <- read.csv(textConnection(file.url))
 

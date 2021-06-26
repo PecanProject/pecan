@@ -12,7 +12,7 @@
 # Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
-library(RCurl)
+library(curl)
 
 #--------------------------------------------------------------------------------#
 # Functions used to write STATUS used by history

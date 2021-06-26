@@ -94,7 +94,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
   # before downloading check that the remote FTP contains the desired years - a little clunky, clean up
   # if we keep this, will need to check this works with other data sources/products
   check_urls <- paste0(unique(dirname(download_urls), fromLast = TRUE),"/")
-  remote_filenames <- Map(function(p) RCurl::getURL(p, ftp.use.epsv = FALSE, 
+  remote_filenames <- Map(function(p) curl::curl_download(p, ftp.use.epsv = FALSE, 
                                                     ftplistonly = TRUE, crlf = TRUE), check_urls)
   remote_filenames_list <- strsplit(paste(as.vector(unlist(remote_filenames)), 
                                           collapse = ''), "\r*\n")[[1]]
