@@ -12,7 +12,6 @@
 #' @return information about the output file
 #' @export
 #' @author Ayush Prasad
-#' @examples download.Drought2018("FI-Sii", "/home/carya/pecan", "2016-01-01", "2018-01-01")
 #' 
 download.Drought2018 <-
   function(sitename,
