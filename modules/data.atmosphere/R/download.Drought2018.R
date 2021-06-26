@@ -88,16 +88,16 @@ download.Drought2018 <-
     zipped_csv_name <-
       grep(
         paste0('^', file_name),
-        unzip(zip_file_name, list = TRUE)$Name,
+        utils::unzip(zip_file_name, list = TRUE)$Name,
         ignore.case = TRUE,
         value = TRUE
       )
-    unzip(file.path(outfolder, paste0('Drought', sitename, '.zip')),
+    utils::unzip(file.path(outfolder, paste0('Drought', sitename, '.zip')),
           files = zipped_csv_name,
           exdir = outfolder)
     `%>%` <- dplyr::`%>%`
     # read in the output CSV file and select the variables required
-    df <- read.csv(file.path(outfolder, zipped_csv_name))
+    df <- utils::read.csv(file.path(outfolder, zipped_csv_name))
     df <-
       subset(
         df,
@@ -128,7 +128,7 @@ download.Drought2018 <-
           as.Date(strptime(df$TIMESTAMP_START, format = "%Y%m%d%H%M")) <= as.Date(end_date)
       ))
     # save the csv file
-    write.csv(df, file.path(outfolder, zipped_csv_name), row.names = FALSE)
+    utils::write.csv(df, file.path(outfolder, zipped_csv_name), row.names = FALSE)
     
     rows    <- 1
     results <- data.frame(
