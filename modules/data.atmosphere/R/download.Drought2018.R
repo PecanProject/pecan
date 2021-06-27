@@ -36,7 +36,7 @@ download.Drought2018 <-
     
     if (as.Date(end_date) > as.Date("2018-12-31")) {
       PEcAn.logger::logger.severe(paste0(
-        "Requested end date ", as.Date(end_date), " exceeds Drought 2018 availability period"
+        "Requested end date ", end_date, " exceeds Drought 2018 availability period"
       ))
     }
     
@@ -50,13 +50,14 @@ download.Drought2018 <-
       body <- "
       prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
       prefix prov: <http://www.w3.org/ns/prov#>
-      select ?dobj
+      select ?dobj ?spec ?timeStart 
       where {
-      VALUES ?spec {<http://meta.icos-cp.eu/resources/cpmeta/dought2018ArchiveProduct>}
-      ?dobj cpmeta:hasObjectSpec ?spec .
-      VALUES ?station {<http://meta.icos-cp.eu/resources/stations/ES_sitename>}
-      ?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?station .
-      FILTER NOT EXISTS {[] cpmeta:isNextVersionOf ?dobj}
+      	VALUES ?spec {<http://meta.icos-cp.eu/resources/cpmeta/dought2018ArchiveProduct>}
+      	?dobj cpmeta:hasObjectSpec ?spec .
+      	VALUES ?station {<http://meta.icos-cp.eu/resources/stations/ES_sitename>}
+      			?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?station .
+      ?dobj cpmeta:hasStartTime | (cpmeta:wasAcquiredBy / prov:startedAtTime) ?timeStart .
+      	FILTER NOT EXISTS {[] cpmeta:isNextVersionOf ?dobj}
       }
       "
       body <- gsub("sitename", sitename, body)
@@ -64,8 +65,12 @@ download.Drought2018 <-
       response <- httr::content(response, as = "text")
       response <- jsonlite::fromJSON(response)
       dataset_url <- response$results$bindings$dobj$value
+      dataset_start_date <-  as.Date(strptime(response$results$bindings$timeStart$value, format = "%Y-%m-%dT%H:%M:%S"))
       if(is.null(dataset_url)){
         PEcAn.logger::logger.severe("Data is not available for the requested site")
+      }
+      if(dataset_start_date > as.Date(start_date)){
+        PEcAn.logger::logger.severe(paste("Data is not available for the requested start date. Please try again with", dataset_start_date, "as start date.") )
       }
       dataset_id <- sub(".*/", "", dataset_url)
       
