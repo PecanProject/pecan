@@ -24,14 +24,27 @@ download.Drought2018 <-
            end_date,
            overwrite = FALSE) {
     
+    stage_download <- TRUE
+    stage_extract <- TRUE
+    
+    # construct output CSV file name
+    output_file_name <- paste0("FLX_", sitename, "_FLUXNET2015_FULLSET_HH_", as.character(format(as.Date(start_date),'%Y')), "-2018_beta-3.csv")
+    
+    if (file.exists(file.path(outfolder, output_file_name)) && !overwrite) {
+      PEcAn.logger::logger.info("Output CSV file for the requested site already exists")
+      stage_download <- FALSE
+      stage_extract <- FALSE
+    }
+    
+    
     # construct zip file name
     zip_file_name <- paste0(outfolder, "/Drought", sitename, ".zip")
     
-    stage_download <- TRUE
     
-    if (file.exists(zip_file_name) && !overwrite) {
+    if (stage_extract && file.exists(zip_file_name) && !overwrite) {
       PEcAn.logger::logger.info("Zip file for the requested site already exists, extracting it...")
       stage_download <- FALSE
+      stage_extract <- FALSE
     }
     
     if (as.Date(end_date) > as.Date("2018-12-31")) {
@@ -87,8 +100,9 @@ download.Drought2018 <-
         ), httr::progress())
     }
     
+    if (stage_extract){
     file_name <- paste0('FLX_', sitename, '_FLUXNET2015_FULLSET_HH')
-    
+  
     # extract only the hourly data file
     zipped_csv_name <-
       grep(
@@ -133,7 +147,8 @@ download.Drought2018 <-
           as.Date(strptime(df$TIMESTAMP_START, format = "%Y%m%d%H%M")) <= as.Date(end_date)
       ))
     # save the csv file
-    utils::write.csv(df, file.path(outfolder, zipped_csv_name), row.names = FALSE)
+    utils::write.csv(df, file.path(outfolder, output_file_name), row.names = FALSE)
+    }
     
     rows    <- 1
     results <- data.frame(
@@ -143,11 +158,11 @@ download.Drought2018 <-
       formatname = character(rows),
       startdate = character(rows),
       enddate = character(rows),
-      dbfile.name = zipped_csv_name,
+      dbfile.name = output_file_name,
       stringsAsFactors = FALSE
     )
     
-    results$file[rows]       <- file.path(outfolder, zipped_csv_name)
+    results$file[rows]       <- file.path(outfolder, output_file_name)
     results$host[rows]       <- PEcAn.remote::fqdn()
     results$startdate[rows]  <- start_date
     results$enddate[rows]    <- end_date
