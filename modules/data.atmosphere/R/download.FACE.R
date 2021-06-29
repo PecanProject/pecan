@@ -3,10 +3,10 @@
 ##' @name download.FACE
 ##' @title download.FACE
 ##' @export
-##' @param sitename
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param sitename sitename
+##' @param outfolder location where output is stored
+##' @param start_year desired start year
+##' @param end_year desired end year
 ##' @param method Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
 ##' downloading files from FTP sites
 ##' 
