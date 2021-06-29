@@ -17,6 +17,8 @@ download.MsTMIP_NARR(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
 \item{start_date}{YYYY-MM-DD}
 
 \item{end_date}{YYYY-MM-DD}
