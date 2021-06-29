@@ -2,12 +2,12 @@
 ##'
 ##' Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
 ##'
-##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param site_id
-##' @param lat
-##' @param lon
+##' @param outfolder location of output
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param site_id site id (BETY)
+##' @param lat latitude of site
+##' @param lon longitude of site
 ##' @export
 ##'
 ##' @author Christy Rollinson (with help from Ankur Desai)
