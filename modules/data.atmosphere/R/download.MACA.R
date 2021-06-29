@@ -2,11 +2,11 @@
 ##' @name download.MACA
 ##' @title download.MACA
 ##' @export
-##' @param outfolder
+##' @param outfolder location where output is stored
 ##' @param start_date , of the format "YEAR-01-01 00:00:00"
 ##' @param end_date , of the format "YEAR-12-31 23:59:59"
-##' @param lat
-##' @param lon
+##' @param lat latitude of site
+##' @param lon longitude of site
 ##' @param model , select which MACA model to run (options are BNU-ESM, CNRM-CM5, CSIRO-Mk3-6-0, bcc-csm1-1, bcc-csm1-1-m, CanESM2, GFDL-ESM2M, GFDL-ESM2G, HadGEM2-CC365, HadGEM2-ES365, inmcm4, MIROC5, MIROC-ESM, MIROC-ESM-CHEM, MRI-CGCM3, CCSM4, IPSL-CM5A-LR, IPSL-CM5A-MR, IPSL-CM5B-LR, NorESM1-M)
 ##' @param scenario , select which scenario to run (options are rcp45, rcp85)
 ##' @param ensemble_member , r1i1p1 is the only ensemble member available for this dataset, CCSM4 uses r6i1p1 instead
