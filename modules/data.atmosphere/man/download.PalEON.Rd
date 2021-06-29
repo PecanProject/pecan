@@ -14,7 +14,11 @@ download.PalEON(
 )
 }
 \arguments{
-\item{end_date}{}
+\item{outfolder}{desired output location}
+
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
 }
 \description{
 Download PalEON files
