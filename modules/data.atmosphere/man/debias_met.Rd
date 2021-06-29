@@ -17,6 +17,8 @@ debias.met(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
 \item{input_met}{- the source_met dataset that will be altered by the training dataset in NC format.}
 
 \item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format}
@@ -27,6 +29,8 @@ debias.met(
 
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 functions print debugging information as they run?}
+
+\item{site.id}{site id}
 }
 \description{
 debias.met takes input_met and debiases it based on statistics from a train_met dataset
