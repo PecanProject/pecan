@@ -26,7 +26,7 @@
 #' 
 #' @export
 #'
-#' @examples
+#'
 
 .download.raw.met.module <-
   function(dir,
