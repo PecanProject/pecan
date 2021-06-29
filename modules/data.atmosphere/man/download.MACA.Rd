@@ -20,6 +20,8 @@ download.MACA(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
 \item{start_date}{, of the format "YEAR-01-01 00:00:00"}
 
 \item{end_date}{, of the format "YEAR-12-31 23:59:59"}
@@ -29,6 +31,10 @@ download.MACA(
 \item{scenario}{, select which scenario to run (options are rcp45, rcp85)}
 
 \item{ensemble_member}{, r1i1p1 is the only ensemble member available for this dataset, CCSM4 uses r6i1p1 instead}
+
+\item{lat}{latitude of site}
+
+\item{lon}{longitude of site}
 }
 \description{
 Download MACA CMIP5 outputs for a single grid point using OPeNDAP and convert to CF
