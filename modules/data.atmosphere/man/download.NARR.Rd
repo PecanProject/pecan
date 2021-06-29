@@ -15,12 +15,18 @@ download.NARR(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
 \item{overwrite}{Overwrite existing files?  Default=FALSE}
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
 \item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 example options(download.ftp.method="ncftpget")}
+
+\item{start_year}{desired start year YYYY-MM-DD}
+
+\item{end_year}{desired end year YYYY-MM-DD}
 }
 \description{
 Download NARR files
