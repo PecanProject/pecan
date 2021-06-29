@@ -15,8 +15,16 @@ download.FACE(
 )
 }
 \arguments{
+\item{sitename}{sitename}
+
+\item{outfolder}{location where output is stored}
+
 \item{method}{Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
 downloading files from FTP sites}
+
+\item{start_year}{desired start year}
+
+\item{end_year}{desired end year}
 }
 \description{
 Download Raw FACE data from the internet
