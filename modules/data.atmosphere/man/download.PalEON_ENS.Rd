@@ -14,7 +14,11 @@ download.PalEON_ENS(
 )
 }
 \arguments{
-\item{end_date}{}
+\item{outfolder}{desired output folder}
+
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
 }
 \description{
 Download PalEON met ensemble files
