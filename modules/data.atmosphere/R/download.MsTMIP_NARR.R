@@ -2,7 +2,7 @@
 ##' @name download.MsTMIP_NARR
 ##' @title download.MsTMIP_NARR
 ##' @export
-##' @param outfolder
+##' @param outfolder location where output is stored
 ##' @param start_date YYYY-MM-DD
 ##' @param end_date YYYY-MM-DD
 ##' @param lat decimal degrees [-90, 90]
