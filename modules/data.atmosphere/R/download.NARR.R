@@ -1,8 +1,8 @@
 ##' Download NARR files
 ##'
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param outfolder location where output is stored
+##' @param start_year desired start year YYYY-MM-DD
+##' @param end_year desired end year YYYY-MM-DD
 ##' @param overwrite Overwrite existing files?  Default=FALSE
 ##' @param verbose Turn on verbose output? Default=FALSE
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
