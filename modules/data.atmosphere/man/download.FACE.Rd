@@ -19,12 +19,16 @@ download.FACE(
 
 \item{outfolder}{location where output is stored}
 
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
+
+\item{overwrite}{overwrite existing files? Default is FALSE}
+
 \item{method}{Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
 downloading files from FTP sites}
 
-\item{start_year}{desired start year}
-
-\item{end_year}{desired end year}
+\item{...}{other inputs}
 }
 \description{
 Download Raw FACE data from the internet
