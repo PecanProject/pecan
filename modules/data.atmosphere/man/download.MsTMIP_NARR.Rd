@@ -23,9 +23,17 @@ download.MsTMIP_NARR(
 
 \item{end_date}{YYYY-MM-DD}
 
-\item{lat}{decimal degrees [-90, 90]}
+\item{site_id}{BETY site id}
 
-\item{lon}{decimal degrees [-180, 180]}
+\item{lat.in}{latitude of site}
+
+\item{lon.in}{longitude of site}
+
+\item{overwrite}{overwrite existing files? Default is FALSE}
+
+\item{verbose}{Default is FALSE, used in ncdf4::ncvar_def}
+
+\item{...}{Other inputs}
 }
 \description{
 Download and conver to CF NARR single grid point from MSTIMIP server using OPENDAP interface
