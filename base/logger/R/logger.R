@@ -140,11 +140,11 @@ logger.severe <- function(msg, ..., wrap = TRUE) {
 ##' }
 logger.message <- function(level, msg, ..., wrap = TRUE) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
-    dump.frames(dumpto = "dump.log")
+    utils::dump.frames(dumpto = "dump.log")
     calls <- names(dump.log)
     calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
     calls <- calls[!grepl("(severe|error|warn|info|debug)ifnot", calls)]
-    func <- sub("\\(.*", "", tail(calls, 1))
+    func <- sub("\\(.*", "", utils::tail(calls, 1))
     if (length(func) == 0) {
       func <- "console"
     }
