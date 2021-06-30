@@ -28,6 +28,12 @@ download.GLDAS(
 \item{lat.in}{latitude of site}
 
 \item{lon.in}{longistude of site}
+
+\item{overwrite}{overwrite existing files? Default is FALSE}
+
+\item{verbose}{Default is FALSE, used as input for ncdf4::ncvar_def}
+
+\item{...}{other inputs}
 }
 \description{
 Download and convert single grid point GLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
