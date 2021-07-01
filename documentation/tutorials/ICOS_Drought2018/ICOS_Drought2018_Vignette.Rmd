@@ -28,7 +28,7 @@ world_map <- ggplot2::map_data("world")
 `%>%` <- dplyr::`%>%`
 europe_cropped <-
         world_map %>% dplyr::filter((
-          world_map$lat >= 30 & world_map$lat <= 75 &
+          world_map$lat >= 35 & world_map$lat <= 75 &
             world_map$long >= -10 & world_map$long <= 40
         ))
 # Compute the centroid as the mean longitude and lattitude
