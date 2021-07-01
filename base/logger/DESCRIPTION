@@ -5,7 +5,7 @@ Date: 2019-09-05
 Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"), email = "kooper@illinois.edu"),
              person("Alexey", "Shiklomanov", role = c("aut"), email = "ashiklom@bu.edu"))
 Description: Special logger functions for tracking execution status and the environment.
-imports: utils
+Imports: utils
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
