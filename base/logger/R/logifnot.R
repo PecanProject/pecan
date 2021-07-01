@@ -1,14 +1,15 @@
 #' Logger message if conditions are not met
 #'
-#' Similar to [base::stopifnot], but allows you to use a custom message and 
+#' Similar to [base::stopifnot], but allows you to use a custom message and
 #' logger level. If all conditions are `TRUE`, silently exit.
 #'
-#' Conditions can be vectorized, or can return non-logical values.The 
-#' underlying function automatically applies `isTRUE(all(.))` to the 
+#' Conditions can be vectorized, or can return non-logical values.The
+#' underlying function automatically applies `isTRUE(all(.))` to the
 #' conditions.
 #'
 #' @param msg Logger message to write, as a single character string.
-#' @param ... Conditions to evaluate 
+#' @param ... Conditions to evaluate
+#' @param ... other arguments passed on to severeifnot
 #' @return Invisibly, `TRUE` if conditions are met, `FALSE` otherwise
 #' @examples
 #' a <- 1:5
@@ -30,6 +31,7 @@ severeifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
+#’ @param ... other arguments passed on to errorifnot
 #' @export
 errorifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
@@ -41,6 +43,7 @@ errorifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
+#’ @param ... other arguments passed on to warnifnot
 #' @export
 warnifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
@@ -52,6 +55,7 @@ warnifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
+#’ @param ... other arguments passed on to infoifnot
 #' @export
 infoifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
@@ -63,6 +67,7 @@ infoifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
+#’ @param ... other arguments passed on to debugifnot
 #' @export
 debugifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
@@ -74,6 +79,7 @@ debugifnot <- function(msg, ...) {
 }
 
 #' Check a list of conditions
+#’ @param ... other arguments passed on to check_conditions
 check_conditions <- function(...) {
   dots <- list(...)
   conditions <- vapply(dots, is_definitely_true, logical(1))
