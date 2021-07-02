@@ -42,7 +42,7 @@ ggplot(europe_cropped, aes(x = long, y = lat)) +
                         guide=FALSE) +
   theme_void()+
   theme(legend.position = "none")+
-  geom_point(data=icos_d2018, aes(x=Longitude, y=Latitude))
+  geom_point(data=icos_d2018, aes(x=Longitude, y=Latitude), color="red", size=2)
 
 ```
 
