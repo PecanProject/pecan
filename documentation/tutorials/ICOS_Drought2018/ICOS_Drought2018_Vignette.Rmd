@@ -52,6 +52,7 @@ sitename   <- "FI-Sii"
 outfolder  <- "~/"
 start_date <- "2016-01-01"
 end_date   <- "2018-01-01"
-PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end_date)
+product <- "Drought2018"
+PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end_date, product)
 
 ```
