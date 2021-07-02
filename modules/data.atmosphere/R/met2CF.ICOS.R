@@ -1,4 +1,4 @@
-#' Convert variables ICOS Drought 2018 variables to CF format. 
+#' Convert variables ICOS variables to CF format. 
 #' 
 #' Variables present in the output netCDF file:
 #' air_temperature, air_temperature, relative_humidity,
@@ -8,7 +8,7 @@
 #' surface_downwelling_photosynthetic_photon_flux_in_air, precipitation_flux,
 #' eastward_wind, northward_wind
 #'
-#' @param in.path path to the input Drought 2018 CSV file
+#' @param in.path path to the input ICOS product CSV file
 #' @param in.prefix name of the input file
 #' @param outfolder path to the directory where the output file is stored. If specified directory does not exists, it is created.
 #' @param start_date start date of the input file
@@ -32,7 +32,7 @@
 #' @export
 #'
 
-met2CF.Drought2018 <-
+met2CF.ICOS <-
   function(in.path,
            in.prefix,
            outfolder,
