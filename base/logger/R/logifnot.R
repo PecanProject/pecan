@@ -32,7 +32,6 @@ severeifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
-#’ @param ... other arguments passed on to errorifnot
 #' @export
 errorifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
