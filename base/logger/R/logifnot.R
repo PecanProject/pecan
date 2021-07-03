@@ -75,8 +75,7 @@ debugifnot <- function(msg, ...) {
   }
 }
 
-#' Check a list of conditions
-#’ @param ... other arguments passed on to check_conditions
+# Check a list of conditions
 check_conditions <- function(...) {
   dots <- list(...)
   conditions <- vapply(dots, is_definitely_true, logical(1))
