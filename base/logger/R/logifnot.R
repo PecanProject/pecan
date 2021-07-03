@@ -43,7 +43,6 @@ errorifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
-#’ @param ... other arguments passed on to warnifnot
 #' @export
 warnifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
