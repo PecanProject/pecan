@@ -82,7 +82,7 @@ check_conditions <- function(...) {
   all(conditions)
 }
 
-#' Robust logical check
+# Robust logical check
 is_definitely_true <- function(x) {
   if (is.null(x) || length(x) == 0 || !is.logical(x)) {
     return(FALSE)
