@@ -88,9 +88,9 @@ logger.error <- function(msg, ...) {
 ##' Prints an severe message and stops execution.
 ##' 
 ##' This function will print a message and stop execution of the code. This
-##' should only be used if the application should terminate. 
+##' should only be used if the application should terminate.
 ##' 
-##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+##' set \code{logger.setQuitOnSevere(FALSE)} to avoid terminating
 ##' the session. This is set by default to TRUE if interactive or running
 ##' inside Rstudio.
 ##'
@@ -140,8 +140,9 @@ logger.severe <- function(msg, ..., wrap = TRUE) {
 ##' }
 logger.message <- function(level, msg, ..., wrap = TRUE) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
-    utils::dump.frames(dumpto = "dump.log")
-    calls <- names(dump.log)
+    call_dump <- NULL # to avoid "no visible binding" note from R check
+    utils::dump.frames(dumpto = "call_dump")
+    calls <- names(call_dump)
     calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
     calls <- calls[!grepl("(severe|error|warn|info|debug)ifnot", calls)]
     func <- sub("\\(.*", "", utils::tail(calls, 1))
