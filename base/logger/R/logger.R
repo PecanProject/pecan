@@ -191,18 +191,15 @@ logger.setLevel <- function(level) {
 } # logger.setLevel
 
 
-##' Returns numeric value for string
-##'
-##' Given the string representation this will return the numeric value
-##' ALL   =  0
-##' DEBUG = 10
-##' INFO  = 20
-##' WARN  = 30
-##' ERROR = 40
-##' ALL   = 99
-##'
-##' @return level the level of the message
-##' @author Rob Kooper
+## Given the string representation this will return the numeric value
+## DEBUG = 10
+## INFO  = 20
+## WARN  = 30
+## ERROR = 40
+## ALL   = 99
+##
+##@return level the level of the message
+##@author Rob Kooper
 logger.getLevelNumber <- function(level) {
   if (toupper(level) == "ALL") {
     return(0)
