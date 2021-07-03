@@ -285,6 +285,15 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         con = con
       )
     }
+  } else { # not exact dates
+    inputs <- db.query(
+        query = paste0(
+          "SELECT * FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid,
+          parent
+        ),
+        con = con
+    )
   }
 
   if (is.null(inputs) | length(inputs$id) == 0) {
