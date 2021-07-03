@@ -9,7 +9,6 @@
 #'
 #' @param msg Logger message to write, as a single character string.
 #' @param ... Conditions to evaluate
-#' @param ... other arguments passed on to severeifnot
 #' @return Invisibly, `TRUE` if conditions are met, `FALSE` otherwise
 #' @examples
 #' a <- 1:5
