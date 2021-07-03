@@ -65,7 +65,6 @@ infoifnot <- function(msg, ...) {
 }
 
 #' @rdname severeifnot
-#’ @param ... other arguments passed on to debugifnot
 #' @export
 debugifnot <- function(msg, ...) {
   if (!check_conditions(...)) {
