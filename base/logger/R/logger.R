@@ -140,9 +140,7 @@ logger.severe <- function(msg, ..., wrap = TRUE) {
 ##' }
 logger.message <- function(level, msg, ..., wrap = TRUE) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
-    call_dump <- NULL # to avoid "no visible binding" note from R check
-    utils::dump.frames(dumpto = "call_dump")
-    calls <- names(call_dump)
+    calls <- utils::limitedLabels(sys.calls())
     calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
     calls <- calls[!grepl("(severe|error|warn|info|debug)ifnot", calls)]
     func <- sub("\\(.*", "", utils::tail(calls, 1))
