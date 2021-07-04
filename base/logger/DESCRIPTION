@@ -7,12 +7,12 @@ Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
              person("Alexey", "Shiklomanov", role = c("aut"),
                 email = "ashiklom@bu.edu"),
              person("Shashank", "Singh", role = c("aut"),
-                email = "shashanksingh819@gmail.com"))
+                email = "shashanksingh819@gmail.com"),
+             person("Chris", "Black", role = c("ctb")))
 Description: Special logger functions for tracking execution status and the environment.
 Imports: utils
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)
