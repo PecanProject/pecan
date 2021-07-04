@@ -1,5 +1,5 @@
 Package: PEcAn.logger
-Title: Logger functions for PEcAn
+Title: Logger Functions for PEcAn
 Version: 1.7.1
 Date: 2019-09-05
 Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"), 
