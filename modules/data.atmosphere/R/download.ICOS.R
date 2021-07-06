@@ -52,7 +52,7 @@ download.ICOS <-
       file_name <-
         paste0('FLX_', sitename, '_FLUXNET2015_FULLSET_HH')
       
-      format_name <- "ICOS_Drought2018_HH"
+      format_name <- "ICOS_ECOSYSTEM_HH"
       
     } else if (tolower(product) == "etc") {
       output_file_name <-
@@ -69,7 +69,7 @@ download.ICOS <-
       file_name <-
         paste0(sitename, "/ICOSETC_", sitename, "_FLUXNET_HH")
       
-      format_name <- "ICOS_ETC_HH"
+      format_name <- "ICOS_ECOSYSTEM_HH"
       
     } else {
       PEcAn.logger::logger.severe("Inavlid product. Product should be one of 'Drought2018', 'ETC' ")
