@@ -35,7 +35,7 @@ variables in output file..}
 
 \item{dataframe}{Logical: if TRUE, will return output in a
 \code{data.frame} format with a posix column. Useful for
-\code{\link[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}} and plotting.}
+\code{\link[PEcAn.benchmark:align_data]{PEcAn.benchmark::align_data()}} and plotting.}
 
 \item{pft.name}{character string, name of the plant functional
 type (PFT) to read PFT-specific output. If \code{NULL} no

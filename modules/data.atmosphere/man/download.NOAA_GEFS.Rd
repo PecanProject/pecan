@@ -14,7 +14,8 @@ download.NOAA_GEFS(
   start_date = Sys.Date(),
   end_date = start_date + lubridate::days(16),
   downscale = TRUE,
-  overwrite = FALSE
+  overwrite = FALSE,
+  ...
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ download.NOAA_GEFS(
 \item{downscale}{logical, assumed True. Indicated whether data should be downscaled to hourly}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
+
+\item{...}{Additional optional parameters}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each

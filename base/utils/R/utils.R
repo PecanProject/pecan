@@ -204,21 +204,21 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
-    dplyr::filter(n == 1) %>%
+    dplyr::filter(.data$n == 1) %>%
     dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
                     .data$control, .data$greenhouse, .data$date, .data$time,
                     .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
-      statname = dplyr::if_else(length(n) == 1, "none", "SE"),
-      stat = stats::sd(mean) / sqrt(length(n)),
-      n = length(n),
+      statname = dplyr::if_else(length(.data$n) == 1, "none", "SE"),
+      stat = stats::sd(.data$mean) / sqrt(length(.data$n)),
+      n = length(.data$n),
       mean = mean(mean)
     ) %>%
     dplyr::ungroup()
   ans2 <- result %>%
-    dplyr::filter(n != 1) %>%
+    dplyr::filter(.data$n != 1) %>%
     # ANS: Silence factor to character conversion warning
-    dplyr::mutate(statname = as.character(statname))
+    dplyr::mutate(statname = as.character(.data$statname))
   if (nrow(ans2) > 0) {
     dplyr::bind_rows(ans1, ans2)
   } else {
@@ -681,7 +681,7 @@ download.file <- function(url, filename, method) {
 
 #--------------------------------------------------------------------------------------------------#
 ##' Retry function X times before stopping in error
-##' 
+##'
 ##' @title retry.func
 ##' @name retry.func
 ##' @description Retry function X times before stopping in error
@@ -689,9 +689,9 @@ download.file <- function(url, filename, method) {
 ##' @param expr The function to try running
 ##' @param maxErrors The number of times to retry the function
 ##' @param sleep How long to wait before retrying the function call
-##' 
+##'
 ##' @return retval returns the results of the function call
-##' 
+##'
 ##' @examples
 ##' \dontrun{
 ##' dap <- retry.func(
@@ -699,7 +699,7 @@ download.file <- function(url, filename, method) {
 ##'   maxErrors=10,
 ##'   sleep=2)
 ##' }
-##' 
+##'
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
 retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
@@ -712,7 +712,7 @@ retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), max
       PEcAn.logger::logger.warn(msg)
       stop(msg)
     } else {
-      msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors, 
+      msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors,
                     utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       #warning(msg)
