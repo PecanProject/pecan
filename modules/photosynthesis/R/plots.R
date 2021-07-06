@@ -1,9 +1,8 @@
-##' @title shaded confidence interval
-##' @name ciEnvelope
-##' @author Mike Dietze
-##' @export
+## @title shaded confidence interval
+## @name ciEnvelope
+## @author Mike Dietze
 ciEnvelope <- function(x, ylo, yhi, col = "lightgrey", ...) {
-  return(polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), 
+  return(graphics::polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), 
                  col = col, border = NA, ...))
 } # ciEnvelope
 
@@ -15,7 +14,7 @@ plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = T
   
   params  <- as.matrix(out$params)
   predict <- as.matrix(out$predict)
-  CI      <- apply(predict, 2, quantile, c(0.025, 0.5, 0.975))
+  CI      <- apply(predict, 2, stats::quantile, c(0.025, 0.5, 0.975))
   pmean   <- CI[, grep("pmean", colnames(CI))]
   pA      <- CI[, grep("pA", colnames(CI))]
   
@@ -56,10 +55,10 @@ plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = T
              main = paste(curve.code[c], "A-Ci"), ylim = range(pmean))
         ciEnvelope(dat$Ci[sel], pA[1, srow[sel]], pA[3, srow[sel]], col = "grey90")  #plot PI      
         ciEnvelope(dat$Ci[sel], pmean[1, srow[sel]], pmean[3, srow[sel]], col = "grey60")  #plot CI      
-        lines(dat$Ci[sel], pmean[2, srow[sel]], col = 2, lwd = 3)  #model line
-        points(dat$Ci[sel], dat$Photo[sel], pch = 20, cex = 1.5)  #licor data points      
-        points(dat$Ci[-sel], dat$Photo[-sel], col = "yellow", pch = 20)
-        legend("bottomright", legend = c("curve data", "other data", "mean", "CI", "PI"), 
+        graphics::lines(dat$Ci[sel], pmean[2, srow[sel]], col = 2, lwd = 3)  #model line
+        graphics::points(dat$Ci[sel], dat$Photo[sel], pch = 20, cex = 1.5)  #licor data points      
+        graphics::points(dat$Ci[-sel], dat$Photo[-sel], col = "yellow", pch = 20)
+        graphics::legend("bottomright", legend = c("curve data", "other data", "mean", "CI", "PI"), 
                col = c(1, "yellow", 2, "grey60", "grey90"), 
                pch = 18, lty = 1, 
                lwd = 8, bty = "n")
@@ -86,10 +85,10 @@ plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = T
              ylim = range(pmean))
         ciEnvelope(dat$PARi[sel], pA[1, srow[sel]], pA[3, srow[sel]], col = "grey90")  #plot PI      
         ciEnvelope(dat$PARi[sel], pmean[1, srow[sel]], pmean[3, srow[sel]], col = "grey60")  #plot CI      
-        lines(dat$PARi[sel], pmean[2, srow[sel]], col = 2, lwd = 3)  #model line
-        points(dat$PARi[sel], dat$Photo[sel], pch = 20, cex = 1.5)  #licor data points      
-        points(dat$PARi[-sel], dat$Photo[-sel], col = "yellow", pch = 20)
-        legend("bottomright", legend = c("curve data", "other data", "mean", "CI", "PI"), 
+        graphics::lines(dat$PARi[sel], pmean[2, srow[sel]], col = 2, lwd = 3)  #model line
+        graphics::points(dat$PARi[sel], dat$Photo[sel], pch = 20, cex = 1.5)  #licor data points      
+        graphics::points(dat$PARi[-sel], dat$Photo[-sel], col = "yellow", pch = 20)
+        graphics::legend("bottomright", legend = c("curve data", "other data", "mean", "CI", "PI"), 
                col = c(1, "yellow", 2, "grey60", "grey90"), 
                pch = 18, lty = 1, lwd = 8, bty = "n")
       } else {
