@@ -19,7 +19,6 @@ fitA <- function(flux.data, cov.data = NULL, model = NULL) {
   ##  function to do: multiple response curves
   ##  specify priors in model object
   ##  integrate with meta-analysis
-  ##  @importFrom rjags
   
   if (is.null(model)) {
     model <- list(a.fixed = NULL, a.random = NULL, V.fixed = NULL, V.random = NULL, 
