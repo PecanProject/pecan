@@ -215,7 +215,7 @@ read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
         y <- a[i] * x^(b[i])
       }
       
-      se[i] <- sqrt(Rratio[i] * var(y))
+      se[i] <- sqrt(Rratio[i] * stats::var(y))
       ## note: y is not units corrected because SE needs to be in original units, same as the other parms
     }
     Xmin <- rng[1, ]

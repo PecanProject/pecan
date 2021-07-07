@@ -48,7 +48,7 @@ NEEt.sd  <- NA
 if (is.nan(NEEt.bar)) {
   NEEt.bar <- NA
 } else {
-  NEEt.sd <- sqrt(var(NEEt, na.rm = TRUE))
+  NEEt.sd <- sqrt(stats::var(NEEt, na.rm = TRUE))
 }
 NEEt.norm <- (NEEt - NEEt.bar) / NEEt.sd
 ## normalize model
@@ -57,7 +57,7 @@ NEEm.sd <- NA
 if (is.nan(NEEm.bar)) {
   NEEm.bar <- NA
 } else {
-  NEEm.sd <- sqrt(var(NEEm, na.rm = TRUE))
+  NEEm.sd <- sqrt(stats::var(NEEm, na.rm = TRUE))
 }
 NEEm.norm <- (NEEm - NEEm.bar) / NEEm.sd
 y <- NEEm.norm - NEEt.norm  ## calc residuals of normalized
@@ -99,7 +99,7 @@ if (FALSE) {
     if (is.null(PspecG)) {
       PspecG <- matrix(NA, length(Period), 1000)
     }
-    PspecG[, seq(nstart, length = stepsize, by = 1)] <- 
+    PspecG[, seq(nstart, length = stepsize, by = 1)] <-
       Pspec[seq_along(Period), seq(nstart, length = stepsize, by = 1)]
   }
   bandN <- NULL
@@ -107,7 +107,7 @@ if (FALSE) {
     print(i)
     # save(wv,Power,day,file=paste('NACPspecNORM4clip.pseudo.',sitenum,'.',i,'.Rdata',sep=''))
     load(file = paste0(outdir, "NACPspecNORM4.pseudo.", site, ".", i, ".Rdata"))
-    
+
     if (is.null(bandN)) {
       bandN <- matrix(NA, 1000, nrow(Power))
     }
@@ -134,8 +134,8 @@ sel    <- which(date < 2004)
 par(mfrow = c(3, 1))
 par(cex = 1.2, lwd = 3)
 par(mar = c(2, 4, 0.5, 0.1))
-plot(date[sel], band[[1]][sel], type = "l", 
-     log = "y", ylim = c(0.05, max(sapply(band, max, na.rm = TRUE))), 
+plot(date[sel], band[[1]][sel], type = "l",
+     log = "y", ylim = c(0.05, max(sapply(band, max, na.rm = TRUE))),
      xlab = "time", ylab = "Power")
 abline(h = thresh, col = "grey")
 lines(date[sel], band[[2]][sel], col = 2)
@@ -146,12 +146,12 @@ legend("bottomleft", legend = tp, col = c(1, 2), lty = 1, horiz = TRUE, bg = "wh
 
 for (i in 1:2) {
   ## plot(date[sel],NEEm.s[[i]][sel],col=2,type='l',ylim=c(-4,2),
-  plot(date[sel], NEEm.s[[i]][sel], col = 2, type = "l", 
+  plot(date[sel], NEEm.s[[i]][sel], col = 2, type = "l",
        ylim = range(c(NEEt.s[[i]], NEEm.s[[i]]), na.rm = TRUE),
        xlab = "time", ylab = "NEE (umol/m2/s)")
   abline(h = 0, col = "grey")
   lines(date[sel], NEEt.s[[i]][sel], col = 4, type = "l")
-  
+
   peaks <- NEEt.s[[i]]
   peaks[which(band[[i]] < thresh)] <- NA
   peaks[is.na(band[[i]])] <- NA

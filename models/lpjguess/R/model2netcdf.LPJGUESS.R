@@ -107,13 +107,13 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     
     dims <- list(lon = lon, lat = lat, time = t)
     
-    var <- list()
-    var[[1]] <- PEcAn.utils::to_ncvar("GPP", dims)
-    var[[2]] <- PEcAn.utils::to_ncvar("NPP", dims)
-    var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
-    var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
-    var[[6]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var <- list()
+    nc_var[[1]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[2]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    nc_var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[6]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     # ******************** Declare netCDF variables ********************#
     
@@ -122,8 +122,8 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

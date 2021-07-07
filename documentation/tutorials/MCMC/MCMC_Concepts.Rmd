@@ -9,11 +9,11 @@ $$A_c = V_{cmax} \frac{C_i - \Gamma}{C_i+ K_C (1+[O]/K_O) }$$
 
 $$A^{(m)} = min(A_j,A_c) - r$$
 
-The first equation $A_j$ describes the RUBP-regeneration limited case. In this equation the first fraction is a nonrectangular hyperbola predicting $J$, the electron transport rate, as a function of incident light $Q$, quantum yield $\alpha$, and the assymptotic saturation of $J$ at high light $J_{max}$. The second equation, $A_c$, describes the Rubisco limited case. The third equation says that the overall net assimilation is determined by whichever of the two above cases is limiting, minus the leaf respiration rate, $r$. 
+The first equation $A_j$ describes the RUBP-regeneration limited case. In this equation the first fraction is a nonrectangular hyperbola predicting $J$, the electron transport rate, as a function of incident light $Q$, quantum yield $\alpha$, and the assymptotic saturation of $J$ at high light $J_{max}$. The second equation, $A_c$, describes the Rubisco limited case. The third equation says that the overall net assimilation is determined by whichever of the two above cases is limiting, minus the leaf respiration rate, $r$.
 
-To keep things simple, as a Data Model (a.k.a. Likelihood or Cost Function) we'll assume that the observed leaf-level assimilation $A^{(o)}$ is Normally distributed around the model predictions with observation error $\tau$. 
+To keep things simple, as a Data Model (a.k.a. Likelihood or Cost Function) we'll assume that the observed leaf-level assimilation $A^{(o)}$ is Normally distributed around the model predictions with observation error $\tau$.
 
-$$A^{(o)} \sim N(A^{(m)},\tau)$$ 
+$$A^{(o)} \sim N(A^{(m)},\tau)$$
 
 To fit this model to data we're going to rely on a piece of statistical software known as JAGS. The above model would be written in JAGS as:
 
@@ -127,7 +127,7 @@ The model we're fitting has six free parameters, and therefore the output matrix
 pairs(params,pch=".")
 ```
 
-The three most common outputs that are performed on almost all Bayesian analyses are to look at the MCMC chains themselves, the marginal distributions of each parameter, and the overall summary statistics. 
+The three most common outputs that are performed on almost all Bayesian analyses are to look at the MCMC chains themselves, the marginal distributions of each parameter, and the overall summary statistics.
 
 The 'trace' diagrams below show the history of individual parameters during the MCMC sampling. There are different color lines that represent the fact that JAGS ran the MCMC multiple times, with each run (i.e. each color) being refered to as a different $chain$. It is common to run multiple chains in order to assess whether the model, started from different points, consistently converges on the same answer. The ideal trace plot looks like white noise with all chains in agreement.  
 
@@ -162,11 +162,11 @@ legend("topleft",legend=c("1:1","regression"),lwd=2,col=2:3,lty=1:2)
 summary(bias.fit)
 RMSE = sqrt(mean((pmean-dat$Photo)^2))
 RMSE
-R2 = 1-RMSE^2/var(dat$Photo)
+R2 = 1-RMSE^2/stats::var(dat$Photo)
 R2
 confint(bias.fit)
 ```
-  
+
 In the final set of plots we look at the actual A-Ci and A-Q curves themselves. Here we've added two interval estimates around the curves. The CI captures the uncertainty in the _parameters_ and will asympotically shrink with more and more data. The PI (predictive interval) includes the parameter and residual error. If our fit is good then 95% PI should thus encompass at least 95% of the observations. That said, as with any statistical model we want to look for systematic deviations in the residuals from either the mean or the range of the PI.
 
 ```{r echo= TRUE, eval=FALSE}

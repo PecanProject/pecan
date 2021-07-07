@@ -1287,4 +1287,3 @@ sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   
   return(multi.settings)
 }
-
