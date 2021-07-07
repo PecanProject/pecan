@@ -833,7 +833,7 @@ return_hyperpars <- function(assim.settings, inputs){
     for(k in seq_along(assim.settings$inputs)){
       hyper.pars[[k]] <- list()
       hyper.pars[[k]]$parama <- 0.001
-      hyper.pars[[k]]$paramb <- 0.001 * Stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
+      hyper.pars[[k]]$paramb <- 0.001 * stats::var(inputs[[k]]$data[,1], na.rm = TRUE)
     }
     
   }else{
@@ -1287,4 +1287,3 @@ sync_pda_remote <- function(multi.settings, ensembleidlist, register = FALSE){
   
   return(multi.settings)
 }
-
