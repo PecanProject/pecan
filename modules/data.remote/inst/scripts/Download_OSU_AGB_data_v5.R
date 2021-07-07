@@ -93,10 +93,10 @@ rm(k)
 
 #--------------------------------------------------------------------------------------------------#
 ## extract pixel values
-bety <- list(user='bety', password='bety', host='localhost',
-             dbname='bety', driver='PostgreSQL',write=TRUE)
-con <- PEcAn.DB::db.open(bety)
-bety$con <- con
+
+con <- PEcAn.DB::db.open(
+   list(user='bety', password='bety', host='localhost',
+   dbname='bety', driver='PostgreSQL',write=TRUE))
 site_ID <- c(2000000023,1000025731)  # US-CZ3, US-SSH
 sites <- list(PEcAn.DB::query.site(site_ID[1],con),PEcAn.DB::query.site(site_ID[2],con))
 

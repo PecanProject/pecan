@@ -294,12 +294,15 @@ Open a connection with BETY. You may need to change the host name depending on w
 
 ```
 
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host ='localhost', 
-                            user     = "bety", 
-                            password = "bety")
+bety <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname   = 'bety', 
+  host ='localhost', 
+  user     = "bety", 
+  password = "bety"
+)
                             
-con <- bety$con
+con <- bety
 ```
 
 Next you will set up the arguments for the function
@@ -342,12 +345,15 @@ If your data is in a csv format you can use the `met2CF.csv`function to convert 
 Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host ='localhost', 
-                            user     = "bety", 
-                            password = "bety")
+bety <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname   = 'bety', 
+  host ='localhost',
+  user     = "bety", 
+  password = "bety"
+)
                             
-con <- bety$con
+con <- bety
 ```
 
 Prepare the arguments you need to execute the met2CF.csv function 

@@ -147,7 +147,7 @@ observeEvent(input$FormatRecordDone, {
 })
 
 # ## Insert Format Record
-# PEcAn.DB::insert.format.vars(con = bety$con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
+# PEcAn.DB::insert.format.vars(con = con, formats_df = FormatsRecord_df, formats_variables_df = NULL)
 
 ###### Formats Vars Server ##############
 ##Output list 
@@ -191,7 +191,7 @@ observeEvent(input$complete_ingest_d1, {
   
   # 1. Create Format and the format variable records
   tryCatch({
-  PEcAn.DB::insert.format.vars(con = bety$con, 
+  PEcAn.DB::insert.format.vars(con = con, 
                                format_name = input$NewFormatName, 
                                mimetype_id = ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id)),
                                header = ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE),
@@ -218,7 +218,7 @@ observeEvent(input$complete_ingest_d1, {
                                                                  mimetype = inputsList$Mimetype,
                                                                  formatname = inputsList$formatName,
                                                                  parentid = inputsList$parentID,
-                                                                 con = bety$con
+                                                                 con = con
                                                                  #hostname = localhost #?, #default to localhost for now
                                                                  #allow.conflicting.dates#? #default to FALSE for now
     )
@@ -239,7 +239,7 @@ observeEvent(input$complete_ingest_lcl, {
   Shared.data$format_vars_df <- Shared.data$format_vars_df %>% select(-one_of("var_name"))
   # 1. Create Format and the format variable records
   tryCatch({
-    PEcAn.DB::insert.format.vars(con = bety$con,
+    PEcAn.DB::insert.format.vars(con = con,
                                  format_name = input$NewFormatName,
                                  mimetype_id = ifelse((input$MimetypeName == ""), "", mimetype_sub %>% dplyr::filter(type_string %in% input$MimetypeName) %>% pull(id)),
                                  header = ifelse((input$HeaderBoolean == "Yes"), TRUE, FALSE),
@@ -266,7 +266,7 @@ observeEvent(input$complete_ingest_lcl, {
                                                                  mimetype = inputsList$Mimetype,
                                                                  formatname = inputsList$formatName,
                                                                  parentid = inputsList$parentID,
-                                                                 con = bety$con
+                                                                 con = con
                                                                  #hostname = localhost #?, #default to localhost for now
                                                                  #allow.conflicting.dates#? #default to FALSE for now
     )

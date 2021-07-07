@@ -1,11 +1,11 @@
 ## Some global environment variables
-.wd <- getwd() # Set this to whatever you want the working directory to be.  If this is run off a cron job, 
+.wd <- getwd() # Set this to whatever you want the working directory to be.  If this is run off a cron job,
                # you probably do not want the working directory to be cron's working directory, which is what getwd will return.
 
 
 ##'
 ##' Rounds a date to the previous 6 hours (0:00, 6:00, 12:00, or 18:00).
-##' 
+##'
 ##' @author Luke Dramko
 round.to.six.hours <- function(date = Sys.time() - lubridate::hours(2)) {
   if (is.character(date)) {
@@ -13,9 +13,9 @@ round.to.six.hours <- function(date = Sys.time() - lubridate::hours(2)) {
   }
   forecast_hour = (lubridate::hour(date) %/% 6) * 6 #Integer division by 6 followed by re-multiplication acts like a "floor function" for multiples of 6
   forecast_hour = sprintf("%04d", forecast_hour * 100)
-  date = as.POSIXct(paste0(lubridate::year(date), "-", lubridate::month(date), "-", lubridate::day(date), " ", 
+  date = as.POSIXct(paste0(lubridate::year(date), "-", lubridate::month(date), "-", lubridate::day(date), " ",
                                  substring(forecast_hour, 1,2), ":00:00"), tz="UTC")
-  
+
   return(date)
 }
 
@@ -59,12 +59,15 @@ dbparms$user = "bety"
 dbparms$password = "bety"
 
 #Connection code copied and pasted from met.process
-bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                            host     = dbparms$host, 
-                            user     = dbparms$user, 
-                            password = dbparms$password)
+bety <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname   = dbparms$dbname,
+  host     = dbparms$host,
+  user     = dbparms$user,
+  password = dbparms$password
+)
 
-con <- bety$con #Connection to the database.  dplyr returns a list.
+con <- bety
 if (is.null(con)) {
   print("Database connection failed.")
   quit("no", status=12)
@@ -97,8 +100,8 @@ settings$ensemble$end.year <- as.character(end_date, "%Y")
 
 # Create new workflow ID and register it with the database
 hostname <- PEcAn.remote::fqdn()
-query <- paste0("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date,", 
-                "end_date, params, advanced_edit) ", 
+query <- paste0("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date,",
+                "end_date, params, advanced_edit) ",
                 "values (", settings$run$site$id, ", ", settings$model$id, ", ", "''", ", '', '", hostname, "', '",
                 format(start_date, "%Y/%m/%d %H:%M:%S"), "', '", format(end_date, "%Y/%m/%d %H:%M:%S"), "', ", "''", ", ", "true) RETURNING id")
 workflowid <- PEcAn.DB::db.query(query, con = con)
@@ -130,4 +133,3 @@ PEcAn.DB::db.close(con)
 
 # Write out the file with updated settings
 PEcAn.settings::write.settings(settings, outputfile = filename, outputdir = xmloutdir)
-

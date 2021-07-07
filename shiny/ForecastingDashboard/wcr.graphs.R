@@ -1,6 +1,6 @@
-#### need to create a graph funciton here to call with the args of start time 
+#### need to create a graph funciton here to call with the args of start time
 
-wcr.graphs <- function(args){ 
+wcr.graphs <- function(args){
   start_date <- tryCatch(as.POSIXct(args[1]), error = function(e) {NULL} )
   if (is.null(start_date)) {
     in_wid <- as.integer(args[1])
@@ -11,29 +11,32 @@ wcr.graphs <- function(args){
   dbparms$user = "bety"
   dbparms$password = "bety"
   #Connection code copied and pasted from met.process
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                              host     = dbparms$host, 
-                              user     = dbparms$user, 
-                              password = dbparms$password)
-  con <- bety$con #Connection to the database.  dplyr returns a list.
+  bety <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    dbname   = dbparms$dbname,
+    host     = dbparms$host,
+    user     = dbparms$user,
+    password = dbparms$password
+  )
+  con <- bety
   # Identify the workflow with the proper information
   if (!is.null(start_date)) {
-    workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='", format(start_date, "%Y-%m-%d %H:%M:%S"), 
+    workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='", format(start_date, "%Y-%m-%d %H:%M:%S"),
                                            "' ORDER BY id"), con)
   } else {
     workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE id='", in_wid, "'"), con)
   }
   print(workflows)
-  
+
   workflows <- workflows[which(workflows$site_id == args[3]),]
-  
+
   if (nrow(workflows) > 1) {
     workflow <- workflows[nrow(workflows),]
   } else {
     workflow <- workflows
   }
-  
-  
+
+
   print(paste0("Using workflow ", workflow$id))
   wid <- workflow$id
   pecan_out_dir <- paste0("/fs/data3/kzarada/output/PEcAn_", wid, "/out");
@@ -50,19 +53,19 @@ wcr.graphs <- function(args){
       print(paste0("File ", datafile, " does not exist."))
       next
     }
-    
+
     num_results <- num_results + 1
-    
+
     #open netcdf file
     ncptr <- ncdf4::nc_open(datafile);
-    
+
     # Attach data to matricies
     nee <- ncdf4::ncvar_get(ncptr, "NEE")
     neemat <- rbind(neemat, nee)
-    
+
     qle <- ncdf4::ncvar_get(ncptr, "Qle")
     qlemat <- rbind(qlemat, qle)
-    
+
     # Close netcdf file
     ncdf4::nc_close(ncptr)
   }
@@ -88,7 +91,7 @@ wcr.graphs <- function(args){
   needf$date <- c(rep(as.Date(start_date), 3), rep(seq(as.Date(start_date) + lubridate::days(1), as.Date(workflow$end_date)-lubridate::days(1), by="days"), each = 4), as.Date(workflow$end_date))
   needf$Time <- c(6,12,18, rep(c(0,6,12,18),length.out = (length(needf$date) - 3)))
   needf$start_date <- rep(start_date, each = 64)
-  
+
   quantiles <- apply(qlemat,2,quantile,c(0.025,0.5,0.975), na.rm=TRUE)
   qlelower95 <- quantiles[1,]
   qlemeans <- quantiles[2,]
@@ -97,11 +100,8 @@ wcr.graphs <- function(args){
   qledf$date <-  c(rep(as.Date(start_date), 3), rep(seq(as.Date(start_date) + lubridate::days(1), as.Date(workflow$end_date)-lubridate::days(1), by="days"), each = 4), as.Date(workflow$end_date))
   qledf$Time <- c(6,12,18, rep(c(0,6,12,18),length.out = (length(qledf$date) - 3)))
   qledf$start_date <- rep(start_date, each = 64)
-  
+
   if(args[2] == "NEE"){
   return(needf)}
   else(return(qledf))
-} 
-
-
-
+}
