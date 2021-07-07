@@ -315,7 +315,7 @@ pdf.stats <- function(distn, A, B) {
     f = ifelse(B > 2,
                B/(B - 2),
                mean(stats::rf(10000, A, B))))
-  nc_var <- switch(distn,
+  var <- switch(distn,
     gamma = A/B^2,
     lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
     beta = A * B/((A + B) ^ 2 * (A + B + 1)),
@@ -329,7 +329,7 @@ pdf.stats <- function(distn, A, B) {
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
   ucl <- ci[2]
-  out <- unlist(list(mean = mean, var = nc_var, lcl = lcl, ucl = ucl))
+  out <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl))
   return(out)
 } # pdf.stats
 #--------------------------------------------------------------------------------------------------#
