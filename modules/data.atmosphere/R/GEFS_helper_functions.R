@@ -6,7 +6,8 @@
 #' @param forecast_date date for forecast
 #' @param model_name_raw model name for directory creation
 #' @param end_hr end hr to determine how many hours to download
-#' @param output_directory output directory 
+#' @param output_directory output directory
+#' @export 
 #'
 #' @return NA
 #'
@@ -141,7 +142,8 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
         print(paste("Downloading", forecast_date, cycle))
         
         if(cycle == "00"){
-          hours <- c(seq(0, 240, 3),seq(246, min(end_hr, 384), 6))
+          hours <- c(seq(0, 240, 3),seq(246, 384, 6))
+          hours <- hours[hours<=end_hr]
         }else{
           hours <- c(seq(0, 240, 3),seq(246, min(end_hr, 840) , 6))
         }
@@ -188,6 +190,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param model_name_raw Name of raw file name
 #' @param output_directory Output directory 
 #' @importFrom rlang .data 
+#' @export
 #' @return List
 #'
 #'
@@ -481,7 +484,10 @@ process_gridded_noaa_download <- function(lat_list,
       
       
       #Write netCDF
-      write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
+      if(!nrow(forecast_noaa_ens) == 0){      
+        write_noaa_gefs_netcdf(df = forecast_noaa_ens,ens, lat = lat_list[1], lon = lon_east, cf_units = cf_var_units1, output_file = output_file, overwrite = TRUE)
+      }else {results_list[[ens]] <- NULL 
+      next}
       
       if(downscale){
         #Downscale the forecast from 6hr to 1hr
@@ -502,12 +508,13 @@ process_gridded_noaa_download <- function(lat_list,
         results_list[[ens]] <- results
         
         #Run downscaling
-        temporal_downscale(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
+        temporal_downscale_half_hour(input_file = output_file, output_file = output_file_ds, overwrite = TRUE, hr = 1)
       }
       
       
     }
   }
+  results_list <- results_list[!sapply(results_list, is.null)]
   return(results_list)
 } #process_gridded_noaa_download
 
@@ -520,6 +527,7 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #' @importFrom rlang .data 
 #' @import tidyselect
+#' @export
 #' @author Quinn Thomas
 #'
 #'
@@ -640,9 +648,10 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 ##' @param cf_units vector of variable names in order they appear in df
 ##' @param output_file name, with full path, of the netcdf file that is generated
 ##' @param overwrite logical to overwrite existing netcdf file
+##' 
 ##' @return NA
 ##'
-##'
+##' @export
 ##' @author Quinn Thomas
 ##'
 ##'

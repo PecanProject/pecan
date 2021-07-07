@@ -35,7 +35,7 @@ download.NARR_site(
 
 \item{parallel}{Download in parallel? Default = TRUE}
 
-\item{ncores}{Number of cores for parallel download. Default is 
+\item{ncores}{Number of cores for parallel download. Default is
 `parallel::detectCores()`}
 }
 \description{
