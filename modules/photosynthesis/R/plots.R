@@ -1,6 +1,7 @@
-## @title shaded confidence interval
-## @name ciEnvelope
-## @author Mike Dietze
+##' @title shaded confidence interval
+##' @name ciEnvelope
+##' @author Mike Dietze
+##' @noRd
 ciEnvelope <- function(x, ylo, yhi, col = "lightgrey", ...) {
   return(graphics::polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), 
                  col = col, border = NA, ...))
