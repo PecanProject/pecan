@@ -27,7 +27,7 @@
 ##' @examples
 ##' \dontrun{
 ##' con <- PEcAn.DB::db.open(
-      list(user='bety', password='bety', host='localhost',
+##'      list(user='bety', password='bety', host='localhost',
 ##'   dbname='bety', driver='PostgreSQL',write=TRUE))
 ##' start_date <- lubridate::ymd_hm('200401010000')
 ##' end_date <- lubridate::ymd_hm('200412312330')
