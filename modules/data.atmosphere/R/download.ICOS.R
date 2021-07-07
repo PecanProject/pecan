@@ -56,7 +56,7 @@ download.ICOS <-
       
     } else if (tolower(product) == "etc") {
       output_file_name <-
-        paste0(sitename, "/ICOSETC_", sitename, "_FLUXNET_HH_01.csv")
+        paste0("ICOSETC_", sitename, "_FLUXNET_HH_01.csv")
       
       # construct zip file name
       zip_file_name <-
@@ -67,7 +67,7 @@ download.ICOS <-
         "http://meta.icos-cp.eu/resources/cpmeta/etcArchiveProduct"
       
       file_name <-
-        paste0(sitename, "/ICOSETC_", sitename, "_FLUXNET_HH")
+        paste0("ICOSETC_", sitename, "_FLUXNET_HH")
       
       format_name <- "ICOS_ECOSYSTEM_HH"
       
@@ -166,13 +166,14 @@ download.ICOS <-
       # extract only the hourly data file
       zipped_csv_name <-
         grep(
-          paste0('^', file_name),
+          paste0('*', file_name),
           utils::unzip(zip_file_name, list = TRUE)$Name,
           ignore.case = TRUE,
           value = TRUE
         )
       utils::unzip(zip_file_name,
                    files = zipped_csv_name,
+                   junkpaths = TRUE,
                    exdir = outfolder)
     }
     
