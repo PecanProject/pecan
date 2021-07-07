@@ -17,15 +17,21 @@ debias.met(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
 \item{input_met}{- the source_met dataset that will be altered by the training dataset in NC format.}
 
 \item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format}
+
+\item{site_id}{BETY site id}
 
 \item{de_method}{- select which debias method you would like to use, options are 'normal', 'linear regression'}
 
 \item{overwrite}{logical: replace output file if it already exists? Currently ignored.}
 
-\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}}
+
+\item{...}{other inputs
 functions print debugging information as they run?}
 }
 \description{
