@@ -16,20 +16,20 @@ outputdirectory "./"
 
 ! Prefined yearly output
 ! These files may be outcommented if their output is not required. 
-!file_cmass "cmass.out"
-!file_anpp "anpp.out"
-!file_agpp "agpp.out"
-!file_fpc "fpc.out"
-!file_aaet "aaet.out"
-!file_lai "lai.out"
-!file_cflux "cflux.out"
-!file_dens "dens.out"
-!file_runoff "tot_runoff.out"
-!file_cpool "cpool.out"
-!file_clitter "clitter.out"
-!file_firert "firert.out"
-!file_aiso "aiso.out"
-!file_amon "amon.out"
+file_cmass "cmass.out"
+file_anpp "anpp.out"
+file_agpp "agpp.out"
+file_fpc "fpc.out"
+file_aaet "aaet.out"
+file_lai "lai.out"
+file_cflux "cflux.out"
+file_dens "dens.out"
+file_runoff "tot_runoff.out"
+file_cpool "cpool.out"
+file_clitter "clitter.out"
+file_firert "firert.out"
+file_aiso "aiso.out"
+file_amon "amon.out"
 !file_speciesheights "height.out"
 
 !file_nmass "nmass.out"
@@ -73,6 +73,7 @@ title 'LPJ-GUESS cohort mode - global pfts'
 
 vegmode "cohort"		! "cohort", "individual" or "population"
 nyear_spinup 500		! number of years to spin up the simulation for
+spinup_lifeform "nolifeform"
 ifcalcsla 0				! whether to calculate SLA from leaf longevity
 ! (PFT-specific value can be specified in this file instead)
 ifcalccton 1			! whether to calculate leaf C:N min from leaf longevity
@@ -82,8 +83,8 @@ npatch 5				! number of replicate patches to simulate
 patcharea 1000			! patch area (m2)
 estinterval 5			! years between establishment events in cohort mode
 ifdisturb 1				! whether generic patch-destroying disturbances enabled
-distinterval 100		! average return time for generic patch-destroying disturbances
-! Hickler et al. (2011) used 200
+distinterval 500		! average return time for generic patch-destroying disturbances
+disturb_year -1
 ifbgestab 1				! whether background establishment enabled
 ifsme 1					! whether spatial mass effect enabled
 ifstochestab 1			! whether establishment stochastic
@@ -105,17 +106,17 @@ nrelocfrac 0.5			! fraction of N retranslocated prior to leaf and root shedding
 
 
 !///////////////////////////////////////////////////////////////////////////////
-  ! SERIALIZATION SETTINGS 
+! SERIALIZATION SETTINGS 
 !///////////////////////////////////////////////////////////////////////////////
-  !state_year 500			! year to save/start state file (no setting = after spinup)
+@STATE_YEAR@			! year to save/start state file (no setting = after spinup)
 restart 0				! wheter to start from a state file
-save_state 0			! wheter to save a state file
-!state_path ""			! directory to put state files in
+save_state @SAVE_STATE_OPTION@			! wheter to save a state file
+@STATE_PATH@			! directory to put state files in
 
 
 ifsmoothgreffmort 1				! whether to vary mort_greff smoothly with growth efficiency (1) 
 ! or to use the standard step-function (0)  
-  ! greff_min values below calibrated for the smooth (1) option 
+! greff_min values below calibrated for the smooth (1) option 
 ifdroughtlimitedestab 0			! whether establishment is limited by growing season drought
 ! guess2008 - species version has 1
 ifrainonwetdaysonly 0			! whether to rain on wet days only (1), or to rain a bit every day (0)
@@ -132,6 +133,7 @@ run_pasture 0	      ! whether to simulate pasture (1) or not (0)
 run_natural 1	      ! whether to simulate natural vegetation (1) or not (0)
 run_peatland 1	      ! whether to simulate peatland (1) or not (0)
 
+@@@@@ Remove in PalEON version @@@@@
 lcfrac_fixed 0        	! use landcover fractions (%) below (1) or read from input file (0)
 lc_fixed_urban 0   	! URBAN
 lc_fixed_cropland 50	! CROPLAND
@@ -140,7 +142,7 @@ lc_fixed_forest 0   	! FOREST
 lc_fixed_natural 25 	! NATURAL
 lc_fixed_peatland 25 	! PEATLAND
 equal_landcover_area 0	! divide gridcell into equal active landcover fractions
-
+@@@@@ Remove in PalEON version @@@@@
 !///////////////////////////////////////////////////////////////////////////////////////
   
   
@@ -185,7 +187,7 @@ pft "@pft@" (
   res_outtake @res_outtake@
   harvest_slow_frac @harvest_slow_frac@
   turnover_harv_prod @turnover_harv_prod@
-  phenology @phenology@
+  phenology '@phenology@'
   fnstorage @fnstorage@
   phengdd5ramp @phengdd5ramp@
   est_max @est_max@					
@@ -193,7 +195,7 @@ pft "@pft@" (
   alphar @alphar@       			
   greff_min @greff_min@ 			
   turnover_sap @turnover_sap@
-  leafphysiognomy @leafphysiognomy@
+  leafphysiognomy '@leafphysiognomy@'
   k_allom1 @k_allom1@
   k_latosa @k_latosa@
   gmin @gmin@
@@ -218,5 +220,6 @@ pft "@pft@" (
   seas_iso @seas_iso@
   eps_mon @eps_mon@
   storfrac_mon @storfrac_mon@
+  minmoist_est @minmoist_est@
 )
 
