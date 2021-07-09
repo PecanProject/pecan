@@ -43,6 +43,8 @@ infoifnot("Something is not a list.", is.list(a), is.list(b))
 warnifnot("I would prefer it if you used lists.", is.list(a), is.list(b))
 errorifnot("You should definitely use lists.", is.list(a), is.list(b))
 try({
-  severeifnot("I absolutely cannot deal with the fact that something is not a list.", is.list(a), is.list(b))
+  severeifnot("I cannot deal with the fact that something is not a list.",
+    is.list(a),
+    is.list(b))
 })
 }

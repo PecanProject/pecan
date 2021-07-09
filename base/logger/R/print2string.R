@@ -17,6 +17,6 @@
 #' logger.debug("Current status:\n", print2string(df, row.names = FALSE), wrap = FALSE)
 #' @export
 print2string <- function(x, ...) {
-  cout <- capture.output(print(x, ...))
+  cout <- utils::capture.output(print(x, ...))
   paste(cout, collapse = "\n")
 }
