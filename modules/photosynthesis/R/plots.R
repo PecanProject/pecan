@@ -10,6 +10,11 @@ ciEnvelope <- function(x, ylo, yhi, col = "lightgrey", ...) {
 ##' @name plot_photo
 ##' @title plot_photo
 ##' @author Mike Dietze
+##' @param data input data
+##' @param out directory where output will be stored
+##' @param curve Whether to do Quality Control by examining the 'ACi' curve, the 'AQ' curve, or both
+##' @param tol Code automatically tries to separate ACi and AQ curves in the same dataset by detecting the 'reference' condition for light and CO2 respectively. This is the relative error around the mode in that detection.
+##' @param byLeaf whether to plot fits on a leaf-by-leaf basis
 ##' @export
 plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE) {
   
