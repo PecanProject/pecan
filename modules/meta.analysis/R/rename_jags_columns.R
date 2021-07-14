@@ -24,7 +24,7 @@ rename_jags_columns <- function(data) {
 
   stat <- NULL
   n <- NULL
-  trt <- NULL
+  trt_id <- NULL
   citation_id <- NULL
   transformed <-  transform(data,
                             Y        = mean,
