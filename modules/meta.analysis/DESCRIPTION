@@ -11,7 +11,6 @@ Authors@R: c(person("Mike","Dietze", role = c("aut")),
              person("Rob","Kooper", role = c("aut")),
              person("Shawn", "Serbin", role = c("aut")),
              person("Shashank", "Singh", role = c("aut")))
-
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
