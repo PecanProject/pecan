@@ -12,7 +12,7 @@ model_specific_tags(settings, model.info)
 \item{model.info}{model info extracted from bety}
 }
 \value{
-
+updated settings list
 }
 \description{
 model_specific_tags
