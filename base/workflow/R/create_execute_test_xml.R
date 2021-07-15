@@ -172,10 +172,7 @@ create_execute_test_xml <- function(model_id,
   )
 }
 
-
-
-
-#' Title
+#' model_specific_tags
 #'
 #' @param settings pecan xml settings
 #' @param model.info model info extracted from bety
