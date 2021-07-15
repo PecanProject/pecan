@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_execute_test_xml.R
 \name{model_specific_tags}
 \alias{model_specific_tags}
-\title{Title}
+\title{model_specific_tags}
 \usage{
 model_specific_tags(settings, model.info)
 }
@@ -15,5 +15,5 @@ model_specific_tags(settings, model.info)
 
 }
 \description{
-Title
+model_specific_tags
 }
