@@ -177,7 +177,7 @@ create_execute_test_xml <- function(model_id,
 #' @param settings pecan xml settings
 #' @param model.info model info extracted from bety
 #'
-#' @return
+#' @return updated settings list
 #' @export
 #'
 model_specific_tags <- function(settings, model.info){
