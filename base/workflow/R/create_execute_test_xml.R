@@ -119,7 +119,7 @@ create_execute_test_xml <- function(model_id,
                        constants = list(num = 1)
                        )
                 ) %>%
-    setNames(rep("pft", length(.))) 
+    stats::setNames(rep("pft", length(.data))) 
 
   #Meta Analysis
   settings$meta.analysis <- list(iter = 3000, random.effects = FALSE)
