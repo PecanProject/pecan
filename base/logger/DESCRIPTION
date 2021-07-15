@@ -10,7 +10,7 @@ Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
                 email = "shashanksingh819@gmail.com"),
              person("Chris", "Black", role = c("ctb")))
 Description: Special logger functions for tracking execution status and the environment.
-BugReports: https://github.com/PecanProject/pecan
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports: utils
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
