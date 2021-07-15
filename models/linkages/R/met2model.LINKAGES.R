@@ -104,7 +104,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_temp_mean <- matrix(NA, nyear, 12)
 
   for (i in seq_len(nyear)) {
-  
+
     year_txt <- formatC(year[i], width = 4, format = "d", flag = "0")
 
     infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
