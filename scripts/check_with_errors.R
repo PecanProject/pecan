@@ -32,6 +32,14 @@ if (!runtests) {
     args <- c("--timings")
 }
 
+# devtools 2.4.0 changed values accepted by document argument:
+# < 2.4.0: TRUE = yes, FALSE = no, NA = yes if a Roxygen package
+# >= 2.4.0: TRUE = yes, FALSE = no,
+#   NULL = if installed Roxygen is same version as package's RoxygenNote
+if ((packageVersion("devtools") >= "2.4.0") && is.na(redocument)) {
+    redocument <- NULL
+}
+
 chk <- devtools::check(pkg, args = args, quiet = TRUE,
     error_on = die_level, document = redocument)
 

@@ -65,7 +65,7 @@ jagify <- function(result, use_ghs = TRUE) {
     r$stat[r$stat <= 0] <- NA
   }
   
-  PEcAn.DB::rename_jags_columns(r)
+  rename_jags_columns(r)
 } # jagify
 # ==================================================================================================#
 
