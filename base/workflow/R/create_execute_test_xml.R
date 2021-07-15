@@ -54,7 +54,7 @@ create_execute_test_xml <- function(model_id,
   if (is.null(db_bety_hostname)) db_bety_hostname <- config.list$db_bety_hostname
   if (is.null(db_bety_port)) db_bety_port <- config.list$db_bety_port
   
-  #opening a connection to bety
+  #opening a connection to bety 
   con <- PEcAn.DB::db.open(list(
     user = db_bety_username,
     password = db_bety_password,
