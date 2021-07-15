@@ -19,12 +19,13 @@
 ##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
+##' @param IC initial conditions list
 ##' @return configuration file for BASGRA for given run
 ##' @export
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
-write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
-
+write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = NULL) {
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
@@ -40,14 +41,37 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names <- names(pft.traits)
     
-    # Initial value of leaf area index m2 m-2 - logged)
-    if ("ilai" %in% pft.names) {
-      run_params[which(names(run_params) == "LOG10LAII")] <- log(pft.traits[which(pft.names == "ilai")])
+    # Replace matches
+    for (mi in seq_along(pft.traits)) {
+      ind <- which(names(run_params) == pft.names[mi])
+      run_params[ind] <- pft.traits[mi]
+    }
+    
+    
+      
+    # Maximum SLA of new leaves
+    if ("SLAMAX" %in% pft.names) {
+      run_params[which(names(run_params) == "SLAMAX")] <- udunits2::ud.convert(pft.traits[which(pft.names == "SLAMAX")], "kg-1","g-1")
+    }
+    
+    # Number of elongating leaves per non-elongating tiller
+    if ("n_el2nel" %in% pft.names) {
+      run_params[which(names(run_params) == "NELLVM")] <- pft.traits[which(pft.names == "n_el2nel")]
     }
     
     # N-C ratio of roots (g N g-1 C)
     if ("c2n_fineroot" %in% pft.names) {
       run_params[which(names(run_params) == "NCR")] <- 1/pft.traits[which(pft.names == "c2n_fineroot")]
+    }
+    
+    # Phenological stage above which elongation and appearance of leaves on elongating tillers decreases
+    if ("phen_etil_decrease" %in% pft.names) {
+      run_params[which(names(run_params) == "PHENCR")] <- pft.traits[which(pft.names == "phen_etil_decrease")]
+    }
+    
+    # Relative death rate of leaves and non-elongating tillers due to shading when LAI is twice the threshold (LAICR)
+    if ("relative_shading_death" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRSCO")] <- pft.traits[which(pft.names == "relative_shading_death")]
     }
     
     # PAR extinction coefficient (m2 m-2)
@@ -60,26 +84,24 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(run_params) == "TRANCO")] <- pft.traits[which(pft.names == "transpiration_coefficient")]
     }
     
-    # Temperature that kills half the plants in a day (degrees Celcius)
-    if ("plant_min_temp" %in% pft.names) {
-      run_params[which(names(run_params) == "LT50")] <- pft.traits[which(pft.names == "plant_min_temp")]
-    }
-    
     if ("phyllochron" %in% pft.names) {
       run_params[which(names(run_params) == "PHY")] <- pft.traits[which(pft.names == "phyllochron")]
     }
     
     if ("leaf_width" %in% pft.names) {
-      # Leaf width on elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
       # Leaf width on non-elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDV")] <- run_params[which(names(run_params) == "LFWIDG")] * 0.6 # simplifying assumption
+      run_params[which(names(run_params) == "LFWIDV")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
     }
     
-    # Initial and maximum value rooting depth (m)
-    if ("rooting_depth" %in% pft.names) {
-      run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
+    if ("generative_leaf_width" %in% pft.names) {
+      # Leaf width on elongating tillers (m)
+      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
     }
+    
+    # # Initial and maximum value rooting depth (m)
+    # if ("rooting_depth" %in% pft.names) {
+    #   run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
+    # }
     
     # Maximum root depth growth rate (m day-1)
     if ("root_growth_rate" %in% pft.names) {
@@ -96,9 +118,416 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
       run_params[which(names(run_params) == "SHAPE")] <- pft.traits[which(pft.names == "shape")]
     }
     
+    # Sink strength of small elongating tillers (g C tiller-1 d-1)
+    if ("elongating_tiller_sink_strength" %in% pft.names) {
+      run_params[which(names(run_params) == "SIMAX1T")] <- pft.traits[which(pft.names == "elongating_tiller_sink_strength")]
+    }
+    
+    # Minimum value of effective temperature for leaf elongation (deg C)
+    if ("gdd_tbase" %in% pft.names) {
+      run_params[which(names(run_params) == "TBASE")] <- pft.traits[which(pft.names == "gdd_tbase")]
+    }
+    
+    # Time constant of mobilisation of reserves (day)
+    if ("tc_res" %in% pft.names) {
+      run_params[which(names(run_params) == "TCRES")] <- pft.traits[which(pft.names == "tc_res")]
+    }
+    
+    # Optimum temperature for vegetative tillers becoming generative (deg C)
+    if ("TOpt_ge" %in% pft.names) {
+      run_params[which(names(run_params) == "TOPTGE")] <- pft.traits[which(pft.names == "TOpt_ge")]
+    }
+    
+    # Growth yield per unit expended carbohydrate (g C g-1 C)
+    if ("growthYield" %in% pft.names) {
+      run_params[which(names(run_params) == "YG")] <- pft.traits[which(pft.names == "growthYield")]
+    }
+    
+    # Maximum surface temperature at which hardening is possible (deg C)
+    if ("THard_max" %in% pft.names) {
+      run_params[which(names(run_params) == "THARDMX")] <- pft.traits[which(pft.names == "THard_max")]
+    }
+    
+    # Minimum relative death rate of foliage (day-1)
+    if ("min_foliage_mort_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRTMIN")] <- pft.traits[which(pft.names == "min_foliage_mort_rate")]
+    }
+    
+    # Maximum N-C ratio of shoot (g N g-1 C)
+    if ("n2c_shoot_max" %in% pft.names) {
+      run_params[which(names(run_params) == "NCSHMAX")] <- pft.traits[which(pft.names == "n2c_shoot_max")]
+    }
+    
+    # Maximum refreezing rate per degree below temperature which snow melts
+    if ("max_refreezing_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "SWrf")] <- pft.traits[which(pft.names == "max_refreezing_rate")]
+    }
+    
+    # Vernalisation threshold (deg C)
+    if ("vernalization_threshold" %in% pft.names) {
+      run_params[which(names(run_params) == "TVERN")] <- pft.traits[which(pft.names == "vernalization_threshold")]
+    }
+    
+    
+    ##### Soil parameters
+    
+    # Fraction of decomposed litter becoming fast SOM
+    if ("f_litter_SOM_fast" %in% pft.names) {
+      run_params[which(names(run_params) == "FLITTSOMF")] <- pft.traits[which(pft.names == "f_litter_SOM_fast")]
+    }
+    
+    # Fraction of decomposed fast SOM
+    if ("fastOM2slowOM" %in% pft.names) {
+      run_params[which(names(run_params) == "FSOMFSOMS")] <- pft.traits[which(pft.names == "fastOM2slowOM")]
+    }
+    
+    # Residence time of slowly decomposing OM
+    if ("sOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCSOMS")] <- pft.traits[which(pft.names == "sOM_residence_time")]
+    }
+    
+    # Residence time of fast decomposing OM
+    if ("fOM_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCSOMF")] <- round(pft.traits[which(pft.names == "fOM_residence_time")])
+    }
+    
+    # Residence time of litter
+    if ("litter_residence_time" %in% pft.names) {
+      run_params[which(names(run_params) == "TCLITT")] <- pft.traits[which(pft.names == "litter_residence_time")]
+    }
+    
+    # Temperature at which decomposition is maximal (deg C)
+    if ("Tdecomp_max" %in% pft.names) {
+      run_params[which(names(run_params) == "TMAXF")] <- pft.traits[which(pft.names == "Tdecomp_max")]
+    }
+    
+    # Resilience of decomposition to temperature change (deg C)
+    if ("decomp_res2Tdelta" %in% pft.names) {
+      run_params[which(names(run_params) == "TSIGMAF")] <- pft.traits[which(pft.names == "decomp_res2Tdelta")]
+    }
+    
+    # Ratio of total to aerobic respiration
+    if ("total2RA" %in% pft.names) {
+      run_params[which(names(run_params) == "KRTOTAER")] <- pft.traits[which(pft.names == "total2RA")]
+    }
+    
+    # Day length below which phenological stage is reset to zero
+    if ("min_daylength_reset" %in% pft.names) {
+      run_params[which(names(run_params) == "DAYLB")] <- pft.traits[which(pft.names == "min_daylength_reset")]
+    }
+    
+    # Day length below which phenological development slows down
+    if ("min_daylength_slow" %in% pft.names) {
+      run_params[which(names(run_params) == "DAYLP")] <- pft.traits[which(pft.names == "min_daylength_slow")]
+    }
+    
+    # Day length below which DAYLGE becomes less than 1
+    if ("daylength_effect" %in% pft.names) {
+      run_params[which(names(run_params) == "DLMXGE")] <- pft.traits[which(pft.names == "daylength_effect")]
+    }
+    
+    # LAI above which shading induces leaf senescence
+    if ("lai_senescence" %in% pft.names) {
+      run_params[which(names(run_params) == "LAICR")] <- pft.traits[which(pft.names == "lai_senescence")]
+    }
+    
+    # Decrease in tillering with leaf area index
+    if ("lai_til_decrease" %in% pft.names) {
+      run_params[which(names(run_params) == "LAIEFT")] <- pft.traits[which(pft.names == "lai_til_decrease")]
+    }
+    
+    # Maximum ratio of tiller and leaf apearance at low leaf area index
+    if ("lai_til2leaf_max" %in% pft.names) {
+      run_params[which(names(run_params) == "LAITIL")] <- pft.traits[which(pft.names == "lai_til2leaf_max")]
+    }
+    
+    # Proportionality of leaf senescence with temperature
+    if ("leaf_senescence_temp_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RDRTEM")] <- pft.traits[which(pft.names == "leaf_senescence_temp_rate")]
+    }
+    
+    # Maximum relative rate of tillers becoming elongating tillers
+    if ("til2etil_max_rate" %in% pft.names) {
+      run_params[which(names(run_params) == "RGENMX")] <- pft.traits[which(pft.names == "til2etil_max_rate")]
+    }
+    
+    # Fraction of reserves in elongating tillers that is harvested
+    if ("etil_resv_harv" %in% pft.names) {
+      run_params[which(names(run_params) == "HAGERE")] <- pft.traits[which(pft.names == "etil_resv_harv")]
+    }
+    
+  } #### End parameter update
+  
+  
+  
+  #### Update initial conditions
+  if (!is.null(IC)) {
+    
+    ic.names <- names(IC)
+    
+    if ("LAI"  %in% ic.names) {
+      run_params[names(run_params) == "LOG10LAII"] <- IC$LAI
+    }
+    
+    
+    if ("fast_soil_pool_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+    }
+    
+    if ("slow_soil_pool_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+    }
+    
+  }else if(!is.null(settings$run$inputs$poolinitcond$path)){
+    
+    IC.path <- settings$run$inputs$poolinitcond$path
+    #IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
+    
+    #if(!is.null(IC.pools)){
+    IC.nc <- ncdf4::nc_open(IC.path)
+    
+    ## laiInit m2/m2
+    lai <- try(ncdf4::ncvar_get(IC.nc, "LAI"), silent = TRUE)
+    if (!is.na(lai) && is.numeric(lai)) {
+      run_params[which(names(run_params) == "LOG10LAII")] <- lai
+    }
+    
+    # Initial value of litter C (g C m-2)
+    clitt0 <- try(ncdf4::ncvar_get(IC.nc, "litter_carbon_content"), silent = TRUE)
+    if (!is.na(clitt0) && is.numeric(clitt0)) {
+      run_params[which(names(run_params) == "CLITT0")] <- udunits2::ud.convert(clitt0, "kg", "g")
+    }
+    
+ 
+    # Initial value of slow SOM (g C m-2)
+    csoms0 <- try(ncdf4::ncvar_get(IC.nc, "slow_soil_pool_carbon_content"), silent = TRUE)
+    if (!is.na(csoms0) && is.numeric(csoms0)) {
+      run_params[which(names(run_params) == "CSOMS0")] <- udunits2::ud.convert(csoms0, "kg", "g")
+    }
+    
+    # Initial value of fast SOM (g C m-2)
+    csomf0 <- try(ncdf4::ncvar_get(IC.nc, "fast_soil_pool_carbon_content"), silent = TRUE)
+    if (!is.na(csomf0) && is.numeric(csomf0)) {
+      run_params[which(names(run_params) == "CSOMF0")] <- udunits2::ud.convert(csomf0, "kg", "g")
+    }
+    
+    # Initial value of root C (g C m-2)
+    crti <- try(ncdf4::ncvar_get(IC.nc, "root_carbon_content"), silent = TRUE)
+    if (!is.na(crti) && is.numeric(crti)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CRTI")] <- udunits2::ud.convert(crti, "kg", "g")
+    }
+    
+    # Initial value of leaf C (g C m-2)
+    clvi <- try(ncdf4::ncvar_get(IC.nc, "leaf_carbon_content"), silent = TRUE)
+    if (!is.na(clvi) && is.numeric(clvi)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CLVI")] <- udunits2::ud.convert(clvi, "kg", "g")
+    }
+    
+    # Initial mineral N
+    nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_nitrogen_content"), silent = TRUE)
+    if (!is.na(nmin0) && is.numeric(nmin0)) {
+      run_params[which(names(run_params) == "NMIN0")] <- udunits2::ud.convert(nmin0, "kg", "g")
+    }
+    
+    # Rooting depth (m)
+    rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
+    if (!is.na(rootd) && is.numeric(rootd)) {
+      run_params[which(names(run_params) == "ROOTDM")] <- rootd
+    }
+    
+    # WCI
+    wci <- try(ncdf4::ncvar_get(IC.nc, "SoilMoistFrac"), silent = TRUE)
+    if (!is.na(wci) && is.numeric(wci)) {
+      run_params[which(names(run_params) == "WCI")] <- wci
+    }
+    
+    # Tiller density (m-2)
+    tiltoti <- try(ncdf4::ncvar_get(IC.nc, "tiller_density"), silent = TRUE)
+    if (!is.na(tiltoti) && is.numeric(tiltoti)) {
+      run_params[which(names(run_params) == "TILTOTI")] <- tiltoti
+    }
+    
+    # Phenological stage
+    pheni <- try(ncdf4::ncvar_get(IC.nc, "phenological_stage"), silent = TRUE)
+    if (!is.na(pheni) && is.numeric(pheni)) {
+      run_params[which(names(run_params) == "PHENI")] <- pheni
+    }
+    
+    # Initial C in reserves (g C m-2)
+    cresi <- try(ncdf4::ncvar_get(IC.nc, "reserve_carbon_content"), silent = TRUE)
+    if (!is.na(cresi) && is.numeric(cresi)) {
+      # not log10 anymore, don't mind the name
+      run_params[which(names(run_params) == "LOG10CRESI")] <- udunits2::ud.convert(cresi, "kg", "g")
+    }
+    
+    # N-C ratio of roots
+    n2c <- try(ncdf4::ncvar_get(IC.nc, "n2c_roots"), silent = TRUE)
+    if (!is.na(n2c) && is.numeric(n2c)) {
+      run_params[which(names(run_params) == "NCR")] <- n2c
+    }
+    
+    # Initial C-N ratio of fast SOM
+    c2n <- try(ncdf4::ncvar_get(IC.nc, "c2n_fast_pool"), silent = TRUE)
+    if (!is.na(c2n) && is.numeric(c2n)) {
+      run_params[which(names(run_params) == "CNSOMF0")] <- c2n
+    }
+    
+    # Water concentration at saturation (m3 m-3)
+    wcst <- try(ncdf4::ncvar_get(IC.nc, "water_concentration_at_saturation"), silent = TRUE)
+    if (!is.na(wcst) && is.numeric(wcst)) {
+      run_params[which(names(run_params) == "WCST")] <- wcst
+    }
+    
   }
-
-
+  
+  # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR
+  # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE
+  
+  # NRT        = NCR * CRTI
+  run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*
+    run_params[names(run_params) == "NCR"]
+  
+  # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
+  # NSH      = NCSHI * (CLVI+CSTI)
+  lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
+  ncshi <- run_params[names(run_params) == "NCSHMAX"] * 
+    (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
+  run_params[which(names(run_params) == "NSHI")] <- ncshi * 
+    ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
+  
+  
+  # TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
+  # TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
+  # TILV       = TILTOTI * (1. - FRTILGI)
+  tiltot_tmp <- run_params[names(run_params) == "TILTOTI"]
+  frtilg_tmp <- run_params[names(run_params) == "FRTILGI"]
+  run_params[names(run_params) == "TILG1I"] <- tiltot_tmp * frtilg_tmp * run_params[names(run_params) == "FRTILGG1I"]
+  run_params[names(run_params) == "TILG2I"] <- tiltot_tmp * frtilg_tmp * (1 - run_params[names(run_params) == "FRTILGG1I"])
+  run_params[names(run_params) == "TILVI"]  <- tiltot_tmp * (1 - frtilg_tmp)
+  
+  #  WAL        = 1000. * ROOTDM * WCI
+  run_params[names(run_params) == "WALI"]  <- 1000. * run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "WCI"]
+  
+  # O2         = FGAS * ROOTDM * FO2MX * 1000./22.4
+  run_params[names(run_params) == "O2I"]  <- run_params[names(run_params) == "FGAS"] * 
+    run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "FO2MX"] * 1000./22.4
+  
+  #NLITT      = CLITT0 / CNLITT0
+  run_params[names(run_params) == "NLITT0"]  <- run_params[names(run_params) == "CLITT0"] / run_params[names(run_params) == "CNLITT0"]
+  
+  #NSOMF      = (CSOM0 *    FCSOMF0)  / CNSOMF0
+  run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
+  run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
+  
+  
+  
+  ##################################################################
+  ######################### PREVIOUS STATE #########################
+  ##################################################################
+  
+  # overwrite initial values with previous time steps
+  # as model2netcdf is developed, some or all of these can be dropped?
+  last_vals <- c()
+  last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
+  
+  if(file.exists(last_states_file)){
+    
+    load(last_states_file)
+    
+    # LOG10CLVI  = pa(1)
+    run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
+    
+    # LOG10CRESI = pa(2)
+    run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
+    
+    # LOG10CRTI  = pa(3)
+    run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
+    
+    # CSTI	   = pa(4)
+    run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
+    
+    # LOG10LAII handled above
+    
+    # PHENI	   = pa(6) 
+    run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
+    
+    # TILTOTI	   = pa(7) 
+    run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
+    
+    # FRTILGI	   = pa(8)
+    #run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
+    
+    # LT50I      = pa(9)
+    run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
+    
+    # CLITT0    = pa( 82) ! (g C m-2)    Initial C in litter
+    run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
+    
+    # CSOM0     = pa( 83) ! (g C m-2)    Initial C in OM - handled above
+    
+    # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
+    # run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
+    
+    # CNSOMS0   = pa( 86) ! (g C g-1 N)  Initial C/N ratio of slowly decomposing OM
+    # csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
+    # run_params[names(run_params) == "CNSOMS0"] <- csoms / last_vals[names(last_vals) == "NSOMS"]
+    
+    # PHENRF <- (1 - run_params[names(run_params) == "PHENI"])/(1 - run_params[names(run_params) == "PHENCR"])
+    # if (PHENRF > 1.0) PHENRF = 1.0
+    # if (PHENRF < 0.0) PHENRF = 0.0
+    # run_params[names(run_params) == "NELLVM"] <- last_vals[names(last_vals) == "NELLVG"] /  PHENRF
+    # if(is.nan(run_params[names(run_params) == "NELLVM"])) run_params[names(run_params) == "NELLVM"]  <- 0
+    # if(run_params[names(run_params) == "NELLVM"] == Inf)  run_params[names(run_params) == "NELLVM"]  <- 0
+    
+    #run_params[names(run_params) == "PHENCR"] <- last_vals[names(last_vals) == "PHENCR"]
+    
+    run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
+    run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"]
+    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
+    
+    run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
+    
+    run_params[names(run_params) == "DRYSTORI"] <- last_vals[names(last_vals) == "DRYSTOR"]
+    run_params[names(run_params) == "FdepthI"]  <- last_vals[names(last_vals) == "Fdepth"]
+    run_params[names(run_params) == "SDEPTHI"]  <- last_vals[names(last_vals) == "Sdepth"]
+    run_params[names(run_params) == "TANAERI"]  <- last_vals[names(last_vals) == "TANAER"]
+    run_params[names(run_params) == "WAPLI"]    <- last_vals[names(last_vals) == "WAPL"]
+    run_params[names(run_params) == "WAPSI"]    <- last_vals[names(last_vals) == "WAPS"]
+    run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
+    run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
+    
+    #run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
+    
+    # this is probably not changing
+    #run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
+    
+    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"]  #* run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"]  #* run_params[names(run_params) == "TILTOTI"]
+    run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
+    
+    
+    run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
+    
+    run_params[names(run_params) == "NRTI"]        <- last_vals[names(last_vals) == "NRT"] 
+    run_params[which(names(run_params) == "NSHI")] <- last_vals[names(last_vals) == "NSH"] 
+    
+    
+    run_params[names(run_params) == "WALI"]        <- last_vals[names(last_vals) == "WAL"] 
+    run_params[names(run_params) == "O2I"]         <- last_vals[names(last_vals) == "O2"] 
+    run_params[names(run_params) == "NLITT0"]      <- last_vals[names(last_vals) == "NLITT"] 
+    run_params[names(run_params) == "NSOMF0"]      <- last_vals[names(last_vals) == "NSOMF"] 
+    run_params[names(run_params) == "NSOMS0"]      <- last_vals[names(last_vals) == "NSOMS"] 
+    
+    #ratio to be preserved
+    # NRT        = NCR * CRTI
+    run_params[which(names(run_params) == "NCR")] <- last_vals[names(last_vals) == "NCRT"] 
+    
+    
+  }
+  
+  
   #-----------------------------------------------------------------------
   # write job.sh
   # create launch script (which will create symlink)
@@ -135,6 +564,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@SITE_MET@",     settings$run$inputs$met$path,     jobsh)
   jobsh <- gsub("@SITE_HARVEST@", settings$run$inputs$harvest$path, jobsh)
+  jobsh <- gsub("@SITE_FERTILIZE@", settings$run$inputs$fertilize$path, jobsh)
+  if(!is.null(settings$run$inputs$co2_file$path)){
+    jobsh <- gsub("@SITE_CO2FILE@", settings$run$inputs$co2_file$path, jobsh)
+  }else{
+    jobsh <- gsub("@SITE_CO2FILE@", 'NULL', jobsh)
+  }
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
@@ -150,5 +585,5 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id) {
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-
-} # write.config.MODEL
+  
+} # write.config.BASGRA

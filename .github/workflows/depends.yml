@@ -12,20 +12,20 @@ on:
 
 env:
   # official supported version of R
-  SUPPORTED: 4.0.2
-  MASTER_REPO: PecanProject/pecan
+  SUPPORTED: 4.0.3
   DOCKERHUB_ORG: pecan
 
 jobs:
   depends:
+    if: github.repository == 'PecanProject/pecan'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - 3.6.3
-          - 4.0.2
+          - "4.0.3"
+          - "4.0.4"
 
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +48,6 @@ jobs:
 
       # this will publish to the actor (person) github packages
       - name: Publish to GitHub
-        if: github.event_name == 'push'
         uses: elgohr/Publish-Docker-Github-Action@2.22
         env:
           R_VERSION: ${{ matrix.R  }}
@@ -63,7 +62,6 @@ jobs:
 
       # this will publish to the clowder dockerhub repo
       - name: Publish to Docker Hub
-        if: github.event_name == 'push' && github.repository == env.MASTER_REPO
         uses: elgohr/Publish-Docker-Github-Action@2.18
         env:
           R_VERSION: ${{ matrix.R  }}
