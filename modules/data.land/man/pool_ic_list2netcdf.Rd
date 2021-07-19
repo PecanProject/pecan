@@ -12,6 +12,8 @@ pool_ic_list2netcdf(input, outdir, siteid, ens = NA)
 \item{outdir}{directory to write netcdf file}
 
 \item{siteid}{site id}
+
+\item{ens}{Default is NA. Ensemble members.}
 }
 \description{
 Converts input list containing standard dimensions and variables (named values) for initial conditions to a netcdf file, input to pool-based models.
