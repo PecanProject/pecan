@@ -1,17 +1,22 @@
 ##' cohort2pool function
 ##'Calculates total biomass using veg cohort file. 
-##'
+##' @name cohort2pool
+##' @title cohort2pool
+##' @description Converts .rds files into pool netcdf files.
 ##' @export
+##'
 ##' @param veg_file path to standard cohort veg_file
+##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
+##'
 ##' @author Saloni Shah
-##' @examples
+##'
 ##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
-cohort2pool <- function(veg_file, allom_param = NULL) {
+cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
   
   ## Building Site ID from past directories
   path <- dirname(veg_file)
@@ -26,22 +31,29 @@ cohort2pool <- function(veg_file, allom_param = NULL) {
   dat <- readRDS(veg_file)
   
   ## Grab DBH
-  dbh <- dat[[2]]$DBH
+  dbh <- dat[[2]][,dbh_name]
   
   ## Grab allometry
   if(is.null(allom_param)){
     a <- 2                        
     b <- 0.3
+    biomass = 10^(a + b*log10(dbh))
   } else {
+    biomass = PEcAn.allometry::allom.predict(allom_param,dbh = )
     print("user provided allometry parameters not yet supported")
     return(NULL)
   }
   
   #Calculate AGB
-  biomass = 10^(a + b*log10(dbh))
+
   biomass[is.na(biomass)] <- 0
-  tot_biomass <- sum(biomass)
+  tot_biomass <- sum(biomass,na.rm = TRUE)
   AGB <- tot_biomass
+  
+  ## NEON SPECIFIC HACK
+  obs <- dat[[2]]
+  n.plot = length(unique(paste(obs$siteID.x,obs$plotID.x,obs$subplotID.x)))
+  AGB = tot_biomass/(dat[[1]]$area*n.plot) ## express biomass on a per unit area basis
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant

@@ -3,8 +3,10 @@
 ##' @export
 ##'
 ##' @param settings pecan settings list
-##' @param dbfiles where to write files
-##' @param overwrite whether to force ic_process to proceed
+##' @param input Taken from settings$run$inputs. This should include id, path, and source
+##' @param dir settings$database$dbfiles
+##' @param overwrite Default = FALSE. whether to force ic_process to proceed
+##'
 ##' @author Istem Fer, Hamze Dokoohaki
 ic_process <- function(settings, input, dir, overwrite = FALSE){
   

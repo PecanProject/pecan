@@ -1,3 +1,16 @@
+##' @param in.path file path to rds file with IC data
+##'
+##' @param in.name file name of IC data
+##' @param start_date YYYY-MM-DD
+##' @param end_date YYYY-MM-DD
+##' @param outfolder Location to store function outputs
+##' @param model BETY model ID
+##' @param new_site Site info including lat, lon, and BETT site ID
+##' @param pfts list settings$pfts. 
+##' @param source Data source as saved in the BETY db
+##' @param overwrite DEfault is FALSE. Option to overwrite existing files. 
+##' @param ... Additional parameters
+##'
 ##' @name write_ic
 ##' @title write_ic
 ##' @export
@@ -18,7 +31,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
   
   # NOTE : match_pft may return NAs for unmatched dead trees
-  pft.info <- PEcAn.data.land::match_pft(obs$bety_species_id, pfts)
+  pft.info <- PEcAn.data.land::match_pft(obs$bety_species_id, pfts, model = model)
   
   ### merge with other stuff
   obs$pft <- pft.info$pft

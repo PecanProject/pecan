@@ -1,4 +1,6 @@
-##' Load/extract + match species module
+##' @description  Load/extract + match species module
+##' @title get.veg.module
+##' @name get.veg.module
 ##' 
 ##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
 ##' @param outfolder path to where the processed files will be written
