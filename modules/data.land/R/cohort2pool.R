@@ -16,7 +16,7 @@
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
-cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
+cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="stemDiameter") {
   
   ## Building Site ID from past directories
   path <- dirname(veg_file)
@@ -39,16 +39,20 @@ cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
     b <- 0.3
     biomass = 10^(a + b*log10(dbh))
   } else {
-    biomass = PEcAn.allometry::allom.predict(allom_param,dbh = )
-    print("user provided allometry parameters not yet supported")
-    return(NULL)
+    #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
+    allom.fit = dat
+    stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+    AGB = apply(stand,1,sum)
+    hist(AGB)
+    #print("user provided allometry parameters not yet supported")
+    #return(NULL)
+    return(AGB)
   }
   
   #Calculate AGB
-
-  biomass[is.na(biomass)] <- 0
-  tot_biomass <- sum(biomass,na.rm = TRUE)
-  AGB <- tot_biomass
+  # biomass[is.na(biomass)] <- 0
+  # tot_biomass <- sum(biomass,na.rm = TRUE)
+  # AGB <- tot_biomass
   
   ## NEON SPECIFIC HACK
   obs <- dat[[2]]
