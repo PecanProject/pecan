@@ -9,7 +9,7 @@ jobs:
     runs-on: macOS-latest
     steps:
       - id: file_changes
-        uses: trilom/file-changes-action@v1.2.3
+        uses: trilom/file-changes-action@v1.2.4
       - name: list changed files
         run: echo '${{ steps.file_changes.outputs.files_modified }}'
       - uses: actions/checkout@v2
@@ -52,7 +52,7 @@ jobs:
       - name: update dependency lists
         run: Rscript scripts/generate_dependencies.R
       - id: file_changes
-        uses: trilom/file-changes-action@v1.2.3
+        uses: trilom/file-changes-action@v1.2.4
       - name : make
         shell: bash
         env:

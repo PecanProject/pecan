@@ -28,6 +28,7 @@ Authors:
   \item Dan Wang
   \item Carl Davidson
   \item Xiaohui Feng
+  \item Shashank Singh
 }
 
 }

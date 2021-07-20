@@ -53,6 +53,8 @@ create_execute_test_xml <- function(model_id,
   if (is.null(db_bety_password)) db_bety_password <- config.list$db_bety_password
   if (is.null(db_bety_hostname)) db_bety_hostname <- config.list$db_bety_hostname
   if (is.null(db_bety_port)) db_bety_port <- config.list$db_bety_port
+  
+  #opening a connection to bety 
   con <- PEcAn.DB::db.open(list(
     user = db_bety_username,
     password = db_bety_password,
@@ -73,6 +75,7 @@ create_execute_test_xml <- function(model_id,
   model.new <- dplyr::tbl(con, "models") %>%
     dplyr::filter(.data$id == !!model_id) %>%
     dplyr::collect()
+  
   outdir_pre <- paste(
     model.new[["model_name"]],
     format(as.Date(start_date), "%Y-%m"),
@@ -104,20 +107,19 @@ create_execute_test_xml <- function(model_id,
     pft <- dplyr::tbl(con, "pfts") %>%
       dplyr::filter(.data$modeltype_id == !!model.new$modeltype_id) %>%
       dplyr::collect()
+    
     pft <- pft$name[[1]]
     message("PFT is `NULL`. Defaulting to the following PFT: ",
             pft)
   }
-  if (length(pft) > 1) {
-    stop(
-      "Currently, only a single PFT is supported. ",
-      "Multiple PFTs will be implemented in a future version."
-    )
-  }
-  settings$pfts <- list(
-    pft = list(name = pft,
-               constants = list(num = 1))
-  )
+
+  ## Putting multiple PFTs separated by semicolon
+  settings$pfts <- strsplit(pft, ";")[[1]] %>%
+    purrr::map( ~ list(name = .x,
+                       constants = list(num = 1)
+                       )
+                ) %>%
+    stats::setNames(rep("pft", length(.data))) 
 
   #Meta Analysis
   settings$meta.analysis <- list(iter = 3000, random.effects = FALSE)
@@ -151,6 +153,9 @@ create_execute_test_xml <- function(model_id,
   )
   settings$host$name <- "localhost"
 
+  
+  # Add model specific options
+  settings<-model_specific_tags(settings, model.new)
   #create file and Run
   XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"),
 	       file = file.path(outdir, "pecan.xml"))
@@ -165,4 +170,24 @@ create_execute_test_xml <- function(model_id,
     sys = sys_out,
     outdir = outdir
   )
+}
+
+#' model_specific_tags
+#'
+#' @param settings pecan xml settings
+#' @param model.info model info extracted from bety
+#'
+#' @return updated settings list
+#' @export
+#'
+model_specific_tags <- function(settings, model.info){
+  
+  #some extra settings for LPJ-GUESS
+  if(model.info$model_name=="LPJ-GUESS"){
+    settings$run$inputs <- c(settings$run$inputs ,
+                              list(soil=list(id=1000000903))
+                             )
+  }
+  
+  return(settings)
 }
