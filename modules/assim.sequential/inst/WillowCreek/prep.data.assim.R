@@ -29,7 +29,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
 
   #Reading the columns we need
   cols <- grep(paste0("_*_f$"), colnames(gapfilled.vars), value = TRUE)
-  gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date, Flag,cols)
+  gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date...11, Flag=Flag...10,cols)####goes wrong
 
  #Creating NEE and LE filled output 
   gapfilled.vars.out <- gapfilled.vars %>% dplyr::select(-Flag) %>% 
@@ -83,7 +83,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
 
  #I'm sending mixing up simulations of vars to aggregate them first and then estimate their var/cov
   outlist<-processed.flux %>%
-       map2_dfc(vars, function(x, xnames) {
+        map2_dfc(vars, function(x, xnames) {
          names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
  
          x %>%
@@ -91,7 +91,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
            mutate(Interval = lubridate::round_date(Date, "6 hour")) %>%
            dplyr::select(-Date)
        }) %>%
-         split(.$Interval) %>%
+         split(.$Interval...101) %>%###goes wrong
            map(function(row) {
          
             #fidning the interval cols / taking them out 
@@ -119,4 +119,5 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
   return(outlist)
 
 } # prep.data.assim
+
 
