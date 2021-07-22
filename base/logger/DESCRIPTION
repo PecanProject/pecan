@@ -2,14 +2,18 @@ Package: PEcAn.logger
 Title: Logger Functions for PEcAn
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"), 
+Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
                 email = "kooper@illinois.edu"),
              person("Alexey", "Shiklomanov", role = c("aut"),
                 email = "ashiklom@bu.edu"),
              person("Shashank", "Singh", role = c("aut"),
                 email = "shashanksingh819@gmail.com"),
-             person("Chris", "Black", role = c("ctb")))
-Description: Special logger functions for tracking execution status and the environment.
+             person("Chris", "Black", role = c("ctb")),
+             person("University of Illinois, NCSA", role = c("cph")))
+Description: This package adds convenience functions for logging outputs. 
+    This is loosely based on the log4j package. This will enable the user to 
+    set what level messages are printed, and if these messages are written to a file, 
+    console or both.
 BugReports: https://github.com/PecanProject/pecan/issues
 Imports: utils
 Suggests: testthat
