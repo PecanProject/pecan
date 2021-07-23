@@ -3,6 +3,9 @@ title: "Fitting Hierarchical Bayes photosynthetic response curves"
 author: "Mike Dietze"
 date: "June 25, 2015"
 output: html_document
+vignette: >
+  %\VignetteIndexEntry{Fitting Hierarchical Bayes photosynthetic response curves}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ## Introduction
