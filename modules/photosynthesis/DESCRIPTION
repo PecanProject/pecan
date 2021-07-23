@@ -8,7 +8,8 @@ Authors@R: c(person("Mike","Dietze", role = c("aut", "cre"),
              person("Xiaohui", "Feng", role = c("aut")),
              person("Shawn", "Serbin", role = c("aut")),
              person("Shashank", "Singh", role = c("aut")),
-             person("Chris", "Black", role = c("ctb")))
+             person("Chris", "Black", role = c("ctb")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
@@ -23,6 +24,10 @@ Imports:
     utils,
     graphics,
     stats
+Suggests:
+    knitr,
+    rmarkdown,
+    markdown
 SystemRequirements: JAGS2.2.0
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
@@ -34,3 +39,4 @@ Collate:
     plots.R
 Encoding: UTF-8
 RoxygenNote: 7.0.2
+VignetteBuilder: knitr
