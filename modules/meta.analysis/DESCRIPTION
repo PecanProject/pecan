@@ -3,16 +3,14 @@ Type: Package
 Title: PEcAn functions used for meta-analysis
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Xiaohui", "Feng"),
-             person("Dan"," Wang"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"))
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
-    Davidson, Rob Kooper, Shawn Serbin
-Maintainer: David LeBauer <dlebauer@illinois.edu>
+Authors@R: c(person("Mike","Dietze", role = c("aut")),
+             person("David", "LeBauer", role = c("aut", "cre"), email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut")),
+             person("Dan"," Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut")),
+             person("Rob","Kooper", role = c("aut")),
+             person("Shawn", "Serbin", role = c("aut")),
+             person("Shashank", "Singh", role = c("aut")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
