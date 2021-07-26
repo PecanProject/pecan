@@ -66,6 +66,8 @@ query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   allomField <- NULL
   query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'"
   allomField.files <- db.query(query, con)
+  allomField.filepath <- dbfile.file("Input",allomField.files$id,con)
+  allomField.files$filepath = allomField.filepath
   
   ## Tally data from 'Input' data table
   #####################################################################
@@ -75,9 +77,11 @@ query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   ## Component.ID     = table 5. priorities: Foliar=18,stem=6,16, maybe 4, fine root=28,
   query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
   allomTally.files <- db.query(query, con)
+  allomTally.filepath <- dbfile.file("Input",allomTally.files$id,con)
+  allomTally.files$filepath = allomTally.filepath
   
-  allom <- read.allom.data(pft.data, variable, allomField.files$filepath, allomTally.files$filepath, 
-                           nsim = nsim)
+  allom <- read.allom.data(pft.data = pft.data, component = variable, parm = allomTally.files$filepath, 
+                           field = allomField.files$filepath, nsim = nsim)
   
   return(allom)
 } # query.allom.data
