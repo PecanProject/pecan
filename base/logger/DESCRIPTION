@@ -11,15 +11,16 @@ Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
              person("Chris", "Black", role = c("ctb")),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Convenience functions for logging outputs from 'PEcAn',
-   the Predictive Ecosystem Analyzer (LeBauer et al. 2017;
-   doi:10.1890/12-0137.1). Enables the user to set what level of messages are
+   the Predictive Ecosystem Analyzer (LeBauer et al. 2017)
+   <doi:10.1890/12-0137.1>. Enables the user to set what level of messages are
    printed, as well as whether these messages are written to the console, 
    a file, or both. It also allows control over whether severe errors should
-   stop execution of the PEcAn workflow; this allows strictness when deugging
+   stop execution of the 'PEcAn' workflow; this allows strictness when debugging
    and lenience when running large batches of simulations that should not be
-   terminated by errors in individual models. PEcAn.logger is loosely based on
+   terminated by errors in individual models. It is loosely based on
    the 'log4j' package.
 BugReports: https://github.com/PecanProject/pecan/issues
+URL: https://pecanproject.github.io/
 Imports: utils
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
