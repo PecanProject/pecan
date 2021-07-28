@@ -31,6 +31,11 @@ check.inputs <- function(settings) {
         "AND modeltypes.name='", settings$model$type, "' ",
         "AND modeltypes_formats.input"),
     con = dbcon)
+  
+  #check if file paths already exist, hack to get around no BETY id for IC file
+  if (!is.null(settings$run$inputs$poolinitcond$path) && !is.null(settings$run$inputs$met$path)) {
+    return(settings)
+  }
 
   # check list of inputs
   allinputs <- names(settings$run$inputs)
@@ -49,11 +54,12 @@ check.inputs <- function(settings) {
         }
         next
       }
-
       # check if <id> exists
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         id <- settings$run$inputs[[tag]][["id"]]
         file <- PEcAn.DB::dbfile.file("Input", id, dbcon, hostname)
+      
+        #file <- PEcAn.DB::dbfile.check("Input", id, dbcon, hostname, return.all = TRUE)
         if (is.na(file)) {
           PEcAn.logger::logger.error(
             "No file found for", tag, " and id", id, "on host", hostname)
@@ -65,7 +71,8 @@ check.inputs <- function(settings) {
               "Input file and id do not match for ", tag)
           }
         }
-      } else if ("path" %in% names(settings$run$inputs[[tag]])) {
+      } 
+      else if ("path" %in% names(settings$run$inputs[[tag]]) && is.null(file.ic)) {
         # can we find the file so we can set the tag.id
         id <- PEcAn.DB::dbfile.id(
           "Input",
