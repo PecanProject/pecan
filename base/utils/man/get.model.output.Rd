@@ -8,6 +8,8 @@ get.model.output(model, settings)
 }
 \arguments{
 \item{model}{the ecosystem model run}
+
+\item{settings}{list of PEcAn settings.}
 }
 \description{
 This function retrieves model output for further analyses
