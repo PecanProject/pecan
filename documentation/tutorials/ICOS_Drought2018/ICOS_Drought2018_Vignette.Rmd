@@ -48,11 +48,26 @@ ggplot(europe_cropped, aes(x = long, y = lat)) +
 
 To download Drought2018 files we use `download.ICOS` function in PEcAn.
 ```{r download, eval=FALSE}
-sitename   <- "FI-Sii"
-outfolder  <- "~/"
+sitename   <- "FI-Hyy"
+outfolder  <- "/home/carya/pecan"
 start_date <- "2016-01-01"
 end_date   <- "2018-01-01"
 product <- "Drought2018"
-PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end_date, product)
+res <- PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end_date, product)
 
 ```
+
+To use the downloaded observations a function like `PEcAn.benchmark::load_data` can be used. Here we load the NEE observations.
+```{r load, eval=FALSE}
+format <- PEcAn.DB::query.format.vars(bety = dbcon, format.id = 1000000136)
+start_date <- lubridate::year("2018-01-01")
+end_date   <- lubridate::year("2018-12-31")
+vars.used.index <- which(format$vars$bety_name %in% c("NEE"))
+obs <- PEcAn.benchmark::load_data(data.path = res$file, 
+                                 format = format, start_year = start_date,  end_year = end_date,
+                                  site = sitename, 
+                                  vars.used.index = vars.used.index,
+                                  time.row = format$time.row)
+
+```
+
