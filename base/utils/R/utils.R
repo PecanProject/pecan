@@ -205,6 +205,8 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @usage summarize.result(result)
 ##' @importFrom rlang .data
 ##' @author David LeBauer, Alexey Shiklomanov
+n <- NULL
+statname <- NULL
 summarize.result <- function(result) {
   ans1 <- result %>%
     dplyr::filter(.data$n == 1) %>%
