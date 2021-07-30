@@ -96,7 +96,7 @@ convert.input <-
                      mimetype, site.id, start_date, end_date))
   
   # TODO see issue #18
-  Rbinary <- ifelse(!exists("settings") || is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
+  Rbinary <- ifelse(!exists("settings") || is.null(.data$settings$host$Rbinary),"R",.data$settings$host$Rbinary)
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {
@@ -168,7 +168,8 @@ convert.input <-
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
-      
+
+      id <- NULL
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
