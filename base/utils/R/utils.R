@@ -700,7 +700,9 @@ download.file <- function(url, filename, method) {
 ##' @examples
 ##' \dontrun{
 ##' dap <- retry.func(
-##'   ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##'   file_host = 'https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220'
+##'   file_path = '/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'
+##'   ncdf4::nc_open(file_host, file_path),
 ##'   maxErrors=10,
 ##'   sleep=2)
 ##' }
