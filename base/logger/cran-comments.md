@@ -17,5 +17,5 @@ Possibly mis-spelled words in DESCRIPTION:
 - et al
 - workflow
 
-LeBaur is the last name of one of the authors, the other words are
+LeBauer is the last name of one of the authors, the other words are
 common words used.
