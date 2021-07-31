@@ -5,7 +5,8 @@ Title: PEcAn Functions Used for Ecological Forecasts and
 Version: 1.7.1
 Date: 2019-09-05
 Authors@R: c(
-             person("Rob","Kooper", role = c("aut", "cre"), 
+           person("Mike", "Dietze", role = "aut"),
+           person("Rob","Kooper", role = c("aut", "cre"), 
              email = "kooper@illinois.edu"),
              person("David","LeBauer", role = c("aut")),
              person("Xiaohui", "Feng", role = c("aut")),
