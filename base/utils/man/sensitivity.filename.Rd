@@ -25,6 +25,8 @@ sensitivity.filename(
 
 \item{ensemble.id}{ensemble IDs}
 
+\item{variable}{variables to be read}
+
 \item{start.year}{first and last year of output to read.}
 
 \item{end.year}{first and last year of output to read.}

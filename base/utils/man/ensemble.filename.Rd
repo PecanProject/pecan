@@ -24,6 +24,8 @@ ensemble.filename(
 
 \item{ensemble.id}{ensemble IDs}
 
+\item{variable}{variables to be read}
+
 \item{start.year, end.year}{first and last year of output to read.}
 
 \item{Character}{vector of variables to be read from.}
