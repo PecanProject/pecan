@@ -9,6 +9,7 @@
 ##' @param ensemble.id ensemble IDs
 ##' @param Character vector of variables to be read from.
 ##' @param start.year,end.year first and last year of output to read.
+##' @param variable variables to be read
 ##'
 ##' @return a filename
 ##' @export
