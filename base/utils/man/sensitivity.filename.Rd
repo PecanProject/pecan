@@ -16,6 +16,19 @@ sensitivity.filename(
   end.year = settings$sensitivity.analysis$end.year
 )
 }
+\arguments{
+\item{settings}{list of PEcAn settings.}
+
+\item{prefix}{for the rabbitmq api endpoint, default is for no prefix.}
+
+\item{suffix}{File suffix, as character (default = \code{NULL}).}
+
+\item{ensemble.id}{ensemble IDs}
+
+\item{start.year}{first and last year of output to read.}
+
+\item{end.year}{first and last year of output to read.}
+}
 \value{
 a filename
 }

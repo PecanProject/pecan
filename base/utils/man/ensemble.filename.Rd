@@ -15,6 +15,19 @@ ensemble.filename(
   end.year = settings$ensemble$end.year
 )
 }
+\arguments{
+\item{settings}{list of PEcAn settings.}
+
+\item{prefix}{for the rabbitmq api endpoint, default is for no prefix.}
+
+\item{suffix}{File suffix, as character (default = \code{NULL}).}
+
+\item{ensemble.id}{ensemble IDs}
+
+\item{start.year, end.year}{first and last year of output to read.}
+
+\item{Character}{vector of variables to be read from.}
+}
 \value{
 a filename
 }

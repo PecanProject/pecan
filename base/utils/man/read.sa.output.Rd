@@ -32,11 +32,11 @@ read.sa.output(
 
 \item{end.year}{last year to include in sensitivity analysis}
 
+\item{variable}{variables to be read from model output}
+
 \item{sa.run.ids}{}
 
 \item{per.pft}{flag to determine whether we want SA on pft-specific variables}
-
-\item{variables}{variables to be read from model output}
 }
 \value{
 dataframe with one col per quantile analysed and one row per trait,
