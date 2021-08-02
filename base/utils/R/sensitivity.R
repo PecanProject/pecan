@@ -20,7 +20,7 @@
 ##' @param pft.name name of PFT used in sensitivity analysis (Optional)
 ##' @param start.year first year to include in sensitivity analysis 
 ##' @param end.year last year to include in sensitivity analysis
-##' @param variables variables to be read from model output
+##' @param variable variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
 ##' @param sa.run.ids 
 ##' @export
