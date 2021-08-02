@@ -1,19 +1,26 @@
 ##' Generate ensemble filenames
-##' 
+##'
 ##' @name ensemble.filename
 ##' @title Generate ensemble filenames
-##' 
+##' @param settings list of PEcAn settings.
+##' @param prefix for the rabbitmq api endpoint, default is for no prefix.
+##' @param suffix File suffix, as character (default = `NULL`).
+##' @param all.var.yr
+##' @param ensemble.id ensemble IDs
+##' @param Character vector of variables to be read from.
+##' @param start.year,end.year first and last year of output to read.
+##'
 ##' @return a filename
 ##' @export
 ##'
 ##' @details Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
-ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "Rdata", 
-                              all.var.yr = TRUE, ensemble.id = settings$ensemble$ensemble.id, 
-                              variable = settings$ensemble$variable, 
-                              start.year = settings$ensemble$start.year, 
+ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "Rdata",
+                              all.var.yr = TRUE, ensemble.id = settings$ensemble$ensemble.id,
+                              variable = settings$ensemble$variable,
+                              start.year = settings$ensemble$start.year,
                               end.year = settings$ensemble$end.year) {
-  
+
   if (is.null(ensemble.id) || is.na(ensemble.id)) {
     # This shouldn't generally arise, as run.write.configs() appends ensemble.id to
     # settings. However,it will come up if running run.write.configs(..., write=F),
@@ -22,42 +29,42 @@ ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "R
     # run.
     ensemble.id <- "NOENSEMBLEID"
   }
-  
+
   ensemble.dir <- settings$outdir
-  
+
   dir.create(ensemble.dir, showWarnings = FALSE, recursive = TRUE)
-  
+
   if (all.var.yr) {
     # All variables and years will be included; omit those from filename
     ensemble.file <- file.path(ensemble.dir, paste(prefix, ensemble.id, suffix, sep = "."))
   } else {
-    ensemble.file <- file.path(ensemble.dir, paste(prefix, ensemble.id, variable, 
+    ensemble.file <- file.path(ensemble.dir, paste(prefix, ensemble.id, variable,
                                                    start.year, end.year, suffix, sep = "."))
   }
-  
+
   return(ensemble.file)
 } # ensemble.filename
 
 
 ##' Generate sensitivity analysis filenames
-##' 
+##'
 ##' @name sensitivity.filename
 ##' @title Generate sensitivity analysis filenames
-##' 
+##' @inheritParams ensemble.filename
 ##' @return a filename
 ##' @export
 ##'
 ##' @details  Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
-sensitivity.filename <- function(settings, 
-                              prefix = "sensitivity.samples", suffix = "Rdata", 
+sensitivity.filename <- function(settings,
+                              prefix = "sensitivity.samples", suffix = "Rdata",
                               all.var.yr = TRUE,
                               pft        = NULL,
                               ensemble.id = settings$sensitivity.analysis$ensemble.id,
                               variable    = settings$sensitivity.analysis$variable,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
-  
+
   if(is.null(ensemble.id) || is.na(ensemble.id)) {
     # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
     ensemble.id <- "NOENSEMBLEID"
@@ -73,7 +80,7 @@ sensitivity.filename <- function(settings,
   if (is.null(end.year)) {
     end.year <- "NA"
   }
-  
+
   if (is.null(pft)) {
     # Goes in main output directory.
     sensitivity.dir <- settings$outdir
@@ -81,13 +88,13 @@ sensitivity.filename <- function(settings,
     ind <- which(sapply(settings$pfts, function(x) x$name) == pft)
     if (length(ind) == 0) {
       ## no match
-      PEcAn.logger::logger.warn("sensitivity.filename: unmatched PFT = ", pft, " not among ", 
+      PEcAn.logger::logger.warn("sensitivity.filename: unmatched PFT = ", pft, " not among ",
                   sapply(settings$pfts, function(x) x$name))
       sensitivity.dir <- file.path(settings$outdir, "pfts", pft)
     } else {
       if (length(ind) > 1) {
         ## multiple matches
-        PEcAn.logger::logger.warn("sensitivity.filename: multiple matchs of PFT = ", pft, 
+        PEcAn.logger::logger.warn("sensitivity.filename: multiple matchs of PFT = ", pft,
                     " among ", sapply(settings$pfts, function(x) x$name), " USING")
         ind <- ind[1]
       }
@@ -98,10 +105,10 @@ sensitivity.filename <- function(settings,
       sensitivity.dir <- settings$pfts[[ind]]$outdir
     }
   }
-  
+
   dir.create(sensitivity.dir, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(sensitivity.dir)) {
-    PEcAn.logger::logger.error("sensitivity.filename: could not create directory, please check permissions ", 
+    PEcAn.logger::logger.error("sensitivity.filename: could not create directory, please check permissions ",
                  sensitivity.dir, " will try ", settings$outdir)
     if (dir.exists(settings$outdir)) {
       sensitivity.dir <- settings$outdir
@@ -109,15 +116,15 @@ sensitivity.filename <- function(settings,
       PEcAn.logger::logger.error("sensitivity.filename: no OUTDIR ", settings$outdir)
     }
   }
-  
+
   if (all.var.yr) {
     # All variables and years will be included; omit those from filename
     sensitivity.file <- file.path(sensitivity.dir,
                                   paste(prefix, ensemble.id, suffix, sep = "."))
   } else {
-    sensitivity.file <- file.path(sensitivity.dir, 
+    sensitivity.file <- file.path(sensitivity.dir,
                                   paste(prefix, ensemble.id, variable, start.year, end.year, suffix, sep = "."))
   }
-  
+
   return(sensitivity.file)
 } # sensitivity.filename
