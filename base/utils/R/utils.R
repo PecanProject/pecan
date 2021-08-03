@@ -24,6 +24,7 @@
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
 ##' @param nsoil nsoil if dimension requests it
+##' param silent boolean to indicate if logging should be performed.
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
@@ -650,7 +651,7 @@ convert.expr <- function(expression) {
 ##' @title download.file
 ##' @param url complete URL for file download
 ##' @param filename destination file name
-##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' @param method Method of file retrieval. Can set this using the options(`download.ftp.method=[method]`) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
 ##'
 ##' @examples
@@ -702,7 +703,7 @@ download.file <- function(url, filename, method) {
 ##'   file_url <- paste0("https://thredds.daac.ornl.gov/", 
 ##'       "thredds/dodsC/ornldaac/1220", 
 ##'       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
-##'   ncdf4::nc_open(file_url)                  
+##'   ncdf4::nc_open(file_url)
 ##'   maxErrors=10,
 ##'   sleep=2)
 ##' }
