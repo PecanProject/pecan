@@ -35,7 +35,7 @@ dap <- retry.func(
   file_url <- paste0("https://thredds.daac.ornl.gov/", 
       "thredds/dodsC/ornldaac/1220", 
       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
-  ncdf4::nc_open(file_url)                  
+  ncdf4::nc_open(file_url)
   maxErrors=10,
   sleep=2)
 }
