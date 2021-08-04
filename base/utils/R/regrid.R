@@ -64,7 +64,6 @@ grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
   nc <- ncdf4::nc_create(filename = outfile, vars = list(CropYield = yieldvar))
 
   ## Output netCDF data
-  yieldarray <- NULL
   #    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(lat, lon, order(lubridate::ymd(date )))]$yield)
   #    ncvar_put(nc, varid = yieldvar, vals = grid.data[order(order(lubridate::ymd(date), lat, lon))]$yield)
   ncdf4::ncvar_put(nc, varid = yieldvar, vals = yieldarray)
