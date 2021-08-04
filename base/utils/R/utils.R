@@ -24,7 +24,7 @@
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
 ##' @param nsoil nsoil if dimension requests it
-##' param silent boolean to indicate if logging should be performed.
+##' @param silent logical: suppress log messages about missing variables?
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
