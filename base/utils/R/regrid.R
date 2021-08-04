@@ -51,7 +51,6 @@ grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
       "please install `data.table`."
     )
   }
-  years <- NULL
   grid.data <- merge(latlons, gdata, by = c("lat", "lon", "date"), all.x = TRUE)
   lat       <- ncdf4::ncdim_def("lat", "degrees_east", vals = lats, longname = "station_latitude")
   lon       <- ncdf4::ncdim_def("lon", "degrees_north", vals = lons, longname = "station_longitude")
