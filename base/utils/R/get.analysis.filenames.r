@@ -3,13 +3,13 @@
 ##' @name ensemble.filename
 ##' @title Generate ensemble filenames
 ##' @param settings list of PEcAn settings.
-##' @param prefix for the rabbitmq api endpoint, default is for no prefix.
-##' @param suffix File suffix, as character (default = `NULL`).
-##' @param all.var.yr
-##' @param ensemble.id ensemble IDs
-##' @param Character vector of variables to be read from.
-##' @param start.year,end.year first and last year of output to read.
-##' @param variable variables to be read
+##' @param prefix string to appear at the beginning of the filename
+##' @param suffix file extension: string to appear at the end of the filename
+##' @param all.var.yr logical: does ensemble include all vars and years?
+##'   If FALSE, filename will include years and vars
+##' @param ensemble.id ensemble ID(s)
+##' @param variable variable(s) included in the ensemble.
+##' @param start.year,end.year first and last year simulated.
 ##'
 ##' @return a filename
 ##' @export
