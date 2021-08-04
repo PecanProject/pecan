@@ -56,7 +56,7 @@
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
-##' @param dbparms list, settings$database info reqired for opening a connection to DB
+##' @param dbparms list of parameters to use for opening a database connection
 ##'
 ##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
