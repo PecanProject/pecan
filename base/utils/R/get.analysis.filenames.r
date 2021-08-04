@@ -11,10 +11,9 @@
 ##' @param variable variable(s) included in the ensemble.
 ##' @param start.year,end.year first and last year simulated.
 ##'
-##' @return a filename
+##' @return a vector of filenames, each in the form
+##'   `[settings$outdir]/[prefix].[ensemble.ID].[variable].[start.year].[end.year][suffix]`.
 ##' @export
-##'
-##' @details Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
 ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "Rdata",
                               all.var.yr = TRUE, ensemble.id = settings$ensemble$ensemble.id,
