@@ -30,10 +30,9 @@ regrid <- function(latlon.data) {
 ##' Write gridded data to netcdf file
 ##'
 ##' @title grid2netcdf
-##' @param grid.data
-##' @param gdata
-##' @param Date as string or date object.
-##' @param outfile location where output will be stored.
+##' @param gdata gridded data to write out
+##' @param date currently ignored; date(s) from `gdata` are used instead
+##' @param outfile name for generated netCDF file.
 ##' @return writes netCDF file
 ##' @author David LeBauer
 grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
