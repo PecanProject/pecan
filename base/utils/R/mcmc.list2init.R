@@ -65,7 +65,7 @@ mcmc.list2init <- function(dat) {
         }
         
       } else {
-        PEcAn.utils::logger.severe("dimension not supported",dim,uname[v])
+        PEcAn.logger::logger.severe("dimension not supported",dim,uname[v])
       }
       
     }  ## end else VECTOR or MATRIX
