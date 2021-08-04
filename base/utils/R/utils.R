@@ -693,7 +693,9 @@ download.file <- function(url, filename, method) {
 ##' @param expr The function to try running
 ##' @param maxErrors The number of times to retry the function
 ##' @param sleep How long to wait before retrying the function call
-##' @param isError
+##' @param isError function to use for checking whether to try again.
+##'   Must take one argument that contains the result of evaluating `expr`
+##'   and return TRUE if another retry is needed 
 ##'
 ##' @return retval returns the results of the function call
 ##'
