@@ -1,7 +1,18 @@
 ##' Generate ensemble filenames
 ##'
-##' @name ensemble.filename
-##' @title Generate ensemble filenames
+##' Generates a vector of filenames to be used for PEcAn ensemble output files.
+##' All paths start from directory `settings$outdir`,
+##' which will be created if it does not exist.
+##'
+##' Typically used by passing only a settings object,
+##'   but all values can be overridden for manual use.
+##'
+##' If only a single variable or a subset of years are needed,
+##'   the generated filename will identify these in the form
+##    `prefix.ensemble_id.variable.startyear.endyear.suffix`
+##' If all vars and years are included, set `all.yr.var` to TRUE
+##'   to get a filename of the form `prefix.ensemble_id.suffix`.
+##' All elements are recycled vectorwise.
 ##' @param settings list of PEcAn settings.
 ##' @param prefix string to appear at the beginning of the filename
 ##' @param suffix file extension: string to appear at the end of the filename
