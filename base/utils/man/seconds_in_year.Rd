@@ -11,7 +11,7 @@ seconds_in_year(year, leap_year = TRUE, ...)
 
 \item{leap_year}{Default = TRUE. If set to FALSE will always return 31536000.}
 
-\item{...}{additional arguments}
+\item{...}{additional arguments, all currently ignored}
 }
 \description{
 Number of seconds in a given year

@@ -18,26 +18,37 @@ ensemble.filename(
 \arguments{
 \item{settings}{list of PEcAn settings.}
 
-\item{prefix}{for the rabbitmq api endpoint, default is for no prefix.}
+\item{prefix}{string to appear at the beginning of the filename}
 
-\item{suffix}{File suffix, as character (default = \code{NULL}).}
+\item{suffix}{file extension: string to appear at the end of the filename}
 
-\item{ensemble.id}{ensemble IDs}
+\item{all.var.yr}{logical: does ensemble include all vars and years?
+If FALSE, filename will include years and vars}
 
-\item{variable}{variables to be read}
+\item{ensemble.id}{ensemble ID(s)}
 
-\item{start.year, end.year}{first and last year of output to read.}
+\item{variable}{variable(s) included in the ensemble.}
 
-\item{Character}{vector of variables to be read from.}
+\item{start.year, end.year}{first and last year simulated.}
 }
 \value{
-a filename
+a vector of filenames, each in the form
+\verb{[settings$outdir]/[prefix].[ensemble.ID].[variable].[start.year].[end.year][suffix]}.
 }
 \description{
-Generate ensemble filenames
+Generates a vector of filenames to be used for PEcAn ensemble output files.
+All paths start from directory \code{settings$outdir},
+which will be created if it does not exist.
 }
 \details{
-Generally uses values in settings, but can be overwritten for manual uses
+Typically used by passing only a settings object,
+but all values can be overridden for manual use.
+
+If only a single variable or a subset of years are needed,
+the generated filename will identify these in the form
+If all vars and years are included, set \code{all.yr.var} to TRUE
+to get a filename of the form \code{prefix.ensemble_id.suffix}.
+All elements are recycled vectorwise.
 }
 \author{
 Ryan Kelly

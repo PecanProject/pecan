@@ -77,7 +77,7 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 
 \item{ensemble_name}{If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.}
 
-\item{dbparms}{list, settings$database info reqired for opening a connection to DB}
+\item{dbparms}{list of parameters to use for opening a database connection}
 
 \item{...}{Additional arguments, passed unchanged to \code{fcn}}
 }

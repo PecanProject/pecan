@@ -19,17 +19,20 @@ sensitivity.filename(
 \arguments{
 \item{settings}{list of PEcAn settings.}
 
-\item{prefix}{for the rabbitmq api endpoint, default is for no prefix.}
+\item{prefix}{string to appear at the beginning of the filename}
 
-\item{suffix}{File suffix, as character (default = \code{NULL}).}
+\item{suffix}{file extension: string to appear at the end of the filename}
 
-\item{ensemble.id}{ensemble IDs}
+\item{all.var.yr}{logical: does ensemble include all vars and years?
+If FALSE, filename will include years and vars}
 
-\item{variable}{variables to be read}
+\item{ensemble.id}{ensemble ID(s)}
 
-\item{start.year}{first and last year of output to read.}
+\item{variable}{variable(s) included in the ensemble.}
 
-\item{end.year}{first and last year of output to read.}
+\item{start.year}{first and last year simulated.}
+
+\item{end.year}{first and last year simulated.}
 }
 \value{
 a filename

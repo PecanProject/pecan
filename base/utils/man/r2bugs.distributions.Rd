@@ -9,8 +9,7 @@ r2bugs.distributions(priors, direction = "r2bugs")
 \arguments{
 \item{priors}{data.frame with columns distn = distribution name, parama, paramb using R default parameterizations.}
 
-\item{direction}{Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
-(PalEON will go backward, anybody interested in the future will go forward)}
+\item{direction}{One of "r2bugs" or "bugs2r"}
 }
 \value{
 priors dataframe using JAGS default parameterizations
