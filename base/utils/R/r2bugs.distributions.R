@@ -12,8 +12,7 @@
 ##' R and BUGS have different parameterizations for some distributions. This function transforms the distributions from R defaults to BUGS defaults. BUGS is an implementation of the BUGS language, and these transformations are expected to work for bugs.
 ##' @title convert R parameterizations to BUGS paramaterizations
 ##' @param priors data.frame with columns distn = distribution name, parama, paramb using R default parameterizations.
-##' @param direction Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
-##'                           (PalEON will go backward, anybody interested in the future will go forward)
+##' @param direction One of "r2bugs" or "bugs2r"
 ##' @return priors dataframe using JAGS default parameterizations
 ##' @author David LeBauer, Ben Bolker
 ##' @export
