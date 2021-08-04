@@ -62,6 +62,8 @@ ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "R
 ##' @name sensitivity.filename
 ##' @title Generate sensitivity analysis filenames
 ##' @inheritParams ensemble.filename
+##' @param pft name of PFT used for analysis. If NULL, assumes all
+##'   PFTs in run are used and does not add them to the filename
 ##' @return a filename
 ##' @export
 ##'

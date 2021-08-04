@@ -26,6 +26,9 @@ sensitivity.filename(
 \item{all.var.yr}{logical: does ensemble include all vars and years?
 If FALSE, filename will include years and vars}
 
+\item{pft}{name of PFT used for analysis. If NULL, assumes all
+PFTs in run are used and does not add them to the filename}
+
 \item{ensemble.id}{ensemble ID(s)}
 
 \item{variable}{variable(s) included in the ensemble.}
