@@ -170,7 +170,6 @@ convert.input <-
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
 
-      id <- NULL
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
