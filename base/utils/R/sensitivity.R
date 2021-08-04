@@ -36,7 +36,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
       load(samples.file)
-      sa.run.ids <- .data$runs.samples$sa
+      sa.run.ids <- runs.samples$sa
     } else {
       PEcAn.logger::logger.error(samples.file, "not found, this file is required by the read.sa.output function")
     }
