@@ -2,6 +2,8 @@
 
 export(add_icon)
 export(ciEnvelope)
+export(create.base.plot)
 export(map.output)
+export(plot_data)
 export(plot_netcdf)
 export(vwReg)

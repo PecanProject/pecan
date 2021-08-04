@@ -34,7 +34,9 @@ read.sa.output(
 
 \item{variable}{variables to be read from model output}
 
-\item{sa.run.ids}{}
+\item{sa.run.ids}{list of run ids to read.
+If NULL, will look in \code{pecandir} for a file named \code{samples.Rdata}
+and read from that}
 
 \item{per.pft}{flag to determine whether we want SA on pft-specific variables}
 }

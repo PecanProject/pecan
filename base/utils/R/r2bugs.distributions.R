@@ -83,8 +83,9 @@ bugs2r.distributions <- function(..., direction = "bugs2r") {
 ##' JAGS
 ##' @title bugs.rdist
 ##' @param prior dataframe with distribution name and parameters
-##' @param n.iter number of samples, output will have n.iter/4 samples
-##' @param n
+##' @param n.iter number of MCMC samples. Output will have n.iter/4 samples
+##' @param n number of randomly chosen samples to return.
+##    If NULL, returns all n.iter/4 of them
 ##' @return vector of samples
 ##' @export
 ##' @author David LeBauer
