@@ -10,7 +10,8 @@ download.ICOS(
   start_date,
   end_date,
   product,
-  overwrite = FALSE
+  overwrite = FALSE,
+  ...
 )
 }
 \arguments{
