@@ -25,10 +25,10 @@ download.ICOS <-
            start_date,
            end_date,
            product,
-           overwrite = FALSE) {
+           overwrite = FALSE, ...) {
     download_file_flag <- TRUE
     extract_file_flag <- TRUE
-    
+    sitename <- sub(".* \\((.*)\\)", "\\1", sitename)
     
     if (tolower(product) == "drought2018") {
       # construct output CSV file name
@@ -175,6 +175,9 @@ download.ICOS <-
                    files = zipped_csv_name,
                    junkpaths = TRUE,
                    exdir = outfolder)
+      if (tolower(product) == "drought2018") {
+        output_file_name <- zipped_csv_name
+      }
     }
     
     

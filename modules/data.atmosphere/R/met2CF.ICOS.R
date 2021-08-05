@@ -39,7 +39,7 @@ met2CF.ICOS <-
            start_date,
            end_date,
            format,
-           overwrite = FALSE) {
+           overwrite = FALSE, ...) {
     results <-
       PEcAn.data.atmosphere::met2CF.csv(in.path,
                                         in.prefix,
