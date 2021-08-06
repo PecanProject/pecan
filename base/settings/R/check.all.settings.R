@@ -33,7 +33,7 @@ check.inputs <- function(settings) {
     con = dbcon)
   
   #check if file paths already exist, hack to get around no BETY id for IC file
-  if (!is.null(settings$run$inputs$poolinitcond$path) && !is.null(settings$run$inputs$met$path)) {
+  if (!is.null(settings$run$inputs$poolinitcond$path)) {
     return(settings)
   }
 

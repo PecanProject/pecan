@@ -2,10 +2,9 @@
 % Please edit documentation in R/load_veg_manual.R
 \name{load_veg_manual}
 \alias{load_veg_manual}
-\alias{load_veg}
 \title{load_veg_manual}
 \usage{
-load_veg(
+load_veg_manual(
   new_site,
   start_date,
   end_date,

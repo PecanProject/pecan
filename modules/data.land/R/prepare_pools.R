@@ -81,6 +81,7 @@ prepare_pools <- function(nc.path, constants = NULL){
       sla <- constants$sla
       if (!is.null(sla) && is.valid(leaf)) {
         LAI <- leaf * sla
+        
         IC.params[["LAI"]] <- LAI
       }
       

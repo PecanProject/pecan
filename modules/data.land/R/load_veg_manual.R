@@ -20,7 +20,9 @@
 load_veg_manual <- function(new_site, start_date, end_date, 
                      source_id, source, icmeta = NULL, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
-
+  library(neonstore)
+  library(neonUtilities)
+  
   start_date = as.Date("2020-01-01")
   end_date = as.Date("2021-09-01")
   outfolder = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/"
@@ -55,6 +57,7 @@ load_veg_manual <- function(new_site, start_date, end_date,
                               user     = dbparms$bety$user, 
                               password = dbparms$bety$password)
   
+  con <- bety$con  
   #match species names in filter.date to species ID on BETY
   
   #Add BETY species IDs to filter.date
@@ -83,7 +86,7 @@ load_veg_manual <- function(new_site, start_date, end_date,
   code.col    <- "species_USDA_symbol"
   format_name <- "usda"
   obs[[code.col]] <- toupper(obs[[code.col]])
-  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
+  spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
   
