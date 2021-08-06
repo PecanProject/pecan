@@ -49,7 +49,7 @@ get_ensemble_weights <- function(settings, time_do){
                                                                                                     time_do[tt] &
                                                                                                     weight_file$climate_model %in% climate_names, 'weights'])) * nens
       
-      if(sum(weight_list[[tt]]) != nens) PEcAn.utils::logger.warn(paste('Time',tt,'does not equal the number of ensemble members',nens))
+      if(sum(weight_list[[tt]]) != nens) PEcAn.logger::logger.warn(paste('Time',tt,'does not equal the number of ensemble members',nens))
       
       #TO DO: will need to have some way of dealing with sampling too if there are more ensemble members than weights or vice versa
       
