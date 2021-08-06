@@ -19,16 +19,18 @@
 cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
   
   ## Building Site ID from past directories
-  path <- dirname(veg_file)
-  last_dir <- basename(path)
-  nums_id <- strsplit(last_dir,"[^[:digit:]]")
-  base_id <- nums_id[[1]][length(nums_id[[1]])]
-  suffix <- nums_id[[1]][(length(nums_id[[1]])-1)]
+  # path <- dirname(veg_file)
+  # last_dir <- basename(path)
+  # nums_id <- strsplit(last_dir,"[^[:digit:]]")
+  # base_id <- nums_id[[1]][length(nums_id[[1]])]
+  # suffix <- nums_id[[1]][(length(nums_id[[1]])-1)]
   #siteid = as.numeric(suffix)*1e9 + as.numeric(base_id)
   siteid = 646 #Need to manually set when running line-by-line, gets siteid from veg_file filepath
+  outdir = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/Harvard/neon_nc_ens/"
   ## load data
+  for (ens in 1:max(length(veg_file))) {
   
-  dat <- readRDS(veg_file)
+  dat <- readRDS(veg_file[ens])
   
   ## Grab DBH
   dbh <- dat[[2]][,dbh_name]
@@ -95,7 +97,7 @@ cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
                 vals = variables)
   
   # Execute pool_ic function
-  result <- PEcAn.data.land::pool_ic_list2netcdf(input = input, outdir = path, siteid = siteid)
-  
+  result <- PEcAn.data.land::pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid, ens = ens)
+  }
   return(result)
 }
