@@ -177,6 +177,12 @@ download.ICOS <-
                    exdir = outfolder)
       if (tolower(product) == "drought2018") {
         output_file_name <- zipped_csv_name
+      }else if (tolower(product) == "etc") {
+        # reformat file slightly so that both Drought2018 and ETC files can use the same format
+        tmp_csv <- read.csv(file.path(outfolder, output_file_name))
+        new_tmp <- cbind(tmp_csv[, -which(colnames(tmp_csv)=="LW_OUT")], tmp_csv[, which(colnames(tmp_csv)=="LW_OUT")])
+        colnames(new_tmp) <- c(colnames(tmp_csv)[-which(colnames(tmp_csv)=="LW_OUT")], "LW_OUT")
+        write.csv(new_tmp, file = file.path(outfolder, output_file_name), row.names = FALSE)
       }
     }
     
