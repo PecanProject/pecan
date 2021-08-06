@@ -220,7 +220,7 @@ download.ICOS <-
       formatname = character(rows),
       startdate = character(rows),
       enddate = character(rows),
-      dbfile.name = basename(output_file_name),
+      dbfile.name = substr(basename(output_file_name), 1, nchar(basename(output_file_name)) - 4),
       stringsAsFactors = FALSE
     )
     
