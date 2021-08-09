@@ -46,7 +46,6 @@
 # 'prediction',single.tree=TRUE)
 allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, use = "Bg", 
                           interval = "prediction", single.tree = FALSE) {
-  library(tools)
   
   if (is.character(object)) {
     object <- load.allom(object)
@@ -195,7 +194,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
     } else {
       s <- 0
     }
-        
+    
     if (is(dbh, "list")) {
       for (j in 1:length(sel)) {
         if ((is(dbh[[sel[j]]], "numeric")) & (all(is.na(dbh[[sel[j]]])))) {

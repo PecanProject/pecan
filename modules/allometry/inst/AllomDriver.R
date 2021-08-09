@@ -13,8 +13,6 @@ if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)}
 #library(PECAn)
 
 ## libraries & database connection
-library(mvtnorm)
-library(MCMCpack)
 haveMPI <- require(Rmpi)
 library(PostgreSQL)
 dvr <- dbDriver("PostgreSQL")

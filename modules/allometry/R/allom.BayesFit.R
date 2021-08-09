@@ -74,8 +74,6 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
     return(NULL)
   }
   
-  library(mvtnorm)
-  library(MCMCpack)
   
   ## grab required variables from allom$parm
   n     <- nu(allom[["parm"]]$n)
