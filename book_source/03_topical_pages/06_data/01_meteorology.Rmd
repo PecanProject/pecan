@@ -121,7 +121,7 @@ Resolution: 1 hr
 
 Availability: Varies by [site](https://meta.icos-cp.eu/collections/ueb_7FcyEcbG6y9-UGo5HUqV)
 
-Notes: To use this option, set source as `ICOS` and a product tag containing `drought2018` in `pecan.xml`
+Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `drought2018` in `pecan.xml`
 
 ## ICOS Ecosystem Archive
 
@@ -131,5 +131,5 @@ Resolution: 1 hr
 
 Availability: Varies by [site](https://meta.icos-cp.eu/collections/q4V7P1VLZevIrnlsW6SJO1Rz)
 
-Notes: To use this option, set source as `ICOS` and a product tag containing `etc` in `pecan.xml`
+Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `etc` in `pecan.xml`
 
