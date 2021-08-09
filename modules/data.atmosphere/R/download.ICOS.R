@@ -74,15 +74,11 @@ download.ICOS <-
     }
     
     output_file <- list.files(path = outfolder, patt= output_file_name)
-
-    if(length(output_file != 0)){
-      if (file.exists(file.path(outfolder, output_file)) &&
-          !overwrite) {
+    if(length(output_file != 0) && !overwrite){
         PEcAn.logger::logger.info("Output CSV file for the requested site already exists")
         download_file_flag <- FALSE
         extract_file_flag <- FALSE
         output_file_name <- output_file
-      }
     }
 
     if (extract_file_flag &&
