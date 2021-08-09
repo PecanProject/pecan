@@ -15,7 +15,12 @@ Depends:
 Imports:
     PEcAn.logger,
     coda (>= 0.18),
-    XML (>= 3.98-1.4)
+    XML (>= 3.98-1.4),
+    grDevices,
+    graphics,
+    methods,
+    stats,
+    utils
 Suggests:
     testthat (>= 1.0.2),
     PEcAn.DB,
