@@ -36,9 +36,7 @@ download.ICOS <-
         paste0(
           "FLX_",
           sitename,
-          "_FLUXNET2015_FULLSET_HH_",
-          as.character(format(as.Date(start_date), '%Y')),
-          "-2018_beta-3.csv"
+          "_FLUXNET2015_FULLSET_HH_"
         )
       
       # construct zip file name
@@ -75,12 +73,16 @@ download.ICOS <-
       PEcAn.logger::logger.severe("Inavlid product. Product should be one of 'Drought2018', 'ETC' ")
     }
     
-    
-    if (file.exists(file.path(outfolder, output_file_name)) &&
-        !overwrite) {
-      PEcAn.logger::logger.info("Output CSV file for the requested site already exists")
-      download_file_flag <- FALSE
-      extract_file_flag <- FALSE
+    output_file <- list.files(path = outfolder, patt= output_file_name)
+
+    if(length(output_file != 0)){
+      if (file.exists(file.path(outfolder, output_file)) &&
+          !overwrite) {
+        PEcAn.logger::logger.info("Output CSV file for the requested site already exists")
+        download_file_flag <- FALSE
+        extract_file_flag <- FALSE
+        output_file_name <- output_file
+      }
     }
 
     if (extract_file_flag &&
