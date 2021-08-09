@@ -127,7 +127,7 @@ Notes: To use this option, set `source` as `ICOS` and a `product` tag containing
 
 Scale: site
 
-Resolution: 1 hr
+Resolution: 30 min
 
 Availability: Varies by [site](https://meta.icos-cp.eu/collections/q4V7P1VLZevIrnlsW6SJO1Rz)
 
