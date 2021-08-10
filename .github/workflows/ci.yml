@@ -115,8 +115,6 @@ jobs:
   check:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
@@ -126,6 +124,7 @@ jobs:
           - "4.0.4"
 
     env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
