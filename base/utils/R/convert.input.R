@@ -274,7 +274,7 @@ convert.input <-
       )
       if ("id" %in% colnames(existing.dbfile)) {
         existing.dbfile <- existing.dbfile %>%
-          dplyr::filter(id==input.args$dbfile.id)
+          dplyr::filter(.data$id==input.args$dbfile.id)
       }
     }else{
       existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
