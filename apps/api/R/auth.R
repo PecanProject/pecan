@@ -3,11 +3,11 @@ library(dplyr)
 #* Obtain the encrypted password for a user
 #* @param username Username, which is also the 'salt'
 #* @param password Unencrypted password
-#* @param secretkey Secret Key, which if null, is set to 'notasecret'
+#* @param secretkey Secret Key, which if NA, is set to 'notasecret'
 #* @return Encrypted password
 #* @author Tezan Sahu
-get_crypt_pass <- function(username, password, secretkey = NULL) {
-  secretkey <- if(is.null(secretkey)) "notasecret" else secretkey
+get_crypt_pass <- function(username, password, secretkey = NA) {
+  secretkey <- if(is.na(secretkey)) "notasecret" else secretkey
   dig <- secretkey
   salt <- username
   for (i in 1:10) {
@@ -25,12 +25,11 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* Check if the encrypted password for the user is valid
 #* @param username Username
 #* @param crypt_pass Encrypted password
-#* @param dbcon Database connection object. Default is global database pool.
 #* @return TRUE if encrypted password is correct, else FALSE
 #* @author Tezan Sahu
-validate_crypt_pass <- function(username, crypt_pass, dbcon = global_db_pool) {
+validate_crypt_pass <- function(username, crypt_pass) {
 
-  res <- tbl(dbcon, "users") %>%
+  res <- tbl(global_db_pool, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
     collect()
