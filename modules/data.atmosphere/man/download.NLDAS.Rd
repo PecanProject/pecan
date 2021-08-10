@@ -16,6 +16,25 @@ download.NLDAS(
   ...
 )
 }
+\arguments{
+\item{outfolder}{location of output}
+
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
+
+\item{site_id}{site id (BETY)}
+
+\item{lat.in}{latitude of site}
+
+\item{lon.in}{longitude of site}
+
+\item{overwrite}{overwrite existing files? Default is FALSE}
+
+\item{verbose}{Turn on verbose output? Default=FALSE}
+
+\item{...}{Other inputs}
+}
 \description{
 Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
 }
