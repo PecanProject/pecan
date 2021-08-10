@@ -41,7 +41,7 @@ The instructions in this section assume that you will be specifying this informa
 
 The figure below summarizes the relevant database tables that need to be updated to add a new model and the primary variables that define each table.
 
-![](https://www.lucidchart.com/publicSegments/view/54a8aea8-9360-4628-af9e-392a0a00c27b/image.png)
+![](03_topical_pages/11_images/bety_new_model.png)
 
 ### Define MODEL_TYPE
 
@@ -747,7 +747,7 @@ Make sure to search for your variables under Data > Variables before suggesting 
 
 For example bety contains a record for Net Primary Productivity: 
 
-![var_record](04_advanced_user_guide/images/var_record.png)
+![var_record](03_topical_pages/11_images/var_record.png)
 
 This record does not have the same variable name or the same units as NPP in the example data. 
 You may have to do some reading to confirm that they are the same variable. 

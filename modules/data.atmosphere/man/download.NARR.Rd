@@ -15,11 +15,19 @@ download.NARR(
 )
 }
 \arguments{
+\item{outfolder}{location where output is stored}
+
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
+
 \item{overwrite}{Overwrite existing files?  Default=FALSE}
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
-\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.}
+
+\item{...}{other inputs
 example options(download.ftp.method="ncftpget")}
 }
 \description{

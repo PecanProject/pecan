@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<APPEEARS>
+    <coord>
+      <coordtype>polygon</coordtype>
+      <coordtype>point</coordtype>
+    </coord>
+    <raw_format>
+     <id></id>
+     <name></name>
+     <mimetype>application/x-netcdf</mimetype>
+   </raw_format>
+</APPEEARS>

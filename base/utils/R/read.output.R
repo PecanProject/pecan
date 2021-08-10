@@ -31,7 +31,7 @@
 ##'   variables in output file..
 ##' @param dataframe Logical: if TRUE, will return output in a
 ##'   `data.frame` format with a posix column. Useful for
-##'   [PEcAn.benchmark::align.data()] and plotting.
+##'   [PEcAn.benchmark::align_data()] and plotting.
 ##' @param pft.name character string, name of the plant functional
 ##'   type (PFT) to read PFT-specific output. If `NULL` no
 ##'   PFT-specific output will be read even the variable has PFT as a

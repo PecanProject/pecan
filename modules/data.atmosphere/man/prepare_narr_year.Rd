@@ -15,10 +15,10 @@ prepare_narr_year(dat, file, lat_nc, lon_nc, verbose = FALSE)
 
 \item{lon_nc}{`ncdim` object for longitude}
 
-\item{verbose}{}
+\item{verbose}{logical: ask`ncdf4` functions to be very chatty while they work?}
 }
 \value{
-List of NetCDF variables in data. Creates NetCDF file containing 
+List of NetCDF variables in data. Creates NetCDF file containing
 data as a side effect
 }
 \description{
