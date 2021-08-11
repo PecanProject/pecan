@@ -3,6 +3,9 @@ title: "PEcAn.allometry Vignette"
 author: "Mike Dietze"
 date: "April 23, 2015"
 output: html_document
+vignette: >
+  %\VignetteIndexEntry{PEcAn.allometry Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ## install package from Github

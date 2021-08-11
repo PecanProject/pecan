@@ -159,7 +159,6 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
       if (use[i] == "Bg") {
         params[[i]] <- object[[i]][[component]][sel, c("Bg0", "Bg1", "Sg")]
       } else if (use[i] == "mu") {
-        library(mvtnorm)
         p <- object[[i]][[component]][sel, c("mu0", "mu1", "sigma", "tau11", "tau12", "tau22")]
         ## pre-sample random effect variability
         mu <- matrix(NA, n, 2)

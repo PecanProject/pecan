@@ -8,10 +8,6 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
              person("Shashank", "Singh", role = c("ctb"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Synthesize allometric equations or fit allometries to data
-Depends:
-    MCMCpack,
-    mvtnorm,
-    tools
 Imports:
     PEcAn.logger,
     coda (>= 0.18),
@@ -20,14 +16,20 @@ Imports:
     graphics,
     methods,
     stats,
-    utils
+    utils,
+    MCMCpack,
+    mvtnorm,
+    tools,
+    PEcAn.DB
 Suggests:
     testthat (>= 1.0.2),
-    PEcAn.DB,
-    withr
+    knitr,
+    rmarkdown,
+    markdown
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+VignetteBuilder: knitr
