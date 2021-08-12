@@ -74,7 +74,7 @@ download.ICOS <-
       PEcAn.logger::logger.severe("Invalid product. Product should be one of 'Drought2018', 'ETC' ")
     }
     
-    output_file <- list.files(path = outfolder, patt= output_file_name)
+    output_file <- list.files(path = outfolder, pattern = output_file_name)
     if(length(output_file != 0) && !overwrite){
         PEcAn.logger::logger.info("Output CSV file for the requested site already exists")
         download_file_flag <- FALSE
