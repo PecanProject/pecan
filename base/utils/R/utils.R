@@ -51,7 +51,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       dims[[length(dims) + 1]] <- time
     } else if (vd == "nsoil" && !is.na(nsoil)) {
       dims[[length(dims) + 1]] <- nsoil
-    } else if (vd == "na") {
+    } else if (is.na(vd)) {
       # skip
     } else {
       if (!silent) {
