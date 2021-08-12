@@ -11,6 +11,7 @@
 #' @param end_date end date area of the data request in the form YYYY-MM-DD
 #' @param product ICOS product to be downloaded. Currently supported options: "Drought2018", "ETC"
 #' @param overwrite should existing files be overwritten. Default False.
+#' @param ... used when extra arguments are present.
 #' @return information about the output file
 #' @export
 #' @examples
@@ -70,7 +71,7 @@ download.ICOS <-
       format_name <- "ICOS_ECOSYSTEM_HH"
       
     } else {
-      PEcAn.logger::logger.severe("Inavlid product. Product should be one of 'Drought2018', 'ETC' ")
+      PEcAn.logger::logger.severe("Invalid product. Product should be one of 'Drought2018', 'ETC' ")
     }
     
     output_file <- list.files(path = outfolder, patt= output_file_name)
@@ -177,10 +178,10 @@ download.ICOS <-
         output_file_name <- zipped_csv_name
       }else if (tolower(product) == "etc") {
         # reformat file slightly so that both Drought2018 and ETC files can use the same format
-        tmp_csv <- read.csv(file.path(outfolder, output_file_name))
+        tmp_csv <- utils::read.csv(file.path(outfolder, output_file_name))
         new_tmp <- cbind(tmp_csv[, -which(colnames(tmp_csv)=="LW_OUT")], tmp_csv[, which(colnames(tmp_csv)=="LW_OUT")])
         colnames(new_tmp) <- c(colnames(tmp_csv)[-which(colnames(tmp_csv)=="LW_OUT")], "LW_OUT")
-        write.csv(new_tmp, file = file.path(outfolder, output_file_name), row.names = FALSE)
+        utils::write.csv(new_tmp, file = file.path(outfolder, output_file_name), row.names = FALSE)
       }
     }
     

@@ -28,6 +28,7 @@
 #'   format$vars$column_number = Column number in CSV file (optional, will use header name first)
 #' Columns with NA for bety variable name are dropped.
 #' @param overwrite overwrite should existing files be overwritten. Default False.
+#' @param ... used when extra arguments are present.
 #' @return information about the output file
 #' @export
 #'

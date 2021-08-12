@@ -26,6 +26,8 @@ download.ICOS(
 \item{product}{ICOS product to be downloaded. Currently supported options: "Drought2018", "ETC"}
 
 \item{overwrite}{should existing files be overwritten. Default False.}
+
+\item{...}{used when extra arguments are present.}
 }
 \value{
 information about the output file
