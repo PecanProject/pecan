@@ -21,7 +21,11 @@ rename_jags_columns <- function(data) {
   # Swap column names; needed for downstream function pecan.ma()
   colnames(data)[colnames(data) %in% c("greenhouse", "ghs")] <- c("ghs", "greenhouse")
   colnames(data)[colnames(data) %in% c("site_id", "site")] <- c("site", "site_id")
-  
+
+  stat <- NULL
+  n <- NULL
+  trt_id <- NULL
+  citation_id <- NULL
   transformed <-  transform(data,
                             Y        = mean,
                             se       = stat,
