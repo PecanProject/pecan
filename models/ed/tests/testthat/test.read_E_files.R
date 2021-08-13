@@ -1,3 +1,4 @@
+
 context("test possible inputs to read_E_file")
 
 outfolder <- tempdir()
