@@ -59,6 +59,16 @@ res <- PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end
 
 To use the downloaded observations a function like `PEcAn.benchmark::load_data` can be used. Here we load the NEE observations.
 ```{r load, eval=FALSE}
+ dbcon <-DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = 'localhost',
+    user = 'bety',
+    password = 'bety',
+    dbname = 'bety'
+  )
+ ## or if you have different DB settings try:
+ ## php_config <- ".../pecan/web/config.php" # path to your PHP config file
+ ## dcon <- betyConnect(php_config)
 format <- PEcAn.DB::query.format.vars(bety = dbcon, format.id = 1000000136)
 start_date <- lubridate::year("2018-01-01")
 end_date   <- lubridate::year("2018-12-31")
