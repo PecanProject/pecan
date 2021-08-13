@@ -30,7 +30,7 @@ load_veg_manual <- function(new_site, start_date, end_date,
   machine_host = "localhost"
 #Load in NEON datasets
 #Only need to run neon_download once
-  #neonstore::neon_download("DP1.10098.001", table = NA, site = c("HARV"),start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+  neonstore::neon_download("DP1.10098.001", table = NA, site = c("HARV"),start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
   temp.veg <- neonUtilities::stackFromStore(filepaths=neon_dir(),dpID="DP1.10098.001",pubdate="2021-06-01",package="basic")
   joined.veg <- dplyr::left_join(temp.veg$vst_mappingandtagging, temp.veg$vst_apparentindividual, by = "individualID")
 

@@ -19,12 +19,12 @@
 cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
   
   ## Building Site ID from past directories
-  # path <- dirname(veg_file)
-  # last_dir <- basename(path)
-  # nums_id <- strsplit(last_dir,"[^[:digit:]]")
-  # base_id <- nums_id[[1]][length(nums_id[[1]])]
-  # suffix <- nums_id[[1]][(length(nums_id[[1]])-1)]
-  #siteid = as.numeric(suffix)*1e9 + as.numeric(base_id)
+  path <- dirname(veg_file)
+  last_dir <- basename(path)
+  nums_id <- strsplit(last_dir,"[^[:digit:]]")
+  base_id <- nums_id[[1]][length(nums_id[[1]])]
+  suffix <- nums_id[[1]][(length(nums_id[[1]])-1)]
+  siteid = as.numeric(suffix)*1e9 + as.numeric(base_id)
   siteid = 646 #Need to manually set when running line-by-line, gets siteid from veg_file filepath
   outdir = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/Harvard/neon_nc_ens/"
   ## load data
@@ -84,11 +84,6 @@ cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
   leaf_biomass = (tot_leaf/(plot_num*plot_size))/2
   AGB = (tot_biomass/(plot_num*plot_size))/2
   wood_biomass = AGB - leaf_biomass
-  
-  # ## NEON SPECIFIC HACK
-  # obs <- dat[[2]]
-  # n.plot = length(unique(paste(obs$siteID.x,obs$plotID.x,obs$subplotID.x)))
-  # AGB = tot_biomass/(dat[[1]]$area*n.plot) ## express biomass on a per unit area basis
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
