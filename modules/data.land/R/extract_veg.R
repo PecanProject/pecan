@@ -21,7 +21,7 @@ extract_veg <- function(new_site, start_date, end_date,
  
  # extract_* functions need to have standard args
  veg_info <- fcn(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
- 
+ #make sure extract_NEON_veg arguments are being passed
  
  #--------------------------------------------------------------------------------------------------#
  # Match species
@@ -32,9 +32,11 @@ extract_veg <- function(new_site, start_date, end_date,
  if(is.null(format_name)){
    format_name <- "fia" 
    code_col    <-  "spcd"
+ } 
+ if(source == "NEON_veg"){
+   format_name = "usda"
+   code_col = "species_USDA_symbol"
  }
-
- 
  # match code to species ID
  spp.info <- match_species_id(input_codes = obs[[code_col]], format_name = format_name)
  

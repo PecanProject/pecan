@@ -25,9 +25,11 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
   veg_info[[2]] <- obs
   
+  #Add chort2pool function call, load model specific registry model and figure out if model is pool or cohort, if pool call cohort2pool
+  
   #--------------------------------------------------------------------------------------------------#
   # veg2model
-  
+  #Create SIPNETveg2model that will run pool_ic_list2netcdf
   ## Set model-specific functions
   pkg <- paste0("PEcAn.", model)
   do.call("library", list(pkg))
