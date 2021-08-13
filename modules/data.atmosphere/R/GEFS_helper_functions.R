@@ -7,7 +7,7 @@
 #' @param model_name_raw model name for directory creation
 #' @param end_hr end hr to determine how many hours to download
 #' @param output_directory output directory
-#' @export 
+#' 
 #'
 #' @return NA
 #'
@@ -190,7 +190,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param model_name_raw Name of raw file name
 #' @param output_directory Output directory 
 #' @importFrom rlang .data 
-#' @export
+#' 
 #' @return List
 #'
 #'
@@ -527,7 +527,7 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #' @importFrom rlang .data 
 #' @import tidyselect
-#' @export
+#' 
 #' @author Quinn Thomas
 #'
 #'
@@ -651,7 +651,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 ##' 
 ##' @return NA
 ##'
-##' @export
+##' 
 ##' @author Quinn Thomas
 ##'
 ##'
