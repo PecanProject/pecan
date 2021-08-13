@@ -75,7 +75,7 @@ download.NOAA_GEFS <- function(site_id,
   PEcAn.logger::logger.info(paste0("Overwrite existing files: ", overwrite))
   
   
-  noaa_grid_download(lat_list = lat.in,
+  PEcAn.data.atmosphere::noaa_grid_download(lat_list = lat.in,
                      lon_list = lon.in,
                      end_hr = end_hr,
                      forecast_time = forecast_time,
@@ -83,7 +83,7 @@ download.NOAA_GEFS <- function(site_id,
                      model_name_raw = model_name_raw,
                      output_directory = outfolder)
   
-  results <- process_gridded_noaa_download(lat_list = lat.in,
+  results <- PEcAn.data.atmosphere::process_gridded_noaa_download(lat_list = lat.in,
                                            lon_list = lon.in,
                                            site_id = site_id,
                                            downscale = downscale,
