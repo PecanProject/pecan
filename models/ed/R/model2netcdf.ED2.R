@@ -18,7 +18,8 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pft_names Names of PFTs used in the run, vector
+##' @param pfts Names of PFTs used in the run, vector
+##' @param settings pecan settings object
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
@@ -189,6 +190,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##'
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched tfiles for that year
+##' @param tfiles names of T files to be read
+##' @param outdir directory where output will be written to
+##' @param start_date start date in YYYY-MM-DD format
+##' @param end_date end date in YYYY-MM-DD format                       
 ##' @export
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 
@@ -859,6 +864,12 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##'
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
+##' @param efiles
+##' @param outdir                       
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
+##' @param pfts Names of PFTs used in the run, vector
+##' @param settings pecan settings object
 ##'
 ##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
