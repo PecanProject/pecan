@@ -2,26 +2,31 @@
 % Please edit documentation in R/cohort2pool.R
 \name{cohort2pool}
 \alias{cohort2pool}
-\title{cohort2pool function
-Calculates total biomass using veg cohort file.}
+\title{cohort2pool}
 \usage{
-cohort2pool(veg_file, allom_param = NULL)
+cohort2pool(veg_file, allom_param = NULL, dbh_name = "DBH", siteid)
 }
 \arguments{
 \item{veg_file}{path to standard cohort veg_file}
 
 \item{allom_param}{parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)}
+
+\item{dbh_name}{Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.}
+
+\item{siteid}{BETY site id taken from settings object in ic_process}
 }
 \description{
+Converts .rds files into pool netcdf files.
+}
+\details{
 cohort2pool function
 Calculates total biomass using veg cohort file.
 }
-\examples{
+\author{
+Saloni Shah
+
 \dontrun{
 veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 cohort2pool(veg_File = veg_file, allom_param = NULL)
 }
-}
-\author{
-Saloni Shah
 }
