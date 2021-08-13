@@ -3,6 +3,7 @@
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
 $db_bety_hostname=getenv('PGHOST', true) ?: "postgres";
+$db_bety_port=getenv('PGPORT', true) ?: 5432;
 $db_bety_username=getenv('BETYUSER', true) ?: "bety";
 $db_bety_password=getenv('BETYPASSWORD', true) ?: "bety";
 $db_bety_database=getenv('BETYDATABASE', true) ?: "bety";

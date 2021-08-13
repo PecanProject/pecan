@@ -9,7 +9,7 @@ col2ncvar(variable, dims)
 \arguments{
 \item{variable}{CF variable name}
 
-\item{dims}{List of NetCDF dimension objects (passed to 
+\item{dims}{List of NetCDF dimension objects (passed to
 `ncdf4::ncvar_def(..., dim)`)}
 }
 \value{

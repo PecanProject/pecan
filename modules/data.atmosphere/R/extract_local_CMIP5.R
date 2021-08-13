@@ -29,7 +29,7 @@
 ##' @param verbose logical. to control printing of debug info
 ##' @param ... Other arguments, currently ignored
 ##' @export
-##' @examples
+##'
 # -----------------------------------
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, adjust.pr=1,
