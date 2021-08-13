@@ -113,7 +113,7 @@ if(length(input_check$id) > 0){
   
   settings$run$inputs$met$id = index_id
   settings$run$inputs$met$path = clim_check
-}else{PEcAn.utils::logger.error("No met file found")}
+}else{PEcAn.logger::logger.error("No met file found")}
 #settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
 
 if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
