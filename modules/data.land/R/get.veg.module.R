@@ -38,7 +38,7 @@ get_veg_module <- function(input_veg,
   con  <- bety$con
   
   # this check might change depending on what other sources that requires querying its own DB we will have
-  if(input_veg$source == "FIA"){ 
+  if(input_veg$source == "FIA" && input_veg$source == "NEON_veg"){ 
     
     fcn <- "extract_veg"
     
