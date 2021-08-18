@@ -94,22 +94,26 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     settings$run$inputs[['poolinitcond']]$path <- newfile
     
     return(settings)
+  }else if (input$source == "NEON_veg"){
+    #For debugging purposes I am hard coding in the start and end dates, will revisit and adjust once extract_NEON_veg is working within ic_process
+    start_date = as.Date("2020-01-01")
+    end_date = as.Date("2021-09-01")
   }else{
     
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)
-   input_file <- db.query(query, con = con) 
+   input_file <- PEcAn.DB::db.query(query, con = con) 
    start_date <- input_file$start_date
    end_date   <- input_file$end_date
     
   }
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
   if(is.null(model)){
-    modeltype_id <- db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
-    model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
+    model <- PEcAn.DB::db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
   }
 
 
@@ -131,15 +135,15 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     getveg.id <- list()
 
     for(i in seq_len(nsource)){
-      getveg.id[[i]] <- get_veg_module(input_veg    = input, 
-                                       outfolder    = outfolder, 
-                                       start_date   = start_date, 
-                                       end_date     = end_date,
-                                       dbparms      = dbparms,
-                                       new_site     = new.site,
-                                       host         = host, 
-                                       machine_host = machine.host,
-                                       overwrite    = overwrite$getveg)
+      getveg.id[[i]] <- PEcAn.data.land::get_veg_module(input_veg    = input, 
+                                                       outfolder    = outfolder, 
+                                                       start_date   = start_date, 
+                                                       end_date     = end_date,
+                                                       dbparms      = dbparms,
+                                                       new_site     = new.site,
+                                                       host         = host, 
+                                                       machine_host = machine.host,
+                                                       overwrite    = overwrite$getveg)
     }
 
   }

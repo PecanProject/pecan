@@ -12,6 +12,8 @@
 ##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
 ##' @param overwrite logical flag for convert.input
 ##' 
+##' @export
+##' 
 ##' @author Istem Fer
 get_veg_module <- function(input_veg, 
                             outfolder,
@@ -38,12 +40,12 @@ get_veg_module <- function(input_veg,
   con  <- bety$con
   
   # this check might change depending on what other sources that requires querying its own DB we will have
-  if(input_veg$source == "FIA" && input_veg$source == "NEON_veg"){ 
+  if(input_veg$source == "FIA" | input_veg$source == "NEON_veg"){ 
     
     fcn <- "extract_veg"
     
     
-  getveg.id <- convert.input(input.id = NA,
+  getveg.id <- PEcAn.utils::convert.input(input.id = NA,
                                outfolder = outfolder, 
                                formatname = "spp.info", 
                                mimetype = "application/rds",
@@ -70,7 +72,7 @@ get_veg_module <- function(input_veg,
     }else{
       PEcAn.logger::logger.error("Must specify input id")
     }
-    getveg.id <- convert.input(input.id = NA,
+    getveg.id <- PEcAn.utils::convert.input(input.id = NA,
                                outfolder = outfolder, 
                                formatname = "spp.info", 
                                mimetype = "application/rds",

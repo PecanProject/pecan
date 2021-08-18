@@ -1,6 +1,20 @@
 ##' Function queries a DB to extract veg info downstream
 ##' @name extract_veg
-##' @title load_veg
+##' @title extract_veg
+##' 
+##' @param new_site new_site object passed from ic_process includes lat, lon, id, and name
+##' @param start_date "YYYY-MM-DD"
+##' @param end_date "YYYY-MM-DD"
+##' @param source taken from input$source, passed from ic_process
+##' @param gridres only used for source = "FIA"
+##' @param format_name DEFAULT=NULL
+##' @param machine_host passed from ic_process
+##' @param dbparms taken from settings object, passed from ic_process
+##' @param outfolder passed from ic_process, location where to store files
+##' @param overwrite DEFAULT = FALSE
+##' @param ... Additional parameters
+##'
+##' @return results object to be passed back to get.veg.module
 ##' @export
 ##' @author Istem Fer
 extract_veg <- function(new_site, start_date, end_date, 
@@ -12,7 +26,7 @@ extract_veg <- function(new_site, start_date, end_date,
  # Extract veg info
   
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
- 
+ #need to find an alternative way to check if a function exists
  if (!exists(fcnx)) {
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
  }else{
@@ -30,13 +44,18 @@ extract_veg <- function(new_site, start_date, end_date,
  
  # TODO: generalize this as we have more sources that have their own DB like FIA
  if(is.null(format_name)){
+   if(source == "FIA"){
    format_name <- "fia" 
    code_col    <-  "spcd"
+   }else{
+      code_col    <- "species_USDA_symbol"
+      format_name <- "usda"
+   }
  }
 
  
  # match code to species ID
- spp.info <- match_species_id(input_codes = obs[[code_col]], format_name = format_name)
+ spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code_col]], format_name = format_name)
  
  # merge with data
  tmp <- spp.info[ , colnames(spp.info) != "input_code"]
@@ -48,7 +67,7 @@ extract_veg <- function(new_site, start_date, end_date,
  # Write vegettion data as rds, return results to convert.input
  
  # need check for overwrite
- sppfilename <- write_veg(outfolder, start_date, end_date, veg_info = veg_info, source)
+ sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
  
  # Build results dataframe for convert.input
  results <- data.frame(file = sppfilename, 

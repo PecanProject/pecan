@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract_veg.R
 \name{extract_veg}
 \alias{extract_veg}
-\title{load_veg}
+\title{extract_veg}
 \usage{
 extract_veg(
   new_site,
@@ -17,6 +17,32 @@ extract_veg(
   overwrite = FALSE,
   ...
 )
+}
+\arguments{
+\item{new_site}{new_site object passed from ic_process includes lat, lon, id, and name}
+
+\item{start_date}{"YYYY-MM-DD"}
+
+\item{end_date}{"YYYY-MM-DD"}
+
+\item{source}{taken from input$source, passed from ic_process}
+
+\item{gridres}{only used for source = "FIA"}
+
+\item{format_name}{DEFAULT=NULL}
+
+\item{machine_host}{passed from ic_process}
+
+\item{dbparms}{taken from settings object, passed from ic_process}
+
+\item{outfolder}{passed from ic_process, location where to store files}
+
+\item{overwrite}{DEFAULT = FALSE}
+
+\item{...}{Additional parameters}
+}
+\value{
+results object to be passed back to get.veg.module
 }
 \description{
 Function queries a DB to extract veg info downstream
