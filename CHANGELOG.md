@@ -43,6 +43,7 @@ This is a major change:
 
 ### Changed
 
+- Removed deprecated mstmip_vars and mstmip_local; now all functions use the combined standard_vars.csv  
 - RabbitMQ is set to be 3.8 since the 3.9 version can no longer be configured with environment variables.
 - Removed old api, now split into rpecanapi and apps/api.
 - Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
