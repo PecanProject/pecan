@@ -87,6 +87,7 @@ This is a major change:
 - PEcAn.DB gains new function `get_postgres_envvars`, which tries to look up connection parameters from Postgres environment variables (if they are set) and return them as a list ready to be passed to `db.open`. It should be especially useful when writing tests that need to run on systems with many different database configurations (#2541).
 - New shiny application to show database synchronization status (shiny/dbsync)
 - Ability to run with [MERRA-2 meteorology](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/) (reanalysis product based on GEOS-5 model)
+- Ability to run with ICOS Ecosystem products
 
 ### Removed
 
