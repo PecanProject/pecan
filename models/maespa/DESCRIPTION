@@ -32,4 +32,4 @@ LazyLoad: yes
 LazyData: FALSE
 Require: 
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
