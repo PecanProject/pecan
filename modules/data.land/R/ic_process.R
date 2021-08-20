@@ -159,16 +159,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     for(i in seq_len(as.numeric(input$ensemble))){
       
       ctr <- ifelse(nsource == 1, 1, i)
-      ensveg.id[[i]] <- ens_veg_module(getveg.id    = getveg.id[[ctr]], 
-                                       dbparms      = dbparms,
-                                       input_veg    = input, 
-                                       outfolder    = outfolder, 
-                                       machine      = machine, 
-                                       start_date   = start_date, 
-                                       end_date     = end_date,
-                                       n.ensemble   = i,
-                                       new_site     = new.site,
-                                       host         = host)
+      ensveg.id[[i]] <- PEcAn.data.land::ens_veg_module(getveg.id    = getveg.id[[ctr]], 
+                                                         dbparms      = dbparms,
+                                                         input_veg    = input, 
+                                                         outfolder    = outfolder, 
+                                                         machine      = machine, 
+                                                         start_date   = start_date, 
+                                                         end_date     = end_date,
+                                                         n.ensemble   = i,
+                                                         new_site     = new.site,
+                                                         host         = host)
     }
     getveg.id <- ensveg.id
   }
@@ -180,20 +180,20 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     putveg.id <- list()
     for(i in seq_along(getveg.id)){
-      putveg.id[[i]] <- put_veg_module(getveg.id  = getveg.id[[i]], 
-                                       dbparms    = dbparms,
-                                       input_veg  = input, 
-                                       pfts       = settings$pfts,
-                                       outfolder  = outfolder, 
-                                       n.ensemble = i,
-                                       dir        = dir, 
-                                       machine    = machine, 
-                                       model      = model,
-                                       start_date = start_date, 
-                                       end_date   = end_date,
-                                       new_site   = new.site,
-                                       host       = host, 
-                                       overwrite  = overwrite$putveg)
+      putveg.id[[i]] <- PEcAn.data.land::put_veg_module(getveg.id  = getveg.id[[i]], 
+                                                         dbparms    = dbparms,
+                                                         input_veg  = input, 
+                                                         pfts       = settings$pfts,
+                                                         outfolder  = outfolder, 
+                                                         n.ensemble = i,
+                                                         dir        = dir, 
+                                                         machine    = machine, 
+                                                         model      = model,
+                                                         start_date = start_date, 
+                                                         end_date   = end_date,
+                                                         new_site   = new.site,
+                                                         host       = host, 
+                                                         overwrite  = overwrite$putveg)
     }
 
     

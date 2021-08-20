@@ -16,21 +16,24 @@
 #' @examples start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
 
 extract_NEON_veg <- function(lon, lat, start_date, end_date, ...){
+
 #Set store_dir to point to dietzelab/neon_store
-#store_dir = "/projectnb/dietzelab/neon_data"
-store_dir = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/Harvard/neon_download/"
-#Find sitename from lon and lat params
-lat = round(lat, digits = 1)
-lon = round(lon, digits = 1)
+store_dir = "/projectnb/dietzelab/neon_data"
+#Find sitename from lon and lat params using distance
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
-#Cannot get to filter for both lat and lon arguments need to revisit
-site <- dplyr::filter(neonsites, round(siteLongitude, digits = 1) == lon)
+neonsites <- dplyr::select(neonsites, siteCode, siteLatitude, siteLongitude) #select for relevant columns
+betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
+mindist <- min(betyneondist)
+distloc <- match(mindist, betyneondist)
+lat <- neonsites$siteLatitude[distloc]
+lon <- neonsites$siteLongitude[distloc]
+site <- dplyr::filter(neonsites, siteLatitude == lat & siteLongitude == lon)
 sitename = site$siteCode
 #Load in NEON datasets
 neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
-temp.veg <- neonUtilities::stackFromStore(filepaths=store_dir,dpID="DP1.10098.001",pubdate="2021-06-01",package="basic")
-joined.veg <- dplyr::left_join(temp.veg$vst_mappingandtagging, temp.veg$vst_apparentindividual, by = "individualID")
-
+apparentindividual <- neonstore::neon_read(table = "apparentindividual", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
 #Filter joined.veg for required information: DBH, tree height, and species
 filter.veg <- dplyr::select(joined.veg, siteID.x, plotID.x, subplotID.x, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
 #Filter for most recent record

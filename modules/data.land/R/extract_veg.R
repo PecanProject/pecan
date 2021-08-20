@@ -20,22 +20,34 @@
 extract_veg <- function(new_site, start_date, end_date, 
                      source, gridres, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
-  
-  
+  #code taken from https://stackoverflow.com/questions/14183766/match-fun-provide-error-with-functions-defined-inside-functions
+   fget <- function(name, env = parent.frame()) {
+      if (identical(env, emptyenv())) {
+         stop("Could not find function called ", name, call. = FALSE)
+      }
+      
+      if (exists(name, env, inherits = FALSE) && is.function(env[[name]])) {
+         env[[name]]
+      } else {
+         fget(name, parent.env(env))
+      }
+   }
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
   
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
- #need to find an alternative way to check if a function exists
+ #Need a better way to check if the function exists
  if (!exists(fcnx)) {
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
  }else{
-   fcn <- match.fun(fcnx)
+   fcn <- fget(fcnx) #Error cannot find the function
  }
- 
  # extract_* functions need to have standard args
- veg_info <- fcn(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
+ lon <- as.numeric(new_site$lon)
+ lat <- as.numeric(new_site$lat)
+ veg_info <- fcn(lon = lon, lat = lat, start_date, end_date, gridres, dbparms)
  
+ #veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
  
  #--------------------------------------------------------------------------------------------------#
  # Match species
@@ -50,6 +62,7 @@ extract_veg <- function(new_site, start_date, end_date,
    }else{
       code_col    <- "species_USDA_symbol"
       format_name <- "usda"
+      obs[obs$species_USDA_symbol != "2PLANT", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
    }
  }
 

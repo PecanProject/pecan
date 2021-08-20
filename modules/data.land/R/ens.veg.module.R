@@ -11,6 +11,8 @@
 ##' @param new_site data frame, id/lat/lon/name info about the site
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' 
+##' @export
+##' 
 ##' @author Istem Fer
 ens_veg_module <- function(getveg.id, dbparms, 
                             input_veg, 
@@ -31,16 +33,16 @@ ens_veg_module <- function(getveg.id, dbparms,
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
   
-  spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
+  spp.file <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   
   pkg  <- "PEcAn.data.land"
   fcn  <- "sample_ic"
   
-  ensveg.id <- convert.input(input.id = getveg.id,
+  ensveg.id <- PEcAn.utils::convert.input(input.id = getveg.id,
                              outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
                              formatname = "spp.info", 
                              mimetype = "application/rds",

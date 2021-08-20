@@ -17,6 +17,8 @@
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' @param overwrite logical flag for convert.input
 ##' 
+##' @export
+##' 
 ##' @author Istem Fer
 put_veg_module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
@@ -39,7 +41,7 @@ put_veg_module <- function(getveg.id, dbparms,
   on.exit(db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
-  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
+  model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
                                 " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
   
