@@ -145,6 +145,7 @@ Datasets currently available for use in PEcAn via Google Earth Engine are,
 * [Sentinel-2 MSI](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) [`gee2pecan_s2()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_s2.py)
 * [SMAP Global Soil Moisture Data](https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture) [`gee2pecan_smap()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_smap.py)
 * [Landsat 8 Surface Reflectance](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR) [`gee2pecan_l8()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_l8.py)
+* [Global Forest Canopy Height, 2019](https://glad.umd.edu/dataset/gedi) [`gee2pecan_gedi()`]()
 
 #### AppEEARS
 [AppEEARS (Application for Extracting and Exploring Analysis Ready Samples)](https://lpdaacsvc.cr.usgs.gov/appeears/) is an online tool which provides an easy to use interface for downloading analysis ready remote sensing data. [Products available on AppEEARS.](https://lpdaacsvc.cr.usgs.gov/appeears/products) Note: AppEEARS uses a task based system for processing the data request, it is possible for a task to run for long hours before it gets completed. The module checks the task status after every 60 seconds and saves the files when the task gets completed.
@@ -354,6 +355,22 @@ PEcAn.data.remote::remote_process(settings)
 ```
 
 The output netCDF file will be saved at outdir and its record would be kept in the inputs table of BETYdb.
+
+#### Example use GEDI (data pool)
+```xml
+  <remotedata>
+  <out_get_data>gedi</out_get_data>
+  <source>datapool</source>
+  <collection>GEDI02_B.002</collection>
+  <credfile>path/to/jsonfile/containingcredentials</credfile>
+  </remotedata>
+```
+
+2. Store the contents of `pecan.xml` in a variable named `settings` and pass it to `remote_process`.
+
+```
+PEcAn.data.remote::remote_process(settings)
+```
 
 
 #### Adding new GEE image collections

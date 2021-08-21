@@ -62,6 +62,7 @@ setup(
         "urllib3>=1.25.10",
         "xarray>=0.13.0",
         "geojson>=2.5.0",
+        "h5py>=2.10.0",
     ],
     # zip_safe=False
 )
