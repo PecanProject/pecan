@@ -189,6 +189,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##'
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched tfiles for that year
+##' @param tfiles names of T h5 files
+##' @param outdir path to run outdir
+##' @param start_date start time of simulation
+##' @param end_date end time of simulation
+##' 
 ##' @export
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 
@@ -859,6 +864,12 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##'
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
+##' @param efiles names of E h5 files
+##' @param outdir path to run outdir
+##' @param start_date start time of simulation
+##' @param end_date end time of simulation
+##' @pfts manually input list of Pecan PFT numbers
+##' @settings optional Pecan settings object
 ##'
 ##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
@@ -1025,6 +1036,17 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##-------------------------------------------------------------------------------------------------#
 
 ##' Function for put -E- values to nc_var list
+##' 
+##' @param yr the year being processed
+##' @param nc_var list of .nc files
+##' @param out path to run outdir
+##' @param lat latitude of site
+##' @param lon longitude of site
+##' @param begins start time of simulation
+##' @param ends end time of simulation
+##' @param pfts manually input list of Pecan PFT numbers
+##' @param settings Pecan settings object
+##' 
 ##' @export
 put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
   
@@ -1058,7 +1080,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
         )
       }
     } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == x]
+      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
     }
     pfts[pft] <- pft_number
   }
