@@ -38,6 +38,13 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
   veg_info[[2]] <- obs
   
+
+# Cohort2Pool -------------------------------------------------------------
+  #add if/else to check if model is pool or cohort 
+  # read in registration xml for met specific information
+  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+  register     <- read.register(register.xml, con)
+  
   #--------------------------------------------------------------------------------------------------#
   # veg2model
   
