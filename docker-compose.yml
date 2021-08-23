@@ -90,7 +90,7 @@ services:
 
   # rabbitmq to connect to extractors
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:3.8-management
     restart: unless-stopped
     networks:
       - pecan
