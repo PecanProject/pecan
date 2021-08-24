@@ -153,13 +153,13 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & !is.null(input$ensemble) & is.null(putveg.id)) { 
     
-    ctr <- 1
+   
     
     ensveg.id <- list()
-    for(i in seq_len(as.numeric(input$ensemble))){
+    for(i in 1:nsource){
       
-      ctr <- ifelse(nsource == 1, 1, i)
-      ensveg.id[[i]] <- PEcAn.data.land::ens_veg_module(getveg.id    = getveg.id[[ctr]], 
+      
+      ensveg.id[[i]] <- PEcAn.data.land::ens_veg_module(getveg.id    = getveg.id[[i]], 
                                                          dbparms      = dbparms,
                                                          input_veg    = input, 
                                                          outfolder    = outfolder, 

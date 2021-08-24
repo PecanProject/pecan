@@ -15,6 +15,7 @@ write_ic(
   pfts,
   source = input_veg$source,
   overwrite = FALSE,
+  n.ensemble,
   ...
 )
 }

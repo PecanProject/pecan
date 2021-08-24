@@ -24,6 +24,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   rds_file <- file.path(in.path, in.name)
   veg_info <- readRDS(rds_file) 
   
+  
   #--------------------------------------------------------------------------------------------------#
   # Prepare for sampling
   # NOTE: This function might call different functions in the future, e.g. : sample_cohort, sample_pool, or both
@@ -84,7 +85,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
     } else {
       #don't have MCMC samples, instead re-sample trees stratified by size
       #not every dataset will call DBH DBH, and 10 should be a variable. Add parameter for bin_size and bin_var with defaults set to DBH and 10 
-      size <- ceiling(samples_sub$bin_var/bin_size)
+      size <- ceiling(samples_sub[,which(colnames(samples_sub)==bin_var)]/bin_size)
       samp_ind <- unlist(tapply(seq_along(size), size, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
     }
     sub_samp    <- samples_sub[samp_ind,]

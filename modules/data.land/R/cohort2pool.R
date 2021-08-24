@@ -5,9 +5,9 @@
 ##' @description Converts .rds files into pool netcdf files.
 ##' @export
 ##'
-##' @param veg_file path to standard cohort veg_file
 ##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
+##' @param veg_info veg_info object passed from write_ic
 ##'
 ##' @author Saloni Shah
 ##'
@@ -16,21 +16,11 @@
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
 ##' }
 
-cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
+cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
   
-  ## Building Site ID from past directories
-  path <- dirname(veg_file)
-  last_dir <- basename(path)
-  nums_id <- strsplit(last_dir,"[^[:digit:]]")
-  base_id <- nums_id[[1]][length(nums_id[[1]])]
-  suffix <- nums_id[[1]][(length(nums_id[[1]])-1)]
-  siteid = as.numeric(suffix)*1e9 + as.numeric(base_id)
-  siteid = 646 #Need to manually set when running line-by-line, gets siteid from veg_file filepath
-  outdir = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/Harvard/neon_nc_ens/"
   ## load data
-  for (ens in 1:max(length(veg_file))) {
   
-  dat <- readRDS(veg_file[ens])
+  dat <- veg_info
   
   ## Grab DBH
   dbh <- dat[[2]][,dbh_name]
@@ -91,8 +81,6 @@ cohort2pool <- function(veg_file, allom_param = NULL, dbh_name="DBH") {
   input <- list(dims = dims,
                 vals = variables)
   
-  # Execute pool_ic function
-  result <- PEcAn.data.land::pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid, ens = ens)
-  }
-  return(result)
+  
+  return(input)
 }

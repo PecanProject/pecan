@@ -17,7 +17,7 @@
 ##' @author Istem Fer
 write_ic <- function(in.path, in.name, start_date, end_date, 
                      outfolder, model, new_site, pfts,
-                     source = input_veg$source, overwrite = FALSE, ...){
+                     source = input_veg$source, overwrite = FALSE, n.ensemble,...){
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -42,8 +42,12 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 # Cohort2Pool -------------------------------------------------------------
   #add if/else to check if model is pool or cohort 
   # read in registration xml for met specific information
-  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
-  register     <- read.register(register.xml, con)
+  register.xml <- "/projectnb/dietzelab/ahelgeso/pecan/models/sipnet/inst/register.SIPNET.xml" #Need to generalize
+  register     <- PEcAn.data.atmosphere::read.register(register.xml, con)
+  if (register$poolinitcond == "POOL") {
+    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH") #Figure out how to grab dbh_name from veg_info object?
+    ncdfinfo <- PEcAn.SIPNET::veg2model.SIPNET(input = poolinfo, outdir = outfolder, siteid = new_site$id, ens = n.ensemble)
+  }
   
   #--------------------------------------------------------------------------------------------------#
   # veg2model

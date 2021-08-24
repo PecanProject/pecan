@@ -41,14 +41,24 @@ put_veg_module <- function(getveg.id, dbparms,
   on.exit(db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
-  model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
-                                " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
-                                " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
+  if (!is.null(input_veg$ouput)) {
+    model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
+                                            " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
+                                            " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
+    formatname <- model_info[1]
+    mimetype   <- model_info[3]
+  }else {
+    model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
+                                            " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
+                                            " where m.name = '", model, "'"), con)
+    #Need to fix this incase IC info is not first option in dataset
+    formatname <- model_info$name[1]
+    mimetype <- model_info$type_string[1]
+  }
   
   PEcAn.logger::logger.info("Begin Model Specific Conversion")
   
-  formatname <- model_info[1]
-  mimetype   <- model_info[3]
+  
   
   # spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   spp.file <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", getveg.id$dbfile.id), con)
@@ -72,7 +82,8 @@ put_veg_module <- function(getveg.id, dbparms,
                              model = model,
                              new_site = new_site,
                              pfts = pfts,
-                             source = input_veg$source)
+                             source = input_veg$source,
+                             n.ensemble = n.ensemble)
   
   
   return(putveg.id)
