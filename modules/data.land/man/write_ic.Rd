@@ -40,6 +40,8 @@ write_ic(
 
 \item{overwrite}{DEfault is FALSE. Option to overwrite existing files.}
 
+\item{n.ensemble}{number of ensemble members}
+
 \item{...}{Additional parameters}
 }
 \description{
