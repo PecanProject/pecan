@@ -27,6 +27,13 @@ download.ICOS <-
            end_date,
            product,
            overwrite = FALSE, ...) {
+
+    # make sure output folder exists
+    if (!file.exists(outfolder)) {
+      dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+    }
+
+
     download_file_flag <- TRUE
     extract_file_flag <- TRUE
     sitename <- sub(".* \\((.*)\\)", "\\1", sitename)
