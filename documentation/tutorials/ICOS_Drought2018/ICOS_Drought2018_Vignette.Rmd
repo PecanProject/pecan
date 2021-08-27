@@ -1,0 +1,83 @@
+---
+title: "ICOS Drought2018 Vignette"
+author: 
+- "Ayush Prasad"
+- "Istem Fer"
+date: "July 1, 2021"
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Drought-2018 ecosystem eddy covariance flux product
+
+Drought-2018 ecosystem eddy covariance flux product is a release of the observational data product for eddy covariance fluxes at 52 stations from the Drought-2018 team, covering the period 1989-2018. 
+
+For details see <https://www.icos-cp.eu/data-products/YVR0-4898>.
+
+The following sites and years are available within this dataset:
+
+```{r icos_d2018, echo=FALSE}
+library(ggplot2)
+icos_d2018 <- read.csv('extfiles/ICOS_Drought2018_Sites.csv')
+knitr::kable(icos_d2018)
+world_map <- ggplot2::map_data("world")
+`%>%` <- dplyr::`%>%`
+europe_cropped <-
+        world_map %>% dplyr::filter((
+          world_map$lat >= 35 & world_map$lat <= 75 &
+            world_map$long >= -10 & world_map$long <= 40
+        ))
+# Compute the centroid as the mean longitude and lattitude
+# Used as label coordinate for country's names
+icos_data <- europe_cropped %>%
+  dplyr::group_by(region) %>%
+  dplyr::summarise(long = mean(long), lat = mean(lat))
+ggplot(europe_cropped, aes(x = long, y = lat)) +
+  geom_polygon(aes( group = group, color = region),fill="grey88")+
+  scale_colour_manual(values=rep("black",length(unique(europe_cropped$region))),
+                        guide=FALSE) +
+  theme_void()+
+  theme(legend.position = "none")+
+  geom_point(data=icos_d2018, aes(x=Longitude, y=Latitude), color="red", size=2)
+
+```
+
+To download Drought2018 files we use `download.ICOS` function in PEcAn.
+```{r download, eval=FALSE}
+sitename   <- "FI-Hyy"
+outfolder  <- "/home/carya/pecan"
+start_date <- "2016-01-01"
+end_date   <- "2018-01-01"
+product <- "Drought2018"
+res <- PEcAn.data.atmosphere::download.ICOS(sitename, outfolder, start_date, end_date, product)
+
+```
+
+To use the downloaded observations a function like `PEcAn.benchmark::load_data` can be used. Here we load the NEE observations.
+```{r load, eval=FALSE}
+ dbcon <-DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = 'localhost',
+    user = 'bety',
+    password = 'bety',
+    dbname = 'bety'
+  )
+ ## or if you have different DB settings try:
+ ## php_config <- ".../pecan/web/config.php" # path to your PHP config file
+ ## dcon <- betyConnect(php_config)
+format <- PEcAn.DB::query.format.vars(bety = dbcon, format.id = 1000000136)
+start_date <- lubridate::year("2018-01-01")
+end_date   <- lubridate::year("2018-12-31")
+vars.used.index <- which(format$vars$bety_name %in% c("NEE"))
+obs <- PEcAn.benchmark::load_data(data.path = res$file, 
+                                 format = format, start_year = start_date,  end_year = end_date,
+                                  site = sitename, 
+                                  vars.used.index = vars.used.index,
+                                  time.row = format$time.row)
+
+```
+

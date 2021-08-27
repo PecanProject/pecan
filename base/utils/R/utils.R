@@ -28,21 +28,18 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
   dims <- list()
- 
+  
   if (nrow(nc_var) == 0) {
-    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(nc_var) == 0) {
-      if (!silent) {
-        PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
-      }
-      if (is.na(time)) {
-        time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
-                                 vals = 1:365, calendar = "standard", unlim = TRUE)
-      }
-      return(ncdf4::ncvar_def(name, "", list(time), -999, name))
+    if (!silent) {
+      PEcAn.logger::logger.info("Don't know about variable", name, " in standard_vars in PEcAn.utils")
     }
+    if (is.na(time)) {
+      time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
+                        vals = 1:365, calendar = "standard", unlim = TRUE)
+    }
+    return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
   
   for (i in 1:4) {
@@ -55,7 +52,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       dims[[length(dims) + 1]] <- time
     } else if (vd == "nsoil" && !is.na(nsoil)) {
       dims[[length(dims) + 1]] <- nsoil
-    } else if (vd == "na") {
+    } else if (is.na(vd)) {
       # skip
     } else {
       if (!silent) {

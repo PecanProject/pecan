@@ -107,9 +107,9 @@ See section 'Cross-references' in the 'Writing R Extensions' manual.
 
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
-  ‘mstmip_local’ ‘mstmip_vars’ ‘trait.dictionary’
+  ‘trait.dictionary’
 Undocumented data sets:
-  ‘mstmip_local’ ‘mstmip_vars’ ‘trait.dictionary’
+  ‘trait.dictionary’
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
