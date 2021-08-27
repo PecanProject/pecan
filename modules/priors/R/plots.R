@@ -102,8 +102,10 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##'
 ##' @param trait character, name of trait to be plotted
 ##' @param prior named distribution with parameters
-##' @param posterior.sample
-##' @param trait.df
+##' @param posterior.sample samples from posterior distribution
+##'   whose density should be plotted
+##' @param trait.df data to be plotted, in a format accepted by
+##'   \code{\link[PEcAn.MA]{jagify}}
 ##' @param fontsize,x.lim,y.lim,logx passed on to ggplot
 ##' @return plot (grob) object
 ##' @author David LeBauer
