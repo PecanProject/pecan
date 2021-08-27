@@ -30,7 +30,7 @@
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
   nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
-  
+ 
   if (nrow(nc_var) == 0) {
     nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
     if (nrow(nc_var) == 0) {
