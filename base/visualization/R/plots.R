@@ -214,7 +214,8 @@ create.base.plot <- function() {
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
-##' @export plot_data
+##' @export
+##' @importFrom rlang .data
 ##' @examples
 ##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 plot_data <- function(trait.data, base.plot = NULL, ymax) {
@@ -243,9 +244,15 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
                           se = trait.data$se, 
                           control = !trait.data$trt == 1 & trait.data$ghs == 1)
   new.plot <- base.plot + 
-    ggplot2::geom_point(data = plot.data, ggplot2::aes(x = x, y = y, color = control)) +
-    ggplot2::geom_segment(data = plot.data,
-                 ggplot2::aes(x = x - se, y = y, xend = x + se, yend = y, color = control)) +
+    ggplot2::geom_point(
+      data = plot.data,
+      ggplot2::aes(x = .data$x, y = .data$y, color = .data$control)) +
+    ggplot2::geom_segment(
+      data = plot.data,
+      ggplot2::aes(
+        x = .data$x - .data$se, y = .data$y,
+        xend = .data$x + .data$se, yend = .data$y,
+        color = .data$control)) +
     ggplot2::scale_color_manual(values = c("black", "grey")) +
     ggplot2::theme(legend.position = "none")
   return(new.plot)
