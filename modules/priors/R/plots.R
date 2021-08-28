@@ -132,6 +132,12 @@ plot_trait <- function(trait,
                        y.lim = NULL,
                        logx = FALSE) {
 
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "plot_trait requires package `PEcAn.visualization`,",
+      "but it is not installed. Please install it and try again.")
+  }
+
   ## Determine plot components
   plot_posterior <- !is.null(posterior.sample)
   plot_prior     <- !is.null(prior)
@@ -178,7 +184,7 @@ plot_trait <- function(trait,
     base.plot <- plot_posterior.density(posterior.density, base.plot = base.plot)
   }
   if (plot_data) {
-    base.plot <- PEcAn.utils::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
+    base.plot <- PEcAn.visualization::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
   }
 
   trait.plot <- base.plot +
