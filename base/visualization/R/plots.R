@@ -181,24 +181,9 @@ iqr <- function(x) {
 } # iqr
 
 
-##' Creates empty ggplot object
-##'
-##' An empty base plot to which layers created by other functions
-##' (\code{\link{plot_data}}, \code{\link[PEcAn.priors]{plot_prior.density}},
-##' \code{\link[PEcAn.priors]{plot_posterior.density}}) can be added.
-##' @name create.base.plot
-##' @title Create Base Plot
-##' @return empty ggplot object
-##' @export
-##' @author David LeBauer
-create.base.plot <- function() {
-  base.plot <- ggplot2::ggplot()
-  return(base.plot)
-} # create.base.plot
-
 
 ##--------------------------------------------------------------------------------------------------#
-##' Add data to an existing plot or create a new one from \code{\link{create.base.plot}}
+##' Add data to an existing plot or create a new one
 ##'
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
@@ -208,9 +193,8 @@ create.base.plot <- function() {
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
-##'   created by \code{\link{create.base.plot}} if none provided
+##'   created if none provided
 ##' @param ymax maximum height of y
-##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
 ##' @export
@@ -220,7 +204,7 @@ create.base.plot <- function() {
 plot_data <- function(trait.data, base.plot = NULL, ymax) {
   
   if (is.null(base.plot)) {
-    base.plot <- create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   
   n.pts <- nrow(trait.data)
