@@ -256,15 +256,18 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
 ##' Add borders to plot
 ##'
 ##' Has ggplot2 display only specified borders, e.g. ('L'-shaped) borders,
-##' rather than a rectangle or no border. Note that the order can be significant;
-##' for example, if you specify the L border option and then a theme, the theme settings
-##' will override the border option, so you need to specify the theme (if any) before the border option, as above.
+##'   rather than a rectangle or no border.
+##' Note that the order can be significant;
+##'   for example, if you specify the L border option and then a theme,
+##'   the theme settings will override the border option,
+##'   so you need to specify the theme (if any) before the border option,
+##'   as above.
 ##' @name theme_border
 ##' @title Theme border for plot
-##' @param type 
-##' @param colour 
-##' @param size 
-##' @param linetype 
+##' @param type border(s) to display
+##' @param colour what colo(u)r should the border be
+##' @param size relative line thickness
+##' @param linetype "solid", "dashed", etc
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
