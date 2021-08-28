@@ -41,7 +41,6 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
     }
     return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
-  
   for (i in 1:4) {
     vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
