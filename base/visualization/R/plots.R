@@ -192,7 +192,6 @@ iqr <- function(x) {
 ##' @export
 ##' @author David LeBauer
 create.base.plot <- function() {
-  need_packages("ggplot2")
   base.plot <- ggplot2::ggplot()
   return(base.plot)
 } # create.base.plot
@@ -219,7 +218,6 @@ create.base.plot <- function() {
 ##' @examples
 ##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 plot_data <- function(trait.data, base.plot = NULL, ymax) {
-  need_packages("ggplot2")
   
   if (is.null(base.plot)) {
     base.plot <- create.base.plot()
