@@ -246,6 +246,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     if(!is.na(data.hrly$lead_var[i])){
       curr <- data.hrly$lead_var[i]
     }else{
+      curr <- varName
       data.hrly$lead_var[i] <- curr
     }
   }

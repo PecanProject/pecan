@@ -8,6 +8,7 @@
 #' @param end_hr end hr to determine how many hours to download
 #' @param output_directory output directory
 #' 
+#' @export
 #'
 #' @return NA
 #'
@@ -191,6 +192,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
 #' @param output_directory Output directory 
 #' @importFrom rlang .data 
 #' 
+#' @export
 #' @return List
 #'
 #'
