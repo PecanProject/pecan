@@ -194,6 +194,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##' @param outdir directory where output will be written to
 ##' @param start_date start date in YYYY-MM-DD format
 ##' @param end_date end date in YYYY-MM-DD format
+##' @param ... additional arguments
 ##' 
 ##' @export
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
@@ -865,12 +866,13 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##'
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched efiles for that year
-##' @param efiles
-##' @param outdir                       
+##' @param efiles names of E h5 files
+##' @param outdir directory where output will be written to
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @param pfts Names of PFTs used in the run, vector
 ##' @param settings pecan settings object
+##' @param ... additional arguments
 ##'
 ##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
@@ -1047,6 +1049,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param ends end time of simulation
 ##' @param pfts manually input list of Pecan PFT numbers
 ##' @param settings Pecan settings object
+##' @param ... additional arguments
 ##' 
 ##' @export
 put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
@@ -1156,11 +1159,11 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
 #' 
 #' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
 #' @param outdir path to run outdir, where the -S- file is
-#' @param pft_names string vector, names of ED2 pfts in the run, e.g. c("temperate.Early_Hardwood", "temperate.Late_Conifer")
+#' @param pfts Names of PFTs used in the run, vector
 #' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
 #' 
 #' @export
-read_S_files <- function(sfile, outdir, pft_names, pecan_names = NULL){
+read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
   
