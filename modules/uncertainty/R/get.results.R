@@ -9,11 +9,16 @@
 
 ##' Reads model output and runs sensitivity and ensemble analyses
 ##'
-##' Output is placed in model output directory (settings$modeloutdir).
-##' @name get.results
-##' @title Generate model output for PEcAn analyses
+##' Output is placed in model output directory (settings$outdir).
 ##' @export
 ##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
+##'   analysis and ensemble analysis.
+##'   If not provided, they are first looked up from `settings`,
+##'   then if not found they are not used and the most recent set of results
+##'   is read from \code{samples.Rdata} in directory \code{settings$outdir}
+##' @param variable variables to retrieve, as vector of names or expressions
+##' @param start.year,end.year first and last years to retrieve
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL, 
                         variable = NULL, start.year = NULL, end.year = NULL) {
@@ -229,8 +234,11 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
   }
 } # get.results
 
-
-##' @export
+#' Apply get.results to each of a list of settings
+#'
+#' @param settings a PEcAn \code{Settings} or \code{MultiSettings} object
+#' @seealso get.results
+#' @export
 runModule.get.results <- function(settings) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, runModule.get.results))

@@ -207,12 +207,12 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   ### compatibility still contains the sample info for (the most recent) sensitivity
   ### and ensemble analysis combined.
   if (!is.null(ensemble.id)) {
-    fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata",
+    fname <- ensemble.filename(settings, "ensemble.samples", "Rdata",
                                             ensemble.id = ensemble.id, 
                                             all.var.yr = TRUE)
   } else if (!is.null(settings$ensemble$ensemble.id)) {
     ensemble.id <- settings$ensemble$ensemble.id
-    fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata",
+    fname <- ensemble.filename(settings, "ensemble.samples", "Rdata",
                                             ensemble.id = ensemble.id, 
                                             all.var.yr = TRUE)
   } else {
@@ -272,7 +272,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   
   names(ensemble.ts) <- variable.fn
   # BMR 10/16/13 Save this variable now to operate later on
-  fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.ts", "Rdata",
+  fname <- ensemble.filename(settings, "ensemble.ts", "Rdata",
                                           all.var.yr = FALSE, 
                                           ensemble.id = ensemble.id, 
                                           variable = variable, 
