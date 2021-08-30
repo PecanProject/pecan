@@ -1212,7 +1212,27 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
   
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
-  pft_nums <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  pfts <- numeric(npft)
+  names(pfts) <- pft_names
+  
+  # Extract the PFT names and numbers for all PFTs
+  xml_pft_names <- lapply(settings$pfts, "[[", "name")
+  for (pft in pft_names) {
+    which_pft <- which(xml_pft_names == pft)
+    xml_pft <- settings$pfts[[which_pft]]
+    if ("ed2_pft_number" %in% names(xml_pft)) {
+      pft_number <- as.numeric(xml_pft$ed2_pft_number)
+      if (!is.finite(pft_number)) {
+        PEcAn.logger::logger.severe(
+          "ED2 PFT number present but not parseable as number. Value was ",
+          xml_pft$ed2_pft_number
+        )
+      }
+    } else {
+      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
+    }
+    pfts[pft] <- pft_number
+  }
   
   out <- list()
   for (varname in pecan_names) {
