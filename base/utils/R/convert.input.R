@@ -161,7 +161,7 @@ convert.input <-
       existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
-                                                             parentid = input.id, 
+                                                             parentid = input.id$input.id, 
                                                              startdate = start_date,
                                                              enddate = end_date, 
                                                              con = con, 

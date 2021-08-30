@@ -1,4 +1,6 @@
 ##' Sampling/ensemble module
+##' @title ens_veg_module
+##' @name ens_veg_module
 ##' 
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB
@@ -43,24 +45,24 @@ ens_veg_module <- function(getveg.id, dbparms,
   fcn  <- "sample_ic"
   
   ensveg.id <- PEcAn.utils::convert.input(input.id = getveg.id,
-                             outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
-                             formatname = "spp.info", 
-                             mimetype = "application/rds",
-                             site.id = new_site$id, 
-                             start_date = start_date, end_date = end_date, 
-                             pkg = pkg, fcn = fcn, 
-                             con = con, host = host, browndog = NULL, 
-                             write = TRUE, 
-                             overwrite = FALSE, 
-                             pattern = paste0(input_veg$source, "_ens", n.ensemble),
-                             forecast = TRUE,
-                             ensemble = 1,
-                             # fcn specific args 
-                             in.path = spp.file$file_path, 
-                             in.name = spp.file$file_name,
-                             n.ensemble = n.ensemble,
-                             machine_host = machine_host,
-                             source = input_veg$source)
+                                         outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
+                                         formatname = "spp.info", 
+                                         mimetype = "application/rds",
+                                         site.id = new_site$id, 
+                                         start_date = start_date, end_date = end_date, 
+                                         pkg = pkg, fcn = fcn, 
+                                         con = con, host = host, browndog = NULL, 
+                                         write = TRUE, 
+                                         overwrite = FALSE, 
+                                         pattern = paste0(input_veg$source, "_ens", n.ensemble),
+                                         forecast = TRUE,
+                                         ensemble = 1,
+                                         # fcn specific args 
+                                         in.path = spp.file$file_path, 
+                                         in.name = spp.file$file_name,
+                                         n.ensemble = n.ensemble,
+                                         machine_host = machine_host,
+                                         source = input_veg$source)
   
   
   return(ensveg.id)

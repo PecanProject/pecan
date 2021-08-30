@@ -2,7 +2,7 @@
 % Please edit documentation in R/ens.veg.module.R
 \name{ens_veg_module}
 \alias{ens_veg_module}
-\title{Sampling/ensemble module}
+\title{ens_veg_module}
 \usage{
 ens_veg_module(
   getveg.id,

@@ -347,7 +347,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
       print(inputs)
       dbfile <- dbfile.check(
         type = "Input",
-        container.id = inputs$id,
+        container.id = inputs$parent_id,
         con = con,
         hostname = hostname,
         machine.check = TRUE,
