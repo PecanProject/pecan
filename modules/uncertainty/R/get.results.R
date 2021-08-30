@@ -98,7 +98,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
         
         # if an expression is provided, convert.expr returns names of the variables accordingly
         # if a derivation is not requested it returns the variable name as is
-        variables <- convert.expr(unlist(variable.sa))
+        variables <- PEcAn.utils::convert.expr(unlist(variable.sa))
         variable.sa <- variables$variable.eqn
         variable.fn <- variables$variable.drv
         
@@ -109,16 +109,17 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
           # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
           per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
                             as.logical(settings$sensitivity.analysis$perpft), FALSE)
-          sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
-                                                           quantiles = quantiles, 
-                                                           pecandir = outdir, 
-                                                           outdir = settings$modeloutdir, 
-                                                           pft.name = pft.name, 
-                                                           start.year = start.year.sa, 
-                                                           end.year = end.year.sa, 
-                                                           variable = variable.sa, 
-                                                           sa.run.ids = sa.run.ids,
-                                                           per.pft = per.pft)
+          sensitivity.output[[pft.name]] <- PEcAn.utils::read.sa.output(
+            traits = traits,
+            quantiles = quantiles,
+            pecandir = outdir,
+            outdir = settings$modeloutdir,
+            pft.name = pft.name,
+            start.year = start.year.sa,
+            end.year = end.year.sa,
+            variable = variable.sa,
+            sa.run.ids = sa.run.ids,
+            per.pft = per.pft)
         }
         
         # Save sensitivity output
@@ -207,7 +208,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
         
         # if an expression is provided, convert.expr returns names of the variables accordingly
         # if a derivation is not requested it returns the variable name as is
-        variables <- convert.expr(variable.ens)
+        variables <- PEcAn.utils::convert.expr(variable.ens)
         variable.ens <- variables$variable.eqn
         variable.fn <- variables$variable.drv
         

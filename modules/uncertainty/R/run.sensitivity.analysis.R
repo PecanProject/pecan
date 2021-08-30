@@ -75,7 +75,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         if(!exists("sa.run.ids"))   sa.run.ids <- runs.samples$sa
         
         ### Load parsed model results
-        variables <- convert.expr(variable)
+        variables <- PEcAn.utils::convert.expr(variable)
         variable.fn <- variables$variable.drv
         
         fname <- sensitivity.filename(

@@ -66,7 +66,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       cflux <- c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp", "DOC_flux", "Fire_flux") #converted to gC/m2/s
       wflux <- c("Evap", "TVeg", "Qs", "Qsb", "Rainf") #kgH20 m-2 s-1
       
-      variables <- convert.expr(variable)
+      variables <- PEcAn.utils::convert.expr(variable)
       variable.ens <- variables$variable.eqn
       variable.fn <- variables$variable.drv
       
