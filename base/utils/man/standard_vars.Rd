@@ -4,7 +4,8 @@
 \name{standard_vars}
 \alias{standard_vars}
 \title{Standardized variable names and units for PEcAn}
-\format{data frame, all columns character
+\format{
+data frame, all columns character
 \describe{
 \item{Variable.Name}{Short name suitable for programming with}
 \item{standard_name}{Name used in the NetCDF \href{http://cfconventions.org/standard-names.html}{CF metadata conventions} }
@@ -16,7 +17,8 @@ See \code{\link[udunits2]{udunits}} for conversions to and from non-standard uni
 \item{dim1,dim2,dim3,dim4}{Dimensions across which is this variable allowed to vary.
 Dimension names are themselves standard vars and must be present in the table with category "Dimension"}
 \item{Description}{Further details. For composite measures, list the variables it is calculated from}
-}}
+}
+}
 \usage{
 standard_vars
 }

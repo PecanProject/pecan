@@ -4,7 +4,9 @@
 \name{met_flag_description}
 \alias{met_flag_description}
 \title{Description of meteorology flags}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5 rows and 2 columns.}
+\format{
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5 rows and 2 columns.
+}
 \usage{
 met_flag_description
 }

@@ -31,4 +31,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 Require: 
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
