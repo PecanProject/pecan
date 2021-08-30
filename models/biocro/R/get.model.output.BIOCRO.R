@@ -18,7 +18,7 @@ get.model.output.BIOCRO <- function(settings) {
   
   ### Get model output on the localhost
   if (settings$host$name == "localhost") {
-    PEcAn.utils::get.results(settings = settings)
+    PEcAn.uncertainty::get.results(settings = settings)
   } else {
     print(paste("biocro model specific get.model.output not implemented for\n", 
                 "use on remote host; generic get.model.output under development"))
