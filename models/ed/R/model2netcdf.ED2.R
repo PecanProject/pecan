@@ -1161,9 +1161,11 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
 #' @param outdir path to run outdir, where the -S- file is
 #' @param pfts Names of PFTs used in the run, vector
 #' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
+#' @param settings pecan settings object
+#' @param ... additional arguments
 #' 
 #' @export
-read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
+read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
   
@@ -1231,7 +1233,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
     } else {
       pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
     }
-    pfts[pft] <- pft_number
+    pfts_nums[pft] <- pft_number
   }
   
   out <- list()
@@ -1257,7 +1259,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
   # remove non-pft sublists
   pars[names(pars) != "pft"] <- NULL
   # pass pft numbers as sublist names
-  names(pars) <- pft_nums
+  names(pars) <- pfts_nums
   
   # Aggregate
   for (l in seq_along(pecan_names)) {
@@ -1274,7 +1276,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL){
       
     } else {# per-pft vars
       for(k in seq_len(npft)) {
-        ind <- (pft == pft_nums[k])
+        ind <- (pft == pfts_nums[k])
         
         if (any(ind)) {
           # check for different variables/units?
