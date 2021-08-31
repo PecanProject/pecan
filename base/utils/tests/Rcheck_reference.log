@@ -107,10 +107,6 @@ See section 'Cross-references' in the 'Writing R Extensions' manual.
 
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
-  ‘logger.error’ ‘logger.getLevel’ ‘logger.info’ ‘logger.setLevel’
-  ‘logger.setOutputFile’ ‘logger.setQuitOnSevere’ ‘logger.setWidth’
-  ‘logger.severe’ ‘logger.warn’
-  ‘runModule.get.results’ ‘runModule.run.write.configs’
   ‘trait.dictionary’
 Undocumented data sets:
   ‘trait.dictionary’

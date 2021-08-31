@@ -7,7 +7,9 @@
 r2bugs.distributions(priors, direction = "r2bugs")
 }
 \arguments{
-\item{priors}{data.frame with columns distn = distribution name, parama, paramb using R default parameterizations}
+\item{priors}{data.frame with columns distn = distribution name, parama, paramb using R default parameterizations.}
+
+\item{direction}{One of "r2bugs" or "bugs2r"}
 }
 \value{
 priors dataframe using JAGS default parameterizations

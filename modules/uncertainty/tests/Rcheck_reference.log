@@ -72,6 +72,9 @@ get.parameter.samples: no visible global function definition for
   ‘vecpaste’
 get.parameter.samples: no visible global function definition for
   ‘get.sa.sample.list’
+get.results: no visible binding for global variable ‘trait.samples’
+get.results: no visible binding for global variable ‘runs.samples’
+get.results: no visible binding for global variable ‘sa.samples’
 get.sensitivity: no visible global function definition for ‘median’
 kurtosis: no visible global function definition for ‘sd’
 plot_flux_uncertainty: no visible global function definition for ‘plot’
@@ -220,8 +223,8 @@ Undefined global functions or variables:
   post.distns quantile read.table required rexp runs.samples sa.samples
   scale_x_continuous scale_y_continuous sd sensitivity.filename
   sensitivity.output site_id splinefun tag theme theme_bw theme_classic
-  theme_set trait.lookup trait.mcmc var variances vecpaste x y
-  zero.truncate
+  theme_set trait.lookup trait.samples trait.mcmc var variances vecpaste
+  x y zero.truncate
 Consider adding
   importFrom("graphics", "box", "boxplot", "hist", "legend", "lines",
              "par", "plot", "points")
