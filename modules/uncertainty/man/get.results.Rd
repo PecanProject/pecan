@@ -2,7 +2,7 @@
 % Please edit documentation in R/get.results.R
 \name{get.results}
 \alias{get.results}
-\title{Generate model output for PEcAn analyses}
+\title{Reads model output and runs sensitivity and ensemble analyses}
 \usage{
 get.results(
   settings,
@@ -15,12 +15,19 @@ get.results(
 }
 \arguments{
 \item{settings}{list, read from settings file (xml) using \code{\link{read.settings}}}
+
+\item{sa.ensemble.id, ens.ensemble.id}{ensemble IDs for the sensitivity
+analysis and ensemble analysis.
+If not provided, they are first looked up from `settings`,
+then if not found they are not used and the most recent set of results
+is read from \code{samples.Rdata} in directory \code{settings$outdir}}
+
+\item{variable}{variables to retrieve, as vector of names or expressions}
+
+\item{start.year, end.year}{first and last years to retrieve}
 }
 \description{
-Reads model output and runs sensitivity and ensemble analyses
-}
-\details{
-Output is placed in model output directory (settings$modeloutdir).
+Output is placed in model output directory (settings$outdir).
 }
 \author{
 David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly

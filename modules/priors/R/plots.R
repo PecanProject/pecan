@@ -2,7 +2,7 @@
 ##' Plots a prior density from a parameterized probability distribution
 ##'
 ##' @param prior.density data frame containing columns x and y
-##' @param base.plot a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided
+##' @param base.plot a ggplot object (grob), created if none provided
 ##' @param prior.color color of line to be plotted
 ##' @return plot with prior density added
 ##' @seealso \code{\link{pr.dens}}
@@ -15,7 +15,7 @@
 ##' }
 plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "black") {
   if (is.null(base.plot)) {
-    base.plot <- PEcAn.visualization::create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   new.plot <- base.plot + geom_line(data = prior.density, aes(x = x, y = y), color = prior.color)
   return(new.plot)
@@ -26,7 +26,7 @@ plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##'  Add posterior density to a plot
 ##'
 ##' @param posterior.density data frame containing columns x and y
-##' @param base.plot a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided
+##' @param base.plot a ggplot object (grob), created if none provided
 ##' @return plot with posterior density line added
 ##' @aliases plot.posterior.density
 ##' @export
@@ -34,7 +34,7 @@ plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##' @author David LeBauer
 plot_posterior.density <- function(posterior.density, base.plot = NULL) {
   if (is.null(base.plot)) {
-    base.plot <- PEcAn.visualization::create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   new.plot <- base.plot + geom_line(data = posterior.density, aes(x = x, y = y))
   return(new.plot)
@@ -132,6 +132,12 @@ plot_trait <- function(trait,
                        y.lim = NULL,
                        logx = FALSE) {
 
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "plot_trait requires package `PEcAn.visualization`,",
+      "but it is not installed. Please install it and try again.")
+  }
+
   ## Determine plot components
   plot_posterior <- !is.null(posterior.sample)
   plot_prior     <- !is.null(prior)
@@ -170,7 +176,7 @@ plot_trait <- function(trait,
 
   x.ticks <- pretty(c(0, x.lim[2]))
 
-  base.plot <- PEcAn.visualization::create.base.plot() + theme_bw()
+  base.plot <- ggplot2::ggplot() + theme_bw()
   if (plot_prior) {
     base.plot <- plot_prior.density(prior.density, base.plot = base.plot, prior.color = prior.color)
   }
@@ -178,7 +184,7 @@ plot_trait <- function(trait,
     base.plot <- plot_posterior.density(posterior.density, base.plot = base.plot)
   }
   if (plot_data) {
-    base.plot <- PEcAn.utils::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
+    base.plot <- PEcAn.visualization::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
   }
 
   trait.plot <- base.plot +

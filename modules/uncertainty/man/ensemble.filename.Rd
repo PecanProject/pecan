@@ -33,21 +33,21 @@ If FALSE, filename will include years and vars}
 }
 \value{
 a vector of filenames, each in the form
-\verb{[settings$outdir]/[prefix].[ensemble.ID].[variable].[start.year].[end.year][suffix]}.
+  `[settings$outdir]/[prefix].[ensemble.ID].[variable].[start.year].[end.year][suffix]`.
 }
 \description{
 Generates a vector of filenames to be used for PEcAn ensemble output files.
-All paths start from directory \code{settings$outdir},
+All paths start from directory `settings$outdir`,
 which will be created if it does not exist.
 }
 \details{
 Typically used by passing only a settings object,
-but all values can be overridden for manual use.
+  but all values can be overridden for manual use.
 
 If only a single variable or a subset of years are needed,
-the generated filename will identify these in the form
-If all vars and years are included, set \code{all.yr.var} to TRUE
-to get a filename of the form \code{prefix.ensemble_id.suffix}.
+  the generated filename will identify these in the form
+If all vars and years are included, set `all.yr.var` to TRUE
+  to get a filename of the form `prefix.ensemble_id.suffix`.
 All elements are recycled vectorwise.
 }
 \author{
