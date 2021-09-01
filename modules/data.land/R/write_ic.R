@@ -41,22 +41,14 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
 
 # Cohort2Pool -------------------------------------------------------------
-  #add if/else to check if model is pool or cohort 
-  # read in registration xml for met specific information
-  register.xml <- "/projectnb/dietzelab/ahelgeso/pecan/models/sipnet/inst/register.SIPNET.xml" #Need to generalize
+  # read in registration xml for pool specific information
+  register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register     <- PEcAn.data.atmosphere::read.register(register.xml, con)
+  #check if register,model.xml includes "POOL"
   if (register$poolinitcond == "POOL") {
-    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH") #Figure out how to grab dbh_name from veg_info object?
-    out <- PEcAn.SIPNET::veg2model.SIPNET(input = poolinfo, outdir = outfolder, siteid = new_site$id, ens = n.ensemble) 
-    # Build results dataframe for convert.input
-    results <- data.frame(file = out$file, 
-                          host = host, 
-                          mimetype = out$mimetype, 
-                          formatname = out$formatname, 
-                          startdate = start_date, 
-                          enddate = end_date, 
-                          dbfile.name = out$dbfile.name, 
-                          stringsAsFactors = FALSE)
+    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH") 
+    out <- PEcAn.SIPNET::veg2model.SIPNET(input = poolinfo, outdir = outfolder, siteid = new_site$id, ens = n.ensemble)
+    
   } else{
     #--------------------------------------------------------------------------------------------------#
     # veg2model
@@ -72,13 +64,13 @@ write_ic <- function(in.path, in.name, start_date, end_date,
     
     out <- fcn(outfolder, veg_info, start_date, new_site, source)
     # Build results dataframe for convert.input
-    results <- data.frame(file = out$filepath, 
-                          host = c(PEcAn.remote::fqdn()), 
+    results <- data.frame(file = out$file, 
+                          host = host$name, 
                           mimetype = out$mimetype, 
                           formatname = out$formatname, 
                           startdate = start_date, 
                           enddate = end_date, 
-                          dbfile.name = out$filename, 
+                          dbfile.name = out$dbfile.name, 
                           stringsAsFactors = FALSE)
   }
   

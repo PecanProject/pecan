@@ -44,7 +44,7 @@ ens_veg_module <- function(getveg.id, dbparms,
   pkg  <- "PEcAn.data.land"
   fcn  <- "sample_ic"
   
-  ensveg.id <- PEcAn.utils::convert.input(input.id = getveg.id,
+  ensveg.id <- PEcAn.utils::convert.input(input.id = getveg.id$input.id,
                                          outfolder = paste0(outfolder, "/", input_veg$source, "_ens", n.ensemble, ".", lubridate::year(start_date)), 
                                          formatname = "spp.info", 
                                          mimetype = "application/rds",
