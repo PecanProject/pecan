@@ -1,6 +1,6 @@
 ##' @description Match species to PFTs + veg2model module
-##' @name put.veg.module
-##' @title put.veg.module
+##' @name put_veg_module
+##' @title put_veg_module
 ##' 
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB
@@ -66,24 +66,24 @@ put_veg_module <- function(getveg.id, dbparms,
   pkg  <- "PEcAn.data.land"
   fcn  <- "write_ic"
   
-  putveg.id <- convert.input(input.id = getveg.id,
-                             outfolder = spp.file$file_path, 
-                             formatname = formatname, 
-                             mimetype = mimetype,
-                             site.id = new_site$id, 
-                             start_date = start_date, end_date = end_date, 
-                             pkg = pkg, fcn = fcn, 
-                             con = con, host = host, browndog = NULL, 
-                             write = TRUE, 
-                             overwrite = overwrite, 
-                             # fcn specific args 
-                             in.path = spp.file$file_path, 
-                             in.name = spp.file$file_name,
-                             model = model,
-                             new_site = new_site,
-                             pfts = pfts,
-                             source = input_veg$source,
-                             n.ensemble = n.ensemble)
+  putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id,
+                                         outfolder = spp.file$file_path, 
+                                         formatname = formatname, 
+                                         mimetype = mimetype,
+                                         site.id = new_site$id, 
+                                         start_date = start_date, end_date = end_date, 
+                                         pkg = pkg, fcn = fcn, 
+                                         con = con, host = host, browndog = NULL, 
+                                         write = TRUE, 
+                                         overwrite = overwrite, 
+                                         # fcn specific args 
+                                         in.path = spp.file$file_path, 
+                                         in.name = spp.file$file_name,
+                                         model = model,
+                                         new_site = new_site,
+                                         pfts = pfts,
+                                         source = input_veg$source,
+                                         n.ensemble = n.ensemble)
   
   
   return(putveg.id)
