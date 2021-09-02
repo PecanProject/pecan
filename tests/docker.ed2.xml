@@ -57,7 +57,7 @@
   <run>
     <site>
       <id>76</id>
-      <met.start>2004-01-01 00:00:00</met.start>
+      <met.start>2005-12-01 00:00:00</met.start>
       <met.end>2009-12-31 23:59:59</met.end>
     </site>
     <inputs>
