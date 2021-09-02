@@ -143,7 +143,9 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .SECONDEXPANSION:
 .doc/%: $$(call files_in_dir, %) | $$(@D)
+ifeq ($(CI),) # skipped on CI because we start the run by bulk-installing all deps
 	+ $(call depends_R_pkg, $(subst .doc/,,$@))
+endif
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 
