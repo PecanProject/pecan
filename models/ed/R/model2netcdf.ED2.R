@@ -1264,7 +1264,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   # Aggregate
   for (l in seq_along(pecan_names)) {
     
-    variable <- convert.expr(ed_derivs[l])  # convert
+    variable <- PEcAn.utils::convert.expr(ed_derivs[l])  # convert
     expr <- variable$variable.eqn$expression
     
     sapply(variable$variable.eqn$variables, function(x) assign(x, ed.dat[[x]], envir = .GlobalEnv))

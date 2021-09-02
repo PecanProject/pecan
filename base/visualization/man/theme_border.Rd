@@ -12,13 +12,13 @@ theme_border(
 )
 }
 \arguments{
-\item{type}{}
+\item{type}{border(s) to display}
 
-\item{colour}{}
+\item{colour}{what colo(u)r should the border be}
 
-\item{size}{}
+\item{size}{relative line thickness}
 
-\item{linetype}{}
+\item{linetype}{"solid", "dashed", etc}
 }
 \value{
 adds borders to ggplot as a side effect
@@ -28,9 +28,12 @@ Add borders to plot
 }
 \details{
 Has ggplot2 display only specified borders, e.g. ('L'-shaped) borders,
-rather than a rectangle or no border. Note that the order can be significant;
-for example, if you specify the L border option and then a theme, the theme settings
-will override the border option, so you need to specify the theme (if any) before the border option, as above.
+rather than a rectangle or no border.
+Note that the order can be significant;
+for example, if you specify the L border option and then a theme,
+the theme settings will override the border option,
+so you need to specify the theme (if any) before the border option,
+as above.
 }
 \examples{
 \dontrun{

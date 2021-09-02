@@ -58,7 +58,7 @@ check_ed2in <- function(ed2in) {
     }
   } else {
     # Check that at least one history file exists
-    history_files <- match_file(ed2in[["SFILIN"]])
+    history_files <- PEcAn.utils::match_file(ed2in[["SFILIN"]])
     if (!length(history_files) > 0) {
       PEcAn.logger::logger.severe(
         "No history files matched for prefix ", ed2in[["SFILIN"]]
