@@ -5,13 +5,13 @@
 \alias{plot.data}
 \title{Add data to plot}
 \usage{
-plot_data(trait.data, base.plot = NULL, ymax, color = "black")
+plot_data(trait.data, base.plot = NULL, ymax)
 }
 \arguments{
 \item{trait.data}{data to be plotted}
 
 \item{base.plot}{a ggplot object (grob),
-created by \code{\link{create.base.plot}} if none provided}
+created if none provided}
 
 \item{ymax}{maximum height of y}
 }
@@ -19,18 +19,15 @@ created by \code{\link{create.base.plot}} if none provided}
 updated plot object
 }
 \description{
-Add data to an existing plot or create a new one from \code{\link{create.base.plot}}
+Add data to an existing plot or create a new one
 }
 \details{
 Used to add raw data or summary statistics to the plot of a distribution.
 The height of Y is arbitrary, and can be set to optimize visualization.
-If SE estimates are available, tehse wil be plotted
+If SE estimates are available, the se wil be plotted
 }
 \examples{
 \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
-}
-\seealso{
-\code{\link{create.base.plot}}
 }
 \author{
 David LeBauer
