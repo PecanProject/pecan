@@ -58,7 +58,7 @@
     <site>
       <id>76</id>
       <met.start>2005-12-01 00:00:00</met.start>
-      <met.end>2009-12-31 23:59:59</met.end>
+      <met.end>2007-01-31 23:59:59</met.end>
     </site>
     <inputs>
       <met>/data/sites/ebifarm/ED_MET_DRIVER_HEADER</met>
