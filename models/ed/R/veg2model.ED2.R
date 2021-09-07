@@ -7,11 +7,12 @@
 #' @param new_site object passed from write_ic includes site id, lat, lon, and sitename
 #' @param source object passed from write_ic
 #' @param outfolder where to write files
+#' @param ens number of ensemble members
 #'
 #' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens){
   
 
   lat       <- as.numeric(as.character(new_site$lat))
@@ -24,7 +25,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste(source, start_year,
+  file.prefix <- paste(source, start_year, ens,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
 
   

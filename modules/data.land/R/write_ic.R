@@ -1,5 +1,7 @@
+##' @name write_ic
+##' @title write_ic
+##' 
 ##' @param in.path file path to rds file with IC data
-##'
 ##' @param in.name file name of IC data
 ##' @param start_date YYYY-MM-DD
 ##' @param end_date YYYY-MM-DD
@@ -11,14 +13,13 @@
 ##' @param overwrite DEfault is FALSE. Option to overwrite existing files. 
 ##' @param n.ensemble number of ensemble members
 ##' @param ... Additional parameters
-##' 
-##' @name write_ic
-##' @title write_ic
+##'
 ##' @export
+##' 
 ##' @author Istem Fer
 write_ic <- function(in.path, in.name, start_date, end_date, 
                      outfolder, model, new_site, pfts,
-                     source = input_veg$source, overwrite = FALSE, n.ensemble,...){
+                     source = input_veg$source, overwrite = FALSE, n.ensemble, ...){
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -32,48 +33,46 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
 
   # # NOTE : match_pft may return NAs for unmatched dead trees
-  pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = con)
+  pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
 
   # ### merge with other stuff
   obs$pft <- pft.info$pft
 
   veg_info[[2]] <- obs
   
-
+  #--------------------------------------------------------------------------------------------------#
+  # veg2model
+  ## Set model-specific functions
+  pkg <- paste0("PEcAn.", model)
+  do.call("library", list(pkg))
+  fcnx <- paste("veg2model.", model, sep = "")
+  if (!exists(fcnx)) {
+    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
+  }else{
+    fcn <- match.fun(fcnx)
+  }
 # Cohort2Pool -------------------------------------------------------------
   # read in registration xml for pool specific information
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register     <- PEcAn.data.atmosphere::read.register(register.xml, con)
   #check if register,model.xml includes "POOL"
   if (register$poolinitcond == "POOL") {
-    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH") 
-    out <- PEcAn.SIPNET::veg2model.SIPNET(input = poolinfo, outdir = outfolder, siteid = new_site$id, ens = n.ensemble)
+    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH")
+    out <- fcn(outfolder, poolinfo, new_site, ens = n.ensemble)
     
   } else{
-    #--------------------------------------------------------------------------------------------------#
-    # veg2model
-    ## Set model-specific functions
-    pkg <- paste0("PEcAn.", model)
-    do.call("library", list(pkg))
-    fcnx <- paste("veg2model.", model, sep = "")
-    if (!exists(fcnx)) {
-      PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
-    }else{
-      fcn <- match.fun(fcnx)
-    }
-    
-    out <- fcn(outfolder, veg_info, start_date, new_site, source)
-    # Build results dataframe for convert.input
-    results <- data.frame(file = out$file, 
-                          host = host$name, 
-                          mimetype = out$mimetype, 
-                          formatname = out$formatname, 
-                          startdate = start_date, 
-                          enddate = end_date, 
-                          dbfile.name = out$dbfile.name, 
-                          stringsAsFactors = FALSE)
+    out <- fcn(outfolder, veg_info, start_date, new_site, source, ens = n.ensemble)
+
   }
-  
+  # Build results dataframe for convert.input
+  results <- data.frame(file = out$file, 
+                        host = host$name, 
+                        mimetype = out$mimetype, 
+                        formatname = out$formatname, 
+                        startdate = start_date, 
+                        enddate = end_date, 
+                        dbfile.name = out$dbfile.name, 
+                        stringsAsFactors = FALSE)
   
   
   ### return for convert.inputs

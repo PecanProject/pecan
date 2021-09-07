@@ -38,7 +38,7 @@ put_veg_module <- function(getveg.id, dbparms,
                               password = dbparms$bety$password)
   
   con <- bety$con
-  on.exit(db.close(con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
   if (!is.null(input_veg$ouput)) {
@@ -66,7 +66,7 @@ put_veg_module <- function(getveg.id, dbparms,
   pkg  <- "PEcAn.data.land"
   fcn  <- "write_ic"
   
-  putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id,
+  putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id$input.id,
                                          outfolder = spp.file$file_path, 
                                          formatname = formatname, 
                                          mimetype = mimetype,
@@ -75,7 +75,7 @@ put_veg_module <- function(getveg.id, dbparms,
                                          pkg = pkg, fcn = fcn, 
                                          con = con, host = host, browndog = NULL, 
                                          write = TRUE, 
-                                         overwrite = overwrite, 
+                                         overwrite = overwrite,
                                          # fcn specific args 
                                          in.path = spp.file$file_path, 
                                          in.name = spp.file$file_name,
