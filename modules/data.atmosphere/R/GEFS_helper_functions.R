@@ -642,6 +642,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 
 
 ##' @title Write NOAA GEFS netCDF
+##' @name write_noaa_gefs_netcdf
 ##' @param df data frame of meterological variables to be written to netcdf.  Columns
 ##' must start with time with the following columns in the order of `cf_units`
 ##' @param ens ensemble index used for subsetting df
@@ -652,7 +653,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 ##' @param overwrite logical to overwrite existing netcdf file
 ##' 
 ##' @return NA
-##'
+##' @export
 ##' 
 ##' @author Quinn Thomas
 ##'
