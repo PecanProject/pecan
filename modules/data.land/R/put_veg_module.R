@@ -66,6 +66,8 @@ put_veg_module <- function(getveg.id, dbparms,
   pkg  <- "PEcAn.data.land"
   fcn  <- "write_ic"
   
+  host.inputargs = host
+  
   putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id$input.id,
                                          outfolder = spp.file$file_path, 
                                          formatname = formatname, 
@@ -78,12 +80,13 @@ put_veg_module <- function(getveg.id, dbparms,
                                          overwrite = overwrite,
                                          # fcn specific args 
                                          in.path = spp.file$file_path, 
-                                         in.name = spp.file$file_name,
-                                         model = model,
-                                         new_site = new_site,
-                                         pfts = pfts,
-                                         source = input_veg$source,
-                                         n.ensemble = n.ensemble)
+                                              in.name = spp.file$file_name,
+                                              model = model,
+                                              new_site = new_site,
+                                              pfts = pfts,
+                                              source = input_veg$source,
+                                              n.ensemble = n.ensemble,
+                                              host.inputargs = host.inputargs)
   
   
   return(putveg.id)

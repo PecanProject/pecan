@@ -16,6 +16,7 @@ write_ic(
   source = input_veg$source,
   overwrite = FALSE,
   n.ensemble,
+  host.inputargs,
   ...
 )
 }
@@ -41,6 +42,8 @@ write_ic(
 \item{overwrite}{DEfault is FALSE. Option to overwrite existing files.}
 
 \item{n.ensemble}{number of ensemble members}
+
+\item{host.inputargs}{host info taken from settings object}
 
 \item{...}{Additional parameters}
 }

@@ -13,13 +13,14 @@
 ##' @param overwrite DEfault is FALSE. Option to overwrite existing files. 
 ##' @param n.ensemble number of ensemble members
 ##' @param ... Additional parameters
+##' @param host.inputargs host info taken from settings object 
 ##'
 ##' @export
 ##' 
 ##' @author Istem Fer
 write_ic <- function(in.path, in.name, start_date, end_date, 
                      outfolder, model, new_site, pfts,
-                     source = input_veg$source, overwrite = FALSE, n.ensemble, ...){
+                     source = input_veg$source, overwrite = FALSE, n.ensemble, host.inputargs, ...){
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -43,9 +44,9 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # veg2model
   ## Set model-specific functions
-  pkg <- paste0("PEcAn.", model)
+  pkg <- paste0("PEcAn.", model$type)
   do.call("library", list(pkg))
-  fcnx <- paste("veg2model.", model, sep = "")
+  fcnx <- paste("veg2model.", model$type, sep = "")
   if (!exists(fcnx)) {
     PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
   }else{
@@ -53,12 +54,13 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   }
 # Cohort2Pool -------------------------------------------------------------
   # read in registration xml for pool specific information
-  register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
+  register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
   register     <- PEcAn.data.atmosphere::read.register(register.xml, con)
   #check if register,model.xml includes "POOL"
   if (register$poolinitcond == "POOL") {
     poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH")
-    out <- fcn(outfolder, poolinfo, new_site, ens = n.ensemble)
+    siteid <- as.numeric(new_site$id)
+    out <- fcn(outfolder, poolinfo, siteid, ens = n.ensemble)
     
   } else{
     out <- fcn(outfolder, veg_info, start_date, new_site, source, ens = n.ensemble)
@@ -66,7 +68,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   }
   # Build results dataframe for convert.input
   results <- data.frame(file = out$file, 
-                        host = host$name, 
+                        host = host.inputargs$name, 
                         mimetype = out$mimetype, 
                         formatname = out$formatname, 
                         startdate = start_date, 

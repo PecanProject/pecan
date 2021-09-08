@@ -4,14 +4,14 @@
 \alias{veg2model.SIPNET}
 \title{veg2model.SIPNET}
 \usage{
-veg2model.SIPNET(outfolder, poolinfo, new_site, ens)
+veg2model.SIPNET(outfolder, poolinfo, siteid, ens)
 }
 \arguments{
 \item{outfolder}{location to store ncdf files}
 
 \item{poolinfo}{object passed from write_ic contains output from cohort2pool function}
 
-\item{new_site}{object passed from write_ic contains site id}
+\item{siteid}{object passed from write_ic contains site id}
 
 \item{ens}{number of ensemble members}
 

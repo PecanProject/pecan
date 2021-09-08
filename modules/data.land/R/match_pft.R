@@ -41,7 +41,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
     
     for (pft in pfts) {
       # query pft id
-      bety_pft <- traits::betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
+      bety_pft <- traits::betydb_query(name = pft$name, modeltype_id = model$id, table = 'pfts', user = 'bety', pwd = 'bety')
       # query species id
       bety_species <- traits::betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
       bety_list[[pft$name]] <- bety_species$specie_id

@@ -14,7 +14,9 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
   site       <- settings$run$site
-  model      <- settings$model$type
+  model <- list()
+    model$type      <- settings$model$type
+    model$id <- settings$model$id
   host       <- settings$host
   dbparms    <- settings$database
   
@@ -231,7 +233,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     for(i in seq_along(putveg.id)){
       
-      model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
+      model_file <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
       
       # now that we don't have multipasses, convert.input only inserts 1st filename
       # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
