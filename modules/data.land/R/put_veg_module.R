@@ -41,19 +41,14 @@ put_veg_module <- function(getveg.id, dbparms,
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
-  if (!is.null(input_veg$ouput)) {
+  if (!is.null(input_veg$output)) {
     model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                             " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
                                             " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
     formatname <- model_info[1]
     mimetype   <- model_info[3]
   }else {
-    model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
-                                            " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
-                                            " where m.name = '", model, "'"), con)
-    #Need to fix this incase IC info is not first option in dataset
-    formatname <- model_info$name[1]
-    mimetype <- model_info$type_string[1]
+    PEcAn.logger::logger.error("Missing required information input_veg$output, this should be the tag identifier from the modeltypes_formats table")
   }
   
   PEcAn.logger::logger.info("Begin Model Specific Conversion")
