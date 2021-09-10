@@ -16,6 +16,27 @@ sensitivity.filename(
   end.year = settings$sensitivity.analysis$end.year
 )
 }
+\arguments{
+\item{settings}{list of PEcAn settings.}
+
+\item{prefix}{string to appear at the beginning of the filename}
+
+\item{suffix}{file extension: string to appear at the end of the filename}
+
+\item{all.var.yr}{logical: does ensemble include all vars and years?
+If FALSE, filename will include years and vars}
+
+\item{pft}{name of PFT used for analysis. If NULL, assumes all
+PFTs in run are used and does not add them to the filename}
+
+\item{ensemble.id}{ensemble ID(s)}
+
+\item{variable}{variable(s) included in the ensemble.}
+
+\item{start.year}{first and last year simulated.}
+
+\item{end.year}{first and last year simulated.}
+}
 \value{
 a filename
 }

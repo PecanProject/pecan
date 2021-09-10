@@ -1,4 +1,4 @@
-# PEcAn.logger 1.7.1.9000
+# PEcAn.logger 1.8.0
 ## Fixed
 
 * Logger calls no longer create a stray `dump.log` object in the global environment

@@ -57,10 +57,10 @@ test_that("dimenstions have MsTMIP standard units",{
 test_that("variables have MsTMIP standard units",{
   skip("tests are broken #1329")
 
-  data(mstmip_vars, package = "PEcAn.utils")
+  data(standard_vars, package = "PEcAn.utils")
   for(var in vars){
-    if(var$name %in% mstmip_vars$Variable.Name){
-      ms.units <-  mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
+    if(var$name %in% standard_vars$Variable.Name){
+      ms.units <-  standard_vars[standard_vars$Variable.Name == var$name, "Units"]
       if(!(ms.units ==  var$units)) {
         ed.output.message <- paste(var$name, "units", var$units, "do not match MsTMIP Units", ms.units)
         PEcAn.logger::logger.warn(ed.output.message)
@@ -70,6 +70,6 @@ test_that("variables have MsTMIP standard units",{
   
   ## The following test should pass if MsTMIP units / dimname standards are used
   ##     expect_true(
-  ##       var$units == mstmip_vars[mstmip_vars$Variable.Name == var$name, "Units"]
+  ##       var$units == standard_vars[standard_vars$Variable.Name == var$name, "Units"]
   ##       )
 })

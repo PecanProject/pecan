@@ -32,10 +32,9 @@ submit.workflow.json <- function(workflowJsonString, userDetails){
 #* Submit a workflow (converted to list)
 #* @param workflowList Workflow parameters expressed as a list
 #* @param userDetails List containing userid & username
-#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID & status of the submitted workflow
 #* @author Tezan Sahu
-submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_pool) {
+submit.workflow.list <- function(workflowList, userDetails) {
 
   # Set database details
   workflowList$database <- list(
@@ -54,9 +53,9 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
   }
 
   # Get model revision and type for the RabbitMQ queue
-  model_info <- dplyr::tbl(dbcon, "models") %>%
+  model_info <- dplyr::tbl(global_db_pool, "models") %>%
     dplyr::filter(id == !!workflowList$model$id) %>%
-    dplyr::inner_join(dplyr::tbl(dbcon, "modeltypes"),
+    dplyr::inner_join(dplyr::tbl(global_db_pool, "modeltypes"),
                       by = c("modeltype_id" = "id")) %>%
     dplyr::collect()
 
@@ -76,7 +75,7 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
   model_revision <- model_info$revision
 
   # Fix RabbitMQ details
-  hostInfo <- PEcAn.DB::dbHostInfo(dbcon)
+  hostInfo <- PEcAn.DB::dbHostInfo(global_db_pool)
   workflowList$host <- list(
     rabbitmq = list(
       uri = Sys.getenv("RABBITMQ_URI", "amqp://guest:guest@localhost/%2F"),
@@ -141,14 +140,13 @@ submit.workflow.list <- function(workflowList, userDetails, dbcon = global_db_po
 
 #* Insert the workflow into workflows table to obtain the workflow_id
 #* @param workflowList List containing the workflow details
-#* @param dbcon Database connection object. Default is global database pool.
 #* @return ID of the submitted workflow
 #* @author Tezan Sahu
-insert.workflow <- function(workflowList, dbcon = global_db_pool){
+insert.workflow <- function(workflowList){
   
   model_id <- workflowList$model$id
   if(is.null(model_id)){
-    model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
+    model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), global_db_pool)
   }
   
   start_time <- Sys.time()
@@ -172,9 +170,9 @@ insert.workflow <- function(workflowList, dbcon = global_db_pool){
   # NOTE: Have to "checkout" a connection from the pool here to work with
   # dbSendStatement and friends. We make sure to return the connection when the
   # function exits (successfully or not).
-  #con <- pool::poolCheckout(dbcon)
+  #con <- pool::poolCheckout(global_db_pool)
   #on.exit(pool::poolReturn(con), add = TRUE)
-  con <- dbcon
+  con <- global_db_pool
 
   insert_query <- glue::glue(
     "INSERT INTO workflows ",
@@ -207,9 +205,8 @@ insert.workflow <- function(workflowList, dbcon = global_db_pool){
 
 #* Insert the workflow into attributes table
 #* @param workflowList List containing the workflow details
-#* @param dbcon Database connection object. Default is global database pool.
 #* @author Tezan Sahu
-insert.attribute <- function(workflowList, dbcon = global_db_pool){
+insert.attribute <- function(workflowList){
 
   # Create an array of PFTs
   pfts <- c()
@@ -220,7 +217,7 @@ insert.attribute <- function(workflowList, dbcon = global_db_pool){
   # Obtain the model_id
   model_id <- workflowList$model$id
   if(is.null(model_id)){
-    model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), dbcon)
+    model_id <- PEcAn.DB::get.id("models", c("model_name", "revision"), c(workflowList$model$type, workflowList$model$revision), global_db_pool)
   }
   
   # Fill in the properties
@@ -231,12 +228,12 @@ insert.attribute <- function(workflowList, dbcon = global_db_pool){
     runs = if(is.null(workflowList$ensemble$size)) 1 else workflowList$ensemble$size,
     modelid = model_id,
     siteid = bit64::as.integer64(workflowList$run$site$id),
-    sitename = dplyr::tbl(dbcon, "sites") %>% filter(id == bit64::as.integer64(workflowList$run$site$id)) %>% pull(sitename),
+    sitename = dplyr::tbl(global_db_pool, "sites") %>% filter(id == bit64::as.integer64(workflowList$run$site$id)) %>% pull(sitename),
     #sitegroupid <- 
     lat = if(is.null(workflowList$run$site$lat)) "" else workflowList$run$site$lat,
     lon = if(is.null(workflowList$run$site$lon)) "" else workflowList$run$site$lon,
     email = if(is.na(workflowList$info$userid) || workflowList$info$userid == -1) "" else
-      dplyr::tbl(dbcon, "users") %>% filter(id == bit64::as.integer64(workflowList$info$userid)) %>% pull(email),
+      dplyr::tbl(global_db_pool, "users") %>% filter(id == bit64::as.integer64(workflowList$info$userid)) %>% pull(email),
     notes = if(is.null(workflowList$info$notes)) "" else workflowList$info$notes,
     variables = workflowList$ensemble$variable
   )
@@ -261,9 +258,9 @@ insert.attribute <- function(workflowList, dbcon = global_db_pool){
   # Insert properties into attributes table
   value_json <- as.character(jsonlite::toJSON(properties, auto_unbox = TRUE))
   
-  # con <- pool::poolCheckout(dbcon)
+  # con <- pool::poolCheckout(global_db_pool)
   # on.exit(pool::poolReturn(con), add = TRUE)
-  con <- dbcon
+  con <- global_db_pool
   res <- DBI::dbSendStatement(con,
                               "INSERT INTO attributes (container_type, container_id, value) VALUES ($1, $2, $3)", 
                               list("workflows", bit64::as.integer64(workflowList$workflow$id), value_json))

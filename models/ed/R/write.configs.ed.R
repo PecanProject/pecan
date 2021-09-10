@@ -52,14 +52,14 @@ convert.samples.ED <- function(trait.samples) {
   if ("root_respiration_rate" %in% names(trait.samples)) {
     rrr1 <- as.numeric(trait.samples[["root_respiration_rate"]])
     rrr2 <- rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
-    trait.samples[["root_respiration_rate"]] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
+    trait.samples[["root_respiration_rate"]] <- PEcAn.utils::arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
     # model version compatibility (rrr and rrf are the same)
     trait.samples[["root_respiration_factor"]] <- trait.samples[["root_respiration_rate"]]
   }
   
   if ("Vcmax" %in% names(trait.samples)) {
     vcmax <- as.numeric(trait.samples[["Vcmax"]])
-    trait.samples[["Vcmax"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    trait.samples[["Vcmax"]] <- PEcAn.utils::arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     # write as Vm0 for version compatibility (Vm0 = Vcmax @ 15C)
     trait.samples[["Vm0"]] <- trait.samples[["Vcmax"]]
     
@@ -69,7 +69,7 @@ convert.samples.ED <- function(trait.samples) {
       
       ## First scale variables to 15 degC
       trait.samples[["leaf_respiration_rate_m2"]] <- 
-        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+        PEcAn.utils::arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
       # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
       trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
