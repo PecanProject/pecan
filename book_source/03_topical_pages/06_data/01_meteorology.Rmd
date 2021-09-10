@@ -113,3 +113,22 @@ Notes:
 It's important to know that the raw ERA5 tiles needs to be downloaded and registered in the database first. Inside the `inst` folder in the data.atmosphere package there are R files for downloading and registering files in the BETY. However, it assumes that you have registered and setup your API requirements. Check out how to setup your API [here] (https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5#HowtodownloadERA5-3-DownloadERA5datathroughtheCDSAPI). 
 In the `inst` folder you can find two files (`ERA5_db_register.R` and `ERA5_USA_download.R`). If you setup your `ecmwf` account as it's explained in the link above, `ERA5_USA_download.R` will help you to download all the tiles with all the variables required for pecan `extract.nc.ERA5` function to generate pecan standard met files. Besides installing the required packages for this file, it should work from top to bottom with no problem. After downloading the tiles, there is simple script in `ERA5_db_register.R` which helps you register your tiles in the bety. `met.process` later on uses that entery to find the required tiles for extracting met data for your sites. There are important points about this file. 1- Make sure you don't change the site id in the script (which is the same the `ParentSite` in ERA5 registeration xml file). 2- Make sure the start and end date in that script matches the downloaded tiles. Set your `ERA5.files.path` to where you downloaded the tiles and then the rest of the script should be working fine.
 
+## ICOS Drought 2018
+
+Scale: site
+
+Resolution: 30 min
+
+Availability: Varies by [site](https://meta.icos-cp.eu/collections/ueb_7FcyEcbG6y9-UGo5HUqV)
+
+Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `drought2018` in `pecan.xml`
+
+## ICOS Ecosystem Archive
+
+Scale: site
+
+Resolution: 30 min
+
+Availability: Varies by [site](https://meta.icos-cp.eu/collections/q4V7P1VLZevIrnlsW6SJO1Rz)
+
+Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `etc` in `pecan.xml`

@@ -181,47 +181,30 @@ iqr <- function(x) {
 } # iqr
 
 
-##' Creates empty ggplot object
-##'
-##' An empty base plot to which layers created by other functions
-##' (\code{\link{plot_data}}, \code{\link[PEcAn.priors]{plot_prior.density}},
-##' \code{\link[PEcAn.priors]{plot_posterior.density}}) can be added.
-##' @name create.base.plot
-##' @title Create Base Plot
-##' @return empty ggplot object
-##' @export
-##' @author David LeBauer
-create.base.plot <- function() {
-  need_packages("ggplot2")
-  base.plot <- ggplot2::ggplot()
-  return(base.plot)
-} # create.base.plot
-
 
 ##--------------------------------------------------------------------------------------------------#
-##' Add data to an existing plot or create a new one from \code{\link{create.base.plot}}
+##' Add data to an existing plot or create a new one
 ##'
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
-##' If SE estimates are available, tehse wil be plotted
+##' If SE estimates are available, the se wil be plotted
 ##' @name plot_data
 ##' @aliases plot.data
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
-##' created by \code{\link{create.base.plot}} if none provided
+##'   created if none provided
 ##' @param ymax maximum height of y
-##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
-##' @export plot_data
+##' @export
+##' @importFrom rlang .data
 ##' @examples
 ##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
-plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
-  need_packages("ggplot2")
+plot_data <- function(trait.data, base.plot = NULL, ymax) {
   
   if (is.null(base.plot)) {
-    base.plot <- create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   
   n.pts <- nrow(trait.data)
@@ -243,9 +226,15 @@ plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
                           se = trait.data$se, 
                           control = !trait.data$trt == 1 & trait.data$ghs == 1)
   new.plot <- base.plot + 
-    ggplot2::geom_point(data = plot.data, ggplot2::aes(x = x, y = y, color = control)) +
-    ggplot2::geom_segment(data = plot.data,
-                 ggplot2::aes(x = x - se, y = y, xend = x + se, yend = y, color = control)) +
+    ggplot2::geom_point(
+      data = plot.data,
+      ggplot2::aes(x = .data$x, y = .data$y, color = .data$control)) +
+    ggplot2::geom_segment(
+      data = plot.data,
+      ggplot2::aes(
+        x = .data$x - .data$se, y = .data$y,
+        xend = .data$x + .data$se, yend = .data$y,
+        color = .data$control)) +
     ggplot2::scale_color_manual(values = c("black", "grey")) +
     ggplot2::theme(legend.position = "none")
   return(new.plot)
@@ -256,15 +245,18 @@ plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
 ##' Add borders to plot
 ##'
 ##' Has ggplot2 display only specified borders, e.g. ('L'-shaped) borders,
-##' rather than a rectangle or no border. Note that the order can be significant;
-##' for example, if you specify the L border option and then a theme, the theme settings
-##' will override the border option, so you need to specify the theme (if any) before the border option, as above.
+##'   rather than a rectangle or no border.
+##' Note that the order can be significant;
+##'   for example, if you specify the L border option and then a theme,
+##'   the theme settings will override the border option,
+##'   so you need to specify the theme (if any) before the border option,
+##'   as above.
 ##' @name theme_border
 ##' @title Theme border for plot
-##' @param type 
-##' @param colour 
-##' @param size 
-##' @param linetype 
+##' @param type border(s) to display
+##' @param colour what colo(u)r should the border be
+##' @param size relative line thickness
+##' @param linetype "solid", "dashed", etc
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
