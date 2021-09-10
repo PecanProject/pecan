@@ -33,6 +33,7 @@ Imports:
     plyr (>= 1.8.4),
     RCurl,
     reshape2,
+    rlang,
     stringr(>= 1.1.0)
 Suggests:
     grid,

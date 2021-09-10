@@ -21,9 +21,11 @@ plot_trait(
 
 \item{prior}{named distribution with parameters}
 
-\item{posterior.sample}{}
+\item{posterior.sample}{samples from posterior distribution
+whose density should be plotted}
 
-\item{trait.df}{}
+\item{trait.df}{data to be plotted, in a format accepted by
+\code{\link[PEcAn.MA]{jagify}}}
 
 \item{fontsize, x.lim, y.lim, logx}{passed on to ggplot}
 }

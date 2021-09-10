@@ -9,7 +9,6 @@
 #' @param ... other arguments passed on to \code{\link[testthat]{expect_match}}
 #' @examples
 #' expect_log(PEcAn.logger::logger.debug("test"), "DEBUG.*test")
-#' expect_log(PEcAn.utils::get.model.output(), "update your workflow")
 #' expect_log(cat("Hello", file = stderr()), "Hello")
 #' # Only messages on stderr are recognized
 #' expect_failure(expect_log("Hello", "Hello"))
