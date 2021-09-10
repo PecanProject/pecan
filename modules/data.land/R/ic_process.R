@@ -15,7 +15,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # Extract info from settings and setup
   site       <- settings$run$site
   model <- list()
-    model$type      <- settings$model$type
+    model$type <- settings$model$type
     model$id <- settings$model$id
   host       <- settings$host
   dbparms    <- settings$database
