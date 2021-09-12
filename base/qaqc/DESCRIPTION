@@ -13,10 +13,18 @@ Depends:
 Imports:
     PEcAn.logger
 Suggests:
+    knitr,
+    mvbutils,
+    PEcAn.BIOCRO,
+    PEcAn.ED2,
+    PEcAn.SIPNET,
+    PEcAn.utils,
+    rmarkdown,
 	testthat
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
+VignetteBuilder: knitr
 RoxygenNote: 7.0.2
