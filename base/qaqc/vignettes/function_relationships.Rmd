@@ -1,3 +1,11 @@
+---
+title: "Package Interdependencies"
+output: html_vignette
+vignette: >
+   %\VignetteIndexEntry{Package Interdependencies}
+   %\VignetteEngine{knitr::rmarkdown}
+---
+
 <!--
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
@@ -8,9 +16,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 -->
-
-Package Interdependencies
-=========================
 
 This some code helps to visualize the interdependence of functions within PEcAn
 
