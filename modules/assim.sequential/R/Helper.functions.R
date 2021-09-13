@@ -112,10 +112,13 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
       }else{
         X[, .x]
       }
-    }) %>%
-    as.matrix() %>%
-    `colnames<-`(colnames(X))
-  
+    })
+
+  if (is.matrix(X)) {
+    Y <- as.matrix(Y)
+    colnames(Y) <- colnames(X)
+  }
+
   try({
     # I'm trying to give the new transform variable the attributes of the old one
     # X for example has `site` attribute
