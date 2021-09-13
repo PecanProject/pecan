@@ -124,7 +124,9 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
       purrr::discard( ~ .x %in% c("dim", "dimnames"))
     
     if (length(attr.X) > 0) {
-      attr(Y, attr.X) <- attr(X, attr.X)
+      for (att in attr.X) {
+        attr(Y, att) <- attr(X, att)
+      }
     }
     
   }, silent = TRUE)
