@@ -46,5 +46,9 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
+<<<<<<< HEAD
 RoxygenNote: 7.1.1
 
+=======
+RoxygenNote: 7.0.2
+>>>>>>> parent of f41dc8e09 ("DESCRIPTION and .Rd files updated after make document")
