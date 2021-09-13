@@ -32,5 +32,4 @@ test_that("AllomAve writes to cwd by default", {
 
 	expect_true(file.exists(file.path(outdir, "Allom.FAGR.18.Rdata")))
 	expect_true(file.exists(file.path(outdir, "Allom.FAGR.18.MCMC.pdf")))
-
 })
