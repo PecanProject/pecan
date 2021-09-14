@@ -10,6 +10,14 @@
 # ----------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 # ----------------------------------------------------------------------
+#' data.fetch
+#' @name data.fetch
+#'
+#' @param var the variable to extract from the hdf data
+#' @param nc ncdf file path
+#' @param fun the function to apply to the data at the same time, DEFAULT fun = mean
+#'
+#' @return aggregated data
 data.fetch <- function(var, nc, fun = mean) {
   # get a specific set of values from the HDF data
   #
