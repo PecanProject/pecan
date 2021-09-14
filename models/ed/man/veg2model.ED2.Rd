@@ -2,7 +2,7 @@
 % Please edit documentation in R/veg2model.ED2.R
 \name{veg2model.ED2}
 \alias{veg2model.ED2}
-\title{veg2model.ED2}
+\title{Writes ED specific IC files}
 \usage{
 veg2model.ED2(outfolder, veg_info, start_date, new_site, source, ens)
 }
