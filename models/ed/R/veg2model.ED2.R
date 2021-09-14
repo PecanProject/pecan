@@ -1,6 +1,4 @@
 #' Writes ED specific IC files
-#' @title veg2model.ED2
-#' @name veg2model.ED2
 #' 
 #' @param veg_info object passed from write_ic includes pft matches
 #' @param start_date "YYYY-MM-DD" passed from write_ic
