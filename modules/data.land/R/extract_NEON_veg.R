@@ -30,14 +30,21 @@ lon <- neonsites$siteLongitude[distloc]
 site <- dplyr::filter(neonsites, siteLatitude == lat & siteLongitude == lon)
 sitename = site$siteCode
 #Load in NEON datasets
+#tree ABG
 neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
 apparentindividual <- neonstore::neon_read(table = "apparentindividual", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
+joined.tree <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
+#herb AGB
+neonstore::neon_download("DP1.10023.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
 #Filter joined.veg for required information: DBH, tree height, and species
-filter.veg <- dplyr::select(joined.veg, siteID.x, plotID.x, subplotID.x, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
+filter.tree <- dplyr::select(joined.tree, siteID.x, plotID.x, subplotID.x, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
+filter.herb <- dplyr::select(joined.herb, sampleID, plotSize, clipArea, dryMass, targetTaxaPresent, collectDate.y, herbGroup, plotID.x)
 #Filter for most recent record
-filter.date <- dplyr::filter(filter.veg, date.y >= start_date)
+filter.date <- dplyr::filter(filter.tree, date.y >= start_date)
 #Create year column
 filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
 #Rename NEON column names to match pecan functions
@@ -47,7 +54,7 @@ veg_info <- list()
 #Set filter.date as veg_info[[2]]
 veg_info[[2]] <- filter.date
 #Set plot size as veg_info[[1]]
-veg_info[[1]] <- list(area = 400)
+veg_info[[1]] <- list(tree_subplot = 400)
 
 return(veg_info)
 }
