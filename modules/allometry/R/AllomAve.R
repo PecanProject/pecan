@@ -83,8 +83,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
   ########## BAYESIAN VERSION ############### 
   for (ipft in seq_along(pfts)) { # loop over PFTs
     pft <- pfts[[ipft]]
-    #pft.name <- names(pfts)[ipft]
-    pft.name <- pft$name
+    pft.name <- names(pfts)[ipft]
     allom.stats[[pft.name]] <- list()
     
     for (component in components) {

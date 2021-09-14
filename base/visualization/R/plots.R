@@ -7,9 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' Variable-width (dagonally cut) histogram
-##'
-##' 
+##' @details Variable-width (dagonally cut) histogram
 ##' When constructing a histogram, it is common to make all bars the same width.
 ##' One could also choose to make them all have the same area.
 ##' These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
@@ -24,6 +22,7 @@
 ##' @param xlab is label for the x axis 
 ##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
 ##' @param lab.spikes = TRUE labels the % of data in the spikes
+##' 
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
