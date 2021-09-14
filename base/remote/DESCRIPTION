@@ -3,12 +3,12 @@ Type: Package
 Title: PEcAn model execution utilities
 Version: 1.7.1
 Date: 2019-09-05
-Authors@R: c(person("David","LeBauer"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
-Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
-Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
+Authors@R: c(person("David","LeBauer", role = "aut"),
+             person("Rob","Kooper", role = c("aut", "cre")),
+             person("Shawn", "Serbin", role = "aut"),
+             person("Alexey", "Shiklomanov", role = "aut",email = "ashiklom@bu.edu"),
+             person("Shashank", "Singh", role = "aut"),
+             person("Chris", "Black", role = "aut"))
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
     In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
 Imports:
@@ -16,6 +16,7 @@ Imports:
     httr,
     jsonlite,
     urltools
+    PEcAn.DB
 Suggests:
     testthat,
     tools,
