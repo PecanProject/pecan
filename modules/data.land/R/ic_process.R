@@ -128,7 +128,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # best pass a flag (<ensemble.source>TRUE<\ensemble.source>) if that's the case, omit the flag otherwise
   # currently downloading/reading in different ensemble members is not implemented, 
   # then we'll need to pass pattern, ensemble etc to convert.input
-  nsource <- ifelse(!is.null(input$ensemble.source) & !is.null(input$ensemble), as.numeric(input$ensemble), 1)
+  nsource <- ifelse(!is.null(input$ensemble), as.numeric(input$ensemble), 1)
   
 #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
@@ -207,7 +207,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   if (!is.null(putveg.id)) {
     
     # extend the inputs list for ensemble members
-    # settings_inputs <- lapply(seq_along(settings$run$inputs), function(x) rep(settings$run$inputs[[x]], each = length((putveg.id))))
+    #settings_inputs <- lapply(seq_along(settings$run$inputs), function(x) rep(settings$run$inputs[[x]], each = length((putveg.id))))
     settings_inputs <- settings$run$inputs
 
     # make sure all sublists are grouped and renamed to have unique tags, e.g.:
@@ -221,18 +221,18 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     #          ...
     #   <pathN>...</pathN>
     # </path>
-    # settings_inputs <- lapply(seq_along(settings_inputs), function(x){
-    #   tmp.list <- settings_inputs[[x]]
-    #   sub_names <- names(settings$run$inputs[[x]])
-    #   names(settings_inputs[[x]]) <- paste0(names(settings_inputs[[x]]), rep(seq_along(putveg.id), length(settings$run$inputs$IC[[x]])))
-    #   tmp.list  <- lapply(seq_along(sub_names), function(v) return(settings_inputs[[x]][names(tmp.list) == sub_names[v]]))
-    #   names(tmp.list) <- sub_names
-    #   if(is.null(tmp.list$path)) tmp.list$path <- list()
-    #   return(tmp.list)
-    # })
-    
-    # names(settings_inputs) <- names(settings$run$inputs)
-    
+    # # settings_inputs <- lapply(seq_along(settings_inputs), function(x){
+    # #   tmp.list <- settings_inputs[[x]]
+    # #   sub_names <- names(settings$run$inputs[[x]])
+    # #   names(settings_inputs[[x]]) <- paste0(names(settings_inputs[[x]]), rep(seq_along(putveg.id), length(settings$run$inputs$IC[[x]])))
+    # #   tmp.list  <- lapply(seq_along(sub_names), function(v) return(settings_inputs[[x]][names(tmp.list) == sub_names[v]]))
+    # #   names(tmp.list) <- sub_names
+    # #   if(is.null(tmp.list$path)) tmp.list$path <- list()
+    # #   return(tmp.list)
+    # # })
+    # 
+    # # names(settings_inputs) <- names(settings$run$inputs)
+    # 
     for(i in seq_along(putveg.id)){
       
       model_file <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
