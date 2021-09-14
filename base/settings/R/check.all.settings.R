@@ -72,7 +72,7 @@ check.inputs <- function(settings) {
           }
         }
       } 
-      else if ("path" %in% names(settings$run$inputs[[tag]]) && is.null(.data$file.ic)) {
+      else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
         id <- PEcAn.DB::dbfile.id(
           "Input",
