@@ -14,6 +14,10 @@ retry.func(
 \arguments{
 \item{expr}{The function to try running}
 
+\item{isError}{function to use for checking whether to try again.
+Must take one argument that contains the result of evaluating \code{expr}
+and return TRUE if another retry is needed}
+
 \item{maxErrors}{The number of times to retry the function}
 
 \item{sleep}{How long to wait before retrying the function call}
@@ -29,8 +33,11 @@ Retry function X times before stopping in error
 }
 \examples{
 \dontrun{
+  file_url <- paste0("https://thredds.daac.ornl.gov/", 
+      "thredds/dodsC/ornldaac/1220", 
+      "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
 dap <- retry.func(
-  ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+  ncdf4::nc_open(file_url)
   maxErrors=10,
   sleep=2)
 }

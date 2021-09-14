@@ -5,25 +5,23 @@ source("get.file.R")
 #' @param workflow_id Workflow id (character)
 #' @param offset
 #' @param limit
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /
-getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res,
-                    dbcon = global_db_pool){
+getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
 
-  Runs <- tbl(dbcon, "runs") %>%
+  Runs <- tbl(global_db_pool, "runs") %>%
     select(id, model_id, site_id, parameter_list, ensemble_id, start_time, finish_time)
   
-  Runs <- tbl(dbcon, "ensembles") %>%
+  Runs <- tbl(global_db_pool, "ensembles") %>%
     select(runtype, ensemble_id=id, workflow_id) %>%
     full_join(Runs, by="ensemble_id") 
   
-  if(! is.null(workflow_id)){
+  if(! is.na(workflow_id)){
     Runs <- Runs %>%
       filter(workflow_id == !!workflow_id)
   }
@@ -84,12 +82,12 @@ getRuns <- function(req, workflow_id=NULL, offset=0, limit=50, res,
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<run_id>
-getRunDetails <- function(req, run_id, res, dbcon = global_db_pool){
+getRunDetails <- function(req, run_id, res){
   
-  Runs <- tbl(dbcon, "runs") %>%
+  Runs <- tbl(global_db_pool, "runs") %>%
     select(-outdir, -outprefix, -setting, -created_at, -updated_at)
   
-  Runs <- tbl(dbcon, "ensembles") %>%
+  Runs <- tbl(global_db_pool, "ensembles") %>%
     select(runtype, ensemble_id=id, workflow_id) %>%
     full_join(Runs, by="ensemble_id") %>%
     filter(id == !!run_id)
@@ -97,7 +95,7 @@ getRunDetails <- function(req, run_id, res, dbcon = global_db_pool){
   qry_res <- Runs %>% collect()
   
   if(Sys.getenv("AUTH_REQ") == TRUE){
-    user_id <- tbl(dbcon, "workflows") %>%
+    user_id <- tbl(global_db_pool, "workflows") %>%
       select(workflow_id=id, user_id) %>% full_join(Runs, by="workflow_id")  %>%
       filter(id == !!run_id) %>%
       pull(user_id)
@@ -144,17 +142,16 @@ getRunDetails <- function(req, run_id, res, dbcon = global_db_pool){
 #' Get the input file specified by user for a run
 #' @param run_id Run id (character)
 #' @param filename Name of the input file (character)
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return Input file specified by user for the run
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/input/<filename>
-getRunInputFile <- function(req, run_id, filename, res, dbcon = global_db_pool){
+getRunInputFile <- function(req, run_id, filename, res){
   
-  Run <- tbl(dbcon, "runs") %>%
+  Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
   
-  workflow_id <- tbl(dbcon, "ensembles") %>%
+  workflow_id <- tbl(global_db_pool, "ensembles") %>%
     select(ensemble_id=id, workflow_id) %>%
     full_join(Run, by="ensemble_id")  %>%
     filter(id == !!run_id) %>%
@@ -185,12 +182,12 @@ getRunInputFile <- function(req, run_id, filename, res, dbcon = global_db_pool){
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/output/<filename>
-getRunOutputFile <- function(req, run_id, filename, res, dbcon = global_db_pool){
+getRunOutputFile <- function(req, run_id, filename, res){
   
-  Run <- tbl(dbcon, "runs") %>%
+  Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
   
-  workflow_id <- tbl(dbcon, "ensembles") %>%
+  workflow_id <- tbl(global_db_pool, "ensembles") %>%
     select(ensemble_id=id, workflow_id) %>%
     full_join(Run, by="ensemble_id")  %>%
     filter(id == !!run_id) %>%
@@ -226,20 +223,19 @@ getRunOutputFile <- function(req, run_id, filename, res, dbcon = global_db_pool)
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
 
-plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res,
-                        dbcon = global_db_pool) {
+plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res) {
   # Get workflow_id for the run
-  Run <- tbl(dbcon, "runs") %>%
+  Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
   
-  workflow_id <- tbl(dbcon, "ensembles") %>%
+  workflow_id <- tbl(global_db_pool, "ensembles") %>%
     select(ensemble_id=id, workflow_id) %>%
     full_join(Run, by="ensemble_id")  %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
   
   if(Sys.getenv("AUTH_REQ") == TRUE){
-    user_id <- tbl(dbcon, "workflows") %>%
+    user_id <- tbl(global_db_pool, "workflows") %>%
       select(id, user_id) %>%
       filter(id == !!workflow_id) %>%
       pull(user_id)

@@ -24,26 +24,23 @@
 ##' @param lon longitude if dimension requests it
 ##' @param time time if dimension requests it
 ##' @param nsoil nsoil if dimension requests it
+##' @param silent logical: suppress log messages about missing variables?
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  nc_var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
+  nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
   dims <- list()
-
+  
   if (nrow(nc_var) == 0) {
-    nc_var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
-    if (nrow(nc_var) == 0) {
-      if (!silent) {
-        PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
-      }
-      if (is.na(time)) {
-        time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
-                          vals = 1:365, calendar = "standard", unlim = TRUE)
-      }
-      return(ncdf4::ncvar_def(name, "", list(time), -999, name))
+    if (!silent) {
+      PEcAn.logger::logger.info("Don't know about variable", name, " in standard_vars in PEcAn.utils")
     }
+    if (is.na(time)) {
+      time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
+                        vals = 1:365, calendar = "standard", unlim = TRUE)
+    }
+    return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
-
   for (i in 1:4) {
     vd <- nc_var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
@@ -54,7 +51,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       dims[[length(dims) + 1]] <- time
     } else if (vd == "nsoil" && !is.na(nsoil)) {
       dims[[length(dims) + 1]] <- nsoil
-    } else if (vd == "na") {
+    } else if (is.na(vd)) {
       # skip
     } else {
       if (!silent) {
@@ -183,7 +180,7 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=N
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
 ##' @param n number of points to use in kernel density estimate. See \code{\link[stats]{density}}
 ##' @return data frame with back-transformed log density estimate
-##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
+##' @author \href{https://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
   y     <- log(x)
@@ -307,24 +304,24 @@ get.parameter.stat <- function(mcmc.summary, parameter) {
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
   mean <- switch(distn,
-    gamma = A/B,
-    lnorm = exp(A + 1/2 * B^2),
-    beta = A/(A + B),
-    weibull = B * gamma(1 + 1/A),
-    norm = A,
-    f = ifelse(B > 2,
-               B/(B - 2),
-               mean(stats::rf(10000, A, B))))
+                 gamma = A/B,
+                 lnorm = exp(A + 1/2 * B^2),
+                 beta = A/(A + B),
+                 weibull = B * gamma(1 + 1/A),
+                 norm = A,
+                 f = ifelse(B > 2,
+                            B/(B - 2),
+                            mean(stats::rf(10000, A, B))))
   var <- switch(distn,
-    gamma = A/B^2,
-    lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
-    beta = A * B/((A + B) ^ 2 * (A + B + 1)),
-    weibull = B ^ 2 * (gamma(1 + 2 / A) -
-                        gamma(1 + 1 / A) ^ 2),
-    norm = B ^ 2,
-    f = ifelse(B > 4,
-               2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-               stats::var(stats::rf(1e+05, A, B))))
+                gamma = A/B^2,
+                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
+                beta = A * B/((A + B) ^ 2 * (A + B + 1)),
+                weibull = B ^ 2 * (gamma(1 + 2 / A) -
+                                     gamma(1 + 1 / A) ^ 2),
+                norm = B ^ 2,
+                f = ifelse(B > 4,
+                           2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
+                           stats::var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -539,7 +536,7 @@ load.modelpkg <- function(model) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
       PEcAn.logger::logger.error("I can't find a package for the ", model,
-                   "model; I expect it to be named ", pecan.modelpkg)
+                                 "model; I expect it to be named ", pecan.modelpkg)
     }
   }
 } # load.modelpkg
@@ -556,10 +553,10 @@ load.modelpkg <- function(model) {
 ##' @return val converted values
 ##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
-
+  
   amC   <- 12.0107  # atomic mass of carbon
   mmH2O <- 18.01528 # molar mass of H2O, g/mol
-
+  
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
     val <- udunits2::ud.convert(x, "ug", "kg") * amC
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
@@ -576,9 +573,9 @@ misc.convert <- function(x, u1, u2) {
     u1 <- gsub("gC","g*12",u1)
     u2 <- gsub("gC","g*12",u2)
     val <- udunits2::ud.convert(x,u1,u2)
-
-
-#    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
+    
+    
+    #    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
 } # misc.convert
@@ -594,7 +591,7 @@ misc.convert <- function(x, u1, u2) {
 ##' @return logical
 ##' @author Istem Fer, Shawn Serbin
 misc.are.convertible <- function(u1, u2) {
-
+  
   # make sure the order of vectors match
   units.from <- c("umol C m-2 s-1", "kg C m-2 s-1",
                   "mol H2O m-2 s-1", "kg H2O m-2 s-1",
@@ -602,7 +599,7 @@ misc.are.convertible <- function(u1, u2) {
   units.to <- c("kg C m-2 s-1", "umol C m-2 s-1",
                 "kg H2O m-2 s-1", "mol H2O m-2 s-1",
                 "kg C m-2", "Mg ha-1")
-
+  
   if(u1 %in% units.from & u2 %in% units.to) {
     if (which(units.from == u1) == which(units.to == u2)) {
       return(TRUE)
@@ -627,7 +624,7 @@ convert.expr <- function(expression) {
   # split equation to LHS and RHS
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
-
+  
   non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
@@ -637,7 +634,7 @@ convert.expr <- function(expression) {
   } else {
     variables <- deri.eqn
   }
-
+  
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 #--------------------------------------------------------------------------------------------------#
@@ -650,7 +647,7 @@ convert.expr <- function(expression) {
 ##' @title download.file
 ##' @param url complete URL for file download
 ##' @param filename destination file name
-##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' @param method Method of file retrieval. Can set this using the `options(download.ftp.method=[method])` in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
 ##'
 ##' @examples
@@ -692,13 +689,19 @@ download.file <- function(url, filename, method) {
 ##' @param expr The function to try running
 ##' @param maxErrors The number of times to retry the function
 ##' @param sleep How long to wait before retrying the function call
+##' @param isError function to use for checking whether to try again.
+##'   Must take one argument that contains the result of evaluating `expr`
+##'   and return TRUE if another retry is needed 
 ##'
 ##' @return retval returns the results of the function call
 ##'
 ##' @examples
 ##' \dontrun{
+##'   file_url <- paste0("https://thredds.daac.ornl.gov/", 
+##'       "thredds/dodsC/ornldaac/1220", 
+##'       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
 ##' dap <- retry.func(
-##'   ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##'   ncdf4::nc_open(file_url)
 ##'   maxErrors=10,
 ##'   sleep=2)
 ##' }

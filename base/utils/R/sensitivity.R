@@ -20,8 +20,11 @@
 ##' @param pft.name name of PFT used in sensitivity analysis (Optional)
 ##' @param start.year first year to include in sensitivity analysis 
 ##' @param end.year last year to include in sensitivity analysis
-##' @param variables variables to be read from model output
+##' @param variable variables to be read from model output
 ##' @param per.pft flag to determine whether we want SA on pft-specific variables
+##' @param sa.run.ids list of run ids to read.
+##'   If NULL, will look in `pecandir` for a file named `samples.Rdata`
+##'   and read from that
 ##' @export
 ##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer

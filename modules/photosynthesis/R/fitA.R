@@ -220,7 +220,7 @@ if ("leaf" %in% V.random) {
 if (!is.null(XV)) {
   Vnames <- gsub(" ", "_", colnames(XV))
   Vformula <- paste(Vformula,
-                    paste0("+ betaV", Vnames, "*XV[rep[i],", seq_along(XV), "]", collapse = " "))
+                    paste0("+ betaV", Vnames, "*XV[rep[i],", seq_len(ncol(XV)), "]", collapse = " "))
   Vpriors <- paste0("     betaV", Vnames, "~dnorm(0,0.001)", collapse = "\n")
   my.model <- sub(pattern = "## Vcmax BETAS", Vpriors, my.model)
   mydat[["XV"]] <- XV

@@ -109,14 +109,9 @@ See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘compare_ED2.Rmd’, ‘function_relationships.Rmd’,
-    ‘lebauer2013ffb.Rmd’, ‘module_output.Rmd’,
-    ‘Pre-release-database-cleanup.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 4 WARNINGs, 3 NOTEs
+Status: 3 WARNINGs, 3 NOTEs

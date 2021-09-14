@@ -168,6 +168,14 @@ foreach($modeltypes as $type) {
       if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
        $x['files'][] = array("id"=>"Fluxnet2015." . $type, "name"=>"Use Fluxnet2015");
       }
+      if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
+          $product = ".drought2018";
+        $x['files'][] = array("id"=>"ICOS." . $type .$product,  "name"=>"Use ICOS Drought 2018");
+      }
+      if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
+          $product = ".etc";
+        $x['files'][] = array("id"=>"ICOS." . $type .$product,  "name"=>"Use ICOS Ecosystem Archive");
+      }
       // check for NARR,this is not exact since it is a conical projection
       if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
         $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
