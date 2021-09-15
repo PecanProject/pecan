@@ -5,6 +5,7 @@
 #' @param yhi Vector defining top of CI envelope
 #' @param ... further arguments passed on to `graphics::polygon`
 #'
+
 #' @export
 #' @author Michael Dietze, David LeBauer
 ciEnvelope <- function(x, ylo, yhi, ...) {

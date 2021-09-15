@@ -65,6 +65,8 @@
 ##' @param quantize either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
 ##' @param add if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
 ##' @param ... further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
+##' 
+
 ##' @return NULL plot as side effect
 ##' @author Felix Schönbrodt
 ##' @export

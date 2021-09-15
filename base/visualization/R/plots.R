@@ -23,6 +23,8 @@
 ##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
 ##' @param lab.spikes = TRUE labels the % of data in the spikes
 ##' 
+##' 
+##' 
 ##' @return list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars. 
 ##' @author Lorraine Denby, Colin Mallows
 ##' @references Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
@@ -194,6 +196,8 @@ iqr <- function(x) {
 ##' @param base.plot a ggplot object (grob),
 ##'   created if none provided
 ##' @param ymax maximum height of y
+##' 
+##' 
 ##' @return updated plot object
 ##' @author David LeBauer
 ##' @export
@@ -256,6 +260,8 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
 ##' @param colour what colo(u)r should the border be
 ##' @param size relative line thickness
 ##' @param linetype "solid", "dashed", etc
+##' 
+
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}

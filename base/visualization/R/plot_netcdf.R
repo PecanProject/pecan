@@ -17,6 +17,8 @@
 #' @param nc ncdf file path
 #' @param fun the function to apply to the data at the same time, DEFAULT fun = mean
 #'
+#'
+#'
 #' @return aggregated data
 data.fetch <- function(var, nc, fun = mean) {
   # get a specific set of values from the HDF data
@@ -82,6 +84,8 @@ data.fetch <- function(var, nc, fun = mean) {
 ##'        create an image based on filename, or display if x11.
 ##' @param year the year this data is for (only used in the title).
 ##'
+##'
+
 ##' @aliases plot.netcdf
 ##' @export
 ##' @author Rob Kooper
