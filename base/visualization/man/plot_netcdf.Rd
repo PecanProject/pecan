@@ -27,7 +27,7 @@ used.}
 
 \item{height}{the height of the image generated, default is 600 pixels.}
 
-\item{filename}{is the name of the file name that is geneated, this
+\item{filename}{is the name of the file name that is generated, this
 can be null to use existing device, otherwise it will try and
 create an image based on filename, or display if x11.}
 

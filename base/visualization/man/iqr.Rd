@@ -10,7 +10,7 @@ iqr(x)
 \item{x}{vector}
 }
 \value{
-numeric vector of length 2, with the 25th and 75th quantiles of input vector x.
+numeric vector of length 2, with the 25th and 75th quantiles of input vector x
 }
 \description{
 Calculate interquartile range

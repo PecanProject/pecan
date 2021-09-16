@@ -8,7 +8,7 @@
 plot_data(trait.data, base.plot = NULL, ymax)
 }
 \arguments{
-\item{trait.data}{data to be plotted}
+\item{trait.data}{Data to be plotted}
 
 \item{base.plot}{a ggplot object (grob),
 created if none provided}

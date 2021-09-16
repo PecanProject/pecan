@@ -24,7 +24,7 @@ dhist(
 
 \item{rx}{is the range used for the left of the left-most bin to the right of the right-most bin}
 
-\item{eps}{used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.}
+\item{eps}{used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24}
 
 \item{xlab}{is label for the x axis}
 
