@@ -79,12 +79,13 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' used.
 ##' @param width the width of the image generated, default is 800 pixels.
 ##' @param height the height of the image generated, default is 600 pixels.
-##' @param filename is the name of the file name that is generated, this
+##' @param filename is the name of the file name that is geneated, this
 ##'        can be null to use existing device, otherwise it will try and
 ##'        create an image based on filename, or display if x11.
 ##' @param year the year this data is for (only used in the title).
 ##'
 ##'
+
 ##' @aliases plot.netcdf
 ##' @export
 ##' @author Rob Kooper
