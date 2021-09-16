@@ -3,8 +3,9 @@
 #' @param x Vector defining CI center
 #' @param ylo Vector defining bottom of CI envelope
 #' @param yhi Vector defining top of CI envelope
-#' @param ... Further arguments passed on to `graphics::polygon`
+#' @param ... further arguments passed on to `graphics::polygon`
 #'
+
 #' @export
 #' @author Michael Dietze, David LeBauer
 ciEnvelope <- function(x, ylo, yhi, ...) {

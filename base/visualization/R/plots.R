@@ -18,7 +18,7 @@
 ##' @param a is the scaling factor, default is 5 * IQR
 ##' @param nbins is the number of bins, default is assigned by the Stuges method
 ##' @param rx  is the range used for the left of the left-most bin to the right of the right-most bin  
-##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24
+##' @param eps used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.
 ##' @param xlab is label for the x axis 
 ##' @param plot = TRUE produces the plot, FALSE returns the heights, breaks and counts
 ##' @param lab.spikes = TRUE labels the % of data in the spikes
@@ -176,7 +176,7 @@ dhist <- function(x, a = 5 * iqr(x), nbins = grDevices::nclass.Sturges(x), rx = 
 ##' @name iqr
 ##' @title Interquartile range
 ##' @param x vector
-##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x 
+##' @return numeric vector of length 2, with the 25th and 75th quantiles of input vector x. 
 iqr <- function(x) {
   return(diff(stats::quantile(x, c(0.25, 0.75), na.rm = TRUE)))
 } # iqr
@@ -192,7 +192,7 @@ iqr <- function(x) {
 ##' @name plot_data
 ##' @aliases plot.data
 ##' @title Add data to plot 
-##' @param trait.data Data to be plotted
+##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
 ##'   created if none provided
 ##' @param ymax maximum height of y
@@ -259,8 +259,9 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
 ##' @param type border(s) to display
 ##' @param colour what colo(u)r should the border be
 ##' @param size relative line thickness
-##' @param linetype "solid", "dashed", etc.
+##' @param linetype "solid", "dashed", etc
 ##' 
+
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
 ##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
