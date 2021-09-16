@@ -89,24 +89,9 @@ See section ‘Good practice’ in ‘?attach’.
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘cull_database_entries’ ‘find_formats_without_inputs’
-  ‘find_inputs_without_formats’ ‘get_table_column_names’
-  ‘write_out_table’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'new.taylor'
-  ‘dataset’ ‘siteid’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking files in ‘vignettes’ ... OK
@@ -114,4 +99,4 @@ Extensions’ manual.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 3 WARNINGs, 3 NOTEs
+Status: 1 WARNING, 3 NOTEs
