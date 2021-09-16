@@ -8,10 +8,10 @@
 #-------------------------------------------------------------------------------
 
 ##' Plot taylor diagram for benchmark sites
-##' @title Taylor Diagram
-##' @param dataset
+##'
+##' @param dataset data to plot
 ##' @param runid a numeric vector with the id(s) of one or more runs (folder in runs) to plot
-##' @param siteid
+##' @param siteid vector of sites to plot
 new.taylor <- function(dataset, runid, siteid) {
   attach(dataset)
   for (run in runid) {
