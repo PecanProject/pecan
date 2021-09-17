@@ -18,7 +18,7 @@ theme_border(
 
 \item{size}{relative line thickness}
 
-\item{linetype}{"solid", "dashed", etc}
+\item{linetype}{"solid", "dashed", etc.}
 }
 \value{
 adds borders to ggplot as a side effect

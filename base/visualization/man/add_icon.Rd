@@ -7,7 +7,7 @@
 add_icon(id = NULL, x = 0, y = 0)
 }
 \arguments{
-\item{id}{additional plot identificaition (URL, database ID, etc)}
+\item{id}{additional plot identification (URL, database ID, etc)}
 
 \item{x}{x-coordinate of logo}
 
