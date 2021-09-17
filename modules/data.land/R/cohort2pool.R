@@ -52,11 +52,12 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
     ratio = c(ratio_greater, ratio_equal, ratio_less)
   } else {
     #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
-    allom.fit = #outputs from AllomAve function
-    stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
-    AGB = apply(stand,1,sum)
-    hist(AGB)
-    #print("user provided allometry parameters not yet supported")
+    # allom.fit = #outputs from AllomAve function
+    # stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+    # AGB = apply(stand,1,sum)
+    # hist(AGB)
+    AGB <- NULL
+    print("user provided allometry parameters not yet supported")
     #return(NULL)
     return(AGB)
   }
