@@ -56,7 +56,7 @@ vwReg(
 
 \item{shape}{shape of points}
 
-\item{show.CI}{should the 95 \% CI limits be plotted?}
+\item{show.CI}{should the 95\% CI limits be plotted?}
 
 \item{method}{the fitting function for the spaghettis; default: loess}
 

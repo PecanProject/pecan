@@ -10,7 +10,7 @@
 #' @description Adapts the dataone::getDataPackage workflow to allow users to download data from the DataONE federation by simply entering the doi or associated package id 
 #'
 #' @export
-#'
+#' @importFrom rlang .data
 
 #' @examples 
 
