@@ -30,7 +30,7 @@ dhist(
 
 \item{plot}{= TRUE produces the plot, FALSE returns the heights, breaks and counts}
 
-\item{lab.spikes}{= TRUE labels the \% of data in the spikes}
+\item{lab.spikes}{= TRUE labels the % of data in the spikes}
 }
 \value{
 list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars.
