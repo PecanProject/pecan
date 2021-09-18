@@ -47,6 +47,6 @@ test_that("taylor diagram", {
         model2 = rnorm(6, 11, 3) + 2)
 
     expect_plot(
-        "new.taylor.png",
+        "taylor.png",
         new.taylor(testdata, siteid = 1:3, runid = 1:2))
 })
