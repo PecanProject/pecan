@@ -128,6 +128,7 @@ wanted <- c(
 'udunits2',
 'urltools',
 'utils',
+'vdiffr',
 'withr',
 'XML',
 'xtable',

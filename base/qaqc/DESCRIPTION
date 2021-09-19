@@ -21,7 +21,8 @@ Suggests:
     PEcAn.SIPNET,
     PEcAn.utils,
     rmarkdown,
-	testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    vdiffr (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
