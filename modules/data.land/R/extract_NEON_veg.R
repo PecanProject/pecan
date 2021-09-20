@@ -13,7 +13,8 @@
 #' @author Alexis Helgeson and Michael Dietze
 #' @export
 #' 
-#' @examples start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
+#' @examples start_date = as.Date("2020-01-01") 
+#' end_date = as.Date("2021-09-01")
 
 extract_NEON_veg <- function(lon, lat, start_date, end_date, ...){
 
