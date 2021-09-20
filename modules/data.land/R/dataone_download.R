@@ -10,7 +10,7 @@
 #' @description Adapts the dataone::getDataPackage workflow to allow users to download data from the DataONE federation by simply entering the doi or associated package id 
 #'
 #' @export
-#' @importFrom rlang .data
+#' 
 
 #' @examples 
 
@@ -40,7 +40,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode
     PEcAn.logger::logger.info("Files located.")
 
   ### make new directory within this directory
-  .data$newdir_D1 <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
+  newdir_D1 <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir_D1)
   
   ### download the data with wget 
@@ -49,7 +49,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode
     PEcAn.logger::logger.info(paste("Downloading", "file", i, "of", n, sep = " "))
     system(paste("cd", newdir_D1, "&&", "{", "wget",  "--header='User-Agent: Mozilla/5.0 (Windows NT 5.1; rv:23.0) Gecko/20100101 Firefox/23.0'", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
   }
-    PEcAn.logger::logger.info(paste(n, "files downloaded to", .data$newdir_D1, sep = " "))
+    PEcAn.logger::logger.info(paste(n, "files downloaded to", newdir_D1, sep = " "))
 }
 
 
