@@ -1,20 +1,22 @@
-##' @export cull_database_entries
+##' Delete selected records from bety
+##'
+##' @export
 ##' @author Tempest McCabe
-##' 
-##' @param outdir  Directory from which the file will be read, and where the delete_log_FILE_NAME will be read to 
-##' @param file_name The name of the file being read in
+##'
+##' @param table data frame containing records to be deleted. Specify either this or `file_name`
+##' @param outdir  Directory from which the file will be read, and where the delete_log_FILE_NAME will be read to
+##' @param file_name The name of the file being read in. Specify either this or `table`
 ##' @param con connection the the bety database
 ##' @param machine_id Optional id of the machine that contains the bety entries.
-##' 
-##' @description This is a fucntion that takes in a table of records and deletes everything in the file. Please do not run this function without 
-##' 1) Backing Up Bety 
-##' 2) Checking the the file only contains entries to be deleted. 
+##' @param table_name database table from which to delete
+##'
+##' @description This is a fucntion that takes in a table of records and deletes everything in the file. Please do not run this function without
+##' 1) Backing Up Bety
+##' 2) Checking the the file only contains entries to be deleted.
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
-##' 
-##' 
-
+##'
 cull_database_entries<-function(table = NULL, outdir, file_name = NULL, con, machine_id = NULL, table_name = NULL){
   
   

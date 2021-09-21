@@ -51,6 +51,7 @@ Imports:
     mvtnorm
 Suggests:
     knitr,
+    rmarkdown,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
