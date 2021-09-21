@@ -20,8 +20,6 @@
 load_veg_manual <- function(new_site, start_date, end_date, 
                      source_id, source, icmeta = NULL, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
-  library(neonstore)
-  library(neonUtilities)
   
   start_date = as.Date("2020-01-01")
   end_date = as.Date("2021-09-01")
