@@ -30,7 +30,7 @@ mindist <- min(betyneondist)
 distloc <- match(mindist, betyneondist)
 lat <- neonsites$siteLatitude[distloc]
 lon <- neonsites$siteLongitude[distloc]
-site <- dplyr::filter(neonsites, siteLatitude == lat & siteLongitude == lon)
+site <- dplyr::filter(neonsites, .data$siteLatitude == lat & .data$siteLongitude == lon)
 sitename = site$siteCode
 #Load in NEON datasets
 neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
@@ -40,7 +40,7 @@ joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "indi
 #Filter joined.veg for required information: DBH, tree height, and species
 filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID.x, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
 #Filter for most recent record
-filter.date <- dplyr::filter(filter.veg, date.y >= start_date)
+filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
 #Create year column
 filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
 #Rename NEON column names to match pecan functions
