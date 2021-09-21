@@ -40,21 +40,34 @@ neonstore::neon_download("DP1.10023.001", dir = store_dir, table = NA, site = si
 massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
-#Filter joined.veg for required information: DBH, tree height, and species
+#species info
+neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+#Filter joined.tree, joined.herb, and div_1m2 for required information: DBH, tree height, dryMass, taxonID (USDA code) and species info
 filter.tree <- dplyr::select(joined.tree, siteID.x, plotID.x, subplotID.x, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
-filter.herb <- dplyr::select(joined.herb, sampleID, plotSize, clipArea, dryMass, targetTaxaPresent, collectDate.y, herbGroup, plotID.x)
-#Filter for most recent record
-filter.date <- dplyr::filter(filter.tree, date.y >= start_date)
+filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, clipArea, dryMass, collectDate.y)
+filter.species <- dplyr::select(div_1m2, plotID, taxonID, scientificName, taxonRank)
+#add species info to filter.herb
+colnames(filter.herb)[2] <- "plotID"
+filter.herb <- dplyr::left_join(filter.herb, filter.species, by = "plotID")
+#remove NAs
+filter.herb <- na.omit(filter.herb)
+filter.tree <- na.omit(filter.tree)
 #Create year column
-filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
+filter.tree$year <- format(as.Date(filter.tree$date.y, format="%Y-%m-%d"),"%Y")
+filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
 #Rename NEON column names to match pecan functions
-colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+colnames(filter.tree) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+colnames(filter.herb) <- c("site_name", "plot", "Subplot", "plotSize", "clipArea", "dryMass", "date", "species_USDA_symbol", "species", "taxonRank", "year")
 #Create veg_info object as a list
 veg_info <- list()
-#Set filter.date as veg_info[[2]]
-veg_info[[2]] <- filter.date
 #Set plot size as veg_info[[1]]
-veg_info[[1]] <- list(tree_subplot = 400)
+veg_info[[1]] <- list(tree_subplot = 400, herb_subplot = filter.herb$clipArea)
+#Set filter.tree as veg_info[[2]]
+veg_info[[2]] <- filter.tree
+#Set filter.herb as veg_info[[3]]
+veg_info[[3]] <- filter.herb
+
 
 return(veg_info)
 }
