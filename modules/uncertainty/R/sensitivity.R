@@ -26,7 +26,6 @@
 ##'   If NULL, will look in `pecandir` for a file named `samples.Rdata`
 ##'   and read from that
 ##' @export
-##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
@@ -124,11 +123,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   runs <- data.frame()
   
   # Reading the site.pft specific tags from xml
-  site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+  site.pfts.vec <- as.character(unlist(settings$run$site$site.pft))
   
   if(!is.null(site.pfts.vec)){
     # find the name of pfts defined in the body of pecan.xml
-    defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+    defined.pfts <- as.character(unlist(purrr::map(settings$pfts, 'name')))
     # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
     if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
       quantile.samples <- quantile.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
