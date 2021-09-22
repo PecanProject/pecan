@@ -14,8 +14,6 @@ veg2model.SIPNET(outfolder, poolinfo, siteid, ens)
 \item{siteid}{object passed from write_ic contains site id}
 
 \item{ens}{number of ensemble members}
-
-\item{source}{object passed from write_ic}
 }
 \value{
 result object with filepaths to ncdf files
