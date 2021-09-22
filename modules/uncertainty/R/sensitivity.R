@@ -59,10 +59,12 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
         # if SA is requested on a variable available per pft, pass pft.name to read.output
         # so that it only returns values for that pft
         pass_pft <- switch(per.pft + 1, NULL, pft.name) 
-        out.tmp <- read.output(runid = run.id, outdir = file.path(outdir, run.id), 
-                               start.year = start.year, end.year = end.year, 
-                               variables = variables[var], 
-                               pft.name = pass_pft)
+        out.tmp <- PEcAn.utils::read.output(
+          runid = run.id,
+          outdir = file.path(outdir, run.id),
+          start.year = start.year, end.year = end.year,
+          variables = variables[var],
+          pft.name = pass_pft)
         assign(variables[var], out.tmp[[variables[var]]])
       }
       
@@ -183,7 +185,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       }
     }
   } else {
-    run.id <- get.run.id("SA", "median")
+    run.id <- PEcAn.utils::get.run.id("SA", "median")
     ensemble.id <- NA
   }
   medianrun <- run.id
@@ -285,10 +287,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               }
             }
           } else {
-            run.id <- get.run.id("SA", 
-                                 round(quantile, 3), 
-                                 trait = trait, 
-                                 pft.name = names(trait.samples)[i])
+            run.id <- PEcAn.utils::get.run.id(
+              run.type = "SA",
+              index = round(quantile, 3),
+              trait = trait,
+              pft.name = names(trait.samples)[i])
           }
           runs[[pftname]][quantile.str, trait] <- run.id
           
