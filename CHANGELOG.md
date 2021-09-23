@@ -40,7 +40,7 @@ This is a major change:
 - fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
 - ensure that control treatments always receives the random effect index of 1; rename madata.Rdata to jagged.data.Rdata and include database ids and names useful for calculating parameter estimates by treatment (#2756)
 - ensure that existing meta-analysis results can be used for pfts with cultivars (#2761)
-
+- Fixed error/notes/warnings after running R CMD checks on utils package([#2823](https://github.com/PecanProject/pecan/pull/2830))
 ### Changed
 
 - Removed deprecated mstmip_vars and mstmip_local; now all functions use the combined standard_vars.csv  
@@ -89,6 +89,7 @@ This is a major change:
 - Ability to run with [MERRA-2 meteorology](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/) (reanalysis product based on GEOS-5 model)
 - Ability to run with ICOS Ecosystem products
 
+
 ### Removed
 
 - Removed travis integration
@@ -97,7 +98,14 @@ This is a major change:
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
 - Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).
 - Old dependency management scripts `check.dependencies.sh`, `update.dependencies.sh`, and `install_deps.R` have been deleted. Use `generate_dependencies.R` and the automatic dependency handling built into `make install` instead (#2563).
-
+- Some Functions have been removed from `PEcAn.utils` package:([#2823](https://github.com/PecanProject/pecan/issues/2834))
+  - removed already deprecated functions `do_conversions`, `run.write.configs`, `get.ensemble.samples`, `read.ensemble.output`
+  - removed already deprecated `logger.R` functions:
+    - `logger.debug` ,`logger.error`, `logger.getLevel` ,`logger.info` ,`logger.setLevel` ,`logger.setOutputFile` ,`logger.setQuitOnSevere` ,`logger.setWidth` ,`logger.severe` , `logger.warn`
+-- Some functions have been moved out from `PecAn.utils` package:
+  - Function `get.results` has been moved to `PEcAn.uncertainty`.
+  - all `Plot.R` functions (`dhist`, `create.base.plot`, `plot_data`, `theme_border`) have been moved to `PEcAn.visualizaton`.
+  - all `Sensitivity.R` (`read.sa.output` & `write.sa.configs`) functions have been moved from `PEcAn.utils` to `PEcAn.uncertainty` package.([#2856](https://github.com/PecanProject/pecan/issues/2856))
 
 ## [1.7.1] - 2018-09-12
 
