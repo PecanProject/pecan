@@ -12,6 +12,7 @@ lapply(c(
 'araiho/linkages_package',
 'ebimodeling/biocro',
 'MikkoPeltoniemi/Rpreles',
+'r-lib/vdiffr@v1.0.2',
 'ropensci/geonames',
 'ropensci/nneo'
 ), remotes::install_github, lib = rlib)

@@ -23,6 +23,13 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     vdiffr (>= 1.0.2)
+X-Comment-Remotes:
+    Installing vdiffr from GitHub because as of 2021-09-23, this is the
+    easiest way to get version >= 1.0.2 onto Docker images that use older
+    Rstudio Package Manager snapshots.
+    When these are updated, OK to go back to installing vdiffr from CRAN.
+Remotes:
+    github::r-lib/vdiffr@v1.0.2
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
