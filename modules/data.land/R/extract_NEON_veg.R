@@ -41,15 +41,22 @@ massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", 
 perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
 #species info
-neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2019-01-01"), end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
 div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 #Filter joined.tree, joined.herb, and div_1m2 for required information: DBH, tree height, dryMass, taxonID (USDA code) and species info
 filter.tree <- dplyr::select(joined.tree, siteID.x, plotID.x, subplotID.x, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
 filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, clipArea, dryMass, collectDate.y)
-filter.species <- dplyr::select(div_1m2, plotID, taxonID, scientificName, taxonRank)
-#add species info to filter.herb
 colnames(filter.herb)[2] <- "plotID"
-filter.herb <- dplyr::left_join(filter.herb, filter.species, by = "plotID")
+filter.species <- dplyr::select(div_1m2, plotID, taxonID, scientificName, taxonRank)
+#check if species info is available for herb plots
+herb.plot <- unique(filter.herb$plotID)
+check.species <- herb.plot %in% filter.species$plotID
+if (TRUE %in% check.species) {
+  #add species info to filter.herb if it exists
+  filter.herb <- dplyr::left_join(filter.herb, filter.species, by = "plotID")
+}else{
+  PEcAn.logger::logger.info(paste0("No herbacious species info available for ", sitename))
+}
 #remove NAs
 filter.herb <- na.omit(filter.herb)
 filter.tree <- na.omit(filter.tree)
