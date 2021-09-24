@@ -59,7 +59,6 @@ check.inputs <- function(settings) {
         id <- settings$run$inputs[[tag]][["id"]]
         file <- PEcAn.DB::dbfile.file("Input", id, dbcon, hostname)
       
-        #file <- PEcAn.DB::dbfile.check("Input", id, dbcon, hostname, return.all = TRUE)
         if (is.na(file)) {
           PEcAn.logger::logger.error(
             "No file found for", tag, " and id", id, "on host", hostname)
