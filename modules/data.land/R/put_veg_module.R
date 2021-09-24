@@ -1,6 +1,4 @@
-##' @description Match species to PFTs + veg2model module
-##' @name put_veg_module
-##' @title put_veg_module
+##' Match species to PFTs + veg2model module
 ##' 
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB

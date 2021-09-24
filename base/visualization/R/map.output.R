@@ -2,7 +2,7 @@
 #' 
 #'
 #' @param table data.table or data.frame with columns lat, lon, followed by variable names 
-#' @param variable Name of variable to be mapped
+#' @param variable name of variable to be mapped
 #' @return plot
 #' @export
 #' @author David LeBauer
