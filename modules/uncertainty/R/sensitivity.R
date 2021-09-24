@@ -26,7 +26,6 @@
 ##'   If NULL, will look in `pecandir` for a file named `samples.Rdata`
 ##'   and read from that
 ##' @export
-##' @importFrom magrittr %>%
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
@@ -37,8 +36,9 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
   if (is.null(sa.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
-      load(samples.file)
-      sa.run.ids <- runs.samples$sa
+      samples <- new.env()
+      load(samples.file, envir = samples)
+      sa.run.ids <- samples$runs.samples$sa
     } else {
       PEcAn.logger::logger.error(samples.file, "not found, this file is required by the read.sa.output function")
     }
@@ -59,10 +59,12 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
         # if SA is requested on a variable available per pft, pass pft.name to read.output
         # so that it only returns values for that pft
         pass_pft <- switch(per.pft + 1, NULL, pft.name) 
-        out.tmp <- read.output(runid = run.id, outdir = file.path(outdir, run.id), 
-                               start.year = start.year, end.year = end.year, 
-                               variables = variables[var], 
-                               pft.name = pass_pft)
+        out.tmp <- PEcAn.utils::read.output(
+          runid = run.id,
+          outdir = file.path(outdir, run.id),
+          start.year = start.year, end.year = end.year,
+          variables = variables[var],
+          pft.name = pass_pft)
         assign(variables[var], out.tmp[[variables[var]]])
       }
       
@@ -124,11 +126,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   runs <- data.frame()
   
   # Reading the site.pft specific tags from xml
-  site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
+  site.pfts.vec <- as.character(unlist(settings$run$site$site.pft))
   
   if(!is.null(site.pfts.vec)){
     # find the name of pfts defined in the body of pecan.xml
-    defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+    defined.pfts <- as.character(unlist(purrr::map(settings$pfts, 'name')))
     # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
     if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
       quantile.samples <- quantile.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
@@ -183,7 +185,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       }
     }
   } else {
-    run.id <- get.run.id("SA", "median")
+    run.id <- PEcAn.utils::get.run.id("SA", "median")
     ensemble.id <- NA
   }
   medianrun <- run.id
@@ -285,10 +287,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               }
             }
           } else {
-            run.id <- get.run.id("SA", 
-                                 round(quantile, 3), 
-                                 trait = trait, 
-                                 pft.name = names(trait.samples)[i])
+            run.id <- PEcAn.utils::get.run.id(
+              run.type = "SA",
+              index = round(quantile, 3),
+              trait = trait,
+              pft.name = names(trait.samples)[i])
           }
           runs[[pftname]][quantile.str, trait] <- run.id
           
