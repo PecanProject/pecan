@@ -101,8 +101,8 @@ This is a major change:
 - Some Functions have been removed from `PEcAn.utils` package:([#2823](https://github.com/PecanProject/pecan/issues/2834))
   - removed already deprecated functions `do_conversions`, `run.write.configs`, `get.ensemble.samples`, `read.ensemble.output`
   - removed already deprecated `logger.R` functions:
-    - `logger.debug` ,`logger.error`, `logger.getLevel` ,`logger.info` ,`logger.setLevel` ,`logger.setOutputFile` ,`logger.setQuitOnSevere` ,`logger.setWidth` ,`logger.severe` , `logger.warn`
--- Some functions have been moved out from `PecAn.utils` package:
+    - `logger.debug` ,`logger.error`, `logger.getLevel` ,`logger.info` ,`logger.setLevel` ,`logger.setOutputFile` ,`logger.setQuitOnSevere` ,`logger.setWidth` ,`logger.severe` ,   `logger.warn`
+- Some functions have been moved out from `PecAn.utils` package:
   - Function `get.results` has been moved to `PEcAn.uncertainty`.
   - all `Plot.R` functions (`dhist`, `create.base.plot`, `plot_data`, `theme_border`) have been moved to `PEcAn.visualizaton`.
   - all `Sensitivity.R` (`read.sa.output` & `write.sa.configs`) functions have been moved from `PEcAn.utils` to `PEcAn.uncertainty` package.([#2856](https://github.com/PecanProject/pecan/issues/2856))
