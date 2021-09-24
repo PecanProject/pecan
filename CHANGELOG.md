@@ -94,7 +94,6 @@ This is a major change:
 - Ability to run with [MERRA-2 meteorology](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/) (reanalysis product based on GEOS-5 model)
 - Ability to run with ICOS Ecosystem products
 
-
 ### Removed
 
 - Removed travis integration
