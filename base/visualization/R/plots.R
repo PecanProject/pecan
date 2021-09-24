@@ -12,8 +12,7 @@
 ##' One could also choose to make them all have the same area.
 ##' These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
 ##' We describe a compromise approach which avoids both of these defects. We regard the histogram as an exploratory device, rather than as an estimate of a density. 
-##' @name dhist
-##' @title Diagonally Cut Histogram 
+##' 
 ##' @param x is a numeric vector (the data)
 ##' @param a is the scaling factor, default is 5 * IQR
 ##' @param nbins is the number of bins, default is assigned by the Stuges method
