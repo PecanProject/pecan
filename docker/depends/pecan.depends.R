@@ -14,8 +14,8 @@ lapply(c(
 'MikkoPeltoniemi/Rpreles',
 'r-lib/testthat@v3.0.4',
 'r-lib/vdiffr@v1.0.2',
-'ropensci/geonames',
-'ropensci/nneo'
+'ropensci-archive/nneo',
+'ropensci/geonames'
 ), remotes::install_github, lib = rlib)
 
 # install all packages (depends, imports, suggests)
