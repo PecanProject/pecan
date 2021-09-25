@@ -63,7 +63,7 @@ Suggests:
     reticulate
 Remotes:
     github::ropensci/geonames,
-    github::ropensci/nneo
+    github::ropensci-archive/nneo
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
