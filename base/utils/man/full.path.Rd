@@ -6,6 +6,9 @@
 \usage{
 full.path(folder)
 }
+\arguments{
+\item{folder}{folder for file paths.}
+}
 \value{
 absolute path
 }

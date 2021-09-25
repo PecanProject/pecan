@@ -65,7 +65,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   endname <- strsplit(outfname, "_")
   endname <- endname[[1]][length(endname[[1]])]
-  endname <- substr(endname, 1, nchar(endname) - 4)
+  endname <- gsub("\\..*", "", endname) 
   outcsvname <- paste0(substr(outfname, 1, 15), "_", file_timestep_hh, "_", endname, ".csv")
   output_csv_file <- file.path(outfolder, outcsvname)
   outcsvname_hr <- paste0(substr(outfname, 1, 15), "_", file_timestep_hr, "_", endname, ".csv")

@@ -19,6 +19,7 @@ Imports:
     ggplot2,
     MASS
 Suggests:
+    PEcAn.visualization,
     testthat
 Encoding: UTF-8
 RoxygenNote: 7.0.2

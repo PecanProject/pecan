@@ -7,7 +7,11 @@
 grid2netcdf(gdata, date = "9999-09-09", outfile = "out.nc")
 }
 \arguments{
-\item{grid.data}{}
+\item{gdata}{gridded data to write out}
+
+\item{date}{currently ignored; date(s) from \code{gdata} are used instead}
+
+\item{outfile}{name for generated netCDF file.}
 }
 \value{
 writes netCDF file
