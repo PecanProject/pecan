@@ -57,6 +57,7 @@ jobs:
         shell: bash
         env:
           FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo ${FILES} \
           | tr ' ' '\n' \
