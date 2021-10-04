@@ -29,7 +29,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   # Prepare for sampling
   # NOTE: This function might call different functions in the future, e.g. : sample_cohort, sample_pool, or both
   # Then, the rest of the script would change, this is cohort-based only
-  
+  # 
   # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
   
