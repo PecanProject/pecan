@@ -1,11 +1,16 @@
 Package: PEcAn.SIBCASA
 Type: Package
 Title: PEcAn package for integration of the SiBCASA model
-Version: 1.5.2
-Date: 2017-12-04
-Author: Tony Gardella, Yasin Elshorabany
-Maintainer: Tony Gardella <tonygard@bu.edu>
+Version: 0.0.1
+Date: 2021-10-07
+Authors@R: c(person("Rob", "Kooper", role = "cre",
+                email = "kooper@illinois.edu"),
+             person("Tony", "Gardella", role = "aut",
+                email = "tonygard@bu.edu"),
+             person("Yasin", "Elshorabany", role = "aut"),
+             person("Chris", "Black", role = "aut"))
 Description: This module provides functions to link (SiBCASA) to PEcAn.
+    It is a work in progress and is not yet fully functional.
 Imports:
     ncdf4,
     PEcAn.logger,
