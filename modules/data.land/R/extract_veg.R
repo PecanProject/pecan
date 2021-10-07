@@ -3,8 +3,8 @@
 ##' @title extract_veg
 ##' 
 ##' @param new_site new_site object passed from ic_process includes lat, lon, id, and name
-##' @param start_date "YYYY-MM-DD"
-##' @param end_date "YYYY-MM-DD"
+##' @param startdate "YYYY-MM-DD"
+##' @param enddate "YYYY-MM-DD"
 ##' @param source taken from input$source, passed from ic_process
 ##' @param gridres only used for source = "FIA"
 ##' @param format_name DEFAULT=NULL
@@ -17,7 +17,7 @@
 ##' @return results object to be passed back to get.veg.module
 ##' @export
 ##' @author Istem Fer
-extract_veg <- function(new_site, start_date, end_date, 
+extract_veg <- function(new_site, startdate, enddate, 
                      source, gridres, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
   #code taken from https://stackoverflow.com/questions/14183766/match-fun-provide-error-with-functions-defined-inside-functions
@@ -34,7 +34,9 @@ extract_veg <- function(new_site, start_date, end_date,
    }
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
-  
+   #set start and end date as date objects
+   start_date = as.Date(startdate)
+   end_date = as.Date(enddate)
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
  #Need a better way to check if the function exists
  if (!exists(fcnx)) {
@@ -45,7 +47,7 @@ extract_veg <- function(new_site, start_date, end_date,
  # extract_* functions need to have standard args
  lon <- as.numeric(new_site$lon)
  lat <- as.numeric(new_site$lat)
- veg_info <- fcn(lon = lon, lat = lat, start_date, end_date, gridres, dbparms)
+ veg_info <- fcn(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
  
  #veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
  

@@ -6,8 +6,8 @@
 \usage{
 extract_veg(
   new_site,
-  start_date,
-  end_date,
+  startdate,
+  enddate,
   source,
   gridres,
   format_name = NULL,
@@ -21,9 +21,9 @@ extract_veg(
 \arguments{
 \item{new_site}{new_site object passed from ic_process includes lat, lon, id, and name}
 
-\item{start_date}{"YYYY-MM-DD"}
+\item{startdate}{"YYYY-MM-DD"}
 
-\item{end_date}{"YYYY-MM-DD"}
+\item{enddate}{"YYYY-MM-DD"}
 
 \item{source}{taken from input$source, passed from ic_process}
 

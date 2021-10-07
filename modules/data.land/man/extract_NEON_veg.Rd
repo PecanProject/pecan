@@ -4,14 +4,16 @@
 \alias{extract_NEON_veg}
 \title{extract_NEON_veg}
 \usage{
-extract_NEON_veg(new_site, start_date, end_date, ...)
+extract_NEON_veg(lon, lat, startdate, enddate, ...)
 }
 \arguments{
-\item{new_site}{object passed from get_veg_module that includes site lat, lon, id, and name}
+\item{lon}{site longitude coordinate passed from get_veg_module}
 
-\item{start_date}{"YYYY-MM-DD", used to download NEON datasets for desired time period}
+\item{lat}{site latitude coordinate passed from get_veg_module}
 
-\item{end_date}{"YYYY_MM_DD", used to download NEON datasets for desired time period}
+\item{startdate}{"YYYY-MM-DD", used to download NEON datasets for desired time period}
+
+\item{enddate}{"YYYY_MM_DD", used to download NEON datasets for desired time period}
 
 \item{...}{Additional parameters}
 }

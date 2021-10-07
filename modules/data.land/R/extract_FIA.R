@@ -1,8 +1,8 @@
 ##' @param lon site longitude 
 ##'
 ##' @param lat site latitude
-##' @param start_date "YYYY-MM-DD"
-##' @param end_date "YYYY-MM-DD"
+##' @param startdate "YYYY-MM-DD"
+##' @param enddate "YYYY-MM-DD"
 ##' @param gridres taken from input_veg, DEFAULT = 0.075
 ##' @param dbparms taken from settings object
 ##' @param ... Additional parameters
@@ -11,9 +11,12 @@
 ##' @title extract_FIA
 ##' @export
 ##' @author Istem Fer
-extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms, ...){
+extract_FIA <- function(lon, lat, startdate, enddate, gridres = 0.075, dbparms, ...){
   
-
+  #Set start_date and end_date as Date objects
+  start_date = as.Date(startdate)
+  end_date = as.Date(enddate)
+  
   veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)

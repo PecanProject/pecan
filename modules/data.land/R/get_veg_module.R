@@ -44,7 +44,10 @@ get_veg_module <- function(input_veg,
     
     fcn <- "extract_veg"
 
-
+  #set start_date and end_date as startdate and enddate in order to pass to functions
+  startdate = start_date
+  enddate = end_date
+    
   getveg.id <- PEcAn.utils::convert.input(input.id = NA,
                                 outfolder = outfolder,
                                 formatname = "spp.info",
@@ -57,9 +60,13 @@ get_veg_module <- function(input_veg,
                                 overwrite = overwrite,
                                 # fcn specific args
                                 new_site = new_site,
-                                gridres = input_veg$gridres, dbparms = dbparms,
-                                machine_host = machine_host, input_veg = input,
-                                source = input_veg$source)
+                                startdate = startdate, 
+                                enddate = enddate,
+                                source = input_veg$source,
+                                gridres = input_veg$gridres, 
+                                machine_host = machine_host, 
+                                dbparms = dbparms,
+                                input_veg = input)
   
     
     return(getveg.id)
