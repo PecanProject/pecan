@@ -7,21 +7,17 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##-------------------------------------------------------------------------------------------------#
-##' Convert SIBCASA output into the NACP Intercomparison format (ALMA using netCDF)
-##' 
-##' @name model2netcdf.SIBCASA
-##' @title Code to convert SIBCASA output into netCDF format
-##'
-##' @param outdir Location of model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @export
-##'
-##' @author Tony Gardella
-outdir <- "/fs/data3/tonygard/work/misc/recieving_files/sibcasa/output/"
+#-------------------------------------------------------------------------------------------------#
+#' Convert SIBCASA output into the NACP Intercomparison format (ALMA using netCDF)
+#'
+#' @param outdir Location of model output
+#' @param sitelat Latitude of the site
+#' @param sitelon Longitude of the site
+#' @param start_date Start time of the simulation
+#' @param end_date End time of the simulation
+#' @export
+#'
+#' @author Tony Gardella
 model2netcdf.SIBCASA <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Get Files
