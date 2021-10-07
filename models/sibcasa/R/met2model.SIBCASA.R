@@ -14,7 +14,8 @@
 #'
 #' @param in.path path on disk where CF file lives
 #' @param in.prefix prefix for each file
-#' @param outfolder location where model specific output is written.
+#' @param outfolder location where model specific output is written
+#' @param overwrite logical: Replace output if it already exists?
 #' @return OK if everything was succesful.
 #' @export
 #' @author Tony Gardella

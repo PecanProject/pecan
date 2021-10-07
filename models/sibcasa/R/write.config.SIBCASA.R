@@ -14,7 +14,7 @@
 #' and the name of the file to create
 #'
 #' @param defaults list of defaults to process
-#' @param trait.samples vector of samples for a given trait
+#' @param trait.values vector of values for a given trait
 #' @param settings list of settings from pecan settings file
 #' @param run.id id of run
 #' @return configuration file for SIBCASA for given run

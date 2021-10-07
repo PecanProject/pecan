@@ -7,6 +7,7 @@ Author: Tony Gardella, Yasin Elshorabany
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link (SiBCASA) to PEcAn.
 Imports:
+    ncdf4,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8)
 Suggests:
@@ -14,9 +15,8 @@ Suggests:
     withr
 SystemRequirements: SiBCASA
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
-LazyLoad: yes
-LazyData: FALSE
+LazyData: TRUE
 Encoding: UTF-8
 RoxygenNote: 7.0.2

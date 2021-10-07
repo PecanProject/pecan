@@ -11,7 +11,9 @@ met2model.SIBCASA(in.path, in.prefix, outfolder, overwrite = FALSE)
 
 \item{in.prefix}{prefix for each file}
 
-\item{outfolder}{location where model specific output is written.}
+\item{outfolder}{location where model specific output is written}
+
+\item{overwrite}{logical: Replace output if it already exists?}
 }
 \value{
 OK if everything was succesful.
