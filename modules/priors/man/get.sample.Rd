@@ -4,12 +4,15 @@
 \alias{get.sample}
 \title{Get Samples}
 \usage{
-get.sample(prior, n)
+get.sample(prior, n = NULL, p = NULL)
 }
 \arguments{
-\item{prior}{data.frame with distn, parama, paramb}
+\item{prior}{data.frame with distn, parama, and optionally paramb.}
 
-\item{n}{number of samples to return}
+\item{n}{number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)}
+
+\item{p}{vector of quantiles from which to sample the distribution; typically pre-generated upstream
+in the workflow to be used by the qdistn family of functions (e.g. qnorm)}
 }
 \value{
 vector with n random samples from prior
@@ -18,7 +21,20 @@ vector with n random samples from prior
 Take n random samples from prior
 }
 \details{
-Like pr.samp, with prior as a single input
+Similar to the prior sample function \link{pr.samp}, except 1) it takes the prior as a named dataframe
+or list and it can return either a random sample of length n OR a sample from a quantile specified as p
+}
+\examples{
+\dontrun{
+# return 1st through 99th quantile of standard normal distribution:
+PEcAn.priors::get.sample(
+   prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+   p = 1:99/100)
+# return 100 random samples from standard normal distribution:
+PEcAn.priors::get.sample(
+   prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+   n = 100)
+}
 }
 \seealso{
 \link{pr.samp}

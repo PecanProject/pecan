@@ -17,3 +17,25 @@ This function returns a list of two pieces of information. One the remote path t
 \description{
 SDA_remote_launcher
 }
+\examples{
+\dontrun{
+ # This example can be found under inst folder in the package
+ library(PEcAn.all)
+ library(purrr)
+ 
+ run.bash.args <- c(
+  "#$ -l h_rt=48:00:00",
+  "#$ -pe omp 28 # Request a parallel environment with 4 cores",
+  "#$ -l mem_per_core=1G # and 4G memory for each",
+  "#$ -l buyin",
+  "module load R/3.5.2",
+  "module load python/2.7.13"
+  )
+ settingPath <-"pecan.SDA.4sites.xml"
+
+ ObsPath <- "Obs/LandTrendr_AGB_output50s.RData"
+   
+ SDA_remote_launcher(settingPath, ObsPath, run.bash.args)
+}
+
+}

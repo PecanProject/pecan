@@ -7,6 +7,9 @@
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                               settings, new.state, RENAME = TRUE, new.params, inputs) {
   
+  var.names <- settings$state.data.assimilation$state.variables %>%
+    purrr::map('variable.name')
+  
   restart <- new.params$restart
   
   # IMPORTANT NOTE: in the future, things that are passed via "restart" list need to be confined to old states that will be used
@@ -214,7 +217,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   # copy the history file with new states and new timestamp to remote 
   # it's OK, because we backed up the original above
-  PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
+  #PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
   
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")

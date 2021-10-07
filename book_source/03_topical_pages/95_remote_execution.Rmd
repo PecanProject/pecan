@@ -308,8 +308,7 @@ will fall back on the older versions install site-library
 
 ```
 install.packages(c('udunits2', 'lubridate'), 
-   configure.args=c(udunits2='--with-udunits2-lib=/project/earth/packages/udunits-2.1.24/lib --with-udunits2-include=/project/earth/packages/udunits-2.1.24/include'),
-   repos='http://cran.us.r-project.org')
+   configure.args=c(udunits2='--with-udunits2-lib=/project/earth/packages/udunits-2.1.24/lib --with-udunits2-include=/project/earth/packages/udunits-2.1.24/include'))
 ```
 
 Finally to install support for both ED and SIPNET:

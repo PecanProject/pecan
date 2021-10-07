@@ -8,18 +8,23 @@ source("auth.R")
 source("general.R")
 
 # Set up the global database pool
-.bety_params <- PEcAn.DB::get_postgres_envvars(
-  host = "localhost",
-  dbname = "bety",
-  user = "bety",
-  password = "bety",
-  driver = "Postgres"
-)
+#.bety_params <- PEcAn.DB::get_postgres_envvars(
+#  host = "localhost",
+#  dbname = "bety",
+#  user = "bety",
+#  password = "bety",
+#  driver = "Postgres"
+#)
+#
+#.bety_params$driver <- NULL
+#.bety_params$drv <- RPostgres::Postgres()
+#global_db_pool <- do.call(pool::dbPool, .bety_params)
+global_db_pool <- PEcAn.DB::betyConnect()
 
-.bety_params$driver <- NULL
-.bety_params$drv <- RPostgres::Postgres()
-global_db_pool <- do.call(pool::dbPool, .bety_params)
+# redirect to trailing slash
+plumber::options_plumber(trailingSlash=TRUE)
 
+# root router
 root <- plumber::Plumber$new()
 root$setSerializer(plumber::serializer_unboxed_json())
 
@@ -64,9 +69,12 @@ root$mount("/api/runs", runs_pr)
 runs_pr <- plumber::Plumber$new("available-models.R")
 root$mount("/api/availableModels", runs_pr)
 
+# set swagger documentation
+root$setApiSpec("../pecanapi-spec.yml")
+
+# enable debug
+root$setDebug(TRUE)
+
 # The API server is bound to 0.0.0.0 on port 8000
 # The Swagger UI for the API draws its source from the pecanapi-spec.yml file
-root$run(host="0.0.0.0", port=8000, debug=TRUE, swagger = function(pr, spec, ...) {
-  spec <- yaml::read_yaml("../pecanapi-spec.yml")
-  spec
-})
+root$run(host="0.0.0.0", port=8000)

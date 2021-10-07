@@ -75,6 +75,40 @@ write.data2pecan.file <- function(y_starts, outdir, pecan_requested_vars, monthl
         dim.order <- sapply(ncin_tr_y$var[[k]]$dim, function(x) x$name)
         starts <-c(y = px_Y, x = px_X, time = 1)
 
+        # What if variable as output from dvmdostem is by pft, or layer or pft and
+        # compartment (pftpart)?
+        #
+        # Guessing/assuming that this is a "calibration run" and that the
+        # dvmdostem calibraiton variables were enabled, which includes netCDF 
+        # output by PFT and soil layer. These have to be sumarized in order to be 
+        # included in the pecan output.") 
+        #
+        # Due to the way R handles NetCDF files, it appears that the dimensions of
+        # vardata_new are (X, Y, PFT, TIME), even though in the NetCDf file, the 
+        # dimensions are explicitly set as y, x, pft, time as reccomended by the
+        # CF standards. In this case we want to sum over pft, which is the 3rd 
+        # dimension in vardata_new. Note, to further confuse things, the 
+        # ncdf4.helpers::nc.get.dim.names() function returns the following: 
+        #
+        #     Browse[4]> nc.get.dim.names(ncin_tr_y)
+        #     [1] "time" "y"    "x"    "pft" 
+        #
+        # But some testing in an interactive R session seems to indicate that
+        # the following apply function sums over PFTs as we want, and we end up
+        # with vardata_new being an array with the dimensions X, Y, time
+        if (length(dim(vardata_new)) == 5) {
+          PEcAn.logger::logger.debug("")
+          vardata_new <- apply(vardata_new, c(1,2,5), function(x) sum(x))
+          dim.order <- dim.order[!dim.order %in% c('pft', 'pftpart')]
+        }
+        if (length(dim(vardata_new)) == 4){
+          PEcAn.logger::logger.debug("")
+          vardata_new <- apply(vardata_new, c(1,2,4), function(x) sum(x))
+          dim.order <- dim.order[!dim.order %in% c('pft', 'layer')]
+        }
+        #if ('pft' %in% nc.get.dim.names(ncin_tr_y)) {}
+        #if ('layers' %in% nc.get.dim.names(ncin_tr_y)) {}
+        #if ('pft' %in% nc.get.dim.names(ncin_tr_y))
 
         if (TRUE %in% sapply(monthly_dvmdostem_outputs, function(x) grepl(paste0("^",k,"_"), x))) {
           # The current variable (j) is a monthly output
@@ -163,6 +197,10 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend, pecan_requested_var
     #skipped_px <- which(run_status == 0)
     #bad_px <- which(run_status < 0)
   }
+
+  # A less aggressive check here might be to see if enough of the transient
+  # and scenario runs completed to do the analysis we need...
+
 
   # Get the actual pixel coords of the cell that ran
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices

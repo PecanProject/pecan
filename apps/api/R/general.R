@@ -11,14 +11,13 @@ ping <- function(req){
 #* @return Details about the database host
 #* @author Tezan Sahu
 status <- function() {
-  
   ## helper function to obtain environment variables
   get_env_var = function (item, default = "unknown") {
     value = Sys.getenv(item)
     if (value == "") default else value
   }
   
-  res <- list(host_details = PEcAn.DB::dbHostInfo(dbcon))
+  res <- list(host_details = PEcAn.DB::dbHostInfo(global_db_pool))
   res$host_details$authentication_required = get_env_var("AUTH_REQ")
   
   res$pecan_details <- list(

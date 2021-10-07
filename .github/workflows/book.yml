@@ -14,9 +14,11 @@ on:
 jobs:
   bookdown:
     runs-on: ubuntu-latest  
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     container: 
-      image: pecan/depends:R4.0.2
+      image: pecan/depends:R4.0.3
 
     steps:
     # checkout source code

@@ -4,7 +4,28 @@
 \alias{put_E_values}
 \title{Function for put -E- values to nc_var list}
 \usage{
-put_E_values(yr, nc_var, out, lat, lon, begins, ends, pft_names, ...)
+put_E_values(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...)
+}
+\arguments{
+\item{yr}{the year being processed}
+
+\item{nc_var}{list of .nc files}
+
+\item{out}{path to run outdir}
+
+\item{lat}{latitude of site}
+
+\item{lon}{longitude of site}
+
+\item{begins}{start time of simulation}
+
+\item{ends}{end time of simulation}
+
+\item{pfts}{manually input list of Pecan PFT numbers}
+
+\item{settings}{Pecan settings object}
+
+\item{...}{additional arguments}
 }
 \description{
 Function for put -E- values to nc_var list

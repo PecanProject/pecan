@@ -7,7 +7,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-### Due to dependencies, PEcAn is now using R 4.0.2 for Docker images.
+### Due to dependencies, PEcAn is now using R 4.0.3 for Docker images.
 
 This is a major change:
 
@@ -35,11 +35,19 @@ This is a major change:
 - Do not override meta-analysis settings random-effects = FALSE https://github.com/PecanProject/pecan/pull/2625
 - model2netcdf.ED2 no longer detecting which varibles names `-T-` files have based on ED2 version (#2623)
 - Changed docker-compose.yml to use user & group IDs of the operating system user (#2572)  
--gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- gSSURGO file download now added as inputs into BETY through extract_soil_gssurgo (#2666)
+- ensure Tleaf converted to K for temperature corrections in PEcAn.photosynthesis::fitA (#2726)
+- fix bug in summarize.result to output stat, which is needed to turn on RE in the meta-analysis (#2753)
+- ensure that control treatments always receives the random effect index of 1; rename madata.Rdata to jagged.data.Rdata and include database ids and names useful for calculating parameter estimates by treatment (#2756)
+- ensure that existing meta-analysis results can be used for pfts with cultivars (#2761)
+- Major code cleanup by GSoC student @moki1202, fixing many check warnings across 10 packages
+  (#2771, #2773, #2774, #2775, #2805, #2815, #2826, #2830, #2857)
 
 ### Changed
 
-- Now using R 4.0.2 for Docker images. This is a major change. Newer version of R and using Ubuntu 20.04 instead of Debian.
+- Removed deprecated mstmip_vars and mstmip_local; now all functions use the combined standard_vars.csv  
+- RabbitMQ is set to be 3.8 since the 3.9 version can no longer be configured with environment variables.
+- Removed old api, now split into rpecanapi and apps/api.
 - Replaced `tmvtnorm` package with `TruncatedNormal` package for speed up per #2621.
 - Continuous integration changes: Added experimental GitHub Actions CI builds (#2544), streamlined Travis CI builds, added a fourth R version (second-newest old release; currently R 3.5) to Travis test matrix (#2592).
 - Functions that update database entries no longer pass `created_at` or `updated_at` timestamps. The database now updates these itself and ensures they are consistently in UTC (#1083).
@@ -55,10 +63,19 @@ This is a major change:
 - PEcAn.JULES: Removed dependency on `ncdf4.helpers` package, which has been removed from CRAN (#2511).
 - data.remote: Arguments to the function `call_MODIS()` have been changed (issue #2519). 
 - Changed precipitaion downscale in `PEcAn.data.atmosphere::download.NOAA_GEFS_downscale`. Precipitation was being downscaled via a spline which was causing fake rain events. Instead the 6 hr precipitation flux values from GEFS are preserved with 0's filling in the hours between. 
--Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
+- Changed `dbfile.input.insert` to work with inputs (i.e soils) that don't have start and end dates associated with them 
+- Default behavior for `stop_on_error` is now `TRUE` for non-ensemble runs; i.e., workflows that run only one model simulation (or omit the `ensemble` XML group altogether) will fail if the model run fails. For ensemble runs, the old behavior is preserved; i.e., workflows will continue even if one of the model runs failed. This behavior can also be manually controlled by setting the new `run -> stop_on_error` XML tag to `TRUE` or `FALSE`.
+- Several functions have been moved out of `PEcAn.utils` into other packages (#2830, #2857):
+  * `ensemble.filename`, `get.results`, `runModule.get.results`, `read.sa.output`, `sensitivity.filename`,
+    and `write.sa.configs` have been moved to `PEcAn.uncertainty`.
+  * `create.base.plot`, `dhist`, `plot_data` and `theme_border` have been moved to `PEcAn.visualizaton`.
 
 ### Added
 
+- BioCro can export Aboveground Biomass (#2790)
+- Functionality for generating the same ensemble parameter sets with randtoolbox functions.
+- Functionality for joint sampling from the posteriors using randtoolbox functions.
+- BASGRA-SDA couplers.
 - Now creates docker images during a PR, when merged it will push them to docker hub and github packages
 - New functionality to the PEcAn API to GET information about PFTs, formats & sites, submit workflows in XML or JSON formats & download relevant inputs/outputs/files related to runs & workflows (#2674 #2665 #2662 #2655)
 - Functions to send/receive messages to/from rabbitmq.
@@ -74,15 +91,23 @@ This is a major change:
 - Documentation how to run ED using singularity
 - PEcAn.DB gains new function `get_postgres_envvars`, which tries to look up connection parameters from Postgres environment variables (if they are set) and return them as a list ready to be passed to `db.open`. It should be especially useful when writing tests that need to run on systems with many different database configurations (#2541).
 - New shiny application to show database synchronization status (shiny/dbsync)
+- Ability to run with [MERRA-2 meteorology](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/) (reanalysis product based on GEOS-5 model)
+- Ability to run with ICOS Ecosystem products
 
 ### Removed
 
+- Removed travis integration
 - Removed the sugarcane and db folders from web, this removes the simple DB editor in the web folder. (#2532)
 - Removed ED2IN.git (#2599) 'definitely going to break things for people' - but they can still use PEcAn <=1.7.1
 - Database maintenance scripts `vacuum.bety.sh` and `reindex.bety.sh` have been moved to the [BeTY database repository](https://github.com/PecanProject/bety) (#2563).
 - Scripts `dump.pgsql.sh` and `dump.mysql.sh` have been deleted. See the ["BeTY database administration"](https://pecanproject.github.io/pecan-documentation/develop/database.html) chapter of the PEcAn documentation for current recommendations (#2563).
 - Old dependency management scripts `check.dependencies.sh`, `update.dependencies.sh`, and `install_deps.R` have been deleted. Use `generate_dependencies.R` and the automatic dependency handling built into `make install` instead (#2563).
-
+- Deprecated copies of functions previously moved to other packages have been removed from `PEcAn.utils` (#2830):
+  * `do_conversions` and `runModule.run.write.configs`, `run.write.configs`. These are now in `PEcAn.workflow`
+  * `get.ensemble.samples`, `read.ensemble.output`, `write.ensemble.configs`. These are now in `PEcAn.uncertainty`
+  * `logger.debug`, `logger.error`, `logger.getLevel`, `logger.info`, `logger.setLevel`,
+    `logger.setOutputFile`, `logger.setQuitOnSevere`, `logger.setWidth`, `logger.severe`, `logger.warn`.
+    These are now in `PEcAn.logger`
 
 ## [1.7.1] - 2018-09-12
 
