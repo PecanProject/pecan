@@ -78,14 +78,14 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
   namel_sibdrv <- gsub("@SITE_LAT@", settings$run$site$lat, nl_sib)
   namel_sibdrv <- gsub("@SITE_LON@", settings$run$site$lon, nl_sib)
   namel_sibdrv <- gsub("@SITE_MET@", settings$run$inputs$met$path, nl_sib)
-  namel_sibdrv <- gsub("@START_DAY@", format(startdate, "%d"), nl_sib)
-  namel_sibdrv <- gsub("@START_YEAR@", format(startdate, "%Y"), nl_sib)
-  namel_sibdrv <- gsub("@END_YEAR@", format(enddate, "%Y"), nl_sib)
+  namel_sibdrv <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), nl_sib)
+  namel_sibdrv <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), nl_sib)
+  namel_sibdrv <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), nl_sib)
   namel_sibdrv <- gsub("@OUTDIR@", settings$host$outdir, nl_sib)
   namel_sibdrv <- gsub("@OUTFILE@", paste0("out", run.id), nl_sib)
 
   #-----------------------------------------------------------------------
-  writeLines(namel_sibdrv, con = paste(, namel_sibdrv, sep = ""))
+  writeLines(namel_sibdrv, con = file.path(settings$rundir, run.id, "namel_sibdrv"))
 
   PEcAn.logger::logger.warn("Parameters are currently not handled ")
 }
