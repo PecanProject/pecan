@@ -15,4 +15,4 @@
 #'  \item{4}{description}
 #'  \item{5}{units}
 #'  \item{6}{unused}}
-"sibcasa_outvars"
+"sibcasa_output_vars"
