@@ -12,6 +12,8 @@ lapply(c(
 'araiho/linkages_package',
 'ebimodeling/biocro',
 'MikkoPeltoniemi/Rpreles',
+'r-lib/testthat@v3.0.4',
+'r-lib/vdiffr@v1.0.2',
 'ropensci/geonames',
 'ropensci/nneo'
 ), remotes::install_github, lib = rlib)
@@ -128,6 +130,8 @@ wanted <- c(
 'udunits2',
 'urltools',
 'utils',
+'vdiffr',
+'withr',
 'XML',
 'xtable',
 'xts',
