@@ -52,7 +52,6 @@ jobs:
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
-        token: ${{ secrets.GH_PAT }}
     # upload new documentation
     - name: publish to github
       if: github.event_name != 'pull_request'
