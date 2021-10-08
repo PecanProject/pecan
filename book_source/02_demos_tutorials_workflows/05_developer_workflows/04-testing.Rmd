@@ -1,0 +1,161 @@
+## Testing {#developer-testing}
+
+PEcAn uses two different kinds of testing -- [unit tests](#developer-testing-unit) and [integration tests](#developer-testing-integration).
+
+### Unit testing {#developer-testing-unit}
+
+Unit tests are short (<1 minute runtime) tests of functionality of specific functions.
+Ideally, every function should have at least one unit test associated with it.
+
+A unit test *should* be written for each of the following situations:
+
+1. Each bug should get a regression test.
+ * The first step in handling a bug is to write code that reproduces the error
+ * This code becomes the test
+ * most important when error could re-appear
+ * essential when error silently produces invalid results
+
+2. Every time a (non-trivial) function is created or edited
+ * Write tests that indicate how the function should perform
+     * example: `expect_equal(sum(1,1), 2)` indicates that the sum
+            function should take the sum of its arguments
+
+ * Write tests for cases under which the function should throw an
+        error
+  * example: `expect_error(sum("foo"))`
+  * better : `expect_error(sum("foo"), "invalid 'type' (character)")`
+3. Any functionality that you would like to protect over the long term. Functionality that is not tested is more likely to be lost.
+PEcAn uses the `testthat` package for unit testing.
+A general overview of is provided in the ["Testing"](http://adv-r.had.co.nz/Testing.html) chapter of Hadley Wickham's book "R packages".
+Another useful resource is the `testthat` [package documentation website](https://testthat.r-lib.org/).
+See also our [`testthat` appendix](#appendix-testthat).
+Below is a lightning introduction to unit testing with `testthat`.
+
+Each package's unit tests live in `.R` scripts in the folder `<package>/tests/testthat`.
+In addition, a `testthat`-enabled package has a file called `<packagename>/tests/testthat.R` with the following contents:
+
+```r
+library(testthat)
+library(<packagename>)
+
+test_check("<packagename>")
+```
+
+Tests should be placed in `<packagename>/tests/testthat/test-<sourcefilename>.R`, and look like the following:
+
+```r
+context("Mathematical operators")
+
+test_that("mathematical operators plus and minus work as expected",{
+  sum1 <- sum(1, 1)
+  expect_equal(sum1, 2)
+  sum2 <- sum(-1, -1)
+  expect_equal(sum2, -2)
+  expect_equal(sum(1,NA), NA)
+  expect_error(sum("cat"))
+  set.seed(0)
+  expect_equal(sum(matrix(1:100)), sum(data.frame(1:100)))
+})
+
+test_that("different testing functions work, giving excuse to demonstrate",{
+  expect_identical(1, 1)
+  expect_identical(numeric(1), integer(1))
+  expect_equivalent(numeric(1), integer(1))
+  expect_warning(mean('1'))
+  expect_that(mean('1'), gives_warning("argument is not numeric or logical: returning NA"))
+  expect_warning(mean('1'), "argument is not numeric or logical: returning NA")
+  expect_message(message("a"), "a")
+})
+```
+
+### Integration testing {#developer-testing-integration}
+
+Integration tests consist of running the PEcAn workflow in full.
+One way to do integration tests is to manually run workflows for a given version of PEcAn, either through the web interface or by manually creating a [`pecan.xml` file](#pecanXML).
+Such manual tests are an important part of checking PEcAn functionality.
+
+Alternatively, the [`base/workflow/inst/batch_run.R`][batch_run] script can be used to quickly run a series of user-specified integration tests without having to create a bunch of XML files.
+This script is powered by the [`PEcAn.workflow::create_execute_test_xml()`][xml_fun] function,
+which takes as input information about the model, meteorology driver, site ID, run dates, and others,
+uses these to construct a PEcAn XML file,
+and then uses the `system()` command to run a workflow with that XML.
+
+If run without arguments, `batch_run.R` will try to run the model configurations specified in the [`base/workflow/inst/default_tests.csv`][default_tests] file.
+This file contains a CSV table with the following columns:
+
+- `model` -- The name of the model (`models.model_name` column in BETY)
+- `revision` -- The version of the model (`models.revision` column in BETY)
+- `met` -- The name of the meteorology driver source
+- `site_id` -- The numeric site ID for the model run (`sites.site_id`)
+- `pft` -- The name of the plant functional type to run. If `NA`, the script will use the first PFT associated with the model.
+- `start_date`, `end_date` -- The start and end dates for the model run, respectively. These should be formatted according to ISO standard (`YYYY-MM-DD`, e.g. `2010-03-16`)
+- `sensitivity` -- Whether or not to run the sensitivity analysis. `TRUE` means run it, `FALSE` means do not.
+- `ensemble_size` -- The number of ensemble members to run. Set this to 1 to do a single run at the trait median.
+- `comment` -- An string providing some user-friendly information about the run.
+
+The `batch_run.R` script will run a workflow for every row in the input table, sequentially (for now; eventually, it will try to run them in parallel),
+and at the end of each workflow, will perform some basic checks, including whether or not the workflow finished and if the model produced any output.
+These results are summarized in a CSV table (by default, a file called `test_result_table.csv`), with all of the columns as the input test CSV plus the following:
+
+- `outdir` -- Absolute path to the workflow directory.
+- `workflow_complete` -- Whether or not the PEcAn workflow completed. Note that this is a relatively low bar -- PEcAn workflows can complete without having run the model or finished some other steps.
+- `has_jobsh` -- Whether or not PEcAn was able to write the model's `job.sh` script. This is a good indication of whether or not the model's `write.configs` step was successful, and may be useful for separating model configuration errors from model execution errors.
+- `model_output_raw` -- Whether or not the model produced any output files at all. This is just a check to see of the `<workflow>/out` directory is empty or not. Note that some models may produce logfiles or similar artifacts as soon as they are executed, whether or not they ran even a single timestep, so this is not an indication of model success.
+- `model_output_processed` -- Whether or not PEcAn was able to post-process any model output. This test just sees if there are any files of the form `YYYY.nc` (e.g. `1992.nc`) in the `<workflow>/out` directory.
+
+Right now, these checks are not particularly robust or comprehensive, but they should be sufficient for catching common errors.
+Development of more, better tests is ongoing.
+
+The `batch_run.R` script can take the following command-line arguments:
+
+- `--help` -- Prints a help message about the script's arguments
+- `--dbfiles=<path>`  -- The path to the PEcAn `dbfiles` folder. The default value is `~/output/dbfiles`, based on the file structure of the PEcAn VM. Note that for this and all other paths, if a relative path is given, it is assumed to be relative to the current working directory, i.e. the directory from which the script was called.
+- `--table=<path>` -- Path to an alternate test table. The default is the `base/workflow/inst/default_tests.csv` file. See preceding paragraph for a description of the format.
+- `--userid=<id>` -- The numeric user ID for registering the workflow. The default value is 99000000002, corresponding to the guest user on the PEcAn VM.
+- `--outdir=<path>` -- Path to a directory (which will be created if it doesn't exist) for storing the PEcAn workflow outputs. Default is `batch_test_output` (in the current working directory).
+- `--pecandir=<path>` -- Path to the PEcAn source code root directory. Default is the current working directory.
+- `--outfile=<path>` -- Full path (including file name) of the CSV file summarizing the results of the runs. Default is `test_result_table.csv`. The format of the output
+
+[batch_run]: https://github.com/pecanproject/pecan/tree/develop/base/workflow/inst/batch_run.R
+[default_tests]: https://github.com/pecanproject/pecan/tree/develop/base/workflow/inst/default_tests.csv
+[xml_fun]:
+
+### Continuous Integration
+
+Every time anyone commits a change to the PEcAn code, the act of pushing to GitHub triggers an automated build and test of the full PEcAn codebase, and all pull requests must report a successful CI build before they will be merged. This will sometimes feel like a burden when the build breaks on an issue that looks trivial, but anything that breaks the build is important enough to fix. It's much better to find errors early and fix them before they get incorporated into the released PEcAn code.
+
+At this writing PEcAn's CI builds primarily use [GitHub Actions](https://github.com/PecanProject/pecan/actions) and the rest of this section assumes a GitHub Actions.
+
+All our GitHub Actions builds run in a containers using different versions of R in parallel. The build will use the latest pecan/depends container for that specific R version. Each night this depends image is rebuild.
+
+Each build starts by launching a separate clean virtual machine for each R version and performs roughly the following actions on all of them:
+* Compile the source code in the container
+   - Installs all the R packages that are declared as dependencies in any PEcAn package, as computed by `scripts/generate_dependencies.R`.
+   - This will also check to see if any files have been modified during this step
+* Run the tests inside the container, and checks to see if they all pass
+  - This will also check to see if any files have been modified during this step
+* Run the doxygen command inside the container
+  - This will also check to see if any files have been modified during this step
+* Run the check command inside the container, and checks if there are any new warnings and/or errors
+  - Runs package unit tests (the same ones you run locally with `make test` or `devtools::test(pkgname)`).  
+    - As discussed in [Unit testing](#developer-testing-unit), these tests should run quickly and test individual components in relative isolation. 
+    - Any test that calls the `skip_on_ci` function will be skipped. This is useful for tests that need to run for a very long time (e.g. large data product downloads) or require resources that aren't available on Travis (e.g. specific models), but be sure to run these tests locally before pushing your code! 
+  - This will also check to see if any files have been modified during this step
+    - Any ERROR in the check output will stop the build immediately.  
+    - If there are no ERRORs, any WARNINGs or NOTEs are compared against a stored historic check result in `<package>/tests/Rcheck_reference.log`. If the package has no stored reference result, all WARNINGs and NOTEs are considered newly added and reported as build failures. 
+    - If all messages from the current built were also present in the reference result, the check passes. If any messages are newly added, a build failure is reported. 
+    - Each line of the check log is considered a separate message, and the test requires exact matching, so a change from `Undocumented arguments in documentation object 'foo': 'x'` to `Undocumented arguments in documentation object 'foo': 'x', 'y'` will be counted as a new warning... and you should fix both of them while you're at it! 
+    - The idea here is to enforce good coding practice and catch likely errors in all new code while recognizing that we have a lot of legacy code whose warnings need to be fixed as we have time rather than all at once. 
+    - As we fix historic warnings, we will revoke their grandfathered status by removing them from the stored check results, so that they will break the build if they reappear.  
+    - If your PR reports a failure in pre-existing code that you think ought to be grandfathered, please fix it as part of your PR anyway. It's frustrating to see tests complain about code you didn't touch, but the failures all need to be cleaned up eventually and it's likely easier to fix the error than to figure out how to re-ignore it.  
+* Run a simple integration test using SIPNET model
+* Create the docker images
+  - Once your PR is merged, it will push them to DockerHub and github container repository.
+* Compiles the PEcAn documentation book (`book_source`) and the tutorials (`documentation/tutorials`) and uploads them to the [PEcAn website](https://pecanproject.github.io/pecan-documentation).
+    - This is only done for commits to the `master` or `develop` branch, so changes to in-progress pull requests never change the live documentation until after they are merged.
+
+If your build fails and indicates that files have been modified there are a few common causes. It should also list the files that have changes, and what has changed.
+* The most common cause is that you forgot to Roxygenize before committing.
+* This step will also detect newly added files, e.g. tests improperly writing to the current working directory rather than `tempdir()` and then failing to clean up after themselves.
+
+If any of the actionsreports an error, the build is marked as "failed". If they all pass, the GitHub actions marks the build as successful and tells the PR that it's OK to allow your changes to be merged... but the final decision belongs to the human reviewing your code and they might still ask you for other changes!

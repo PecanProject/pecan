@@ -58,6 +58,10 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
   
+  ## Save the jagged.data object, replaces previous madata.Rdata object
+  ## First 6 columns are equivalent and direct inputs into the meta-analysis
+  save(jagged.data, file = file.path(pft$outdir, "jagged.data.Rdata"))
+  
   if(!use_ghs){
     # check if any data left after excluding greenhouse
     all_trait_check <- sapply(jagged.data, nrow)
@@ -159,10 +163,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 
 ##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
-##' 
-##' @name run.meta.analysis
 ##'
-##' @title Invoke PEcAn meta.analysis
 ##' This will use the following items from setings:
 ##' - settings$pfts
 ##' - settings$database$bety
@@ -178,14 +179,14 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##'   \code{\link{pecan.ma.summary}}
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
 ##' \code{\link{pecan.ma}} and post.distns created by
-##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata \
-##' and post.distns.Rdata, respectively
+##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
+##'   and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
 run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE) {
   # process all pfts
   dbcon <- db.open(database)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
 
   result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
                    threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)

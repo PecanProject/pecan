@@ -4,8 +4,14 @@
 \alias{upscale_met}
 \title{upscale_met}
 \usage{
-upscale_met(outfolder, input_met, resolution = 1/24, overwrite = FALSE,
-  verbose = FALSE, ...)
+upscale_met(
+  outfolder,
+  input_met,
+  resolution = 1/24,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{path to directory where output should be saved

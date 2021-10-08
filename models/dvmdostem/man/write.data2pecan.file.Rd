@@ -4,8 +4,15 @@
 \alias{write.data2pecan.file}
 \title{Write data into PEcAn shaped output file.}
 \usage{
-write.data2pecan.file(y_starts, outdir, pecan_requested_vars,
-  monthly_dvmdostem_outputs, yearly_dvmdostem_outputs, px_Y, px_X)
+write.data2pecan.file(
+  y_starts,
+  outdir,
+  pecan_requested_vars,
+  monthly_dvmdostem_outputs,
+  yearly_dvmdostem_outputs,
+  px_Y,
+  px_X
+)
 }
 \arguments{
 \item{y_starts}{a list of years, i.e.: 1901, 1902, 1903, etc.}

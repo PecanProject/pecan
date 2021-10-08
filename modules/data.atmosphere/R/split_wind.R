@@ -8,7 +8,7 @@
 #' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run? 
 #' @param ... other arguments, currently ignored
 #'
-#' @return
+#' @return nothing. TODO: Return data frame summarizing results
 #' @export
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 

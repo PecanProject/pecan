@@ -4,8 +4,14 @@
 \alias{query_priors}
 \title{Query priors using prepared statements}
 \usage{
-query_priors(pft_names = NULL, traits = NULL, pft_ids = NULL,
-  expand = TRUE, strict = FALSE, ...)
+query_priors(
+  pft_names = NULL,
+  traits = NULL,
+  pft_ids = NULL,
+  expand = TRUE,
+  strict = FALSE,
+  ...
+)
 }
 \arguments{
 \item{pft_names}{Character vector of PFT names (`name` column of

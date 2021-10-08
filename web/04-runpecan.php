@@ -163,9 +163,9 @@ $stmt->closeCursor();
 // create the workflow execution
 $userid=get_userid();
 if ($userid != -1) {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW(), :userid)");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, user_id) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), :userid)");
 } else {
-  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at, created_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW(), NOW())");
+  $q=$pdo->prepare("INSERT INTO workflows (site_id, model_id, notes, folder, hostname, start_date, end_date, advanced_edit, started_at) values (:siteid, :modelid, :notes, '', :hostname, :startdate, :enddate, :advanced_edit, NOW())");
 }
 $q->bindParam(':siteid', $siteid, PDO::PARAM_INT);
 $q->bindParam(':modelid', $modelid, PDO::PARAM_INT);
@@ -212,7 +212,7 @@ if (! isset($dbfiles_folder)) {
 }
 
 # setup umask so group has write as well
-umask(0002);
+umask(0000);
 
 # create the folder(s)
 if (!mkdir($folder)) {
@@ -260,11 +260,7 @@ if (isset($db_bety_port)) {
         fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
 }
 fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
-if ($db_bety_type == "mysql") {
-	fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
-} else if ($db_bety_type = "pgsql") {
-	fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
-}
+fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
 
@@ -296,16 +292,11 @@ if ($browndog) {
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
-$pft_id=1;
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
 	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
-	fwrite($fh, "      <constants>" . PHP_EOL);
-	fwrite($fh, "        <num>${pft_id}</num>" . PHP_EOL);
-	fwrite($fh, "      </constants>" . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
-	$pft_id++;
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
 
@@ -407,9 +398,10 @@ foreach($_REQUEST as $key => $val) {
   if (is_numeric($val)) {
     fwrite($fh, "        <id>${val}</id>" . PHP_EOL);
   } else {
-    $parts=explode(".", $val, 2);
+    $parts=explode(".", $val, 3);
     fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
+    fwrite($fh, "        <product>${parts[2]}</product>" . PHP_EOL);
     if (isset($_REQUEST['fluxusername'])) {
       fwrite($fh, "      <username>${_REQUEST['fluxusername']}</username>" . PHP_EOL);
     }
@@ -541,7 +533,11 @@ if ($pecan_edit) {
   }
 
   # create the message
-  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"}';
+  $message = '{"folder": "' . $folder . '", "workflowid": "' . $workflowid . '"';
+  if ($model_edit) {
+    $message .= ', "modeledit": true';
+  }
+  $message .= '}';
   send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done

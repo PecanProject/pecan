@@ -25,5 +25,5 @@ parent_ids to this function.
 }
 \examples{
 \dontrun{input.ens.gen(settings,"met","sampling")}
- 
+
 }

@@ -102,12 +102,12 @@ Finally, **click "Next"** to start the model run.
 
 #### Data Use Policies
 
-You will see a data policy statement if you selected a data source with a policy. Agreeing to the policy is required prior to starting the run.
+The last step before the run starts is to **read and agree** to AmeriFlux's data policy and **give a valid username**. If you don't already have an Ameriflux username, click "register here" and create one. If you selected a different data source, this step may or may not be needed: you will need to agree to a data policy if your source has one, but if it doesn't then the run will start immediately.
 
 
 #### If you get an error in your run 
 
-If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE) for help.
+If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ) for help.
 
 #### Model Run Workflow
 
@@ -147,7 +147,7 @@ If enabled post-process output for these analyses
 If at any point a Stage Name has the **Status “ERROR”** please notify the PEcAn team member that is administering the demo or feel free to do any of the following:
 
 * Refer to the PEcAn Documentation for documentation
-* Post the end of your workflow log on our Gitter chat
+* Post the end of your workflow log on our Slack Channel chat
 * Post an issue on Github. 
 
 The entire PEcAn team welcomes any questions you may have!

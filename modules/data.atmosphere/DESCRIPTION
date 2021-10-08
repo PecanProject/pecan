@@ -1,8 +1,8 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn functions used for managing climate driver data
-Version: 1.7.1
-Date: 2019-09-05
+Version: 1.7.2
+Date: 2021-10-04
 Authors@R: c(person("Mike","Dietze", role = "aut"),
              person("David","LeBauer", role = c("aut", "cre"),
                 email = "dlebauer@illinois.edu"),
@@ -16,11 +16,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
 Depends:
-    methods,
-    xts
+    methods
 Imports:
     abind (>= 1.4.5),
-    car,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -40,16 +38,18 @@ Imports:
     PEcAn.remote,
     PEcAn.utils,
     purrr (>= 0.2.3),
+    raster,
     RCurl,
     REddyProc,
     reshape2,
     rgdal,
-    rnoaa,
+    rlang (>= 0.2.0),
     sp,
     stringr (>= 1.1.0),
     testthat (>= 2.0.0),
     tibble,
     tidyr,
+    tidyselect,
     truncnorm,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
@@ -60,14 +60,13 @@ Suggests:
     foreach,
     parallel,
     progress,
-    reticulate,
-    rlang (>= 0.2.0)
+    reticulate
 Remotes:
     github::ropensci/geonames,
     github::ropensci/nneo
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

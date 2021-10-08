@@ -4,8 +4,14 @@
 \alias{split_inputs.SIPNET}
 \title{split_inputs.SIPNET}
 \usage{
-split_inputs.SIPNET(settings, start.time, stop.time, inputs,
-  overwrite = FALSE, outpath = NULL)
+split_inputs.SIPNET(
+  settings,
+  start.time,
+  stop.time,
+  inputs,
+  overwrite = FALSE,
+  outpath = NULL
+)
 }
 \arguments{
 \item{settings}{PEcAn settings object}

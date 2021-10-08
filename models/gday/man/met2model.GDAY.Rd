@@ -4,8 +4,16 @@
 \alias{met2model.GDAY}
 \title{met2model.GDAY}
 \usage{
-met2model.GDAY(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+met2model.GDAY(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

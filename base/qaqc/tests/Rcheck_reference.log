@@ -1,0 +1,86 @@
+* using log directory ‘/tmp/Rtmp0KMN9Z/PEcAn.qaqc.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.qaqc/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.qaqc’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.qaqc’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Malformed Description field: should contain one or more complete sentences.
+Authors@R field gives no person with name and roles.
+Authors@R field gives no person with maintainer role, valid email
+address and non-empty name.
+* checking top-level files ... NOTE
+Non-standard file/directory found at top level:
+  ‘README.Rmd’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' imports not declared from:
+  ‘dplyr’ ‘PEcAn.DB’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+cull_database_entries: no visible global function definition for
+  ‘read.table’
+cull_database_entries: no visible global function definition for
+  ‘write.table’
+find_formats_without_inputs: no visible binding for global variable
+  ‘user_id’
+find_formats_without_inputs: no visible binding for global variable
+  ‘created_at’
+find_formats_without_inputs: no visible binding for global variable
+  ‘updated_at’
+find_inputs_without_formats: no visible binding for global variable
+  ‘user_id_code’
+find_inputs_without_formats: no visible binding for global variable
+  ‘created_at’
+find_inputs_without_formats: no visible binding for global variable
+  ‘updated_at’
+write_out_table: no visible global function definition for
+  ‘write.table’
+Undefined global functions or variables:
+  created_at read.table updated_at
+  user_id user_id_code write.table
+Consider adding
+  importFrom("utils", "read.table", "write.table")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* DONE
+Status: 1 WARNING, 3 NOTEs

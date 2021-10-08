@@ -4,8 +4,15 @@
 \alias{return.bias}
 \title{return.bias}
 \usage{
-return.bias(settings, isbias, model.out, inputs, prior.list.bias,
-  run.round = FALSE, pass2bias = NULL)
+return.bias(
+  settings,
+  isbias,
+  model.out,
+  inputs,
+  prior.list.bias,
+  run.round = FALSE,
+  pass2bias = NULL
+)
 }
 \arguments{
 \item{settings}{settings list}

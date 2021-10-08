@@ -4,8 +4,16 @@
 \alias{get_NARR_thredds}
 \title{Retrieve NARR data using thredds}
 \usage{
-get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = TRUE,
-  drop_outside = TRUE, parallel = TRUE, ncores = 1)
+get_NARR_thredds(
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  progress = TRUE,
+  drop_outside = TRUE,
+  parallel = TRUE,
+  ncores = 1
+)
 }
 \arguments{
 \item{start_date}{Start date for meteorology}
@@ -19,12 +27,12 @@ get_NARR_thredds(start_date, end_date, lat.in, lon.in, progress = TRUE,
 \item{progress}{Whether or not to show a progress bar (default = `TRUE`).
 Requires the `progress` package to be installed.}
 
-\item{drop_outside}{Whether or not to drop dates outside of `start_date` to 
+\item{drop_outside}{Whether or not to drop dates outside of `start_date` to
 `end_date` range (default = `TRUE`).}
 
 \item{parallel}{Download in parallel? Default = TRUE}
 
-\item{ncores}{Number of cores for parallel download. Default is 
+\item{ncores}{Number of cores for parallel download. Default is
 `parallel::detectCores()`}
 }
 \value{

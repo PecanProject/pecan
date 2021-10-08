@@ -4,9 +4,19 @@
 \alias{met.process}
 \title{met.process}
 \usage{
-met.process(site, input_met, start_date, end_date, model,
-  host = "localhost", dbparms, dir, browndog = NULL, spin = NULL,
-  overwrite = FALSE)
+met.process(
+  site,
+  input_met,
+  start_date,
+  end_date,
+  model,
+  host = "localhost",
+  dbparms,
+  dir,
+  browndog = NULL,
+  spin = NULL,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{site}{Site info from settings file}
@@ -28,6 +38,7 @@ met.process(site, input_met, start_date, end_date, model,
 \item{spin}{spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)}
 
 \item{overwrite}{Whether to force met.process to proceed.
+
 
        `overwrite` may be a list with individual components corresponding to 
        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,

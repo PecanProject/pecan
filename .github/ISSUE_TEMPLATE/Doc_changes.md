@@ -13,6 +13,6 @@ There is a broken URL link in the documentation. It is in the master version in 
 
 ### Information for those wanting to make changes
 
-Please follow the instructions in the [Editing this Book](https://pecanproject.github.io/pecan-documentation/develop/bookediting.html) section of the documentation. 
+Please follow the instructions in the [Editing this Book](https://pecanproject.github.io/pecan-documentation/develop/about-the-pecan-book.html#bookediting) section of the documentation. 
 
 All R-markdown files related to documentation are located within the main directory `/pecan/book_source` except for the demos and vignettes which are in `pecan/documentation/tutorials`.

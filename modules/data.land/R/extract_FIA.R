@@ -8,7 +8,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
   veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
-  on.exit(db.close(fia.con), add = T)
+  on.exit(db.close(fia.con), add = TRUE)
   
   lonmin   <- lon - gridres
   lonmax   <- lon + gridres

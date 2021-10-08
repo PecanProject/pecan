@@ -2,15 +2,17 @@
 % Please edit documentation in R/createMultisiteMultiSettings.r
 \name{getRunSettings}
 \alias{getRunSettings}
-\title{Build run MultiSettings for a list of site id's}
+\title{Build run MultiSettings for a single site id}
 \usage{
 getRunSettings(templateSettings, siteId)
 }
 \arguments{
-\item{templateSettings}{}
+\item{templateSettings}{A \code{\link{Settings}} object that will be
+the template for the resulting MultiSettings.}
 
-\item{siteId}{}
+\item{siteId}{site to process. See `createMultiSiteSettings`}
 }
 \description{
-Build run MultiSettings for a list of site id's
+Processes one site from the `siteIds` argument of `createMultiSiteSettings`.
+You probably don't need to call it directly.
 }

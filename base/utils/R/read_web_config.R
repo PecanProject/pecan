@@ -5,13 +5,13 @@
 #' @param parse Logical. If `TRUE` (default), try to parse numbers and
 #'   unquote strings.
 #' @param expand Logical. If `TRUE` (default), try to perform some
-#'   variable substitutions (only done if parse = TRUE).
+#'   variable substitutions.
 #' @return Named list of variable-value pairs set in `config.php`
 #' @export
 #' @examples
-#' # Read Docker configuration and extract the `dbfiles` and output folders
 #' \dontrun{
-#' docker_config <- read_web_config("/home/carya/web/config.php")
+#' # Read Docker configuration and extract the `dbfiles` and output folders.
+#' docker_config <- read_web_config(file.path("..", "..", "docker", "web", "config.docker.php"))
 #' docker_config[["dbfiles_folder"]]
 #' docker_config[["output_folder"]]
 #' }
@@ -30,30 +30,25 @@ read_web_config <- function(php.config = "../../web/config.php",
   config_list <- lapply(results, `[[`, 3)
   names(config_list) <- list_names
 
-  # always remove the \"
-  config_list <- lapply(config_list, gsub,
-                        pattern = "\"(.*?)\"", replacement = "\\1")
-
-  # parse data and cleanup
+  # Convert to numeric if possible
   if (parse) {
-    # try to conver to number/boolean (as.numeric(FALSE) == 0)
-    config_list <- lapply(config_list, function(s) {
-      s <- tryCatch(as.numeric(s), warning = function(e) {
-        b = as.logical(s)
-        ifelse(is.na(b), s, b)
-      })
-    })
+    # Remove surrounding quotes
+    config_list <- lapply(config_list, gsub,
+                          pattern = "\"(.*?)\"", replacement = "\\1")
 
-    if (expand) {
-      of <- config_list[["output_folder"]]
-      if (!is.null(of)) {
-        modify <- grep("\\$output_folder *\\. *", config_list)
-        # gsub will force all fields to character
-        config_list[modify] <- lapply(config_list[modify], gsub,
-                                      pattern = "\\$output_folder *\\. *", replacement = of)
-      }
-    }
+    # Try to convert numbers to numeric
+    config_list <- lapply(
+      config_list,
+      function(x) tryCatch(as.numeric(x), warning = function(e) x)
+    )
   }
 
+  if (expand) {
+    # Replace $output_folder with its value, and concatenate strings
+    chr <- vapply(config_list, is.character, logical(1))
+    config_list[chr] <- lapply(config_list[chr], gsub,
+                          pattern = "\\$output_folder *\\. *",
+                          replacement = config_list[["output_folder"]])
+  }
   config_list
 }

@@ -16,8 +16,14 @@ get.parameter.samples <- function(settings,
   pft.names <- list()
   outdirs   <- list()
   ## Open database connection
-  con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
+  con <- try(PEcAn.DB::db.open(settings$database$bety))
+  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  
+  # If we fail to connect to DB then we set to NULL
+  if (inherits(con, "try-error"))  {
+    con <- NULL
+    PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
+  }
   
   for (i.pft in seq_along(pfts)) {
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name
@@ -46,6 +52,7 @@ get.parameter.samples <- function(settings,
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
+    
     rm(prior.distns, post.distns, trait.mcmc)
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
@@ -66,7 +73,7 @@ get.parameter.samples <- function(settings,
     }
     
     ### Load trait mcmc data (if exists, either from MA or PDA)
-    if (!is.null(settings$pfts[[i]]$posteriorid)) { # first check if there are any files associated with posterior ids
+    if (!is.null(settings$pfts[[i]]$posteriorid) && !inherits(con, "try-error")) {# first check if there are any files associated with posterior ids
       files <- PEcAn.DB::dbfile.check("Posterior",
                                       settings$pfts[[i]]$posteriorid, 
                                       con, settings$host$name, return.all = TRUE)
@@ -123,11 +130,30 @@ get.parameter.samples <- function(settings,
     }
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
+    if (ens.sample.method == "halton") {
+      q_samples <- randtoolbox::halton(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "sobol") {
+      q_samples <- randtoolbox::sobol(n = samples.num, dim = length(priors), scrambling = 3)
+    } else if (ens.sample.method == "torus") {
+      q_samples <- randtoolbox::torus(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "lhc") {
+      q_samples <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(priors), nrow = 2)), samples.num)
+    } else if (ens.sample.method == "uniform") {
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                               samples.num, 
+                               length(priors))
+    } else {
+      PEcAn.logger::logger.info("Method ", ens.sample.method, " has not been implemented yet, using uniform random sampling")
+      # uniform random
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                          samples.num, 
+                          length(priors))
+    }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-        samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
+        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } else {
-        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
+        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }

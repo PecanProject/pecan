@@ -111,7 +111,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, scrambling = 3, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
@@ -146,12 +146,22 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       
       # meaning we want to keep MCMC samples together
       if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
-        # TODO: for now we are sampling row numbers uniformly
-        # stop if other methods were requested 
-        if(method != "uniform"){
-          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
+        if (method == "halton") {
+          same.i <- round(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "sobol") {
+          same.i <- round(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "torus") {
+          same.i <- round(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "lhc") {
+          same.i <- round(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))
+        } else if (method == "uniform") {
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        } else {
+          PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+          # uniform random
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
         }
-        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        
       }
       
       for (trait.i in seq(pft.samples[[pft.i]])) {
@@ -200,6 +210,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
                                    clean = FALSE, write.to.db = TRUE,restart=NULL) {
   
+  con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
   my.write_restart <- paste0("write_restart.", model)
   
@@ -207,20 +218,26 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     return(list(runs = NULL, ensemble.id = NULL))
   }
   
-  # Open connection to database so we can store all run/ensemble information
+  # See if we need to write to DB
+  write.to.db <- as.logical(settings$database$bety$write)
+  
   if (write.to.db) {
-    con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-    if (inherits(con, "try-error")) {
+    # Open connection to database so we can store all run/ensemble information
+    con <-
+      try(PEcAn.DB::db.open(settings$database$bety))
+    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+    
+    # If we fail to connect to DB then we set to NULL
+    if (inherits(con, "try-error"))  {
       con <- NULL
-    } else {
-      on.exit(PEcAn.DB::db.close(con))
+      PEcAn.logger::logger.warn("We were not able to successfully establish a connection with Bety ")
     }
-  } else {
-    con <- NULL
   }
+
+
   
   # Get the workflow id
-  if ("workflow" %in% names(settings)) {
+  if (!is.null(settings$workflow$id)) {
     workflow.id <- settings$workflow$id
   } else {
     workflow.id <- -1
@@ -228,7 +245,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   #------------------------------------------------- if this is a new fresh run------------------  
   if (is.null(restart)){
     # create an ensemble id
-    if (!is.null(con)) {
+    if (!is.null(con) && write.to.db) {
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO ensembles (runtype, workflow_id) ",
@@ -285,6 +302,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
     
+
     # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
     if(!is.null(con)){
       Pft_Site_df <- dplyr::tbl(con, "sites_cultivars")%>%
@@ -299,19 +317,29 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       #-- if there is enough info to connect the site to pft
       #if ( nrow(Pft_Site_df) > 0 & all(site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
     }
+
     # Reading the site.pft specific tags from xml
     site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
     
-    if(!is.null(site.pfts.vec)){
+    if (!is.null(site.pfts.vec)) {
       # find the name of pfts defined in the body of pecan.xml
-      defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
+      defined.pfts <-
+        settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
       # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
-      if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
-        ensemble.samples <- ensemble.samples [site.pfts.vec[ which(site.pfts.vec %in% defined.pfts) ]]
+      if (length(which(site.pfts.vec %in% defined.pfts)) > 0)
+        ensemble.samples <-
+          ensemble.samples [site.pfts.vec[which(site.pfts.vec %in% defined.pfts)]]
       # warn if there is a pft specified in the site but it's not defined in the pecan xml.
-      if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
-        PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
-                                         site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
+      if (length(which(!(site.pfts.vec %in% defined.pfts))) > 0)
+        PEcAn.logger::logger.warn(
+          paste0(
+            "The following pfts are specified for the siteid ",
+            settings$run$site$id ,
+            " but they are not defined as a pft in pecan.xml:",
+            site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))],
+            collapse = ","
+          )
+        )
     }
     
     # if no ensemble piece was in the xml I replicate n times the first element in params
@@ -326,7 +354,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # write configuration for each run of the ensemble
     runs <- data.frame()
     for (i in seq_len(settings$ensemble$size)) {
-      if (!is.null(con)) {
+      if (!is.null(con) && write.to.db) {
         paramlist <- paste("ensemble=", i, sep = "")
         # inserting this into the table and getting an id back
         run.id <- PEcAn.DB::db.query(paste0(
@@ -465,35 +493,39 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #'
 #' @examples
 #' \dontrun{input.ens.gen(settings,"met","sampling")}
-#'  
-input.ens.gen<-function(settings,input,method="sampling",parent_ids=NULL){
-  
+#'
+input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NULL) {
+
   #-- reading the dots and exposing them to the inside of the function
-  samples<-list()
-  samples$ids<-c()
+  samples <- list()
+  samples$ids <- c()
   #
   if (is.null(method)) return(NULL)
   # parameter is exceptional it needs to be handled spearatly
-  if (input=="parameters") return(NULL)
+  if (input == "parameters") return(NULL)
+
   #-- assing the sample ids based on different scenarios
-  if(!is.null(parent_ids)) {
-    samples$ids <- parent_ids$ids  
-    out.of.sample.size <- length(samples$ids[samples$ids > settings$run$inputs[[tolower(input)]]$path %>% length])
+  input_path <- settings$run$inputs[[tolower(input)]]$path
+  if (!is.null(parent_ids)) {
+    samples$ids <- parent_ids$ids
+    out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
     #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
-    samples$ids[samples$ids%in%out.of.sample.size] <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
-                                                              out.of.sample.size,
-                                                              replace = T)
-  }else if( tolower(method)=="sampling") {
-    samples$ids <- sample(settings$run$inputs[[tolower(input)]]$path %>% seq_along(),
-                          settings$ensemble$size,
-                          replace = T)  
-  }else if( tolower(method)=="looping"){
-    samples$ids <- rep_len(settings$run$inputs[[tolower(input)]]$path %>% seq_along(), length.out=settings$ensemble$size)
+    samples$ids[samples$ids %in% out.of.sample.size] <- sample(
+      seq_along(input_path),
+      out.of.sample.size,
+      replace = TRUE)
+  } else if (tolower(method) == "sampling") {
+    samples$ids <- sample(
+      seq_along(input_path),
+      settings$ensemble$size,
+      replace = TRUE)
+  } else if (tolower(method) == "looping") {
+    samples$ids <- rep_len(
+      seq_along(input_path),
+      length.out = settings$ensemble$size)
   }
   #using the sample ids
-  samples$samples<-settings$run$inputs[[tolower(input)]]$path[samples$ids]
-  
-  
-  
+  samples$samples <- input_path[samples$ids]
+
   return(samples)
 }

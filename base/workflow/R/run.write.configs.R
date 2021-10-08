@@ -26,15 +26,22 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
   
-  con <- PEcAn.DB::db.open(settings$database$bety)
-  on.exit(PEcAn.DB::db.close(con))
-  
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
     ## if posterior.files is specified us that
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
+        
+        tryCatch({
+          con <- PEcAn.DB::db.open(settings$database$bety)
+          on.exit(PEcAn.DB::db.close(con), add = TRUE)
+        }, error = function(e) {
+          PEcAn.logger::logger.severe(
+            "Connection requested, but failed to open with the following error: ",
+            conditionMessage(e))
+        })
+  
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
                               con, settings$host$name, return.all = TRUE)
@@ -54,6 +61,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
+
   PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
@@ -93,7 +101,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
-    sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
+    sa.runs <- PEcAn.uncertainty::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 
                                 settings = settings, 
                                 model = model,
@@ -104,7 +112,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
     
     # Save sensitivity analysis info
-    fname <- PEcAn.utils::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
+    fname <- PEcAn.uncertainty::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
                                   all.var.yr = TRUE, pft = NULL)
     save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
     
@@ -124,7 +132,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     ens.samples <- ensemble.samples  # rename just for consistency
     
     # Save ensemble analysis info
-    fname <- PEcAn.utils::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
+    fname <- PEcAn.uncertainty::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
     save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file = fname)
   } else {
     PEcAn.logger::logger.info("not writing config files for ensemble, settings are NULL")

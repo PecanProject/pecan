@@ -11,8 +11,10 @@ session_start();
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
-    Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.7.1</span>";
+    Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), 
+    Department of Defense, the Arizona Experiment Station, the Energy Biosciences Institute, 
+    and an Amazon AWS in Education Grant.
+    <span style=\"float:right\">PEcAn Version 1.7.2</span>";
 }
 
 function whoami() {
@@ -42,9 +44,9 @@ function left_footer() {
 <p></p>
   <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLTYyZTZiZWQ4NGE1YWU3YWIyMTVmZjEyYzA3OWJhYTZmOWQwMDkwZGU0Mjc4Nzk0NGYwYTIyM2RiZmMyNjg5MTE" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
   <br>
-  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+  <a href="http://pecanproject.github.io/Report_an_issue.html" target="_blank">Bug Report</a>
 <?php
 }
 
@@ -74,6 +76,7 @@ function toXML($string) {
 # ----------------------------------------------------------------------
 function open_database() {
   global $db_bety_hostname;
+  global $db_bety_port;
   global $db_bety_username;
   global $db_bety_password;
   global $db_bety_database;
@@ -81,7 +84,7 @@ function open_database() {
   global $pdo;
 
   try {
-    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database};port=${db_bety_port}", $db_bety_username, $db_bety_password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   } catch (PDOException $e) {
     // handler to input database configurations manually

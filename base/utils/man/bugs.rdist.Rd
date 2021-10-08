@@ -4,15 +4,18 @@
 \alias{bugs.rdist}
 \title{bugs.rdist}
 \usage{
-bugs.rdist(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
-  n.iter = 1e+05, n = NULL)
+bugs.rdist(
+  prior = data.frame(distn = "norm", parama = 0, paramb = 1),
+  n.iter = 1e+05,
+  n = NULL
+)
 }
 \arguments{
 \item{prior}{dataframe with distribution name and parameters}
 
-\item{n.iter}{number of samples, output will have n.iter/4 samples}
+\item{n.iter}{number of MCMC samples. Output will have n.iter/4 samples}
 
-\item{n}{}
+\item{n}{number of randomly chosen samples to return.}
 }
 \value{
 vector of samples

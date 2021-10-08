@@ -64,22 +64,24 @@ sda_rewind <- function(settings,run.id,time_to_rewind){
   files.last.sda <- list.files.nodir(file.path(settings$outdir,"SDA"))
   
   #copying
-  file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-            file.path(file.path(settings$outdir,"SDA"),paste0(as.numeric(time_to_rewind)-1,"/",files.last.sda)))
-  
-  load(file.path(settings$outdir,"SDA",'sda.output.Rdata'))
-  
-  X <- FORECAST[[t]]
-  FORECAST[t] <- NULL
-  ANALYSIS[t] <- NULL
-  enkf.params[t] <- NULL
-  
-  for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[t]][,i]
-  
-  t = t-1
-  
-  save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
-       ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+  if(file.exists(file.path(settings$outdir,"SDA"))){
+    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
+              file.path(file.path(settings$outdir,"SDA"),paste0(as.numeric(time_to_rewind)-1,"/",files.last.sda)))
+    
+    load(file.path(settings$outdir,"SDA",'sda.output.Rdata'))
+    
+    X <- FORECAST[[t]]
+    FORECAST[t] <- NULL
+    ANALYSIS[t] <- NULL
+    enkf.params[t] <- NULL
+    
+    for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[t-1]][,i] #not sure if this should be t or t-1
+    
+    t = t-1
+    
+    save(site.locs, t, X, FORECAST, ANALYSIS, enkf.params, new.state, new.params, run.id,
+         ensemble.id, ensemble.samples, inputs, Viz.output,  file = file.path(settings$outdir,"SDA", "sda.output.Rdata"))
+  }
   
   ### Paleon specific with leading zero dates
   if(nchar(time_to_rewind) == 3){

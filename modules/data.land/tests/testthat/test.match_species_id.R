@@ -2,7 +2,6 @@
 context("Species matching")
 
 test_that("Species matching works", {
-  skip("Failing test (#1959); please fix and re-enable")
   test_merge <- function(input_codes, format_name, bety, ...) {
       dat_merge <- match_species_id(input_codes = input_codes,
                                     format_name = format_name,

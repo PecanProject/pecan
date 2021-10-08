@@ -1,7 +1,7 @@
 ##' Define PDA Likelihood Functions
 ##'
 ##' @title Define PDA Likelihood Functions
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param settings PEcAn settings list
 ##'
 ##' @return List of likelihood functions, one for each dataset to be assimilated against.
 ##'
@@ -44,7 +44,9 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @title Calculate sufficient statistics
 ##' @param settings list
+##' @param con DB connection
 ##' @param model_out list
+##' @param run.id run ID
 ##' @param inputs list
 ##' @param bias.terms matrix
 ##'
@@ -93,11 +95,8 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         # there might not be a negative slope if non-negative variable, assign zero, move on
         suppressWarnings(if(length(beta_n) == 0) beta_n <- 0)
         
-        # weigh down log-likelihood calculation with neff
-        # if we had one beta value (no heteroscadasticity), we could've multiply n_eff*beta
-        # now need to multiply every term with n_eff/n 
-        SS_p <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_p) - resid[[1]][pos]/beta_p
-        SS_n <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_n) - resid[[1]][!pos]/beta_n
+        SS_p <- - log(2*beta_p) - resid[[1]][pos]/beta_p
+        SS_n <- - log(2*beta_n) - resid[[1]][!pos]/beta_n
         suppressWarnings(if(length(SS_n) == 0) SS_n <- 0)
         pda.errors[[k]] <- sum(SS_p, SS_n, na.rm = TRUE)
         SSdb[[k]] <- pda.errors[[k]]
@@ -158,7 +157,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
 ##' Calculate Likelihoods for PDA
 ##'
 ##' @title Calculate Likelihoods for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
+##' @param pda.errors calculated errors
+##' @param llik.fn list of likelihood fcns
+##' @param llik.par parameters to be passed llik functions
 ##'
 ##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
 ##'
@@ -171,7 +172,11 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   LL.vec <- numeric(n.var)
   
   for (k in seq_len(n.var)) {
-    LL.vec[k] <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
+    
+    j <- k %% length(llik.fn)
+    if(j==0) j <- length(llik.fn)
+        
+    LL.vec[k] <- llik.fn[[j]](pda.errors[k], llik.par[[k]])
   }
   
   LL.total <- sum(LL.vec)
@@ -198,13 +203,18 @@ pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   for(k in seq_along(error.stats)){
     
+    j <- k %% length(settings$assim.batch$inputs)
+    if(j==0) j <- length(settings$assim.batch$inputs)
+    
     llik.par[[k]] <- list()
     
-    if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
-        settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
+    if (settings$assim.batch$inputs[[j]]$likelihood == "Gaussian" |
+        settings$assim.batch$inputs[[j]]$likelihood == "multipGauss") {
       
+
         llik.par[[k]]$par <- stats::rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
                                     hyper.pars[[k]]$paramb + error.stats[k]/2)
+
         names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
 
     }

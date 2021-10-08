@@ -4,11 +4,10 @@
 \alias{mstmipvar}
 \title{MstMIP variable}
 \usage{
-mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
-  silent = FALSE)
+mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE)
 }
 \arguments{
-\item{name}{name of variable}
+\item{name}{of variable}
 
 \item{lat}{latitude if dimension requests it}
 
@@ -17,6 +16,8 @@ mstmipvar(name, lat = NA, lon = NA, time = NA, nsoil = NA,
 \item{time}{time if dimension requests it}
 
 \item{nsoil}{nsoil if dimension requests it}
+
+\item{silent}{logical: suppress log messages about missing variables?}
 }
 \value{
 ncvar based on MstMIP definition

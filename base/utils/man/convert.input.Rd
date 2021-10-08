@@ -4,12 +4,32 @@
 \alias{convert.input}
 \title{Convert between formats, reusing existing files where possible}
 \usage{
-convert.input(input.id, outfolder, formatname, mimetype, site.id,
-  start_date, end_date, pkg, fcn, con = con, host, browndog,
-  write = TRUE, format.vars, overwrite = FALSE, exact.dates = FALSE,
-  allow.conflicting.dates = TRUE, insert.new.file = FALSE,
-  pattern = NULL, forecast = FALSE, ensemble = FALSE,
-  ensemble_name = NULL, dbparms = NULL, ...)
+convert.input(
+  input.id,
+  outfolder,
+  formatname,
+  mimetype,
+  site.id,
+  start_date,
+  end_date,
+  pkg,
+  fcn,
+  con = con,
+  host,
+  browndog,
+  write = TRUE,
+  format.vars,
+  overwrite = FALSE,
+  exact.dates = FALSE,
+  allow.conflicting.dates = TRUE,
+  insert.new.file = FALSE,
+  pattern = NULL,
+  forecast = FALSE,
+  ensemble = FALSE,
+  ensemble_name = NULL,
+  dbparms = NULL,
+  ...
+)
 }
 \arguments{
 \item{input.id}{The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.}
@@ -56,6 +76,8 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 \item{ensemble}{An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.}
 
 \item{ensemble_name}{If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.}
+
+\item{dbparms}{list of parameters to use for opening a database connection}
 
 \item{...}{Additional arguments, passed unchanged to \code{fcn}}
 }

@@ -52,14 +52,14 @@ convert.samples.ED <- function(trait.samples) {
   if ("root_respiration_rate" %in% names(trait.samples)) {
     rrr1 <- as.numeric(trait.samples[["root_respiration_rate"]])
     rrr2 <- rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
-    trait.samples[["root_respiration_rate"]] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
+    trait.samples[["root_respiration_rate"]] <- PEcAn.utils::arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
     # model version compatibility (rrr and rrf are the same)
     trait.samples[["root_respiration_factor"]] <- trait.samples[["root_respiration_rate"]]
   }
   
   if ("Vcmax" %in% names(trait.samples)) {
     vcmax <- as.numeric(trait.samples[["Vcmax"]])
-    trait.samples[["Vcmax"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    trait.samples[["Vcmax"]] <- PEcAn.utils::arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     # write as Vm0 for version compatibility (Vm0 = Vcmax @ 15C)
     trait.samples[["Vm0"]] <- trait.samples[["Vcmax"]]
     
@@ -69,7 +69,7 @@ convert.samples.ED <- function(trait.samples) {
       
       ## First scale variables to 15 degC
       trait.samples[["leaf_respiration_rate_m2"]] <- 
-        arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+        PEcAn.utils::arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
       # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
       trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
@@ -363,7 +363,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   if (!is.null(custom_tags)) {
     # Convert numeric tags to numeric
     # Anything that isn't converted to NA via `as.numeric` is numeric
-    custom_tags <- lapply(custom_tags,
+    custom_tags <- lapply(custom_tags, function(x)
                           tryCatch(as.numeric(x), warning = function(e) x))
     # Figure out what is a numeric vector
     # Look for a list of numbers like: "1,2,5"
@@ -537,6 +537,9 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         if (!is.null(converted.defaults)){
           vals <- modifyList(vals, converted.defaults)
         }
+        
+        ## Make sure that include_pft is set to 1
+        vals$include_pft = 1
 
         pft.xml <- PEcAn.settings::listToXml(vals, "pft")
         xml <- XML::append.xmlNode(xml, pft.xml)

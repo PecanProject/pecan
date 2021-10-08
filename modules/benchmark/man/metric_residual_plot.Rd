@@ -4,8 +4,12 @@
 \alias{metric_residual_plot}
 \title{Residual Plot}
 \usage{
-metric_residual_plot(metric_dat, var, filename = NA,
-  draw.plot = is.na(filename))
+metric_residual_plot(
+  metric_dat,
+  var,
+  filename = NA,
+  draw.plot = is.na(filename)
+)
 }
 \arguments{
 \item{draw.plot}{}

@@ -8,8 +8,17 @@ Currently
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc}
 \usage{
-metgapfill(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-  overwrite = FALSE, verbose = FALSE, ...)
+metgapfill(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  lst = 0,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stord}

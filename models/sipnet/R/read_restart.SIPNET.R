@@ -26,9 +26,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
   
   # Read ensemble output
-  ens <- read.output(runid = runid, 
-                     outdir = file.path(outdir, runid), 
-                     start.year = lubridate::year(stop.time), 
+  ens <- PEcAn.utils::read.output(runid = runid,
+                     outdir = file.path(outdir, runid),
+                     start.year = lubridate::year(stop.time),
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   
@@ -38,18 +38,12 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   params$restart <-c() ## This will be filled with some restart coefficient if above ground wood is in the state variables.
 
   #### PEcAn Standard Outputs
-  if ("GWBI" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
-    names(forecast[[length(forecast)]]) <- c("GWBI")
-  }
-  
   if ("AbvGrndWood" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
    
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
-    
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
@@ -61,12 +55,18 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
 
+  if ("GWBI" %in% var.names) {
+       forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+           names(forecast[[length(forecast)]]) <- c("GWBI")
+  }
+
   # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
   if ("NEE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- mean(ens$NEE)  ## 
     names(forecast[[length(forecast)]]) <- c("NEE")
   }
   
+
   # Reading in Latent heat flux for SDA  - unit is MW m-2
   if ("Qle" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$Qle[last]*1e-6  ##  
@@ -78,16 +78,17 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("LeafC")
   }
   
+  if ("LAI" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$LAI[last]  ## m2/m2 
+    names(forecast[[length(forecast)]]) <- c("LAI")
+  }
+  
   if ("litter_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
-    names(forecast[[length(forecast)]]) <- c("Litter")
+    names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
-  
-  if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
-    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
-  }
-  
+
+    
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
@@ -104,6 +105,11 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
   
+  if ("TotSoilCarb" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
+  }
+ 
   print(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)

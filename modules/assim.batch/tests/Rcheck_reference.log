@@ -1,0 +1,86 @@
+* using log directory ‘/tmp/RtmpNECEcU/PEcAn.assim.batch.Rcheck’
+* using R version 3.5.2 (2018-12-20)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PEcAn.assim.batch/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.assim.batch’ version ‘1.7.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+Imports includes 28 non-default packages.
+Importing from so many packages makes the package vulnerable to any of
+them becoming unavailable.  Move as many as possible to Suggests and
+use conditionally.
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.assim.batch’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+get.da.data: no visible binding for global variable ‘ensemble.samples’
+get.da.data : <anonymous>: no visible binding for global variable
+  ‘sa.samples’
+get.da.data: no visible binding for global variable ‘sa.samples’
+get.da.data : <anonymous>: no visible global function definition for
+  ‘read.output.type’
+get.da.data.growth: no visible binding for global variable
+  ‘ensemble.samples’
+get.da.data.growth: no visible binding for global variable ‘sa.samples’
+get.da.data.growth : <anonymous>: no visible global function definition
+  for ‘read.output.type’
+pda.load.priors: no visible binding for global variable ‘post.distns’
+pda.load.priors: no visible binding for global variable ‘prior.distns’
+plot.da: no visible binding for global variable ‘y’
+plot.da: no visible binding for global variable ‘ensemble.samples’
+plot.da : <anonymous>: no visible binding for global variable
+  ‘ensemble.samples’
+plot.da : <anonymous>: no visible binding for global variable
+  ‘sa.samples’
+plot.da : <anonymous>: no visible binding for global variable ‘m’
+Undefined global functions or variables:
+  ensemble.samples m post.distns prior.distns read.output.type
+  sa.samples y
+
+Found the following assignments to the global environment:
+File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
+  assign(x, model.raw[x], envir = .GlobalEnv)
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+ OK
+* DONE
+Status: 1 NOTE

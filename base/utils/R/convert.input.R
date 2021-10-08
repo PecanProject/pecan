@@ -56,6 +56,7 @@
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
+##' @param dbparms list of parameters to use for opening a database connection
 ##'
 ##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
@@ -168,7 +169,7 @@ convert.input <-
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
-      
+
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
@@ -221,18 +222,23 @@ convert.input <-
                                       verbose = TRUE,R = Rbinary, scratchdir = outfolder)
       
       successful <- FALSE
-      on.exit(if (exists("successful") && successful) {
-        PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-      } else {
-        PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-        PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                        host, user = NA, 
-                                        verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-      }
-      )#Close on.exit
+      on.exit(
+        if (exists("successful") && successful) {
+          PEcAn.logger::logger.info(
+            "Conversion successful, with overwrite=TRUE. Deleting old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$delete.tmp,
+            host, user = NA,
+            verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+        } else {
+          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+          PEcAn.remote::remote.execute.R(
+            file.deletion.commands$replace.from.tmp,
+            host, user = NA,
+            verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+        },
+        add = TRUE
+      ) # Close on.exit
     }
     
     # If all of the files for an existing ensemble exist, we'll just use those files.  Otherwise, we'll need to run the function to
@@ -265,8 +271,11 @@ convert.input <-
                                                       hostname = host$name, 
                                                       exact.dates = TRUE,
                                                       pattern = pattern
-      ) %>%
-        dplyr::filter(id==input.args$dbfile.id)
+      )
+      if ("id" %in% colnames(existing.dbfile)) {
+        existing.dbfile <- existing.dbfile %>%
+          dplyr::filter(.data$id==input.args$dbfile.id)
+      }
     }else{
       existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
                                                       mimetype = mimetype, 
@@ -319,18 +328,22 @@ convert.input <-
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-                PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-        } else {
-                PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-                PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                  host, user = NA, 
-                                  verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        }
-        )#Close on.exit
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # Close on.exit
       }
       
       
@@ -436,21 +449,25 @@ convert.input <-
         
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-          PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp,
-                            host, user = NA, 
-                            verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-          
-        } else {
-          
-          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-          PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp,
-                            host, user = NA,
-                            verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-        } 
-        )#close on on.exit
-        
+        on.exit(
+          if (exists("successful") && successful) {
+            PEcAn.logger::logger.info(
+              "Conversion successful, with overwrite=TRUE. Deleting old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$delete.tmp,
+              host, user = NA,
+              verbose = TRUE,  R = Rbinary, scratchdir = outfolder)
+          } else {
+            PEcAn.logger::logger.info(
+              "Conversion failed. Replacing old files.")
+            PEcAn.remote::remote.execute.R(
+              file.deletion.commands$replace.from.tmp,
+              host, user = NA,
+              verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+          },
+          add = TRUE
+        ) # close on.exit
+
       } else if ((start_date >= existing.input$start_date) &&
                  (end_date <= existing.input$end_date)) {
         
@@ -638,32 +655,17 @@ convert.input <-
         fname <- list.files(outfolder)
       }
     }
-    
-    # settings$run$inputs$path <- outputfile 
-    # what if there is more than 1 output file?
-    rows <- length(fname)
-    result <- data.frame(file = character(rows), 
-                         host = character(rows), 
-                         mimetype = character(rows), 
-                         formatname = character(rows), 
-                         startdate = character(rows), 
-                         enddate = character(rows), 
-                         stringsAsFactors = FALSE)
-    
-    
-    
-    for (i in seq_len(rows)) {
-      old.file <- file.path(dbfile$file_path, files[i])
-      new.file <- file.path(outfolder, fname[i])
-      
-      # create array with results
-      result$file[i]       <- new.file
-      result$host[i]       <- PEcAn.remote::fqdn()
-      result$startdate[i]  <- paste(input$start_date, "00:00:00")
-      result$enddate[i]    <- paste(input$end_date, "23:59:59")
-      result$mimetype[i]   <- mimetype
-      result$formatname[i] <- formatname
-    }
+
+    result <- data.frame(
+      # contains one row for each file in fname
+      file = file.path(outfolder, fname),
+      host = PEcAn.remote::fqdn(),
+      mimetype = mimetype,
+      formatname = formatname,
+      startdate = paste(input$start_date, "00:00:00"),
+      enddate = paste(input$end_date, "23:59:59"),
+      stringsAsFactors = FALSE)
+
   } else if (conversion == "local.remote") {
     # perform conversion on local or remote host
     

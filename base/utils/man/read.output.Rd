@@ -4,9 +4,18 @@
 \alias{read.output}
 \title{Read model output}
 \usage{
-read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP", dataframe = FALSE, pft.name = NULL,
-  ncfiles = NULL, verbose = FALSE, print_summary = TRUE)
+read.output(
+  runid,
+  outdir,
+  start.year = NA,
+  end.year = NA,
+  variables = "GPP",
+  dataframe = FALSE,
+  pft.name = NULL,
+  ncfiles = NULL,
+  verbose = FALSE,
+  print_summary = TRUE
+)
 }
 \arguments{
 \item{runid}{the ID distinguishing the model run. Can be omitted
@@ -26,7 +35,7 @@ variables in output file..}
 
 \item{dataframe}{Logical: if TRUE, will return output in a
 \code{data.frame} format with a posix column. Useful for
-\code{\link[PEcAn.benchmark:align.data]{PEcAn.benchmark::align.data()}} and plotting.}
+\code{PEcAn.benchmark::align.data} and plotting.}
 
 \item{pft.name}{character string, name of the plant functional
 type (PFT) to read PFT-specific output. If \code{NULL} no

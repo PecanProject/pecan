@@ -64,12 +64,10 @@ if ($row == false) {
 
   $date = date("Y-m-d H:i:s");
   $stmt = $pdo->prepare("INSERT
-    INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
-    VALUES (:id, :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
+    INTO machines (id, hostname, sync_host_id, sync_url, sync_contact, sync_start, sync_end)
+    VALUES (:id, :hostname, :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
   $stmt->bindValue(':id', $id, PDO::PARAM_INT);
   $stmt->bindValue(':hostname', $fqdn, PDO::PARAM_STR);
-  $stmt->bindValue(':created_at', $date, PDO::PARAM_STR);
-  $stmt->bindValue(':updated_at', $date, PDO::PARAM_STR);
   $stmt->bindValue(':sync_host_id', $host_id, PDO::PARAM_INT);
   $stmt->bindValue(':sync_url', ' ', PDO::PARAM_STR);
   $stmt->bindValue(':sync_contact', ' ', PDO::PARAM_STR);
