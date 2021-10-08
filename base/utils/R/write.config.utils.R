@@ -11,10 +11,10 @@
 ### TODO: Generalize this code for all ecosystem models (e.g. ED2.2, SiPNET, etc).
 #--------------------------------------------------------------------------------------------------#
 
-#--------------------------------------------------------------------------------------------------#
-##' Returns a vector of quantiles specified by a given <quantiles> xml tag
+##' Get Quantiles
 ##'
-##' @title Get Quantiles  
+##' Returns a vector of quantiles specified by a given `<quantiles>` xml tag
+##'
 ##' @param quantiles.tag specifies tag used to specify quantiles
 ##' @return vector of quantiles
 ##' @export
@@ -40,7 +40,6 @@ get.quantiles <- function(quantiles.tag) {
 
 ##' get sensitivity samples as a list
 ##'
-##' @title get.sa.sample.list 
 ##' @param pft Plant Functional Type
 ##' @param env 
 ##' @param quantiles quantiles at which to obtain samples from parameter for
@@ -58,16 +57,20 @@ get.sa.sample.list <- function(pft, env, quantiles) {
 } # get.sa.sample.list
 
 
-#--------------------------------------------------------------------------------------------------#
+##' Get sensitivity analysis samples
+##'
 ##' Samples parameters for a model run at specified quantiles.
-##' 
-##' Samples from long (>2000) vectors that represent random samples from a trait distribution.
-##' Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
-##' the closed-form distribution of the parameter probability distribution function.
+##'
+##' Samples from long (>2000) vectors that represent random samples from a
+##'   trait distribution.
+##' Samples are either the MCMC chains output from the Bayesian meta-analysis
+##'   or are randomly sampled from the closed-form distribution of the
+##'   parameter probability distribution function.
 ##' The list is indexed first by trait, then by quantile.
-##' @title get sensitivity analysis samples
-##' @param samples random samples from trait distribution   
-##' @param quantiles list of quantiles to at which to sample, set in settings file
+##'
+##' @param samples random samples from trait distribution
+##' @param quantiles list of quantiles to at which to sample,
+##'   set in settings file
 ##' @return a list of lists representing quantile values of trait distributions
 ##' @export
 ##' @author David LeBauer
@@ -83,12 +86,10 @@ get.sa.samples <- function(samples, quantiles) {
 } # get.sa.samples
 
 
-#--------------------------------------------------------------------------------------------------#
 ##' checks that met2model function exists
 ##'
-##' Checks if met2model.<model> exists for a particular
-##' model
-##' @title met2model.exists
+##' Checks if `met2model.<model>` exists for a particular model
+##'
 ##' @param model model package name
 ##' @return logical
 met2model.exists <- function(model) {

@@ -101,7 +101,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
-    sa.runs <- PEcAn.utils::write.sa.configs(defaults = settings$pfts,
+    sa.runs <- PEcAn.uncertainty::write.sa.configs(defaults = settings$pfts,
                                 quantile.samples = sa.samples, 
                                 settings = settings, 
                                 model = model,
