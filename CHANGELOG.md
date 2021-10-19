@@ -5,7 +5,7 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## [Unreleased]
+## [1.7.2] - 2021-10-04
 
 ### Due to dependencies, PEcAn is now using R 4.0.3 for Docker images.
 
