@@ -107,7 +107,8 @@
       },
       {
          "affiliation":"Wentworth Institute of Technology",
-         "name":"Afshin Pourmokhtarian"
+         "name":"Afshin Pourmokhtarian",
+         "orcid":"0000-0003-2453-1212"
       },
       {
          "affiliation":"Morton Arboretum",
@@ -118,7 +119,8 @@
       },
       {
          "affiliation":"Purdue University",
-         "name":"Brady Hardiman"
+         "name":"Brady Hardiman",
+         "orcid": "0000-0001-6833-9404"
       },
       {
          "affiliation":"University of New South Wales",
@@ -150,7 +152,7 @@
          "name":"Yan Zhao"
       },
       {
-         "affiliation":"University of Illinois at Urbana-Champaign",
+         "affiliation":"Uber",
          "name":"Jing Xia"
       }
    ],
@@ -163,8 +165,8 @@
       "Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. (2016) Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion. Remote Sensing of the Environment 183: 226-238",
       "LeBauer, David S, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P Long, & Michael C Dietze (2018). BETYdb: a yield, trait, and ecosystem service database applied to second generation bioenergy feedstock production. GCB Bioenergy, 10(1), 61-71. doi: 10.1111/gcbb.12420"
    ],
-   "notes":"The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.",
-   "license":"NCSA",
+   "notes":"The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), DARPA (HR001118C0137), the Energy Biosciences Institute, Google Summer of Code, and an Amazon AWS in Education Grant.",
+   "license":"University of Illinois/NCSA Open Source License",
    "upload_type":"software",
    "access_right":"open"
 }
