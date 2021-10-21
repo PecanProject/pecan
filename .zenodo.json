@@ -18,24 +18,43 @@
          "orcid":"0000-0002-5781-7287"
       },
       {
-         "affiliation":"Boston University",
+         "affiliation":"NASA Goddard",
          "name":"Alexey Shiklomanov",
          "orcid":"0000-0003-4022-5979"
       },
       {
-         "affiliation":"Boston University",
+         "affiliation":"James Hutton Institute",
          "name":"Betsy Cowdery",
          "orcid":"0000-0002-6538-6296"
       },
       {
-         "affiliation":"Boston Univeristy",
+         "affiliation":"University of Illinois, Urbana-Champaign",
+         "name":"Hamze Dokoohaki",
+         "orcid":"0000-0003-2131-7712"
+      },
+      {
+         "affiliation":"Finnish Meteorlogical Institute",
          "name":"Istem Fer",
          "orcid":"0000-0001-8236-303X"
       },
       {
-         "affiliation":"Boston Univeristy",
+         "affiliation":"Univeristy of Michigan",
          "name":"Anthony Gardella",
          "orcid":"0000-0003-4380-3412"
+      },
+      {
+         "affiliation":"University of North Dakota",
+         "name":"Luke Dramko",
+      },
+      {
+         "name":"Ayush Pradad",
+      },
+      {
+         "name":"Shashank Singh",
+      },
+      {
+         "affiliation":"Boston University",
+         "name":"Alexis Helgeson",
       },
       {
          "affiliation":"Pacific Northwest National Laboratory / University of Maryland",
@@ -48,20 +67,26 @@
          "orcid":"0000-0003-4136-8971"
       },
       {
-         "affiliation":"University of Notre Dame",
+         "affiliation":"NASA Goddard",
          "name":"Ann Raiho"
+      },
+      {
+         "name":"Tezan Sahu",
+      },
+      {
+         "name":"Mukul Maheshwari",
       },
       {
          "affiliation":"Brigham Young University",
          "name":"Anne Thomas"
       },
       {
-         "affiliation":"Pennsylvania State University",
+         "affiliation":"Indigo Agriculture",
          "name":"Chris Black",
          "orcid":"0000-0001-8382-298X"
       },
       {
-         "affiliation":"University of Wisconsin-Madison",
+         "affiliation":"Rutgers University",
          "name":"James Simkins"
       },
       {
@@ -81,7 +106,7 @@
          "name":"Liam Burke"
       },
       {
-         "affiliation":"Boston University",
+         "affiliation":"Wentworth Institute of Technology",
          "name":"Afshin Pourmokhtarian"
       },
       {
