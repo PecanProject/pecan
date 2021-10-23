@@ -15,8 +15,7 @@ Imports:
     PEcAn.logger,
     httr,
     jsonlite,
-    urltools,
-    PEcAn.DB
+    urltools
 Suggests:
     testthat,
     tools,
