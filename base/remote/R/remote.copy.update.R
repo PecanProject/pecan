@@ -21,16 +21,10 @@ remote.copy.update <- function(input_id,
   if (is.null(remote_file_name)) {
     remote_file_name <- basename(local_file_path)
   }
-
   remote_file_path <- file.path(remote_dir, remote_file_name)
-
   remote.copy.to(host, local_file_path, remote_file_path)
-
   type <- PEcAn.DB::db.query(
-    paste(
-      "SELECT container_type from dbfiles where container_id =",
-      putveg.id[[i]]
-    ),
+    paste("SELECT container_type from dbfiles where container_id =", input_id),
     con
   )
 
@@ -39,11 +33,10 @@ remote.copy.update <- function(input_id,
     in.path = remote_dir,
     in.prefix = remote_file_name,
     type = unique(type),
-    id = input_id$input.id,
+    id = input_id,
     con = con,
     hostname = host$name
   )
-
 
   remote_id
 } # remote.copy.update
