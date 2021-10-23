@@ -9,7 +9,7 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu"),
-             person("Toni", "Viskari"),
+             person("Toni", "Viskari", role = c("aut")),
              person("University of Illinois, NCSA", role = c("cph")))
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
