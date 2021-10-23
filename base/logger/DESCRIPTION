@@ -3,12 +3,13 @@ Title: Logger Functions for 'PEcAn'
 Version: 1.8.0
 Date: 2021-07-27
 Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
-                email = "kooper@illinois.edu"),
+                     email = "kooper@illinois.edu"),
              person("Alexey", "Shiklomanov", role = c("aut"),
-                email = "ashiklom@bu.edu"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
              person("Shashank", "Singh", role = c("aut"),
-                email = "shashanksingh819@gmail.com"),
-             person("Chris", "Black", role = c("ctb")),
+                     email = "shashanksingh819@gmail.com"),
+             person("Chris", "Black", role = c("aut"),
+                     email = "ckb23@psu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Convenience functions for logging outputs from 'PEcAn',
    the Predictive Ecosystem Analyzer (LeBauer et al. 2017)
