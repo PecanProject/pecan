@@ -38,6 +38,7 @@ Non-standard files/directories found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking dependencies in R code ... NOTE
 * checking dependencies in R code ... WARNING
 Missing or unexported object: ‘BioCro::Gro’
 * checking S3 generic/method consistency ... OK
