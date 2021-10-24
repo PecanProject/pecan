@@ -20,6 +20,8 @@ Description: Convenience functions for logging outputs from 'PEcAn',
    and lenience when running large batches of simulations that should not be
    terminated by errors in individual models. It is loosely based on
    the 'log4j' package.
+Imports:
+    stringi
 BugReports: https://github.com/PecanProject/pecan/issues
 URL: https://pecanproject.github.io/
 Imports: utils
