@@ -119,7 +119,9 @@
          "name":"Christy Rollinson"
       },
       {
-         "name":"Shubham Agarwal"
+         "affiliation": "PulseLabs AI",
+         "name": "Shubham Agarwal",
+         "orcid": "0000-0002-2977-9615"
       },
       {
          "affiliation":"Purdue University",
