@@ -37,7 +37,7 @@ jobs:
       run: |
         R CMD INSTALL base/logger
         R CMD INSTALL base/remote
-        R CMD INSTALL base/utls
+        R CMD INSTALL base/utils
     # render book
     - name: Render Book
       run: |
