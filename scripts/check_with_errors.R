@@ -100,11 +100,7 @@ if (!file.exists(old_file)) {
     quit("no")
 }
 
-txt <- paste(readLines(old_file))
-if (getRversion() > "4.1" && pkg %in% c("models/biocro")) {
-  txt <- gsub("checking dependencies in R code ... NOTE", "checking dependencies in R code ... WARNING", txt)
-}
-old <- rcmdcheck::parse_check(text = txt)
+old <- rcmdcheck::parse_check(old_file)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
 msg_lines <- function(msg) {
