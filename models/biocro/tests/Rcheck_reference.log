@@ -20,7 +20,7 @@
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
+* checking DESCRIPTION meta-information ... OK
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
@@ -39,7 +39,6 @@ Non-standard files/directories found at top level:
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... NOTE
-* checking dependencies in R code ... WARNING
 Missing or unexported object: ‘BioCro::Gro’
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK

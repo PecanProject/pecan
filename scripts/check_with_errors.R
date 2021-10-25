@@ -100,7 +100,11 @@ if (!file.exists(old_file)) {
     quit("no")
 }
 
-old <- rcmdcheck::parse_check(old_file)
+txt <- paste(readLines(old_file))
+if (getRversion() > "4.1") {
+  txt <- gsub("checking dependencies in R code ... NOTE", "checking dependencies in R code ... WARNING", txt)
+}
+old <- rcmdcheck::parse_check(text = txt)
 cmp <- rcmdcheck::compare_checks(old, chk)
 
 msg_lines <- function(msg) {
