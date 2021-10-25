@@ -22,9 +22,7 @@ Description: Convenience functions for logging outputs from 'PEcAn',
    the 'log4j' package.
 BugReports: https://github.com/PecanProject/pecan/issues
 URL: https://pecanproject.github.io/
-Imports: 
-    utils,
-    stringi
+Imports: utils
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
