@@ -65,12 +65,23 @@ jobs:
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
+    # upload artifact for next steps
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: pecan-build-${{ matrix.R }}
+        path: |
+          .install
+          /usr/local/lib/R/site-library/PEcAn*
+        retention-days: 1
+
   # ----------------------------------------------------------------------
   # R TEST
   # ----------------------------------------------------------------------
   test:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    needs: build
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
@@ -105,6 +116,12 @@ jobs:
     - name: add models to db
       run: ./scripts/add.models.sh
 
+    # download artifacts from build
+    - name: Download build files
+      uses: actions/download-artifact@v2
+      with:
+        name: pecan-build-${{ matrix.R }}
+
     # run PEcAn tests
     - name: test
       run: make -j1 test
@@ -117,6 +134,7 @@ jobs:
   check:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    needs: build
 
     strategy:
       fail-fast: false
@@ -153,6 +171,12 @@ jobs:
     - name: update processx
       run: Rscript -e 'devtools::install_github("r-lib/processx")'
 
+    # download artifacts from build
+    - name: Download build files
+      uses: actions/download-artifact@v2
+      with:
+        name: pecan-build-${{ matrix.R }}
+
     # run PEcAn checks
     - name: check
       run: make -j1 check
@@ -169,6 +193,7 @@ jobs:
   sipnet:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    needs: build
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
@@ -214,9 +239,11 @@ jobs:
         cd ${GITHUB_WORKSPACE}/sipnet
         make
 
-    # compile PEcAn code
-    - name: build
-      run: make -j1
+    # download artifacts from build
+    - name: Download build files
+      uses: actions/download-artifact@v2
+      with:
+        name: pecan-build-${{ matrix.R }}
 
     # run SIPNET test
     - name: integration test
