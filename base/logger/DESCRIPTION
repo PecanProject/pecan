@@ -9,7 +9,7 @@ Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
              person("Shashank", "Singh", role = c("aut"),
                      email = "shashanksingh819@gmail.com"),
              person("Chris", "Black", role = c("aut"),
-                     email = "ckb23@psu.edu"),
+                     email = "chris@ckblack.org"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Convenience functions for logging outputs from 'PEcAn',
    the Predictive Ecosystem Analyzer (LeBauer et al. 2017)

@@ -9,7 +9,7 @@ Authors@R: c(person("Rob", "Kooper", role = "cre",
                 email = "tonygard@bu.edu"),
              person("Yasin", "Elshorabany", role = c("aut")),
              person("Chris", "Black", role = c("aut"),
-                     email = "ckb23@psu.edu"),
+                     email = "chris@ckblack.org"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: This module provides functions to link (SiBCASA) to PEcAn.
     It is a work in progress and is not yet fully functional.
