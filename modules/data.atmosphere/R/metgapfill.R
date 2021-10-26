@@ -157,7 +157,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
-    diy <- PEcAn.utils::days_in_year(year)
+    if(year == start_year & year != end_year){
+      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # partial start-year
+    }else if(year != start_year & year == end_year){
+      diy <- lubridate::yday(end_date) # partial end-year
+    }else{
+      if(year == start_year & year == end_year){
+        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # single partial year
+      }else{
+        diy <- PEcAn.utils::days_in_year(year) # full mid-year
+      }
+    }
     doy <- rep(seq_len(diy), each = 86400 / dt)
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
