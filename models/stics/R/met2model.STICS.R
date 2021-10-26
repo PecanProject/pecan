@@ -43,8 +43,8 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         host = PEcAn.remote::fqdn(),
                         mimetype = "text/plain",
                         formatname = "climate",
-                        startdate = start_date,
-                        enddate = end_date,
+                        startdate = start_date, # these need fixing,not same for all climate files
+                        enddate = end_date,  # these need fixing
                         dbfile.name = out.files,
                         stringsAsFactors = FALSE)
   PEcAn.logger::logger.info("internal results")
@@ -112,14 +112,24 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
-      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+      dt <- diff(sec)[1]
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
       
       ind <- rep(simdays, each = tstep)
       
+      if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
+        #this should always be the case, but just in case
+        origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
+        ydays <- lubridate::yday(origin_dt + sec)
+        
+      }else{
+        PEcAn.logger::logger.error("Check units of time in the weather data.")
+      }
+      
       # column 6: minimum temperature (°C)
       Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+      Tair   <- Tair[ydays %in% simdays]
       Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
       t_dmin <- round(tapply(Tair_C, ind, min, na.rm = TRUE), digits = 2) # maybe round these numbers 
       weather_df[ ,6] <- t_dmin
@@ -131,12 +141,14 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # column 8: global radiation (MJ m-2. j-1)
       rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
       gr  <- rad * 0.0864 # W m-2 to MJ m-2 d-1
+      gr  <- gr[ydays %in% simdays] 
       weather_df[ ,8] <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
       
       # column 9: Penman PET (mm.j-1) OPTIONAL, leave it as -999.9 for now
       
       # column 10: rainfall (mm.j-1)
       Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
+      Rain  <- Rain[ydays %in% simdays]
       raini <- tapply(Rain * 86400, ind, mean, na.rm = TRUE) 
       weather_df[ ,10] <- round(raini, digits = 2) # precipitation (mm d-1)	
       
@@ -145,9 +157,12 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
       V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
       if(is.numeric(U) & is.numeric(V)){
+        U  <- U[ydays %in% simdays]
+        V  <- V[ydays %in% simdays]
         ws <- sqrt(U ^ 2 + V ^ 2)      
       }else{
         ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
+        ws <- ws[ydays %in% simdays]
         if (is.numeric(ws)) {
           PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
         }else{
@@ -161,6 +176,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # column 13: CO2 content(ppm). 
       co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+      co2 <- co2[ydays %in% simdays]
       if(is.numeric(co2)){
         weather_df[ ,13] <- round(tapply(co2 * 1e6, ind, mean,  na.rm = TRUE), digits = 1)
       }else{
