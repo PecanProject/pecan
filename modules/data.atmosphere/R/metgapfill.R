@@ -58,17 +58,21 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if(year == start_year & year != end_year){
       results$startdate[row]  <- paste(start_date, "00:00:00")
       results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # can handle partial start-year
     }else if(year != start_year & year == end_year){
       results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
       results$enddate[row]    <- paste(end_date,   "23:59:59") 
+      diy <- lubridate::yday(end_date) # can handle partial end-year
     }else{
       if(year == start_year & year == end_year){
         results$startdate[row]  <- paste(start_date, "00:00:00")
         results$enddate[row]    <- paste(end_date,   "23:59:59") 
+        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # can handle single partial year
       }else{
         # regular full year
         results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
         results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+        diy <- PEcAn.utils::days_in_year(year) # regular full (mid-)year
       }
     }
 
@@ -172,18 +176,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
-    if(year == start_year & year != end_year){
-      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # can handle partial start-year
-    }else if(year != start_year & year == end_year){
-      diy <- lubridate::yday(end_date) # can handle partial end-year
-    }else{
-      if(year == start_year & year == end_year){
-        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # can handle single partial year
-      }else{
-        diy <- PEcAn.utils::days_in_year(year) # regular full (mid-)year
-      }
-    }
-    doy <- rep(seq_len(diy), each = 86400 / dt)
+    doy <- rep(seq_len(diy), each = 86400 / dt) # diy computed above
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
     cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
