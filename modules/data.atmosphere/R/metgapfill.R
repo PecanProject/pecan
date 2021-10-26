@@ -55,8 +55,23 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     row <- year - start_year + 1
     results$file[row]       <- new.file
     results$host[row]       <- PEcAn.remote::fqdn()
-    results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
-    results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+    if(year == start_year & year != end_year){
+      results$startdate[row]  <- paste(start_date, "00:00:00")
+      results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+    }else if(year != start_year & year == end_year){
+      results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
+      results$enddate[row]    <- paste(end_date,   "23:59:59") 
+    }else{
+      if(year == start_year & year == end_year){
+        results$startdate[row]  <- paste(start_date, "00:00:00")
+        results$enddate[row]    <- paste(end_date,   "23:59:59") 
+      }else{
+        # regular full year
+        results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
+        results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+      }
+    }
+
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF (gapfilled)"
 
@@ -158,14 +173,14 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
     if(year == start_year & year != end_year){
-      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # partial start-year
+      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # can handle partial start-year
     }else if(year != start_year & year == end_year){
-      diy <- lubridate::yday(end_date) # partial end-year
+      diy <- lubridate::yday(end_date) # can handle partial end-year
     }else{
       if(year == start_year & year == end_year){
-        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # single partial year
+        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # can handle single partial year
       }else{
-        diy <- PEcAn.utils::days_in_year(year) # full mid-year
+        diy <- PEcAn.utils::days_in_year(year) # regular full mid-year
       }
     }
     doy <- rep(seq_len(diy), each = 86400 / dt)
