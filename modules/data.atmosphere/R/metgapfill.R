@@ -180,7 +180,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       if(year == start_year & year == end_year){
         diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # can handle single partial year
       }else{
-        diy <- PEcAn.utils::days_in_year(year) # regular full mid-year
+        diy <- PEcAn.utils::days_in_year(year) # regular full (mid-)year
       }
     }
     doy <- rep(seq_len(diy), each = 86400 / dt)
