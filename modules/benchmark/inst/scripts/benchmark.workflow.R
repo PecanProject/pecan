@@ -8,17 +8,10 @@ library(PEcAn.benchmark)
 library(lubridate)
 
 
-d <- settings$database$bety[c("dbname", "password", "host", "user")]
-bety <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = d$host,
-  user = d$user,
-  password = d$password,
-  dbname = d$dbname
-)
+con <- PEcan.DB::db.open(settings$database$bety)
 settings$host$name <- "localhost"
 
-bm.settings <- define_benchmark(settings,bety)
+bm.settings <- define_benchmark(settings, con)
 
 # For testing (make sure new_run is FALSE)
 str(bm.settings)
@@ -44,5 +37,5 @@ if(bm.settings$new_run){
   sprintf("MODEL: %s", settings$model$type)
 
   settings <- prepare.settings(settings)
-  results <- papply(settings, function(x) calc_benchmark(x, bety))
+  results <- papply(settings, function(x) calc_benchmark(x, con))
 }

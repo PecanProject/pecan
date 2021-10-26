@@ -20,20 +20,19 @@ test_that("Species matching works", {
       return(dat_merge)
   }
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
+  con <- PEcAn.DB::db.open(list(
+    driver = 'Postgres',
     dbname = 'bety',
     user = 'bety',
-    password = 'bety'
+    password = 'bety')
   )
-con <- bety
-  test_merge(c('ACRU', 'TSCA'), 'usda', bety)
-  test_merge(c(316, 261), 'fia', bety)
-  test_merge(c('Acer rubrum', 'Tsuga canadensis'), 'latin_name', bety)
+  test_merge(c('ACRU', 'TSCA'), 'usda', con)
+  test_merge(c(316, 261), 'fia', con)
+  test_merge(c('Acer rubrum', 'Tsuga canadensis'), 'latin_name', con)
 
   test_table <- data.frame(bety_species_id = c(30, 1419),
                            input_code = c('AceRub', 'TsuCan'))
 
-  test_merge(input_codes = test_table$input_code, format_name = 'custom', bety = bety,
+  test_merge(input_codes = test_table$input_code, format_name = 'custom', bety = con,
              translation_table = test_table)
 })

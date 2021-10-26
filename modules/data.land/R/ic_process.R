@@ -42,15 +42,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   }
 
   # set up bety connection
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = dbparms$bety$dbname,
-    host     = dbparms$bety$host,
-    user     = dbparms$bety$user,
-    password = dbparms$bety$password
-  )
-
-  con <- bety
+  con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(db.close(con), add = TRUE)
 
   latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)

@@ -11,7 +11,7 @@ cmd <-  paste0("SELECT workflows.id, workflows.folder, workflows.start_date, wor
 
 observeEvent(input$workflowclassrand, {
   tryCatch({
-    history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    history <- PEcAn.DB::db.query(cmd, dbConnect$bety)
     workflow_id <- strsplit(input$workflowselected, "_")[[1]]
     workflow_id <- trimws(workflow_id[2])
     val.jason <- history$value[history$id == workflow_id]
@@ -43,7 +43,7 @@ observeEvent(input$workflowclassrand, {
 
 observeEvent(input$workflow_explor_classrand, {
   tryCatch({
-    #history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    #history <- PEcAn.DB::db.query(cmd, dbConnect$bety)
     workflow_id <- strsplit(input$workflows_explor_selected, "_")[[1]]
    
     workflow_id <- trimws(workflow_id[1])
@@ -62,7 +62,7 @@ observeEvent(input$workflow_explor_classrand, {
 
 observeEvent(input$submitInfo, {
   tryCatch({
-    history <- PEcAn.DB::db.query(cmd, dbConnect$bety$con)
+    history <- PEcAn.DB::db.query(cmd, dbConnect$bety)
     output$historyfiles <- DT::renderDT(
       DT::datatable(history %>%
                       dplyr::select(-value, -modelname) %>%

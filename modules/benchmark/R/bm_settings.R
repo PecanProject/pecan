@@ -15,19 +15,14 @@ read_settings_BRR <- function(settings){
 
   # Check database connection
   if (is.null(settings$database$bety)) {
-    PEcAn.logger::logger.info("No databasse connection, can't get run information.")
+    PEcAn.logger::logger.info("No database settings, can't get run information.")
     return (settings)
   }
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = settings$database$bety$dbname,
-    host     = settings$database$bety$host,
-    user     = settings$database$bety$user,
-    password = settings$database$bety$password
-  )
-  con <- bety
-  BRR <- tbl(bety,"reference_runs") %>%
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
+
+  BRR <- tbl(con,"reference_runs") %>%
     filter(id == settings$benchmarking$reference_run_id) %>%
     collect()
 

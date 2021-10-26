@@ -84,12 +84,14 @@ for(l in 1:length(in.prefix)){
 files = list.files(outfolder)
 
 ### Get BETY information ###
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host     = 'psql-pecan.bu.edu', 
-                            user     = 'bety', 
-                            password = 'bety')
-con <- bety$con
-
+con <- db.open(
+  params = list(
+    driver = "Postgres",
+    dbname   = 'bety',
+    host     = 'psql-pecan.bu.edu',
+    user     = 'bety',
+    password = 'bety')
+)
 
 
 for(h in 1:length(files)){

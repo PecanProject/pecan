@@ -17,7 +17,7 @@ match_species_id(
 
 \item{format_name}{Species code format name (see details)}
 
-\item{bety}{\code{dplyr} \code{src} object containing BETY connection}
+\item{bety}{BETY connection object}
 
 \item{translation_table}{Data frame with custom translation table (see details).}
 }
@@ -44,20 +44,18 @@ Parses species codes in input data and matches them with the BETY species ID.
 }
 \examples{
 \dontrun{
-bety <- DBI::dbConnect(
-  RPostgres::Postgres(),
+con <- PEcAn.DB::db.open(list(
+  driver = "Postgres",
   dbname = 'bety',
   user = 'bety',
   password = 'bety',
-  host = 'localhost'
+  host = 'localhost')
 )
-con <- bety
-
 input_codes <- c('ACRU', 'PIMA', 'TSCA')
 format_name <- 'usda'
 match_species_id(input_codes = input_codes,
                  format_name = format_name,
-                 bety = bety)
+                 bety = con)
 }
 
 }

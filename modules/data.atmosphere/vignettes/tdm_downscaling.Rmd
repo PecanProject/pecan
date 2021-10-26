@@ -22,15 +22,9 @@ lon        <- -105.546
 start_date <- '2000/01/01'
 end_date   <- '2014/12/31'
 outfolder  <- "~/Example"
-bety      <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = bety$host,
-  user = bety$user,
-  password = bety$password,
-  dbname = bety$dbname
-)
-con <- bety
-format    <- query.format.vars(input.id = 5000000005, bety = bety)
+# TODO show where `bety` comes from
+con <- db.open(params = bety)
+format    <- query.format.vars(input.id = 5000000005, bety = con)
 in.prefix <- 'FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3'
 download.Fluxnet2015(sitename, lat, lon, start_date, end_date, outfolder, username = 'pecan', overwrite = FALSE)
 

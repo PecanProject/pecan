@@ -1025,17 +1025,11 @@ return_multi_site_objects <- function(multi.settings){
   any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
   sf <- unique(unlist(any.scaling))
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname = settings$database$bety$dbname,
-    host = settings$database$bety$host,
-    user = settings$database$bety$user,
-    password = settings$database$bety$password
-  )
-  con <- bety
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   # get prior.list
-  temp        <- pda.load.priors(settings, bety$con, TRUE)
+  temp        <- pda.load.priors(settings, con, TRUE)
   prior_list  <- temp$prior
 
   # extract other indices to fenerate knots
@@ -1063,7 +1057,7 @@ return_multi_site_objects <- function(multi.settings){
 
   # get format.list
   input_ids   <- sapply(settings$assim.batch$inputs, `[[`, "input.id")
-  format_list <- lapply(input_ids, PEcAn.DB::query.format.vars, bety = bety)
+  format_list <- lapply(input_ids, PEcAn.DB::query.format.vars, bety = con)
 
   # get knots
   # if this is the initial round we will draw from priors
@@ -1134,7 +1128,7 @@ return_multi_site_objects <- function(multi.settings){
     }
 
     }
-  ensembleid_list <- sapply(multi.settings, function(x) pda.create.ensemble(x, bety$con, x$workflow$id))
+  ensembleid_list <- sapply(multi.settings, function(x) pda.create.ensemble(x, con, x$workflow$id))
 
   return(list(priorlist = prior_list,
               formatlist = format_list,

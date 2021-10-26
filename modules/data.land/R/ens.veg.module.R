@@ -25,16 +25,8 @@ ens_veg_module <- function(getveg.id, dbparms,
 
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = dbparms$bety$dbname,
-    host     = dbparms$bety$host,
-    user     = dbparms$bety$user,
-    password = dbparms$bety$password
-  )
-
-  con <- bety
-  on.exit(db.close(con), add = TRUE)
+  con <- PEcAn.DB::db.open(dbparms)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
 

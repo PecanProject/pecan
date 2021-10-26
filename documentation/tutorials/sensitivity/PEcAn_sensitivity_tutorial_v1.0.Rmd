@@ -24,15 +24,7 @@ Open up a connection to the bety database and create a settings object from your
 
 settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000002/pecan.CONFIGS.xml")
 
-bety<-settings$database$bety
-bety <-DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = bety$host,
-  user = bety$user,
-  password = bety$password,
-  dbname = bety$dbname
-)
-  con <- bety
+con <- PEcan.DB::db.open(settings$database$bety)
 
 ```
 
@@ -103,8 +95,8 @@ Recall reading Ameriflux NEE in the modelVSdata tutorial.
 ```{r echo= TRUE, eval=FALSE}
 File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
 
-File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
-site<-PEcAn.DB::query.site(site.id = site.id,bety$con)  
+File_format<-PEcAn.DB::query.format.vars(bety = con, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+site<-PEcAn.DB::query.site(site.id = site.id, con)
 
 obs<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year)
 

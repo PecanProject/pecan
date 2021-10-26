@@ -55,17 +55,10 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     con <- NULL
   }
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname = settings$database$bety$dbname,
-    host = settings$database$bety$host,
-    user = settings$database$bety$user,
-    password = settings$database$bety$password
-  )
-  con <- bety
+  bety <- PEcAn.DB::db.open(settings$database$bety)
 
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con)
+  temp        <- pda.load.priors(settings, bety)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)

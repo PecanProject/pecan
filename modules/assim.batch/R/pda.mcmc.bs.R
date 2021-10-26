@@ -61,16 +61,10 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     con <- NULL
   }
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname = settings$database$bety$dbname,
-    host = settings$database$bety$host,
-    user = settings$database$bety$user,
-    password = settings$database$bety$password
-  )
-  con <- bety
+  bety <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con)
+  temp        <- pda.load.priors(settings, bety)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)
@@ -375,11 +369,6 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
   save(jcov.list, file = settings$assim.batch$jcov.path)
 
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
-
-  ## close database connection
-  if (!is.null(con)) {
-    PEcAn.DB::db.close(con)
-  }
 
   ## Output an updated settings list
   return(settings)

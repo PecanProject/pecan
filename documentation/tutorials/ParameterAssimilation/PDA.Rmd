@@ -73,20 +73,12 @@ library(PEcAn.all)
 settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
 
 # open up a DB connection
-bety<-settings$database$bety
-bety <-DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = bety$host,
-  user = bety$user,
-  password = bety$password,
-  dbname = bety$dbname
-)
-con <- bety
+con <- PEcAn.DB::db.open(settings$database$bety)
 
 # Fill out the arguments needed by load_data function
 
 # read file format information
-format     <- PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002)
+format     <- PEcAn.DB::query.format.vars(bety = con, format.id = 5000000002)
 start_year <- lubridate::year(settings$run$start.date)
 end_year   <- lubridate::year(settings$run$end.date)
 vars.used.index <- which(format$vars$bety_name %in% c("NEE", "UST"))

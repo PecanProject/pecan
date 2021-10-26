@@ -49,14 +49,7 @@ site.id<-settings$run$site$id
 File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
 
 ## Open up a connection to The Bety Database
-bety <-DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = settings$database$bety$host,
-  user = settings$database$bety$user,
-  password = settings$database$bety$password,
-  dbname = settings$database$bety$dbname
-)
-con <- bety
+con <- PEcAn.DB::db.open(settings$database$bety)
 
 ```
 
@@ -73,16 +66,16 @@ The arguments to read.output are the run ID, the folder where the run is located
 **First** _load up the observations_ and take a look at the contents of the file
 
 ```{r echo = TRUE, warning=FALSE, eval= FALSE}
-File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+File_format<-PEcAn.DB::query.format.vars(bety = con, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
-site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
+site<-PEcAn.DB::query.site(site.id, con) #This tells PEcAn where the data comes from
 
 observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted.
 ```
 
 File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge.
 
-File_format queries the database for the format your file is in. The defualt format ID "5000000002" is for csv files downloaded from the Ameriflux website.
+File_format queries the database for the format your file is in. The default format ID "5000000002" is for csv files downloaded from the Ameriflux website.
 You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/adding-an-ecosystem-model.html#formats).
 
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in.

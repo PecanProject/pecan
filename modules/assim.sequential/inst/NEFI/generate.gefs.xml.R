@@ -52,22 +52,14 @@ filename <- basename(args[1]) # Extract file name from args[1]
 
 if(xmloutdir == "") {xmloutdir <- "."}
 
-dbparms = list()
-dbparms$dbname = "bety"
-dbparms$host = "128.197.168.114"
-dbparms$user = "bety"
-dbparms$password = "bety"
+dbparms = list(
+  dbname = "bety",
+  host = "128.197.168.114",
+  user = "bety",
+  password = "bety",
+  driver = "Postgres")
+con <- PEcAn.DB::db.open(dbparms)
 
-#Connection code copied and pasted from met.process
-bety <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  dbname   = dbparms$dbname,
-  host     = dbparms$host,
-  user     = dbparms$user,
-  password = dbparms$password
-)
-
-con <- bety
 if (is.null(con)) {
   print("Database connection failed.")
   quit("no", status=12)

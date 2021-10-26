@@ -780,14 +780,14 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
 
   ### Get BETY information ###
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = "bety",
-    host     = "psql-pecan.bu.edu",
-    user     = "bety",
-    password = "bety"
+  con <- db.open(
+    params = list(
+      driver = "Postgres",
+      dbname   = "bety",
+      host     = "psql-pecan.bu.edu",
+      user     = "bety",
+      password = "bety")
   )
-  con <- bety
 
   # get matching dbfiles from BETY
   dbfile.path <- dirname(full.old.file)

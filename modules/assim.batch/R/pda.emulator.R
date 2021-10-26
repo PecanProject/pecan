@@ -105,22 +105,15 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
 
   if(!remote){
-    bety <- DBI::dbConnect(
-      RPostgres::Postgres(),
-      dbname = settings$database$bety$dbname,
-      host = settings$database$bety$host,
-      user = settings$database$bety$user,
-      password = settings$database$bety$password
-    )
+    bety <- PEcAn.DB::db.open(settings$database$bety)
   }else{
     bety     <- list()
-    bety$con <- NULL
   }
 
 
   ## Load priors
   if(is.null(external.priors)){
-    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    temp        <- pda.load.priors(settings, bety, run.normal)
     prior.list  <- temp$prior
     settings    <- temp$settings
   }else{

@@ -7,14 +7,8 @@ load_veg <- function(new_site, start_date, end_date,
                      source_id, source, icmeta = NULL, format_name = NULL,
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
 
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = dbparms$bety$dbname,
-    host     = dbparms$bety$host,
-    user     = dbparms$bety$user,
-    password = dbparms$bety$password
-  )
-con <- bety
+  con <- PEcAn.DB::db.open(dbparms$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   #--------------------------------------------------------------------------------------------------#
   # Load data : this step requires DB connections
 
@@ -31,7 +25,7 @@ con <- bety
 
 
   # query format info
-  format     <- PEcAn.DB::query.format.vars(bety = bety, input.id = source_id)
+  format     <- PEcAn.DB::query.format.vars(bety = con, input.id = source_id)
 
   # load_data{benchmark}
   obs        <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
@@ -57,7 +51,7 @@ con <- bety
   # match code to species ID
   # no lower case
   obs[[code.col]] <- toupper(obs[[code.col]])
-  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
+  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = con)
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
 

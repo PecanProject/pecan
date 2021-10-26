@@ -26,14 +26,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   host       <- settings$host
   dbparms    <- settings$database
   # set up bety connection
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = dbparms$bety$dbname,
-    host     = dbparms$bety$host,
-    user     = dbparms$bety$user,
-    password = dbparms$bety$password
-  )
-  con <- bety
+  con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
   latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)

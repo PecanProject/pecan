@@ -5,20 +5,15 @@ wcr.graphs <- function(args){
   if (is.null(start_date)) {
     in_wid <- as.integer(args[1])
   }
-  dbparms = list()
-  dbparms$dbname = "bety"
-  dbparms$host = "128.197.168.114"
-  dbparms$user = "bety"
-  dbparms$password = "bety"
-  #Connection code copied and pasted from met.process
-  bety <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    dbname   = dbparms$dbname,
-    host     = dbparms$host,
-    user     = dbparms$user,
-    password = dbparms$password
-  )
-  con <- bety
+
+  dbparms <- list(
+    dbname = "bety",
+    host = "128.197.168.114",
+    user = "bety",
+    password = "bety",
+    driver = "Postgres")
+  con <- PEcAn.DB::db.open(dbparms)
+
   # Identify the workflow with the proper information
   if (!is.null(start_date)) {
     workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='", format(start_date, "%Y-%m-%d %H:%M:%S"),
