@@ -4,9 +4,7 @@
 \name{tobit2space.model}
 \alias{tobit2space.model}
 \title{Fit tobit prior to ensemble members}
-\format{
-TBD
-}
+\format{TBD}
 \usage{
 tobit2space.model
 }
