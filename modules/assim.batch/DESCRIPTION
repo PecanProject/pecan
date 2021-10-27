@@ -40,6 +40,7 @@ Imports:
     PEcAn.settings,
     PEcAn.uncertainty,
     PEcAn.utils,
+    PEcAn.workflow,
     rjags,
     stats,
     prodlim,
@@ -48,7 +49,6 @@ Imports:
     udunits2 (>= 0.11),
     utils,
     XML,
-    lattice,
     lqmm,
     mvtnorm
 Suggests:
