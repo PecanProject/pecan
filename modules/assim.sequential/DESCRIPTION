@@ -21,6 +21,7 @@ Imports:
     PEcAn.remote,
     PEcAn.settings,
     PEcAn.utils,
+    PEcAn.workflow,
     plyr (>= 1.8.4),
     lubridate (>= 1.6.0),
     reshape2 (>= 1.4.2),
