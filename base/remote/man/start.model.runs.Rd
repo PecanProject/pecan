@@ -14,7 +14,8 @@
 \item{stop.on.error}{Throw error if \emph{any} of the runs fails. Default TRUE.}
 }
 \description{
-Start selected ecosystem model runs within PEcAn workflow
+DEFUNCT: This function has been moved to PEcAn.workflow::start_model_runs;
+please use that instead.
 }
 \examples{
 \dontrun{
