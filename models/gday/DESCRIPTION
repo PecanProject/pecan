@@ -1,10 +1,13 @@
 Package: PEcAn.GDAY
 Type: Package
 Title: PEcAn package for integration of the GDAY model
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Martin","De Kauwe"),
-             person("Tony", "Gardella"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Martin", "De Kauwe", role = c("aut", "cre"),
+                     email = "mdekauwe@gmail.com"),
+             person("Tony", "Gardella", role = c("aut"),
+                     email = "tonygard@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Martin De Kauwe
 Maintainer: Martin De Kauwe <mdekauwe@gmail.com>
 Description: This module provides functions to link the GDAY model to PEcAn.

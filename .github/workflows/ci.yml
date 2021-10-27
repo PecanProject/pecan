@@ -37,8 +37,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -78,8 +78,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
@@ -122,8 +122,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -171,8 +171,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:

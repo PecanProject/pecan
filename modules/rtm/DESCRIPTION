@@ -1,11 +1,15 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut", "cre"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
