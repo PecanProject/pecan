@@ -355,7 +355,7 @@ sda.enkf.multisite <- function(settings,
       #-------------------------------------------- RUN
       tictoc::tic(paste0("Running models for cycle = ", t))
       if (control$debug) browser()
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
       
       # this is the option to force job.sh files that are randomly not being run by the SDA
       if (forceRun)

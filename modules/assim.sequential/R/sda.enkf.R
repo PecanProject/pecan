@@ -309,7 +309,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   
   ## start model runs
   if(is.null(restart)){
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   }
 
   ###-------------------------------------------------------------------###
@@ -1122,7 +1122,7 @@ for(t in seq_len(nt)) { #
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
       print(paste("Running Model for Year", as.Date(obs.times[t]) + 1))
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     }
     
     ###-------------------------------------------------------------------###

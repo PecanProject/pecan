@@ -84,7 +84,7 @@ if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysi
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
   PEcAn.logger::logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
 }
 
 # get results

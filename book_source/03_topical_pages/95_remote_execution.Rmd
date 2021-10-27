@@ -166,7 +166,7 @@ For additional functions related to remote file operations and other stuff, see 
 
 ## Remote model execution with PEcAn
 
-The workhorse of remote model execution is the `PEcAn.remote::start.model.runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
+The workhorse of remote model execution is the `PEcAn.workflow::start_model_runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
 
 Broadly, there are three major types of model execution:
 

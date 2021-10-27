@@ -127,7 +127,7 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
       stop_on_error <- FALSE
     }
   }
-  PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = stop_on_error)
+  PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)
   PEcAn.utils::status.end()
 }
 

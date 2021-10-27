@@ -242,7 +242,7 @@ if (PEcAn.utils::status.check("CONFIG") == 0){
 # Start MAAT model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.workflow::runModule_start_model_runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
 
