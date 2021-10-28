@@ -14,6 +14,7 @@
 - [ ] Immediately
 - [ ] Within one week
 - [ ] When possible
+
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Bug fix (non-breaking change which fixes an issue) <!-- please add issue number -->
@@ -24,6 +25,7 @@
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 - [ ] My change requires a change to the documentation.
+- [ ] My name is in the list of .zenodo.json
 - [ ] I have updated the CHANGELOG.md.
 - [ ] I have updated the documentation accordingly.
 - [ ] I have read the **CONTRIBUTING** document.
