@@ -2,7 +2,7 @@
 % Please edit documentation in R/put_veg_module.R
 \name{put_veg_module}
 \alias{put_veg_module}
-\title{put_veg_module}
+\title{Match species to PFTs + veg2model module}
 \usage{
 put_veg_module(
   getveg.id,

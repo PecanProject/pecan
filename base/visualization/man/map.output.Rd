@@ -9,7 +9,7 @@ map.output(table, variable)
 \arguments{
 \item{table}{data.table or data.frame with columns lat, lon, followed by variable names}
 
-\item{variable}{Name of variable to be mapped}
+\item{variable}{name of variable to be mapped}
 }
 \value{
 plot

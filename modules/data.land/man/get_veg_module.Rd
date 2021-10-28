@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_veg_module.R
 \name{get_veg_module}
 \alias{get_veg_module}
-\title{get_veg_module}
+\title{Load/extract + match species module}
 \usage{
 get_veg_module(
   input_veg,

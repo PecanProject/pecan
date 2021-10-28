@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{dhist}
 \alias{dhist}
-\title{Diagonally Cut Histogram}
+\title{Variable-width (diagonally cut) histogram}
 \usage{
 dhist(
   x,
@@ -36,10 +36,6 @@ dhist(
 list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars.
 }
 \description{
-Diagonally Cut Histogram
-}
-\details{
-Variable-width (dagonally cut) histogram
 When constructing a histogram, it is common to make all bars the same width.
 One could also choose to make them all have the same area.
 These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
