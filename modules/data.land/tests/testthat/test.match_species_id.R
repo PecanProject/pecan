@@ -20,12 +20,13 @@ test_that("Species matching works", {
       return(dat_merge)
   }
 
-  con <- PEcAn.DB::db.open(list(
-    driver = 'Postgres',
-    dbname = 'bety',
-    user = 'bety',
-    password = 'bety')
-  )
+  db_params <- PEcAn.DB::get_postgres_envvars(
+    dbname = "bety",
+    user = "bety",
+    password = "bety",
+    host = "localhost")
+  con <- PEcAn.DB::db.open(db_params)
+
   test_merge(c('ACRU', 'TSCA'), 'usda', con)
   test_merge(c(316, 261), 'fia', con)
   test_merge(c('Acer rubrum', 'Tsuga canadensis'), 'latin_name', con)
