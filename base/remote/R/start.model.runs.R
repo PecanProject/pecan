@@ -27,6 +27,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 }
 
 ##' @export
+##' @rdname start.model.runs
 runModule.start.model.runs <- function(settings,stop.on.error=TRUE) {
   .Defunct("PEcAn.workflow::runModule_start_model_runs") 
 }

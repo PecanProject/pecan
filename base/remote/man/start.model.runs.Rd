@@ -2,9 +2,12 @@
 % Please edit documentation in R/start.model.runs.R
 \name{start.model.runs}
 \alias{start.model.runs}
+\alias{runModule.start.model.runs}
 \title{Start selected ecosystem model runs within PEcAn workflow}
 \usage{
 \method{start}{model.runs}(settings, write = TRUE, stop.on.error = TRUE)
+
+runModule.start.model.runs(settings, stop.on.error = TRUE)
 }
 \arguments{
 \item{settings}{pecan settings object}
