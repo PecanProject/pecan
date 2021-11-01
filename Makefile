@@ -3,7 +3,7 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet stics template
+				lpjguess maat maespa preles sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -143,7 +143,9 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .SECONDEXPANSION:
 .doc/%: $$(call files_in_dir, %) | $$(@D)
+ifeq ($(CI),) # skipped on CI because we start the run by bulk-installing all deps
 	+ $(call depends_R_pkg, $(subst .doc/,,$@))
+endif
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 

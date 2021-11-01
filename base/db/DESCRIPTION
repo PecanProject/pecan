@@ -1,43 +1,40 @@
 Package: PEcAn.DB
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.1
-Date: 2019-09-05
+Version: 1.7.2
+Date: 2021-10-04
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
-                     email = "dlebauer@email.arizona.edu",
-                     comment = c(ORCID = "0000-0001-7228-053X")),
+                     email = "dlebauer@email.arizona.edu"),
              person("Mike", "Dietze", role = c("aut"),
-                     email = "dietze@bu.edu",
-                     comment = c(ORCID = "0000-0002-2324-2518")),
+                     email = "dietze@bu.edu"),
              person("Rob", "Kooper", role = c("aut"),
-                     email = "kooper@illinois.edu",
-                     comment = c(ORCID = "0000-0002-5781-7287")),
+                     email = "kooper@illinois.edu"),
              person("Shawn", "Serbin", role = c("aut"),
-                     email = "sserbin@bnl.gov",
-                     comment = c(ORCID = "0000-0003-4136-8971")),
-             person("Betsy", "Cowdery", role = c("aut"),
-                     email = "ecowdery@bu.edu",
-                     comment = c(ORCID = "0000-0002-6538-6296")),
+                     email = "sserbin@bnl.gov"),
+             person("Elizabeth", "Cowdery", role = c("aut"),
+                     email = "ecowdery@bu.edu"),
              person("Ankur", "Desai", role = c("aut"),
-                     email = "desai@aos.wisc.edu",
-                     comment = c(ORCID = "0000-0002-5226-6041")),
+                     email = "desai@aos.wisc.edu"),
              person("Istem", "Fer", role = c("aut"),
-                     email = "istfer@bu.edu",
-                     comment = c(ORCID = "0000-0001-8236-303X")),
+                     email = "istem.fer@fmi.fi"),
              person("Alexey", "Shiklomanov", role = c("aut"),
-                     email = "alexey.shiklomanov@pnnl.gov",
-                     comment = c(ORCID = "0000-0003-4022-5979")),
+                     email = "alexey.shiklomanov@pnnl.gov"),
              person("Tony", "Gardella", role = c("aut"),
-                     email = "tonygard@bu.edu",
-                     comment = c(ORCID = "0000-0003-4380-3412")),
-             person("Christopher", "Black", role = c("aut"),
-                     email = "ckb23@psu.edu",
-                     comment = c(ORCID = "0000-0001-8382-298X")),
-             person("Liam", "Burke", role = c("aut")),
-             person("Ryan", "Kelly", role = c("aut")),
+                     email = "tonygard@bu.edu"),
+             person("Chris", "Black", role = c("aut"),
+                     email = "chris@ckblack.org"),
+             person("Liam", "Burke", role = c("aut"),
+                     email = "liam.burke24@gmail.com>"),
+             person("Ryan", "Kelly", role = c("aut"),
+                     email = "rykelly@bu.edu"),
              person("Dan", "Wang", role = c("aut")),
-             person("Carl", "Davidson", role = c("aut")),
-             person("Xiaohui", "Feng", role = c("aut")))
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Shashank", "Singh", role = c("aut"),
+                     email = "shashanksingh819@gmail.com"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to

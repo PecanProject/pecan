@@ -1,11 +1,11 @@
-* using log directory ‘/tmp/RtmpNWKth3/PEcAn.BIOCRO.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/tmp/RtmpglaOpI/PEcAn.BIOCRO.Rcheck’
+* using R version 4.1.1 (2021-08-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.BIOCRO/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.BIOCRO’ version ‘1.7.0’
+* this is package ‘PEcAn.BIOCRO’ version ‘1.7.2’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -19,10 +19,8 @@
 * checking whether package ‘PEcAn.BIOCRO’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... NOTE
 Non-standard files/directories found at top level:
   ‘Dockerfile’ ‘model_info.json’
@@ -39,6 +37,10 @@ Non-standard files/directories found at top level:
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... NOTE
 Missing or unexported object: ‘BioCro::Gro’
+# Hack: this upgraded from NOTE to WARNING in R 4.1, so duplicating
+# message so both are seen as pre-existing until we're ready to fix it.
+* checking dependencies in R code ... WARNING
+Missing or unexported object: ‘BioCro::Gro’
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -51,7 +53,6 @@ Missing link or links in documentation object 'get_biocro_defaults.Rd':
   ‘[BioCro:Gro]{Gro}’
 
 See section 'Cross-references' in the 'Writing R Extensions' manual.
-
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... OK
@@ -63,6 +64,16 @@ Files in the 'vignettes' directory but no files in 'inst/doc':
 Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 WARNINGs, 3 NOTEs
+
+Status: 3 WARNINGs, 2 NOTEs
+See
+  ‘/tmp/RtmpglaOpI/PEcAn.BIOCRO.Rcheck/00check.log’
+for details.
+
+

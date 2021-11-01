@@ -1,12 +1,16 @@
 Package: PEcAn.benchmark
 Type: Package
 Title: PEcAn functions used for benchmarking
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Rob","Kooper"),
-             person("Toni", "Viskari"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Toni", "Viskari", role = c("aut")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific

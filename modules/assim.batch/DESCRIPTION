@@ -1,13 +1,15 @@
 Package: PEcAn.assim.batch
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze", role = "aut",
-                email = "dietze@bu.edu"),
-             person("Istem","Fer", role = c("aut", "cre"),
-                email = "istem.fer@fmi.fi"),
-             person("Ryan", "Kelly", role = "aut"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("Istem", "Fer", role = c("aut", "cre"),
+                     email = "istem.fer@fmi.fi"),
+             person("Ryan", "Kelly", role = c("aut"),
+                     email = "rykelly@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
@@ -51,6 +53,7 @@ Imports:
     mvtnorm
 Suggests:
     knitr,
+    rmarkdown,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

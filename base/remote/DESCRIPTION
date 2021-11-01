@@ -1,12 +1,17 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn model execution utilities
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("David","LeBauer"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut", "cre"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.

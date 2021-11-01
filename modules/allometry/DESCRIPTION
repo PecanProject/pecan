@@ -1,9 +1,11 @@
 Package: PEcAn.allometry
 Type: Package
 Title: PEcAn allometry functions
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data
@@ -17,7 +19,8 @@ Imports:
     XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2),
-    PEcAn.DB
+    PEcAn.DB,
+    withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

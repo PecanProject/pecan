@@ -19,4 +19,4 @@
 # run.write.configs("ED2")
 # clear.scratch(settings)
 # start.model.runs("ED2")
-# get.model.output("ED2")
+# get.results(settings)

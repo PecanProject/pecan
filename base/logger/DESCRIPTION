@@ -1,15 +1,32 @@
 Package: PEcAn.logger
-Title: Logger functions for PEcAn
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Rob","Kooper"),
-             person("Alexey", "Shiklomanov"))
-Author: Rob Kooper, Alexey Shiklomanov
-Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
-Description: Special logger functions for tracking execution status and the environment.
+Title: Logger Functions for 'PEcAn'
+Version: 1.8.0
+Date: 2021-07-27
+Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
+                     email = "kooper@illinois.edu"),
+             person("Alexey", "Shiklomanov", role = c("aut"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("Shashank", "Singh", role = c("aut"),
+                     email = "shashanksingh819@gmail.com"),
+             person("Chris", "Black", role = c("aut"),
+                     email = "chris@ckblack.org"),
+             person("University of Illinois, NCSA", role = c("cph")))
+Description: Convenience functions for logging outputs from 'PEcAn',
+   the Predictive Ecosystem Analyzer (LeBauer et al. 2017)
+   <doi:10.1890/12-0137.1>. Enables the user to set what level of messages are
+   printed, as well as whether these messages are written to the console, 
+   a file, or both. It also allows control over whether severe errors should
+   stop execution of the 'PEcAn' workflow; this allows strictness when debugging
+   and lenience when running large batches of simulations that should not be
+   terminated by errors in individual models. It is loosely based on
+   the 'log4j' package.
+BugReports: https://github.com/PecanProject/pecan/issues
+URL: https://pecanproject.github.io/
+Imports: 
+    utils,
+    stringi
 Suggests: testthat
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)

@@ -1,20 +1,26 @@
 Package: PEcAn.visualization
 Type: Package
 Title: PEcAn visualization functions
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(
-    person("Mike", "Dietze", role = "aut"),
-    person("David", "LeBauer",
-        role = c("aut", "cre"),
-        email = "dlebauer@email.arizona.edu"),
-    person("Xiaohui", "Feng", role = "aut"),
-    person("Dan", " Wang", role = "aut"),
-    person("Carl", "Davidson", role = "aut"),
-    person("Rob", "Kooper", role = "aut"),
-    person("Shawn", "Serbin", role = "aut"),
-    person("Alexey", "Shiklomanov", role = "aut"),
-    person("Elizabeth", "Cowdery", role = "aut"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut", "cre"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("Elizabeth", "Cowdery", role = c("aut"),
+                     email = "ecowdery@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
@@ -33,6 +39,7 @@ Imports:
     plyr (>= 1.8.4),
     RCurl,
     reshape2,
+    rlang,
     stringr(>= 1.1.0)
 Suggests:
     grid,
@@ -46,3 +53,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.0.2
+Roxygen: list(markdown = TRUE)
