@@ -1,10 +1,12 @@
 Package: PEcAn.DALEC
 Type: Package
 Title: PEcAn package for integration of the DALEC model
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("Tristan","Quaife"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("Tristan", "Quaife", role = c("aut")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.

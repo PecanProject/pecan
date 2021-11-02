@@ -1,15 +1,22 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze",email="dietze@bu.edu",role="cre"),
-             person("David","LeBauer",role="aut"),
-             person("Xiaohui", "Feng",role="ctb"),
-             person("Dan"," Wang",role="ctb"),
-             person("Carl", "Davidson",role="ctb"),
-             person("Rob","Kooper",role="ctb"),
-             person("Alexey", "Shiklomanov",role="ctb"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("ctb"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("ctb")),
+             person("Carl", "Davidson", role = c("ctb"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("ctb"),
+                     email = "kooper@illinois.edu"),
+             person("Alexey", "Shiklomanov", role = c("ctb"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
