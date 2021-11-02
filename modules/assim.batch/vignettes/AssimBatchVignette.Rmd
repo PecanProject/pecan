@@ -39,32 +39,31 @@ Note that, there used to be Metropolis-Hastings Markov Chain Monte Carlo (MCMC) 
 
 ## Adding PDA tags to pecan.xml
 
-The easiest way to use PEcAn's parameter data assimilation module is to add an `<assim.batch>` block to pecan.xml, load the file with `read.settings`, and pass the resulting settings object to `pda.mcmc()`. There are some differences in the settings for using different PDA methods (see below), but here is an example `<assim.batch>` block :
+The easiest way to use PEcAn's parameter data assimilation module is to add an `<assim.batch>` block to pecan.xml, load the file with `read.settings`, and pass the resulting settings object to `pda.bayesian.tools()` or `pda.emulator()`. There are some differences in the settings for using different PDA methods (we will go through test cases, at this point just familiarize yourself with the general pattern), but here is an example `<assim.batch>` block :
 
 ```
 <assim.batch>
-  <iter>10000</iter>
-  <method>bruteforce</method>
+  <iter>100000</iter>
+  <method>emulator</method>                     <--- WHICH PDA APPROACH
   <chain>3</chain>
   <param.names>
-   <temperate.coniferous>                        <--- YOUR PFT
-    <param>veg_respiration_Q10</param>
-    <param>stem_respiration_rate</param>
-    <param>Vm_low_temp</param>
+   <temperate.coniferous>                       <--- YOUR PFT(S)
+    <param>PARAM1</param>                       <--- PARAMETER(S) YOU TARGET IN PDA
+    <param>PARAM2</param>
    </temperate.coniferous>
   </param.names>
   <inputs>
     <file>
-      <input.id>1000000384</input.id>
+      <input.id> ... </input.id>                <--- YOUR CONSTRAINT ID FROM BETY DB 
       <path>
-        <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc</path>
-        <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc</path>
+        <path> ... </path>                      <--- YOUR CONSTRAINT FILE PATH
+        <path> ... </path>
       </path>
-      <likelihood>Laplace</likelihood>
-      <variable.id>298</variable.id>
+      <likelihood>Laplace</likelihood>          <--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
+      <variable.id>298</variable.id>            <--- (CONSTRAINT) VARIABLE ID FROM BETY DB
       <variable.name>
-        <variable.name>LE</variable.name>
-        <variable.name>UST</variable.name>
+        <variable.name>LE</variable.name>       <--- (CONSTRAINT) VARIABLE
+        <variable.name>UST</variable.name>      <--- HELPER VARIABLE SPECIFIC TO FLUX CASE
       </variable.name>
     </file>
   </inputs>
@@ -76,7 +75,7 @@ The easiest way to use PEcAn's parameter data assimilation module is to add an `
       </path>
     <likelihood>multipGauss</likelihood>
     <hyper.pars>
-      <parama>0.001</parama>
+      <parama>0.001</parama>                    <--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
       <paramb>0.001</paramb>
     </hyper.pars>
     <ss.positive>TRUE</ss.positive>
@@ -85,20 +84,14 @@ The easiest way to use PEcAn's parameter data assimilation module is to add an `
       </variable.name>
     </file>
   </inputs>
-  <jump>
-    <ar.target>0.3</ar.target>
-    <adapt>200</adapt>
-    <adj.min>0.1</adj.min>
-  </jump>
-  <diag.plot.iter>500</diag.plot.iter>
 </assim.batch>
 ```
 
 
-Here are details about the settings:
+Here are some more details about the PDA tags:
 
 
-* `<iter>` Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. Ignored by pda.emulator(). 
+* `<iter>` Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. 
 
 * `<chain>` Specifies the number of MCMC chains to be run.
 
@@ -110,7 +103,7 @@ Here are details about the settings:
        
        NOTE: It is recommended to leave the `<prior>` tag empty if you are doing this for the first time. PEcAn workflow will handle it for you.
 
-* `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. These must be the standard names given in the `id` column of the `trait.dictionary`, i.e. :
+* `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. *These must be the standard names given in BETY DB, not your model specific parameter names*, i.e. check out the `id` column of the `trait.dictionary`, i.e. :
 
 ```{r}
 data(trait.dictionary, package = "PEcAn.utils")
@@ -120,7 +113,7 @@ head(trait.dictionary[,c("id", "figid")])
 
            NOTE : `<param.names>` chunk should always be on your xml file regardless of the method you use in the PDA.
            
-* `<inputs>` Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating Ameriflux dataset currently, and assumes the input is Ameriflux NEE/FC or LE. 
+* `<inputs>` Observation (constraint) data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating flux datasets numerous times using the NEE/FC or LE variables. 
 
      
     + `<file>` Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in `<variable.id>` and `<variable.name>` :

@@ -342,34 +342,33 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p><strong>Which one to use?</strong></p>
 <p><strong>bayesian.tools :</strong> The <code>pda.bayesian.tools.R</code> is the main script of this PDA workflow that performs a bruteforce (MCMC methods that require running your models at least couple of thousand of times) calibration. This script uses the <code>BayesianTools</code> R-package (Hartig, Minuno and Paul, 2019) that includes MCMC and SMC samplers and other tools for Bayesian parameter calibration with external models. If you choose <em>bayesian.tools</em> option, PEcAn framework will hand the PDA calculations over to the <code>BayesianTools</code> package. Although this package includes algorithms that are designed to explore the parameter space more efficiently than the traditional MH-MCMC, you would still need a relatively faster model to use these algorithms. Note that the <code>BayesianTools</code> R-package itself is constantly under development, and its integration with PEcAn may not be possible to leverage all <code>BayesianTools</code> functionality through PEcAn.</p>
 <p><strong>emulator :</strong> The <code>pda.emulator.R</code> is the main script of this PDA workflow. When a model is slow, it is practically not possible to run it hundreds of thousands of times sequentially to explore the parameter space and draw enough samples to converge the target distribution with bruteforce algorithms. Instead, we can run the model for a relatively smaller number of times with parameter combinations that have been carefully chosen to give good coverage of parameter space. Then we can interpolate the likelihood calculated for each of those runs to get a surface that “emulates” the true likelihood and perform regular MCMC (just like the “bruteforce” approach), except instead of actually running the model on every iteration to obtain a likelihood value, this time we will just get an approximation from the likelihood emulator. A lot more details about the emulator approach can be found in <a href="https://doi.org/10.5194/bg-15-5801-2018">Fer et al. 2018.</a></p>
-<p><strong>Multi-site HPDA :</strong> The <code>pda.emulator.ms.R</code> is the main script of this PDA workflow which performs a multi-site hierarchical Bayesian calibration using the emulator approach. In the multi-site hierarhical calibration, global posteriors are fitted simultaneously using an additional Gibbs update step, and used as the new prior hyperparameters in the next iteration of MCMC to obtain site-level hierarchical posteriors. This workflow has its own vignette (see <code>/modules/assim.batch/vignettes/MultiSitePDAVignette.Rmd</code>) and we will not be one of the examples here. For more information also see <a href="https://doi.org/10.1101/2021.04.28.441243">Fer et al. 2021 bioRxiv preprint</a>.</p>
+<p><strong>Multi-site HPDA :</strong> The <code>pda.emulator.ms.R</code> is the main script of this PDA workflow which performs a multi-site hierarchical Bayesian calibration using the emulator approach. In the multi-site hierarhical calibration, global posteriors are fitted simultaneously using an additional Gibbs update step, and used as the new prior hyperparameters in the next iteration of MCMC to obtain site-level hierarchical posteriors. This PDA workflow has its own vignette (see <code>/modules/assim.batch/vignettes/MultiSitePDAVignette.Rmd</code>) and will not be one of the examples here. For more information also see <a href="https://doi.org/10.1101/2021.04.28.441243">Fer et al. 2021 bioRxiv preprint</a>.</p>
 </div>
 <div id="adding-pda-tags-to-pecan.xml" class="section level2">
 <h2>Adding PDA tags to pecan.xml</h2>
-<p>The easiest way to use PEcAn’s parameter data assimilation module is to add an <code>&lt;assim.batch&gt;</code> block to pecan.xml, load the file with <code>read.settings</code>, and pass the resulting settings object to <code>pda.mcmc()</code>. There are some differences in the settings for using different PDA methods (see below), but here is an example <code>&lt;assim.batch&gt;</code> block :</p>
+<p>The easiest way to use PEcAn’s parameter data assimilation module is to add an <code>&lt;assim.batch&gt;</code> block to pecan.xml, load the file with <code>read.settings</code>, and pass the resulting settings object to <code>pda.bayesian.tools()</code> or <code>pda.emulator()</code>. There are some differences in the settings for using different PDA methods (we will go through test cases, at this point just familiarize yourself with the general pattern), but here is an example <code>&lt;assim.batch&gt;</code> block :</p>
 <pre><code>&lt;assim.batch&gt;
-  &lt;iter&gt;10000&lt;/iter&gt;
-  &lt;method&gt;bruteforce&lt;/method&gt;
+  &lt;iter&gt;100000&lt;/iter&gt;
+  &lt;method&gt;emulator&lt;/method&gt;                      &lt;--- WHICH PDA APPROACH
   &lt;chain&gt;3&lt;/chain&gt;
   &lt;param.names&gt;
-   &lt;temperate.coniferous&gt;                        &lt;--- YOUR PFT
-    &lt;param&gt;veg_respiration_Q10&lt;/param&gt;
-    &lt;param&gt;stem_respiration_rate&lt;/param&gt;
-    &lt;param&gt;Vm_low_temp&lt;/param&gt;
+   &lt;temperate.coniferous&gt;                        &lt;--- YOUR PFT(S)
+    &lt;param&gt;PARAM1&lt;/param&gt;                        &lt;--- PARAMETER(S) YOU TARGET IN PDA
+    &lt;param&gt;PARAM2&lt;/param&gt;
    &lt;/temperate.coniferous&gt;
   &lt;/param.names&gt;
   &lt;inputs&gt;
     &lt;file&gt;
-      &lt;input.id&gt;1000000384&lt;/input.id&gt;
+      &lt;input.id&gt; ... &lt;/input.id&gt;                 &lt;--- YOUR CONSTRAINT ID FROM BETY DB 
       &lt;path&gt;
-        &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc&lt;/path&gt;
-        &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc&lt;/path&gt;
+        &lt;path&gt; ... &lt;/path&gt;                       &lt;--- YOUR CONSTRAINT FILE PATH
+        &lt;path&gt; ... &lt;/path&gt;
       &lt;/path&gt;
-      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
-      &lt;variable.id&gt;298&lt;/variable.id&gt;
+      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;           &lt;--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
+      &lt;variable.id&gt;298&lt;/variable.id&gt;             &lt;--- (CONSTRAINT) VARIABLE ID FROM BETY DB
       &lt;variable.name&gt;
-        &lt;variable.name&gt;LE&lt;/variable.name&gt;
-        &lt;variable.name&gt;UST&lt;/variable.name&gt;
+        &lt;variable.name&gt;LE&lt;/variable.name&gt;        &lt;--- (CONSTRAINT) VARIABLE
+        &lt;variable.name&gt;UST&lt;/variable.name&gt;       &lt;--- HELPER VARIABLE SPECIFIC TO FLUX CASE
       &lt;/variable.name&gt;
     &lt;/file&gt;
   &lt;/inputs&gt;
@@ -381,7 +380,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
       &lt;/path&gt;
     &lt;likelihood&gt;multipGauss&lt;/likelihood&gt;
     &lt;hyper.pars&gt;
-      &lt;parama&gt;0.001&lt;/parama&gt;
+      &lt;parama&gt;0.001&lt;/parama&gt;                     &lt;--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
       &lt;paramb&gt;0.001&lt;/paramb&gt;
     &lt;/hyper.pars&gt;
     &lt;ss.positive&gt;TRUE&lt;/ss.positive&gt;
@@ -390,16 +389,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
       &lt;/variable.name&gt;
     &lt;/file&gt;
   &lt;/inputs&gt;
-  &lt;jump&gt;
-    &lt;ar.target&gt;0.3&lt;/ar.target&gt;
-    &lt;adapt&gt;200&lt;/adapt&gt;
-    &lt;adj.min&gt;0.1&lt;/adj.min&gt;
-  &lt;/jump&gt;
-  &lt;diag.plot.iter&gt;500&lt;/diag.plot.iter&gt;
 &lt;/assim.batch&gt;</code></pre>
-<p>Here are details about the settings:</p>
+<p>Here are some more details about the PDA tags:</p>
 <ul>
-<li><p><code>&lt;iter&gt;</code> Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. Ignored by pda.emulator().</p></li>
+<li><p><code>&lt;iter&gt;</code> Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing.</p></li>
 <li><p><code>&lt;chain&gt;</code> Specifies the number of MCMC chains to be run.</p></li>
 <li><p><code>&lt;prior&gt;</code> Identifies the prior to be used for PDA. Can be one of either:</p>
 <pre><code> + `&lt;posterior.id&gt;` A posterior ID in BETY specifying the posterior from a previous PEcAn analysis (e.g., meta-analysis or previous PDA) to be used as the prior for PDA. Defaults to the most recent relevant posterior in the database if omitted (and no `&lt;path&gt;` specified instead; see below).
@@ -407,7 +400,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
  + `&lt;path&gt;` As an alternative to using a posterior ID, can specify a file path to either a `prior.distns.Rdata` or `post.distns.Rdata` file generated from an earlier analysis. Conceptually, using a posterior distribution as the prior for PDA is preferred, as this allows the multiple analyses to work together to iteratively constrain parameters. In practice, previous analyses may have over-constrained parameters to ranges that do not actually optimize model outputs, so using a less informative prior for PDA might yield better results. 
 
  NOTE: It is recommended to leave the `&lt;prior&gt;` tag empty if you are doing this for the first time. PEcAn workflow will handle it for you.</code></pre></li>
-<li><p><code>&lt;param.names&gt;</code> The names of parameters to be constrained by assimilation, listed in individual <code>&lt;param&gt;</code> tags. These must be the standard names given in the <code>id</code> column of the <code>trait.dictionary</code>, i.e. :</p></li>
+<li><p><code>&lt;param.names&gt;</code> The names of parameters to be constrained by assimilation, listed in individual <code>&lt;param&gt;</code> tags. <em>These must be the standard names given in BETY DB, not your model specific parameter names</em>, i.e. check out the <code>id</code> column of the <code>trait.dictionary</code>, i.e. :</p></li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">data</span>(trait.dictionary, <span class="dt">package =</span> <span class="st">&quot;PEcAn.utils&quot;</span>)</a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"></a>
@@ -422,7 +415,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <pre><code>       NOTE : `&lt;param.names&gt;` chunk should always be on your xml file regardless of the method you use in the PDA.
        </code></pre>
 <ul>
-<li><p><code>&lt;inputs&gt;</code> Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating Ameriflux dataset currently, and assumes the input is Ameriflux NEE/FC or LE.</p>
+<li><p><code>&lt;inputs&gt;</code> Observation (constraint) data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating flux datasets numerous times using the NEE/FC or LE variables.</p>
 <ul>
 <li><code>&lt;file&gt;</code> Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in <code>&lt;variable.id&gt;</code> and <code>&lt;variable.name&gt;</code> :</li>
 </ul>
