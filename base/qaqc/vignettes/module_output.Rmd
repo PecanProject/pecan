@@ -1,3 +1,11 @@
+---
+title: "Modules and outputs"
+output: html_vignette
+vignette: >
+   %\VignetteIndexEntry{Modules and outputs}
+   %\VignetteEngine{knitr::rmarkdown}
+---
+
 <!--
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
@@ -9,9 +17,6 @@
 #-------------------------------------------------------------------------------
 -->
 
-Modules and outputs
-===================
-
 To get a better understanding on what files are created where, Rob created a workflow as an SVG diagram. You can find the diagram at
 
 http://isda.ncsa.illinois.edu/~kooper/EBI/workflow.svg
@@ -22,7 +27,8 @@ are inputs and outputs.
 To create this I used the trace functionality in R to capture the files
 saved/loaded
 
-```{r}
+```{r, eval = FALSE}
+library("ncdf4")
 trace(nc_open, quote(cat(c("LOAD : ", filename, "\n"), file="files.txt", append=TRUE)))
 trace(nc_create, quote(cat(c("SAVE : ", filename, "\n"), file="files.txt", append=TRUE)))
 trace(save, quote(cat(c("SAVE : ", file, "\n"), file="files.txt", append=TRUE)))

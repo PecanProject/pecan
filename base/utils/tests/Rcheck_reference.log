@@ -9,9 +9,7 @@
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
-Packages suggested but not available for checking:
-  'PEcAn.data.atmosphere', 'PEcAn.data.land', 'PEcAn.settings',
-  'PEcAn.DB'
+Package suggested but not available for checking: 'PEcAn.DB'
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -27,9 +25,7 @@ Packages suggested but not available for checking:
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
-* checking top-level files ... NOTE
-Non-standard file/directory found at top level:
-  ‘scripts’
+* checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -41,8 +37,7 @@ Non-standard file/directory found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' import not declared from: ‘PEcAn.uncertainty’
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -51,157 +46,30 @@ convert.input: no visible binding for global variable ‘settings’
 convert.input: no visible binding for global variable ‘id’
 convert.input : log_format_df: no visible binding for global variable
   ‘.’
-get.results: no visible binding for global variable ‘trait.samples’
-get.results: no visible binding for global variable ‘runs.samples’
-get.results: no visible binding for global variable ‘sa.samples’
 grid2netcdf: no visible binding for global variable ‘years’
 grid2netcdf: no visible binding for global variable ‘yieldarray’
 mcmc.list2init: no visible binding for global variable ‘nr’
-plot_data: no visible binding for global variable ‘x’
-plot_data: no visible binding for global variable ‘y’
-plot_data: no visible binding for global variable ‘control’
-plot_data: no visible binding for global variable ‘se’
-read.ensemble.output: no visible binding for global variable
-  ‘runs.samples’
-read.output: no visible binding for global variable ‘median’
 read.sa.output: no visible binding for global variable ‘runs.samples’
-run.write.configs: no visible global function definition for
-  ‘get.parameter.samples’
-run.write.configs: no visible binding for global variable
-  ‘trait.samples’
-run.write.configs: no visible binding for global variable ‘sa.samples’
-run.write.configs: no visible binding for global variable
-  ‘ensemble.samples’
 
 Undefined global functions or variables:
-  . citation_id control cultivar_id ensemble.samples
-  get.parameter.samples greenhouse id median n nr runs.samples
-  sa.samples se settings site_id specie_id statname time trait.samples
-  trt_id x y years yieldarray
-Consider adding
-  importFrom("stats", "median", "time")
-to your NAMESPACE file.
+  . nr runs.samples settings years yieldarray
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'retry.func.Rd':
-  \examples lines wider than 100 characters:
-       ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
-
-These lines will be truncated in the PDF manual.
-* checking Rd cross-references ... WARNING
-Unknown packages ‘PEcAn.priors’, ‘PEcAn.benchmark’ in Rd xrefs
-Missing link or links in documentation object 'download.file.Rd':
-  ‘method’
-
-Missing link or links in documentation object 'get.results.Rd':
-  ‘read.settings’
-
-Missing link or links in documentation object 'standard_vars.Rd':
-  ‘[udunits2]{udunits}’
-
-Missing link or links in documentation object 'write.ensemble.configs.Rd':
-  ‘write.config.ED’
-
-See section 'Cross-references' in the 'Writing R Extensions' manual.
-
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
-  ‘logger.error’ ‘logger.getLevel’ ‘logger.info’ ‘logger.setLevel’
-  ‘logger.setOutputFile’ ‘logger.setQuitOnSevere’ ‘logger.setWidth’
-  ‘logger.severe’ ‘logger.warn’ ‘mstmip_local’ ‘mstmip_vars’
-  ‘runModule.get.results’ ‘runModule.run.write.configs’
   ‘trait.dictionary’
 Undocumented data sets:
-  ‘mstmip_local’ ‘mstmip_vars’ ‘trait.dictionary’
+  ‘trait.dictionary’
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'convert.input'
-  ‘dbparms’
-
-Undocumented arguments in documentation object 'ensemble.filename'
-  ‘settings’ ‘prefix’ ‘suffix’ ‘all.var.yr’ ‘ensemble.id’ ‘variable’
-  ‘start.year’ ‘end.year’
-
-Undocumented arguments in documentation object 'full.path'
-  ‘folder’
-
-Undocumented arguments in documentation object 'get.ensemble.samples'
-  ‘...’
-
-Undocumented arguments in documentation object 'get.model.output'
-  ‘settings’
-
-Undocumented arguments in documentation object 'get.results'
-  ‘sa.ensemble.id’ ‘ens.ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’
-
-Undocumented arguments in documentation object 'grid2netcdf'
-  ‘gdata’ ‘date’ ‘outfile’
-Documented arguments not in \usage in documentation object 'grid2netcdf':
-  ‘grid.data’
-
-Undocumented arguments in documentation object 'logger.debug'
-  ‘...’
-
-Undocumented arguments in documentation object 'mstmipvar'
-  ‘silent’
-
-Undocumented arguments in documentation object 'plot_data'
-  ‘color’
-
-Undocumented arguments in documentation object 'r2bugs.distributions'
-  ‘direction’
-
-Undocumented arguments in documentation object 'read.ensemble.output'
-  ‘variable’ ‘ens.run.ids’
-Documented arguments not in \usage in documentation object 'read.ensemble.output':
-  ‘variables’
-
-Undocumented arguments in documentation object 'read.sa.output'
-  ‘variable’ ‘sa.run.ids’
-Documented arguments not in \usage in documentation object 'read.sa.output':
-  ‘variables’
-
-Undocumented arguments in documentation object 'retry.func'
-  ‘isError’
-
-Undocumented arguments in documentation object 'run.write.configs'
-  ‘settings’ ‘overwrite’
-Documented arguments not in \usage in documentation object 'run.write.configs':
-  ‘model’
-
-Undocumented arguments in documentation object 'seconds_in_year'
-  ‘...’
-
-Undocumented arguments in documentation object 'sensitivity.filename'
-  ‘settings’ ‘prefix’ ‘suffix’ ‘all.var.yr’ ‘pft’ ‘ensemble.id’
-  ‘variable’ ‘start.year’ ‘end.year’
-
-Undocumented arguments in documentation object 'write.ensemble.configs'
-  ‘model’ ‘write.to.db’
-Documented arguments not in \usage in documentation object 'write.ensemble.configs':
-  ‘write.config’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... WARNING
-Argument items with no description in Rd object 'bugs.rdist':
-  ‘n’
-
 Argument items with no description in Rd object 'get.sa.sample.list':
   ‘env’
-
-Argument items with no description in Rd object 'grid2netcdf':
-  ‘grid.data’
-
-Argument items with no description in Rd object 'theme_border':
-  ‘type’ ‘colour’ ‘size’ ‘linetype’
 
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
@@ -214,7 +82,7 @@ Argument items with no description in Rd object 'theme_border':
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 5 WARNINGs, 5 NOTEs
+Status: 2 WARNINGs, 3 NOTEs
 See
   ‘/tmp/Rtmp6InlXl/PEcAn.utils.Rcheck/00check.log’
 for details.

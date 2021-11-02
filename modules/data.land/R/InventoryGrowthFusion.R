@@ -29,7 +29,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   }
   max.chunks <- ceiling(n.iter/n.chunk)
   if(max.chunks < k_restart){
-    PEcAn.utils::logger.warn("MCMC already complete",max.chunks,k_restart)
+    PEcAn.logger::logger.warn("MCMC already complete",max.chunks,k_restart)
     return(NULL)
   }
   avail.chunks <- k_restart:ceiling(n.iter/n.chunk)

@@ -1,9 +1,11 @@
 Package: PEcAn.priors
 Type: Package
 Title: PEcAn functions used to estimate priors from data
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("David","LeBauer"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: Functions to estimate priors from data.
@@ -19,6 +21,7 @@ Imports:
     ggplot2,
     MASS
 Suggests:
+    PEcAn.visualization,
     testthat
 Encoding: UTF-8
 RoxygenNote: 7.0.2

@@ -1,16 +1,24 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn package for integration of ED2 model
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Xiaohui", "Feng"),
-             person("Dan"," Wang"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
 Maintainer: Mike Dietze <dietze@bu.edu>
@@ -20,14 +28,13 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the Ecosystem Demography Model, version 2, to PEcAn.
-Depends:
-    PEcAn.utils
 Imports:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
+    PEcAn.utils,
     abind (>= 1.4.5),
     dplyr,
     glue,
