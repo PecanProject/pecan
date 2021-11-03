@@ -192,7 +192,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # for pre-industrial values just use 280 ppm
   if (end.year < 1850) {
     CO2 <- data.frame(start.year:end.year, rep(280, n.year))
-  } else if (end.year < 2020) {
+  } else if (end.year < 2021) {
     data(co2.1850.2020, package = "PEcAn.LPJGUESS")
     if (start.year < 1850) {
       CO2_preind <- data.frame(year = start.year:1849, ppm = rep(280, length(start.year:1849)))
@@ -202,7 +202,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
       CO2 <- co2.1850.2020[1:which(co2.1850.2020[, 1] == end.year), ]
     }
   } else {
-    PEcAn.logger::logger.severe("End year should be < 2020 for CO2")
+    PEcAn.logger::logger.severe("End year should be < 2021 for CO2")
   }
   write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins <- gsub("@CO2_FILE@", co2.file, guessins)
