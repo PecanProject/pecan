@@ -287,8 +287,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i],
-                                                                   dbfile.id = cf.id$dbfile.id[i]), 
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+                                                                   dbfile.id = cf.id$id[i]), 
                                        register = register, 
                                        dir = dir, 
                                        met = met, 
