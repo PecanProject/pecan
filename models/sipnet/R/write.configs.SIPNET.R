@@ -45,6 +45,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   } else {
     jobsh <- readLines(con = system.file("template.job", package = "PEcAn.SIPNET"), n = -1)
   }
+  jobsh[1] <- paste(jobsh[1],"-l")#in geo this will throw an error that the syntax of first line is wrong.
   
   # create host specific setttings
   hostsetup <- ""
