@@ -104,7 +104,7 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
     dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
   
   #Write netCDF
-  write_noaa_gefs_netcdf(df = forecast_noaa_ds,
+  PEcAn.data.atmosphere::write_noaa_gefs_netcdf(df = forecast_noaa_ds,
                                                 ens = ens,
                                                 lat = lat.in,
                                                 lon = lon.in,
@@ -262,6 +262,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     if(!is.na(data.hrly$lead_var[i])){
       curr <- data.hrly$lead_var[i]
     }else{
+      curr <- varName
       data.hrly$lead_var[i] <- curr
     }
   }
