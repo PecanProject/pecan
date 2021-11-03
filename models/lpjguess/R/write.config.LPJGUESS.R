@@ -121,50 +121,50 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
     
-    write2pftblock[[i]] <- pftblock
-    write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
-    
-    warning_list <- list()
-    
-    # pass param values
-    # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
-    for(t in seq_along(lpjguess_param_list)){
-      trait_name <- names(lpjguess_param_list)[t]
-      if(trait_name != "pft" & !(trait_name %in% noprior_params)){
-        if(trait_name %in% names(trait.values[[i]])){ # pass sample
-          
-          pecan_sample <- trait.values[[i]][[trait_name]]
-          
-          if(trait_name == "rootdist"){  # convert from ratio to fractions
-            lower_layer_fraction = 1/(pecan_sample+1)
-            upper_layer_fraction = 1 - lower_layer_fraction
-            pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
+      write2pftblock[[i]] <- pftblock
+      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+      
+      warning_list <- list()
+      
+      # pass param values
+      # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
+      for(t in seq_along(lpjguess_param_list)){
+        trait_name <- names(lpjguess_param_list)[t]
+        if(trait_name != "pft" & !(trait_name %in% noprior_params)){
+          if(trait_name %in% names(trait.values[[i]])){ # pass sample
+            
+            pecan_sample <- trait.values[[i]][[trait_name]]
+            
+            if(trait_name == "rootdist"){  # convert from ratio to fractions
+              lower_layer_fraction = 1/(pecan_sample+1)
+              upper_layer_fraction = 1 - lower_layer_fraction
+              pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
+            }
+            
+            if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
+              pecan_sample <- pecan_sample*997 # density of water
+            }
+            
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
+          }else{ # use default
+            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
+            warning_list[[trait_name]] <- trait_name
           }
-          
-          if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
-            pecan_sample <- pecan_sample*997 # density of water
-          }
-          
-          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
-        }else{ # use default
-          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
+        }  
+      }
+      
+      # handle the no prior params
+      for(t in seq_along(noprior_params)){
+        trait_name <- noprior_params[t]
+        if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
+        }else{ #pass the default, add to warning
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
           warning_list[[trait_name]] <- trait_name
         }
-      }  
-    }
-    
-    # handle the no prior params
-    for(t in seq_along(noprior_params)){
-      trait_name <- noprior_params[t]
-      if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
-        write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
-      }else{ #pass the default, add to warning
-        write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
-        warning_list[[trait_name]] <- trait_name
       }
-    }
-    
-    PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
+      
+      PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
   } #end of pft-loop
   
   # erase the placeholder, write back the pft blocks
