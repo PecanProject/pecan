@@ -20,6 +20,13 @@
 ##' @export
 ##' 
 sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAn.assim.sequential::sda.enkf.original()`.",
+      "Please install it and try again.")
+  }
   
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
