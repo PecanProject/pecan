@@ -221,7 +221,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       con,
       hostname = PEcAn.remote::fqdn(),
       exact.dates = TRUE,
-      pattern = met,
+#      pattern = met,
       return.all=TRUE
     ) 
     # If we already had the met downloaded for this site  
