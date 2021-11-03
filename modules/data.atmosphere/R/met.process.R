@@ -244,7 +244,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
           end_date <= end_date,
           format_id == formatid
         ) %>%
-        filter(grepl(met, name)) %>%
+        filter(grepl(met, "name")) %>%
         inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
         filter(machine_id == machine.id) %>%
         collect()
