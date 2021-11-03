@@ -96,16 +96,16 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
 #' @author Istem Fer
 write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id) {
   
-  guessins  <- base::readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  paramsins <- base::readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
   pftindx   <- 152:222 # should grab automatically
   pftblock  <- paramsins[pftindx] # lines with pft params
   
-  # cp the grid indices file
-  grid.file <- base::file.path(settings$host$rundir, "gridind.txt")
-  gridind   <- base::readLines(con = system.file("gridind.txt", package = "PEcAn.LPJGUESS"), n = -1)
-  base::writeLines(gridind, grid.file)
-  guessins  <- base::gsub("@GRID_FILE@", grid.file, guessins)
+  # create the grid indices file
+  grid.file <- file.path(settings$host$rundir, "gridind.txt")
+  gridind   <- readLines(con = system.file("gridind.txt", package = "PEcAn.LPJGUESS"), n = -1)
+  writeLines(gridind, grid.file)
+  guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
   pft_names <- sapply(settings$pfts, `[[`,"name")
   load(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
