@@ -58,7 +58,7 @@ met2CF.ERA5<- function(lat,
         dewpoint  <-
           udunits2::ud.convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
         beta <- (112 - (0.1 * t) + dewpoint) / (112 + (0.9 * t))
-        relative.humidity <- 100 * beta ^ 8
+        relative.humidity <- beta ^ 8
         #specific humidity
         specific_humidity <-
           PEcAn.data.atmosphere::rh2qair(relative.humidity,
