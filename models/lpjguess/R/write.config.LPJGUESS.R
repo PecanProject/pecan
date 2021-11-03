@@ -96,16 +96,16 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
 #' @author Istem Fer
 write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id) {
   
-  guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  guessins  <- base::readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
+  paramsins <- base::readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
   pftindx   <- 152:222 # should grab automatically
   pftblock  <- paramsins[pftindx] # lines with pft params
   
   # cp the grid indices file
-  grid.file <- file.path(settings$host$rundir, "gridind.txt")
-  gridind   <- system.file("gridind.txt", package = "PEcAn.LPJGUESS")
-  system(paste("cp ", gridind, settings$rundir))
-  guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
+  grid.file <- base::file.path(settings$host$rundir, "gridind.txt")
+  gridind   <- base::readLines(con = system.file("gridind.txt", package = "PEcAn.LPJGUESS"), n = -1)
+  base::writeLines(gridind, grid.file)
+  guessins  <- base::gsub("@GRID_FILE@", grid.file, guessins)
   
   pft_names <- sapply(settings$pfts, `[[`,"name")
   load(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
@@ -120,51 +120,51 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
-
-      write2pftblock[[i]] <- pftblock
-      write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
-      
-      warning_list <- list()
-      
-      # pass param values
-      # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
-      for(t in seq_along(lpjguess_param_list)){
-        trait_name <- names(lpjguess_param_list)[t]
-        if(trait_name != "pft" & !(trait_name %in% noprior_params)){
-          if(trait_name %in% names(trait.values[[i]])){ # pass sample
-            
-            pecan_sample <- trait.values[[i]][[trait_name]]
-            
-            if(trait_name == "rootdist"){  # convert from ratio to fractions
-              lower_layer_fraction = 1/(pecan_sample+1)
-              upper_layer_fraction = 1 - lower_layer_fraction
-              pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
-            }
-            
-            if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
-              pecan_sample <- pecan_sample*997 # density of water
-            }
-            
-            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
-          }else{ # use default
-            write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
-            warning_list[[trait_name]] <- trait_name
+    
+    write2pftblock[[i]] <- pftblock
+    write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
+    
+    warning_list <- list()
+    
+    # pass param values
+    # IMPORTANT : Ideally all params should have priors on them! Currently the defaults are only for a tropical broadleaved evergreen pft
+    for(t in seq_along(lpjguess_param_list)){
+      trait_name <- names(lpjguess_param_list)[t]
+      if(trait_name != "pft" & !(trait_name %in% noprior_params)){
+        if(trait_name %in% names(trait.values[[i]])){ # pass sample
+          
+          pecan_sample <- trait.values[[i]][[trait_name]]
+          
+          if(trait_name == "rootdist"){  # convert from ratio to fractions
+            lower_layer_fraction = 1/(pecan_sample+1)
+            upper_layer_fraction = 1 - lower_layer_fraction
+            pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
           }
-        }  
-      }
-      
-      # handle the no prior params
-      for(t in seq_along(noprior_params)){
-        trait_name <- noprior_params[t]
-        if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
-          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
-        }else{ #pass the default, add to warning
-          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
+          
+          if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
+            pecan_sample <- pecan_sample*997 # density of water
+          }
+          
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), pecan_sample, write2pftblock[[i]])
+        }else{ # use default
+          write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), lpjguess_param_list[[trait_name]], write2pftblock[[i]])
           warning_list[[trait_name]] <- trait_name
         }
+      }  
+    }
+    
+    # handle the no prior params
+    for(t in seq_along(noprior_params)){
+      trait_name <- noprior_params[t]
+      if(!is.null(settings$pfts[[i]][[trait_name]])){ # specified in xml
+        write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", settings$pfts[[i]][[trait_name]], "'"), write2pftblock[[i]])
+      }else{ #pass the default, add to warning
+        write2pftblock[[i]] <- gsub(paste0("@", trait_name, "@"), paste0("'", lpjguess_param_list[[trait_name]], "'"), write2pftblock[[i]])
+        warning_list[[trait_name]] <- trait_name
       }
-
-      PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
+    }
+    
+    PEcAn.logger::logger.warn("***You have not specified the following parameters for your PFT,", pft_names[i],"- Be aware that the defaults may not work well for you.***", unlist(warning_list))
   } #end of pft-loop
   
   # erase the placeholder, write back the pft blocks
@@ -192,17 +192,17 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # for pre-industrial values just use 280 ppm
   if (end.year < 1850) {
     CO2 <- data.frame(start.year:end.year, rep(280, n.year))
-  } else if (end.year < 2012) {
-    data(co2.1850.2011, package = "PEcAn.LPJGUESS")
+  } else if (end.year < 2020) {
+    data(co2.1850.2020, package = "PEcAn.LPJGUESS")
     if (start.year < 1850) {
       CO2_preind <- data.frame(year = start.year:1849, ppm = rep(280, length(start.year:1849)))
-      CO2_postind <- co2.1850.2011[1:which(co2.1850.2011[, 1] == end.year), ]
+      CO2_postind <- co2.1850.2020[1:which(co2.1850.2020[, 1] == end.year), ]
       CO2 <- rbind(CO2_preind, CO2_postind)
     } else {
-      CO2 <- co2.1850.2011[1:which(co2.1850.2011[, 1] == end.year), ]
+      CO2 <- co2.1850.2020[1:which(co2.1850.2020[, 1] == end.year), ]
     }
   } else {
-    PEcAn.logger::logger.severe("End year should be < 2012 for CO2")
+    PEcAn.logger::logger.severe("End year should be < 2020 for CO2")
   }
   write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins <- gsub("@CO2_FILE@", co2.file, guessins)
@@ -303,8 +303,8 @@ pecan2lpjguess <- function(trait.values){
     if(length(canconvert) != 0){
       for(c in seq_along(canconvert)){
         x[,names(x) == canconvert[c]] <- udunits2::ud.convert(x[,names(x) == canconvert[c]], 
-                                                             vartable$pecanunits[vartable$lpjguessname == canconvert[c]], 
-                                                             vartable$lpjguessunits[vartable$lpjguessname == canconvert[c]])
+                                                              vartable$pecanunits[vartable$lpjguessname == canconvert[c]], 
+                                                              vartable$lpjguessunits[vartable$lpjguessname == canconvert[c]])
       }
     }
     return(x)
