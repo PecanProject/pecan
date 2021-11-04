@@ -25,7 +25,7 @@ ens_veg_module <- function(getveg.id, dbparms,
 
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
-  con <- PEcAn.DB::db.open(dbparms)
+  con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
