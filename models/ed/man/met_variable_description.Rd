@@ -4,7 +4,9 @@
 \name{met_variable_description}
 \alias{met_variable_description}
 \title{Description of meteorology variables}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 15 rows and 3 columns.}
+\format{
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 15 rows and 3 columns.
+}
 \usage{
 met_variable_description
 }
