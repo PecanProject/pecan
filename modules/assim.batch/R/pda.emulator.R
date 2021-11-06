@@ -104,20 +104,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     con <- NULL
   }
   
-  if(!remote){
-    bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
-                                host = settings$database$bety$host, 
-                                user = settings$database$bety$user, 
-                                password = settings$database$bety$password)
-  }else{
-    bety     <- list()
-    bety$con <- NULL
-  }
-
-  
   ## Load priors
   if(is.null(external.priors)){
-    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    temp        <- pda.load.priors(settings, con, run.normal)
     prior.list  <- temp$prior
     settings    <- temp$settings
   }else{
