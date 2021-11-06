@@ -296,8 +296,17 @@ Now you can either pass the post PDA settings in your environment to the pda.emu
 ### settings_PDA_round1 <- read.settings("pecan.pdaR1_ENS_ID.xml")
 settings_PDA_round2 <- pda.emulator(settings_PDA_round1)
 ```
+
+Before moving on to the `BayesianTools` case, here is an example assim.batch block for a case where you constrain parameters of more than one model PFT with more than one Ameriflux data stream:
+
 ## 2. PEcAn data pipeline with BayesianTools
+
 ## 3. Own data with emulator
+
+Sometimes you might want to use your own local data (e.g. from a tower that is not necessarily part of any flux tower network PEcAn has access to, or some chamber measurements etc.) in constraining your model. Although we still do recommend using formal PEcAn data registration and processing pipelines, sometimes you may not have access to the DB and/or may want to bypass other data processing steps to perform a quick PDA analysis to plan ahead. In that case, you can use `external.*` arguments of the `pda.emulator()` function.
+
+
+
 ## 4. Own data with BayesianTools
 
 
