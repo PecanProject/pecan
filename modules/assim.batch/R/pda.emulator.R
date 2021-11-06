@@ -117,7 +117,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   
   if(is.null(external.data)){
-    inputs <- load.pda.data(settings, bety, external.formats)
+    inputs <- load.pda.data(settings, con, external.formats)
   }else{
     inputs <- external.data
   }
@@ -744,6 +744,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # I can use a counter to run pre-defined number of emulator rounds
   if(is.null(settings$assim.batch$round_counter)){
     settings$assim.batch$round_counter <- 1
+    settings$assim.batch$extension     <- "round" 
   }else{
     settings$assim.batch$round_counter <- 1 +  as.numeric(settings$assim.batch$round_counter)
   }
