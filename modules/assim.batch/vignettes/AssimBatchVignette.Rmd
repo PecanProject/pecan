@@ -29,6 +29,7 @@ Currently, there are three ways of doing Parameter Data Assimilation (PDA) in PE
 
 Note that, there used to be Metropolis-Hastings Markov Chain Monte Carlo (MCMC) algorithms implemented natively in PEcAn, namely `/modules/assim.batch/R/pda.mcmc.R` and `pda.mcmc.bs.R`. These are deprecated and they will no longer be maintained.
 
+
 **Which one to use?**
 
 **bayesian.tools :** The `pda.bayesian.tools.R` is the main script of this PDA workflow that performs a bruteforce (MCMC methods that require running your models at least couple of thousand of times) calibration. This script uses the `BayesianTools` R-package (Hartig, Minuno and Paul, 2019) that includes MCMC and SMC samplers and other tools for Bayesian parameter calibration with external models. If you choose *bayesian.tools* option, PEcAn framework will hand the PDA calculations over to the `BayesianTools` package. Although this package includes algorithms that are designed to explore the parameter space more efficiently than the traditional MH-MCMC, you would still need a relatively faster model to use these algorithms. Note that the `BayesianTools` R-package itself is constantly under development, and its integration with PEcAn may not be possible to leverage all `BayesianTools` functionality through PEcAn.
@@ -103,7 +104,7 @@ Here are some more details about the PDA tags:
        
        NOTE: It is recommended to leave the `<prior>` tag empty if you are doing this for the first time. PEcAn workflow will handle it for you.
 
-* `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. *These must be the standard names given in BETY DB, not your model specific parameter names*, i.e. check out the `id` column of the `trait.dictionary`, i.e. :
+* `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. *These must be the standard names given in BETY DB (e.g. wood_density), not your model specific parameter names (e.g. wooddens)*, i.e. check out the `id` column of the `trait.dictionary`, i.e. :
 
 ```{r}
 data(trait.dictionary, package = "PEcAn.utils")
@@ -170,6 +171,100 @@ head(trait.dictionary[,c("id", "figid")])
 
 
 ## Method specific settings
+
+Now we will go through 4 examples of how you could arrange your `<assim.batch>` tags and run a PDA in PEcAn:
+
+1. Using existing PEcAn data pipelines (e.g. Ameriflux) and variables in the emulator-based calibration.
+2. Using existing PEcAn data pipelines and variables in the BayesianTools-based (bruteforce) calibration.
+3. Using your own pre-formatted data and variables in the emulator-based calibration.
+4. Using your own pre-formatted data and variables in the BayesianTools-based (bruteforce) calibration.
+
+## 1. PEcAn data pipeline with emulator
+
+Assuming you already familiarized yourself with Demo 1 and Demo 2, and ran SIPNET at Niwot Ridge (US-NR1), in this section we will go through the `pecan.xml` tags for calibrating SIPNET with Ameriflux NEE data with the emulator approach at the US-NR1 site. The SIPNET PFT for this site was `temperate.coniferous`, let's assume the top three parameters contributing to the model NEE output uncertainty (Demo 2) were `psnTOpt`,`half_saturation_PAR`, and `Vm_low_temp`, so we decided to constrain these in the PDA. Go to your workflow directory where you performed the uncertainty analysis, open up your `pecan.CONFIGS.xml`, insert the following tags at the top of your xml after the `<pecan>` tag (don't forget to remove `<---` comments), modify the paths according to *your* setup, and save the file as `pecan.PDA.xml`:
+
+```
+ <assim.batch>
+  <method>emulator</method>
+  <n.knot>60</n.knot>   <--- 20 x p (= no. of paramaters you target) 
+  <iter>100000</iter>
+  <chain>3</chain>
+  <param.names>
+   <temperate.coniferous>
+    <param>psnTOpt</param>
+    <param>half_saturation_PAR</param>
+    <param>Vm_low_temp</param>
+   </temperate.coniferous>
+  </param.names>
+  <jump>
+   <adapt>250</adapt>
+    <adj.min>0.1</adj.min>
+    <ar.target>0.3</ar.target>
+  </jump>
+  <inputs>
+   <file>
+    <input.id>1000011238</input.id>   <--- your input ID (of the DB record of where the AMF csv file is)
+    <path>
+     <path>/.../AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_12-5.csv</path>  <--- your path
+    </path>
+    <likelihood>Laplace</likelihood>
+    <variable.id>1000000042</variable.id>
+    <variable.name>
+     <variable.name>FC</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>
+  </inputs>
+ </assim.batch>
+```
+
+For reference, these are the tags for a similar workflow for SIPNET at ICOS-NEE (FI-Var site) combination. Note the differences in PFT name, input ID and path, variable ID and name:
+
+```
+ <assim.batch>
+  <method>emulator</method>
+  <n.knot>60</n.knot>   
+  <iter>100000</iter>
+  <chain>3</chain>
+  <param.names>
+   <boreal.coniferous>
+    <param>psnTOpt</param>
+    <param>half_saturation_PAR</param>
+    <param>Vm_low_temp</param>
+   </boreal.coniferous>
+  </param.names>
+  <jump>
+   <adapt>250</adapt>
+    <adj.min>0.1</adj.min>
+    <ar.target>0.3</ar.target>
+  </jump>
+  <inputs>
+   <file>
+    <input.id>15000000028</input.id>  
+    <path>
+     <path>/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path>  
+    </path>
+    <likelihood>Laplace</likelihood>
+    <variable.id>297</variable.id>
+    <variable.name>
+     <variable.name>NEE</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>
+  </inputs>
+ </assim.batch>
+```
+
+Now you can read in your `pecan.PDA.xml` and run PDA:
+```
+settings <- read.settings("pecan.PDA.xml")
+postPDA_settings <- pda.emulator(settings)
+```
+
+## 2. PEcAn data pipeline with BayesianTools
+## 3. Own data with emulator
+## 4. Own data with BayesianTools
+
 
 If you want to extend your previous *bruteforce* and *bruteforce.bs* MCMC-chains, you can add an `<extension>` tag within your `<assim.batch>` chunk after reading your post-PDA settings (which would be saved as "pecan.pda[UNIQUE_ID].xml" in your working directory) and set it to "longer". 
 

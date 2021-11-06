@@ -349,26 +349,26 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>The easiest way to use PEcAn’s parameter data assimilation module is to add an <code>&lt;assim.batch&gt;</code> block to pecan.xml, load the file with <code>read.settings</code>, and pass the resulting settings object to <code>pda.bayesian.tools()</code> or <code>pda.emulator()</code>. There are some differences in the settings for using different PDA methods (we will go through test cases, at this point just familiarize yourself with the general pattern), but here is an example <code>&lt;assim.batch&gt;</code> block :</p>
 <pre><code>&lt;assim.batch&gt;
   &lt;iter&gt;100000&lt;/iter&gt;
-  &lt;method&gt;emulator&lt;/method&gt;                      &lt;--- WHICH PDA APPROACH
+  &lt;method&gt;emulator&lt;/method&gt;                     &lt;--- WHICH PDA APPROACH
   &lt;chain&gt;3&lt;/chain&gt;
   &lt;param.names&gt;
-   &lt;temperate.coniferous&gt;                        &lt;--- YOUR PFT(S)
-    &lt;param&gt;PARAM1&lt;/param&gt;                        &lt;--- PARAMETER(S) YOU TARGET IN PDA
+   &lt;temperate.coniferous&gt;                       &lt;--- YOUR PFT(S)
+    &lt;param&gt;PARAM1&lt;/param&gt;                       &lt;--- PARAMETER(S) YOU TARGET IN PDA
     &lt;param&gt;PARAM2&lt;/param&gt;
    &lt;/temperate.coniferous&gt;
   &lt;/param.names&gt;
   &lt;inputs&gt;
     &lt;file&gt;
-      &lt;input.id&gt; ... &lt;/input.id&gt;                 &lt;--- YOUR CONSTRAINT ID FROM BETY DB 
+      &lt;input.id&gt; ... &lt;/input.id&gt;                &lt;--- YOUR CONSTRAINT ID FROM BETY DB 
       &lt;path&gt;
-        &lt;path&gt; ... &lt;/path&gt;                       &lt;--- YOUR CONSTRAINT FILE PATH
+        &lt;path&gt; ... &lt;/path&gt;                      &lt;--- YOUR CONSTRAINT FILE PATH
         &lt;path&gt; ... &lt;/path&gt;
       &lt;/path&gt;
-      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;           &lt;--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
-      &lt;variable.id&gt;298&lt;/variable.id&gt;             &lt;--- (CONSTRAINT) VARIABLE ID FROM BETY DB
+      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;          &lt;--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
+      &lt;variable.id&gt;298&lt;/variable.id&gt;            &lt;--- (CONSTRAINT) VARIABLE ID FROM BETY DB
       &lt;variable.name&gt;
-        &lt;variable.name&gt;LE&lt;/variable.name&gt;        &lt;--- (CONSTRAINT) VARIABLE
-        &lt;variable.name&gt;UST&lt;/variable.name&gt;       &lt;--- HELPER VARIABLE SPECIFIC TO FLUX CASE
+        &lt;variable.name&gt;LE&lt;/variable.name&gt;       &lt;--- (CONSTRAINT) VARIABLE
+        &lt;variable.name&gt;UST&lt;/variable.name&gt;      &lt;--- HELPER VARIABLE SPECIFIC TO FLUX CASE
       &lt;/variable.name&gt;
     &lt;/file&gt;
   &lt;/inputs&gt;
@@ -380,7 +380,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
       &lt;/path&gt;
     &lt;likelihood&gt;multipGauss&lt;/likelihood&gt;
     &lt;hyper.pars&gt;
-      &lt;parama&gt;0.001&lt;/parama&gt;                     &lt;--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
+      &lt;parama&gt;0.001&lt;/parama&gt;                    &lt;--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
       &lt;paramb&gt;0.001&lt;/paramb&gt;
     &lt;/hyper.pars&gt;
     &lt;ss.positive&gt;TRUE&lt;/ss.positive&gt;
@@ -400,7 +400,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
  + `&lt;path&gt;` As an alternative to using a posterior ID, can specify a file path to either a `prior.distns.Rdata` or `post.distns.Rdata` file generated from an earlier analysis. Conceptually, using a posterior distribution as the prior for PDA is preferred, as this allows the multiple analyses to work together to iteratively constrain parameters. In practice, previous analyses may have over-constrained parameters to ranges that do not actually optimize model outputs, so using a less informative prior for PDA might yield better results. 
 
  NOTE: It is recommended to leave the `&lt;prior&gt;` tag empty if you are doing this for the first time. PEcAn workflow will handle it for you.</code></pre></li>
-<li><p><code>&lt;param.names&gt;</code> The names of parameters to be constrained by assimilation, listed in individual <code>&lt;param&gt;</code> tags. <em>These must be the standard names given in BETY DB, not your model specific parameter names</em>, i.e. check out the <code>id</code> column of the <code>trait.dictionary</code>, i.e. :</p></li>
+<li><p><code>&lt;param.names&gt;</code> The names of parameters to be constrained by assimilation, listed in individual <code>&lt;param&gt;</code> tags. <em>These must be the standard names given in BETY DB (e.g. wood_density), not your model specific parameter names (e.g. wooddens)</em>, i.e. check out the <code>id</code> column of the <code>trait.dictionary</code>, i.e. :</p></li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">data</span>(trait.dictionary, <span class="dt">package =</span> <span class="st">&quot;PEcAn.utils&quot;</span>)</a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"></a>
@@ -472,6 +472,94 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="method-specific-settings" class="section level2">
 <h2>Method specific settings</h2>
+<p>Now we will go through 4 examples of how you could arrange your <code>&lt;assim.batch&gt;</code> tags and run a PDA in PEcAn:</p>
+<ol style="list-style-type: decimal">
+<li>Using existing PEcAn data pipelines (e.g. Ameriflux) and variables in the emulator-based calibration.</li>
+<li>Using existing PEcAn data pipelines and variables in the BayesianTools-based (bruteforce) calibration.</li>
+<li>Using your own pre-formatted data and variables in the emulator-based calibration.</li>
+<li>Using your own pre-formatted data and variables in the BayesianTools-based (bruteforce) calibration.</li>
+</ol>
+</div>
+<div id="pecan-data-pipeline-with-emulator" class="section level2">
+<h2>1. PEcAn data pipeline with emulator</h2>
+<p>Assuming you already familiarized yourself with Demo 1 and Demo 2, and ran SIPNET at Niwot Ridge (US-NR1), in this section we will go through the <code>pecan.xml</code> tags for calibrating SIPNET with Ameriflux NEE data with the emulator approach at the US-NR1 site. The SIPNET PFT for this site was <code>temperate.coniferous</code>, let’s assume the top three parameters contributing to the model NEE output uncertainty (Demo 2) were <code>psnTOpt</code>,<code>half_saturation_PAR</code>, and <code>Vm_low_temp</code>, so we decided to constrain these in the PDA. Go to your workflow directory where you performed the uncertainty analysis, open up your <code>pecan.CONFIGS.xml</code>, insert the following tags at the top of your xml after the <code>&lt;pecan&gt;</code> tag (don’t forget to remove <code>&lt;---</code> comments), modify the paths according to <em>your</em> setup, and save the file as <code>pecan.PDA.xml</code>:</p>
+<pre><code> &lt;assim.batch&gt;
+  &lt;method&gt;emulator&lt;/method&gt;
+  &lt;n.knot&gt;60&lt;/n.knot&gt;   &lt;--- 20 x p (= no. of paramaters you target) 
+  &lt;iter&gt;100000&lt;/iter&gt;
+  &lt;chain&gt;3&lt;/chain&gt;
+  &lt;param.names&gt;
+   &lt;temperate.coniferous&gt;
+    &lt;param&gt;psnTOpt&lt;/param&gt;
+    &lt;param&gt;half_saturation_PAR&lt;/param&gt;
+    &lt;param&gt;Vm_low_temp&lt;/param&gt;
+   &lt;/temperate.coniferous&gt;
+  &lt;/param.names&gt;
+  &lt;jump&gt;
+   &lt;adapt&gt;250&lt;/adapt&gt;
+    &lt;adj.min&gt;0.1&lt;/adj.min&gt;
+    &lt;ar.target&gt;0.3&lt;/ar.target&gt;
+  &lt;/jump&gt;
+  &lt;inputs&gt;
+   &lt;file&gt;
+    &lt;input.id&gt;1000011238&lt;/input.id&gt;   &lt;--- your input ID (of the DB record of where the AMF csv file is)
+    &lt;path&gt;
+     &lt;path&gt;/.../AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_12-5.csv&lt;/path&gt;  &lt;--- your path
+    &lt;/path&gt;
+    &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
+    &lt;variable.id&gt;1000000042&lt;/variable.id&gt;
+    &lt;variable.name&gt;
+     &lt;variable.name&gt;FC&lt;/variable.name&gt;
+     &lt;variable.name&gt;UST&lt;/variable.name&gt;
+    &lt;/variable.name&gt;
+   &lt;/file&gt;
+  &lt;/inputs&gt;
+ &lt;/assim.batch&gt;</code></pre>
+<p>For reference, these are the tags for a similar workflow for SIPNET at ICOS-NEE (FI-Var site) combination. Note the differences in PFT name, input ID and path, variable ID and name:</p>
+<pre><code> &lt;assim.batch&gt;
+  &lt;method&gt;emulator&lt;/method&gt;
+  &lt;n.knot&gt;60&lt;/n.knot&gt;    &lt;--- 20 x p (= no. of paramaters you target) 
+  &lt;iter&gt;100000&lt;/iter&gt;
+  &lt;chain&gt;3&lt;/chain&gt;
+  &lt;param.names&gt;
+   &lt;boreal.coniferous&gt;
+    &lt;param&gt;psnTOpt&lt;/param&gt;
+    &lt;param&gt;half_saturation_PAR&lt;/param&gt;
+    &lt;param&gt;Vm_low_temp&lt;/param&gt;
+   &lt;/boreal.coniferous&gt;
+  &lt;/param.names&gt;
+  &lt;jump&gt;
+   &lt;adapt&gt;250&lt;/adapt&gt;
+    &lt;adj.min&gt;0.1&lt;/adj.min&gt;
+    &lt;ar.target&gt;0.3&lt;/ar.target&gt;
+  &lt;/jump&gt;
+  &lt;inputs&gt;
+   &lt;file&gt;
+    &lt;input.id&gt;15000000028&lt;/input.id&gt;   &lt;--- your input ID (of the DB record of where the AMF csv file is)
+    &lt;path&gt;
+     &lt;path&gt;/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv&lt;/path&gt;   &lt;--- your path
+    &lt;/path&gt;
+    &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
+    &lt;variable.id&gt;297&lt;/variable.id&gt;
+    &lt;variable.name&gt;
+     &lt;variable.name&gt;NEE&lt;/variable.name&gt;
+     &lt;variable.name&gt;UST&lt;/variable.name&gt;
+    &lt;/variable.name&gt;
+   &lt;/file&gt;
+  &lt;/inputs&gt;
+ &lt;/assim.batch&gt;</code></pre>
+<p>Now you can read in your <code>pecan.PDA.xml</code> and run PDA:</p>
+<pre><code>settings &lt;- read.settings(&quot;pecan.PDA.xml&quot;)
+postPDA_settings &lt;- pda.emulator(settings)</code></pre>
+</div>
+<div id="pecan-data-pipeline-with-bayesiantools" class="section level2">
+<h2>2. PEcAn data pipeline with BayesianTools</h2>
+</div>
+<div id="own-data-with-emulator" class="section level2">
+<h2>3. Own data with emulator</h2>
+</div>
+<div id="own-data-with-bayesiantools" class="section level2">
+<h2>4. Own data with BayesianTools</h2>
 <p>If you want to extend your previous <em>bruteforce</em> and <em>bruteforce.bs</em> MCMC-chains, you can add an <code>&lt;extension&gt;</code> tag within your <code>&lt;assim.batch&gt;</code> chunk after reading your post-PDA settings (which would be saved as “pecan.pda[UNIQUE_ID].xml” in your working directory) and set it to “longer”.</p>
 <pre><code>  ...
   &lt;method&gt;bruteforce.bs&lt;/method&gt;
