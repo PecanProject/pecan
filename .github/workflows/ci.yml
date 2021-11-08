@@ -147,11 +147,6 @@ jobs:
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-    # need processx > 3.5.2 to avoid cryptic errors from
-    # https://github.com/r-lib/rcmdcheck/issues/140
-    # Remove when https://github.com/r-lib/processx/pull/299 reaches CRAN
-    - name: update processx
-      run: Rscript -e 'devtools::install_github("r-lib/processx")'
 
     # run PEcAn checks
     - name: check

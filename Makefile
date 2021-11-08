@@ -76,7 +76,10 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "stop_on_failure = TRUE," \
 	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
-doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
+doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript \
+	-e "roxver <- packageVersion('roxygen2')" \
+	-e "if (roxver != '7.0.2') stop('Roxygen2 version is ', roxver, ', but PEcAn package documentation must be built with exactly version 7.0.2')" \
+	-e "devtools::document('"$(strip $(1))"')"
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
