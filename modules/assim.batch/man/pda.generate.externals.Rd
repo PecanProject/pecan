@@ -39,7 +39,7 @@ NA  2017-01-01 01:30:00
 NA  2017-01-01 02:00:00
 4.575248e-09  2017-01-01 02:30:00
 if you have more than variable make sure the order you pass the data is the same as varn. E.g. for varn=c("NEE", "Qle"), external.data should be
-obs\link{1}]
+obs[\link{1}]
 NEE  posix
 NA   2018-05-09
 NA   2018-05-10
@@ -58,6 +58,8 @@ NA   2018-05-12
 
 \item{varid}{a vector of BETY variable id(s) of your constraints, e.g. for varn = c("NEE", "Qle"), varid = c(297, 298)}
 
+\item{n_eff}{effective sample size of constraints, PDA functions estimates it for NEE and LE, and uses it in the heteroskedastic Laplacian only, if you already know it passing it now will save you some time}
+
 \item{align_method}{one of the benchmark::align_data align_method options "match_timestep" or "mean_over_larger_timestep", defaults to "match_timestep"}
 
 \item{par}{list with vector sublists of likelihood parameters of heteroskedastic laplacian for flux data, function calculates it if NULL for NEE, FC, and Qle. Leave empty for other variables
@@ -73,12 +75,17 @@ as well as plot a quick & dirty timerseries graph}
 
 \item{end_date}{the end date of the model.out run, e.g. "2018-12-31"}
 
-\item{prior.list}{list of prior data frames, if you're using this make sure the targeted parameters is on the list
+\item{external.formats}{todo}
+
+\item{external.priors}{todo}
+
+\item{prior.list}{list of prior data frames (one per pft, make sure the order is the same as it is in your <assim.batch> block), if you're using this make sure the targeted parameters are on the list
 e.g.
 prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 0),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
 data.frame(distn = c("unif", "unif"), parama = c(10, 4), paramb = c(40,27), n = rep(NA, 2), row.names = c("psnTOpt", "half_saturation_PAR")))}
 
-\item{external.knots}{example
+\item{external.knots}{todo
+example
 
 pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, varn = "NEE", varid = 297, n_eff = 106.9386, external.formats = TRUE,
 model_data_diag = TRUE, model.out = "/data/workflows/PEcAn_15000000111/out/15000186876",
