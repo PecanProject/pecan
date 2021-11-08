@@ -73,7 +73,8 @@ as well as plot a quick & dirty timerseries graph}
 
 \item{end_date}{the end date of the model.out run, e.g. "2018-12-31"}
 
-\item{prior.list}{list of prior data frames, e.g.
+\item{prior.list}{list of prior data frames, if you're using this make sure the targeted parameters is on the list
+e.g.
 prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 0),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
 data.frame(distn = c("unif", "unif"), parama = c(10, 4), paramb = c(40,27), n = rep(NA, 2), row.names = c("psnTOpt", "half_saturation_PAR")))}
 

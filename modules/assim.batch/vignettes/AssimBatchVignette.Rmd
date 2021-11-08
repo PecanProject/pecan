@@ -349,7 +349,7 @@ Once you prepare `external.data` and `external.format`, now you can omit the `<i
 
 Save and read your `pecan.PDA.xml` accordingly. Next Then pass the external data and formats you prepared explicitly to the `pda.emulator()` function:
 ```
-settings <- read.settings("pecan.PDAwEXTERNALS.xml")
+settings <- read.settings("pecan.PDA.xml")
 pda.externals <-  pda.generate.externals(external.data = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE) # see above for this function
 settings_postPDA <- pda.emulator(settings, external.data = pda.externals$external.data, external.formats = pda.externals$external.formats)
 
