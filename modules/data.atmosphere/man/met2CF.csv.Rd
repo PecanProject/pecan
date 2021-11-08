@@ -43,10 +43,9 @@ met2CF.csv
 }
 \examples{
 \dontrun{
-bety <- list(user='bety', password='bety', host='localhost',
-  dbname='bety', driver='PostgreSQL',write=TRUE)
-con <- PEcAn.DB::db.open(bety)
-bety$con <- con
+con <- PEcAn.DB::db.open(
+  list(user='bety', password='bety', host='localhost',
+  dbname='bety', driver='PostgreSQL',write=TRUE))
 start_date <- lubridate::ymd_hm('200401010000')
 end_date <- lubridate::ymd_hm('200412312330')
 file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)

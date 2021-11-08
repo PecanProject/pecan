@@ -5,7 +5,7 @@
 ##' with a more general PEcAn 'load_data' function eventually.
 ##' 
 ##' @param settings = PEcAn settings list
-##' @param bety bety list object
+##' @param bety database connection object
 ##' @param external.formats formats list
 ##'
 ##' @return A list containg the loaded input data, plus metadata
@@ -39,7 +39,7 @@ load.pda.data <- function(settings, bety, external.formats = NULL) {
       PEcAn.logger::logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
-    if(is.null(bety$con)){
+    if(is.null(bety)){
       format <- external.formats[[i]]
     }else{
       format <- PEcAn.DB::query.format.vars(bety = bety, input.id = inputs[[i]]$input.id)

@@ -159,7 +159,7 @@ If no `outdir` is specified, PEcAn defaults to the working directory from which 
 
 #### `bety`: PEcAn database (Bety) configuration {#xml-bety}
 
-The `bety` tag defines the driver to use to connect to the database (the only driver we support, and the default, is `PostgreSQL`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
+The `bety` tag defines the driver to use to connect to the database (we support `PostgreSQL`, which is the default, and `Postgres`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
 
 In other words, this configuration...
 
@@ -172,21 +172,23 @@ In other words, this configuration...
       <host>postgres</host>
       <dbname>bety</dbname>
       <driver>PostgreSQL</driver>
+      <port>5432</port>
       <write>true</write>
     </bety>
 	...
   </database>
 ```
 
-...will be translated into R code like the following:
+...will be translated (by way of `PEcAn.DB::db.open(settings$database$bety)`) into R code like the following:
 
 ```r
 con <- DBI::dbConnect(
-  DBI::dbDriver("PostgreSQL"),
+  drv = RPostgreSQL::PostgreSQL(),
   user = "bety",
   password = "bety",
   dbname = "bety",
   host = "postgres",
+  port = "5432",
   write = TRUE
 )
 ```
