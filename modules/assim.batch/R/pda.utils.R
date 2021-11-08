@@ -172,13 +172,14 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   # n.knot: Number of emulator knots
   if (!is.null(n.knot)) {
-    settings$assim.batch$n.knot <- n.knot
+    settings$assim.batch$n.knot <- as.numeric(n.knot)
+  }else if(settings$assim.batch$method == "emulator"){
+    if (is.null(settings$assim.batch$n.knot)) {
+      settings$assim.batch$n.knot <- 100 # Default
+    }
+    settings$assim.batch$n.knot <- as.numeric(settings$assim.batch$n.knot)
   }
-  if (is.null(settings$assim.batch$n.knot)) {
-    settings$assim.batch$n.knot <- 100 # Default
-  }
-  settings$assim.batch$n.knot <- as.numeric(settings$assim.batch$n.knot)
-  
+
   # ----- Jump distribution / tuning parameters 
   # adapt: How often to adapt the MCMC. Defaults to iter/10
   if (!is.null(adapt)) {

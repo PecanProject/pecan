@@ -95,6 +95,8 @@ pda.settings.bt <- function(settings) {
   sampler <- settings$assim.batch$bt.settings$sampler
   
   iterations <- as.numeric(settings$assim.batch$bt.settings$iter)
+  chain      <- as.numeric(settings$assim.batch$bt.settings$chain)
+  
   optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
                      settings$assim.batch$bt.settings$optimize, 
                      TRUE)
@@ -120,6 +122,7 @@ pda.settings.bt <- function(settings) {
   
   if (sampler == "Metropolis") {
     bt.settings <- list(iterations = iterations,
+                        nrChains = chain,
                         optimize = optimize, 
                         DRlevels = DRlevels, 
                         adapt = adapt, 

@@ -19,18 +19,35 @@
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, prior.id = NULL,
+pda.bayesian.tools <- function(settings, external.data = NULL, external.priors = NULL, 
+                               external.formats = NULL, ensemble.id = NULL, 
+                               params.id = NULL, param.names = NULL, prior.id = NULL, 
                                chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
-                               ar.target = NULL, jvar = NULL, n.knot = NULL) {
-  
+                               ar.target = NULL, jvar = NULL, remote = FALSE, ...) {
+
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
   ## this bit of code is useful for defining the variables 
   ## passed to this function if you are debugging
   if (FALSE) {
-    params.id <- param.names <- prior.id <- chain <- iter <- NULL
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
+    external.data <- external.priors <- external.formats <- NULL
+    ensemble.id <- params.id <- param.names <- prior.id <- chain <- iter <- NULL
+    adapt <- adj.min <- ar.target <- jvar <- NULL
+    remote <- FALSE
+  }
+  
+  # is this an extension run
+  extension.check <- is.null(settings$assim.batch$extension) 
+  
+  if (extension.check) {
+    # not an extension run
+    run.normal <- TRUE
+    run.longer <- FALSE
+  } else if (!extension.check & settings$assim.batch$extension == "longer") {
+    # 'longer' extension
+    run.normal <- FALSE
+    run.longer <- TRUE
   }
   
   ## -------------------------------------- Setup ------------------------------------- 
@@ -38,13 +55,13 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   settings <- pda.settings(
     settings = settings, params.id = params.id, param.names = param.names, 
     prior.id = prior.id, chain = chain, iter = iter, adapt = adapt,
-    adj.min = adj.min, ar.target = ar.target, jvar = jvar, n.knot = n.knot)
+    adj.min = adj.min, ar.target = ar.target, jvar = jvar)
   
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   
   ## Open database connection
-  if (settings$database$bety$write) {
+  if (as.logical(settings$database$bety$write) & !remote) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
     if (inherits(con, "try-error")) {
       con <- NULL
@@ -55,27 +72,30 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     con <- NULL
   }
   
-  bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
-                       host = settings$database$bety$host, 
-                       user = settings$database$bety$user, 
-                       password = settings$database$bety$password)
-  
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con)
-  prior.list  <- temp$prior
-  settings    <- temp$settings
+  if(is.null(external.priors)){
+    temp        <- pda.load.priors(settings, con, run.normal)
+    prior.list  <- temp$prior
+    settings    <- temp$settings
+  }else{
+    prior.list  <- external.priors
+  }
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
   ## Load data to assimilate against
-  inputs  <- load.pda.data(settings, bety)
+  if(is.null(external.data)){
+    inputs <- load.pda.data(settings, con, external.formats)
+  }else{
+    inputs <- external.data
+  }
   n.input <- length(inputs)
   
   # get hyper parameters if any
   hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
   
   # efficient sample size calculation
-  # fot BT you might want to run the model once and align inputs & outputs, then calculate n_eff
+  # for BT you might want to run the model once and align inputs & outputs, then calculate n_eff
   # for now assume they will be same length
   inputs <- pda.neff.calc(inputs)
   
@@ -106,7 +126,11 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   }
   
   ## Create an ensemble id
-  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  if(is.null(ensemble.id)){
+    settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  }else{
+    settings$assim.batch$ensemble.id <- ensemble.id
+  }
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
@@ -145,10 +169,10 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
                                                                                                              now, sep = "."))
     
     ## Start model run
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.remote::start.model.runs(settings, (as.logical(settings$database$bety$write) & !remote))
     
     ## Read model outputs
-    align.return <- pda.get.model.output(settings, run.id, bety, inputs)
+    align.return <- pda.get.model.output(settings, run.id, con, inputs, external.formats)
     model.out <- align.return$model.out
     if(all(!is.na(model.out))){
       inputs <- align.return$inputs

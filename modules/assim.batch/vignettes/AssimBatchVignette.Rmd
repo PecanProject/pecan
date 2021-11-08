@@ -260,7 +260,7 @@ Now you can read in your `pecan.PDA.xml` and run PDA (This will take some time, 
 settings <- read.settings("pecan.PDA.xml")
 settings_PDA_round1 <- pda.emulator(settings)
 ```
-The PDA workflow has populated you `settings` list object with couple of relevant tags, settings_PDA_round1 has these additional tags (as well as the pecan.pdaR1_ENS_ID.xml file that is automatically written to your workflow directory). These tags look like this:
+The PDA workflow has populated you `settings` list object with couple of relevant tags, settings_PDA_round1 has these additional tags (as well as the `pecan.pdaR1_ENS_ID.xml` file that is automatically written to your workflow directory). These tags look like this:
 
 ```
   <prior>
@@ -279,7 +279,7 @@ The PDA workflow has populated you `settings` list object with couple of relevan
   <extension>round</extension>
 
 ```
-* `<prior.id>` This is the initial prior that went into your first PDA round. Even though the PDA workflow updates the `<posteriorid>` under your PFT block, if you do another emulator round only the initial prior will be used in the MCMC (otherwise you use data twice!). Hence, we keep track of its ID in the xml. But it is still perfectly fine to propose the new training points for the next emulator round from the posterior of the previous round, so that you can refine your emulator surface, that's when the PDA workflow uses <posteriorid> under the hood.
+* `<prior.id>` This is the initial prior that went into your first PDA round. Even though the PDA workflow updates the `<posteriorid>` under your PFT block, if you do another emulator round only the initial prior will be used in the MCMC (otherwise you use data twice!). Hence, we keep track of its ID in the xml. But it is still perfectly fine to propose the new training points for the next emulator round from the posterior of the previous round, so that you can refine your emulator surface, that's when the PDA workflow uses `<posteriorid>` under the hood.
 
 * `<ensemble.id>` Each emulator round is assigned a new ensemble ID. You can see this ID in every file recorded for the associated emulator round, e.g.: `history.pdaR1_ENS_ID.Rdata`, `pecan.pdaR1_ENS_ID.xml`, `post.distns.pda.YOURPFT_R1_ENS_ID.Rdata` etc.
 
@@ -301,7 +301,78 @@ Before moving on to the `BayesianTools` case, here is an example assim.batch blo
 
 ## 2. PEcAn data pipeline with BayesianTools
 
-## TODO
+Using the bruteforce PDA approach with one of the MCMC-flavors as implemented in the BayesianTools R-package requires a few additional tags to configure its setup. **pda.bayesian.tools()** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
+
+* Metropolis
+     + Standard MH-MCMC
+     + With pre-optimization
+     + Adaptive MCMC
+     + Delayed rejection
+     + Gibbs updating
+* M : Another implementation of standard MH-MCMC.
+* AM : Adaptive Metropolis
+* DR : Delayed Rejection
+* DRAM : Delayed Rejection Adaptive Metropolis
+* DE : Differential Evolution 
+* DEzs : Differential Evolution with a snooker updater
+* DREAM : Differential Evolution Adaptive Metropolis 
+* DREAMzs : Differential Evolution Adaptive Metropolis with a snooker updater
+* Twalk : "traverse" or "thoughtful" walk, a general purpose sampling algorithm
+* SMC : Sequential Monte Carlo
+
+Note that it is not possible to use some of the samplers in this package for univariate cases. The ones that you can use for univariate cases are: "Metropolis", "DE", "DEzs" and "Twalk". Some of the samplers are also restartable : "Metropolis", "DE", "DEzs", "DREAM", "DREAMzs", "Twalk". For further details please see the BayesianTools documentation which itself has a helpful vignette.
+
+The name of the chosen sampler would be passed under `<sampler>` tag within the `<bt.settings>` block. E.g. for Metropolis variations:
+```
+  ...
+  <method>bayesian.tools</method>
+  <bt.settings>
+    <iter>10000</iter>
+    <sampler>Metropolis</sampler>
+    <DRlevels>1</DRlevels>                               <-- set 2 for Delayed Rejection
+    <optimize>FALSE</optimize>                           <-- set TRUE for pre-optimization
+    <adapt>FALSE</adapt>                                 <-- set TRUE for Adaptive Metropolis
+    <adaptationNotBefore>500</adaptationNotBefore>       <-- set for Adaptive Metropolis
+  </bt.settings>
+  ...
+```
+
+We will check out the `<assim.batch>` block for the good old MH-MCMC and the DREAMzs (recommended) algorithms.
+```
+ <assim.batch>
+   <method>bayesian.tools</method>
+   <bt.settings>
+     <sampler>DREAMzs</sampler>
+     <iter>100000</iter>
+   </bt.settings>
+  <param.names>
+   <boreal.coniferous>
+    <param>psnTOpt</param>
+    <param>half_saturation_PAR</param>
+    <param>Vm_low_temp</param>
+   </boreal.coniferous>
+  </param.names>
+  <jump>
+   <adapt>250</adapt>
+    <adj.min>0.1</adj.min>
+    <ar.target>0.3</ar.target>
+  </jump>
+  <inputs>
+   <file>
+    <input.id>15000000028</input.id>  
+    <path>
+     <path>/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path>  
+    </path>
+    <likelihood>Laplace</likelihood>
+    <variable.id>297</variable.id>
+    <variable.name>
+     <variable.name>NEE</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>
+  </inputs>
+ </assim.batch>
+```
 
 ## 3. Own data with emulator
 
@@ -369,7 +440,7 @@ settings_postPDA <- pda.emulator(settings, external.data    = pda.externals$exte
                                            external.priors  = pda.externals$external.priors, 
                                            remote = TRUE, ensemble.id = "PDA_VIGNETTE")
 ```
-Two more notes here before moving onto the next case. Now that we only passed priors for the three parameters we target, rest of the model parameters will be kept as their defaults (however it is implemented in the model package), they won't be kept at the medians of their prior range as it is normally the case in PDA. If you don't want that pass a more comprehensive list or try to use objects generated by PEcAn workflows. Finally, we haven't used the `external.knots` argument yet. We only use it when we need to overwrite and force the training points for the emulator and don't necessarily need to populate this argument when doing PDA without database connection. We leave testing with `external.knots` as an exercise.
+Two more notes here before moving onto the next case. Now that we only passed priors for the three parameters we target, rest of the model parameters will be kept as their defaults (however it is implemented in the model package), *they won't be kept at the medians of their prior range as it is normally the case in PDA*. If you don't want that to happen, pass a more comprehensive list or try to use prior (or meta analysis posterior) objects generated by PEcAn workflows. Finally, we haven't used the `external.knots` argument yet. We only use it when we need to overwrite and force the training points for the emulator and don't necessarily need to populate this argument when doing PDA without database connection. We leave testing with `external.knots` as an exercise.
 
 ## 4. Own data with BayesianTools
 
