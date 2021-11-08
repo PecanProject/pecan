@@ -139,6 +139,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
         ncdf4::ncvar_put(loc, merra_flux_vars[r,][["CF_name"]], x,
                          start = c(1, 1, start), count = c(1, 1, 24))
       }
+      ncdf4::nc_close(nc)
       lfofile <- file.path(outfolder, sprintf("merra-lfo-%s.nc", as.character(date)))
       nc <- ncdf4::nc_open(lfofile)
       for (r in seq_len(nrow(merra_lfo_vars))) {
@@ -146,7 +147,6 @@ download.MERRA <- function(outfolder, start_date, end_date,
         ncdf4::ncvar_put(loc, merra_lfo_vars[r,][["CF_name"]], x,
                          start = c(1, 1, start), count = c(1, 1, 24))
       }
-
       ncdf4::nc_close(nc)
     }
 
@@ -176,7 +176,9 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   month <- as.numeric(gsub(dpat, "\\2", date))
   day <- as.numeric(gsub(dpat, "\\3", date))
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
-  version <- if (year >= 2011) {
+  version <- if (year == 2020 & month == 9) {
+    401
+  } else if (year >= 2011) {
     400
   } else if (year >= 2001) {
     300
