@@ -30,7 +30,7 @@ Set your PEcAn database user ID, and create a database connection object, which 
 ```r
 options(pecanapi.user_id = 99000000002)
 con <- DBI::dbConnect(
-  RPostgres::Postgres(),
+  drv = RPostgres::Postgres(),
   user = "bety",
   password = "bety",
   host = "localhost",

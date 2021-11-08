@@ -11,7 +11,7 @@ pda.get.model.output(settings, run.id, bety, inputs, external.formats = NULL)
 
 \item{run.id}{run ID}
 
-\item{bety}{bety list}
+\item{bety}{database connection}
 
 \item{inputs}{inputs list}
 
