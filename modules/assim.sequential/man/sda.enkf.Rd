@@ -21,8 +21,8 @@ sda.enkf(
   obs.cov,
   Q = NULL,
   restart = NULL,
-  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot = TRUE, BiasPlot =
-    FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
+  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot = TRUE, BiasPlot
+    = FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
   ...
 )
 }
