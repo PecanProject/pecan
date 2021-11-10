@@ -94,8 +94,22 @@ pda.settings.bt <- function(settings) {
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
-  iterations <- as.numeric(settings$assim.batch$bt.settings$iter)
-  chain      <- as.numeric(settings$assim.batch$bt.settings$chain)
+  iterations <- ifelse(!is.null(settings$assim.batch$bt.settings$iterations), 
+                  as.numeric(settings$assim.batch$bt.settings$iterations),
+                  1000)
+
+  chain <- ifelse(!is.null(settings$assim.batch$bt.settings$chain), 
+                  as.numeric(settings$assim.batch$bt.settings$chain),
+                  2)
+  
+  if(!is.null(settings$assim.batch$bt.settings$parallel)){
+    parallel <- ifelse(as.logical(settings$assim.batch$bt.settings$parallel) == TRUE, 
+                    'external',
+                    FALSE)
+  }else{
+    parallel <- FALSE
+  }
+
   
   optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
                      settings$assim.batch$bt.settings$optimize, 
@@ -127,13 +141,14 @@ pda.settings.bt <- function(settings) {
                         DRlevels = DRlevels, 
                         adapt = adapt, 
                         adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities)
+                        gibbsProbabilities = gibbsProbabilities,
+                        parallel = parallel)
   } else if (sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings <- list(iterations = iterations, startValue = "prior")
+    bt.settings <- list(iterations = iterations, startValue = "prior", parallel = parallel)
   } else if (sampler %in% c("DE", "DEzs", "DREAM", "DREAMzs", "Twalk")) {
-    bt.settings <- list(iterations = iterations)
+    bt.settings <- list(iterations = iterations, nrChains = chain, parallel = parallel)
   } else if (sampler == "SMC") {
-    bt.settings <- list(initialParticles = list("prior", iterations))
+    bt.settings <- list(initialParticles = list("prior", iterations), parallel = parallel)
   } else {
     PEcAn.logger::logger.error(paste0(sampler, " sampler not found!"))
   }

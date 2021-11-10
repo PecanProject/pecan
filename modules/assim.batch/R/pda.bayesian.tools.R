@@ -147,11 +147,27 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   names(parm)   <- pname.all
 
 
+  PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
+  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
+                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
+                nrow = sum(n.param))
+  # if it's a uniform distribution, use given boundaries
+  for (i in 1:sum(n.param)) {
+    if (prior.all[prior.ind.all, ][i, 1] == "unif") {
+      rng[i, 1] <- prior.all[prior.ind.all, ][i, 2]
+      rng[i, 2] <- prior.all[prior.ind.all, ][i, 3]
+    }
+  }
+  prior.sel <- prior.all[prior.ind.all, ]
+  prior.sel$lower <-  rng[,1]
+  prior.sel$upper <-  rng[,2]
+  prior.sel$best  <-  parm[prior.ind.all]
+  
   ## Create prior class object for BayesianTools
-  bt.prior      <- pda.create.btprior(prior.all[prior.ind.all, ])
+  bt.prior      <- pda.create.btprior(prior.sel)
 
   ## Create log-likelihood function for createbayesianSetup{BayesianTools}
-
+  ## you test with bt.likelihood(bt.prior$sampler())
   bt.likelihood <- function(x) {
     parm[prior.ind.all] <- x
 
@@ -211,26 +227,12 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     return(LL.new)
   }
 
-  ## Create bayesianSetup object for BayesianTools
-  bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, best = parm[prior.ind.all], parallel = FALSE)
-
-  PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
-  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
-                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
-                nrow = sum(n.param))
-  # if it's a uniform distribution, use given boundaries
-  for (i in 1:sum(n.param)) {
-    if (prior.all[prior.ind.all, ][i, 1] == "unif") {
-      rng[i, 1] <- prior.all[prior.ind.all, ][i, 2]
-      rng[i, 2] <- prior.all[prior.ind.all, ][i, 3]
-    }
-  }
-
-  bayesianSetup$prior$lower <- rng[, 1]
-  bayesianSetup$prior$upper <- rng[, 2]
-
   ## Apply BayesianTools specific settings
   bt.settings <- pda.settings.bt(settings)
+
+  ## Create bayesianSetup object for BayesianTools
+  bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, parallel = bt.settings$parallel)
+
 
   if (!is.null(settings$assim.batch$extension)) {
     load(settings$assim.batch$out.path)  # loads previous out list
@@ -238,6 +240,10 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   } else {
     ## central function in BayesianTools
     out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
+    
+    # prepare for parallelization
+    #dcores <- parallel::detectCores() - 1
+    #ncores <- min(max(dcores, 1), length(SS))
   }
 
   # save the out object for restart functionality and further inspection
@@ -247,9 +253,12 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
                                                     ".Rdata"))
   save(out, file = settings$assim.batch$out.path)
 
+  ## Combine the chains
+  out <- BayesianTools::createMcmcSamplerList(out)
   # prepare for post-process
-  samples <- BayesianTools::getSample(out, parametersOnly = TRUE)  # getSample{BayesianTools}
-  colnames(samples) <- pname.all[prior.ind.all]
+  samples   <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE)  # getSample{BayesianTools}
+  mcmc.list <- lapply(samples, `colnames<-`, pname.all[prior.ind.all])
+
   mcmc.list <- list(samples)
 
   # Separate each PFT's parameter samples to their own list

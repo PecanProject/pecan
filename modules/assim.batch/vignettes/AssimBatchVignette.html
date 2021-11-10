@@ -622,7 +622,7 @@ settings_PDA_round2 &lt;- pda.emulator(settings_PDA_round1)</code></pre>
     &lt;adaptationNotBefore&gt;500&lt;/adaptationNotBefore&gt;       &lt;-- set for Adaptive Metropolis
   &lt;/bt.settings&gt;
   ...</code></pre>
-<p>We will check out the <code>&lt;assim.batch&gt;</code> block for the good old MH-MCMC and the DREAMzs (recommended) algorithms.</p>
+<p>We will check out the <code>&lt;assim.batch&gt;</code> block for MH-MCMC and the DREAMzs (recommended) algorithms. To make sure everything works fine, initially set <code>&lt;iter&gt;</code> to some small number like 100.</p>
 <pre><code> &lt;assim.batch&gt;
    &lt;method&gt;bayesian.tools&lt;/method&gt;
    &lt;bt.settings&gt;

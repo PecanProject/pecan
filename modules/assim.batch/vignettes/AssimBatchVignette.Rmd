@@ -337,7 +337,7 @@ The name of the chosen sampler would be passed under `<sampler>` tag within the 
   ...
 ```
 
-We will check out the `<assim.batch>` block for the good old MH-MCMC and the DREAMzs (recommended) algorithms.
+We will check out the `<assim.batch>` block for MH-MCMC and the DREAMzs (recommended) algorithms. To make sure everything works fine, initially set `<iter>` to some small number like 100.
 ```
  <assim.batch>
    <method>bayesian.tools</method>
