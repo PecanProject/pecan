@@ -5,7 +5,7 @@
 \title{Convert the printed output of an object to a string. This is
 particularly useful for passing complex objects (e.g. matrices,
 data.frames) to simple printing functions like
-\code{\link[PEcAn.logger:logger.info]{PEcAn.logger::logger.info()}} or \code{\link[base:message]{base::message()}}.}
+\code{\link[=logger.info]{logger.info()}} or \code{\link[base:message]{base::message()}}.}
 \usage{
 print2string(x, ...)
 }

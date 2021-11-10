@@ -3,7 +3,7 @@
 ##' @title Get Model Output for PDA
 ##' @param settings PEcAn settings list
 ##' @param run.id run ID
-##' @param bety bety list
+##' @param bety database connection
 ##' @param inputs inputs list
 ##' @param external.formats format list
 ##'

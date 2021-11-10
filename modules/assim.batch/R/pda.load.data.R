@@ -5,7 +5,7 @@
 ##' with a more general PEcAn 'load_data' function eventually.
 ##' 
 ##' @param settings = PEcAn settings list
-##' @param bety bety list object
+##' @param bety database connection object
 ##' @param external.formats formats list
 ##'
 ##' @return A list containg the loaded input data, plus metadata
