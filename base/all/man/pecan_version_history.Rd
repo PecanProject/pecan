@@ -4,14 +4,16 @@
 \name{pecan_version_history}
 \alias{pecan_version_history}
 \title{Versions of all PEcAn packages in each release of PEcAn}
-\format{Data frame with at least 33 columns (plus one more every release!)
+\format{
+Data frame with at least 33 columns (plus one more every release!)
 \describe{
 \item{package}{Package name, as character}
 \item{v1.0, ..., v1.7.2, ....}{Release numbers,
 each with the Git tag as the column name and numeric package versions
 as the row contents.
 NA means \code{package} did not exist in this version of PEcAn.}
-}}
+}
+}
 \source{
 Extracted from Git history of the
 \href{https://github.com/PecanProject/pecan}{PEcAn development repository}

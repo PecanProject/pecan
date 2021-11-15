@@ -4,12 +4,14 @@
 \name{pecan_releases}
 \alias{pecan_releases}
 \title{Dates, tags, and versions of all PEcAn releases}
-\format{Data frame with 3 columns
+\format{
+Data frame with 3 columns
 \describe{
 \item{tag}{name used to mark the release}
 \item{date}{date released}
 \item{version}{numeric version assigned to this release}
-}}
+}
+}
 \source{
 Extracted from Git tags in the
 \href{https://github.com/PecanProject/pecan}{PEcAn development repository}
