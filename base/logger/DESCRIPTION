@@ -26,7 +26,7 @@ Imports:
     utils,
     stringi
 Suggests: testthat
-License: BSD_3_clause + file LICENSE
+License: BSD_3_clause
 Encoding: UTF-8
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
