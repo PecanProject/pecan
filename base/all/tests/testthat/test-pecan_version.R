@@ -43,23 +43,27 @@ test_that("pecan_version", {
   expect_length(noargs, 3)
   expect_named(noargs, c("package", expected_tag, "installed"))
 
-  # Why the `[[1]]`s below?
+  # Why the `any()`s below?
   # Because R CMD check runs tests with local test dir added to .libPaths,
-  # so if PEcAn.all is already installed then pecan_version will find two
-  # copies of it - one local version under test, one installed normally.
+  #  so if PEcAn.all is already installed then pecan_version will find two
+  #  copies of it - one local version under test, one installed normally.
   # When this happens pecan_version() will report both of them,
-  # which is arguably correct behavior but confusing for testing.
-  # As a workaround, we explicitly subset to the first version found
-  # (which is the copy that is being tested).
-  expect_equal(
-    noargs[noargs$package == "PEcAn.all", ]$installed[[1]],
-    packageVersion("PEcAn.all")
+  #  which is arguably correct behavior but confusing for testing.
+  # Rather than try to line them up precisely, we check only that the version
+  #  under test is *one of* the versions found by `pecan_version`.
+  expect_true(
+    any(
+      noargs[noargs$package == "PEcAn.all", ]$installed ==
+      packageVersion("PEcAn.all")
+    )
   )
-  expect_equal(
-    noargs[noargs$package == "PEcAn.all", expected_tag][[1]],
-    PEcAn.all::pecan_version_history[
-      PEcAn.all::pecan_version_history$package == "PEcAn.all",
-      expected_tag
-    ]
+  expect_true(
+    any(
+      noargs[noargs$package == "PEcAn.all", expected_tag] ==
+      PEcAn.all::pecan_version_history[
+        PEcAn.all::pecan_version_history$package == "PEcAn.all",
+        expected_tag
+      ]
+    )
   )
 })

@@ -61,6 +61,8 @@ Depends:
     PEcAn.benchmark,
     PEcAn.remote,
     PEcAn.workflow
+Imports:
+    utils
 Suggests:
     PEcAn.ED2,
     PEcAn.SIPNET,
