@@ -17,8 +17,9 @@ data frame with columns for package name, expected version(s),
 and installed version
 }
 \description{
-Reports the currently installed version of each PEcAn package, as well the
-versions expected by the specified release(s) of the PEcAn system.
+Reports the currently installed or loaded version(s) of each PEcAn package,
+as well as the versions expected by the specified release(s) of the PEcAn
+system.
 }
 \details{
 When \code{exact} = FALSE (the default), \code{pecan_version} will show all releases
@@ -26,6 +27,14 @@ whose names contain \code{version} as a substring.
 This is mostly so that e.g. "1.4.2" finds the release tag "v1.4.2",
 but since all matches are returned it can also be handy for seeing all
 patches sharing a minor version number (see examples).
+
+If more than one version of a package is installed, the output from
+\code{pecan_version()} will contain multiple rows for that package.
+This can occur if you have installed different versions to different
+locations in \code{.libPaths()}, or if you've loaded a new version into your
+current session by loading it from its source directory without installing
+it to the R library.
+If you see multiple rows unexpectedly, try \verb{find.package(<pkgname>, verbose = TRUE)} to see where each version was found.
 }
 \examples{
 pecan_version()
