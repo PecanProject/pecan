@@ -54,16 +54,53 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
   
   # spline-based downscaling
   if(length(which(c("air_temperature", "wind_speed","specific_humidity", "air_pressure") %in% cf_var_names) == 4)){
-    forecast_noaa_ds <- PEcAn.data.atmosphere::downscale_spline_to_half_hrly(df = noaa_data, VarNames = c("air_temperature", "wind_speed","specific_humidity", "air_pressure"))
-  }else{
+    #convert units for qair2rh conversion
+    noaa_data_units <- data.frame(time = noaa_data$time, wind_speed = noaa_data$wind_speed, specific_humidity = noaa_data$specific_humidity)
+    airTemp <- noaa_data$air_temperature
+    airPress <- noaa_data$air_pressure
+    #convert K to C
+    K2C <- function(K){
+      C = K - 273.15
+      return(C)
+    }
+    temp.K <- as.matrix(airTemp)
+    temp.C <- apply(temp.K, 1, K2C)
+    noaa_data_units$air_temperature <- temp.C
+    #convert Pa to mb
+    Pa2mb <- function(P){
+      M <- P/100
+      return(M)
+    }
+    press.P <- as.matrix(airPress)
+    press.mb <- apply(press.P, 1, Pa2mb)
+    noaa_data_units$air_pressure <- press.mb
+    forecast_noaa_ds <- PEcAn.data.atmosphere::downscale_spline_to_half_hrly(df = noaa_data_units, VarNames = c("wind_speed","specific_humidity", "air_temperature", "air_pressure"))
+     }else{
     #Add error message
+       PEcAn.logger::logger.error(paste0("1hr Met ncdf file missing either air_temperature, wind_speed, specific_humidity, or air_pressure"))
   }
   
   # Convert splined SH, temperature, and presssure to RH
   forecast_noaa_ds <- forecast_noaa_ds %>%
     dplyr::mutate(relative_humidity = qair2rh(qair = forecast_noaa_ds$specific_humidity, temp = forecast_noaa_ds$air_temperature, press = forecast_noaa_ds$air_pressure)) %>%
     dplyr::mutate(relative_humidity = ifelse(.data$relative_humidity > 1, 1, .data$relative_humidity))
-  
+  #convert airTemp and air Press back to K and Pa for met2model fcns
+  #convert C to K
+  C2K <- function(C){
+    K = C + 273.15
+    return(K)
+  }
+  temp.C <- as.matrix(forecast_noaa_ds$air_temperature)
+  temp.K <- apply(temp.C, 1, C2K)
+  forecast_noaa_ds$air_temperature <- temp.K
+  #convert mb to Pa
+  mb2Pa <- function(M){
+    P = M*100
+    return(P)
+  }
+  press.mb <- as.matrix(forecast_noaa_ds$air_pressure)
+  press.P <- apply(press.mb, 1, mb2Pa)
+  forecast_noaa_ds$air_pressure <- press.P
   # convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
   if("surface_downwelling_longwave_flux_in_air" %in% cf_var_names){
     LW.flux.hrly <- downscale_repeat_6hr_to_half_hrly(df = noaa_data, varName = "surface_downwelling_longwave_flux_in_air")
@@ -141,22 +178,6 @@ downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
   }
   
   names(noaa_data_interp) <- c("time",VarNames)
-  #convert K to C
-  K2C <- function(K){
-    C = K - 273.15
-    return(C)
-  }
-  temp.K <- as.matrix(noaa_data_interp$air_temperature)
-  temp.C <- apply(temp.K, 1, K2C)
-  noaa_data_interp$air_temperature <- temp.C
-  #convert Pa to mb
-  Pa2mb <- function(P){
-    M <- P/100
-    return(M)
-  }
-  press.P <- as.matrix(noaa_data_interp$air_pressure)
-  press.mb <- apply(press.P, 1, Pa2mb)
-  noaa_data_interp$air_pressure <- press.mb
   
   return(noaa_data_interp)
 }
