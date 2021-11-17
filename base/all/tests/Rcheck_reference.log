@@ -34,6 +34,14 @@ selectively is preferable.
 * checking whether the package can be loaded ... OK
 * checking whether the package can be loaded with stated dependencies ... OK
 * checking whether the package can be unloaded cleanly ... OK
+* checking dependencies in R code ... NOTE
+Packages in Depends field not imported from:
+  ‘PEcAn.DB’ ‘PEcAn.MA’ ‘PEcAn.assim.batch’ ‘PEcAn.benchmark’
+  ‘PEcAn.data.atmosphere’ ‘PEcAn.data.land’ ‘PEcAn.data.remote’
+  ‘PEcAn.emulator’ ‘PEcAn.logger’ ‘PEcAn.priors’ ‘PEcAn.remote’
+  ‘PEcAn.settings’ ‘PEcAn.uncertainty’ ‘PEcAn.utils’ ‘PEcAn.workflow’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
