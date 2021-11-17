@@ -1,21 +1,42 @@
 #!/usr/bin/env Rscript
 
+# Parses existing Git tags to create 2 tables:
+# `pecan_releases` lists versions and dates of tagged PEcAn releases,
+# `pecan_version_history` lists package versions at each release.
+#
+# This script is provided for historical interest.
+# It was used to generate the initial versions of these tables,
+# but is not useful for adding new entries to them at release time,
+# because those updates will happen before the new tag is created.
+# See `record_versions.R` for the release-friendly version.
+#
+# This script writes full tag dates including timestamps,
+# but `record_versions.R` only uses dates.
+# Rather than rerun to fix this for all previous releases,
+# I resaved the existing file:
+# ```
+# release_file <- "base/all/data/pecan_releases.rda"
+# load(release_file)
+# pecan_releases$date <- as.Date(pecan_releases$date)
+# save(pecan_releases, file = release_file, version = 2)
+# ```
+
 # Usage:
-# ./base/all/data-raw/record_package_versions_for_release.R [tag ...] [save]
+# ./base/all/data-raw/record_previous_releases.R [tag ...] [save]
 #
 # START WITH A CLEAN GIT TREE. This script checks out tags to read their
 # versions. It complains before clobbering anything and restores state
 # after run, but no warranties etc
 #
 # No "save" => just write to console
-# ./base/all/data-raw/record_package_versions_for_release.R v1.2.3
+# ./base/all/data-raw/record_previous_releases.R v1.2.3
 #
 # With "save" => add results to package data files
 # base/all/data/pecan_version_history.rda & base/all/data/pecan_releases.rda
-# ./base/all/data-raw/record_package_versions_for_release.R v4.5.6 v4.5.7 save
+# ./base/all/data-raw/record_previous_releases.R v4.5.6 v4.5.7 save
 #
 # No tags specified => read all (slow!)
-# ./base/all/data-raw/record_package_versions_for_release.R
+# ./base/all/data-raw/record_previous_releases.R
 
 # Needs R >= 4.1 for `|>` and `\()`,
 #  and `git2r` package for repository operations
