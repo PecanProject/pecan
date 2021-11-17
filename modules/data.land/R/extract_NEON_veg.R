@@ -34,18 +34,18 @@ site <- dplyr::filter(neonsites, .data$siteLatitude == lat & .data$siteLongitude
 sitename = site$siteCode
 #Load in NEON datasets
 #tree ABG
-neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), type = "basic",api = "https://data.neonscience.org/api/v0")
-apparentindividual <- neonstore::neon_read(table = "apparentindividual", product = "DP1.10098.001", site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), dir = store_dir)
-mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), dir = store_dir)
+neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+apparentindividual <- neonstore::neon_read(table = "apparentindividual", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 joined.tree <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
 #herb AGB
-neonstore::neon_download("DP1.10023.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), type = "basic",api = "https://data.neonscience.org/api/v0")
-massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), dir = store_dir)
-perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), dir = store_dir)
+neonstore::neon_download("DP1.10023.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
 #species info
-neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), type = "basic",api = "https://data.neonscience.org/api/v0")
-div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = as.Date("2019-01-01"), end_date = as.Date("2019-12-31"), dir = store_dir)
+neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 #Filter joined.tree, joined.herb, and div_1m2 for required information: DBH, tree height, dryMass, taxonID (USDA code) and species info
 filter.tree <- dplyr::select(joined.tree, siteID.x, plotID.x, subplotID.x, nestedSubplotID, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
 filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, plotType.x, clipArea, dryMass, collectDate.y)
