@@ -265,11 +265,19 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     #Shift valued back because the 6hr value represents the average over the
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
+  #hack alert: last two values are Nas 
+  if (dim(df)[1] == 841) {
+    df$lead_var[840] <- df$lead_var[839]
+    df$lead_var[841] <- df$lead_var[839]
+  }else{
+    df$lead_var[384] <- df$lead_var[383]
+    df$lead_var[385] <- df$lead_var[383]
+  }
   
   #Create new vector with all hours
-  interp.df.days <- seq(min(df$days_since_t0),
-                        as.numeric(max(df$days_since_t0)),
-                        1 / (24 / hr))
+  interp.df.days <- seq(from = min(df$days_since_t0),
+                        to = as.numeric(max(df$days_since_t0)),
+                        by = 1 / (24 / hr))
   
   #Create new data frame
   noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days))
@@ -279,17 +287,17 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     dplyr::left_join(df, by = "time")
   
   #Fill in hours
+  curr <- vector()
   for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
+    if(is.na(data.hrly$lead_var[i])){
+      curr[i] <- data.hrly$lead_var[i-1]
     }else{
-      curr <- varName
-      data.hrly$lead_var[i] <- curr
+      curr[i] <- data.hrly$lead_var[i]
     }
   }
-  
+  data.hrly$curr <- curr
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", .data$lead_var) %>%
+  data.hrly <- data.hrly %>% dplyr::select("time", .data$curr) %>%
     dplyr::arrange(.data$time)
   
   names(data.hrly) <- c("time", varName)
