@@ -1,21 +1,4 @@
 Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir = "/projectnb/dietzelab/hamzed/LandTrendr/LandTrendr_AGB_data/"){
-  #loading libraries
-  library(PEcAn.all)
-  library(PEcAn.SIPNET)
-  library(PEcAn.LINKAGES)
-  library(PEcAn.visualization)
-  library(PEcAn.assim.sequential)
-  library(nimble)
-  library(lubridate)
-  library(PEcAn.visualization)
-  library(rgdal) # need to put in assim.sequential
-  library(ncdf4) # need to put in assim.sequential
-  library(purrr)
-  library(listviewer)
-  library(dplyr)
-  library(furrr)
-  library(tictoc)
-  
   ####working on downloading LAI and extraction AGB
   settings <- multi.settings #getting it simpler
   
