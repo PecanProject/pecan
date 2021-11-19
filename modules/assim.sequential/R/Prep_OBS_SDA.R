@@ -6,7 +6,7 @@
 #' @param out_dir  output dir
 #' @param AGB_dir  AGB data dir
 #'
-#' @return
+#' @return mean and covariance of observations
 #' @export
 #'
 #' @examples
