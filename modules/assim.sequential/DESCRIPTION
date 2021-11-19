@@ -34,7 +34,7 @@ Imports:
 Suggests:
     PEcAn.benchmark,
     DBI,
-    glue
+    glue,
     corrplot,
     ggrepel,
     gridExtra,
