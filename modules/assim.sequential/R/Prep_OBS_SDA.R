@@ -59,12 +59,12 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
                       lon=qry_results$lon, time_zone=qry_results$time_zone)
     
     #download LAI
-    lai = call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
+    lai = PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
                      run_parallel = TRUE, ncores = ncores, product = "MOD15A2H", band = "Lai_500m",
                      package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
     lai_data <- rbind(lai_data, lai)
     
-    sd = rbind(call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
+    sd = rbind(PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
                           run_parallel = TRUE, ncores = ncores, product = "MOD15A2H", band = "LaiStdDev_500m",
                           package_method = "MODISTools", QC_filter = TRUE, progress = FALSE), sd)
     

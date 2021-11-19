@@ -19,6 +19,7 @@ Imports:
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.data.remote,
     PEcAn.settings,
     PEcAn.utils,
     plyr (>= 1.8.4),
