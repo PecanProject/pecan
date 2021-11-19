@@ -33,6 +33,8 @@ Imports:
     coda
 Suggests:
     PEcAn.benchmark,
+    DBI,
+    glue
     corrplot,
     ggrepel,
     gridExtra,
