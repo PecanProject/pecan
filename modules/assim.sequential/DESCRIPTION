@@ -34,6 +34,7 @@ Imports:
 Suggests:
     PEcAn.benchmark,
     PEcAn.data.remote,
+    stats,
     DBI,
     glue,
     corrplot,
