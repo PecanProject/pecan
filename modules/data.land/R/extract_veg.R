@@ -37,65 +37,84 @@ extract_veg <- function(new_site, startdate, enddate,
    #set start and end date as date objects
    start_date = as.Date(startdate)
    end_date = as.Date(enddate)
- fcnx <- paste0("extract_", source) # e.g. extract_FIA
- #Need a better way to check if the function exists
- if (!exists(fcnx)) {
-   PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
- }else{
-   fcn <- fget(fcnx) #Error cannot find the function
- }
+ # fcnx <- paste0("extract_", source) # e.g. extract_FIA
+ # #Need a better way to check if the function exists
+ # if (!exists(fcnx)) {
+ #   PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
+ # }else{
+ #   fcn <- fget(fcnx) #Error cannot find the function
+ # }
  # extract_* functions need to have standard args
  lon <- as.numeric(new_site$lon)
  lat <- as.numeric(new_site$lat)
- veg_info <- fcn(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
+ #veg_info <- fcn(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
  
- #veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
+ veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
  
  #--------------------------------------------------------------------------------------------------#
  # Match species
- 
- obs <- veg_info[[2]]
- 
- # TODO: generalize this as we have more sources that have their own DB like FIA
- if(is.null(format_name)){
-   if(source == "FIA"){
-   format_name <- "fia" 
-   code_col    <-  "spcd"
-   }else{
-      code_col    <- "species_USDA_symbol"
-      format_name <- "usda"
-      obs[obs$species_USDA_symbol != "2PLANT", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
-   }
+ if (source == "NEON_veg") {
+    #skip species matching for now revisit later 
+    # need check for overwrite
+    sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
+    
+    # Build results dataframe for convert.input
+    results <- data.frame(file = sppfilename, 
+                          host = machine_host, 
+                          mimetype = "application/rds", 
+                          formatname = "spp.info", 
+                          startdate = start_date, 
+                          enddate = end_date, 
+                          dbfile.name = basename(sppfilename), 
+                          stringsAsFactors = FALSE)
+    
+    ### return for convert.inputs
+    return(invisible(results))
+ }else{
+    obs <- veg_info[[2]]
+    
+    # TODO: generalize this as we have more sources that have their own DB like FIA
+    if(is.null(format_name)){
+       if(source == "FIA"){
+          format_name <- "fia" 
+          code_col    <-  "spcd"
+       }else{
+          code_col    <- "species_USDA_symbol"
+          format_name <- "usda"
+          obs[obs$species_USDA_symbol != "2PLANT", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
+       }
+    }
+    
+    
+    # match code to species ID
+    spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code_col]], format_name = format_name)
+    
+    # merge with data
+    tmp <- spp.info[ , colnames(spp.info) != "input_code"]
+    
+    veg_info[[2]] <- cbind(obs, tmp)
+    
+    
+    #--------------------------------------------------------------------------------------------------#
+    # Write vegettion data as rds, return results to convert.input
+    
+    # need check for overwrite
+    sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
+    
+    # Build results dataframe for convert.input
+    results <- data.frame(file = sppfilename, 
+                          host = machine_host, 
+                          mimetype = "application/rds", 
+                          formatname = "spp.info", 
+                          startdate = start_date, 
+                          enddate = end_date, 
+                          dbfile.name = basename(sppfilename), 
+                          stringsAsFactors = FALSE)
+    
+    ### return for convert.inputs
+    return(invisible(results)) 
  }
-
- 
- # match code to species ID
- spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code_col]], format_name = format_name)
- 
- # merge with data
- tmp <- spp.info[ , colnames(spp.info) != "input_code"]
- 
- veg_info[[2]] <- cbind(obs, tmp)
- 
- 
- #--------------------------------------------------------------------------------------------------#
- # Write vegettion data as rds, return results to convert.input
- 
- # need check for overwrite
- sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
- 
- # Build results dataframe for convert.input
- results <- data.frame(file = sppfilename, 
-                       host = machine_host, 
-                       mimetype = "application/rds", 
-                       formatname = "spp.info", 
-                       startdate = start_date, 
-                       enddate = end_date, 
-                       dbfile.name = basename(sppfilename), 
-                       stringsAsFactors = FALSE)
- 
- ### return for convert.inputs
- return(invisible(results))  
+   
  
   
 } # extract_veg

@@ -100,7 +100,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   }else if (input$source == "NEON_veg"){
     #For debugging purposes I am hard coding in the start and end dates, will revisit and adjust once extract_NEON_veg is working within ic_process
     start_date = as.Date("2019-01-01")
-    end_date = as.Date("2019-12-31")
+    end_date = as.Date("2021-09-30")
   }else{
     
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)

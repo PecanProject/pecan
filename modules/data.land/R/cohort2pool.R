@@ -34,9 +34,9 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
   dat_equal <- dat[[2]][dat[[2]]$DBH == 2.5,]
   dbh_equal <- dat_equal$DBH
   #Grab plot size
-  plot_size <- dat[[1]]$area
+  plot_size <- dat[[1]]$subPlot
   #Grab number of plots
-  plot_num <- length(unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot)))
+  plot_num <- length(unique(dat[[2]]$Subplot))
   
   ## Grab allometry
   if(is.null(allom_param)){
@@ -65,19 +65,29 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
   biomass[is.na(biomass)] <- 0
   tot_biomass <- sum(biomass,na.rm = TRUE)
   
+  #grab herbaceous weight and plot size
+  herb_plot <- dat[[1]]$herb_clipArea
+  tot_herb <- sum(dat[[3]][,"dryMass"])
+  
   #calculate total wood and leaf biomass
   ratio[is.na(ratio)] <- 0
   leaf <- ratio*biomass
   tot_leaf <- sum(leaf,na.rm = TRUE)
   
   #Divide by plot area, divide by 2 to convert from kg to kgC
+  #THflag <- dat[[4]] #add different calculation for tree vs herb site
+
   leaf_biomass = (tot_leaf/(plot_num*plot_size))/2
   AGB = (tot_biomass/(plot_num*plot_size))/2
   wood_biomass = AGB - leaf_biomass
+  litter_biomass = tot_herb/herb_plot
+  
+  #grab soil carbon info
+  #soil_carbon = dat[[5]] #conversion done in extract_NEON_veg (gC/m^2)
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
-  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass)
+  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass, litter_carbon_content = litter_biomass) #soil_organic_carbon_content = soil_carbon) 
   input <- list(dims = dims,
                 vals = variables)
   

@@ -11,8 +11,8 @@
 #' 
 #' @return veg_info object to be passed to extract_veg within ic_process
 #' @author Alexis Helgeson and Michael Dietze
+#'
 #' @export
-#' 
 #' @examples start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
 
 extract_NEON_veg <- function(lon, lat, startdate, enddate, ...){
@@ -22,6 +22,9 @@ store_dir = "/projectnb/dietzelab/neon_data"
 #Set start_date and end_date as Date objects
 start_date = as.Date(startdate)
 end_date = as.Date(enddate)
+#set lat & lon as numeric 
+lon = as.numeric(lon)
+lat = as.numeric(lat)
 #Find sitename from lon and lat params using distance
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns
@@ -46,6 +49,15 @@ joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
 #species info
 neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
 div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+# #soil carbon
+# neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), type = "basic",api = "https://data.neonscience.org/api/v0")
+# perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = store_dir)
+# perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = store_dir)
+# perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = store_dir)
+# joined.soil <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
+# joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
+# soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000)
+
 #Filter joined.tree, joined.herb, and div_1m2 for required information: DBH, tree height, dryMass, taxonID (USDA code) and species info
 filter.tree <- dplyr::select(joined.tree, siteID.x, plotID.x, subplotID.x, nestedSubplotID, taxonID, scientificName, taxonRank, date.y, stemDiameter, height)
 filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, plotType.x, clipArea, dryMass, collectDate.y)
@@ -77,7 +89,16 @@ veg_info[[1]] <- list(Plot = 1600, subPlot = 400, nestedSubplot = 100, herb_clip
 veg_info[[2]] <- filter.tree
 #Set filter.herb as veg_info[[3]]
 veg_info[[3]] <- filter.herb
-
+#set veg_info[[4]] as herbaceous vs tree site flag
+treeSites <- c("HARV", "BART", "OSBS")
+herbSites <- c("KONZ", "SRER")
+if (sitename %in% treeSites) {
+  veg_info[[4]] <- TRUE
+}else{
+  veg_info[[4]] <- FALSE
+}  
+# #set soilcarbon.per.m2 as veg_info[[5]]
+# veg_info[[5]] <- soilcarbon.per.m2
 
 return(veg_info)
 }

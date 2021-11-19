@@ -31,77 +31,94 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   # Then, the rest of the script would change, this is cohort-based only
   # 
   # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
-  obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
+  obsTree <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
+  obsHerb <- as.data.frame(veg_info[[3]], stringsAsFactors = FALSE)
   
+  #clean up herb and tree data i.e. remove NA weight, DBH, or height measurements
+  obsTree <- obsTree[!is.na(obsTree$DBH),]
+  obsTree <- obsTree[!is.na(obsTree$height),]
+  obsHerb <- obsHerb[!is.na(obsHerb$dryMass),]
+  
+  #set year
   year <- lubridate::year(start_date)
   
   # subset samples for the year 
-  samples <- obs[obs$year == year, ]
-  
-  # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
-  samples <- samples[complete.cases(samples), ]
+  samplesTree <- obsTree[obsTree$year == year, ]
+  samplesHerb <- obsHerb[obsHerb$year == year, ]
   
   # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
-  if(!is.null(samples$Subplot)){
-    n.subplot <- length(unique(samples$Subplot))
-    subplot.n <- unique(samples$Subplot)
+  if(!is.null(samplesTree$Subplot)){
+    n.subplotTree <- length(unique(samplesTree$Subplot))
+    subplot.nTree <- unique(samplesTree$Subplot)
   }else{
     n.subplot <- 1
     samples$Subplot <- 1
     subplot.n <- 1
   }
+  if(!is.null(samplesHerb$Subplot)){
+    n.subplotHerb <- length(unique(samplesHerb$Subplot))
+    subplot.nHerb <- unique(samplesHerb$Subplot)
+  }else{
+    n.subplot <- 1
+    samples$Subplot <- 1
+    subplot.n <- 1
+  }
+  
   sppfilename <- rep(NA, n.ensemble)
   #--------------------------------------------------------------------------------------------------#
   # Sampling 
   #loop over ensemble members
+  #hack herb and tree sampling happen separately but need to fix for they are sampled together
   for (ens in 1:n.ensemble) {
   
-  sub.list <- list()
+  sub.listTree <- list()
+  sub.listHerb <- list()
   veg_ens <- veg_info
-  for(np in seq_len(n.subplot)){
-    samples_sub <- samples[samples$Subplot == subplot.n[np],] 
+  for(np in seq_len(n.subplotTree)){
+    samples_subTree <- samplesTree[samplesTree$Subplot == subplot.nTree[np],] 
     
-    ############################################
-    #  
-    #  samples_sub is in this format (there are other columns):
-    # 
-    #   DBH  MCMC_iteration ... Tree_number ...
-    #    36               1 ...           1 ...
-    #  16.1               1 ...           2 ...
-    #    24               1 ...           3 ...
-    #   ...             ... ...         ... ...
-    #  36.5               2 ...           1 ...
-    #  16.2               2 ...           2 ...
-    #   ...             ... ...         ... ...
-    #  35.9            1000 ...           1 ...
-    #    16            1000 ...           2 ...
-    #   ...             ... ...         ... ...
-    #   6.8            1000 ...         170 ...   
-    #
     #  we can use Tree_number as the index for tapply and sample 1 from MCMC samples
-    if (!is.null(samples_sub$Tree_number)) {
+    if (!is.null(samples_subTree$Tree_number)) {
       samp_ind    <- tapply(seq_along(samples_sub$Tree_number), samples_sub$Tree_number, sample, 1)
       
     } else {
       #don't have MCMC samples, instead re-sample trees stratified by size
       #not every dataset will call DBH DBH, and 10 should be a variable. Add parameter for bin_size and bin_var with defaults set to DBH and 10 
-      size <- ceiling(samples_sub[,which(colnames(samples_sub)==bin_var)]/bin_size)
-      samp_ind <- unlist(tapply(seq_along(size), size, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
+      sizeTree <- ceiling(samples_subTree[,which(colnames(samples_subTree)==bin_var)]/bin_size)
+      samp_indTree <- unlist(tapply(seq_along(sizeTree), sizeTree, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
     }
-    sub_samp    <- samples_sub[samp_ind,]
+    sub_sampTree    <- samples_subTree[samp_indTree,]
     
-    sub.list[[np]]  <- sub_samp
+    sub.listTree[[np]]  <- sub_sampTree
   }
   
-    veg_ens[[2]] <- do.call("rbind", sub.list)
-  
-  
+    veg_ens[[2]] <- do.call("rbind", sub.listTree)
+    
+    for(n in seq_len(n.subplotHerb)){
+      samples_subHerb <- samplesHerb[samplesHerb$Subplot == subplot.nHerb[n],] 
+      
+      #  we can use Tree_number as the index for tapply and sample 1 from MCMC samples
+      if (!is.null(samples_subHerb$Tree_number)) {
+        samp_ind    <- tapply(seq_along(samples_sub$Tree_number), samples_sub$Tree_number, sample, 1)
+        
+      } else {
+        #don't have MCMC samples, instead re-sample trees stratified by size
+        #not every dataset will call DBH DBH, and 10 should be a variable. Add parameter for bin_size and bin_var with defaults set to DBH and 10 
+        sizeHerb <- ceiling(samples_subHerb[,which(colnames(samples_subHerb)=="dryMass")]/bin_size)
+        samp_indHerb <- unlist(tapply(seq_along(sizeHerb), sizeHerb, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
+      }
+      sub_sampHerb    <- samples_subHerb[samp_indHerb,]
+      
+      sub.listHerb[[n]]  <- sub_sampHerb
+    }
+    
+    veg_ens[[3]] <- do.call("rbind", sub.listHerb)
   
   #--------------------------------------------------------------------------------------------------#
   # Write vegettion data as rds, return results to convert.input
   
   # write with ensemble number
-  sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
+  sppfilename[ens] <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
   }
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 
