@@ -1,3 +1,15 @@
+#' SDA observation preparation function for LAI and AGB
+#'
+#' @param multi.settings settings objects that contains multiple sites info
+#' @param start_year starting year
+#' @param end_year ending year
+#' @param out_dir  output dir
+#' @param AGB_dir  AGB data dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir = "/projectnb/dietzelab/hamzed/LandTrendr/LandTrendr_AGB_data/"){
   ####working on downloading LAI and extraction AGB
   settings <- multi.settings #getting it simpler
