@@ -33,7 +33,6 @@ Imports:
     coda
 Suggests:
     PEcAn.benchmark,
-    PEcAn.data.remote,
     DBI,
     glue,
     corrplot,
