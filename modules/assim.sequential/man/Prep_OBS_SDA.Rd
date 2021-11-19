@@ -24,7 +24,7 @@ Prep_OBS_SDA(
 \item{AGB_dir}{AGB data dir}
 }
 \value{
-
+mean and covariance of observations
 }
 \description{
 SDA observation preparation function for LAI and AGB
