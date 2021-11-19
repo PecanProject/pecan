@@ -73,8 +73,8 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
   
   #extracting AGB data
   work_dir <- getwd()
-  med_agb_data <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
-  sdev_agb_data <- extract.LandTrendr.AGB(site_info, "stdv", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
+  med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
+  sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "stdv", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
   
   #formatting AGB data
   ndates = colnames(med_agb_data)[-c(1:2)] # getting dates
@@ -111,7 +111,7 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
       if (length(index) > 0)
       {
         # peak lai is the max value that is the value <95th quantile to remove potential outlier values
-        max = site[which(site$Median == max(site$Median[which(site$Median <= quantile(site$Median, probs = 0.95))], na.rm = T))[1],] #which(d$Median == max(d$Median[index], na.rm = T))[1]
+        max = site[which(site$Median == max(site$Median[which(site$Median <= stats::quantile(site$Median, probs = 0.95))], na.rm = T))[1],] #which(d$Median == max(d$Median[index], na.rm = T))[1]
         peak = data.frame(max$Site_ID, Date = paste("Year", years[i], sep = "_"), Median = max$Median, SD = max$SD)
         peak_lai = rbind(peak_lai, peak)
         
@@ -141,15 +141,15 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
   
   # change the dates to be middle of the year
   date.obs <- strsplit(names(obs.mean), "_") %>%
-    map_chr(~.x[2]) %>% paste0(.,"/07/15")
+    purrr::map_chr(~.x[2]) %>% paste0(.,"/07/15")
   
   obs.mean = names(obs.mean) %>%
-    map(function(namesl){
+    purrr::map(function(namesl){
       obs.mean[[namesl]] %>%
         split(.$site_id) %>%
-        map(~.x[3:4] %>% setNames(c("AbvGrndWood", "LAI")) %>% `row.names<-`(NULL))
+        purrr::map(~.x[3:4] %>% stats::setNames(c("AbvGrndWood", "LAI")) %>% `row.names<-`(NULL))
       #setNames(site.ids)
-    }) %>% setNames(date.obs)
+    }) %>% stats::setNames(date.obs)
   
   #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
   names = date.obs
@@ -178,11 +178,11 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
     split(.$date)
   
   obs.cov = names(obs.cov) %>%
-    map(function(namesl){
+    purrr::map(function(namesl){
       obs.cov[[namesl]] %>%
         split(.$site_id) %>%
-        map(~.x[3:4]^2 %>% unlist %>% diag(nrow = 2, ncol = 2) ) 
-    }) %>% setNames(date.obs)
+        purrr::map(~.x[3:4]^2 %>% unlist %>% diag(nrow = 2, ncol = 2) ) 
+    }) %>% stats::setNames(date.obs)
   
   
   names = date.obs
