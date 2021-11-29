@@ -57,7 +57,7 @@ parse_tag_versions <- function(x) {
 
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 3) {
+if (length(args) < 3 || length(args) > 4) {
   stop("Usage: record_versions.R tag version date [save]")
 }
 
