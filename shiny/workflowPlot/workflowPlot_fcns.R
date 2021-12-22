@@ -40,7 +40,7 @@ loadObservationData <- function(bety,inputs_df){
   # To make it work with the VM, uncomment the line below
   # File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
-  site <- PEcAn.DB::query.site(site.id,bety$con)
+  site <- PEcAn.DB::query.site(site.id, bety)
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,  
     site = site, start_year = start.year, end_year = end.year) 

@@ -6,7 +6,9 @@
 \title{Build a mapping from dvmdostem names to PEcAn names, units, etc.
 The temunits should be (are) looked up from the dvmdostem output 
 file's units attributes.}
-\format{An object of class \code{list} of length 19.}
+\format{
+An object of class \code{list} of length 19.
+}
 \usage{
 vmap_reverse
 }

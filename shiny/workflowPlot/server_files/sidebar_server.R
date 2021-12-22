@@ -164,7 +164,7 @@ load.model.data <- eventReactive(input$load_data, {
   # To make it work with the VM, uncomment the line below
   #File_path <- paste0(inputs_df$filePath,'.csv')
   site.id <- inputs_df$site_id
-  site <- PEcAn.DB::query.site(site.id,dbConnect$bety$con)
+  site <- PEcAn.DB::query.site(site.id,dbConnect$bety)
   
   observations <- PEcAn.benchmark::load_data(
     data.path = File_path, format = File_format, time.row = File_format$time.row,
@@ -214,15 +214,15 @@ output$formatPreview <- DT::renderDT({
       PEcAn.DB::get.id("formats",
                        "name",
                        input$format_sel_pre,
-                       dbConnect$bety$con) %>%
+                       dbConnect$bety) %>%
       as.character()
     
     if (length(Fids) > 1)
       toastr_warning(title = "Format Preview",
                      message = "More than one id was found for this format. The first one will be used.")
     
-    mimt<-tbl(dbConnect$bety$con,"formats") %>%
-      left_join(tbl(dbConnect$bety$con,"mimetypes"), by=c('mimetype_id'='id'))%>%
+    mimt<-tbl(dbConnect$bety, "formats") %>%
+      left_join(tbl(dbConnect$bety, "mimetypes"), by=c('mimetype_id'='id'))%>%
       dplyr::filter(id==Fids[1]) %>%
       dplyr::pull(type_string)
     
@@ -231,7 +231,7 @@ output$formatPreview <- DT::renderDT({
     })
     
     DT::datatable(
-      tbl(dbConnect$bety$con, "formats_variables")  %>%
+      tbl(dbConnect$bety, "formats_variables")  %>%
         dplyr::filter(format_id == Fids[1]) %>%
         dplyr::select(-id, -format_id,-variable_id,-created_at,-updated_at) %>%
         dplyr::filter(name != "") %>%
@@ -355,7 +355,7 @@ observeEvent(input$register_button,{
                                   mimetype = mt,
                                   formatname = input$format_sel,
                                   #parentid = input$parentID,
-                                  con = dbConnect$bety$con
+                                  con = dbConnect$bety
                                   #hostname = localhost #?, #default to localhost for now
                                   #allow.conflicting.dates#? #default to FALSE for now
     )

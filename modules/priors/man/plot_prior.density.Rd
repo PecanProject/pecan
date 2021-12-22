@@ -10,7 +10,7 @@ plot_prior.density(prior.density, base.plot = NULL, prior.color = "black")
 \arguments{
 \item{prior.density}{data frame containing columns x and y}
 
-\item{base.plot}{a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided}
+\item{base.plot}{a ggplot object (grob), created if none provided}
 
 \item{prior.color}{color of line to be plotted}
 }

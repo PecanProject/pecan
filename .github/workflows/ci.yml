@@ -37,8 +37,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -56,6 +56,8 @@ jobs:
       run: Rscript scripts/generate_dependencies.R
     - name: check for out-of-date dependencies files
       uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      run: Rscript docker/depends/pecan.depends.R
 
     # compile PEcAn code
     - name: build
@@ -76,8 +78,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
@@ -120,8 +122,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -145,11 +147,6 @@ jobs:
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-    # need processx > 3.5.2 to avoid cryptic errors from
-    # https://github.com/r-lib/rcmdcheck/issues/140
-    # Remove when https://github.com/r-lib/processx/pull/299 reaches CRAN
-    - name: update processx
-      run: Rscript -e 'devtools::install_github("r-lib/processx")'
 
     # run PEcAn checks
     - name: check
@@ -174,8 +171,8 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:

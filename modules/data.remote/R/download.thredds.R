@@ -24,10 +24,9 @@ download.thredds.AGB <- function(outdir = NULL, site_ids, run_parallel = FALSE,
                                     ncores = NULL) {
   
   
-  bety <- list(user='bety', password='bety', host='localhost',
-               dbname='bety', driver='PostgreSQL',write=TRUE)
-  con <- PEcAn.DB::db.open(bety)
-  bety$con <- con
+  con <- PEcAn.DB::db.open(
+    list(user='bety', password='bety', host='localhost',
+    dbname='bety', driver='PostgreSQL',write=TRUE))
   site_ID <- as.character(site_ids)
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",

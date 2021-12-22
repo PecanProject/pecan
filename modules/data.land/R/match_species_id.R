@@ -12,7 +12,7 @@
 #'
 #' @param input_codes Character vector of species codes
 #' @param format_name Species code format name (see details)
-#' @param bety \code{dplyr} \code{src} object containing BETY connection
+#' @param bety BETY connection object
 #' @param translation_table Data frame with custom translation table (see details).
 #' @return \code{data.frame} containing the following columns:
 #' \describe{
@@ -24,15 +24,18 @@
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
 #' \dontrun{
-#' bety <- dplyr::src_postgres(dbname = 'bety',
-#'                        user = 'bety',
-#'                        password = 'bety',
-#'                        host = 'localhost')
+#' con <- PEcAn.DB::db.open(list(
+#'   driver = "Postgres",
+#'   dbname = 'bety',
+#'   user = 'bety',
+#'   password = 'bety',
+#'   host = 'localhost')
+#' )
 #' input_codes <- c('ACRU', 'PIMA', 'TSCA')
 #' format_name <- 'usda'
 #' match_species_id(input_codes = input_codes,
 #'                  format_name = format_name,
-#'                  bety = bety)
+#'                  bety = con)
 #' }
 #'
 #' @importFrom magrittr %>%

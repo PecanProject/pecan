@@ -38,7 +38,6 @@ mcmc.list2init <- function(dat) {
     
     ## detect variable type (scalar, vector, matrix)
     cols <- which(firstname == uname[v])
-    
     if(length(cols) == 1){
       ## SCALAR
       for(c in seq_len(nc)){
