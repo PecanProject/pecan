@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<datapool>
+<lpdaacdatapool>
     <coord>
       <coordtype>point</coordtype>
     </coord>
@@ -8,4 +8,4 @@
      <name>Remote_generic</name>
      <mimetype>text/csv</mimetype>
    </raw_format>
-</datapool>
+</lpdaacdatapool>

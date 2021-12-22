@@ -249,7 +249,7 @@ GEE registration file (register.GEE.xml) :
    * `name` name of the format
    * `mimetype` MIME type
    
-AppEEARS registarion file (registrer.APPEEARS.xml) :
+AppEEARS registration file (register.APPEEARS.xml) :
 
 * `coord`
   * `coord_type` coordinate type supported by the product 
@@ -356,11 +356,11 @@ PEcAn.data.remote::remote_process(settings)
 
 The output netCDF file will be saved at outdir and its record would be kept in the inputs table of BETYdb.
 
-#### Example use GEDI (data pool)
+#### Example use GEDI (LP DAAC data pool)
 ```xml
   <remotedata>
   <out_get_data>gedi</out_get_data>
-  <source>datapool</source>
+  <source>lpdaacdatapool</source>
   <collection>GEDI02_B.002</collection>
   <credfile>path/to/jsonfile/containingcredentials</credfile>
   </remotedata>

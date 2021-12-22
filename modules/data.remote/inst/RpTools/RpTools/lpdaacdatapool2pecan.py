@@ -1,5 +1,5 @@
 """
-datapool2pecan downloads files from Earth Data Pool. Currently GEDI Level1B, Level2A and Level2B options available.
+lpdaacdatapool2pecan downloads files from Earth Data Pool. Currently GEDI Level1B, Level2A and Level2B options available.
 
 Based on DAAC Downloader script https://git.earthdata.nasa.gov/projects/LPDUR/repos/daac_data_download_python/browse/DAACDataDownload.py 
 and GEDI subsetter https://git.earthdata.nasa.gov/projects/LPDUR/repos/gedi-subsetter/browse/GEDI_Subsetter.py
@@ -21,7 +21,7 @@ from subprocess import Popen
 from netrc import netrc
 
 
-def datapool2pecan(geofile, outdir, out_filename, start, end, product, credfile=None):
+def lpdaacdatapool2pecan(geofile, outdir, out_filename, start, end, product, credfile=None):
     """
     Downloads files from LP DAAC Data Pool
 
