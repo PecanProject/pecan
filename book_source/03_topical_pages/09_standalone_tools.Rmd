@@ -223,11 +223,20 @@ This module is accesible using the R function `remote_process` which uses the Py
 * `qc`: (optional) quality control parameter, required for some gee collections
 * `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 
-These tags are only required if processed data is requested:
+If you don't want to enter your Earthdata credentials everytime you use AppEEARS or LP DAAC use the following tag too:
+
+* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required when using AppEEARS and LP DAAC data pool. The contents of this file could be as simple as the following:
+```
+{
+  "username": "yourEARTHDATAusername",
+  "password": "yourEARTHDATApassword"
+}
+```
+These tags are only required if processed data (i.e. further processing after downloading the data) is requested:
 
 * `out_process_data`: (optional) type of processed output requested, e.g, lai
 * `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
-* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
+
 
 Additional information are taken from the registration files located at [pecan/modules/data.remote/inst/registration](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/registration), each source has its own registration file. This is so because there isn't a standardized way to retrieve all image collections from GEE and each image collection may require its own way of performing quality checks, etc whereas all of the products available on AppEEARS can be retrieved using its API in a standardized way.
 
@@ -249,7 +258,7 @@ GEE registration file (register.GEE.xml) :
    * `name` name of the format
    * `mimetype` MIME type
    
-AppEEARS registration file (register.APPEEARS.xml) :
+AppEEARS and LP DAAC Data Pool registration files (register.APPEEARS.xml and register.LPDAACDATAPOOL.xml) :
 
 * `coord`
   * `coord_type` coordinate type supported by the product 
