@@ -104,6 +104,12 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("nonelongating_vegetative_tiller")
   }
   
+  if ("tiller_density" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$tiller_density
+    if (new.state$tiller_density < 0) analysis.save[[length(analysis.save)]] <- 100
+    names(analysis.save[[length(analysis.save)]]) <- c("tiller_density")
+  }
+  
   if ("phenological_stage" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$phenological_stage
     if (new.state$phenological_stage < 0) analysis.save[[length(analysis.save)]] <- 0.01

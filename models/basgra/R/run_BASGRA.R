@@ -131,7 +131,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         matrix_weather[ ,4] <- t_dmin # mean temperature (degrees Celsius)
         matrix_weather[ ,5] <- t_dmax # that's what they had in read_weather_Bioforsk
         
-        RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
+        RH <- ncdf4::ncvar_get(nc, "relative_humidity")  # %
         RH <- RH[ydays %in% simdays]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
      
@@ -304,11 +304,11 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   #calendar_Ndep[1,] <- c(1900,  1,0)
   #calendar_Ndep[2,] <- c(2100, 366, 0)
   
-  # hardcoding these for now, should be able to modify later on
+  # hardcoding these for now to be 0, should be able to modify later on
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
-  calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
-  calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
-  calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
+  calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 1900
+  calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 1980
+  calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 2100
   
   days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 3)
   # read in harvest days
@@ -396,6 +396,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILV")] 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "PHEN")] 
     
+    outlist[[length(outlist) + 1]] <- output[thisyear, which(outputNames == "TILG1")] + 
+      output[thisyear, which(outputNames == "TILG2")] + output[thisyear, which(outputNames == "TILV")]
+    
     # Soil Respiration in kgC/m2/s
     rsoil         <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
     outlist[[length(outlist)+1]]  <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
@@ -438,36 +441,38 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     dims <- list(lon = lon, lat = lat, time = t)
     
     nc_var <- list()
-    nc_var[[1]]   <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[2]]   <- PEcAn.utils::to_ncvar("CropYield", dims)
-    nc_var[[3]]   <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[4]]   <- ncdf4::ncvar_def("stubble_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("CropYield", dims)
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("stubble_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
                         longname = "Stubble Carbon Content")
-    nc_var[[5]]   <- ncdf4::ncvar_def("stem_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("stem_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
                                       longname = "Stem Carbon Content")
-    nc_var[[6]]   <- PEcAn.utils::to_ncvar("root_carbon_content", dims)
-    nc_var[[7]]   <- ncdf4::ncvar_def("reserve_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("root_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("reserve_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
                                       longname = "Reserve Carbon Content")
-    nc_var[[8]]   <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims)
-    nc_var[[9]]   <- ncdf4::ncvar_def("dead_leaf_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("dead_leaf_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
                                       longname = "Dead Leaf Carbon Content")
-    nc_var[[10]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
-    nc_var[[11]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    nc_var[[12]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    nc_var[[13]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Non-elongating generative tiller density") 
-    nc_var[[14]]  <- ncdf4::ncvar_def("elongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("elongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Elongating generative tiller density") 
-    nc_var[[15]]  <- ncdf4::ncvar_def("nonelongating_vegetative_tiller", units = "m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_vegetative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Non-elongating vegetative tiller density")
-    nc_var[[16]]  <- ncdf4::ncvar_def("phenological_stage", units = "-", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("phenological_stage", units = "-", dim = dims, missval = -999,
                                       longname = "Phenological stage")
-    nc_var[[17]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
-    nc_var[[18]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    nc_var[[19]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-    nc_var[[20]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    nc_var[[21]]  <- PEcAn.utils::to_ncvar("Qle", dims)
-    nc_var[[22]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("tiller_density", units = "m-2", dim = dims, missval = -999,
+                                                    longname = "Tiller density")
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("Qle", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
                                       longname = "Average Layer Soil Moisture")
     
     # ******************** Declare netCDF variables ********************#

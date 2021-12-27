@@ -101,6 +101,7 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("dead_leaf_carbon_content")
   }
   
+  # I'm not deleting the following but updating the overall tiller_density in SDA worked better, so use it instead in the SDA.xml
   if ("nonelongating_generative_tiller" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$nonelongating_generative_tiller[last]  # m-2
     names(forecast[[length(forecast)]]) <- c("nonelongating_generative_tiller")
@@ -115,6 +116,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$nonelongating_vegetative_tiller[last]  # m-2
     names(forecast[[length(forecast)]]) <- c("nonelongating_vegetative_tiller")
   } 
+  
+  if ("tiller_density" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$tiller_density[last]
+    names(forecast[[length(forecast)]]) <- c("tiller_density")
+  }
   
   if ("phenological_stage" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$phenological_stage[last]  
