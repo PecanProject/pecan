@@ -134,7 +134,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
         RH <- RH[ydays %in% simdays]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
-        #if(is.na(RH)) RH <- 80
+     
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
         matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100, digits = 2)
         
@@ -419,6 +419,11 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
                           PEcAn.data.atmosphere::get.lv()) / sec_in_day  
     
+    # SoilMoist (!!! only liquid water !!!) kg m-2
+    # during the groowing season its depth will mainly be equal to the rooting depth, but during winter its depth will be ROOTD-Fdepth
+    soilm <- output[thisyear, which(outputNames == "WAL")] # mm
+    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
+    
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
                           units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -462,6 +467,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     nc_var[[19]]  <- PEcAn.utils::to_ncvar("NEE", dims)
     nc_var[[20]]  <- PEcAn.utils::to_ncvar("GPP", dims)
     nc_var[[21]]  <- PEcAn.utils::to_ncvar("Qle", dims)
+    nc_var[[22]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
+                                      longname = "Average Layer Soil Moisture")
     
     # ******************** Declare netCDF variables ********************#
     
