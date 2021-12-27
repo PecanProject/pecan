@@ -285,6 +285,15 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         con = con
       )
     }
+  } else { # not exact dates
+    inputs <- db.query(
+        query = paste0(
+          "SELECT * FROM inputs WHERE site_id=", siteid,
+          " AND format_id=", formatid,
+          parent
+        ),
+        con = con
+    )
   }
 
   if (is.null(inputs) | length(inputs$id) == 0) {
@@ -771,13 +780,14 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
 
   ### Get BETY information ###
-  bety <- dplyr::src_postgres(
-    dbname = "bety",
-    host = "psql-pecan.bu.edu",
-    user = "bety",
-    password = "bety"
+  con <- db.open(
+    params = list(
+      driver = "Postgres",
+      dbname   = "bety",
+      host     = "psql-pecan.bu.edu",
+      user     = "bety",
+      password = "bety")
   )
-  con <- bety$con
 
   # get matching dbfiles from BETY
   dbfile.path <- dirname(full.old.file)

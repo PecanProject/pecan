@@ -95,9 +95,6 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         # there might not be a negative slope if non-negative variable, assign zero, move on
         suppressWarnings(if(length(beta_n) == 0) beta_n <- 0)
         
-        # weigh down log-likelihood calculation with neff
-        # if we had one beta value (no heteroscadasticity), we could've multiply n_eff*beta
-        # now need to multiply every term with n_eff/n 
         SS_p <- - log(2*beta_p) - resid[[1]][pos]/beta_p
         SS_n <- - log(2*beta_n) - resid[[1]][!pos]/beta_n
         suppressWarnings(if(length(SS_n) == 0) SS_n <- 0)

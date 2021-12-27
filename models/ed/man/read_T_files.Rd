@@ -10,6 +10,16 @@ read_T_files(yr, yfiles, tfiles, outdir, start_date, end_date, ...)
 \item{yr}{the year being processed}
 
 \item{yfiles}{the years on the filenames, will be used to matched tfiles for that year}
+
+\item{tfiles}{names of T files to be read}
+
+\item{outdir}{directory where output will be written to}
+
+\item{start_date}{start date in YYYY-MM-DD format}
+
+\item{end_date}{end date in YYYY-MM-DD format}
+
+\item{...}{additional arguments}
 }
 \description{
 Function for reading -T- files

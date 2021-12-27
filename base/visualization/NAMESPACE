@@ -3,5 +3,7 @@
 export(add_icon)
 export(ciEnvelope)
 export(map.output)
+export(plot_data)
 export(plot_netcdf)
 export(vwReg)
+importFrom(rlang,.data)
