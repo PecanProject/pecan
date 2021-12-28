@@ -156,7 +156,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
   }
   if (is.null(settings$assim.batch$chain)) {
     # Default
-    settings$assim.batch$chain <- 1
+    settings$assim.batch$chain <- 2
   }
   settings$assim.batch$chain <- as.numeric(settings$assim.batch$chain)
 
