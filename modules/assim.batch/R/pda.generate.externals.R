@@ -1,17 +1,9 @@
-##' helper function for syncing remote pda runs
-##' this function resembles remote.copy.from but we don't want to sync everything back
-##' 
-##' @param multi.settings PEcAn multi settings
-##' @param ensembleidlist ensemble id list for remote runs
-##' @param register if register==TRUE, the last files returned will be registered to the DB, TO BE DONE
-##' @export
-##' 
 ##' This is a helper function for preparing PDA external objects, but it doesn't cover all the cases yet, use it with care
 ##' You can use this function just to generate either one of the external.* PDA objects, but note that some args cannot be blank depending on what you aim to generate
 ##' @param external.data boolean, if TRUE function will generate external.data for PDA, then you need to pass varn and obs too, as well as align_method if different than "match_timestep"
 ##' @param obs your data as a(n ordered) list where each sublist corresponds to a data frame of your constraining variable with two columns, variable name - posix
 ##' IMPORTANT: your obs must be in the same units as PEcAn standards already, this function doesn't do unit conversions!
-##' IMPORTANT: your obs must be ready to compare with model outputs in general, i.e. if you're passing flux data it should already be ustar filtered
+##' IMPORTANT: your obs must be ready to compare with model outputs in general, e.g. if you're passing flux data it should already be ustar filtered
 ##' e.g.
 ##' obs[[1]]
 ##' NEE           posix 
@@ -48,13 +40,19 @@
 ##' @param model.out an example model output folder to align your data with model, e.g. "/data/workflows/PEcAn_15000000111/out/15000186876"
 ##' @param start_date the start date of the model.out run, e.g. "2017-01-01"
 ##' @param end_date the end date of the model.out run, e.g. "2018-12-31"
-##' @param external.formats todo
-##' @param external.priors todo
-##' @param prior.list list of prior data frames (one per pft, make sure the order is the same as it is in your <assim.batch> block), if you're using this make sure the targeted parameters are on the list
+##' @param external.formats boolean, if TRUE make sure to pass the varn argument
+##' @param external.priors boolean, if TRUE pass prior.list argument too
+##' @param prior.list a list of prior dataframes (one per pft, make sure the order is the same as it is in your <assim.batch> block), if you're using this make sure the targeted parameters are on the list
 ##' e.g.
-##' prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 0),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
+##' prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 1),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
 ##'                     data.frame(distn = c("unif", "unif"), parama = c(10, 4), paramb = c(40,27), n = rep(NA, 2), row.names = c("psnTOpt", "half_saturation_PAR")))
-##' @param external.knots todo
+##' @param external.knots boolean, if TRUE pass prior.list, ind.list, nknots OR knots.list arguments too
+##' @param knots.list a list of dataframes (one per pft) where each row is a parameter vector, i.e. training points for the emulator. 
+##' If not NULL these are used, otherwise knots will be generated using prior.list, ind.list and nknots.
+##' @param ind.list a named list of vectors (one per pft), where each vector indicates the indices of the parameters on the prior.list targeted in the PDA 
+##' e.g. ind.list <-  list(temperate.deciduous = c(2), temperate.conifer = c(1,2))
+##' @param nknots number of knots you want to train the emulator on
+##' @export
 ##' example
 ##'
 ##' pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, varn = "NEE", varid = 297, n_eff = 106.9386, external.formats = TRUE,
@@ -65,7 +63,7 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
                                     model_data_diag  = FALSE, model.out = NULL, start_date = NULL, end_date = NULL,
                                     external.formats = FALSE,
                                     external.priors  = FALSE, prior.list = NULL,
-                                    external.knots   = FALSE){
+                                    external.knots   = FALSE, knots.list = NULL){
   
   pda.externals <- list()
   ##################### external.data #####################
@@ -130,7 +128,7 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
   
   ##################### external.priors #####################
   if(external.priors){
-    if(is.null(varn)){
+    if(is.null(prior.list)){
       stop("If you want to generate external.priors, prior.list cannot be NULL.")
     }
     external.priors <- prior.list
@@ -139,7 +137,23 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
   
   ##################### external.knots #####################
   if(external.knots){
-    # to do
+    #todo: generate external knots from prior.list
+    if(is.null(knots.list) | (is.null(prior.list) & is.null(ind.list) & is.null(nknots))){
+      stop("If you want to generate external.knots, please pass either prior.list, ind.list and nknots OR knots.list cannot args.")
+    }else if(!is.null(knots.list)){
+      external.knots <- knots.list
+    }else if(!is.null(prior.list) & !is.null(ind.list) & !is.null(nknots)){
+      prior.fcnx <- lapply(prior.list, pda.define.prior.fn)
+      knots.list <- lapply(seq_along(prior.list),
+                           function(x) pda.generate.knots(nknots, sf = NULL,
+                                                          n.param.all = nrow(prior.list[[x]]),
+                                                          prior.ind = ind.list[[x]],
+                                                          prior.fn = prior.fcnx[[x]],
+                                                          pname = row.names(prior.list[[x]])))
+      names(knots.list) <- names(ind.list)
+      external.knots <- lapply(knots.list, `[[`, "params")
+    }
+    
   }
   pda.externals$external.knots <- external.knots
 

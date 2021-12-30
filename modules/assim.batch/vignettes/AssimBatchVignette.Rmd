@@ -377,16 +377,38 @@ We will check out the `<assim.batch>` block for MH-MCMC and the DREAMzs (recomme
 
 ## 3. Own data with emulator
 
-Sometimes you might want to use your own local data (e.g. from a tower that is not necessarily part of any flux tower network PEcAn has access to, or some chamber measurements etc.) in constraining your model. Although we still do recommend using formal PEcAn data registration and processing pipelines, sometimes you may not have access to the DB and/or may want to bypass other data processing steps to perform a quick PDA analysis to plan ahead. In that case, you can use `external.*` arguments of the `pda.emulator()` function. You can prepare the `external.*` arguments manually, but the easiest way to generate them is to use `pda.generate.externals()` function that you can find under the script with the same name:
+Sometimes you might want to use your own local data (e.g. from a tower that is not necessarily part of any flux tower network PEcAn has access to, or some chamber measurements etc.) for constraining your model. Although we still do recommend using formal PEcAn data registration and processing pipelines, sometimes you may not have access to the DB and/or may want to bypass other data processing steps to perform a quick PDA analysis to plan ahead. In that case, you can use `external.*` arguments of the `pda.emulator()` function. You can prepare the `external.*` arguments manually, but the easiest way to generate them is to use `pda.generate.externals()` function that you can find under the script with the same name. `pda.emulator()` function accepts the following `external.*` arguments:
 
 * `external.data` This is a list containing your constraining variables in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). *Hint: You may want to perform case #1 and load the `history.pda` file to check the format of the `inputs` object out, because if `external.data` is passed to the `pda.emulator()` it will simply be assined to this variable, `inputs <- external.data`.* To be able to prepare `external.data` with the `pda.generate.externals()` function you need your data as a(n ordered) list where each sublist corresponds to a data frame of your constraining variable with two columns, variable name - posix.
 
-* `external.formats` This is a list of variable names in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). Depending on expressions provided in this object, PDA functions are capable of performing simple derivations on data. Hence, this list has a slightly more complex structure than a simple list of names, but don't worry about it. To be able to prepare `external.formats` with the `pda.generate.externals()` it is enough to pass `varn` vector that has the standard variable names (when in doubt check the standard variable naes under `/base/utils/data/standard_vars.csv`).
+* `external.formats` This is a list of variable names in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). Depending on expressions provided in this object, PDA functions are capable of performing simple derivations on data. Hence, this list has a slightly more complex structure than a simple list of names, but don't worry about it. To be able to prepare `external.formats` with the `pda.generate.externals()` it is enough to pass `varn` vector that has the standard variable names (when in doubt, check the standard variable names under `/base/utils/data/standard_vars.csv`).
 
-* `external.priors` To do.
+* `external.priors` This is a list of pecan probability distribution dataframes to be used as PDA priors, e.g.:
+```
+[[1]]
+                       distn parama  paramb  n
+frozenSoilEff           beta  1.000    1.00 NA
+soilRespMoistEffect     unif  0.000    2.00 NA
+...
 
-* `external.knots` To do.
+[[2]]
+                              distn      parama       paramb   n
+growth_resp_factor             beta       2.630      6.5e+00   0
+root_respiration_rate          norm       8.700      9.5e-01  NA
+...
+```
 
+* `external.knots` This is a list of dataframes containing emulator training points. Only pass it if you want to build the emulator on specific knots that you want to have control over, otherwise knots are generated from the PDA priors using Latin Hypercube Sampling. Each sublist should be a `nknot x nPFTparam` dataframe, e.g. if you are building amulator with 250 knots and your PFT has 30 parameters, this will be a 250 x 30 dataframe where each row is a parameter vector. Therefore only the columns of parameters that you are targeting in PDA should have varying parameter values. E.g. if you are calibrating the `psnTOpt` parameter, it would look like this:
+```
+> external.knots
+$temperate.deciduous
+        ...  half_saturation_PAR fine_root_respiration_Q10   psnTOpt  AmaxFrac   ...
+  [1,]  ...                 15.5                       3.2  24.83626 0.8605507   ...   
+  [2,]  ...                 15.5                       3.2  25.18056 0.8605507   ...
+  [3,]  ...                 15.5                       3.2  26.10204 0.8605507   ...
+  [4,]  ...                 15.5                       3.2  25.03353 0.8605507   ...
+   ...  ...                 ...                        ...       ...       ...   ...
+```
 Once you prepare `external.data` and `external.format`, now you can omit the `<input.id></input.id>` and `<path></path>` tags in the `<assim.batch>` block (they will be ignored even if you pass them when `external.data` is not NULL:
 ```
  <assim.batch>
@@ -423,7 +445,7 @@ Save and read your `pecan.PDA.xml` accordingly. Next Then pass the external data
 
 ```
 settings <- read.settings("pecan.PDA.xml")
-pda.externals <-  pda.generate.externals(external.data = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE) # see above for this function
+pda.externals <-  pda.generate.externals(external.data = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE) 
 settings_postPDA <- pda.emulator(settings, external.data = pda.externals$external.data, external.formats = pda.externals$external.formats)
 ```
 
