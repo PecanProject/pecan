@@ -90,7 +90,8 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     inputs <- external.data
   }
   n.input <- length(inputs)
-
+  inputs[[1]]$n_eff <- 20000
+  
   # get hyper parameters if any
   hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
 
@@ -111,6 +112,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   prior.ind <- lapply(seq_along(settings$pfts),
                       function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
   n.param   <- sapply(prior.ind, length)
+  
 
   ## NOTE: The listed samplers here require more than 1 parameter for now because of the way their
   ## cov is calculated
@@ -166,6 +168,14 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   ## Create prior class object for BayesianTools
   bt.prior      <- pda.create.btprior(prior.sel)
 
+  if(is.null(external.formats)){
+    external.formats <- list()
+    for(it in seq_len(n.input)){
+      external.formats[[it]] <- PEcAn.DB::query.format.vars(bety = con,
+                                            input.id = settings$assim.batch$inputs[[it]]$input.id)
+    }
+  }
+  
   ## Create log-likelihood function for createbayesianSetup{BayesianTools}
   ## you test with bt.likelihood(bt.prior$sampler())
   bt.likelihood <- function(x) {
@@ -179,16 +189,16 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     }
     run.params <- list(run.params)
 
-    now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
+    now <- format(Sys.time(), "%Y%m%d%H%M%OS4")
 
-    run.id <- pda.init.run(settings, con, my.write.config, workflow.id, run.params, n = 1, run.names = paste("run",
+    run.id <- pda.init.run(settings, NULL, my.write.config, workflow.id, run.params, n = 1, run.names = paste("run",
                                                                                                              now, sep = "."))
 
     ## Start model run
-    PEcAn.remote::start.model.runs(settings, (as.logical(settings$database$bety$write) & !remote))
+    PEcAn.remote::start.model.runs(settings, FALSE)
     
     ## Read model outputs
-    align.return <- pda.get.model.output(settings, run.id, con, inputs, external.formats)
+    align.return <- pda.get.model.output(settings, run.id, NULL, inputs, external.formats)
     model.out <- align.return$model.out
     if(all(!is.na(model.out))){
       inputs <- align.return$inputs
@@ -217,7 +227,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     }
 
     ## calculate error statistics
-    pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
+    pda.errors <- pda.calc.error(settings, NULL, model_out = model.out, run.id, inputs, all.bias)
     llik.par <- pda.calc.llik.par(settings, n = n.of.obs,
                                   error.stats = unlist(pda.errors),
                                   hyper.pars)
@@ -231,7 +241,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   bt.settings <- pda.settings.bt(settings)
 
   ## Create bayesianSetup object for BayesianTools
-  bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, parallel = bt.settings$parallel)
+  bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, parallel = FALSE)
 
 
   if (!is.null(settings$assim.batch$extension)) {
@@ -239,11 +249,30 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     out <- BayesianTools::runMCMC(bayesianSetup = out, sampler = sampler, settings = bt.settings)
   } else {
     ## central function in BayesianTools
-    out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
+    ## out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
+    
+    nChains <-  bt.settings$nrChains
+    bt.settings$nrChains <-  1
     
     # prepare for parallelization
-    #dcores <- parallel::detectCores() - 1
-    #ncores <- min(max(dcores, 1), length(SS))
+    dcores <- parallel::detectCores() - 1
+    ncores <- min(max(dcores, 1), nChains)
+    
+    PEcAn.logger::logger.info("MCMC started. Please wait.")
+    
+    cl <- parallel::makeCluster(ncores, type="FORK")
+    parallel::clusterEvalQ(cl, library(BayesianTools))
+    
+    ## Parallel over chains
+    out <- parallel::parLapply(cl, seq_len(ncores), function(x){
+      out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
+      return(out)
+    }) 
+      
+    parallel::stopCluster(cl)
+    
+    ## Combine the chains
+    out <- BayesianTools::createMcmcSamplerList(out)
   }
 
   # save the out object for restart functionality and further inspection
@@ -253,13 +282,9 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
                                                     ".Rdata"))
   save(out, file = settings$assim.batch$out.path)
 
-  ## Combine the chains
-  out <- BayesianTools::createMcmcSamplerList(out)
   # prepare for post-process
-  samples   <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE)  # getSample{BayesianTools}
+  samples   <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE)  # BayesianTools::getSample
   mcmc.list <- lapply(samples, `colnames<-`, pname.all[prior.ind.all])
-
-  mcmc.list <- list(samples)
 
   # Separate each PFT's parameter samples to their own list
   mcmc.param.list <- list()

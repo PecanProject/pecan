@@ -85,7 +85,7 @@ pda.create.btprior <- function(prior.sel) {
 ##' @title Apply settings for BayesianTools
 ##' @param settings PEcAn settings
 ##'
-##' @return bt.settings list of runMCMC{BayesianTools} settings
+##' @return bt.settings list of BayesianTools::runMCMC settings
 ##'
 ##' @author Istem Fer
 ##' @export
@@ -101,15 +101,6 @@ pda.settings.bt <- function(settings) {
   chain <- ifelse(!is.null(settings$assim.batch$bt.settings$chain), 
                   as.numeric(settings$assim.batch$bt.settings$chain),
                   2)
-  
-  if(!is.null(settings$assim.batch$bt.settings$parallel)){
-    parallel <- ifelse(as.logical(settings$assim.batch$bt.settings$parallel) == TRUE, 
-                    'external',
-                    FALSE)
-  }else{
-    parallel <- FALSE
-  }
-
   
   optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
                      settings$assim.batch$bt.settings$optimize, 
@@ -133,7 +124,8 @@ pda.settings.bt <- function(settings) {
   } else {
     gibbsProbabilities <- NULL
   }
-  
+
+  # currently parallelize over whole chains using parLapply
   if (sampler == "Metropolis") {
     bt.settings <- list(iterations = iterations,
                         nrChains = chain,
@@ -142,13 +134,13 @@ pda.settings.bt <- function(settings) {
                         adapt = adapt, 
                         adaptationNotBefore = adaptationNotBefore,
                         gibbsProbabilities = gibbsProbabilities,
-                        parallel = parallel)
+                        parallel = FALSE)
   } else if (sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings <- list(iterations = iterations, startValue = "prior", parallel = parallel)
+    bt.settings <- list(iterations = iterations, startValue = "prior", parallel = FALSE)
   } else if (sampler %in% c("DE", "DEzs", "DREAM", "DREAMzs", "Twalk")) {
-    bt.settings <- list(iterations = iterations, nrChains = chain, parallel = parallel)
+    bt.settings <- list(iterations = iterations, nrChains = chain, parallel = FALSE)
   } else if (sampler == "SMC") {
-    bt.settings <- list(initialParticles = list("prior", iterations), parallel = parallel)
+    bt.settings <- list(initialParticles = list("prior", iterations), parallel = FALSE)
   } else {
     PEcAn.logger::logger.error(paste0(sampler, " sampler not found!"))
   }
