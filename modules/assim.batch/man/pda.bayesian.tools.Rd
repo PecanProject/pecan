@@ -26,6 +26,14 @@ pda.bayesian.tools(
 \arguments{
 \item{settings}{= a pecan settings list}
 
+\item{external.data}{list of external inputs}
+
+\item{external.priors}{list of external priors}
+
+\item{external.formats}{bety formats used when function is used without a DB connection, e.g. remote}
+
+\item{ensemble.id}{ensemble IDs}
+
 \item{params.id}{id of pars}
 
 \item{param.names}{names of pars}
@@ -44,7 +52,7 @@ pda.bayesian.tools(
 
 \item{jvar}{jump variance}
 
-\item{n.knot}{number of knots requested}
+\item{external.knots}{list of external knots}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions

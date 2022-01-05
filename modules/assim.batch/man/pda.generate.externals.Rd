@@ -21,7 +21,9 @@ pda.generate.externals(
   external.priors = FALSE,
   prior.list = NULL,
   external.knots = FALSE,
-  knots.list = NULL
+  knots.list = NULL,
+  ind.list = NULL,
+  nknots = NULL
 )
 }
 \arguments{

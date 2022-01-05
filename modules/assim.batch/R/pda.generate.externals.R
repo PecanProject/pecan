@@ -63,7 +63,7 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
                                     model_data_diag  = FALSE, model.out = NULL, start_date = NULL, end_date = NULL,
                                     external.formats = FALSE,
                                     external.priors  = FALSE, prior.list = NULL,
-                                    external.knots   = FALSE, knots.list = NULL){
+                                    external.knots   = FALSE, knots.list = NULL, ind.list = NULL, nknots = NULL){
   
   pda.externals <- list()
   ##################### external.data #####################

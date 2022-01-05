@@ -3,6 +3,11 @@
 ##'
 ##' @title Paramater Data Assimilation using BayesianTools
 ##' @param settings = a pecan settings list
+##' @param external.data  list of external inputs
+##' @param external.priors  list of external priors
+##' @param external.knots  list of external knots
+##' @param external.formats bety formats used when function is used without a DB connection, e.g. remote
+##' @param ensemble.id ensemble IDs
 ##' @param params.id id of pars
 ##' @param param.names names of pars
 ##' @param prior.id ids of priors
@@ -12,7 +17,6 @@
 ##' @param adj.min to be used in adjustment
 ##' @param ar.target acceptance rate target
 ##' @param jvar jump variance
-##' @param n.knot number of knots requested
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
