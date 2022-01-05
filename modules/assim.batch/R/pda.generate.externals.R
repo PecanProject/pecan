@@ -178,8 +178,8 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
       obvz <- dat[,colnames(dat) == paste0(varn[i],".o"), drop = FALSE][[1]]
       modz <- dat[,colnames(dat) == paste0(varn[i],".m"), drop = FALSE][[1]]
       plot(obvz, main = "Model & data", ylab = varn[i], ylim = range(c(obvz, modz), na.rm = TRUE))
-      points(modz, col = "red", pch = "+")
-      legend("topleft", legend=c("model", "data"), pch=c("+", "o"), col=c("red", "black"))
+      graphics::points(modz, col = "red", pch = "+")
+      graphics::legend("topleft", legend=c("model", "data"), pch=c("+", "o"), col=c("red", "black"))
       model_data_diag[[i]] <-  dat
     }
   }
