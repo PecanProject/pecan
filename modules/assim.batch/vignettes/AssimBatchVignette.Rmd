@@ -116,7 +116,6 @@ You can inspect your `write.config.MODEL.R` script for standard parameter names 
            NOTE : `<param.names>` chunk should always be on your xml file regardless of the method you use in the PDA.
            
 * `<inputs>` Observation (constraint) data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating flux datasets numerous times using the NEE/FC or LE variables. 
-
      
     + `<file>` [REVISE] Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in `<variable.id>` and `<variable.name>` :
     
@@ -157,18 +156,15 @@ You can inspect your `write.config.MODEL.R` script for standard parameter names 
     + `<source>` A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no `<id>` or `<path>` is given.
       + `<likelihood>` Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood. 
       + `<hyper.pars>` Optional. Hyperparameters for your likelihood. E.g. Prior parameters of the precision for Gaussian likelihood. Defaults to scaled values if not provided. 
+      + `<ss.positive>` When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound. 
       + `<variable.id>` The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default `<likelihood>` to variable.id values (allowing `<likelihood>` to be omitted from pecan.xml). 
       
            NOTE : `<inputs>` chunk should always be on your xml file regardless of the method you use in the PDA.
-           
            
 * `<jump>` Settings for the specifics of the proposal schema and adaptation functionality. 
      + `<ar.target>` Target acceptance rate for the adaptive jump algorithm. Defaults to 0.5 if missing. 
      + `<adapt>` Number of iterations between jump variance adaptations. Defaults to `floor(iter/10)` if missing. If set equal to the number of `<iter>`, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality.
      + `<adj.min>` Minimum factor by which to reduce jump variance when adapting. Prevents jump variances from degenerating to 0. Defaults to 0.1 if missing. 
-* `<diag.plot.iter>` Interval between saving diagnostic plots. Omit or set to NULL to skip them.
-* `<params.id>` (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into `<params.id>`. The `pda.mcmc()` funtion returns the `<assim.batch>` settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC. 
-
 
 
 ## Method specific settings
@@ -396,31 +392,30 @@ The name of the chosen sampler would be passed under `<sampler>` tag within the 
   ...
 ```
 
-We will check out the `<assim.batch>` block for MH-MCMC and the DREAMzs (recommended) algorithms. To make sure everything works fine, initially set `<iter>` to some small number like 100 though.
+The rest of the `<assim.batch>` block is the same. Below is an example for DREAMzs (recommended) algorithm. To make sure everything works fine, you may choose to initially set `<iter>` to some small number like 100:
 ```
  <assim.batch>
    <method>bayesian.tools</method>
    <bt.settings>
      <sampler>DREAMzs</sampler>
-     <iter>100000</iter>
+     <iter>10000</iter>
+     <chain>3</chain>
    </bt.settings>
   <param.names>
+   <soil>
+    <param>som_respiration_rate</param>
+   </soil>
    <boreal.coniferous>
     <param>psnTOpt</param>
     <param>half_saturation_PAR</param>
     <param>Vm_low_temp</param>
    </boreal.coniferous>
   </param.names>
-  <jump>
-   <adapt>250</adapt>
-    <adj.min>0.1</adj.min>
-    <ar.target>0.3</ar.target>
-  </jump>
   <inputs>
    <file>
-    <input.id>15000000028</input.id>  
+    <input.id>15000000028</input.id>   
     <path>
-     <path>/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path>  
+     <path>/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path> 
     </path>
     <likelihood>Laplace</likelihood>
     <variable.id>297</variable.id>
@@ -432,6 +427,7 @@ We will check out the `<assim.batch>` block for MH-MCMC and the DREAMzs (recomme
   </inputs>
  </assim.batch>
 ```
+
 
 ## 3. Own data with emulator
 
@@ -528,31 +524,7 @@ Two more notes here before moving onto the next case. Above, in the `prior.list`
 ## TODO
 
 
-If you want to extend your previous *bruteforce* and *bruteforce.bs* MCMC-chains, you can add an `<extension>` tag within your `<assim.batch>` chunk after reading your post-PDA settings (which would be saved as "pecan.pda[UNIQUE_ID].xml" in your working directory) and set it to "longer". 
 
-```
-  ...
-  <method>bruteforce.bs</method>
-  <iter>10000</iter>
-  <method>bruteforce</method>
-  <chain>3</chain>
-  <extension>longer</extension>
-  ...
-```
-
-If you are using methods other than *bruteforce* and *bruteforce.bs*, some additional tags and different settings may apply. 
-
-**emulator** would use additional tags:
-```
-  ...
-  <method>emulator</method>
-  <n.knot>20</n.knot>
-  <GPpckg>GPfit</GPpckg>
-  <chain>3</chain>
-  <extension>round</extension>
-  <knot.par>0.75</knot.par>
-  ...
-```
 * `<n.knot>` Specifies the number of locations in parameter space to be sampled by the Latin Hypercube design. These locations are where the model will actually be run. In other words the model will be run for `<n.knots>` times. 
 
 * `<GPpckg>` Specifies which R package to use for fitting a Gaussian process to interpolate the likelihood surface in between the calculated values that are obtained from actual model runs. Current options are `kernlab` and `GPfit` (recommended). 
@@ -583,42 +555,3 @@ If you are using methods other than *bruteforce* and *bruteforce.bs*, some addit
 
 * `<ss.positive>` When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound. 
 
-**bayesian.tools** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
-
-* Metropolis
-     + Standard MH-MCMC
-     + With pre-optimization
-     + Adaptive MCMC
-     + Delayed rejection
-     + Gibbs updating
-* M : Another implementation of standard MH-MCMC.
-* AM : Adaptive Metropolis
-* DR : Delayed Rejection
-* DRAM : Delayed Rejection Adaptive Metropolis
-* DE : Differential Evolution 
-* DEzs : Differential Evolution with a snooker updater
-* DREAM : Differential Evolution Adaptive Metropolis 
-* DREAMzs : Differential Evolution Adaptive Metropolis with a snooker updater
-* Twalk : "traverse" or "thoughtful" walk, a general purpose sampling algorithm
-* SMC : Sequential Monte Carlo
-
-The name of the chosen sampler would be passed under `<sampler>` tag within the `<bt.settings>` block :
-
-It is not possible to use some of the samplers in this package for univariate cases. The ones that you can use for univariate cases are: "Metropolis", "DE", "DEzs" and "Twalk".
-
-For Metropolis variations:
-```
-  ...
-  <method>bayesian.tools</method>
-  <bt.settings>
-    <iter>10000</iter>
-    <sampler>Metropolis</sampler>
-    <DRlevels>1</DRlevels>                               <-- set 2 for Delayed Rejection
-    <optimize>FALSE</optimize>                           <-- set TRUE for pre-optimization
-    <adapt>FALSE</adapt>                                 <-- set TRUE for Adaptive Metropolis
-    <adaptationNotBefore>500</adaptationNotBefore>       <-- set for Adaptive Metropolis
-  </bt.settings>
-  ...
-```
-
-Some of the samplers are also restartable : "Metropolis", "DE", "DEzs", "DREAM", "DREAMzs", "Twalk"

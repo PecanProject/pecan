@@ -17,10 +17,8 @@ assim.batch <- function(settings) {
     settings$assim.batch$method <- "bruteforce.bs"
   }
 
-  if (settings$assim.batch$method == "bruteforce") {
-    settings <- pda.mcmc(settings)
-  } else if (settings$assim.batch$method == "bruteforce.bs") {
-    settings <- pda.mcmc.bs(settings)
+  if (settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs") {
+    PEcAn.logger::logger.severe(paste0("PDA method ", settings$assim.batch$method, " is no longer maintained. Please use one of the 'emulator' or 'bayesian.tools' options."))
   } else if (settings$assim.batch$method == "emulator") {
     settings <- pda.emulator(settings)
   } else if (settings$assim.batch$method == "bayesian.tools") {
@@ -223,11 +221,6 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
     settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
     # have to add names or listToXml() won't work
     names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
-  }
-
-  # diag.plot.iter: How often to do diagnostic plots. Just need to convert to numeric.
-  if (!is.null(settings$assim.batch$diag.plot.iter)) {
-    settings$assim.batch$diag.plot.iter <- as.numeric(settings$assim.batch$diag.plot.iter)
   }
 
   return(settings)

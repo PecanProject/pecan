@@ -49,7 +49,24 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     run.normal <- FALSE
     run.longer <- TRUE
   }
+  
+  # load inputs with neff if this is another round
+  if(!run.normal){
+    external_data_path <- file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata"))
+    if(file.exists(external_data_path)){
+      load(external_data_path)
+      # and delete the file afterwards because it will be re-written with a new ensemble id in the end
+      file.remove(external_data_path)
+    }
+  }
 
+  if(!remote){
+    settings_outdir  <- settings$outdir
+  }else{
+    settings_outdir  <- dirname(settings$host$rundir)
+    settings_outdir  <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
+  }
+  
   ## -------------------------------------- Setup -------------------------------------
   ## Handle settings
   settings <- pda.settings(
@@ -90,7 +107,6 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     inputs <- external.data
   }
   n.input <- length(inputs)
-  inputs[[1]]$n_eff <- 20000
   
   # get hyper parameters if any
   hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
@@ -168,6 +184,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   ## Create prior class object for BayesianTools
   bt.prior      <- pda.create.btprior(prior.sel)
 
+  ## Let's not write every bruteforce run to DB for now, also DB con might be an issue in parallelizing
   if(is.null(external.formats)){
     external.formats <- list()
     for(it in seq_len(n.input)){
@@ -189,7 +206,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     }
     run.params <- list(run.params)
 
-    now <- format(Sys.time(), "%Y%m%d%H%M%OS4")
+    now <- format(Sys.time(), "%Y%m%d%H%M%OS5")
 
     run.id <- pda.init.run(settings, NULL, my.write.config, workflow.id, run.params, n = 1, run.names = paste("run",
                                                                                                              now, sep = "."))
@@ -243,23 +260,29 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   ## Create bayesianSetup object for BayesianTools
   bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, parallel = FALSE)
 
-
+  PEcAn.logger::logger.info("MCMC starting. Please wait.")
+  
+  nChains <-  bt.settings$nrChains
+  bt.settings$nrChains <-  1
+  
+  # prepare for parallelization
+  dcores <- parallel::detectCores() - 1
+  ncores <- min(max(dcores, 1), nChains)
+  
   if (!is.null(settings$assim.batch$extension)) {
     load(settings$assim.batch$out.path)  # loads previous out list
-    out <- BayesianTools::runMCMC(bayesianSetup = out, sampler = sampler, settings = bt.settings)
+
+    cl <- parallel::makeCluster(ncores, type="FORK")
+    parallel::clusterEvalQ(cl, library(BayesianTools))
+    
+    ## Parallel over chains
+    out <- parallel::parLapply(cl, out, function(x){
+      out <- BayesianTools::runMCMC(bayesianSetup = x, sampler = sampler, settings = bt.settings)
+      return(out)
+    }) 
+    
   } else {
-    ## central function in BayesianTools
-    ## out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
-    
-    nChains <-  bt.settings$nrChains
-    bt.settings$nrChains <-  1
-    
-    # prepare for parallelization
-    dcores <- parallel::detectCores() - 1
-    ncores <- min(max(dcores, 1), nChains)
-    
-    PEcAn.logger::logger.info("MCMC started. Please wait.")
-    
+
     cl <- parallel::makeCluster(ncores, type="FORK")
     parallel::clusterEvalQ(cl, library(BayesianTools))
     
@@ -269,11 +292,12 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
       return(out)
     }) 
       
-    parallel::stopCluster(cl)
-    
-    ## Combine the chains
-    out <- BayesianTools::createMcmcSamplerList(out)
   }
+  
+  parallel::stopCluster(cl)
+  
+  ## Combine the chains
+  out <- BayesianTools::createMcmcSamplerList(out)
 
   # save the out object for restart functionality and further inspection
   settings$assim.batch$out.path <- file.path(settings$outdir,
@@ -281,6 +305,14 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
                                                     settings$assim.batch$ensemble.id,
                                                     ".Rdata"))
   save(out, file = settings$assim.batch$out.path)
+  
+  # save inputs list, this object has been processed for autocorrelation correction
+  # this can take a long time depending on the data, re-load and skip in next iteration
+  external.data <- inputs
+  save(external.data, file = file.path(settings_outdir,
+                                       paste0("external.",
+                                              settings$assim.batch$ensemble.id,
+                                              ".Rdata")))
 
   # prepare for post-process
   samples   <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE)  # BayesianTools::getSample
