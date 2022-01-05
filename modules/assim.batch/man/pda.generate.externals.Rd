@@ -2,8 +2,8 @@
 % Please edit documentation in R/pda.generate.externals.R
 \name{pda.generate.externals}
 \alias{pda.generate.externals}
-\title{helper function for syncing remote pda runs
-this function resembles remote.copy.from but we don't want to sync everything back}
+\title{This is a helper function for preparing PDA external objects, but it doesn't cover all the cases yet, use it with care
+You can use this function just to generate either one of the external.* PDA objects, but note that some args cannot be blank depending on what you aim to generate}
 \usage{
 pda.generate.externals(
   external.data = FALSE,
@@ -20,7 +20,8 @@ pda.generate.externals(
   external.formats = FALSE,
   external.priors = FALSE,
   prior.list = NULL,
-  external.knots = FALSE
+  external.knots = FALSE,
+  knots.list = NULL
 )
 }
 \arguments{
@@ -28,7 +29,7 @@ pda.generate.externals(
 
 \item{obs}{your data as a(n ordered) list where each sublist corresponds to a data frame of your constraining variable with two columns, variable name - posix
 IMPORTANT: your obs must be in the same units as PEcAn standards already, this function doesn't do unit conversions!
-IMPORTANT: your obs must be ready to compare with model outputs in general, i.e. if you're passing flux data it should already be ustar filtered
+IMPORTANT: your obs must be ready to compare with model outputs in general, e.g. if you're passing flux data it should already be ustar filtered
 e.g.
 obs[\link{1}]
 NEE           posix
@@ -75,29 +76,26 @@ as well as plot a quick & dirty timerseries graph}
 
 \item{end_date}{the end date of the model.out run, e.g. "2018-12-31"}
 
-\item{external.formats}{todo}
+\item{external.formats}{boolean, if TRUE make sure to pass the varn argument}
 
-\item{external.priors}{todo}
+\item{external.priors}{boolean, if TRUE pass prior.list argument too}
 
-\item{prior.list}{list of prior data frames (one per pft, make sure the order is the same as it is in your <assim.batch> block), if you're using this make sure the targeted parameters are on the list
+\item{prior.list}{a list of prior dataframes (one per pft, make sure the order is the same as it is in your <assim.batch> block), if you're using this make sure the targeted parameters are on the list
 e.g.
-prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 0),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
+prior.list <-  list(data.frame(distn = c("norm", "beta"), parama = c(4, 1),  paramb = c(7,2),   n = rep(NA, 2), row.names = c("growth_resp_factor", "leaf_turnover_rate")),
 data.frame(distn = c("unif", "unif"), parama = c(10, 4), paramb = c(40,27), n = rep(NA, 2), row.names = c("psnTOpt", "half_saturation_PAR")))}
 
-\item{external.knots}{todo
-example
+\item{external.knots}{boolean, if TRUE pass prior.list, ind.list, nknots OR knots.list arguments too}
 
-pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, varn = "NEE", varid = 297, n_eff = 106.9386, external.formats = TRUE,
-model_data_diag = TRUE, model.out = "/data/workflows/PEcAn_15000000111/out/15000186876",
-start_date = "2017-01-01", end_date = "2018-12-31")}
+\item{knots.list}{a list of dataframes (one per pft) where each row is a parameter vector, i.e. training points for the emulator.
+If not NULL these are used, otherwise knots will be generated using prior.list, ind.list and nknots.}
 
-\item{multi.settings}{PEcAn multi settings}
+\item{ind.list}{a named list of vectors (one per pft), where each vector indicates the indices of the parameters on the prior.list targeted in the PDA
+e.g. ind.list <-  list(temperate.deciduous = c(2), temperate.conifer = c(1,2))}
 
-\item{ensembleidlist}{ensemble id list for remote runs}
-
-\item{register}{if register==TRUE, the last files returned will be registered to the DB, TO BE DONE}
+\item{nknots}{number of knots you want to train the emulator on}
 }
 \description{
-helper function for syncing remote pda runs
-this function resembles remote.copy.from but we don't want to sync everything back
+This is a helper function for preparing PDA external objects, but it doesn't cover all the cases yet, use it with care
+You can use this function just to generate either one of the external.* PDA objects, but note that some args cannot be blank depending on what you aim to generate
 }

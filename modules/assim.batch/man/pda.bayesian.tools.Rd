@@ -6,6 +6,10 @@
 \usage{
 pda.bayesian.tools(
   settings,
+  external.data = NULL,
+  external.priors = NULL,
+  external.formats = NULL,
+  ensemble.id = NULL,
   params.id = NULL,
   param.names = NULL,
   prior.id = NULL,
@@ -15,7 +19,8 @@ pda.bayesian.tools(
   adj.min = NULL,
   ar.target = NULL,
   jvar = NULL,
-  n.knot = NULL
+  remote = FALSE,
+  ...
 )
 }
 \arguments{

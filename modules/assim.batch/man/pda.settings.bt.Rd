@@ -10,7 +10,7 @@ pda.settings.bt(settings)
 \item{settings}{PEcAn settings}
 }
 \value{
-bt.settings list of runMCMC{BayesianTools} settings
+bt.settings list of BayesianTools::runMCMC settings
 }
 \description{
 Helper function for applying BayesianTools specific settings from PEcAn general settings
