@@ -105,35 +105,38 @@ pda.settings.bt <- function(settings) {
   optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
                      settings$assim.batch$bt.settings$optimize, 
                      TRUE)
-  # consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates),
-  # as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  
   adapt <- ifelse(!is.null(settings$assim.batch$bt.settings$adapt), 
                   settings$assim.batch$bt.settings$adapt, 
                   TRUE)
+  
   adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval),
                               as.numeric(settings$assim.batch$bt.settings$adaptationInverval),
                               max(round(iterations/100*5),100))
+  
   adaptationNotBefore <- ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 adaptationInverval)
+  
   DRlevels <- ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels),
                      as.numeric(settings$assim.batch$bt.settings$DRlevels), 
                      1)
+  
   if (!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) {
     gibbsProbabilities <- as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
   } else {
     gibbsProbabilities <- NULL
   }
 
-  # currently parallelize over whole chains using parLapply
+  # parallel always FALSE because currently we parallelize over whole chains using parLapply
   if (sampler == "Metropolis") {
-    bt.settings <- list(iterations = iterations,
-                        nrChains = chain,
-                        optimize = optimize, 
-                        DRlevels = DRlevels, 
-                        adapt = adapt, 
+    bt.settings <- list(iterations          = iterations,
+                        nrChains            = chain,
+                        optimize            = optimize, 
+                        DRlevels            = DRlevels, 
+                        adapt               = adapt, 
                         adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities,
+                        gibbsProbabilities  = gibbsProbabilities,
                         parallel = FALSE)
   } else if (sampler %in% c("AM", "M", "DRAM", "DR")) {
     bt.settings <- list(iterations = iterations, startValue = "prior", parallel = FALSE)

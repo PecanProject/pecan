@@ -59,13 +59,6 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
       file.remove(external_data_path)
     }
   }
-
-  if(!remote){
-    settings_outdir  <- settings$outdir
-  }else{
-    settings_outdir  <- dirname(settings$host$rundir)
-    settings_outdir  <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
-  }
   
   ## -------------------------------------- Setup -------------------------------------
   ## Handle settings
@@ -150,6 +143,13 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     settings$assim.batch$ensemble.id <- ensemble.id
   }
 
+  if(!remote){
+    settings_outdir  <- settings$outdir
+  }else{
+    settings_outdir  <- dirname(settings$host$rundir)
+    settings_outdir  <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
+  }
+  
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 

@@ -13,7 +13,7 @@
 <meta name="author" content="Istem Fer" />
 <meta name="author" content="Ryan Kelly" />
 
-<meta name="date" content="2021-11-15" />
+<meta name="date" content="2022-01-05" />
 
 <title>PEcAn.assim.batch Vignette</title>
 
@@ -320,7 +320,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">PEcAn.assim.batch Vignette</h1>
 <h4 class="author">Istem Fer</h4>
 <h4 class="author">Ryan Kelly</h4>
-<h4 class="date">November 15, 2021</h4>
+<h4 class="date">January 5, 2022</h4>
 
 
 
@@ -359,33 +359,37 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
     &lt;param&gt;PARAM2&lt;/param&gt;
    &lt;/temperate.coniferous&gt;
   &lt;/param.names&gt;
+  &lt;jump&gt;
+   &lt;adapt&gt;250&lt;/adapt&gt;
+   &lt;adj.min&gt;0.1&lt;/adj.min&gt;
+   &lt;ar.target&gt;0.3&lt;/ar.target&gt;
+  &lt;/jump&gt;
   &lt;inputs&gt;
     &lt;file&gt;
-      &lt;input.id&gt; ... &lt;/input.id&gt;                &lt;--- YOUR CONSTRAINT ID FROM BETY DB 
+      &lt;input.id&gt; ... &lt;/input.id&gt;               &lt;--- YOUR CONSTRAINT ID FROM BETY DB 
       &lt;path&gt;
-        &lt;path&gt; ... &lt;/path&gt;                      &lt;--- YOUR CONSTRAINT FILE PATH
+        &lt;path&gt; ... &lt;/path&gt;                     &lt;--- YOUR CONSTRAINT FILE PATH(S)
         &lt;path&gt; ... &lt;/path&gt;
       &lt;/path&gt;
-      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;          &lt;--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
-      &lt;variable.id&gt;298&lt;/variable.id&gt;            &lt;--- (CONSTRAINT) VARIABLE ID FROM BETY DB
+      &lt;likelihood&gt;Laplace&lt;/likelihood&gt;         &lt;--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
+      &lt;variable.id&gt;298&lt;/variable.id&gt;           &lt;--- (CONSTRAINT) VARIABLE ID FROM BETY DB
       &lt;variable.name&gt;
-        &lt;variable.name&gt;LE&lt;/variable.name&gt;       &lt;--- (CONSTRAINT) VARIABLE
-        &lt;variable.name&gt;UST&lt;/variable.name&gt;      &lt;--- HELPER VARIABLE SPECIFIC TO FLUX CASE
+        &lt;variable.name&gt;LE&lt;/variable.name&gt;      &lt;--- (CONSTRAINT) VARIABLE
+        &lt;variable.name&gt;UST&lt;/variable.name&gt;     &lt;--- HELPER VARIABLE SPECIFIC TO FLUX CASE
       &lt;/variable.name&gt;
     &lt;/file&gt;
-  &lt;/inputs&gt;
-  &lt;inputs&gt;
     &lt;file&gt;
       &lt;input.id&gt;...&lt;/input.id&gt;
       &lt;path&gt;
         &lt;path&gt;...&lt;/path&gt;
       &lt;/path&gt;
-    &lt;likelihood&gt;multipGauss&lt;/likelihood&gt;
-    &lt;hyper.pars&gt;
-      &lt;parama&gt;0.001&lt;/parama&gt;                    &lt;--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
-      &lt;paramb&gt;0.001&lt;/paramb&gt;
-    &lt;/hyper.pars&gt;
-    &lt;ss.positive&gt;TRUE&lt;/ss.positive&gt;
+      &lt;likelihood&gt;multipGauss&lt;/likelihood&gt;
+      &lt;hyper.pars&gt;
+        &lt;parama&gt;0.001&lt;/parama&gt;                 &lt;--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
+        &lt;paramb&gt;0.001&lt;/paramb&gt;
+      &lt;/hyper.pars&gt;
+      &lt;ss.positive&gt;TRUE&lt;/ss.positive&gt;
+      &lt;variable.id&gt;...&lt;/variable.id&gt; 
       &lt;variable.name&gt;
         &lt;variable.name&gt;...&lt;/variable.name&gt;
       &lt;/variable.name&gt;
@@ -420,57 +424,52 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <ul>
 <li><p><code>&lt;inputs&gt;</code> Observation (constraint) data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating flux datasets numerous times using the NEE/FC or LE variables.</p>
 <ul>
-<li><code>&lt;file&gt;</code> [REVISE] Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in <code>&lt;variable.id&gt;</code> and <code>&lt;variable.name&gt;</code> :</li>
+<li><code>&lt;file&gt;</code> Denotes a set of tags for a single input (constraint data). Would be repeated for multiple datasets/variables, e.g. in this case note the differences in <code>&lt;variable.id&gt;</code> and <code>&lt;variable.name&gt;</code> :</li>
 </ul>
 <pre><code>...
 &lt;inputs&gt;
-  &lt;file&gt;
-    &lt;input.id&gt;1000000384&lt;/input.id&gt;
-    &lt;path&gt;
-      &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc&lt;/path&gt;
-      &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc&lt;/path&gt;
-    &lt;/path&gt;
-    &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
-    &lt;variable.id&gt;298&lt;/variable.id&gt;
-    &lt;variable.name&gt;
-      &lt;variable.name&gt;LE&lt;/variable.name&gt;
-      &lt;variable.name&gt;UST&lt;/variable.name&gt;
-    &lt;/variable.name&gt;
-  &lt;/file&gt;
-  &lt;file&gt;
-    &lt;input.id&gt;1000000384&lt;/input.id&gt;
-    &lt;path&gt;
-      &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc&lt;/path&gt;
-      &lt;path&gt;/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc&lt;/path&gt;
-    &lt;/path&gt;
-    &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
-    &lt;variable.id&gt;1000000042&lt;/variable.id&gt;
-    &lt;variable.name&gt;
-      &lt;variable.name&gt;FC&lt;/variable.name&gt;
-      &lt;variable.name&gt;UST&lt;/variable.name&gt;
-    &lt;/variable.name&gt;
-  &lt;/file&gt;
+ &lt;file&gt;
+  &lt;input.id&gt;15000000028&lt;/input.id&gt;   
+  &lt;path&gt;
+   &lt;path&gt;/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv&lt;/path&gt; 
+  &lt;/path&gt;
+  &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
+  &lt;variable.id&gt;297&lt;/variable.id&gt;
+  &lt;variable.name&gt;
+   &lt;variable.name&gt;NEE&lt;/variable.name&gt;
+   &lt;variable.name&gt;UST&lt;/variable.name&gt;
+  &lt;/variable.name&gt;
+ &lt;/file&gt;   
+ &lt;file&gt;
+  &lt;input.id&gt;15000000028&lt;/input.id&gt;   
+  &lt;path&gt;
+   &lt;path&gt;/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv&lt;/path&gt; 
+  &lt;/path&gt;
+  &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
+  &lt;variable.id&gt;298&lt;/variable.id&gt;
+  &lt;variable.name&gt;
+   &lt;variable.name&gt;LE&lt;/variable.name&gt;
+   &lt;variable.name&gt;UST&lt;/variable.name&gt;
+  &lt;/variable.name&gt;
+ &lt;/file&gt;
 &lt;/inputs&gt;
 ...</code></pre>
 <ul>
 <li><code>&lt;input.id&gt;</code> BETY input ID for looking up the input.</li>
 <li><code>&lt;path&gt;</code> File path to the input. Both <code>&lt;id&gt;</code> and <code>&lt;path&gt;</code> of the observation data should be supplied for the PDA.</li>
-<li><code>&lt;source&gt;</code> A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no <code>&lt;id&gt;</code> or <code>&lt;path&gt;</code> is given.
-<ul>
+<li><code>&lt;source&gt;</code> A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no <code>&lt;id&gt;</code> or <code>&lt;path&gt;</code> is given.</li>
 <li><code>&lt;likelihood&gt;</code> Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood.</li>
 <li><code>&lt;hyper.pars&gt;</code> Optional. Hyperparameters for your likelihood. E.g. Prior parameters of the precision for Gaussian likelihood. Defaults to scaled values if not provided.</li>
+<li><code>&lt;ss.positive&gt;</code> When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound.</li>
 <li><p><code>&lt;variable.id&gt;</code> The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default <code>&lt;likelihood&gt;</code> to variable.id values (allowing <code>&lt;likelihood&gt;</code> to be omitted from pecan.xml).</p>
-<p>NOTE : <code>&lt;inputs&gt;</code> chunk should always be on your xml file regardless of the method you use in the PDA.</p></li>
+<pre><code> NOTE : `&lt;inputs&gt;` chunk should always be on your xml file regardless of the method you use in the PDA.</code></pre></li>
 </ul></li>
-</ul></li>
-<li><code>&lt;jump&gt;</code> Settings for the specifics of the proposal schema and adaptation functionality.
+<li><code>&lt;jump&gt;</code> Settings for the specifics of the proposal schema and adaptation functionality. It is used in the <code>emulator</code> approach, it’s possible to set adaptation options using <code>bayesian.tools</code> specific tags as well (see below for <code>&lt;bt.settings&gt;</code>).
 <ul>
 <li><code>&lt;ar.target&gt;</code> Target acceptance rate for the adaptive jump algorithm. Defaults to 0.5 if missing.</li>
-<li><code>&lt;adapt&gt;</code> Number of iterations between jump variance adaptations. Defaults to <code>floor(iter/10)</code> if missing. If set equal to the number of <code>&lt;iter&gt;</code>, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality.</li>
+<li><code>&lt;adapt&gt;</code> Number of iterations between jump variance adaptations. Defaults to <code>floor(iter/10)</code> if missing. If set equal to the number of <code>&lt;iter&gt;</code>, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality for the emulator approach.</li>
 <li><code>&lt;adj.min&gt;</code> Minimum factor by which to reduce jump variance when adapting. Prevents jump variances from degenerating to 0. Defaults to 0.1 if missing.</li>
 </ul></li>
-<li><code>&lt;diag.plot.iter&gt;</code> Interval between saving diagnostic plots. Omit or set to NULL to skip them.</li>
-<li><p><code>&lt;params.id&gt;</code> (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into <code>&lt;params.id&gt;</code>. The <code>pda.mcmc()</code> funtion returns the <code>&lt;assim.batch&gt;</code> settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC.</p></li>
 </ul>
 </div>
 <div id="method-specific-settings" class="section level2">
@@ -585,7 +584,7 @@ settings_PDA_round1 &lt;- pda.emulator(settings)</code></pre>
 <p>Now you can either pass the post PDA settings in your environment to the <code>pda.emulator()</code> function again (yes you can put this in a loop) or you can re-read your <code>pecan.pdaR1_ENS_ID.xml</code> at any time to perform an iterative emulator round.</p>
 <pre><code>### settings_PDA_round1 &lt;- read.settings(&quot;pecan.pdaR1_ENS_ID.xml&quot;)
 settings_PDA_round2 &lt;- pda.emulator(settings_PDA_round1)</code></pre>
-<p>Before moving on to the <code>BayesianTools</code> case, here is what your <code>pecan.PDA.xml</code> would look like for a case where you constrain parameters of more than one model PFT with more than one Ameriflux data stream:</p>
+<p>Before moving on to the <code>BayesianTools</code> case, here is what your <code>pecan.PDA.xml</code> could look like for a case where you constrain parameters of more than one model PFT with more than one Ameriflux data stream, note the ordering in <code>&lt;assim.batch&gt;&lt;param.names&gt;</code> and <code>&lt;pfts&gt;</code>:</p>
 <pre><code>...
  &lt;assim.batch&gt;
   ...
@@ -680,30 +679,29 @@ settings_PDA_round2 &lt;- pda.emulator(settings_PDA_round1)</code></pre>
     &lt;adaptationNotBefore&gt;500&lt;/adaptationNotBefore&gt;       &lt;-- set for Adaptive Metropolis
   &lt;/bt.settings&gt;
   ...</code></pre>
-<p>We will check out the <code>&lt;assim.batch&gt;</code> block for MH-MCMC and the DREAMzs (recommended) algorithms. To make sure everything works fine, initially set <code>&lt;iter&gt;</code> to some small number like 100 though.</p>
+<p>The rest of the <code>&lt;assim.batch&gt;</code> block is the same (except you can now omit the <code>&lt;jump&gt;</code> tag as it takes no effect in this case). While all the algorithms can be accessed by the “Metropolis” sampler in BayesianTools package by specifying the sampler’s settings, it could be easier to directly pass the sampler name explicitly. Below is an example for DREAMzs (recommended) algorithm:</p>
 <pre><code> &lt;assim.batch&gt;
    &lt;method&gt;bayesian.tools&lt;/method&gt;
    &lt;bt.settings&gt;
      &lt;sampler&gt;DREAMzs&lt;/sampler&gt;
-     &lt;iter&gt;100000&lt;/iter&gt;
+     &lt;iter&gt;10000&lt;/iter&gt;
+     &lt;chain&gt;3&lt;/chain&gt;
    &lt;/bt.settings&gt;
   &lt;param.names&gt;
+   &lt;soil&gt;
+    &lt;param&gt;som_respiration_rate&lt;/param&gt;
+   &lt;/soil&gt;
    &lt;boreal.coniferous&gt;
     &lt;param&gt;psnTOpt&lt;/param&gt;
     &lt;param&gt;half_saturation_PAR&lt;/param&gt;
     &lt;param&gt;Vm_low_temp&lt;/param&gt;
    &lt;/boreal.coniferous&gt;
   &lt;/param.names&gt;
-  &lt;jump&gt;
-   &lt;adapt&gt;250&lt;/adapt&gt;
-    &lt;adj.min&gt;0.1&lt;/adj.min&gt;
-    &lt;ar.target&gt;0.3&lt;/ar.target&gt;
-  &lt;/jump&gt;
   &lt;inputs&gt;
    &lt;file&gt;
-    &lt;input.id&gt;15000000028&lt;/input.id&gt;  
+    &lt;input.id&gt;15000000028&lt;/input.id&gt;   
     &lt;path&gt;
-     &lt;path&gt;/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv&lt;/path&gt;  
+     &lt;path&gt;/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv&lt;/path&gt; 
     &lt;/path&gt;
     &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
     &lt;variable.id&gt;297&lt;/variable.id&gt;
@@ -714,6 +712,12 @@ settings_PDA_round2 &lt;- pda.emulator(settings_PDA_round1)</code></pre>
    &lt;/file&gt;
   &lt;/inputs&gt;
  &lt;/assim.batch&gt;</code></pre>
+<p>Assuming you save these tags under a <code>pecan.PDA.xml</code></p>
+<pre><code>settings &lt;- read.settings(&quot;pecan.PDA.xml&quot;)
+settings_postPDA &lt;- pda.bayesian.tools(settings)</code></pre>
+<p>In case of no convergence and/or if you would like to run the same chains longer, you can add the extension option:</p>
+<pre><code>settings_postPDA$assim.batch$extension &lt;- 'longer'
+settings_postPDA_longer &lt;- pda.bayesian.tools(settings_postPDA)</code></pre>
 </div>
 <div id="own-data-with-emulator" class="section level2">
 <h2>3. Own data with emulator</h2>
@@ -794,89 +798,39 @@ settings_postPDA &lt;- pda.emulator(settings, external.data    = pda.externals$e
 </div>
 <div id="own-data-with-bayesiantools" class="section level2">
 <h2>4. Own data with BayesianTools</h2>
-</div>
-<div id="todo" class="section level2">
-<h2>TODO</h2>
-<p>If you want to extend your previous <em>bruteforce</em> and <em>bruteforce.bs</em> MCMC-chains, you can add an <code>&lt;extension&gt;</code> tag within your <code>&lt;assim.batch&gt;</code> chunk after reading your post-PDA settings (which would be saved as “pecan.pda[UNIQUE_ID].xml” in your working directory) and set it to “longer”.</p>
-<pre><code>  ...
-  &lt;method&gt;bruteforce.bs&lt;/method&gt;
-  &lt;iter&gt;10000&lt;/iter&gt;
-  &lt;method&gt;bruteforce&lt;/method&gt;
-  &lt;chain&gt;3&lt;/chain&gt;
-  &lt;extension&gt;longer&lt;/extension&gt;
-  ...</code></pre>
-<p>If you are using methods other than <em>bruteforce</em> and <em>bruteforce.bs</em>, some additional tags and different settings may apply.</p>
-<p><strong>emulator</strong> would use additional tags:</p>
-<pre><code>  ...
-  &lt;method&gt;emulator&lt;/method&gt;
-  &lt;n.knot&gt;20&lt;/n.knot&gt;
-  &lt;GPpckg&gt;GPfit&lt;/GPpckg&gt;
-  &lt;chain&gt;3&lt;/chain&gt;
-  &lt;extension&gt;round&lt;/extension&gt;
-  &lt;knot.par&gt;0.75&lt;/knot.par&gt;
-  ...</code></pre>
-<ul>
-<li><p><code>&lt;n.knot&gt;</code> Specifies the number of locations in parameter space to be sampled by the Latin Hypercube design. These locations are where the model will actually be run. In other words the model will be run for <code>&lt;n.knots&gt;</code> times.</p></li>
-<li><p><code>&lt;GPpckg&gt;</code> Specifies which R package to use for fitting a Gaussian process to interpolate the likelihood surface in between the calculated values that are obtained from actual model runs. Current options are <code>kernlab</code> and <code>GPfit</code> (recommended).</p></li>
-<li><p><code>&lt;chain&gt;</code> Specifies the number of MCMC chains to be run.</p></li>
-<li><p><code>&lt;extension&gt;</code> Specifies the extension type of additional emulator runs, should be skipped if this a first emulator run of its own. Otherwise it is possible to extend emulator PDA runs in two ways:</p>
-<ul>
-<li><p><code>&lt;extension&gt;longer&lt;/extension&gt;</code> using the same emulator, this extension run takes the MCMC sampling from where it was left in the previous emulator run and runs a longer MCMC chain.</p></li>
-<li><p><code>&lt;extension&gt;round&lt;/extension&gt;</code> this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the <code>&lt;knot.par&gt;</code> tag. If you leave it empty, 75% of your new points will be drawn from the posterior of your previous run by default.</p></li>
-</ul></li>
-</ul>
-<pre><code>      &lt;file&gt;
-        &lt;input.id&gt;...&lt;/input.id&gt;
-        &lt;path&gt;
-          &lt;path&gt;...&lt;/path&gt;
-        &lt;/path&gt;
-        &lt;likelihood&gt;multipGauss&lt;/likelihood&gt;
-        &lt;ss.positive&gt;TRUE&lt;/ss.positive&gt;
-        &lt;variable.id&gt;...&lt;/variable.id&gt;
-        &lt;variable.name&gt;
-          &lt;variable.name&gt;...&lt;/variable.name&gt;
-        &lt;/variable.name&gt;
-      &lt;/file&gt;
-    &lt;/inputs&gt;</code></pre>
-<ul>
-<li><code>&lt;ss.positive&gt;</code> When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound.</li>
-</ul>
-<p><strong>bayesian.tools</strong> would look for sampler specific settings that can be passed through the pecan.xml as a block under the <code>&lt;bt.settings&gt;</code> tag. Currently, the available samplers in the BayesianTools package are:</p>
-<ul>
-<li>Metropolis
-<ul>
-<li>Standard MH-MCMC</li>
-<li>With pre-optimization</li>
-<li>Adaptive MCMC</li>
-<li>Delayed rejection</li>
-<li>Gibbs updating</li>
-</ul></li>
-<li>M : Another implementation of standard MH-MCMC.</li>
-<li>AM : Adaptive Metropolis</li>
-<li>DR : Delayed Rejection</li>
-<li>DRAM : Delayed Rejection Adaptive Metropolis</li>
-<li>DE : Differential Evolution</li>
-<li>DEzs : Differential Evolution with a snooker updater</li>
-<li>DREAM : Differential Evolution Adaptive Metropolis</li>
-<li>DREAMzs : Differential Evolution Adaptive Metropolis with a snooker updater</li>
-<li>Twalk : “traverse” or “thoughtful” walk, a general purpose sampling algorithm</li>
-<li>SMC : Sequential Monte Carlo</li>
-</ul>
-<p>The name of the chosen sampler would be passed under <code>&lt;sampler&gt;</code> tag within the <code>&lt;bt.settings&gt;</code> block :</p>
-<p>It is not possible to use some of the samplers in this package for univariate cases. The ones that you can use for univariate cases are: “Metropolis”, “DE”, “DEzs” and “Twalk”.</p>
-<p>For Metropolis variations:</p>
-<pre><code>  ...
-  &lt;method&gt;bayesian.tools&lt;/method&gt;
-  &lt;bt.settings&gt;
-    &lt;iter&gt;10000&lt;/iter&gt;
-    &lt;sampler&gt;Metropolis&lt;/sampler&gt;
-    &lt;DRlevels&gt;1&lt;/DRlevels&gt;                               &lt;-- set 2 for Delayed Rejection
-    &lt;optimize&gt;FALSE&lt;/optimize&gt;                           &lt;-- set TRUE for pre-optimization
-    &lt;adapt&gt;FALSE&lt;/adapt&gt;                                 &lt;-- set TRUE for Adaptive Metropolis
-    &lt;adaptationNotBefore&gt;500&lt;/adaptationNotBefore&gt;       &lt;-- set for Adaptive Metropolis
-  &lt;/bt.settings&gt;
-  ...</code></pre>
-<p>Some of the samplers are also restartable : “Metropolis”, “DE”, “DEzs”, “DREAM”, “DREAMzs”, “Twalk”</p>
+<p>It’s all very much the same as the cases above, in combination of #2 (prepare <code>BayesianTools</code> specific xml tags) and #3 (prepare external arguments).</p>
+<pre><code> &lt;assim.batch&gt;
+   &lt;method&gt;bayesian.tools&lt;/method&gt;
+   &lt;bt.settings&gt;
+     &lt;sampler&gt;DREAMzs&lt;/sampler&gt;
+     &lt;iter&gt;10000&lt;/iter&gt;
+     &lt;chain&gt;3&lt;/chain&gt;
+   &lt;/bt.settings&gt;
+  &lt;param.names&gt;
+   &lt;boreal.coniferous&gt;
+    &lt;param&gt;psnTOpt&lt;/param&gt;
+    &lt;param&gt;half_saturation_PAR&lt;/param&gt;
+    &lt;param&gt;Vm_low_temp&lt;/param&gt;
+   &lt;/boreal.coniferous&gt;
+  &lt;/param.names&gt;
+  &lt;inputs&gt;
+   &lt;file&gt;
+    &lt;likelihood&gt;Laplace&lt;/likelihood&gt;
+    &lt;variable.id&gt;297&lt;/variable.id&gt;
+    &lt;variable.name&gt;
+     &lt;variable.name&gt;NEE&lt;/variable.name&gt;
+     &lt;variable.name&gt;UST&lt;/variable.name&gt;
+    &lt;/variable.name&gt;
+   &lt;/file&gt;
+  &lt;/inputs&gt;
+ &lt;/assim.batch&gt;</code></pre>
+<p>Save and read your <code>pecan.PDA.xml</code> accordingly. Next, pass the external data and formats you prepared explicitly to the <code>pda.bayesian.tools()</code> function:</p>
+<pre><code>settings &lt;- read.settings(&quot;pecan.PDA.xml&quot;)
+pda.externals &lt;-  pda.generate.externals(external.data    = TRUE, obs = obs, varn = &quot;NEE&quot;, varid = 297, external.formats = TRUE, external.priors  = TRUE, prior.list = prior.list) 
+settings_postPDA &lt;- pda.bayesian.tools(settings, external.data    = pda.externals$external.data, 
+                                           external.formats = pda.externals$external.formats,
+                                           external.priors  = pda.externals$external.priors, 
+                                           remote = TRUE, ensemble.id = &quot;PDA_VIGNETTE&quot;)</code></pre>
 </div>
 
 
