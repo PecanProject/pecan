@@ -53,10 +53,11 @@ pda.bayesian.tools(
 \item{jvar}{jump variance}
 
 \item{remote}{logical, if TRUE no DB connection is established}
+
+\item{...}{additional arguments}
 }
 \value{
-nothing. Diagnostic plots, MCMC samples, and posterior distributions
-are saved as files and db records.
+settings
 }
 \description{
 Paramater Data Assimilation using BayesianTools R Package

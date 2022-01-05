@@ -17,9 +17,9 @@
 ##' @param ar.target acceptance rate target
 ##' @param jvar jump variance
 ##' @param remote logical, if TRUE no DB connection is established
+##' @param ... additional arguments
 ##'
-##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
-##'  are saved as files and db records.
+##' @return settings
 ##'
 ##' @author Istem Fer
 ##' @export
