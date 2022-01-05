@@ -33,7 +33,7 @@ pda.generate.externals(
 IMPORTANT: your obs must be in the same units as PEcAn standards already, this function doesn't do unit conversions!
 IMPORTANT: your obs must be ready to compare with model outputs in general, e.g. if you're passing flux data it should already be ustar filtered
 e.g.
-obs[\link{1}]
+obs[[1]]
 NEE           posix
 4.590273e-09  2017-01-01 00:00:00
 NA  2017-01-01 00:30:00
@@ -42,14 +42,14 @@ NA  2017-01-01 01:30:00
 NA  2017-01-01 02:00:00
 4.575248e-09  2017-01-01 02:30:00
 if you have more than variable make sure the order you pass the data is the same as varn. E.g. for varn=c("NEE", "Qle"), external.data should be
-obs[\link{1}]
+obs[[1]]
 NEE  posix
 NA   2018-05-09
 NA   2018-05-10
 NA   2018-05-11
 NA   2018-05-12
 ... ... ...
-obs[\link{2}]
+obs[[2]]
 Qle  posix
 NA   2018-05-09
 NA   2018-05-10

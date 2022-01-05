@@ -52,7 +52,7 @@ pda.bayesian.tools(
 
 \item{jvar}{jump variance}
 
-\item{external.knots}{list of external knots}
+\item{remote}{logical, if TRUE no DB connection is established}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions
