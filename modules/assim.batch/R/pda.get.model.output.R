@@ -3,7 +3,7 @@
 ##' @title Get Model Output for PDA
 ##' @param settings PEcAn settings list
 ##' @param run.id run ID
-##' @param bety bety list
+##' @param bety database connection
 ##' @param inputs inputs list
 ##' @param external.formats format list
 ##'
@@ -34,7 +34,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs, external.format
     # if no derivation is requested expr will be the same as variable name
     expr <- lapply(variable.name, `[[`, "expression")
     
-    if(is.null(bety$con)){
+    if(is.null(bety)){
       format <- external.formats[[k]]
     }else{
       format <- PEcAn.DB::query.format.vars(bety = bety,

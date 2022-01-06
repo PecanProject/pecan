@@ -10,7 +10,7 @@ read_settings_BRR(settings)
 \item{settings}{settings or multisettings object}
 }
 \description{
-For each benchmark entry in a (multi)settings object, get run settings using reference run id 
+For each benchmark entry in a (multi)settings object, get run settings using reference run id
 and add to the settings object
 }
 \author{

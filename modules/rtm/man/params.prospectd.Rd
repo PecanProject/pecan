@@ -4,7 +4,9 @@
 \name{params.prospectd}
 \alias{params.prospectd}
 \title{PROSPECT D parameters}
-\format{An object of class \code{character} of length 7.}
+\format{
+An object of class \code{character} of length 7.
+}
 \usage{
 params.prospectd
 }

@@ -26,12 +26,12 @@ load_data_paleon_sda <- function(settings){
   
   # library(plyr) #need to load to use .fnc below
   
-  d <- settings$database$bety[c("dbname", "password", "host", "user")]
-  bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
+  d <- settings$database$bety
+  con <- PEcAn.DB::db.open(d)
   
   if(settings$host$name != 'localhost') PEcAn.logger::logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
-  site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
+  site <- PEcAn.DB::query.site(settings$run$site$id, con)
   format_id <- settings$state.data.assimilation$data$format_id
 
   input.list <- list()
@@ -57,11 +57,15 @@ load_data_paleon_sda <- function(settings){
   biomass2carbon <- 0.48
   
   for(i in seq_along(format_id)){
-    input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), bety$con)
+    input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), con)
     input.id[[i]] <- input.list[[i]]$id
     
-    data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
-    format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
+    data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, con)
+    format_full <- format <- PEcAn.DB::query.format.vars(
+      bety = con,
+      input.id = input.id[[i]],
+      format.id = NA,
+      var.ids=NA)
     
 
     ### Tree Ring Data Product
@@ -98,9 +102,9 @@ load_data_paleon_sda <- function(settings){
       
       ### Map species to model specific PFTs
       if(any(var.names == 'AGB.pft')){
-        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
+        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda', con)
         pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
-                             con = bety$con, allow_missing = TRUE)
+                             con = con, allow_missing = TRUE)
         
         x <- paste0('AGB.pft.', pft_mat$pft)
         names(x) <- spp_id$input_code
