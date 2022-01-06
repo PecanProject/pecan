@@ -63,6 +63,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     if (file.exists(out.files.full[ctr]) && !overwrite) {
       PEcAn.logger::logger.debug("File '", out.files.full[ctr], "' already exists, skipping to next file.")
+      ctr <- ctr + 1
       next
     }
     

@@ -59,6 +59,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
   usm_list <- XML::xmlToList(usm_xml)
   
+  # NOTE: it's the text files, not the xml files that are read by the STICS executable.
   
   ################################# Prepare Plant File #######################################
   
@@ -66,34 +67,44 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template plt file, has all the formalisms
   plt_xml  <- XML::xmlParse(system.file("crop_plt.xml", package = "PEcAn.STICS"))
-  plt_list <- XML::xmlToList(plt_xml)
+  #plt_list <- XML::xmlToList(plt_xml)
   
   for (pft in seq_along(trait.values)) {
     
     pft.traits <- unlist(trait.values[[pft]])
     pft.names  <- names(pft.traits)
     
+    plant_file <- file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml"))
+    
+    # save the template
+    XML::saveXML(plt_xml, file = plant_file)
+    
     # go over each formalism and replace params following the order in crop_plt
     # for now I vary only one parameter under roots.
+    # TODO: vary more params
     
     # plant name and group
     # effect of atmospheric CO2 concentration
     # phasic development
     # emergence and starting
     # leaves
+    
     # radiation interception
+    # to see parameters per formalism
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")
+    # unlist(values)
+    
     # shoot biomass growth
     # partitioning of biomass in organs
     # yield formation
     
     # roots
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "roots")
     
-    # specific root length (cm g-1)
-    # plt_list[[10]][[6]][[2]][[4]] position
+    # longsperac - specific root length (cm g-1)
     if ("SRL" %in% pft.names) {
       srl_val  <- udunits2::ud.convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
-      plt_list <- plt_list %>% purrr::modify_depth(-1, ~if(all(.x == "@longsperac@")) srl_val else .x)
-      
+      SticsRFiles::set_param_xml(plant_file, "longsperac", srl_val, overwrite = TRUE)
     }
     
     # frost
