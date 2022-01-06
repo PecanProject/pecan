@@ -59,6 +59,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
   usm_list <- XML::xmlToList(usm_xml)
   
+  # stics and javastics path
+  stics_path <- settings$model$binary
+  javastics_path <-  gsub("bin","", dirname(stics_path))
+  
   # NOTE: it's the text files, not the xml files that are read by the STICS executable.
   
   ################################# Prepare Plant File #######################################
@@ -113,13 +117,20 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # correspondance code BBCH
     # cultivar parameters
     
+    # delete - SticsRFiles::set_param_xml overwrites already
     # write back
+    # if(names(trait.values)[pft] != "env"){
+    #   
+    #   XML::saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
+    #           file = file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml")), 
+    #           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+    #   
+    # }
+    
+    # convert xml2txt
     if(names(trait.values)[pft] != "env"){
-      
-      XML::saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
-              file = file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml")), 
-              prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
-      
+      SticsRFiles::convert_xml2txt(xml_file = plant_file, java_dir = javastics_path)
+      # do I also need to move the file out of the plant folder to main rundir?
     }
     
   } # pft-loop ends
@@ -347,7 +358,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   }
 
   # stics path
-  stics_path <- settings$model$binary
+  # stics_path <- settings$model$binary
   
   # symlink to binary
   file.symlink(stics_path, bindir)
@@ -357,6 +368,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   usm_name <- defaults$pft$name
   
+  # if this script can already create the txts, bypass this step
   cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, usm_name)
   
   # copy *.mod files
