@@ -80,26 +80,96 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     plant_file <- file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml"))
     
-    # save the template
+    # save the template, will be overwritten below
     XML::saveXML(plt_xml, file = plant_file)
     
+    # to learn the parameters in a plant file
+    # SticsRFiles::get_param_info(file_path = plant_file)
+    
     # go over each formalism and replace params following the order in crop_plt
-    # for now I vary only one parameter under roots.
     # TODO: vary more params
     
     # plant name and group
     # effect of atmospheric CO2 concentration
+    
     # phasic development
+    # to see parameters per formalism
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "phasic development")
+    # unlist(values)
+    
+    # minimum temperature below which development stops (degree C)
+    if ("tdmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tdmin", pft.traits[which(pft.names == "tdmin")], overwrite = TRUE)
+    }
+    
+    # maximum temperature above which development stops (degree C)
+    if ("tdmax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tdmax", pft.traits[which(pft.names == "tdmax")], overwrite = TRUE)
+    }
+    
+    
     # emergence and starting
     # leaves
     
+    # phyllotherme, thermal duration between the apparition of two successive leaves on the main stem (degree day)
+    # assuming this is the same as phyllochron
+    if ("phyllochron" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "phyllotherme", pft.traits[which(pft.names == "phyllochron")], overwrite = TRUE)
+    }
+    
+    # minimal density above which interplant competition starts (m-2)
+    if ("dens_comp" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "bdens", pft.traits[which(pft.names == "dens_comp")], overwrite = TRUE)
+    }
+    
+    # LAI above which competition between plants starts (m2 m-2)
+    if ("lai_comp" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "laicomp", pft.traits[which(pft.names == "lai_comp")], overwrite = TRUE)
+    }
+    
+    # basal height of crop (m)
+    if ("height" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "hautbase", pft.traits[which(pft.names == "height")], overwrite = TRUE)
+    }
+    
+    # maximum height of crop
+    if ("HTMAX" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "hautmax", pft.traits[which(pft.names == "HTMAX")], overwrite = TRUE)
+    }
+    
     # radiation interception
-    # to see parameters per formalism
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")
-    # unlist(values)
     
     # shoot biomass growth
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "shoot biomass growth")
+    
+    # optimal temperature (1/2) for plant growth
+    if ("teopt" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "teopt", pft.traits[which(pft.names == "teopt")], overwrite = TRUE)
+    }
+    
+    # optimal temperature (2/2) for plant growth
+    if ("teoptbis" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "teoptbis", pft.traits[which(pft.names == "teoptbis")], overwrite = TRUE)
+    }
+    
     # partitioning of biomass in organs
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "partitioning of biomass in organs")
+    
+    # maximum SLA (specific leaf area) of green leaves (cm2 g-1)
+    if ("SLAMAX" %in% pft.names) {
+      slamax <- pft.traits[which(pft.names == "SLAMAX")]
+      slamax <- udunits2::ud.convert(udunits2::ud.convert(slamax, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
+      SticsRFiles::set_param_xml(plant_file, "slamax", slamax, overwrite = TRUE)
+    }
+    
+    # minimum SLA (specific leaf area) of green leaves (cm2 g-1)
+    if ("SLAMIN" %in% pft.names) {
+      slamin <- pft.traits[which(pft.names == "SLAMIN")]
+      slamin <- udunits2::ud.convert(udunits2::ud.convert(slamin, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
+      SticsRFiles::set_param_xml(plant_file, "slamin", slamin, overwrite = TRUE)
+    }
+    
     # yield formation
     
     # roots
@@ -115,17 +185,31 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # water
     # nitrogen
     # correspondance code BBCH
-    # cultivar parameters
     
-    # delete - SticsRFiles::set_param_xml overwrites already
-    # write back
-    # if(names(trait.values)[pft] != "env"){
-    #   
-    #   XML::saveXML(PEcAn.settings::listToXml(plt_list, "fichierplt"), 
-    #           file = file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml")), 
-    #           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
-    #   
-    # }
+    # cultivar parameters
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "cultivar parameters")
+    
+    # there are multiple cultivars (varietes) in plt file
+    # for now I assume we will always use #1 in simulations and modify its parameter values
+    # hence, _tec file will always say variete==1, if you change the logic don't forget to update handling of the _tec file accordingly
+    
+    # maximal lifespan of an adult leaf expressed in summation of Q10=2 (2**(T-Tbase))
+    if ("leaf_lifespan_max" %in% pft.names) {
+      # this will modify the first variete by default
+      SticsRFiles::set_param_xml(plant_file, "durvieF", pft.traits[which(pft.names == "leaf_lifespan_max")], overwrite = TRUE)
+      # see example for setting the Grindstad cultivar param
+      # SticsRFiles::set_param_xml(plant_file, "durvieF", pft.traits[which(pft.names == "leaf_lifespan_max")], select = "Grindstad", overwrite = TRUE)    
+    }
+    
+    # cumulative thermal time between the stages LEV (emergence) and AMF (maximum acceleration of leaf growth, end of juvenile phase) 
+    if ("cum_thermal_juvenile" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "stlevamf", pft.traits[which(pft.names == "cum_thermal_juvenile")], overwrite = TRUE)
+    }
+    
+    # cumulative thermal time between the stages AMF (maximum acceleration of leaf growth, end of juvenile phase)  and LAX (maximum leaf area index, end of leaf growth)
+    if ("cum_thermal_growth" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "stamflax", pft.traits[which(pft.names == "cum_thermal_growth")], overwrite = TRUE)
+    }
     
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
