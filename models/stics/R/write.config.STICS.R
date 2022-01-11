@@ -62,8 +62,13 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # stics and javastics path
   stics_path <- settings$model$binary
   javastics_path <-  gsub("bin","", dirname(stics_path))
+
   
-  # NOTE: it's the text files, not the xml files that are read by the STICS executable.
+  # Per STICS development team, there are two types of STICS inputs
+  # Global input: _plt.xml, param_gen.xml, param_newform.xml
+  # Local input: _ini.xml (initialization), sols.xml (soils), _tec.xml (crop management), (climate files) _sta.xml, *.year
+  
+  # NOTE: however, it's the text files, not the xml files that are read by the STICS executable.
   
   ################################# Prepare Plant File #######################################
   
@@ -220,6 +225,20 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   } # pft-loop ends
   
   
+  ############################## Param gen / newform ####################################
+  
+  ## DO NOTHING FOR NOW
+  gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
+  gen_file <- file.path(rundir, "param_gen.xml")
+  XML::saveXML(gen_xml, file = gen_file)
+  SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
+  # may delete the xml after this
+  
+  newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
+  newf_file <- file.path(rundir, "param_newform.xml")
+  XML::saveXML(newf_xml, file = newf_file)  
+  SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
+  
   
   
   ############################ Prepare Initialization File ##################################
@@ -228,15 +247,16 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template ini file
   ini_xml  <- XML::xmlParse(system.file("pecan_ini.xml", package = "PEcAn.STICS"))
-  ini_list <- XML::xmlToList(ini_xml)
+  ini_file <- file.path(rundir, paste0(defaults$pft$name, "_ini.xml"))
+  
+  # write the ini file 
+  XML::saveXML(ini_xml, file = ini_file)
   
   # DO NOTHING FOR NOW
+  # but when you do note that this also has multiple options, e.g.
+  # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0", param_value = 1, select = "plante", value = "1", overwrite = TRUE)  
   
-  # write the ini file
-  XML::saveXML(PEcAn.settings::listToXml(ini_list, "initialisations"), 
-          file = file.path(rundir, paste0(defaults$pft$name, "_ini.xml")), 
-          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
-  
+  SticsRFiles::convert_xml2txt(xml_file = ini_file, java_dir = javastics_path)
   
   
   ############################ Prepare Soils ##################################
@@ -285,20 +305,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## skipping for now
   
   
-  ############################## Param gen / newform ####################################
-  
-  ## DO NOTHING
-  gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
-  gen_list <- XML::xmlToList(gen_xml)
-  XML::saveXML(PEcAn.settings::listToXml(gen_list, "fichierpar"), 
-               file = file.path(rundir, "param_gen.xml"), 
-               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
-  
-  newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
-  newf_list <- XML::xmlToList(newf_xml)
-  XML::saveXML(PEcAn.settings::listToXml(newf_list, "fichierparamgen"), 
-               file = file.path(rundir, "param_newform.xml"), 
-               prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
 
   
   ############################ Prepare Technical File ##################################
