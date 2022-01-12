@@ -263,6 +263,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   #### THERE IS SOME BUG IN SticsRFiles::convert_xml2txt FOR SOLS.XML
   #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
+  #### TODO: revise other to have txt templates directly in hte package
   
   # read in template sols file (xml)
   # sols_xml  <- XML::xmlParse(system.file("sols.xml", package = "PEcAn.STICS"))
@@ -287,23 +288,19 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template sta file
   sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
-  sta_list <- XML::xmlToList(sta_xml)
+  sta_file <- file.path(rundir, "pecan_sta.xml")
+  
+  XML::saveXML(sta_xml, file = sta_file)
+  SticsRFiles::convert_xml2txt(xml_file = sta_file, java_dir = javastics_path)
+  
+  sta_txt <- file.path(rundir, "station.txt")
   
   # change latitute
-  sta_list[[1]][[3]]$text <- settings$run$site$lat
+  SticsRFiles::set_station_txt(sta_txt, param = "latitude", value = settings$run$site$lat)
   
   # DO NOTHING ELSE FOR NOW
-  
   # Should these be prepared by met2model.STICS?
-  
-  # write the sta file
-  XML::saveXML(PEcAn.settings::listToXml(sta_list, "fichiersta"), 
-          file = file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml")), 
-          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
-  
 
-  
-  
   
   ############################## Prepare LAI forcing ####################################
   ## skipping for now
