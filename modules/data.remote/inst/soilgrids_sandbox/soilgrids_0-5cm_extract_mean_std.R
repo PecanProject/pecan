@@ -4,6 +4,7 @@
 rm(list = ls())
 library(terra)
 library(reshape2)
+library(DBI)
 
 soc_extract <- function (lon_input, lat_input) {
   i <- 1
@@ -133,5 +134,29 @@ soc_extract <- function (lon_input, lat_input) {
   return(list("Mean" = mean, "Standard dev" = std))
 }
 
-result <- soc_extract(-116.8, 41.3)
+db <- 'betydb'
+host_db <- 'modex.bnl.gov'
+db_port <- '5432'
+db_user <- 'bety'
+db_password <- 'bety'
+con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port, user=db_user, password=db_password)
+
+
+bety <- list(user='bety', password='bety', host='modex.bnl.gov',
+             dbname='betydb', driver='PostgreSQL',write=TRUE)
+con <- PEcAn.DB::db.open(bety)
+con
+
+
+suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
+                                            ids = "1000000030", .con = con))
+
+suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
+suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+
+qry_results
+
+result <- soc_extract(qry_results$lon, qry_results$lat)
 result
+# EOF
