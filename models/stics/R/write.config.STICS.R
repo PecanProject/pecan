@@ -54,10 +54,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
           file = file.path(cfgdir, "preferences.xml"), 
           prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">\n')
   
-  # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
-  # TODO: more than one usm
-  usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
-  usm_list <- XML::xmlToList(usm_xml)
   
   # stics and javastics path
   stics_path <- settings$model$binary
@@ -85,8 +81,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     plant_file <- file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml"))
     
-    # save the template, will be overwritten below
-    XML::saveXML(plt_xml, file = plant_file)
+    if(names(trait.values)[pft] != "env"){
+      # save the template, will be overwritten below
+      XML::saveXML(plt_xml, file = plant_file)
+    }
     
     # to learn the parameters in a plant file
     # SticsRFiles::get_param_info(file_path = plant_file)
@@ -195,14 +193,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "cultivar parameters")
     
     # there are multiple cultivars (varietes) in plt file
-    # for now I assume we will always use #1 in simulations and modify its parameter values
+    # for now I assume we will always use only #1 in simulations 
     # hence, _tec file will always say variete==1, if you change the logic don't forget to update handling of the _tec file accordingly
     
     # maximal lifespan of an adult leaf expressed in summation of Q10=2 (2**(T-Tbase))
     if ("leaf_lifespan_max" %in% pft.names) {
-      # this will modify the first variete by default
+      # this will modifies all varietes' durvieFs by default
       SticsRFiles::set_param_xml(plant_file, "durvieF", pft.traits[which(pft.names == "leaf_lifespan_max")], overwrite = TRUE)
-      # see example for setting the Grindstad cultivar param
+      # see example for setting a particular (the Grindstad) cultivar param
       # SticsRFiles::set_param_xml(plant_file, "durvieF", pft.traits[which(pft.names == "leaf_lifespan_max")], select = "Grindstad", overwrite = TRUE)    
     }
     
@@ -263,19 +261,25 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ## this is where we modify soil characteristics
   
-  # read in template sols file
-  sols_xml  <- XML::xmlParse(system.file("sols.xml", package = "PEcAn.STICS"))
-  sols_list <- XML::xmlToList(sols_xml)
+  #### THERE IS SOME BUG IN SticsRFiles::convert_xml2txt FOR SOLS.XML
+  #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
   
-  sols_list$sol$.attrs[["nom"]] <- paste0("sol", defaults$pft$name)
+  # read in template sols file (xml)
+  # sols_xml  <- XML::xmlParse(system.file("sols.xml", package = "PEcAn.STICS"))
+  sols_file <- file.path(rundir, "param.sol")
   
-  # DO NOTHING FOR NOW
+  # cp template sols file (txt)
+  file.copy(system.file("param.sol", package = "PEcAn.STICS"), sols_file)
   
-  # write the tec file
-  XML::saveXML(PEcAn.settings::listToXml(sols_list, "sols"), 
-          file = file.path(rundir, "sols.xml"), 
-          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  # check param names
+  # sols_vals  <- SticsRFiles::get_soil_txt(sols_file)
   
+  SticsRFiles::set_soil_txt(filepath = sols_file, param="typsol", value=paste0("sol", defaults$pft$name))
+  
+  # DO NOTHING ELSE FOR NOW
+
+  # this has some bug for sols.xml
+  # SticsRFiles::convert_xml2txt(xml_file = sols_file, java_dir = javastics_path)
   
   ######################### Prepare Weather Station File ###############################
   
@@ -375,6 +379,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ################################ Prepare USM file ######################################
 
+  # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
+  usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
+  usm_list <- XML::xmlToList(usm_xml)
+  
   # TODO: more than 1 USM and PFTs (STICS can run 2 PFTs max: main crop + intercrop)
   
   # pft name
