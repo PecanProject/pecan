@@ -23,7 +23,7 @@ read_settings_BRR <- function(settings){
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   BRR <- tbl(con,"reference_runs") %>%
-    filter(id == settings$benchmarking$reference_run_id) %>%
+    filter(.data$id == settings$benchmarking$reference_run_id) %>%
     collect()
 
   BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
@@ -90,9 +90,9 @@ add_workflow_info <- function(settings, bety){
   }
   if(!as.logical(settings$benchmarking$new_run)){
     settings$workflow$id <- tbl(bety,"ensembles") %>%
-      filter(id == settings$benchmarking$ensemble_id) %>%
-      dplyr::select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
+      filter(.data$id == settings$benchmarking$ensemble_id) %>%
+      dplyr::select(.data$workflow_id) %>% collect %>% .[[1]]
+    wf <- tbl(bety, 'workflows') %>% filter(.data$id == settings$workflow$id) %>% collect()
     settings$rundir <- file.path(wf$folder, "run")
     settings$modeloutdir <- file.path(wf$folder, "out")
     settings$outdir <- wf$folder
