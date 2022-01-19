@@ -133,8 +133,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     # I'm assuming not right now
     assign(stage$id.name,
            list(
-             inputid = input_met$id,
-             dbfileid = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
+             input.id = input_met$id,
+             dbfile.id = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
                                                  con)$id
            ))
   }

@@ -10,9 +10,11 @@
 ##' @param veg_info veg_info object passed from write_ic
 ##'
 ##' @author Saloni Shah
-##' @example 
+##' @examples
+##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
+##' }
 ##' 
 
 cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
