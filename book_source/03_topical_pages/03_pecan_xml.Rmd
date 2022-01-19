@@ -378,9 +378,9 @@ This section provides detailed configuration for the model run, including the si
         <output>SIPNET</output>
       </met>
       <poolinitcond>
-     <source>NEON_veg</source>
-     <output>poolinitcond</output>
-     <ensemble>30</ensemble>
+      <source>NEON_veg</source>
+      <output>poolinitcond</output>
+      <ensemble>30</ensemble>
    </poolinitcond>
     </inputs>
     <start.date>2004/01/01</start.date>

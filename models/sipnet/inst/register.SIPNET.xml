@@ -2,5 +2,5 @@
 <model> 
   <name>SIPNET</name> 
   <exact.dates>TRUE</exact.dates>
-  <poolinitcond>POOL</poolinitcond>
+  <initcond>POOL</initcond>
 </model>
