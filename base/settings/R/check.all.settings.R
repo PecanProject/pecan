@@ -13,30 +13,25 @@
 #' @export check.inputs
 check.inputs <- function(settings) {
   if (is.null(settings$model$type)) return(settings)
-
+  
   # don't know how to check inputs
   if (is.null(settings$database$bety)) {
     PEcAn.logger::logger.info("No database connection, can't check inputs.")
     return(settings)
   }
-
+  
   # get list of inputs associated with model type
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
-
+  
   inputs <- PEcAn.DB::db.query(
     paste0(
       "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
       "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
-        "AND modeltypes.name='", settings$model$type, "' ",
-        "AND modeltypes_formats.input"),
+      "AND modeltypes.name='", settings$model$type, "' ",
+      "AND modeltypes_formats.input"),
     con = dbcon)
   
-  #check if file paths already exist, hack to get around no BETY id for IC file
-  if (!is.null(settings$run$inputs$poolinitcond$path)) {
-    return(settings)
-  }
-
   # check list of inputs
   allinputs <- names(settings$run$inputs)
   if (nrow(inputs) > 0) {
@@ -44,7 +39,7 @@ check.inputs <- function(settings) {
       tag <- inputs$tag[i]
       hostname <- settings$host$name
       allinputs <- allinputs[allinputs != tag]
-
+      
       # check if tag exists
       if (is.null(settings$run$inputs[[tag]])) {
         if (inputs$required[i]) {
@@ -54,11 +49,11 @@ check.inputs <- function(settings) {
         }
         next
       }
+      
       # check if <id> exists
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         id <- settings$run$inputs[[tag]][["id"]]
         file <- PEcAn.DB::dbfile.file("Input", id, dbcon, hostname)
-      
         if (is.na(file)) {
           PEcAn.logger::logger.error(
             "No file found for", tag, " and id", id, "on host", hostname)
@@ -70,8 +65,7 @@ check.inputs <- function(settings) {
               "Input file and id do not match for ", tag)
           }
         }
-      } 
-      else if ("path" %in% names(settings$run$inputs[[tag]])) {
+      } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
         id <- PEcAn.DB::dbfile.id(
           "Input",
@@ -107,15 +101,16 @@ check.inputs <- function(settings) {
       PEcAn.logger::logger.info("path", settings$run$inputs[[tag]][["path"]])
     }
   }
-
+  
   if (length(allinputs) > 0) {
     PEcAn.logger::logger.info(
       "Unused inputs found :",
       paste(allinputs, collapse = " "))
   }
-
+  
   return(settings)
 }
+
 
 # check database section
 #' @title Check Database
