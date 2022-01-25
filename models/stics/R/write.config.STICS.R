@@ -263,7 +263,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   #### THERE IS SOME BUG IN SticsRFiles::convert_xml2txt FOR SOLS.XML
   #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
-  #### TODO: revise other to have txt templates directly in hte package
+  #### TODO: revise others to have txt templates directly in the package
   
   # read in template sols file (xml)
   # sols_xml  <- XML::xmlParse(system.file("sols.xml", package = "PEcAn.STICS"))
@@ -312,66 +312,75 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ## this is where we modify management practices
   
-  # read in template tec file
-  tec_xml  <- XML::xmlParse(system.file("pecan_tec.xml", package = "PEcAn.STICS"))
-  tec_list <- XML::xmlToList(tec_xml)
+  ## instead of using a template, this could be easier if we prepare a dataframe and use SticsRFiles::gen_tec_xml
+  tec_df <- data.frame(Tec_name = paste0(defaults$pft$name, "_tec.xml")) # note more than one PFT cases
   
-  # If harvest file is given, use given dates 
-  # this will need  more complicated checks and file formats
+  SticsRFiles::gen_tec_xml(out_path = rundir, param_table = tec_df)
+  
+  # the following formalisms exist in the tec file:
+  ## supply of organic residus
+  ## soil tillage
+  ## sowing
+  ## phenological stages
+  ## irrigation
+  ## fertilisation
+  ## harvest
+  ## special techniques
+  ## soil modification by techniques (compaction-fragmentation)
+  
+  # if a harvest file is given, most (all?) of our harvest cases are actually fall under special techniques - cut crop
   if(!is.null(settings$run$inputs$harvest)){
     
     h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
     
-    # probably should use nicer list manipulation techniques, but these template files are static for now
-    # save last list to add at the end
-    attr_sublist <- tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[4]] 
-    tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[4]] <- NULL
+    # param names
+    h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d
+                       "hautcoupe"  , # cut height for forage crops, m
+                       "lairesiduel", # residual LAI after each cut of forage crop, m2 m-2
+                       "msresiduel" , # residual aerial biomass after a cut of a forage crop, t.ha-1
+                       "anitcoupe")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
+                         
     
-    list_no <- 2
-    
+    harvest_list <- list()
     for(hrow in seq_len(nrow(h_days))){
       
-     
-     harvest_list <- tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[2]] # refreshing the "template"
-     intervention_names <- names(tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[2]])
-     
-     # If given harvest date is within simulation days
-     if(as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01")) %in% dseq){
-       
-       # STICS needs cutting days in cumulative julian days 
-       # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
-       # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
-       # the following code should give that
-       harvest_list$colonne$text <- which(dseq == as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01"))) + lubridate::yday(dseq[1]) - 2
-       
-       tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[list_no]] <- harvest_list
-       
-       list_no <- list_no + 1
-     }
-     
-    }
-    
-    # this means we have prescribed more than 2 cutting days
-    if(list_no > 4){
-      names(tec_list[[8]][[1]][[1]][[2]][[2]][[1]])[3:(list_no-1)] <- "intervention"
+      # empty
+      harvest_df <- data.frame(julfauche = NA, hautcoupe = NA, lairesiduel = NA,  msresiduel = NA, anitcoupe = NA) 
       
-      #add the last sublist back
-      attr_sublist["nb_interventions"] <- list_no - 2
-      tec_list[[8]][[1]][[1]][[2]][[2]][[1]][[".attrs"]] <- attr_sublist
-     
+      
+      # If given harvest date is within simulation days
+      # probably need to break down >2 years into multiple usms
+      if(as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01")) %in% dseq){
+        
+        # STICS needs cutting days in cumulative julian days 
+        # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
+        # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
+        # the following code should give that
+        harvest_df$julfauche   <- which(dseq == as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01"))) + lubridate::yday(dseq[1]) - 2
+        harvest_df$lairesiduel <- h_days[hrow, 3]
+        # also pass cutting height
+      }
+      
+      colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
+      harvest_list[[hrow]] <- harvest_df
     }
+    harvest_tec <- do.call("cbind", harvest_list) 
     
-
+    harvest_tec$codefauche <- 2 # use calendar days
   }
+  # TODO: if no harvest file is given modify harvest parameters, e.g. harvest decision
   
-  # OTHERWISE DO NOTHING FOR NOW
+  # DO NOTHING ELSE FOR NOW
+  # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
   
-  # write the tec file
-  XML::saveXML(PEcAn.settings::listToXml(tec_list, "fichiertec"), 
-          file = file.path(rundir, paste0(defaults$pft$name, "_tec.xml")), 
-          prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+  # same usm -> continue columns
+  tec_df <- cbind(tec_df, harvest_tec)
+  SticsRFiles::gen_tec_xml(out_path = rundir, param_table = tec_df)
   
+  # TODO: more than 1 USM, rbind
   
+  SticsRFiles::convert_xml2txt(xml_file = file.path(rundir, paste0(defaults$pft$name, "_tec.xml")), 
+                               java_dir = javastics_path)
   
   
   ################################ Prepare USM file ######################################
