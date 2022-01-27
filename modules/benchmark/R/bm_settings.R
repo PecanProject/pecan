@@ -44,8 +44,8 @@ read_settings_BRR <- function(settings){
 
 clean_settings_BRR <- function(inputfile){
   clean <- PEcAn.settings::clean.settings(inputfile,write=FALSE)
-  if (is.MultiSettings(clean)) {
-    logger.error("Cannot run clean settings for a mutlisettings object") # For now
+  if (PEcAn.settings::is.MultiSettings(clean)) {
+    PEcAn.logger::logger.error("Cannot run clean settings for a mutlisettings object") # For now
   }
 
   # Remove database & host information
@@ -134,6 +134,6 @@ check_BRR <- function(settings_xml, con){
   # Other options include comparing lists (slow)
   # more spohisticated PSQL queries
   # changing the settings field to jsonb
-  ref_run <- tbl(con, "reference_runs") %>% filter(settings == settings_xml) %>% collect
+  ref_run <- tbl(con, "reference_runs") %>% filter(.data$settings == settings_xml) %>% collect
   return(ref_run)
 }
