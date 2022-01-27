@@ -4,8 +4,8 @@
 ##' @param model.calc data.frame
 ##' @param obvs.calc data.frame
 ##' @param var data.frame
+##' @importFrom rlang .data
 ##' @return dat
-
 ##' @author Betsy Cowdery
 
 

@@ -81,6 +81,7 @@ clean_settings_BRR <- function(inputfile){
 ##' @title Add workflow specific info to settings list for benchmarking
 ##' @param settings settings or multisettings object
 ##' @param bety connection to the database
+##' @importFrom rlang .data
 ##' @export
 ##' @author Betsy Cowdery
 
