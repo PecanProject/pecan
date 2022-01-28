@@ -288,15 +288,18 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template sta file
   sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
-  sta_file <- file.path(rundir, "pecan_sta.xml")
+  sta_file <- file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
   
   XML::saveXML(sta_xml, file = sta_file)
+  
+  # change latitude
+  SticsRFiles::set_param_xml(sta_file, "latitude", settings$run$site$lat, overwrite = TRUE)
+  
   SticsRFiles::convert_xml2txt(xml_file = sta_file, java_dir = javastics_path)
   
-  sta_txt <- file.path(rundir, "station.txt")
-  
-  # change latitute
-  SticsRFiles::set_station_txt(sta_txt, param = "latitude", value = settings$run$site$lat)
+  # another way to change latitute
+  # sta_txt <- file.path(rundir, "station.txt")
+  # SticsRFiles::set_station_txt(sta_txt, param = "latitude", value = settings$run$site$lat)
   
   # DO NOTHING ELSE FOR NOW
   # Should these be prepared by met2model.STICS?
@@ -387,9 +390,24 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
 
   # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
   usm_xml  <- XML::xmlParse(system.file("usms.xml", package = "PEcAn.STICS"))
-  usm_list <- XML::xmlToList(usm_xml)
+  usm_file <- file.path(rundir, "usms.xml")
+  XML::saveXML(usm_xml, file = usm_file)
   
-  # TODO: more than 1 USM and PFTs (STICS can run 2 PFTs max: main crop + intercrop)
+  # This may also be easier to generate from a data frame instead of overwriting a template
+  usms_param_df <- data.frame(usm_name = defaults$pft$name,  # pft name
+                              datedebut = lubridate::yday(settings$run$start.date), # beginning day of the simulation (julian.d)
+                              datefin = usm_list$usm$datedebut + length(dseq) - 1, # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
+                              finit = paste0(defaults$pft$name, "_ini.xml"), # name of the initialization file
+                              nomsol = paste0("sol", defaults$pft$name), # name of the soil in the sols.xml file
+                              fstation = paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"), # name of the weather station file
+                             )
+  
+
+  
+  # TODO: more than 1 USM and PFTs 
+  # STICS can run 2 PFTs max: main crop + intercrop
+  
+
   
   # pft name
   usm_list$usm$.attrs[["nom"]] <- defaults$pft$name
