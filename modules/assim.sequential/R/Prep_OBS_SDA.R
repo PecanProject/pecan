@@ -36,6 +36,10 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
                               password = dbparms$password)
   con <- bety$con
 
+<<<<<<< HEAD
+=======
+  source("call_MODIS.R")
+>>>>>>> 8b607ce01e263a32b2377836bcafbe3afc2b8a29
   
   #convert year to YEARDOY
   start_YEARDOY <- paste0(as.character(start_year), "001")
