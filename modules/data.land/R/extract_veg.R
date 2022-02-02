@@ -21,17 +21,17 @@ extract_veg <- function(new_site, startdate, enddate,
                      source, gridres, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
   #code taken from https://stackoverflow.com/questions/14183766/match-fun-provide-error-with-functions-defined-inside-functions
-   fget <- function(name, env = parent.frame()) {
-      if (identical(env, emptyenv())) {
-         stop("Could not find function called ", name, call. = FALSE)
-      }
-      
-      if (exists(name, env, inherits = FALSE) && is.function(env[[name]])) {
-         env[[name]]
-      } else {
-         fget(name, parent.env(env))
-      }
-   }
+   # fget <- function(name, env = parent.frame()) {
+   #    if (identical(env, emptyenv())) {
+   #       stop("Could not find function called ", name, call. = FALSE)
+   #    }
+   #    
+   #    if (exists(name, env, inherits = FALSE) && is.function(env[[name]])) {
+   #       env[[name]]
+   #    } else {
+   #       fget(name, parent.env(env))
+   #    }
+   # }
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
    #set start and end date as date objects
@@ -49,14 +49,20 @@ extract_veg <- function(new_site, startdate, enddate,
  lat <- as.numeric(new_site$lat)
  #veg_info <- fcn(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
  
- veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
+ if (source == "NEON_veg") {
+   veg_info <- extract_NEON_veg(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
+ } else if(source == "FIA"){
+   veg_info <- extract_FIA(lon = lon, lat = lat, startdate = start_date, enddate = end_date, gridres, dbparms)
+ }else{
+   PEcAn.logger::logger.debug("Only have extract functions for source = NEON_veg or FIA, please use load_veg")
+ }
  
  #--------------------------------------------------------------------------------------------------#
  # Match species
  if (source == "NEON_veg") {
     #skip species matching for now revisit later 
     # need check for overwrite
-    sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
+    sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, source)
     
     # Build results dataframe for convert.input
     results <- data.frame(file = sppfilename, 
@@ -87,7 +93,7 @@ extract_veg <- function(new_site, startdate, enddate,
     
     
     # match code to species ID
-    spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code_col]], format_name = format_name)
+    spp.info <- match_species_id(input_codes = obs[[code_col]], format_name = format_name)
     
     # merge with data
     tmp <- spp.info[ , colnames(spp.info) != "input_code"]

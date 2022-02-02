@@ -31,15 +31,15 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Match PFTs
   #revisit later need to fix species matching first
-  # obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
+  obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
   # 
   # # # NOTE : match_pft may return NAs for unmatched dead trees
-  # pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
-  # 
+  pft.info <- match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
+
   # # ### merge with other stuff
-  # obs$pft <- pft.info$pft
-  # 
-  # veg_info[[2]] <- obs
+  obs$pft <- pft.info$pft
+
+  veg_info[[2]] <- obs
   
   #--------------------------------------------------------------------------------------------------#
   # veg2model
@@ -57,8 +57,8 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
   register     <- PEcAn.data.atmosphere::read.register(register.xml, con)
   #check if register,model.xml includes "POOL"
-  if (register$poolinitcond == "POOL") {
-    poolinfo <- PEcAn.data.land::cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH")
+  if (register$initcond == "POOL") {
+    poolinfo <- cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH", dryMass_name = "dryMass")
     siteid <- as.numeric(new_site$id)
     out <- fcn(outfolder, poolinfo, siteid, ens = n.ensemble)
     

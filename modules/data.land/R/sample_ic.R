@@ -118,7 +118,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   # Write vegettion data as rds, return results to convert.input
   
   # write with ensemble number
-  sppfilename[ens] <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
+  sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
   }
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 
