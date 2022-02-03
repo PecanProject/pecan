@@ -10,6 +10,7 @@ Sys.setenv(RLIB = rlib)
 # install remotes first in case packages are references in dependencies
 lapply(c(
 'araiho/linkages_package',
+'chuhousen/amerifluxr',
 'ebimodeling/biocro',
 'MikkoPeltoniemi/Rpreles',
 'r-lib/testthat@v3.0.4',
