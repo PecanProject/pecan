@@ -54,8 +54,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   }
   
   
-  #options(timeout = 150) # can we try and cath error and increase timeout and try again instead of increasing it right away
-  #something like
+
   repeat {
     tout <- options("timeout")
     zip_file <- try(amerifluxr::amf_download_base(user_id = username,
@@ -91,7 +90,6 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   # get zip and csv filenames
   outfname <- strsplit(ftplink, "/")
   outfname <- outfname[[1]][length(outfname[[1]])]
-  print(ftplink)
   output_zip_file <- file.path(outfolder, outfname)
   file_timestep_hh <- "HH"
   file_timestep_hr <- "HR"
