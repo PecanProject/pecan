@@ -7,6 +7,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## Unreleased
 
+### Fixed
+- Replaced the broken ameriflux download pipeline with the new amerifluxr package's function.
+
 ### Changed
 
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
