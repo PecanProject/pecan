@@ -71,7 +71,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
     if (!inherits(zip_file, "try-error")){
       break
     }else if(tout$timeout > 250 ){
-      PEcAn.logger::logger.info("Download takes too long, check your connection.")
+      PEcAn.logger::logger.severe("Download takes too long, check your connection.")
       break
     }
     PEcAn.logger::logger.info("Added 100 seconds before the download timeouts")
