@@ -221,13 +221,13 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
       group <- group + 1
       data.hrly$group_6hr[i] <- group
     }else{
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      data.hrly$group_6hr[i] <- group
+      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- data.hrly$lead_var[i-1]
+      data.hrly$group_6hr[i] <- data.hrly$group_6hr[i-1]
     }
   }
   
   ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
+    dplyr::mutate(hour = lubridate::hour(.data$time) + + lubridate::minute(.data$time)/60) %>%
     dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
     dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
     dplyr::group_by(.data$group_6hr) %>%
@@ -239,7 +239,6 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   return(ShortWave.ds)
   
 }
-
 
 #' @title Downscale repeat to half hourly
 #' @param df dataframe of data to be downscaled (Longwave)
@@ -265,13 +264,13 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     #Shift valued back because the 6hr value represents the average over the
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
-  #hack alert: last two values are Nas 
-  if (dim(df)[1] == 841) {
-    df$lead_var[840] <- df$lead_var[839]
-    df$lead_var[841] <- df$lead_var[839]
-  }else{
-    df$lead_var[384] <- df$lead_var[383]
-    df$lead_var[385] <- df$lead_var[383]
+  #check for NA values and gapfill using closest timestep
+  for(k in 1:dim(df)[1]){
+    if (is.na(df$lead_var[k])) {
+      df$lead_var[k] <- df$lead_var[k-1]
+    }else{
+      df$lead_var[k] <- df$lead_var[k]
+    }
   }
   
   #Create new vector with all hours
