@@ -201,8 +201,8 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   t0 <- min(df$time)
   df <- df %>%
     dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
-    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
-    dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) #%>%
+    #dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
@@ -211,30 +211,43 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   data.hrly <- noaa_data_interp %>%
     dplyr::left_join(df, by = "time")
   
-  data.hrly$group_6hr <- NA
+  data.hrly$hour <- lubridate::hour(data.hrly$time)
+  data.hrly$doy <- lubridate::yday(data.hrly$time) + data.hrly$hour/(24/hr)
+  data.hrly$rpot <- downscale_solar_geom_halfhour(data.hrly$doy, as.vector(lon), as.vector(lat))
   
-  group <- 0
-  for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      group <- group + 1
-      data.hrly$group_6hr[i] <- group
+  for (k in 1:nrow(data.hrly)) {
+    if(is.na(data.hrly$surface_downwelling_shortwave_flux_in_air[k])){
+      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- ifelse(data.hrly$rpot[k] > 0, data.hrly$rpot[k]*(data.hrly$surface_downwelling_shortwave_flux_in_air[k-1]/data.hrly$rpot[k]),0)
     }else{
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- data.hrly$lead_var[i-1]
-      data.hrly$group_6hr[i] <- data.hrly$group_6hr[i-1]
+      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- data.hrly$surface_downwelling_shortwave_flux_in_air[k]
     }
   }
   
-  ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(.data$time) + + lubridate::minute(.data$time)/60) %>%
-    dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
-    dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by(.data$group_6hr) %>%
-    dplyr::mutate(avg.rpot = mean(.data$rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
-    dplyr::ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
-    dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
+  ShortWave.ds <- dplyr::select(data.hrly, time, surface_downwelling_shortwave_flux_in_air)
+  # data.hrly$group_6hr <- NA
+  # 
+  # group <- 0
+  # for(i in 1:nrow(data.hrly)){
+  #   if(!is.na(data.hrly$lead_var[i])){
+  #     curr <- data.hrly$lead_var[i]
+  #     data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
+  #     group <- group + 1
+  #     data.hrly$group_6hr[i] <- group
+  #   }else{
+  #     data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- data.hrly$lead_var[i-1]
+  #     data.hrly$group_6hr[i] <- data.hrly$group_6hr[i-1]
+  #   }
+  # }
+  # 
+  # ShortWave.ds <- data.hrly %>%
+  #   dplyr::mutate(hour = lubridate::hour(.data$time) + lubridate::minute(.data$time)/60) %>%
+  #   dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
+  #   dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
+  #   dplyr::group_by(.data$group_6hr) %>%
+  #   dplyr::mutate(avg.rpot = mean(.data$rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
+  #   dplyr::ungroup() %>%
+  #   dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
+  #   dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
   
   return(ShortWave.ds)
   
