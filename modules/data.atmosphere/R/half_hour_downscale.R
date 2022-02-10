@@ -201,7 +201,9 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   t0 <- min(df$time)
   df <- df %>%
     dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
-    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) #%>%
+    dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
+    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
+    dplyr::mutate(day = lubridate::date(.data$time))#%>%
     #dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
@@ -211,15 +213,19 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   data.hrly <- noaa_data_interp %>%
     dplyr::left_join(df, by = "time")
   
+  data.hrly$surface_downwelling_shortwave_flux_in_air <- NA
+  data.hrly$day <- lubridate::date(data.hrly$time)
   data.hrly$hour <- lubridate::hour(data.hrly$time)
-  data.hrly$doy <- lubridate::yday(data.hrly$time) + data.hrly$hour/(24/hr)
-  data.hrly$rpot <- downscale_solar_geom_halfhour(data.hrly$doy, as.vector(lon), as.vector(lat))
+  data.hrly$hourmin <- lubridate::hour(data.hrly$time) + lubridate::minute(data.hrly$time)/60
+  data.hrly$doyH <- lubridate::yday(data.hrly$time) + data.hrly$hour/(24/hr)
+  data.hrly$doyHM <- lubridate::yday(data.hrly$time) + data.hrly$hourmin/(24/hr)
+  data.hrly$rpotH <- downscale_solar_geom_halfhour(data.hrly$doyH, as.vector(lon), as.vector(lat))
+  data.hrly$rpotHM <- downscale_solar_geom_halfhour(data.hrly$doyHM, as.vector(lon), as.vector(lat))
   
   for (k in 1:nrow(data.hrly)) {
     if(is.na(data.hrly$surface_downwelling_shortwave_flux_in_air[k])){
-      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- ifelse(data.hrly$rpot[k] > 0, data.hrly$rpot[k]*(data.hrly$surface_downwelling_shortwave_flux_in_air[k-1]/data.hrly$rpot[k]),0)
-    }else{
-      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- data.hrly$surface_downwelling_shortwave_flux_in_air[k]
+      SWflux <- as.matrix(subset(df, day == data.hrly$day[k] & hour == data.hrly$hour[k], surface_downwelling_shortwave_flux_in_air))
+      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- ifelse(data.hrly$rpotHM[k] > 0, as.numeric(SWflux[1])*(data.hrly$rpotH[k]/data.hrly$rpotHM[k]),0)
     }
   }
   
