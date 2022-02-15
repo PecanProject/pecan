@@ -14,8 +14,13 @@
 ##' @param ncores Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1
 ##' @param overwrite Logical. Overwrite existing files and replace with new versions
 ##' 
-##' @return data.frame summarize the results of the function call
-##' 
+##' @importFrom PEcAn.logger logger.severe logger.info
+##' @importFrom PEcAn.utils download.file
+##' @importFrom parallel detectCores makeCluster
+##' @importFrom RCurl getURL
+##' @importFrom purrr negate %>%
+##' @importFrom foreach %dopar% foreach
+##'  
 ##' @examples
 ##' \dontrun{
 ##' outdir <- "~/scratch/abg_data/"
@@ -31,6 +36,8 @@
 ##'            product_dates = product_dates2, 
 ##'            product_version = product_version)
 ##' }
+##' 
+##' @return data.frame summarizing the results of the function call
 ##' 
 ##' @export
 ##' @author Shawn Serbin
@@ -64,7 +71,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
     if (!is.null(ncores)) {
       ncores <- ncores
     } else {
-      ncores <- parallel::detectCores() -1
+      ncores <- parallel::detectCores()-1
     }
     PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
   }
