@@ -117,6 +117,7 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'terra',
 'testthat',
 'tibble',
 'tictoc',
