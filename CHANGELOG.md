@@ -16,6 +16,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
 
+### Added
+- Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#2903). Function was created for the CMS SDA workflow
+
 ## [1.7.2] - 2021-10-04
 
 ### Due to dependencies, PEcAn is now using R 4.0.3 for Docker images.
