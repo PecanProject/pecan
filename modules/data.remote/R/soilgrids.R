@@ -213,13 +213,3 @@ soilgrids.soc.extract <- function (site_info=NULL, verbose=TRUE) {
                                  "100-200cm")
   return(list("Mean_soc" = mean_site.2, "Sdev_soc" = std_site.2))
 } ### end of function
-
-
-
-
-site_list <- qry_results.2
-verbose <- TRUE
-system.time(result_soc <- soilgrids.soc.extract(site_info=site_list, verbose=verbose))
-result_soc
-
-
