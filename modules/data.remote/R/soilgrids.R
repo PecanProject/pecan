@@ -40,6 +40,8 @@
 ##' 
 ##' @importFrom reshape2 melt
 ##' @importFrom terra vect project rast extract
+##' @importFrom stats qgamma optim
+##' @importFrom utils flush.console setTxtProgressBar txtProgressBar
 ##' 
 ##' @return list of two dataframes containing the mean SOC values per location and depth
 ##' and the corresponding standard deviation values (uncertainties) for each location 
