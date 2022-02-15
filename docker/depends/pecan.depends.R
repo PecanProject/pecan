@@ -98,7 +98,6 @@ wanted <- c(
 'RCurl',
 'REddyProc',
 'redland',
-'reshape',
 'reshape2',
 'reticulate',
 'rgdal',
