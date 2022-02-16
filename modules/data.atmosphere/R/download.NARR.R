@@ -1,11 +1,12 @@
 ##' Download NARR files
 ##'
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param outfolder location where output is stored
 ##' @param overwrite Overwrite existing files?  Default=FALSE
 ##' @param verbose Turn on verbose output? Default=FALSE
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param ... other inputs
 ##' example options(download.ftp.method="ncftpget")
 ##' @importFrom magrittr %>%
 ##' 

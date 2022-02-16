@@ -31,13 +31,13 @@ gSSURGO.Query <- function(mukeys=2747727,
   #browser()
   #               ,
   ######### Reteiv soil
-  headerFields =
+  headerFields <-
     c(Accept = "text/xml",
       Accept = "multipart/*",
       'Content-Type' = "text/xml; charset=utf-8",
       SOAPAction = "http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx/RunQuery")
   
-  body = paste('<?xml version="1.0" encoding="utf-8"?>
+  body <- paste('<?xml version="1.0" encoding="utf-8"?>
                <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
                <soap:Body>
                <RunQuery xmlns="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
@@ -53,14 +53,14 @@ gSSURGO.Query <- function(mukeys=2747727,
                </soap:Body>
                </soap:Envelope>')
   reader <- RCurl::basicTextGatherer()
-  out<-RCurl::curlPerform(url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx",
+  out <- RCurl::curlPerform(url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx",
                           httpheader = headerFields,  postfields = body,
                           writefunction = reader$update
   )
   suppressWarnings(
     suppressMessages({
-      xml_doc <- xmlTreeParse(reader$value())
-      xmltop  <- xmlRoot(xml_doc)
+      xml_doc <- XML::xmlTreeParse(reader$value())
+      xmltop  <- XML::xmlRoot(xml_doc)
       tablesxml <- (xmltop[[1]]["RunQueryResponse"][[1]]["RunQueryResult"][[1]]["diffgram"][[1]]["NewDataSet"][[1]])
     })
   )
@@ -69,21 +69,21 @@ gSSURGO.Query <- function(mukeys=2747727,
   tryCatch({
     suppressMessages(
       suppressWarnings({
-        tables<-getNodeSet(tablesxml,"//Table")
+        tables <- XML::getNodeSet(tablesxml,"//Table")
         
         ##### All datatables below newdataset
         # This method leaves out the variables are all NAs  - so we can't have a fixed naming scheme for this df
-        dfs<-tables%>%
+        dfs <- tables %>%
           purrr::map_dfr(function(child){
             #converting the xml obj to list
-            allfields <- xmlToList(child)
-            remov<-names(allfields) %in% c(".attrs")
+            allfields <- XML::xmlToList(child)
+            remov <- names(allfields) %in% c(".attrs")
             #browser()
-            names(allfields)[!remov]%>%
+            names(allfields)[!remov] %>%
               purrr::map_dfc(function(nfield){
                 #browser()
-                outv <-allfields[[nfield]] %>% unlist() %>% as.numeric
-                ifelse(length(outv)>0, outv, NA)
+                outv <- allfields[[nfield]] %>% unlist() %>% as.numeric
+                ifelse(length(outv) > 0, outv, NA)
               })%>%
               as.data.frame() %>%
               `colnames<-`(names(allfields)[!remov])

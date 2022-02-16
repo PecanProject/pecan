@@ -26,9 +26,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
   
   # Read ensemble output
-  ens <- read.output(runid = runid, 
-                     outdir = file.path(outdir, runid), 
-                     start.year = lubridate::year(stop.time), 
+  ens <- PEcAn.utils::read.output(runid = runid,
+                     outdir = file.path(outdir, runid),
+                     start.year = lubridate::year(stop.time),
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   

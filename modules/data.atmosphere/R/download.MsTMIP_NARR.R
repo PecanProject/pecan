@@ -2,11 +2,16 @@
 ##' @name download.MsTMIP_NARR
 ##' @title download.MsTMIP_NARR
 ##' @export
-##' @param outfolder
+##'
+##' @param outfolder location where output is stored
 ##' @param start_date YYYY-MM-DD
+##' @param site_id BETY site id
+##' @param lat.in latitude of site
+##' @param lon.in longitude of site
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param verbose Default is FALSE, used in ncdf4::ncvar_def
+##' @param ... Other inputs
 ##' @param end_date YYYY-MM-DD
-##' @param lat decimal degrees [-90, 90]
-##' @param lon decimal degrees [-180, 180]
 ##'
 ##' @author James Simkins
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,

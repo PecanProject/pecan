@@ -21,6 +21,10 @@ on:
 
   pull_request:
 
+  issue_comment:
+    types:
+      - created
+
 # Certain actions will only run when this is the master repo.
 env:
   MASTER_REPO: PecanProject/pecan
@@ -28,6 +32,7 @@ env:
 
 jobs:
   docker:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     steps:

@@ -32,8 +32,19 @@ Documentation for the `dplyr` interface to databases is provided in the [dplyr v
 
 ```{r, eval=FALSE}
 library(dplyr)
+
 d <- settings$database$bety[c("dbname", "password", "host", "user")]
-bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
+bety <- DBI::dbConnect(
+    drv = RPostgres::Postgres(),
+    host = d$host,
+    user = d$user,
+    password = d$password,
+    dbname = d$dbname
+)
+# (Note: you could also do this as `bety <- db.open(settings$database$bety)`,
+# but we show the dbConnect version to emphasize that you can, if you wish,
+# access BETY without using PEcAn)
+
 
 species <- tbl(bety, 'species') %>% 
   select(id, scientificname, genus) %>% 

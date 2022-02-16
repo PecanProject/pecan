@@ -35,6 +35,8 @@
 ##' @param username username from pecan workflow 
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param downscale logical, assumed True. Indicated whether data should be downscaled to hourly
+##' @param ...  Additional optional parameters
+##'
 ##' @export
 ##' 
 ##' @examples 
@@ -56,7 +58,8 @@ download.NOAA_GEFS <- function(site_id,
                                start_date= Sys.Date(),
                                end_date = start_date + lubridate::days(16),
                                downscale = TRUE,
-                               overwrite = FALSE){
+                               overwrite = FALSE,
+                               ...){
   
   forecast_date = as.Date(start_date)
   forecast_time = (lubridate::hour(start_date) %/% 6)*6

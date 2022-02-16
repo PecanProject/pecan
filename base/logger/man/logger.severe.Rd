@@ -20,7 +20,7 @@ This function will print a message and stop execution of the code. This
 should only be used if the application should terminate.
 }
 \details{
-set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
 the session. This is set by default to TRUE if interactive or running
 inside Rstudio.
 }

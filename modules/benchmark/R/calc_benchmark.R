@@ -39,7 +39,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
                                      "VALUES(",settings$benchmarking$reference_run_id,
                                      ", ",ensemble$id,
                                      ", ",settings$model$id,", ",settings$info$userid,
-                                     ", 1000000001 ) RETURNING *;"), bety$con)
+                                     ", 1000000001 ) RETURNING *;"), bety)
     }else if(dim(bm.ensemble)[1] >1){
       PEcAn.logger::logger.error("Duplicate record entries in benchmarks_ensembles")
     }
@@ -47,7 +47,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
     # --------------------------------------------------------------------------------------------- #
     # Setup
     
-    site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
+    site <- PEcAn.DB::query.site(settings$run$site$id, bety)
     model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
     # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
     
@@ -84,7 +84,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
       dir.create(bm_dir)
       
       bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
-      data.path <- PEcAn.DB::query.file.path(input.id, settings$host$name, bety$con)
+      data.path <- PEcAn.DB::query.file.path(input.id, settings$host$name, bety)
       format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
       
       # ---- LOAD INPUT DATA ---- #
@@ -127,10 +127,10 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
       # Loop over benchmark ids
       # i = 1 # for testing
       for (i in seq_along(bm.ids)) {
-        bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
+        bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety)
         metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", 
                                   "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
-                                  "WHERE b.benchmark_id = ", bm.ids[i]), bety$con) 
+                                  "WHERE b.benchmark_id = ", bm.ids[i]), bety)
         #"run" metric needs to be removed from metrics so it isn't computed twice
         var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
         var.list <- c(var.list, var)
@@ -176,7 +176,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
             db.query(paste0(
               "INSERT INTO benchmarks_ensembles_scores",
               "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
-              "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
+              "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"), bety)
           }else if(dim(score.entry)[1] >1){
             PEcAn.logger::logger.error("Duplicate record entries in scores")
           }

@@ -3,12 +3,15 @@
 ##' @name download.FACE
 ##' @title download.FACE
 ##' @export
-##' @param sitename
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##'
+##' @param sitename sitename
+##' @param outfolder location where output is stored
 ##' @param method Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
 ##' downloading files from FTP sites
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param ... other inputs
 ##' 
 ##' @author Betsy Cowdery
 download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, method, ...) {

@@ -53,14 +53,6 @@ match_dbcols: no visible binding for global variable ‘as’
 
 query.priors: no visible binding for global variable ‘settings’
 
-rename_jags_columns: no visible binding for global variable ‘stat’
-rename_jags_columns: no visible binding for global variable ‘n’
-rename_jags_columns: no visible binding for global variable ‘trt_id’
-rename_jags_columns: no visible binding for global variable ‘site_id’
-rename_jags_columns: no visible binding for global variable
-  ‘citation_id’
-rename_jags_columns: no visible binding for global variable
-  ‘greenhouse’
 
 
 Undefined global functions or variables:
@@ -79,8 +71,6 @@ contains 'methods').
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... NOTE
-Unknown package ‘PEcAn.MA’ in Rd xrefs
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING

@@ -18,24 +18,44 @@
          "orcid":"0000-0002-5781-7287"
       },
       {
-         "affiliation":"Boston University",
+         "affiliation":"NASA Goddard",
          "name":"Alexey Shiklomanov",
          "orcid":"0000-0003-4022-5979"
       },
       {
-         "affiliation":"Boston University",
+         "affiliation":"James Hutton Institute",
          "name":"Betsy Cowdery",
          "orcid":"0000-0002-6538-6296"
       },
       {
-         "affiliation":"Boston Univeristy",
+         "affiliation":"University of Illinois, Urbana-Champaign",
+         "name":"Hamze Dokoohaki",
+         "orcid":"0000-0003-2131-7712"
+      },
+      {
+         "affiliation":"Finnish Meteorological Institute",
          "name":"Istem Fer",
          "orcid":"0000-0001-8236-303X"
       },
       {
-         "affiliation":"Boston Univeristy",
+         "affiliation":"University of Michigan",
          "name":"Anthony Gardella",
          "orcid":"0000-0003-4380-3412"
+      },
+      {
+         "affiliation":"Carnegie Mellon University",
+         "name":"Luke Dramko",
+         "orcid": "0000-0002-5845-5628"
+      },
+      {
+         "name":"Ayush Pradad"
+      },
+      {
+         "name":"Shashank Singh"
+      },
+      {
+         "affiliation":"Boston University",
+         "name":"Alexis Helgeson"
       },
       {
          "affiliation":"Pacific Northwest National Laboratory / University of Maryland",
@@ -48,20 +68,29 @@
          "orcid":"0000-0003-4136-8971"
       },
       {
-         "affiliation":"University of Notre Dame",
+         "affiliation":"NASA Goddard",
          "name":"Ann Raiho"
       },
       {
-         "affiliation":"Brigham Young University",
-         "name":"Anne Thomas"
+         "affiliation": "Microsoft Corporation",
+         "name":"Tezan Sahu",
+         "orcid": "0000-0003-1031-9683"
       },
       {
-         "affiliation":"Pennsylvania State University",
+         "name":"Mukul Maheshwari"
+      },
+      {
+         "affiliation":"University of Cambridge",
+         "name":"Anne Thomas",
+         "orcid": "0000-0002-2808-6462"
+      },
+      {
+         "affiliation":"CK Black Science Consulting",
          "name":"Chris Black",
          "orcid":"0000-0001-8382-298X"
       },
       {
-         "affiliation":"University of Wisconsin-Madison",
+         "affiliation":"Rutgers University",
          "name":"James Simkins"
       },
       {
@@ -81,19 +110,23 @@
          "name":"Liam Burke"
       },
       {
-         "affiliation":"Boston University",
-         "name":"Afshin Pourmokhtarian"
+         "affiliation":"Wentworth Institute of Technology",
+         "name":"Afshin Pourmokhtarian",
+         "orcid":"0000-0003-2453-1212"
       },
       {
          "affiliation":"Morton Arboretum",
          "name":"Christy Rollinson"
       },
       {
-         "name":"Shubham Agarwal"
+         "affiliation": "PulseLabs AI",
+         "name": "Shubham Agarwal",
+         "orcid": "0000-0002-2977-9615"
       },
       {
          "affiliation":"Purdue University",
-         "name":"Brady Hardiman"
+         "name":"Brady Hardiman",
+         "orcid": "0000-0001-6833-9404"
       },
       {
          "affiliation":"University of New South Wales",
@@ -105,7 +138,8 @@
       },
       {
          "affiliation":"Boston University",
-         "name":"Tess McCabe"
+         "name":"Tess McCabe",
+         "orcid": "0000-0002-8901-3267"
       },
       {
          "affiliation":"Boston University",
@@ -125,7 +159,7 @@
          "name":"Yan Zhao"
       },
       {
-         "affiliation":"University of Illinois at Urbana-Champaign",
+         "affiliation":"Uber",
          "name":"Jing Xia"
       }
    ],
@@ -138,8 +172,8 @@
       "Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. (2016) Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion. Remote Sensing of the Environment 183: 226-238",
       "LeBauer, David S, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P Long, & Michael C Dietze (2018). BETYdb: a yield, trait, and ecosystem service database applied to second generation bioenergy feedstock production. GCB Bioenergy, 10(1), 61-71. doi: 10.1111/gcbb.12420"
    ],
-   "notes":"The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), the Energy Biosciences Institute, and an Amazon AWS in Education Grant.",
-   "license":"NCSA",
+   "notes":"The PEcAn project is supported by the National Science Foundation (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891, EF #1501873, EF #1638577, EF #1702996), NASA Terrestrial Ecosystems #NNX14AH65G, NASA CMS #80NSSC17KO711, NASA NESSF #NNX16AO13H, the Department of Energy (ARPA-E awards #DE-AR0000594, #DE-AR0000598, and #SERDP RC-2636), DARPA (HR001118C0137), the Energy Biosciences Institute, Google Summer of Code, and an Amazon AWS in Education Grant.",
+   "license":"University of Illinois/NCSA Open Source License",
    "upload_type":"software",
    "access_right":"open"
 }

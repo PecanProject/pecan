@@ -217,8 +217,6 @@ interactive.plotting.sda: no visible binding for global variable
 interactive.plotting.sda: no visible binding for global variable
   ‘alphapink’
 load_data_paleon_sda: no visible global function definition for
-  ‘src_postgres’
-load_data_paleon_sda: no visible global function definition for
   ‘db.query’
 load_data_paleon_sda: no visible global function definition for ‘.’
 load_data_paleon_sda: no visible binding for global variable
@@ -853,7 +851,7 @@ Undefined global functions or variables:
   Rmcmc_tobit2space rmvnorm rnorm run.write.configs samplerNumberOffset
   samplerNumberOffset_tobit2space scale_color_manual scale_fill_manual
   Sd setNames settings Site site_id Site_ID site.ids sNPP spTransform
-  src_postgres stop.on.error summarise t1 tableGrob tail test_remote
+  stop.on.error summarise t1 tableGrob tail test_remote
   theme theme_bw theme_minimal TimeElapsed title tobit.model
   tobit2space_pred tobit2space.model toggle Type Upper Value var Var1
   Var2 Variable Variables walk weighted.hist weighted.mean write.csv

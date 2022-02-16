@@ -1,8 +1,8 @@
 ##--------------------------------------------------------------------------------------------------#
-##' Plots a prior density from a parameterized probability distribution  
+##' Plots a prior density from a parameterized probability distribution
 ##'
 ##' @param prior.density data frame containing columns x and y
-##' @param base.plot a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided
+##' @param base.plot a ggplot object (grob), created if none provided
 ##' @param prior.color color of line to be plotted
 ##' @return plot with prior density added
 ##' @seealso \code{\link{pr.dens}}
@@ -15,7 +15,7 @@
 ##' }
 plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "black") {
   if (is.null(base.plot)) {
-    base.plot <- PEcAn.utils::create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   new.plot <- base.plot + geom_line(data = prior.density, aes(x = x, y = y), color = prior.color)
   return(new.plot)
@@ -26,7 +26,7 @@ plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##'  Add posterior density to a plot
 ##'
 ##' @param posterior.density data frame containing columns x and y
-##' @param base.plot a ggplot object (grob), created by \code{\link[PEcAn.utils]{create.base.plot}} if none provided
+##' @param base.plot a ggplot object (grob), created if none provided
 ##' @return plot with posterior density line added
 ##' @aliases plot.posterior.density
 ##' @export
@@ -34,7 +34,7 @@ plot_prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##' @author David LeBauer
 plot_posterior.density <- function(posterior.density, base.plot = NULL) {
   if (is.null(base.plot)) {
-    base.plot <- PEcAn.utils::create.base.plot()
+    base.plot <- ggplot2::ggplot()
   }
   new.plot <- base.plot + geom_line(data = posterior.density, aes(x = x, y = y))
   return(new.plot)
@@ -45,20 +45,20 @@ plot_posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' Plot prior density and data
 ##'
 ##' @name priorfig
-##' @title Prior Figure 
+##' @title Prior Figure
 ##' @param priordata observations to be plotted as points
 ##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
 ##' @param trait name of trait
 ##' @param xlim limits for x axis
 ##' @author David LeBauer
-##' @return plot / grob of prior distribution with data used to inform the distribution 
+##' @return plot / grob of prior distribution with data used to inform the distribution
 ##' @export
 ##' @importFrom ggplot2 ggplot aes theme_bw scale_x_continuous scale_y_continuous element_blank element_text geom_rug geom_line geom_point
 priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto", fontsize = 18) {
   if (is.data.frame(priordata)) {
     colnames(priordata) <- "x"
   }
-  
+
   if (isTRUE(xlim == "auto")) {
     x.breaks <- pretty(c(signif(priordensity$x, 2)), 4)
     xlim     <- range(x.breaks)
@@ -66,27 +66,27 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
     x.breaks <- pretty(signif(xlim, 2), 4)
     xlim     <- range(c(x.breaks, xlim))
   }
-  
-  priorfigure <- ggplot() + theme_bw() + 
+
+  priorfigure <- ggplot() + theme_bw() +
     scale_x_continuous(limits = xlim, breaks = x.breaks, name = PEcAn.utils::trait.lookup(trait)$units) +
-    scale_y_continuous(breaks = NULL) + 
+    scale_y_continuous(breaks = NULL) +
     labs(title = PEcAn.utils::trait.lookup(trait)$figid) +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text.y = element_blank(),    ## hide y axis label
           axis.text.x = element_text(size = fontsize),
           axis.title.y = element_blank(),   ## hide y axis label
-          axis.title.x = element_text(size = fontsize * 0.9), 
+          axis.title.x = element_text(size = fontsize * 0.9),
           plot.title = element_text(size = fontsize * 1.1))
-  
+
   if (is.data.frame(priordata)) {
     priordata   <- subset(priordata, subset = !is.na(x))
     dx          <- with(priordata, min(abs(diff(x)[diff(x) != 0])))
-    ## add jitter to separate equal values 
+    ## add jitter to separate equal values
     priordata   <- transform(priordata, x = x + runif(length(x), -dx / 2, dx / 2))
     rug         <- geom_rug(data = priordata, aes(x))
     priorfigure <- priorfigure + rug
-  }  
+  }
   if (is.data.frame(priordensity[1])) {
     dens.line   <- geom_line(data = priordensity, aes(x, y))
     qpts        <- get.quantiles.from.density(priordensity)
@@ -102,8 +102,10 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##'
 ##' @param trait character, name of trait to be plotted
 ##' @param prior named distribution with parameters
-##' @param posterior.sample 
-##' @param trait.df 
+##' @param posterior.sample samples from posterior distribution
+##'   whose density should be plotted
+##' @param trait.df data to be plotted, in a format accepted by
+##'   \code{\link[PEcAn.MA]{jagify}}
 ##' @param fontsize,x.lim,y.lim,logx passed on to ggplot
 ##' @return plot (grob) object
 ##' @author David LeBauer
@@ -129,17 +131,23 @@ plot_trait <- function(trait,
                        x.lim = NULL,
                        y.lim = NULL,
                        logx = FALSE) {
-  
+
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "plot_trait requires package `PEcAn.visualization`,",
+      "but it is not installed. Please install it and try again.")
+  }
+
   ## Determine plot components
   plot_posterior <- !is.null(posterior.sample)
   plot_prior     <- !is.null(prior)
   plot_data      <- !is.null(trait.df)
-  
+
   ## get units for plot title
   units <- PEcAn.utils::trait.lookup(trait)$units
 
   if(plot_data)  trait.df <- PEcAn.MA::jagify(trait.df)
-  
+
   if (plot_prior) {
     prior.color   <- ifelse(plot_posterior, "grey", "black")
     prior.density <- create.density.df(distribution = prior)
@@ -153,7 +161,7 @@ plot_trait <- function(trait,
   } else {
     posterior.density <- data.frame(x = NA, y = NA)
   }
-  
+
   if (is.null(x.lim)) {
     if (!is.null(trait.df)) {
       data.range <- max(c(trait.df$Y, trait.df$Y + trait.df$se), na.rm = TRUE)
@@ -165,10 +173,10 @@ plot_trait <- function(trait,
   if (is.null(y.lim)) {
     y.lim <- range(posterior.density$y, prior.density$y, na.rm = TRUE)
   }
-  
+
   x.ticks <- pretty(c(0, x.lim[2]))
-  
-  base.plot <- PEcAn.utils::create.base.plot() + theme_bw()
+
+  base.plot <- ggplot2::ggplot() + theme_bw()
   if (plot_prior) {
     base.plot <- plot_prior.density(prior.density, base.plot = base.plot, prior.color = prior.color)
   }
@@ -176,23 +184,23 @@ plot_trait <- function(trait,
     base.plot <- plot_posterior.density(posterior.density, base.plot = base.plot)
   }
   if (plot_data) {
-    base.plot <- PEcAn.utils::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
+    base.plot <- PEcAn.visualization::plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
   }
-  
-  trait.plot <- base.plot + 
-    geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) + 
+
+  trait.plot <- base.plot +
+    geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) +
     scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, name = PEcAn.utils::trait.lookup(trait)$units) +
     labs(title = PEcAn.utils::trait.lookup(trait)$figid) +
-    theme(axis.text.x = element_text(size = fontsize$axis), 
-          axis.text.y = element_blank(), 
-          axis.title.x = element_text(size = fontsize$axis), 
-          axis.title.y = element_blank(), 
-          axis.ticks.y = element_blank(), 
-          axis.line.y = element_blank(), 
-          legend.position = "none", 
-          plot.title = element_text(size = fontsize$title), 
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(), 
+    theme(axis.text.x = element_text(size = fontsize$axis),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = fontsize$axis),
+          axis.title.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          legend.position = "none",
+          plot.title = element_text(size = fontsize$title),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
           panel.border = element_blank())
   return(trait.plot)
 } # plot_trait
@@ -205,19 +213,19 @@ plot_trait <- function(trait,
 ##' @aliases plot.densities
 ##' @param density.plot_inputs list containing trait.samples and trait.df
 ##' @param ... passed on to plot_density
-##' @param outdir directory in which to generate figure as pdf 
+##' @param outdir directory in which to generate figure as pdf
 ##' @author David LeBauer
-##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
+##' @return outputs plots in outdir/sensitivity.analysis.pdf file
 plot_densities <- function(density.plot_inputs, outdir, ...) {
   trait.samples       <- density.plot_inputs$trait.samples
   trait.df            <- density.plot_inputs$trait.df
   prior.trait.samples <- density.plot_inputs$trait.df
-  
+
   traits <- names(trait.samples)
   grDevices::pdf(paste0(outdir, "trait.densities.pdf"), height = 12, width = 20)
-  
+
   for (trait in traits) {
-    density.plot <- plot_density(trait.sample = trait.samples[, trait], 
+    density.plot <- plot_density(trait.sample = trait.samples[, trait],
                                  trait.df = trait.df[[trait]], ...)
     print(density.plot)
   }

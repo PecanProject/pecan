@@ -15,7 +15,7 @@ read_narr_var(nc, xy, variable, unit, flx, pb = NULL)
 
 \item{unit}{Output unit of variable to retrieve}
 
-\item{flx}{(Logical) If `TRUE`, format for `flx` variables. Otherwise, 
+\item{flx}{(Logical) If `TRUE`, format for `flx` variables. Otherwise,
 format for `sfc` variables. See [narr_flx_vars].}
 
 \item{pb}{Progress bar R6 object (default = `NULL`)}

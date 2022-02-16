@@ -65,7 +65,7 @@ You can now use the command `docker-compose` to work with the containers setup f
 
 ### First time setup
 
-The steps in this section only need to be done the fist time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
 
 * setup .env file
 * create folders to hold the data
@@ -127,9 +127,9 @@ docker-compose pull
 
 #### folders (optional)
 
-The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on a presentation done during [DockerCon 2020](https://docker.events.cube365.net/docker/dockercon/content/Videos/92BAM7vob5uQ2spZf). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, you will need to comment out the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
+The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on a presentation done during [DockerCon 2020](https://docker.events.cube365.net/docker/dockercon/content/Videos/92BAM7vob5uQ2spZf). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, by uncommenting the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
 
-If you have commented out the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with: 
+If you have uncommented the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with: 
 
 ```
 mkdir -p $HOME/volumes/pecan/{lib,pecan,portainer,postgres,rabbitmq,traefik}

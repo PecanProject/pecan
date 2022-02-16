@@ -41,9 +41,6 @@ Non-standard file/directory found at top level:
 * checking dependencies in R code ... WARNING
 '::' or ':::' imports not declared from:
   ‘dplyr’ ‘PEcAn.DB’
-Package in Depends field not imported from: ‘plotrix’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -64,59 +61,26 @@ find_inputs_without_formats: no visible binding for global variable
   ‘created_at’
 find_inputs_without_formats: no visible binding for global variable
   ‘updated_at’
-new.taylor: no visible global function definition for ‘taylor.diagram’
-new.taylor: no visible binding for global variable ‘obs’
-new.taylor: no visible binding for global variable ‘site’
-new.taylor: no visible global function definition for ‘cor’
-new.taylor: no visible global function definition for ‘sd’
-new.taylor: no visible global function definition for ‘text’
 write_out_table: no visible global function definition for
   ‘write.table’
 Undefined global functions or variables:
-  cor created_at obs read.table sd site taylor.diagram text updated_at
+  created_at read.table updated_at
   user_id user_id_code write.table
 Consider adding
-  importFrom("graphics", "text")
-  importFrom("stats", "cor", "sd")
   importFrom("utils", "read.table", "write.table")
 to your NAMESPACE file.
-
-Found the following calls to attach():
-File ‘PEcAn.qaqc/R/taylor.plot.R’:
-  attach(dataset)
-See section ‘Good practice’ in ‘?attach’.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘cull_database_entries’ ‘find_formats_without_inputs’
-  ‘find_inputs_without_formats’ ‘get_table_column_names’
-  ‘write_out_table’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'new.taylor'
-  ‘dataset’ ‘siteid’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘compare_ED2.Rmd’, ‘function_relationships.Rmd’,
-    ‘lebauer2013ffb.Rmd’, ‘module_output.Rmd’,
-    ‘Pre-release-database-cleanup.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 4 WARNINGs, 3 NOTEs
+Status: 1 WARNING, 3 NOTEs

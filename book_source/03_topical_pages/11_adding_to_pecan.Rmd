@@ -294,12 +294,15 @@ Open a connection with BETY. You may need to change the host name depending on w
 
 ```
 
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host ='localhost', 
-                            user     = "bety", 
-                            password = "bety")
-                            
-con <- bety$con
+con <- PEcAn.DB::db.open(
+  params = list(
+    driver = RPostgres::Postgres(),
+    dbname   = 'bety',
+    host ='localhost',
+    user     = "bety",
+    password = "bety")
+)
+
 ```
 
 Next you will set up the arguments for the function
@@ -309,7 +312,7 @@ in.path <- '.'
 in.prefix <- raw.file$dbfile.name
 outfolder <- '.'
 format.id <- 5000000002
-format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = con)
 lon <- -105.54
 lat <- 40.03
 format$time_zone <- "America/Chicago"
@@ -342,12 +345,14 @@ If your data is in a csv format you can use the `met2CF.csv`function to convert 
 Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host ='localhost', 
-                            user     = "bety", 
-                            password = "bety")
-                            
-con <- bety$con
+con <- PEcAn.DB::db.open(
+  params = list(
+    driver = RPostgres::Postgres(),
+    dbname = 'bety',
+    host ='localhost',
+    user = "bety",
+    password = "bety")
+)
 ```
 
 Prepare the arguments you need to execute the met2CF.csv function 
@@ -357,7 +362,7 @@ in.path <- 'path/where/the/raw/file/lives'
 in.prefix <- 'prefix_of_the_raw_file'
 outfolder <- 'path/to/where/you/want/to/output/thecsv/'
 format.id <- formatid of the format your created
-format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+format <- PEcAn.DB::query.format.vars(format.id=format.id, bety = con)
 lon <- longitude of your site
 lat <- latitude of your site
 format$time_zone <- time zone of your site

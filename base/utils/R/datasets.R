@@ -15,7 +15,7 @@
 #'  \item{Variable.Name}{Short name suitable for programming with}
 #'  \item{standard_name}{Name used in the NetCDF \href{http://cfconventions.org/standard-names.html}{CF metadata conventions} }
 #'  \item{Units}{Standard units for this variable. Do not call variables by these names if they are in different units.
-#'    See \code{\link[udunits2]{udunits}} for conversions to and from non-standard units}
+#'    See \code{\link[udunits2]{ud.convert}} for conversions to and from non-standard units}
 #'  \item{Long.Name}{Human-readable variable name, suitable for e.g. axis labels}
 #'  \item{Category}{What kind of variable is it? (Carbon pool, N flux, dimension, input driver, etc)}
 #'  \item{var_type}{Storage type (character, integer, etc)}

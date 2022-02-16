@@ -14,9 +14,11 @@ on:
 jobs:
   bookdown:
     runs-on: ubuntu-latest  
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     container: 
-      image: pecan/depends:R4.0.3
+      image: pecan/depends:R4.1
 
     steps:
     # checkout source code
@@ -31,8 +33,11 @@ jobs:
         mkdir -p book_source/extfiles
         cp -f documentation/tutorials/01_Demo_Basic_Run/extfiles/* book_source/extfiles
     # compile PEcAn code
-    - name: build
-      run: make -j1
+    - name: build needed modules
+      run: |
+        R CMD INSTALL base/logger
+        R CMD INSTALL base/remote
+        R CMD INSTALL base/utils
     # render book
     - name: Render Book
       run: |

@@ -55,8 +55,27 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     row <- year - start_year + 1
     results$file[row]       <- new.file
     results$host[row]       <- PEcAn.remote::fqdn()
-    results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
-    results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+    if(year == start_year & year != end_year){
+      results$startdate[row]  <- paste(start_date, "00:00:00")
+      results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+      diy <- PEcAn.utils::days_in_year(year) - lubridate::yday(start_date) + 1 # can handle partial start-year
+    }else if(year != start_year & year == end_year){
+      results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
+      results$enddate[row]    <- paste(end_date,   "23:59:59") 
+      diy <- lubridate::yday(end_date) # can handle partial end-year
+    }else{
+      if(year == start_year & year == end_year){
+        results$startdate[row]  <- paste(start_date, "00:00:00")
+        results$enddate[row]    <- paste(end_date,   "23:59:59") 
+        diy <- lubridate::yday(end_date) - lubridate::yday(start_date) + 1 # can handle single partial year
+      }else{
+        # regular full year
+        results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
+        results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
+        diy <- PEcAn.utils::days_in_year(year) # regular full (mid-)year
+      }
+    }
+
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF (gapfilled)"
 
@@ -157,8 +176,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
-    diy <- PEcAn.utils::days_in_year(year)
-    doy <- rep(seq_len(diy), each = 86400 / dt)
+    doy <- rep(seq_len(diy), each = 86400 / dt) # diy computed above
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
     cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
@@ -220,7 +238,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     Ts1 <- try(ncdf4::ncvar_get(nc = nc, varid = "soil_temperature"), silent = TRUE)
     if (!is.numeric(Ts1)) {
-      Lw <- missingarr
+      Ts1 <- missingarr
       myvar <- ncdf4::ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = myvar)
       ncdf4::ncvar_put(nc, varid = myvar, missingarr)

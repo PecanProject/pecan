@@ -1,10 +1,6 @@
 name: CI
 
 on:
-  repository_dispatch:
-    types:
-      - force
-
   push:
     branches:
       - master
@@ -15,8 +11,16 @@ on:
 
   pull_request:
 
+  issue_comment:
+    types:
+      - created
+
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: en_US.UTF-8
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
 
 jobs:
 
@@ -24,19 +28,17 @@ jobs:
   # R BUILD
   # ----------------------------------------------------------------------
   build:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
-
-    env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
+          - "4.0"
+          - "4.1"
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -54,6 +56,8 @@ jobs:
       run: Rscript scripts/generate_dependencies.R
     - name: check for out-of-date dependencies files
       uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      run: Rscript docker/depends/pecan.depends.R
 
     # compile PEcAn code
     - name: build
@@ -65,24 +69,22 @@ jobs:
   # R TEST
   # ----------------------------------------------------------------------
   test:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
@@ -113,19 +115,18 @@ jobs:
   # R CHECK
   # ----------------------------------------------------------------------
   check:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
@@ -146,11 +147,6 @@ jobs:
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-    # need processx > 3.5.2 to avoid cryptic errors from
-    # https://github.com/r-lib/rcmdcheck/issues/140
-    # Remove when https://github.com/r-lib/processx/pull/299 reaches CRAN
-    - name: update processx
-      run: Rscript -e 'devtools::install_github("r-lib/processx")'
 
     # run PEcAn checks
     - name: check
@@ -166,24 +162,22 @@ jobs:
   # SIPNET TESTS
   # ----------------------------------------------------------------------
   sipnet:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
         image: mdillon/postgis:9.5
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    env:
-      NCPUS: 2
-      PGHOST: postgres
-      CI: true
 
     container: 
       image: pecan/depends:R${{ matrix.R }}
