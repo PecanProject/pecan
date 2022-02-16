@@ -605,18 +605,27 @@ convert.input <-
     }
     
     # create curl options
+    curloptions <- list(followlocation = TRUE)
     if (!is.null(browndog$username) && !is.null(browndog$password)) {
-      userpwd <- paste(browndog$username, browndog$password, sep = ":")
-      curloptions <- list(userpwd = userpwd, httpauth = 1L)
+      curloptions$userpwd = paste(
+        browndog$username, browndog$password, sep = ":"),
+      curloptions$httpauth = 1L
     }
-    curloptions <- c(curloptions, followlocation = TRUE)
     
     # check if we can do conversion
-    out.html <- curl::curl_download(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",
-                              browndog$inputtype), curloptions)
-    if (outputtype %in% unlist(strsplit(out.html, "\n"))) {
-      PEcAn.logger::logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
-                        "through Brown Dog"))
+    h <- curl::new_handle()
+    curl::handle_setopt(h, .list = curloptions)
+    out.html <- readLines(
+      curl::curl(
+        url = paste0(
+          "http://dap-dev.ncsa.illinois.edu:8184/inputs/",
+          browndog$inputtype),
+        handle = h))
+    if (outputtype %in% out.html) {
+      PEcAn.logger::logger.info(
+        "Conversion from", browndog$inputtype,
+        "to", outputtype,
+        "through Brown Dog")
       conversion <- "browndog"
     }
   }
@@ -637,17 +646,16 @@ convert.input <-
     }
     
     # post zipped file to Brown Dog
-    h <- new_handle()
-    handle_setform(h,
-    fileData = curl::form_file(curl::curl_upload(zipfile, url))
-    )
-    html <- curl::curl_fetch_memory(url, handle = h)
+    h <- curl::new_handle()
+    curl::handle_setopt(handle = h, .list = curloptions)
+    curl::handle_setform(handle = h, fileData = curl::form_file(zipfile))
+    html <- readLines(curl::curl(url = url, handle = h))
     link <- XML::getHTMLLinks(html)
     file.remove(zipfile)
     
     # download converted file
     outfile <- file.path(outfolder, unlist(strsplit(basename(link), "_"))[2])
-    download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)
+    download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry = TRUE)
     
     # unzip downloaded file if necessary
     if (file.exists(outfile)) {
