@@ -466,7 +466,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
   
   #---- Saving the chains
-  save(dat, file=paste0("SDA/Chains_", t, ".RData"))
+  save(dat, file=file.path(settings$outdir, paste0('dat',t,'.Rdata')))
   
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
