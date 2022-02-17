@@ -34,7 +34,7 @@
 ##' 
 ##' site_info <- qry_results.2
 ##' verbose <- TRUE
-##' system.time(result_soc <- soc_extract(site_info=site_info, verbose=verbose))
+##' system.time(result_soc <- soilgrids.soc.extract(site_info=site_info, verbose=verbose))
 ##' result_soc
 ##' 
 ##' }
