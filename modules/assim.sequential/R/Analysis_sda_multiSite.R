@@ -434,7 +434,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       Rmcmc,
       Cmodel,
       Cmcmc,
-      file = file.path(settings$outdir,"SDA","NimbleVars.RData")
+      file = file.path(settings$outdir,"NimbleVars.RData")
     )
     # if t>1 in GEF --------------------------------------------   
   } else {
