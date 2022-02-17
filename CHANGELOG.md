@@ -19,6 +19,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
 
+### Removed
+
+- the check image (used in kubernetes) is removed, please use ncsa/checks instead.
+
 ## [1.7.2] - 2021-10-04
 
 ### Due to dependencies, PEcAn is now using R 4.0.3 for Docker images.
