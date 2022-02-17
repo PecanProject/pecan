@@ -313,7 +313,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
   
   ### create matrix the describes the support for each observed state variable at time t
-  interval <- matrix(NA, length(obs.mean[[t]]), 2)
+  interval <- matrix(NA, length(unlist(obs.mean[[t]])), 2)
   
   # if this function is revoked by multisite then the structure of data looks a bit different.
   if (exists('blocked.dis')){
