@@ -5,7 +5,7 @@
 \title{extract.LandTrendr.AGB}
 \usage{
 extract.LandTrendr.AGB(
-  site_info,
+  site_info = NULL,
   dataset = "median",
   buffer = NULL,
   fun = "mean",
@@ -16,7 +16,9 @@ extract.LandTrendr.AGB(
 )
 }
 \arguments{
-\item{site_info}{list of site info for parsing AGB data: list(site_id, site_name, lat, lon, time_zone)}
+\item{site_info}{A BETYdb site info dataframe containing at least each site ID, sitename, 
+latitude, longitude, and time_zone. e.g. c(site_qry$id, site_qry$sitename, site_qry$lon,
+site_qry$lat, site_qry$time_zone)}
 
 \item{dataset}{Which LandTrendr dataset to parse, "median" or "stdv".Default: "median"}
 
@@ -55,8 +57,6 @@ ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
 ids = site_ID, .con = con))
 suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
 suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat, 
-lon=qry_results$lon, time_zone=qry_results$time_zone)
 data_dir <- "~/scratch/agb_data/"
 
 results <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", 

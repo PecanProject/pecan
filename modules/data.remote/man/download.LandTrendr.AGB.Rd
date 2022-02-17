@@ -16,16 +16,19 @@ download.LandTrendr.AGB(
 )
 }
 \arguments{
-\item{outdir}{Where to place output}
+\item{outdir}{Where to store the output - the downloaded LandTrendr AGB raster data}
 
-\item{target_dataset}{Which LandTrendr dataset to download?  Default = "biomass"}
+\item{target_dataset}{Use these argument to select which LandTrendr dataset to download. 
+For v1 the default is "biomass" For v2 you should use "biomassfiaald"}
 
 \item{product_dates}{What data product dates to download}
 
-\item{product_version}{Optional. LandTrend AGB is provided with two versions, 
-v0 and v1 (latest version)}
+\item{product_version}{Optional. LandTrend AGB is provided with three versions, 
+v0, v1, and v2 (latest version)}
 
-\item{con}{Optional database connection. If specified then the code will check to see}
+\item{con}{Optional database connection. If specified then the code will check to see 
+if the file already exists in PEcAn before downloading, and will also create a database 
+entry for new downloads - NOT YET IMPLEMENTED}
 
 \item{run_parallel}{Logical. Download and extract files in parallel?}
 
@@ -34,7 +37,7 @@ v0 and v1 (latest version)}
 \item{overwrite}{Logical. Overwrite existing files and replace with new versions}
 }
 \value{
-data.frame summarize the results of the function call
+data.frame summarizing the results of the function call
 }
 \description{
 download.LandTrendr.AGB
@@ -44,13 +47,16 @@ download.LandTrendr.AGB
 outdir <- "~/scratch/abg_data/"
 product_dates <- c(1990, 1991, 1995)  # using discontinous, or specific years
 product_dates2 <- seq(1992, 1995, 1)  # using a date sequence for selection of years
-product_version = "v1"
+product_version = "v2"
+target_dataset = "biomassfiaald"
 
-results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir,
+           target_dataset=target_dataset,
            product_dates = product_dates, 
            product_version = product_version)
 
 results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+           target_dataset=target_dataset,
            product_dates = product_dates2, 
            product_version = product_version)
 }
