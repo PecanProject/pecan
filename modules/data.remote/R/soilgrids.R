@@ -4,6 +4,7 @@
 ##' @param site_info A BETYdb site info dataframe containing at least each site ID, sitename, 
 ##' latitude, longitude, and time_zone. e.g. c(site_qry$id, site_qry$sitename, site_qry$lon,
 ##' site_qry$lat, site_qry$time_zone)
+##' @param outdir Directory to store SOC data.  Format *.Rdata
 ##' @param verbose logical. If TRUE show the extraction progress bar
 ##' 
 ##' ##' @examples
@@ -51,7 +52,7 @@
 ##' @export
 ##' @author Qianyu Li, Shawn P. Serbin
 ##' 
-soilgrids.soc.extract <- function (site_info=NULL, verbose=TRUE) {
+soilgrids.soc.extract <- function (site_info=NULL, outdir=NULL, verbose=TRUE) {
   
   
   if (is.null(site_info)) {
@@ -157,7 +158,6 @@ soilgrids.soc.extract <- function (site_info=NULL, verbose=TRUE) {
     return(sum((pred - val) ^ 2))
   }
   
-  
   fitQ <- function(x) {
     val = x$Value
     stat = as.character(x$Quantile)
@@ -213,5 +213,12 @@ soilgrids.soc.extract <- function (site_info=NULL, verbose=TRUE) {
                                  "30-60cm",
                                  "60-100cm",
                                  "100-200cm")
+  if (!is.null(outdir)) {
+    PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"soilgrids_soc_data.RData")))
+    if (! file.exists(outdir)) dir.create(outdir,recursive=TRUE)
+    soilgrids_soc_data <- list("Mean_soc" = mean_site.2, "Sdev_soc" = std_site.2)
+    save(outdir, file = file.path(outdir,"soilgrids_soc_data.RData"))
+  }
+  # return the results to the terminal as well
   return(list("Mean_soc" = mean_site.2, "Sdev_soc" = std_site.2))
 } ### end of function

@@ -4,12 +4,14 @@
 \alias{soilgrids.soc.extract}
 \title{soilgrids.soc.extract}
 \usage{
-soilgrids.soc.extract(site_info = NULL, verbose = TRUE)
+soilgrids.soc.extract(site_info = NULL, outdir = NULL, verbose = TRUE)
 }
 \arguments{
 \item{site_info}{A BETYdb site info dataframe containing at least each site ID, sitename, 
 latitude, longitude, and time_zone. e.g. c(site_qry$id, site_qry$sitename, site_qry$lon,
 site_qry$lat, site_qry$time_zone)}
+
+\item{outdir}{Directory to store SOC data.  Format *.Rdata}
 
 \item{verbose}{logical. If TRUE show the extraction progress bar
 
