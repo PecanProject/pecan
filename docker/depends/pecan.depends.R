@@ -22,6 +22,7 @@ lapply(c(
 # install all packages (depends, imports, suggests)
 wanted <- c(
 'abind',
+'amerifluxr',
 'BayesianTools',
 'binaryLogic',
 'BioCro',
