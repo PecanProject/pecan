@@ -14,7 +14,7 @@
 #' @examples
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
-  # open netcdf
+    # open netcdf
   nc <- ncdf4::nc_open(input_file)
   
   if(stringr::str_detect(input_file, "ens")){
