@@ -5,7 +5,7 @@ library("plotly")
 library("gganimate")
 library("tidyverse")
 library('PEcAn.all')
-library("curl")
+library("RCurl")
 source("/fs/data3/kzarada/NEFI/Willow_Creek/forecast.graphs.R")
 #source("/fs/data3/kzarada/NEFI/Willow_Creek/download_WCr_met.R")
 
