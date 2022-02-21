@@ -20,7 +20,6 @@
 cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_name = "dryMass") {
   
   ## load data
-  
   dat <- veg_info
   
   # Grab DBH
