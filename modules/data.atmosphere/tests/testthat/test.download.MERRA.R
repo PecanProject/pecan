@@ -5,6 +5,8 @@ setup(dir.create(outdir, showWarnings = FALSE, recursive = TRUE))
 teardown(unlink(outdir, recursive = TRUE))
 
 test_that("MERRA download works", {
+  skip_on_ci()
+  
   start_date <- "2009-06-01"
   end_date <- "2009-06-04"
   dat <- download.MERRA(outdir, start_date, end_date,
