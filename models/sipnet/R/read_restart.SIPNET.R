@@ -46,7 +46,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "g/m^2", "Mg/ha")
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
     
     # calculate fractions, store in params, will use in write_restart
