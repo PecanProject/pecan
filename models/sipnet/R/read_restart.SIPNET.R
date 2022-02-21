@@ -27,21 +27,28 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   # Read ensemble output
   ens <- PEcAn.utils::read.output(runid = runid,
-                     outdir = file.path(outdir, runid),
-                     start.year = lubridate::year(stop.time),
-                     end.year = lubridate::year(stop.time),
-                     variables = var.names)
+                                  outdir = file.path(outdir, runid),
+                                  start.year = lubridate::year(stop.time),
+                                  end.year = lubridate::year(stop.time),
+                                  variables = c(var.names,"time_bounds"))
+  #calculate last
+  # if(firstrun){
+  #   last <- 1568
+  # }else{
+  #   last <- length(ens[[1]])
+  # }
+  start.time <- as.Date(paste0(lubridate::year(stop.time),"-01-01"))
+  time_var <- ens$time_bounds[1,]
+  real_time <- as.POSIXct(time_var*3600*24, origin = start.time)
+  last <- which(as.Date(real_time)==as.Date(stop.time))[1]
   
-  last <- length(ens[[1]])
-  
-
   params$restart <-c() ## This will be filled with some restart coefficient if above ground wood is in the state variables.
-
+  
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
     forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
-   
+    
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
@@ -50,29 +57,29 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
     params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
-
+    
     if (length(params$restart)>0)
-    names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+      names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
-
+  
   if ("GWBI" %in% var.names) {
-       forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
-           names(forecast[[length(forecast)]]) <- c("GWBI")
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+    names(forecast[[length(forecast)]]) <- c("GWBI")
   }
-
+  
   # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
   if ("NEE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- mean(ens$NEE)  ## 
     names(forecast[[length(forecast)]]) <- c("NEE")
   }
   
-
+  
   # Reading in Latent heat flux for SDA  - unit is MW m-2
   if ("Qle" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$Qle[last]*1e-6  ##  
     names(forecast[[length(forecast)]]) <- c("Qle")
   }
-
+  
   if ("leaf_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  ## kgC/m2*m2/kg*2kg/kgC
     names(forecast[[length(forecast)]]) <- c("LeafC")
@@ -87,8 +94,8 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
-
-    
+  
+  
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
@@ -109,7 +116,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
- 
+  
   print(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)
