@@ -91,7 +91,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("litter_carbon_content" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$litter_carbon_content[last], 'g m-2', 'kg m-2')  ##kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
   
@@ -113,7 +113,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotSoilCarb[last], 'g m-2', 'kg m-2')  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
