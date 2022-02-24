@@ -288,7 +288,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template sta file
   sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
-  sta_file <- file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
+  sta_file <- file.path(rundir, settings$pfts$pft$name, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
   
   XML::saveXML(sta_xml, file = sta_file)
   
@@ -318,8 +318,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## instead of using a template, this could be easier if we prepare a dataframe and use SticsRFiles::gen_tec_xml
   tec_df <- data.frame(Tec_name = paste0(defaults$pft$name, "_tec.xml")) # note more than one PFT cases
   
-  SticsRFiles::gen_tec_xml(out_path = rundir, param_table = tec_df)
-  
+
   # the following formalisms exist in the tec file:
   ## supply of organic residus
   ## soil tillage
@@ -335,6 +334,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   if(!is.null(settings$run$inputs$harvest)){
     
     h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
+    
+    #temporary dev hack, give 2-years of intervention until multiple usms
+    h_days <- h_days[1:4,]
     
     # param names
     h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d
@@ -378,11 +380,24 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # same usm -> continue columns
   tec_df <- cbind(tec_df, harvest_tec)
-  SticsRFiles::gen_tec_xml(out_path = rundir, param_table = tec_df)
+  
+  # these shouldn't be empty even if we don't use them (values from timothy example in STICS)
+  tec_df$iplt0 <- 999 # date of sowing
+  tec_df$profsem <- 2 # depth of sowing
+  tec_df$densitesem <- 100 # plant sowing density
+  tec_df$variete <- 1 # cultivar number corresponding to the cultivar name in the plant file (could be passed via a field activity file)
+  tec_df$irecbutoir <- 999 #latest date of harvest (imposed if the crop cycle is not finished at this date)
+  tec_df$profmes <- 120 # depth of measurement of the soil water reserve (cm)
+  tec_df$engrais <- 1 # fertilizer type
+  tec_df$concirr <- 0.11 # concentration of mineral N in irrigation water (kg ha-1 mm-1)
+  tec_df$ressuite <- 'straw+roots' # type of crop residue
+  tec_df$h2ograinmax <- 0.32 # maximal water content of fruits at harvest
+    
+  SticsRFiles::gen_tec_xml(out_path = file.path(rundir, defaults$pft$name), param_table = tec_df)
   
   # TODO: more than 1 USM, rbind
   
-  SticsRFiles::convert_xml2txt(xml_file = file.path(rundir, paste0(defaults$pft$name, "_tec.xml")), 
+  SticsRFiles::convert_xml2txt(xml_file = file.path(rundir, defaults$pft$name, paste0(defaults$pft$name, "_tec.xml")), 
                                java_dir = javastics_path)
   
   
@@ -452,7 +467,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   usm_list[[1]][[11]]$ftec <- paste0(defaults$pft$name, "_tec.xml")
   
   # name of the LAI forcing file for main plant (null if none)
-  usm_list[[1]][[11]]$flai <- "null" # hardcode for now
+  usm_list[[1]][[11]]$flai <- "default.lai" # hardcode for now, doesn't matter when codesimul==0
   
   # name of the plant file for associated plant (intercropping)
   usm_list[[1]][[12]]$fplt <- "null" # hardcode for now
