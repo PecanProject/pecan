@@ -15,8 +15,13 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   
   cd "@RUNDIR@"
   
-  @CMD_GENERATE@
-  @CMD_RUN@
+  # call stics_wrapper
+  echo "
+  javastics_path = '@JAVASTICS_PATH@'
+  sticsrun_dir = '@RUNDIR@'
+  wrapper_options = SticsOnR::stics_wrapper_options(javastics_path = javastics_path, data_dir = sticsrun_dir)
+  SticsOnR::stics_wrapper(model_options = wrapper_options)
+  " | R --vanilla
   
   # copy log
   mv "@RUNDIR@/stics_errors.log" "@OUTDIR@"
