@@ -312,6 +312,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ############################ Prepare Technical File ##################################
   
   ## this is where we modify management practices
+  ## TODO: use ICASA compatible json file
   
   ## instead of using a template, this could be easier if we prepare a dataframe and use SticsRFiles::gen_tec_xml
   tec_df <- data.frame(Tec_name = paste0(defaults$pft$name, "_tec.xml")) # note more than one PFT cases
@@ -332,9 +333,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   if(!is.null(settings$run$inputs$harvest)){
     
     h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
-    
-    #temporary dev hack, give 2-years of intervention until multiple usms
-    h_days <- h_days[1:4,]
     
     # param names
     h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d

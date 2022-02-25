@@ -22,9 +22,9 @@
 ##' @export
 ##'
 ##' @author Istem Fer
+##' 
 model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, overwrite = FALSE) {
-
-
+  
   ### Read in model output in STICS format
   out_files <- list.files(outdir)
   
@@ -38,7 +38,7 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   
   # check that specified years and output years match
   if (!all(year_seq %in% simulation_years)) {
-    PEcAn.logger::logger.severe("Years selected for model run and STICS output years do not match ")
+    PEcAn.logger::logger.info("Years selected for model run and STICS output years do not match.")
   }
   
   # determine time step?
@@ -53,6 +53,26 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     
     outlist <- list()
     outlist[[1]] <- stics_output[thisyear, "lai.n."]  # LAI in (m2 m-2)
+    
+    # daily amount of CO2-C emitted due to soil mineralisation (humus and organic residues) (kg ha-1 d-1)
+    HeteroResp <- stics_output[thisyear, "CO2sol"]  
+
+    #outlist[[2]] <- udunits2::ud.convert(HeteroResp, "ha-1 day-1", "m-2 s-1")
+    
+    # need to study NEE in STICS, growth rate is calcultaed after photosynthesis and remobilized reserves
+    # also check the final utput is not shoot growth only
+    
+    # dltams(n): daily growth rate of the plant (t.ha-1.d-1)
+    dltams      <- stics_output[thisyear, "dltams.n."]   * 1000 * 0.48
+    
+    # dltaremobil: daily amount of perennial reserves remobilised (t.ha-1.d-1)
+    dltaremobil <- stics_output[thisyear, "dltaremobil"] * 1000 * 0.48
+    
+    # is it? is autotrophic respiration accounted for?
+    NPP <- dltams - dltaremobil # kgC ha-1 d-1
+    #outlist[[3]] <- udunits2::ud.convert(NPP, "ha-1 day-1", "m-2 s-1")
+    
+    outlist[[2]] <- -1 * udunits2::ud.convert(NPP - HeteroResp, "ha-1 day-1", "m-2 s-1")
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -69,6 +89,7 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     
     nc_var <- list()
     nc_var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[2]] <- PEcAn.utils::to_ncvar("NEE", dims)
     
     # ******************** Declare netCDF variables ********************#
     

@@ -36,7 +36,7 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   fi
 
   # copy output
-  mv @RUNDIR@/*.sti @OUTDIR@
+  mv @USMDIR@/*.sti @OUTDIR@
 
   # convert to MsTMIP
   echo "library (PEcAn.STICS)

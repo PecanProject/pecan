@@ -43,3 +43,6 @@ mafrais
 pdsfruitfrais
 Qdrain
 rnet
+CO2sol
+dltams(n)
+dltaremobil
