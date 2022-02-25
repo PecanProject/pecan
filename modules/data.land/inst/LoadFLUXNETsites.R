@@ -8,7 +8,7 @@
 
 user.id = 1000000001
 
-library("curl")
+library("RCurl")
 library("XML")
 library(PEcAn.DB)
 
