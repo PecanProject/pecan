@@ -31,7 +31,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
-  pltdir  <- file.path(settings$host$rundir, run.id, "plant")
+  usmdir  <- file.path(settings$host$rundir, run.id, settings$pfts$pft$name) # will think about multiple usm/PFT case
   cfgdir  <- file.path(settings$host$rundir, run.id, "config")
   bindir  <- file.path(settings$host$rundir, run.id, "bin")
   outdir  <- file.path(settings$host$outdir, run.id)
@@ -41,7 +41,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
   ## create plant, config and bin dirs
-  dir.create(pltdir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(usmdir, showWarnings = FALSE, recursive = TRUE)
   dir.create(cfgdir, showWarnings = FALSE, recursive = TRUE)
   dir.create(bindir, showWarnings = FALSE, recursive = TRUE)
   
@@ -79,7 +79,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names  <- names(pft.traits)
     
-    plant_file <- file.path(pltdir, paste0(names(trait.values)[pft], "_plt.xml"))
+    plant_file <- file.path(usmdir, paste0(names(trait.values)[pft], "_plt.xml"))
     
     if(names(trait.values)[pft] != "env"){
       # save the template, will be overwritten below
@@ -227,13 +227,13 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ## DO NOTHING FOR NOW
   gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
-  gen_file <- file.path(rundir, "param_gen.xml")
+  gen_file <- file.path(usmdir, "param_gen.xml")
   XML::saveXML(gen_xml, file = gen_file)
   SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
   # may delete the xml after this
   
   newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
-  newf_file <- file.path(rundir, "param_newform.xml")
+  newf_file <- file.path(usmdir, "param_newform.xml")
   XML::saveXML(newf_xml, file = newf_file)  
   SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
   
@@ -245,7 +245,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template ini file
   ini_xml  <- XML::xmlParse(system.file("pecan_ini.xml", package = "PEcAn.STICS"))
-  ini_file <- file.path(rundir, paste0(defaults$pft$name, "_ini.xml"))
+  ini_file <- file.path(usmdir, paste0(defaults$pft$name, "_ini.xml"))
   
   # write the ini file 
   XML::saveXML(ini_xml, file = ini_file)
@@ -265,7 +265,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
   #### TODO: revise others to have txt templates directly in the package
   
-  sols_file <- file.path(rundir, "param.sol")
+  sols_file <- file.path(usmdir, "param.sol")
   
   # cp template sols file (txt)
   file.copy(system.file("param.sol", package = "PEcAn.STICS"), sols_file)
@@ -286,7 +286,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template sta file
   sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
-  sta_file <- file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
+  sta_file <- file.path(usmdir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
   
   XML::saveXML(sta_xml, file = sta_file)
   
@@ -312,10 +312,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ############################ Prepare Technical File ##################################
   
   ## this is where we modify management practices
-  
-  # probably need to do this before in the code
-  usmdir  <- file.path(rundir, defaults$pft$name)
-  dir.create(usmdir, showWarnings = FALSE, recursive = TRUE)
   
   ## instead of using a template, this could be easier if we prepare a dataframe and use SticsRFiles::gen_tec_xml
   tec_df <- data.frame(Tec_name = paste0(defaults$pft$name, "_tec.xml")) # note more than one PFT cases
@@ -490,29 +486,23 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   clim_run <- do.call("rbind", clim_list)
   write.table(clim_run, file.path(usmdir, "climat.txt"), col.names = FALSE, row.names = FALSE)
 
-  # stics path
-  # stics_path <- settings$model$binary
-  
   # symlink to binary
   file.symlink(stics_path, bindir)
-  
-  # generate STICS input files using JavaStics
-  # jexe <- file.path(gsub("bin","", dirname(stics_path)), "JavaSticsCmd.exe")
+  stics_exe <- file.path(bindir, basename(stics_path))
   
   usm_name <- defaults$pft$name
   
-  # if this script can already create the txts, bypass this step
-  # cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, usm_name)
-  
   # copy *.mod files
-  mod_files <- c(file.path(gsub("bin","example", dirname(stics_path)), "var.mod"),
-                 file.path(gsub("bin","example", dirname(stics_path)), "rap.mod"),
-                 file.path(gsub("bin","example", dirname(stics_path)), "prof.mod"))
-  file.copy(mod_files, rundir)
+  file.copy(system.file("var.mod", package = "PEcAn.STICS"), usmdir)
+  file.copy(system.file("rap.mod", package = "PEcAn.STICS"), usmdir)
+  file.copy(system.file("prof.mod", package = "PEcAn.STICS"), usmdir)
   
   #cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)
   
   # using SticsOnR wrapper in job.sh now - SticsOnR::stics_wrapper(model_options = wrapper_options)
+  # used to be:
+  # cmd_generate <- paste("java -jar", jexe,"--generate-txt", rundir, usm_name)
+  # cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)
   
 
   #-----------------------------------------------------------------------
@@ -554,9 +544,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
   jobsh <- gsub("@MODFILE@", paste0("mod_s", usm_name, ".sti"), jobsh)
-  
-  #jobsh <- gsub("@CMD_GENERATE@", cmd_generate, jobsh)
-  jobsh <- gsub("@JAVASTICS_PATH@", javastics_path, jobsh)
+  jobsh <- gsub("@STICSEXE@", stics_exe, jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

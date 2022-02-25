@@ -17,9 +17,10 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   
   # call stics_wrapper
   echo "
-  javastics_path = '@JAVASTICS_PATH@'
+  javastics_path = '@RUNDIR@'
+  stics_exe = '@STICSEXE@'
   sticsrun_dir = '@RUNDIR@'
-  wrapper_options = SticsOnR::stics_wrapper_options(javastics_path = javastics_path, data_dir = sticsrun_dir)
+  wrapper_options = SticsOnR::stics_wrapper_options(javastics_path = javastics_path, stics_exe = stics_exe, data_dir = sticsrun_dir, force = TRUE)
   SticsOnR::stics_wrapper(model_options = wrapper_options)
   " | R --vanilla
   
