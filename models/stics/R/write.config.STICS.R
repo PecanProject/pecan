@@ -542,6 +542,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
+  jobsh <- gsub("@USMDIR@", usmdir, jobsh)
   
   jobsh <- gsub("@MODFILE@", paste0("mod_s", usm_name, ".sti"), jobsh)
   jobsh <- gsub("@STICSEXE@", stics_exe, jobsh)
