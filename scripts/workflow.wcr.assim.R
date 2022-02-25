@@ -11,8 +11,6 @@
 # Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
-library(PEcAn.utils)
-library(curl)
 # make sure always to call status.end
 options(warn = 1)
 options(error = quote({
