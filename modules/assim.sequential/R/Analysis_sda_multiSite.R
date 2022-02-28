@@ -91,13 +91,11 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   } else{
     q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
   } 
-  #Loading nimbles functions
-  #if (!exists('GEF.MultiSite.Nimble')) load_nimble()  
-  #load_nimble()
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   Pf = cov(X) # Cov Forecast - This is used as an initial condition
+  diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
   
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
   #Observed inputs
@@ -158,16 +156,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       #The purpose of this step is to impute data for mu.f
       #where there are zero values so that
       #mu.f is in 'tobit space' in the full model
+      diag(Pf)[which(diag(Pf)<0.1)] <- min(diag(Pf)[which(diag(Pf) >= 0.1)]) #fixing det(Pf)==0
       constants.tobit2space = list(N = nrow(X),
                                    J = length(mu.f))
-      
-      data.tobit2space = list(
-        y.ind = x.ind,
-        y.censored = x.censored,
-        mu_0 = rep(0, length(mu.f)),
-        lambda_0 = diag(10, length(mu.f)),
-        nu_0 = 3
-      )#some measure of prior obs
+      data.tobit2space <- list(y.ind = x.ind,
+                               y.censored = x.censored,
+                               mu_0 = rep(0,length(mu.f)),
+                               lambda_0 = solve(diag(1000,length(mu.f))), #can try solve
+                               nu_0 = ncol(X)+1,
+                               wts = wts*nrow(X), #sigma x2 max Y
+                               Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
       
       inits.tobit2space <<-
         list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
@@ -230,9 +228,10 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     
     dat.tobit2space <-
       runMCMC(Cmcmc_tobit2space,
+              nchains = 1,
               niter = 50000,
               progressBar = TRUE)
-    
+    #dat.tobit2space <- do.call(rbind, dat.tobit2space)
     ## update parameters
     mu.f <-
       colMeans(dat.tobit2space[, grep("muf", colnames(dat.tobit2space))])
@@ -270,6 +269,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       if (q.type==Site.q) { # if we wanna estimate a q per site
         aqq <-
           array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
+        for (i in 1:nt) {
+          aqq[,,i] <- diag(length(elements.W.Data))
+        }
       } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
         
         site.pfts <- settings %>%
@@ -301,13 +303,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     }
 
   } else{
-    if (ncol(aqq) > 1 & nrow(aqq) > 1)
-    aqq[, , t] <- Local.support(
-      aqq[, , t],
-      distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
-                ceiling(elements.W.Data/length(var.names))],
-      settings$state.data.assimilation$scalef %>% as.numeric()
-    )
+    # if(length(elements.W.Data)==ncol(aqq[, , t])){
+      if (ncol(aqq) > 1 & nrow(aqq) > 1)
+        aqq[, , t] <- Local.support(
+          aqq[, , t],
+          distances[ceiling(elements.W.Data/length(var.names)), # finding sites with data
+                    ceiling(elements.W.Data/length(var.names))],
+          settings$state.data.assimilation$scalef %>% as.numeric()
+        )
+    # }
+    
   }
 
 
@@ -344,27 +349,20 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   y.ind <- as.numeric(Y > interval[, 1])
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
   
-  if(t == 1){ #TO DO need to make something that works to pick whether to compile or not
+  recompileGEF <- extraArg$recompileGEF
+  if(t == 1 | recompileGEF){ #TO DO need to make something that works to pick whether to compile or not
   # initial Q depends on the size of aqq
-    q.tmp <- diag(1, nrow(aqq), ncol(aqq))
-
-    if (q.type == single.q ){
-      aq.arg <- 1
-    } else{
-      aq.arg <-aqq[,,t]
-    }
+    aq.arg <- aqq[,,t]
     
     #Initial values
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
-        qq = 1,
-        X = as.vector(mu.f)[length(elements.W.Data)],
+        X = as.vector(mu.f)[elements.W.Data],
         Xall = as.vector(mu.f),
-        Xs = as.vector(mu.f)[length(elements.W.Data)],
+        Xs = as.vector(mu.f)[elements.W.Data],
         q = diag(1, length(elements.W.Data), length(elements.W.Data))
       ) #
-    
     dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
                             Q = c(nrow(aqq), ncol(aqq))
@@ -406,7 +404,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
     
-    conf$addMonitors(c("X","Xall","q")) 
+    conf$addMonitors(c("X","Xall","q","Xs")) 
     samplerNumberOffset <<- length(conf$getSamplers())
     
     for(i in 1:length(y.ind)) {
@@ -447,10 +445,17 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     Cmodel$pf <- Pf
     Cmodel$r <- solve(R)
     
-    inits.pred = list(q = diag(length(elements.W.Data)),
-                      X.mod = as.vector(mu.f),
-                      X = as.vector(mu.f)[elements.W.Data]) #
-    
+    # inits.pred = list(q = diag(length(elements.W.Data)),
+    #                   X.mod = as.vector(mu.f),
+    #                   X = as.vector(mu.f)[elements.W.Data]) #
+    inits.pred <-
+      list(
+        X.mod = as.vector(mu.f),
+        X = as.vector(mu.f)[elements.W.Data],
+        Xall = as.vector(mu.f),
+        Xs = as.vector(mu.f)[elements.W.Data],
+        q = diag(1, length(elements.W.Data), length(elements.W.Data))
+      ) #
     Cmodel$setInits(inits.pred)
     
     for(i in 1:length(y.ind)) {
@@ -464,6 +469,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
 
   dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
+  #dat <- do.call(rbind, dat)
   
   #---- Saving the chains
   save(dat, file=file.path(settings$outdir, paste0('dat',t,'.Rdata')))
