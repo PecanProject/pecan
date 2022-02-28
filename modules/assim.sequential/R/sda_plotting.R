@@ -809,7 +809,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir, "timeseries.plot.data.Rdata"))
   
   
 }
