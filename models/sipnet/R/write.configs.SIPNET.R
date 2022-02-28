@@ -451,8 +451,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
-  else if (!is.null(settings$run$inputs$poolinitcond$path$path1)) {
-    IC.path <- settings$run$inputs$poolinitcond$path$path1
+  else if (length(settings$run$inputs$poolinitcond$path)>0) {
+    ICs_num <- length(settings$run$inputs$poolinitcond$path)
+    IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
