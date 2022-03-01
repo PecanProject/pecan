@@ -456,6 +456,22 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
+    #working on reading soil file (only working for 1 soil file)
+    if(length(settings$run$inputs$soilinitcond$path)==1){
+      soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$soilinitcond$path)
+      #SoilWHC and LitterWHC
+      if("volume_fraction_of_water_in_soil_at_saturation"%in%names(soil_IC_list$vals)){
+        #SoilWHC
+        param[which(param[, 1] == "soilWHC"), 2] <- mean(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]))*100
+        
+        #LitterWHC
+        param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*100
+      }
+      if("soil_hydraulic_conductivity_at_saturation"%in%names(soil_IC_list$vals)){
+        #litwaterDrainrate
+        param[which(param[, 1] == "litWaterDrainRate"), 2] <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1]*100/(3600*24)
+      }
+    }
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
