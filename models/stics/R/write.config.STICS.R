@@ -31,19 +31,32 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # find out where to write run/ouput
   rundir  <- file.path(settings$host$rundir, run.id)
-  usmdir  <- file.path(settings$host$rundir, run.id, settings$pfts$pft$name) # will think about multiple usm/PFT case
   cfgdir  <- file.path(settings$host$rundir, run.id, "config")
   bindir  <- file.path(settings$host$rundir, run.id, "bin")
   outdir  <- file.path(settings$host$outdir, run.id)
+  
+  # will think about multiple PFT case, currently considering successive (>2 years) case only
+  usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
+  # In STICS, it is 1 UMS per crop cycle, where the cycle can be 2-years max
+  # If we have a consecutive monoculture for > 2 years, we still need to divide it into 2-year USMs
+  years_requested <- unique(lubridate::year(dseq))
+  if(length(years_requested) %%2 == 1) years_requested <- c(years_requested, years_requested[length(years_requested)])
+  
+  if(length(years_requested) > 2){
+    years_indices <- rep(seq(1, length(years_requested), by=2), each=2)
+    usmdirs <- tapply(years_requested, years_indices, function(x)  paste0(usmdir_root, paste(x, collapse = '-')))
+  }else{
+    usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
+  } 
   
   ## make sure rundir and outdir exist
   dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   
-  ## create plant, config and bin dirs
-  dir.create(usmdir, showWarnings = FALSE, recursive = TRUE)
-  dir.create(cfgdir, showWarnings = FALSE, recursive = TRUE)
-  dir.create(bindir, showWarnings = FALSE, recursive = TRUE)
+  ## create usm, config and bin dirs
+  dir.create(cfgdir,  showWarnings = FALSE, recursive = TRUE)
+  dir.create(bindir,  showWarnings = FALSE, recursive = TRUE)
+  sapply(usmdirs, dir.create, showWarnings = FALSE, recursive = TRUE)
   
   # write preferences
   prf_xml  <- XML::xmlParse(system.file("preferences.xml", package = "PEcAn.STICS"))
@@ -79,7 +92,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.names  <- names(pft.traits)
     
-    plant_file <- file.path(usmdir, paste0(names(trait.values)[pft], "_plt.xml"))
+    plant_file <- file.path(rundir, paste0(names(trait.values)[pft], "_plt.xml"))
     
     if(names(trait.values)[pft] != "env"){
       # save the template, will be overwritten below
@@ -222,20 +235,23 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
   } # pft-loop ends
   
+  file.copy(file.path(rundir, "ficplt1.txt"), file.path(usmdirs, "ficplt1.txt"))
   
   ############################## Param gen / newform ####################################
   
   ## DO NOTHING FOR NOW
   gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
-  gen_file <- file.path(usmdir, "param_gen.xml")
+  gen_file <- file.path(rundir, "param_gen.xml")
   XML::saveXML(gen_xml, file = gen_file)
   SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
   # may delete the xml after this
+  file.copy(file.path(rundir, "tempopar.sti"), file.path(usmdirs, "tempopar.sti"))
   
   newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
-  newf_file <- file.path(usmdir, "param_newform.xml")
+  newf_file <- file.path(rundir, "param_newform.xml")
   XML::saveXML(newf_xml, file = newf_file)  
   SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
+  file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs, "tempoparv6.sti"))
   
   
   
@@ -245,7 +261,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template ini file
   ini_xml  <- XML::xmlParse(system.file("pecan_ini.xml", package = "PEcAn.STICS"))
-  ini_file <- file.path(usmdir, paste0(defaults$pft$name, "_ini.xml"))
+  ini_file <- file.path(rundir, paste0(defaults$pft$name, "_ini.xml"))
   
   # write the ini file 
   XML::saveXML(ini_xml, file = ini_file)
@@ -255,7 +271,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0", param_value = 1, select = "plante", value = "1", overwrite = TRUE)  
   
   SticsRFiles::convert_xml2txt(xml_file = ini_file, java_dir = javastics_path)
-  
+  file.copy(file.path(rundir, "ficini.txt"), file.path(usmdirs, "ficini.txt"))
   
   ############################ Prepare Soils ##################################
   
@@ -265,7 +281,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
   #### TODO: revise others to have txt templates directly in the package
   
-  sols_file <- file.path(usmdir, "param.sol")
+  sols_file <- file.path(rundir, "param.sol")
   
   # cp template sols file (txt)
   file.copy(system.file("param.sol", package = "PEcAn.STICS"), sols_file)
@@ -274,6 +290,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # sols_vals  <- SticsRFiles::get_soil_txt(sols_file)
   
   SticsRFiles::set_soil_txt(filepath = sols_file, param="typsol", value=paste0("sol", defaults$pft$name))
+  file.copy(sols_file, file.path(usmdirs, "param.sol"))
   
   # DO NOTHING ELSE FOR NOW
 
@@ -286,7 +303,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # read in template sta file
   sta_xml  <- XML::xmlParse(system.file("pecan_sta.xml", package = "PEcAn.STICS"))
-  sta_file <- file.path(usmdir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
+  sta_file <- file.path(rundir, paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"))
   
   XML::saveXML(sta_xml, file = sta_file)
   
@@ -294,6 +311,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   SticsRFiles::set_param_xml(sta_file, "latitude", settings$run$site$lat, overwrite = TRUE)
   
   SticsRFiles::convert_xml2txt(xml_file = sta_file, java_dir = javastics_path)
+  file.copy(file.path(rundir, "station.txt"), file.path(usmdirs, "station.txt"))
   
   # another way to change latitute
   # sta_txt <- file.path(rundir, "station.txt")
@@ -317,6 +335,17 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## instead of using a template, this could be easier if we prepare a dataframe and use SticsRFiles::gen_tec_xml
   tec_df <- data.frame(Tec_name = paste0(defaults$pft$name, "_tec.xml")) # note more than one PFT cases
   
+  # these shouldn't be empty even if we don't use them (values from timothy example in STICS)
+  tec_df$iplt0 <- 999 # date of sowing
+  tec_df$profsem <- 2 # depth of sowing
+  tec_df$densitesem <- 100 # plant sowing density
+  tec_df$variete <- 1 # cultivar number corresponding to the cultivar name in the plant file (could be passed via a field activity file)
+  tec_df$irecbutoir <- 999 #latest date of harvest (imposed if the crop cycle is not finished at this date)
+  tec_df$profmes <- 120 # depth of measurement of the soil water reserve (cm)
+  tec_df$engrais <- 1 # fertilizer type
+  tec_df$concirr <- 0.11 # concentration of mineral N in irrigation water (kg ha-1 mm-1)
+  tec_df$ressuite <- 'straw+roots' # type of crop residue
+  tec_df$h2ograinmax <- 0.32 # maximal water content of fruits at harvest
 
   # the following formalisms exist in the tec file:
   ## supply of organic residus
@@ -333,7 +362,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   if(!is.null(settings$run$inputs$harvest)){
     
     h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
-    
+
     # param names
     h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d
                        "hautcoupe"  , # cut height for forage crops, m
@@ -341,132 +370,145 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
                        "msresiduel" , # residual aerial biomass after a cut of a forage crop, t.ha-1
                        "anitcoupe")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
                          
-    
-    harvest_list <- list()
-    for(hrow in seq_len(nrow(h_days))){
+    # loop for each USM
+    for(usmi in seq_along(usmdirs)){
+      usm_years <- years_requested[(usmi*2-1):(usmi*2)]
       
-      # empty
-      harvest_df <- data.frame(julfauche = NA, hautcoupe = NA, lairesiduel = NA,  msresiduel = NA, anitcoupe = NA) 
+      h_sub <- h_days[h_days[,1] %in% usm_years, ]
+      dseq_sub <- dseq[lubridate::year(dseq) %in% usm_years]
       
-      
-      # If given harvest date is within simulation days
-      # probably need to break down >2 years into multiple usms
-      if(as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01")) %in% dseq){
+      harvest_list <- list()
+      for(hrow in seq_len(nrow(h_sub))){
         
-        # STICS needs cutting days in cumulative julian days 
-        # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
-        # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
-        # the following code should give that
-        harvest_df$julfauche   <- which(dseq == as.Date(h_days[hrow, 2], origin = paste0(h_days[hrow, 1], "-01-01"))) + lubridate::yday(dseq[1]) - 2
-        harvest_df$lairesiduel <- h_days[hrow, 3]
-        # also pass cutting height
+        # empty
+        harvest_df <- data.frame(julfauche = NA, hautcoupe = NA, lairesiduel = NA,  msresiduel = NA, anitcoupe = NA) 
+        
+        
+        # If given harvest date is within simulation days
+        # probably need to break down >2 years into multiple usms
+        if(as.Date(h_sub[hrow, 2], origin = paste0(h_sub[hrow, 1], "-01-01")) %in% dseq_sub){
+          
+          # STICS needs cutting days in cumulative julian days 
+          # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
+          # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
+          # the following code should give that
+          harvest_df$julfauche   <- which(dseq_sub == as.Date(h_sub[hrow, 2], origin = paste0(h_sub[hrow, 1], "-01-01"))) + lubridate::yday(dseq_sub[1]) - 2
+          harvest_df$lairesiduel <- h_sub[hrow, 3]
+          # also pass cutting height
+        }
+        
+        colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
+        harvest_list[[hrow]] <- harvest_df
       }
+      harvest_tec <- do.call("cbind", harvest_list) 
       
-      colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
-      harvest_list[[hrow]] <- harvest_df
-    }
-    harvest_tec <- do.call("cbind", harvest_list) 
-    
-    harvest_tec$codefauche <- 2 # use calendar days
-  }
-  # TODO: if no harvest file is given modify other harvest parameters, e.g. harvest decision
-  
-  # DO NOTHING ELSE FOR NOW
-  # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
-  
-  # same usm -> continue columns
-  tec_df <- cbind(tec_df, harvest_tec)
-  
-  # these shouldn't be empty even if we don't use them (values from timothy example in STICS)
-  tec_df$iplt0 <- 999 # date of sowing
-  tec_df$profsem <- 2 # depth of sowing
-  tec_df$densitesem <- 100 # plant sowing density
-  tec_df$variete <- 1 # cultivar number corresponding to the cultivar name in the plant file (could be passed via a field activity file)
-  tec_df$irecbutoir <- 999 #latest date of harvest (imposed if the crop cycle is not finished at this date)
-  tec_df$profmes <- 120 # depth of measurement of the soil water reserve (cm)
-  tec_df$engrais <- 1 # fertilizer type
-  tec_df$concirr <- 0.11 # concentration of mineral N in irrigation water (kg ha-1 mm-1)
-  tec_df$ressuite <- 'straw+roots' # type of crop residue
-  tec_df$h2ograinmax <- 0.32 # maximal water content of fruits at harvest
-    
-  SticsRFiles::gen_tec_xml(out_path = usmdir, param_table = tec_df)
-  
-  # TODO: more than 1 USM, rbind
-  
-  SticsRFiles::convert_xml2txt(xml_file = file.path(usmdir, paste0(defaults$pft$name, "_tec.xml")), 
-                               java_dir = javastics_path)
-  
+      harvest_tec$codefauche <- 2 # use calendar days
+      
+      # DO NOTHING ELSE FOR NOW
+      # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
+      
+      # same usm -> continue columns
+      usm_tec_df <- cbind(tec_df, harvest_tec)
+      
+      SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
+      
+      # TODO: more than 1 USM, rbind
+      
+      SticsRFiles::convert_xml2txt(xml_file = file.path(usmdirs[usmi], paste0(defaults$pft$name, "_tec.xml")), 
+                                   java_dir = javastics_path)
+      
+     } # end-loop over usms
+    } # TODO: if no harvest file is given modify other harvest parameters, e.g. harvest decision
   
   ################################ Prepare USM file ######################################
 
-  # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
-  usm_file <- file.path(usmdir, "new_travail.usm")
+  # loop for each USM
+  #ncodesuite <- ifelse(length(usmdirs) > 1, 1,0)
   
-  # cp template usm file 
-  file.copy(system.file("template.usm", package = "PEcAn.STICS"), usm_file)
-  
-  # Type of LAI simulation 
-  # 0 = culture (LAI calculated by the model), 1 = feuille (LAI forced)
-  SticsRFiles::set_usm_txt(usm_file, "codesimul", 0, add = FALSE) # hardcode for now
-  
-  # use optimization
-  # 0 = no;  1 = yes main plant; 2 = yes associated plant
-  SticsRFiles::set_usm_txt(usm_file, "codeoptim", 0, add = FALSE) 
-  
-  # option to simulate several
-  # successive USM (0 = no, 1 = yes)
-  SticsRFiles::set_usm_txt(usm_file, "codesuite", 0, add = FALSE) # for now
-  
-  # number of simulated plants (sole crop=1; intercropping=2)
-  SticsRFiles::set_usm_txt(usm_file, "nbplantes", 1, add = FALSE) # hardcode for now
-  
-  # pft name
-  SticsRFiles::set_usm_txt(usm_file, "nom", defaults$pft$name, add = FALSE)
+  for(usmi in seq_along(usmdirs)){
     
-  # beginning day of the simulation (julian.d)
-  SticsRFiles::set_usm_txt(usm_file, "datedebut", lubridate::yday(settings$run$start.date), add = FALSE)
-  
-  # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
-  SticsRFiles::set_usm_txt(usm_file, "datefin", (lubridate::yday(settings$run$start.date) + length(dseq) - 1), add = FALSE)
-  
-  # name of the initialization file
-  SticsRFiles::set_usm_txt(usm_file, "finit", paste0(defaults$pft$name, "_ini.xml"), add = FALSE)
-  
-  # soil number
-  SticsRFiles::set_usm_txt(usm_file, "numsol", 1, add = FALSE)
-  
-  # name of the soil in the sols.xml file
-  SticsRFiles::set_usm_txt(usm_file, "nomsol", paste0("sol", defaults$pft$name), add = FALSE)
-  
-  # name of the weather station file
-  SticsRFiles::set_usm_txt(usm_file, "fstation", paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"), add = FALSE)
-  
-  # name of the first climate file
-  SticsRFiles::set_usm_txt(usm_file, "fclim1", paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", lubridate::year(settings$run$start.date)), add = FALSE)
-  
-  # name of the last climate file
-  SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", lubridate::year(settings$run$end.date)), add = FALSE)
-  
-  # number of simulation years
-  SticsRFiles::set_usm_txt(usm_file, "nbans", 2, add = FALSE) # hardcode for now
-  
-  # number of calendar years involved in the crop cycle
-  # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
-  SticsRFiles::set_usm_txt(usm_file, "culturean", trait.values$timothy$crop_cycle, add = FALSE)
-  
-  # name of the plant file for main plant 
-  SticsRFiles::set_usm_txt(usm_file, "fplt1", paste0(defaults$pft$name, "_plt.xml"), add = FALSE) 
-  
-  # name of the technical file for main plant
-  SticsRFiles::set_usm_txt(usm_file, "ftec1", paste0(defaults$pft$name, "_tec.xml"), add = FALSE) 
-  
-  # name of the LAI forcing file for main plant (null if none)
-  SticsRFiles::set_usm_txt(usm_file, "flai1", "default.lai", add = FALSE) # hardcode for now, doesn't matter when codesimul==0
-  
+    usm_years <- years_requested[(usmi*2-1):(usmi*2)]
+    dseq_sub <- dseq[lubridate::year(dseq) %in% usm_years]
+    
+    # read in template USM (Unit of SiMulation) file, has the master settings, file names etc.
+    usm_file <- file.path(usmdirs[usmi], "new_travail.usm")
+    
+    # cp template usm file 
+    file.copy(system.file("template.usm", package = "PEcAn.STICS"), usm_file)
+    
+    # Type of LAI simulation 
+    # 0 = culture (LAI calculated by the model), 1 = feuille (LAI forced)
+    SticsRFiles::set_usm_txt(usm_file, "codesimul", 0, add = FALSE) # hardcode for now
+    
+    # use optimization
+    # 0 = no;  1 = yes main plant; 2 = yes associated plant
+    SticsRFiles::set_usm_txt(usm_file, "codeoptim", 0, add = FALSE) 
+    
+    # option to simulate several
+    # successive USM (0 = no, 1 = yes)
+    if(usmi == 1){
+      SticsRFiles::set_usm_txt(usm_file, "codesuite", 0, add = FALSE)
+    }else{
+      SticsRFiles::set_usm_txt(usm_file, "codesuite", 1, add = FALSE)
+    }
+     
 
-  
-  # TODO: more than 1 USM (can use add=TRUE) and PFTs 
-  # STICS can run 2 PFTs max: main crop + intercrop
+    # number of simulated plants (sole crop=1; intercropping=2)
+    SticsRFiles::set_usm_txt(usm_file, "nbplantes", 1, add = FALSE) # hardcode for now
+    
+    # pft name
+    SticsRFiles::set_usm_txt(usm_file, "nom", basename(usmdirs[usmi]), add = FALSE)
+    
+    
+    ## handle dates, also for partial year(s)
+    if(usmi == 1){
+      # beginning day of the simulation (julian.d)
+      # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
+      SticsRFiles::set_usm_txt(usm_file, "datedebut", lubridate::yday(settings$run$start.date), add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datefin", (lubridate::yday(settings$run$start.date) + length(dseq_sub) - 1), add = FALSE)
+    }else{
+      SticsRFiles::set_usm_txt(usm_file, "datedebut", 1, add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datefin", length(dseq_sub), add = FALSE)
+    }
+    
+    # name of the initialization file
+    SticsRFiles::set_usm_txt(usm_file, "finit", paste0(defaults$pft$name, "_ini.xml"), add = FALSE)
+    
+    # soil number
+    SticsRFiles::set_usm_txt(usm_file, "numsol", 1, add = FALSE)
+    
+    # name of the soil in the sols.xml file
+    SticsRFiles::set_usm_txt(usm_file, "nomsol", paste0("sol", defaults$pft$name), add = FALSE)
+    
+    # name of the weather station file
+    SticsRFiles::set_usm_txt(usm_file, "fstation", paste0(tolower(sub(" .*", "", settings$run$site$name)), "_sta.xml"), add = FALSE)
+    
+    # name of the first climate file
+    SticsRFiles::set_usm_txt(usm_file, "fclim1", paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", usm_years[1]), add = FALSE)
+    
+    # name of the last climate file
+    SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(tolower(sub(" .*", "", settings$run$site$name)), ".", usm_years[2]), add = FALSE)
+    
+    # number of simulation years
+    SticsRFiles::set_usm_txt(usm_file, "nbans", 2, add = FALSE) # hardcode for now
+    
+    # number of calendar years involved in the crop cycle
+    # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
+    SticsRFiles::set_usm_txt(usm_file, "culturean", trait.values$timothy$crop_cycle, add = FALSE)
+    
+    # name of the plant file for main plant 
+    SticsRFiles::set_usm_txt(usm_file, "fplt1", paste0(defaults$pft$name, "_plt.xml"), add = FALSE) 
+    
+    # name of the technical file for main plant
+    SticsRFiles::set_usm_txt(usm_file, "ftec1", paste0(defaults$pft$name, "_tec.xml"), add = FALSE) 
+    
+    # name of the LAI forcing file for main plant (null if none)
+    SticsRFiles::set_usm_txt(usm_file, "flai1", "default.lai", add = FALSE) # hardcode for now, doesn't matter when codesimul==0
+    
+    # TODO: more than 1 PFTs 
+    # STICS can run 2 PFTs max: main crop + intercrop
+  }
+
   
 
   
@@ -474,26 +516,31 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # symlink climate files
   met_path <- settings$run$inputs$met$path
-  clim_list <- list() # temporary solution
-  ctr <- 1
-  for(clim in seq(lubridate::year(settings$run$start.date), lubridate::year(settings$run$end.date))){
-    met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(clim, ".climate"), met_path)
-    clim_list[[ctr]] <- read.table(met_file)
-    ctr <- ctr + 1
+  
+  for(usmi in seq_along(usmdirs)){
+    
+    usm_years <- unique(years_requested[(usmi*2-1):(usmi*2)])
+    dseq_sub <- dseq[lubridate::year(dseq) %in% usm_years]
+    
+    clim_list <- list() # temporary solution
+    for(clim in seq_along(usm_years)){
+      # currently assuming only first year file has been passed to the settings, modify met2model if changing the logic
+      met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(usm_years[clim], ".climate"), met_path)
+      clim_list[[clim]] <- read.table(met_file)
+    }
+    clim_run <- do.call("rbind", clim_list)
+    write.table(clim_run, file.path(usmdirs[usmi], "climat.txt"), col.names = FALSE, row.names = FALSE)
+    
   }
-  clim_run <- do.call("rbind", clim_list)
-  write.table(clim_run, file.path(usmdir, "climat.txt"), col.names = FALSE, row.names = FALSE)
-
+  
   # symlink to binary
   file.symlink(stics_path, bindir)
   stics_exe <- file.path(bindir, basename(stics_path))
   
-  usm_name <- defaults$pft$name
-  
-  # copy *.mod files
-  file.copy(system.file("var.mod", package = "PEcAn.STICS"), usmdir)
-  file.copy(system.file("rap.mod", package = "PEcAn.STICS"), usmdir)
-  file.copy(system.file("prof.mod", package = "PEcAn.STICS"), usmdir)
+  # symlink *.mod files
+  file.symlink(system.file("var.mod",  package = "PEcAn.STICS"), file.path(usmdirs, "var.mod"))
+  file.symlink(system.file("rap.mod",  package = "PEcAn.STICS"), file.path(usmdirs, "rap.mod"))
+  file.symlink(system.file("prof.mod", package = "PEcAn.STICS"), file.path(usmdirs, "prof.mod"))
   
   #cmd_run <- paste("java -jar", jexe,"--run", rundir, usm_name)
   
@@ -540,9 +587,16 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  jobsh <- gsub("@USMDIR@", usmdir, jobsh)
   
-  jobsh <- gsub("@MODFILE@", paste0("mod_s", usm_name, ".sti"), jobsh)
+  if(length(usmdirs)>1){
+    jobsh <- gsub("@SUCCESSIVE_USMS@", paste0("list(c('", paste(basename(usmdirs), collapse="','"), "'))"), jobsh)
+  }else{
+    jobsh <- gsub("@SUCCESSIVE_USMS@", 'NULL', jobsh)
+  }
+  
+  jobsh <- gsub("@USMDIR@", usmdirs[1], jobsh) # for now
+  
+  jobsh <- gsub("@MODFILE@", paste0("mod_s", basename(usmdirs[1]), ".sti"), jobsh)
   jobsh <- gsub("@STICSEXE@", stics_exe, jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))

@@ -20,12 +20,13 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   javastics_path = '@RUNDIR@'
   stics_exe = '@STICSEXE@'
   sticsrun_dir = '@RUNDIR@'
-  wrapper_options = SticsOnR::stics_wrapper_options(javastics_path = javastics_path, stics_exe = stics_exe, data_dir = sticsrun_dir, force = TRUE)
+  successive_usms = @SUCCESSIVE_USMS@
+  wrapper_options = SticsOnR::stics_wrapper_options(javastics_path = javastics_path, stics_exe = stics_exe, data_dir = sticsrun_dir, force = TRUE, successive_usms = successive_usms)
   SticsOnR::stics_wrapper(model_options = wrapper_options)
   " | R --vanilla
   
   # copy log
-  mv "@USMDIR@/stics_errors.log" "@OUTDIR@"
+  cp "@USMDIR@/stics_errors.log" "@OUTDIR@"
   
   STATUS=$?
   
@@ -36,7 +37,9 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   fi
 
   # copy output
-  mv @USMDIR@/*.sti @OUTDIR@
+  mv @RUNDIR@/**/mod_b* @OUTDIR@
+  mv @RUNDIR@/**/mod_s* @OUTDIR@
+
 
   # convert to MsTMIP
   echo "library (PEcAn.STICS)
