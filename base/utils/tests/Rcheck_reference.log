@@ -43,7 +43,6 @@ address and non-empty name.
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
 convert.input: no visible binding for global variable ‘settings’
-convert.input: no visible binding for global variable ‘id’
 convert.input : log_format_df: no visible binding for global variable
   ‘.’
 grid2netcdf: no visible binding for global variable ‘years’
