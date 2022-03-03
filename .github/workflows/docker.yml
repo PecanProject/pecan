@@ -9,7 +9,7 @@ name: Docker
 #   latest and develop
 # - when a pull request is created and updated  to make sure the
 #   Dockerfile is still valid.
-# To be able to push to dockerhub, this execpts the following
+# To be able to push to dockerhub, this expects the following
 # secrets to be set in the project:
 # - DOCKERHUB_USERNAME : username that can push to the org
 # - DOCKERHUB_PASSWORD : password asscoaited with the username
