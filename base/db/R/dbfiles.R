@@ -51,7 +51,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   formatid <- get.id(
     table = "formats",
     colnames = c("mimetype_id", "name"),
-    values = c(mimetypeid, formatname),
+    values = c(format(mimetypeid), formatname),
     con = con,
     create = TRUE,
     dates = TRUE
