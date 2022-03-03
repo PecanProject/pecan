@@ -608,7 +608,7 @@ convert.input <-
     curloptions <- list(followlocation = TRUE)
     if (!is.null(browndog$username) && !is.null(browndog$password)) {
       curloptions$userpwd = paste(
-        browndog$username, browndog$password, sep = ":"),
+        browndog$username, browndog$password, sep = ":")
       curloptions$httpauth = 1L
     }
     

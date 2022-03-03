@@ -21,15 +21,15 @@
 ##' download.url('http://localhost/', index.html)
 ##' }
 download.url <- function(url, file, timeout = 600, .opts = list(), retry = TRUE) {
-  dir.create(basename(file), recursive = TRUE)
   count <- 0
-  while (retry && !url_found(url)) && count < timeout) {
+  while (retry && !url_found(url) && count < timeout) {
     count <- count + 1
     Sys.sleep(1)
   }
-  if (count >= timeout || (!retry && !url_found(url)) {
+  if (count >= timeout || (!retry && !url_found(url))) {
     return(NA)
   }
+  dir.create(dirname(file), recursive = TRUE)
   res <- curl::curl_download(
     url = url,
     destfile = file,
