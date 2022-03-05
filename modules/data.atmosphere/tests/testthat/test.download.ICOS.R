@@ -5,6 +5,8 @@ setup(dir.create(outfolder, showWarnings = FALSE, recursive = TRUE))
 teardown(unlink(outfolder, recursive = TRUE))
 
 test_that("ICOS Drought 2018 download works", {
+  skip_on_ci()
+
   start_date <- "2016-01-01"
   end_date <- "2017-01-01"
   sitename <- "FI-Sii"
@@ -15,6 +17,8 @@ test_that("ICOS Drought 2018 download works", {
 })
 
 test_that("ICOS ETC download works", {
+  skip_on_ci()
+
   start_date <- "2019-01-01"
   end_date <- "2020-01-01"
   sitename <- "FI-Sii"
