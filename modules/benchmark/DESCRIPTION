@@ -32,6 +32,7 @@ Imports:
     PEcAn.settings,
     PEcAn.utils,
     reshape2,
+    rlang,
     SimilarityMeasures,
     stringr,
     tidyselect,
