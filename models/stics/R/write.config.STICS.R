@@ -359,9 +359,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## soil modification by techniques (compaction-fragmentation)
   
   # if a field activity file is given, most (all?) of our harvest cases are actually fall under special techniques - cut crop
-  if(!is.null(settings$run$inputs$field.activity)){
+  if(!is.null(settings$run$inputs$fielddata)){
     
-    events_file <- jsonlite::read_json(settings$run$inputs$field.activity$path, simplifyVector = TRUE)[[1]]
+    events_file <- jsonlite::read_json(settings$run$inputs$fielddata$path, simplifyVector = TRUE)[[1]]
     # loop for each USM
     for(usmi in seq_along(usmdirs)){
       
