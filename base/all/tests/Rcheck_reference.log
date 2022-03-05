@@ -8,6 +8,16 @@
 * this is package ‘PEcAn.all’ version ‘1.7.0’
 * package encoding: UTF-8
 * checking package namespace information ... OK
+* checking package dependencies ... WARNING
+Depends: includes the non-default packages:
+  ‘PEcAn.DB’ ‘PEcAn.settings’ ‘PEcAn.MA’ ‘PEcAn.logger’ ‘PEcAn.utils’
+  ‘PEcAn.uncertainty’ ‘PEcAn.data.atmosphere’ ‘PEcAn.data.land’
+  ‘PEcAn.data.remote’ ‘PEcAn.assim.batch’ ‘PEcAn.emulator’
+  ‘PEcAn.priors’ ‘PEcAn.benchmark’ ‘PEcAn.remote’ ‘PEcAn.workflow’
+Adding so many packages to the search path is excessive and importing
+selectively is preferable.
+
+Requires (indirectly) orphaned package: ‘udunits2’
 * checking package dependencies ... NOTE
 Depends: includes the non-default packages:
   ‘PEcAn.DB’ ‘PEcAn.settings’ ‘PEcAn.MA’ ‘PEcAn.logger’ ‘PEcAn.utils’
