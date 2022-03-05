@@ -358,67 +358,78 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   ## special techniques
   ## soil modification by techniques (compaction-fragmentation)
   
-  # if a harvest file is given, most (all?) of our harvest cases are actually fall under special techniques - cut crop
-  if(!is.null(settings$run$inputs$harvest)){
+  # if a field activity file is given, most (all?) of our harvest cases are actually fall under special techniques - cut crop
+  if(!is.null(settings$run$inputs$field.activity)){
     
-    h_days <- as.matrix(utils::read.table(settings$run$inputs$harvest$path, header = TRUE, sep = ","))
-
-    # param names
-    h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d
-                       "hautcoupe"  , # cut height for forage crops, m
-                       "lairesiduel", # residual LAI after each cut of forage crop, m2 m-2
-                       "msresiduel" , # residual aerial biomass after a cut of a forage crop, t.ha-1
-                       "anitcoupe")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
-                         
+    events_file <- jsonlite::read_json(settings$run$inputs$field.activity$path, simplifyVector = TRUE)[[1]]
     # loop for each USM
     for(usmi in seq_along(usmdirs)){
-      usm_years <- years_requested[(usmi*2-1):(usmi*2)]
       
-      h_sub <- h_days[h_days[,1] %in% usm_years, ]
+      usm_years <- years_requested[(usmi*2-1):(usmi*2)]
       dseq_sub <- dseq[lubridate::year(dseq) %in% usm_years]
       
-      harvest_list <- list()
-      for(hrow in seq_len(nrow(h_sub))){
+      events_sub <- events_file$events[lubridate::year(events_file$events$date) %in% usm_years, ]
+      
+      if("planting" %in% events_sub$mgmt_operations_event){
         
-        # empty
-        harvest_df <- data.frame(julfauche = NA, hautcoupe = NA, lairesiduel = NA,  msresiduel = NA, anitcoupe = NA) 
-        
-        
-        # If given harvest date is within simulation days
-        # probably need to break down >2 years into multiple usms
-        if(as.Date(h_sub[hrow, 2], origin = paste0(h_sub[hrow, 1], "-01-01")) %in% dseq_sub){
-          
-          # STICS needs cutting days in cumulative julian days 
-          # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
-          # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
-          # the following code should give that
-          harvest_df$julfauche   <- which(dseq_sub == as.Date(h_sub[hrow, 2], origin = paste0(h_sub[hrow, 1], "-01-01"))) + lubridate::yday(dseq_sub[1]) - 2
-          harvest_df$lairesiduel <- h_sub[hrow, 3]
-          # also pass cutting height
-        }
-        
-        colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
-        harvest_list[[hrow]] <- harvest_df
+        pl_date <- events_sub$date[events_sub$mgmt_operations_event == "planting"]
+        tec_df$iplt0 <- lubridate::yday(as.Date(pl_date))
       }
-      harvest_tec <- do.call("cbind", harvest_list) 
       
-      harvest_tec$codefauche <- 2 # use calendar days
+      if("harvest" %in% events_sub$mgmt_operations_event){
+        # param names
+        h_param_names <- c("julfauche"  , # date of each cut for forage crops, julian.d
+                           "hautcoupe"  , # cut height for forage crops, m
+                           "lairesiduel", # residual LAI after each cut of forage crop, m2 m-2
+                           "msresiduel" , # residual aerial biomass after a cut of a forage crop, t.ha-1
+                           "anitcoupe")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
+
       
-      # DO NOTHING ELSE FOR NOW
-      # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
-      
-      # same usm -> continue columns
-      usm_tec_df <- cbind(tec_df, harvest_tec)
-      
-      SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
-      
-      # TODO: more than 1 USM, rbind
-      
-      SticsRFiles::convert_xml2txt(xml_file = file.path(usmdirs[usmi], paste0(defaults$pft$name, "_tec.xml")), 
-                                   java_dir = javastics_path)
-      
+        harvest_sub <- events_sub[events_sub$mgmt_operations_event == "harvest",]
+ 
+        harvest_list <- list()
+        for(hrow in seq_len(nrow(harvest_sub))){
+          
+          # empty
+          harvest_df <- data.frame(julfauche = NA, hautcoupe = NA, lairesiduel = NA,  msresiduel = NA, anitcoupe = NA) 
+          
+          
+          # If given harvest date is within simulation days
+          # probably need to break down >2 years into multiple usms
+          if(as.Date(harvest_sub$date[hrow]) %in% dseq_sub){
+            
+            # STICS needs cutting days in cumulative julian days 
+            # e.g. first cutting day of the first simulation year can be 163 (2018-06-13)
+            # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
+            # the following code should give that
+            harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
+            harvest_df$lairesiduel <- 0.1 # hardcode for now
+            # also pass cutting height
+          }
+          
+          colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
+          harvest_list[[hrow]] <- harvest_df
+        }
+        harvest_tec <- do.call("cbind", harvest_list) 
+        
+        harvest_tec$codefauche <- 2 # use calendar days
+        
+        # DO NOTHING ELSE FOR NOW
+        # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
+        
+        # same usm -> continue columns
+        usm_tec_df <- cbind(tec_df, harvest_tec)
+        
+        SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
+        
+        # TODO: more than 1 USM, rbind
+        
+        SticsRFiles::convert_xml2txt(xml_file = file.path(usmdirs[usmi], paste0(defaults$pft$name, "_tec.xml")), 
+                                     java_dir = javastics_path)
+        
+      } #harvest-if end
      } # end-loop over usms
-    } # TODO: if no harvest file is given modify other harvest parameters, e.g. harvest decision
+    } # TODO: if no events file is given modify other harvest parameters, e.g. harvest decision
   
   ################################ Prepare USM file ######################################
 
