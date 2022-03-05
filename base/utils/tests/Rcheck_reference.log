@@ -8,8 +8,12 @@
 * this is package ‘PEcAn.utils’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
+* checking package dependencies ... WARNING
+Requires orphaned package: ‘udunits2’
+
+Package suggested but not available for checking: ‘PEcAn.DB’
 * checking package dependencies ... NOTE
-Package suggested but not available for checking: 'PEcAn.DB'
+Package suggested but not available for checking: ‘PEcAn.DB’
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK

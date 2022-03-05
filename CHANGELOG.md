@@ -7,10 +7,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## Unreleased
 
+We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
+
 ### Changed
 
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
+- PEcAn.logger is now BSD-3 License
 - Skipped ICOS and MERRA download tests when running in github actions
 
 ### Removed
