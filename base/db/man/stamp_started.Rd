@@ -15,7 +15,7 @@ stamp_finished(con, run)
 \item{run}{(numeric) run ID}
 }
 \value{
-\code{NULL}
+`NULL`
 }
 \description{
 Stamp start and stop times of runs

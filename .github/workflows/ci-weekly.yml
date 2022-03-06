@@ -1,19 +1,10 @@
-name: CI
+name: Weekly Checks
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-
-    tags:
-      - '*'
-
-  pull_request:
-
-  issue_comment:
-    types:
-      - created
+  #  every Monday at 4:30 AM
+  # (hopefully after the 1:30 AM `depends` build has completed)
+   schedule:
+    - cron: '30 4 * * 1'
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
@@ -36,8 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
-          - "4.1"
+          - "devel"
 
     services:
       postgres:
@@ -84,8 +74,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
-          - "4.1"
+          - "devel"
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -133,8 +122,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
-          - "4.1"
+          - "devel"
 
     services:
       postgres:

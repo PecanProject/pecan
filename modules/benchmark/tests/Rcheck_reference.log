@@ -57,8 +57,6 @@ add_workflow_info: no visible global function definition for ‘papply’
 add_workflow_info: no visible binding for global variable
   ‘add_workflow_id’
 add_workflow_info: no visible global function definition for ‘%>%’
-add_workflow_info: no visible binding for global variable ‘id’
-add_workflow_info: no visible binding for global variable ‘workflow_id’
 add_workflow_info: no visible binding for global variable ‘.’
 align_data: possible error in round(obvs.calc$posix, units =
   coarse.unit): unused argument (units = coarse.unit)
@@ -66,10 +64,7 @@ align_data: possible error in round(model.calc$posix, units =
   coarse.unit): unused argument (units = coarse.unit)
 align_data: no visible global function definition for ‘%>%’
 align_data: no visible binding for global variable ‘.’
-align_data: no visible binding for global variable ‘round.posix’
 align_data: no visible global function definition for ‘one_of’
-align_data_to_data_pft: no visible global function definition for
-  ‘logger.severe’
 bm_settings2pecan_settings: no visible global function definition for
   ‘is.MultiSettings’
 bm_settings2pecan_settings: no visible global function definition for
