@@ -403,8 +403,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
             # the following code should give that
             harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
-            harvest_df$lairesiduel <- 0.1 # hardcode for now
-            # also pass cutting height
+            harvest_df$hautcoupe <- 0.1 # hardcode for now
+            harvest_df$lairesiduel <- 0.2 # hardcode for now
+            harvest_df$msresiduel <- 0
+            harvest_df$anitcoupe <- 0
           }
           
           colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
@@ -412,7 +414,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         }
         harvest_tec <- do.call("cbind", harvest_list) 
         
-        harvest_tec$codefauche <- 2 # use calendar days
+        harvest_tec$codefauche <- 1  # cut crop - 1:yes, 2:no
+        harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
+        harvest_tec$codemodfauche <- 2 # use calendar days
+        harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops
+        harvest_tec$stadecoupedf <- "rec"
         
         # DO NOTHING ELSE FOR NOW
         # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
@@ -540,6 +546,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       clim_list[[clim]] <- read.table(met_file)
     }
     clim_run <- do.call("rbind", clim_list)
+    clim_run[,8] <- clim_run[,8]/2
     write.table(clim_run, file.path(usmdirs[usmi], "climat.txt"), col.names = FALSE, row.names = FALSE)
     
   }

@@ -51,8 +51,8 @@
       <choix code="1" nom="no"/>
       <choix code="2" nom="vernalisation (herbaceous)">
         <param format="integer" max="7" min="0" nom="jvcmini">7.00000</param>
-        <param format="integer" max="731" min="1" nom="julvernal">274</param>
-        <param format="real" max="10.0" min="-5.0" nom="tfroid">6.50000</param>
+        <param format="integer" max="731" min="1" nom="julvernal">284</param>
+        <param format="real" max="10.0" min="-5.0" nom="tfroid">1.50000</param>
         <param format="real" max="30.0" min="1.0" nom="ampfroid">10.00000</param>
       </choix>
       <choix code="3" nom="dormancy (woody)">
@@ -260,7 +260,7 @@
       </choix>
       <choix code="2" nom="true density">
         <param format="real" max="1000.0" min="1.0" nom="draclong">12.440</param>
-        <param format="real" max="2000.0" min="0.0" nom="debsenrac">480.000</param>
+        <param format="real" max="2000.0" min="0.0" nom="debsenrac">1480.000</param>
         <param format="real" max="1.0" min="0.02" nom="lvfront">0.05000</param>
         <param format="real" max="25000.0" min="250.0" nom="longsperac">@longsperac@</param>
         <option choix="2" nom="N effect on root distribution" nomParam="codazorac">
@@ -423,15 +423,15 @@
   <formalisme nom="cultivar parameters">
     <tv nb_varietes="6" nom="genotypes">
       <variete nom="champ">
-        <param format="real" max="6000.0" min="0.0" nom="stlevamf">197.443</param>
-        <param format="real" max="6000.0" min="0.0" nom="stamflax">509.954</param>
-        <param format="real" max="6000.0" min="0.0" nom="stlevdrp">393.704</param>
+        <param format="real" max="6000.0" min="0.0" nom="stlevamf">128.464857</param>
+        <param format="real" max="6000.0" min="0.0" nom="stamflax">2606.618454</param>
+        <param format="real" max="6000.0" min="0.0" nom="stlevdrp">1393.704</param>
         <param format="real" max="500.0" min="0.0" nom="stflodrp">0</param>
         <param format="real" max="900.0" min="0.0" nom="stdrpdes">700.00</param>
         <param format="real" max="0.5" min="0.003" nom="pgrainmaxi">0.01</param>
         <param format="real" max="0.0" min="-2.0" nom="adens">-0.5513</param>
         <param format="real" max="0.5" min="0.005" nom="croirac">0.04813</param>
-        <param format="real" max="500.0" min="10.0" nom="durvieF">45.5920</param>
+        <param format="real" max="500.0" min="10.0" nom="durvieF">66.441935</param>
         <optionv nom="codebfroid">
           <param code="2" format="integer" max="70" min="0" nom="jvc">33</param>
         </optionv>
