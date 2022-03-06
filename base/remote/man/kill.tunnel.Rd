@@ -2,12 +2,19 @@
 % Please edit documentation in R/kill.tunnel.R
 \name{kill.tunnel}
 \alias{kill.tunnel}
-\title{kill.tunnel}
+\title{Kill tunnel to remote machine}
 \usage{
 kill.tunnel(settings, exe = TRUE, data = TRUE)
 }
+\arguments{
+\item{settings}{PEcAn settings list}
+
+\item{exe}{Kill tunnel to executable?}
+
+\item{data}{Kill tunnel to data?}
+}
 \description{
-kill tunnel to remote machine
+Kill tunnel to remote machine
 }
 \author{
 Rob Kooper
