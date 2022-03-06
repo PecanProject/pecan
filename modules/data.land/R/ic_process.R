@@ -239,23 +239,47 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         # Copy to remote, update DB and change paths if needed
         if (settings$host$name != "localhost") {
 
-          folder_dir <- paste0(input$source, "_site_", str_ns, "/", input$source, "_ens", i, ".", lubridate::year(start_date))
+          folder_dir <- paste0(
+            input$source, "_site_", str_ns, "/",
+            input$source, "_ens", i, ".",
+            lubridate::year(start_date))
           remote_dir <- file.path(settings$host$folder, folder_dir)
 
           # copies css
           css_file <- settings_inputs[["css"]][['path']][[paste0('path', i)]]
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = css_file, host = settings$host, con = con)
-          settings_inputs[["css"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(css_file))
+          remote.copy.update(
+            input_id = putveg.id[[i]],
+            remote_dir = remote_dir,
+            local_file_path = css_file,
+            host = settings$host,
+            con = con)
+          settings_inputs[["css"]][['path']][[paste0('path', i)]] <- file.path(
+            remote_dir,
+            basename(css_file))
 
-          # pss
+          # pss 
           pss_file <- settings_inputs[["pss"]][['path']][[paste0('path', i)]]
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = pss_file, host = settings$host, con = con)
-          settings_inputs[["pss"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(pss_file))
+          remote.copy.update(
+            input_id = putveg.id[[i]],
+            remote_dir = remote_dir,
+            local_file_path = pss_file,
+            host = settings$host,
+            con = con)
+          settings_inputs[["pss"]][['path']][[paste0('path', i)]] <- file.path(
+            remote_dir,
+            basename(pss_file))
 
           # site
           site_file <- settings_inputs[["site"]][['path']][[paste0('path', i)]]
-          PEcAn.remote::remote.copy.update(putveg.id[[i]], remote_dir, local_file_path = site_file, host = settings$host, con = con)
-          settings_inputs[["site"]][['path']][[paste0('path', i)]] <- file.path(remote_dir, basename(site_file))
+          remote.copy.update(
+            input_id = putveg.id[[i]],
+            remote_dir = remote_dir,
+            local_file_path = site_file,
+            host = settings$host,
+            con = con)
+          settings_inputs[["site"]][['path']][[paste0('path', i)]] <- file.path(
+            remote_dir,
+            basename(site_file))
 
         }
       }

@@ -8,7 +8,8 @@
 * this is package ‘PEcAn.MAAT’ version ‘1.7.0’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... WARNING
+Requires orphaned package: ‘udunits2’
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
