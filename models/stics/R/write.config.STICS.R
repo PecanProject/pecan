@@ -546,7 +546,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       clim_list[[clim]] <- read.table(met_file)
     }
     clim_run <- do.call("rbind", clim_list)
-    clim_run[,8] <- clim_run[,8]/2
     write.table(clim_run, file.path(usmdirs[usmi], "climat.txt"), col.names = FALSE, row.names = FALSE)
     
   }
