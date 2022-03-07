@@ -5,7 +5,14 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [Unreleased]
+
+### Added
+
+- `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
+  package the version that was provided with this release and the version that
+  is currently installed. Use it in scripts to record your system state for
+  reproducibility, or for debugging.
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
