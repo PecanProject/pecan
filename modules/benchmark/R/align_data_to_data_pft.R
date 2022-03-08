@@ -135,7 +135,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
     
   }else if(check_if_list_of_pfts(format_one) && (check_if_list_of_pfts(format_two))){
   
-    if(is.null(custom_table)){logger.severe("Please provide custom_table")}else if (!is.null(custom_table))
+    if(is.null(custom_table)){PEcAn.logger::logger.severe("Please provide custom_table")}else if (!is.null(custom_table))
     {
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
 
@@ -143,7 +143,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
         aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
       }else{
-        logger.severe("custom_table provided does not correctly map plant_functional_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant functional types.")
+        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_functional_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant functional types.")
       } 
     }
     
