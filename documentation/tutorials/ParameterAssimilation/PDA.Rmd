@@ -255,7 +255,7 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
   PEcAn.settings::write.settings(settings, outputfile=paste0('pecan.pda', postPDA.settings$assim.batch$ensemble.id,'.xml'))
 
  # Start ecosystem model runs, this one takes awhile...
-  PEcAn.remote::start.model.runs(postPDA.settings, postPDA.settings$database$bety$write)
+  PEcAn.workflow::start_model_runs(postPDA.settings, postPDA.settings$database$bety$write)
 
  # Get results of model runs
   get.results(postPDA.settings)

@@ -22,7 +22,7 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   if(is.null(ens.runid)){
     run.write.configs(settings, write = settings$database$bety$write)
     
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     
     ens.runid <- read.table(file.path(settings$rundir,'runs.txt'))
   }
