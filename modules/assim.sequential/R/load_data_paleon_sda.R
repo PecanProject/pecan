@@ -24,7 +24,18 @@ load_data_paleon_sda <- function(settings){
     return(obs.list)
   }
   
-  # library(plyr) #need to load to use .fnc below
+  suggests_avail <- c(
+    reshape2 = requireNamespace("reshape2", quietly = TRUE),
+    plyr = requireNamespace("plyr", quietly = TRUE))
+  suggests_missing <- paste(
+    sQuote(names(suggests_avail)[!suggests_avail], q = FALSE),
+    collapse = ", ")
+  if (!all(suggests_avail)) {
+    PEcAn.logger::logger.error(
+      "Can't find package(s)", suggests_missing,
+      ", needed by `PEcAn.assim.sequential::load_data_paleon_sda()`.",
+      "Please install these and try again.")
+  }
   
   d <- settings$database$bety
   con <- PEcAn.DB::db.open(d)
@@ -94,10 +105,15 @@ load_data_paleon_sda <- function(settings){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
       if(!is.null(obvs[[i]]$AbvGrndWood))obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon #* kgm2Mgha 
       if(!is.null(obvs[[i]]$GWBI)) obvs[[i]]$GWBI <- obvs[[i]]$GWBI * biomass2carbon  #* kgms2Mghayr 
-      arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
-      arguments2 <- list(.(year), .(variable))
-      arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
-      
+      arguments <- list(
+        plyr::.(year, MCMC_iteration, site_id),
+        plyr::.(variable))
+      arguments2 <- list(plyr::.(year), plyr::.(variable))
+      arguments3 <- list(
+        plyr::.(MCMC_iteration),
+        plyr::.(variable),
+        plyr::.(year))
+
       dataset <- obvs[[i]]
       
       ### Map species to model specific PFTs
@@ -114,11 +130,16 @@ load_data_paleon_sda <- function(settings){
         dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
         
         variable <- c('AbvGrndWood')
-        arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
-        arguments2 <- list(.(year, pft.cat), .(variable))
-        arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
-      } 
-      
+        arguments <- list(
+          plyr::.(year, MCMC_iteration, site_id, pft.cat),
+          plyr::.(variable))
+        arguments2 <- list(plyr::.(year, pft.cat), plyr::.(variable))
+        arguments3 <- list(
+          plyr::.(MCMC_iteration),
+          plyr::.(pft.cat, variable),
+          plyr::.(year))
+      }
+
       PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
       melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
       melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)

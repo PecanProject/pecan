@@ -281,7 +281,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
 
     ## start model runs
-    PEcAn.remote::start.model.runs(settings, (as.logical(settings$database$bety$write) & !remote))
+    PEcAn.workflow::start_model_runs(settings, (as.logical(settings$database$bety$write) & !remote))
 
     ## Retrieve model outputs and error statistics
     model.out <- list()

@@ -323,7 +323,7 @@ Some important tags are as follows:
 This information is currently used by the following PEcAn workflow function:
 
 - `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
-- `PEcAn.remote::start.model.runs` -- Begin model run execution
+- `PEcAn.workflow::start_model_runs` -- Begin model run execution
 
 #### Model-specific configuration {#xml-model-specific}
 
