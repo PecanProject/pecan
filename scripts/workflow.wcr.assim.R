@@ -89,7 +89,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.workflow::runModule_start_model_runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
 # Get results of model runs

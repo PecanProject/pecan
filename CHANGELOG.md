@@ -5,7 +5,16 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## Unreleased
+## [Unreleased]
+
+### Added
+
+- `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
+  package the version that was provided with this release and the version that
+  is currently installed. Use it in scripts to record your system state for
+  reproducibility, or for debugging.
+
+We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
 ### Changed
 
@@ -13,6 +22,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
 - `PEcAn.utils::download.url` argument `retry404` is now renamed to `retry` and
   now functions as intended (it was being ignored completely before).
+- PEcAn.logger is now BSD-3 License
+- Skipped ICOS and MERRA download tests when running in github actions
 
 ### Removed
 

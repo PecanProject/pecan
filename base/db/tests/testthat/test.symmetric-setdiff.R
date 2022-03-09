@@ -18,7 +18,7 @@ test_that("Symmetric setdiff works", {
 test_that("Unequal dfs compare unequal", {
   expect_error(
     symmetric_setdiff(data.frame(a = 1L), data.frame(b = 1L)),
-    "Cols in x but not y")
+    "Cols in `?x`? but not `?y")
   d <- symmetric_setdiff(data.frame(a = 1:3L), data.frame(a = 1:4L))
   expect_length(d$a, 1L)
   expect_equal(d$a, 4L)

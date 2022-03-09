@@ -159,7 +159,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 # Start ecosystem model runs
 if (check.status("MODEL") == 0) {
   status.start("MODEL")
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   status.end()
 }
 
@@ -215,7 +215,7 @@ if (!is.null(settings$assim.batch)) {
   
   # Start ecosystem model runs
   status.start("PDA.MODEL")
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   status.end()
   
   # Get results of model runs
