@@ -32,6 +32,13 @@ generate_colors_sda <-function(){
 
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
 
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAn.assim.sequential::interactive.plotting.sda()`.",
+      "Please install it and try again.")
+  }
+
   #Defining some colors
   generate_colors_sda()
   t1 <- 1
@@ -121,6 +128,13 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 ##' @export
 
 postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAn.assim.sequential::postana.timeser.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
   generate_colors_sda()
@@ -217,6 +231,13 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 ##' @export
 
 postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAn.assim.sequential::postana.bias.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
   generate_colors_sda()

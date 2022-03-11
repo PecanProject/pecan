@@ -36,10 +36,7 @@ selectively is preferable.
 * checking whether package ‘PEcAn.all’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -47,20 +44,23 @@ address and non-empty name.
 * checking whether the package can be loaded ... OK
 * checking whether the package can be loaded with stated dependencies ... OK
 * checking whether the package can be unloaded cleanly ... OK
+* checking dependencies in R code ... NOTE
+Packages in Depends field not imported from:
+  ‘PEcAn.DB’ ‘PEcAn.MA’ ‘PEcAn.assim.batch’ ‘PEcAn.benchmark’
+  ‘PEcAn.data.atmosphere’ ‘PEcAn.data.land’ ‘PEcAn.data.remote’
+  ‘PEcAn.emulator’ ‘PEcAn.logger’ ‘PEcAn.priors’ ‘PEcAn.remote’
+  ‘PEcAn.settings’ ‘PEcAn.uncertainty’ ‘PEcAn.utils’ ‘PEcAn.workflow’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented data sets:
-  ‘pecan.packages’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
 * checking data for ASCII and uncompressed saves ... OK
-* checking examples ... NONE
+* checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ... OK
 * DONE
-Status: 1 WARNING, 2 NOTEs
+Status: 2 NOTEs
