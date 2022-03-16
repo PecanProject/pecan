@@ -15,24 +15,16 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
   #getting site info
   #getting site ID
   observations <- c()
-  for (i in seq_along(1:length(settings$run))) {
-    command <- paste0("settings$run$settings.",i,"$site$id")
-    obs <- eval(parse(text=command))
+  for (i in 1:length(settings)) {
+    obs <- settings[[i]]$run$site$id
     observations <- c(observations,obs)
   }
   
   #query site info
-  dbparms = list()
-  dbparms$dbname = "bety"
-  dbparms$host = "128.197.168.114"
-  dbparms$user = "bety"
-  dbparms$password = "bety"
-  
-  #Connection code copied and pasted from met.process
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                              host     = dbparms$host, 
-                              user     = dbparms$user, 
-                              password = dbparms$password)
+  bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
+                              host     = settings$database$bety$host,
+                              user     = settings$database$bety$user,
+                              password = settings$database$bety$password)
   con <- bety$con
   site_ID <- observations
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
@@ -43,7 +35,7 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
   site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
                     lon=qry_results$lon, time_zone=qry_results$time_zone)
   
-  #db query
+  #initialize db query elements
   if(Write){
     mimetype <- "application/x-netcdf"
     formatname <- "CF Meteorology"
@@ -63,17 +55,20 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
     
     # setup parent part of query if specified
     parent <- ""
-  }
-  
-  #loop over each site
-  #Record all IDs for inputs and dbfiles
-  if(Write){
+    
+    #initialize Input_IDs object when looping over each site
     Input_IDs <- list()
+    
+    #initialize physical paths for each ERA5 file
+    Clim_paths <- list()
+    
+    #initialize site_outFolder
+    site_outFolder <- c()
   }
   
-  #record paths of extracted .clim files if not writing into bety
-  if(!Write){
-    Clim_paths <- list()
+  #setting up met2model function depending on model name from settings
+  if(settings$model$type == "SIPNET"){
+    met2model_method <- PEcAn.SIPNET::met2model.SIPNET
   }
   
   #loop over each site
@@ -85,22 +80,14 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
     if(!file.exists(site_outFolder)){
       dir.create(site_outFolder)
     }else{
+      #export info
       print(paste0("The output files for site ",as.character(site_info$site_id[i])," already exists jump to the next site"))
+      
+      #grab physical paths of existing ERA5 files
+      Clim_paths[i] <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
       next
     }
     
-    #Write into inputs table for each site
-    if(Write){
-      #insert into inputs table
-      cmd <- paste0(
-        "INSERT INTO inputs ",
-        "(site_id, format_id, start_date, end_date, name) VALUES (",
-        site_info$site_id[i], ", ", formatid, ", '", start_date, "', '", end_date, "','", paste0('ERA5_',site_info$site_id[i]),
-        "') RETURNING id"
-      )
-      # This is the id that we just registered
-      inputid <- PEcAn.DB::db.query(query = cmd, con = con)
-    }
     #extract ERA5.nc files
     PEcAn.data.atmosphere::extract.nc.ERA5(slat = site_info$lat[i],
                                            slon = site_info$lon[i],
@@ -111,16 +98,11 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
                                            in.prefix = 'ERA5_',
                                            newsite = as.character(site_info$site_id[i]))
     
-    #starting working on met2model.SIPNET function over each ensemble
+    #starting working on met2model.model function over each ensemble
     #find every path associated with each ensemble member
     ens_nc <- list.files(path = site_outFolder, full.names = T)
     
-    #finding the ensemble number
     #loop over each ensemble member
-    #record dbfile IDs
-    if(Write){
-      dbfile_IDs <- c()
-    }
     for (j in 1:length(ens_nc)) {
       nc_path <- ens_nc[j]
       
@@ -129,34 +111,43 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
       in_prefix <- paste0("ERA5.", ens_num)
       
       #preparing for the met2model.SIPNET function
-      PEcAn.SIPNET::met2model.SIPNET(in.path = nc_path,
-                                     in.prefix = in_prefix,
-                                     outfolder = site_outFolder,
-                                     start_date = start_date,
-                                     end_date = end_date
+      met2model_method(in.path = nc_path,
+                       in.prefix = in_prefix,
+                       outfolder = site_outFolder,
+                       start_date = start_date,
+                       end_date = end_date
       )
       
-      #Write into dbfiles table
-      if(Write){
+    }
+    # grab physical paths of ERA5 files
+    Clim_paths[i] <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
+  }
+  
+  #write into bety
+  if(Write){
+    #loop over each site
+    for (i in 1:length(site_info$site_id)) {
+      #insert into inputs table
+      cmd <- paste0(
+        "INSERT INTO inputs ",
+        "(site_id, format_id, start_date, end_date, name) VALUES (",
+        site_info$site_id[i], ", ", formatid, ", '", start_date, "', '", end_date, "','", paste0('ERA5_',site_info$site_id[i]),
+        "') RETURNING id"
+      )
+      # This is the id that we just registered
+      inputid <- PEcAn.DB::db.query(query = cmd, con = con)
+      
+      #loop over each ensemble
+      dbfile_IDs <- c()
+      for(j in 1:length(Clim_paths[[i]])){
         dbfileid <- dbfile.insert(
-          in.path = nc_path, in.prefix = in_prefix, type = "Input", id = inputid,
+          in.path = Clim_paths[[i]][j], in.prefix = in_prefix, type = "Input", id = inputid,
           con = con, reuse = TRUE, hostname = hostname
         )
         dbfile_IDs <- c(dbfile_IDs, dbfileid)
       }
+      Input_IDs[[i]] <- list(input_ID=inputid$id, dbfile_IDs=dbfile_IDs, Site_ID=site_info$site_id[i], in.path=Clim_paths[[i]])
     }
-    
-    #record paths of clim files if not Write into Bety
-    if(!Write){
-      Clim_paths[i] <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
-    }
-
-    #record input ID and dbfile IDs and extracted paths of clim files for each site
-    if(Write){
-      Input_IDs[[i]] <- list(input_ID=inputid$id, dbfile_IDs=dbfile_IDs, Site_ID=site_info$site_id[i], in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
-    }
-  }
-  if(Write){
     save(Input_IDs, file=paste0(out.path, '/', 'Inputs.RData'))
     return(Input_IDs)
   }else{
@@ -164,25 +155,3 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
     return(Clim_paths)
   }
 }
-
-# #test code
-# #get settings
-# setwd("/projectnb/dietzelab/dongchen/Multi-site/download_500_sites")
-# xml_files <- paste0("Site_XMLS/",list.files("Site_XMLS"))
-# 
-# settings <- list()
-# for (i in 1:length(xml_files)) {
-#   settings[i] <- list(settings=read.settings(xml_files[i]))
-# }
-# 
-# #convert to multi-settings
-# settings <- MultiSettings(settings)
-# 
-# #
-# in.path <- "/projectnb/dietzelab/hamzed/ERA5/Data/Ensemble"
-# out.path <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/ERA5_2012_2019"
-# start_date <- as.Date(paste0(2012,"-01-01"), tz="UTC")
-# end_date <- as.Date(paste0(2019,"-12-31"), tz="UTC")
-# Write <- T
-# 
-# ERA5_met_process(settings, in.path, start_date, end_date, out.path)
