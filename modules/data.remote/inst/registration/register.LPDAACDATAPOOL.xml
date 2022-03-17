@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<lpdaacdatapool>
+    <coord>
+      <coordtype>point</coordtype>
+    </coord>
+    <raw_format>
+     <id>1000000129</id>
+     <name>Remote_generic</name>
+     <mimetype>text/csv</mimetype>
+   </raw_format>
+</lpdaacdatapool>
