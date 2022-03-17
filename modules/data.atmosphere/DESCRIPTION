@@ -24,6 +24,7 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
+    amerifluxr,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -67,6 +68,7 @@ Suggests:
     progress,
     reticulate
 Remotes:
+    github::chuhousen/amerifluxr,
     github::ropensci/geonames,
     github::ropensci/nneo
 License: BSD_3_clause + file LICENSE
