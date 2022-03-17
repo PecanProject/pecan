@@ -62,11 +62,15 @@ drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 # Generates a list of regular files at any depth inside its argument
 files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
-# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
+# HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
+# circular dependencies in utils pkg.
 # When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
-	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
-	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
+depends_R_pkg = ./scripts/time.sh "depends ${1}" \
+	./scripts/confirm_deps.R ${1} \
+	$(if $(or \
+			$(findstring base/utils,$(1)), \
+			$(findstring modules/benchmark,$(1))) \
+		,NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
 	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
@@ -146,9 +150,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .SECONDEXPANSION:
 .doc/%: $$(call files_in_dir, %) | $$(@D)
-ifeq ($(CI),) # skipped on CI because we start the run by bulk-installing all deps
 	+ $(call depends_R_pkg, $(subst .doc/,,$@))
-endif
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 

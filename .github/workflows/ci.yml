@@ -23,48 +23,6 @@ env:
   CI: true
 
 jobs:
-
-  # ----------------------------------------------------------------------
-  # R BUILD
-  # ----------------------------------------------------------------------
-  build:
-    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        R:
-          - "4.0"
-          - "4.1"
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - uses: actions/checkout@v2
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf curl
-
-    # check dependencies
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
-    - name: check for out-of-date dependencies files
-      uses: infotroph/tree-is-clean@v1
-    - name: install newly-added dependencies
-      run: Rscript docker/depends/pecan.depends.R
-
-    # compile PEcAn code
-    - name: build
-      run: make -j1
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
-
   # ----------------------------------------------------------------------
   # R TEST
   # ----------------------------------------------------------------------
@@ -96,8 +54,12 @@ jobs:
     # install additional tools needed
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
+    - name: check for out-of-date dependencies files
+      uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      run: Rscript docker/depends/pecan.depends.R
 
     # initialize database
     - name: db setup

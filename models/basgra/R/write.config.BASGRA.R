@@ -46,8 +46,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       ind <- which(names(run_params) == pft.names[mi])
       run_params[ind] <- pft.traits[mi]
     }
-    
-    
       
     # Maximum SLA of new leaves
     if ("SLAMAX" %in% pft.names) {
@@ -97,11 +95,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       # Leaf width on elongating tillers (m)
       run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
     }
-    
-    # # Initial and maximum value rooting depth (m)
-    # if ("rooting_depth" %in% pft.names) {
-    #   run_params[which(names(run_params) == "ROOTDM")] <- pft.traits[which(pft.names == "rooting_depth")]
-    # }
     
     # Maximum root depth growth rate (m day-1)
     if ("root_growth_rate" %in% pft.names) {
@@ -269,7 +262,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "LOG10LAII"] <- IC$LAI
     }
     
-    
     if ("fast_soil_pool_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
     }
@@ -278,6 +270,60 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
     }
     
+    if ("CropYield"  %in% ic.names) {
+       run_params[names(run_params) == "YIELDI"] <-  udunits2::ud.convert(IC$CropYield, "kg", "g")
+    }
+    
+    if ("litter_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CLITT0"] <-  udunits2::ud.convert(IC$litter_carbon_content, "kg", "g")
+    }
+    
+    # not as important as others but you can throw this into the SDA too, then comment out last value overwriting below
+    # if ("stubble_carbon_content"  %in% ic.names) {
+    #   run_params[names(run_params) == "CSTUBI"] <-  udunits2::ud.convert(IC$stubble_carbon_content, "kg", "g")
+    # }
+   
+    if ("stem_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSTI"] <-  udunits2::ud.convert(IC$stem_carbon_content, "kg", "g")
+    }
+    
+    if ("root_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "LOG10CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
+    }
+
+    if ("reserve_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "LOG10CRESI"] <-  udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
+    }
+    
+    if ("leaf_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "LOG10CLVI"] <-  udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
+    }
+    
+    if ("dead_leaf_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CLVDI"] <-  udunits2::ud.convert(IC$dead_leaf_carbon_content, "kg", "g")
+    }
+
+    if ("nonelongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG1I"] <-  IC$nonelongating_generative_tiller
+    }
+
+    if ("elongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG2I"] <-  IC$elongating_generative_tiller
+    }
+
+    if ("nonelongating_vegetative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILVI"] <-  IC$nonelongating_vegetative_tiller
+    }
+    
+    if ("tiller_density"  %in% ic.names) {
+      run_params[names(run_params) == "TILTOTI"] <-  IC$tiller_density
+    }
+
+    if ("phenological_stage"  %in% ic.names) {
+      run_params[names(run_params) == "PHENI"] <-  IC$phenological_stage
+    }
+    
+
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
     
     IC.path <- settings$run$inputs$poolinitcond$path
@@ -380,10 +426,25 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "WCST")] <- wcst
     }
     
+    # Water concentration at field capacity (m3 m-3)
+    wcfc <- try(ncdf4::ncvar_get(IC.nc, "water_concentration_at_field_capacity"), silent = TRUE)
+    if (!is.na(wcfc) && is.numeric(wcfc)) {
+      # WCFC  = FWCFC  * WCST
+      run_params[which(names(run_params) == "FWCFC")] <- wcfc / wcst 
+    }
+    
+    # Water concentration at wilting point (m3 m-3)
+    wcwp <- try(ncdf4::ncvar_get(IC.nc, "water_concentration_at_wilting_point"), silent = TRUE)
+    if (!is.na(wcwp) && is.numeric(wcwp)) {
+      # WCWP  = FWCWP  * WCST
+      run_params[which(names(run_params) == "FWCWP")] <- wcwp / wcst 
+    }
+
   }
   
   # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR
-  # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE
+  # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE BECAUSE OF SDA
+  # BUT WHEN NOT DOING SDA WE STILL NEED TO PASS THEM
   
   # NRT        = NCR * CRTI
   run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*
@@ -396,16 +457,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
   run_params[which(names(run_params) == "NSHI")] <- ncshi * 
     ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
-  
-  
-  # TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
-  # TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
-  # TILV       = TILTOTI * (1. - FRTILGI)
-  tiltot_tmp <- run_params[names(run_params) == "TILTOTI"]
-  frtilg_tmp <- run_params[names(run_params) == "FRTILGI"]
-  run_params[names(run_params) == "TILG1I"] <- tiltot_tmp * frtilg_tmp * run_params[names(run_params) == "FRTILGG1I"]
-  run_params[names(run_params) == "TILG2I"] <- tiltot_tmp * frtilg_tmp * (1 - run_params[names(run_params) == "FRTILGG1I"])
-  run_params[names(run_params) == "TILVI"]  <- tiltot_tmp * (1 - frtilg_tmp)
   
   #  WAL        = 1000. * ROOTDM * WCI
   run_params[names(run_params) == "WALI"]  <- 1000. * run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "WCI"]
@@ -434,58 +485,19 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   if(file.exists(last_states_file)){
     
+    # TODO: certain variables should be thrown into the state matrix in SDA together
+    # but in case someone forgot to do so, make sure those missing values are passed from where we left off here
+    
     load(last_states_file)
     
-    # LOG10CLVI  = pa(1)
-    run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
-    
-    # LOG10CRESI = pa(2)
-    run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
-    
-    # LOG10CRTI  = pa(3)
-    run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
-    
-    # CSTI	   = pa(4)
-    run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
-    
-    # LOG10LAII handled above
-    
+    # SDA handles this now
     # PHENI	   = pa(6) 
     run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
-    
-    # TILTOTI	   = pa(7) 
-    run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILG"] + last_vals[names(last_vals) == "TILV"]
-    
-    # FRTILGI	   = pa(8)
-    #run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
     
     # LT50I      = pa(9)
     run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
     
-    # CLITT0    = pa( 82) ! (g C m-2)    Initial C in litter
-    run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
-    
-    # CSOM0     = pa( 83) ! (g C m-2)    Initial C in OM - handled above
-    
-    # CNLITT0   = pa( 84) ! (g C g-1 N)  Initial C/N ratio of litter
-    # run_params[names(run_params) == "CNLITT0"] <- last_vals[names(last_vals) == "CLITT"] / last_vals[names(last_vals) == "NLITT"]
-    
-    # CNSOMS0   = pa( 86) ! (g C g-1 N)  Initial C/N ratio of slowly decomposing OM
-    # csoms <- (1 - run_params[which(names(run_params) == "FCSOMF0")]) * run_params[which(names(run_params) == "CSOM0")]
-    # run_params[names(run_params) == "CNSOMS0"] <- csoms / last_vals[names(last_vals) == "NSOMS"]
-    
-    # PHENRF <- (1 - run_params[names(run_params) == "PHENI"])/(1 - run_params[names(run_params) == "PHENCR"])
-    # if (PHENRF > 1.0) PHENRF = 1.0
-    # if (PHENRF < 0.0) PHENRF = 0.0
-    # run_params[names(run_params) == "NELLVM"] <- last_vals[names(last_vals) == "NELLVG"] /  PHENRF
-    # if(is.nan(run_params[names(run_params) == "NELLVM"])) run_params[names(run_params) == "NELLVM"]  <- 0
-    # if(run_params[names(run_params) == "NELLVM"] == Inf)  run_params[names(run_params) == "NELLVM"]  <- 0
-    
-    #run_params[names(run_params) == "PHENCR"] <- last_vals[names(last_vals) == "PHENCR"]
-    
-    run_params[names(run_params) == "CLVDI"]  <- last_vals[names(last_vals) == "CLVD"]
-    run_params[names(run_params) == "YIELDI"] <- last_vals[names(last_vals) == "YIELD"]
-    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
+    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"] 
     
     run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
     
@@ -497,33 +509,28 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "WAPSI"]    <- last_vals[names(last_vals) == "WAPS"]
     run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
     run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
+  
     
-    #run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
+    run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
     
-    # this is probably not changing
-    #run_params[names(run_params) == "FRTILGG1I"] <- last_vals[names(last_vals) == "FRTILG1"] / last_vals[names(last_vals) == "FRTILG"]
+    #TILV       = TILTOTI * (1. - FRTILGI)
+    #TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
+    #TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
     
-    run_params[names(run_params) == "TILG1I"] <- last_vals[names(last_vals) == "TILG1"]  #* run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILG2I"] <- last_vals[names(last_vals) == "TILG2"]  #* run_params[names(run_params) == "TILTOTI"]
-    run_params[names(run_params) == "TILVI"]  <- last_vals[names(last_vals) == "TILV"]
+    run_params[names(run_params) == "TILVI"]  <- run_params[names(run_params) == "TILTOTI"] * (1-run_params[names(run_params) == "FRTILGI"])
+    gtil <- run_params[names(run_params) == "TILTOTI"] - run_params[names(run_params) == "TILVI"]
+    run_params[names(run_params) == "TILG1I"] <- gtil*last_vals[names(last_vals) == "TILG1"]  / 
+      (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
+    run_params[names(run_params) == "TILG2I"] <- gtil*last_vals[names(last_vals) == "TILG2"]  / 
+      (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
     
+    run_params[names(run_params) == "DAYLI"]  <- last_vals[names(last_vals) == "DAYL"]
     
     run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
     
-    run_params[names(run_params) == "NRTI"]        <- last_vals[names(last_vals) == "NRT"] 
-    run_params[which(names(run_params) == "NSHI")] <- last_vals[names(last_vals) == "NSH"] 
-    
-    
     run_params[names(run_params) == "WALI"]        <- last_vals[names(last_vals) == "WAL"] 
-    run_params[names(run_params) == "O2I"]         <- last_vals[names(last_vals) == "O2"] 
-    run_params[names(run_params) == "NLITT0"]      <- last_vals[names(last_vals) == "NLITT"] 
-    run_params[names(run_params) == "NSOMF0"]      <- last_vals[names(last_vals) == "NSOMF"] 
-    run_params[names(run_params) == "NSOMS0"]      <- last_vals[names(last_vals) == "NSOMS"] 
-    
-    #ratio to be preserved
-    # NRT        = NCR * CRTI
-    run_params[which(names(run_params) == "NCR")] <- last_vals[names(last_vals) == "NCRT"] 
-    
+    run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
+    run_params[names(run_params) == "O2I"]         <- last_vals[names(last_vals) == "O2"]
     
   }
   
