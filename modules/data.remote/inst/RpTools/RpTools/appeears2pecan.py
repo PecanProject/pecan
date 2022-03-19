@@ -50,7 +50,6 @@ def appeears2pecan(
 
     credfile (str) -- path to JSON file containing Earthdata username and password. None by default
 
-    siteid (str) -- shortform of siteid, None by default
   
     Returns
     -------
