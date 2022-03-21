@@ -123,6 +123,32 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "tdmax", pft.traits[which(pft.names == "tdmax")], overwrite = TRUE)
     }
     
+    # maximum phasic delay allowed due to stresses
+    if ("phasic_delay_max" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "stressdev", pft.traits[which(pft.names == "phasic_delay_max")], overwrite = TRUE)
+    }
+    
+    # minimum number of vernalising days (d) [0,7]
+    if ("vernalization_days_min" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "jvcmini", round(pft.traits[which(pft.names == "vernalization_days_min")]), overwrite = TRUE)
+    }
+    
+    # day of initiation of vernalisation in perennial crops (julian d) [1,731]
+    if ("vernalization_init" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "julvernal", round(pft.traits[which(pft.names == "vernalization_init")]), overwrite = TRUE)
+    }
+    
+    # optimal temperature for vernalisation (degreeC)
+    if ("vernalization_TOpt" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tfroid", pft.traits[which(pft.names == "vernalization_TOpt")], overwrite = TRUE)
+    }
+    
+    # skipping amfroid for now, seems to be relevant for winter barley only, come back for barley 
+    # semi thermal amplitude for vernalising effect (degreeC)
+    #if ("vernalization_TAmp" %in% pft.names) { # haven't entered this variable to DB, this is only a suggestion
+    #  SticsRFiles::set_param_xml(plant_file, "ampfroid", pft.traits[which(pft.names == "vernalization_TAmp")], overwrite = TRUE)
+    #}
+    
     
     # emergence and starting
     # leaves
@@ -511,7 +537,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # number of calendar years involved in the crop cycle
     # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
-    SticsRFiles::set_usm_txt(usm_file, "culturean", trait.values$timothy$crop_cycle, add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "culturean", 0, add = FALSE) #hardcoding this for now, if passed as a trait from priors it breaks sensitivity analysis
+    # probably best to pass this via the json file
     
     # name of the plant file for main plant 
     SticsRFiles::set_usm_txt(usm_file, "fplt1", paste0(defaults$pft$name, "_plt.xml"), add = FALSE) 
