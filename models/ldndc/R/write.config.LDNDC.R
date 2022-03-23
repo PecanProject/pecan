@@ -24,7 +24,7 @@
 ##' @author Henri Kajasilta
 ##-------------------------------------------------------------------------------------------------#
 write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
-  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
+  #PEcAn.logger::logger.severe("NOT IMPLEMENTED")
   # Please follow the PEcAn style guide:
   # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
   # Note that `library()` calls should _never_ appear here; instead, put
@@ -34,9 +34,49 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Also, `require()` should be used only when a package dependency is truly
   # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
   
+  
+  
+  # Check minimum package required
+  MinPackReq <- "1.9"
+  
+  
+  # Create Schedule time
+  if(!is.null(settings$run$start.date) & !is.null(settings$run$end.date)){
+    
+    steps <- 48
+    ScheduleTime <- paste0(format(as.POSIXlt(settings$run$site$met.start), "%Y-%m-%d"), "/",
+                           steps, " -> ", format(as.POSIXlt(settings$run$site$met.end), "%Y-%m-%d"))
+  }
+
+  # Source
+  if(!is.null(settings$run$inputs$met$path)){
+    SourcePrefix <- paste0(dirname(settings$run$inputs$met$path), "/Qvidja_")
+    OutputPrefix <- paste0(dirname(settings$run$inputs$met$path), "/Output/Output_")
+  }
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
+  
+  #-----------------------------------------------------------------------
+  # create .ldndc template
+  #file.copy("~/pecan/models/ldndc/inst/project.ldndc", rundir)
+  projectfile <- readLines(con = system.file("project.ldndc", package = "PEcAn.LDNDC"), n = -1)
+  
+  
+  # changes
+  projectfile <- gsub('@PackMinVerReq@', MinPackReq, projectfile)
+  
+  projectfile <- gsub('@ScheduleTime@', ScheduleTime, projectfile)
+  
+  projectfile <- gsub('@SourcePrefix@', SourcePrefix, projectfile)
+  projectfile <- gsub('@OutputPrefix@', OutputPrefix, projectfile)
+  
+  # Write project file to rundir
+  writeLines(projectfile, con = file.path(settings$rundir, run.id, "project.ldndc"))
+  
+  
+  
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -69,7 +109,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
-  jobsh <- gsub("@SITE_MET@", settings$run$site$met, jobsh)
   
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
@@ -77,10 +116,34 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
-  jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
+  jobsh <- gsub("@BINARY@", paste(settings$model$binary, paste0(rundir, "/project.ldndc")), jobsh)
+  
+  # if(is.null(settings$model$delete.raw)){
+  #   settings$model$delete.raw <- FALSE
+  # }
+  # 
+  # jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
+  
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  
+  
+  #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
+  for(pft in seq_along(trait.values)){
+    pft.traits <- unlist(trait.values[[pft]])
+    pft.names <- names(pft.traits)
+    
+  }
+  
+  
+  
+  # Specific leaf area under full light
+  SLAMIN <- NA
+  if("SLAMIN" %in% pft.names){
+    SLAMIN <- pft.traits[which(pft.names == "SLAMIN")]
+  }
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
