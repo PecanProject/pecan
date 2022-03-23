@@ -97,6 +97,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(names(trait.values)[pft] != "env"){
       # save the template, will be overwritten below
       XML::saveXML(plt_xml, file = plant_file)
+    }else{
+      next
     }
     
     # to learn the parameters in a plant file
@@ -151,6 +153,57 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     
     # emergence and starting
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "emergence and starting")
+    # unlist(values)
+    
+    # minimum temperature below which emergence is stopped (degreeC)
+    if ("emergence_Tmin" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "tgmin", pft.traits[which(pft.names == "emergence_Tmin")], overwrite = TRUE)
+    }
+    
+    # nbfeuilplant, leaf number per plant when planting, default 0, skipping for now
+    
+    
+    # this is a switch, for now hardcoding to be direct start (2)
+    # should probably be passed via json
+    # codegermin, option of simulation of a germination phase or a delay at the beginning of the crop (1) or direct starting (2)
+    SticsRFiles::set_param_xml(plant_file, "codegermin", 2, overwrite = TRUE)
+    # hence, skipping the other parameters related to this switch
+    # stpltger: cumulative thermal time allowing germination
+    # potgermi: soil water potential under which seed imbibition is impeded
+    # nbjgerlim: maximum number of days after grain imbibition allowing full germination
+    # propjgermin: minimal proportion of the duration nbjgerlim when the temperature is higher than the temperature threshold Tdmax
+    
+    
+    # parameter of the curve of coleoptile elongation
+    if ("belong" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "belong", pft.traits[which(pft.names == "belong")], overwrite = TRUE)
+    }
+    
+    # parameter of the plantlet elongation curve
+    if ("celong" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "celong", pft.traits[which(pft.names == "celong")], overwrite = TRUE)
+    }
+    
+    # maximum elongation of the coleoptile in darkness condition
+    if ("coleoptile_elong_dark_max" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "elmax", pft.traits[which(pft.names == "coleoptile_elong_dark_max")], overwrite = TRUE)
+    }
+    
+    # number of days after germination after which plant emergence is reduced
+    if ("days_reduced_emergence_postgerm" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "nlevlim1", round(pft.traits[which(pft.names == "days2reduced_emergence_postgerm")]), overwrite = TRUE)
+    }
+    
+    # number of days after germination after which plant emergence is impossible
+    if ("days2stopped_emergence_postgerm" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "nlevlim2", round(pft.traits[which(pft.names == "days2stopped_emergence_postgerm")]), overwrite = TRUE)
+    }
+    
+    # plant vigor index allowing to emerge through a soil crust, vigueurbat == 1 inactivates some soil crust related parameters, skipping for now
+    
+    # there are also "planting" related parameters
+    
     # leaves
     
     # phyllotherme, thermal duration between the apparition of two successive leaves on the main stem (degree day)
