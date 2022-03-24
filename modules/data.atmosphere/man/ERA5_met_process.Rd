@@ -4,23 +4,12 @@
 \alias{ERA5_met_process}
 \title{Met Processes for ERA5 data}
 \usage{
-ERA5_met_process(
-  settings,
-  in.path,
-  start_date,
-  end_date,
-  out.path,
-  Write = FALSE
-)
+ERA5_met_process(settings, in.path, out.path, Write = FALSE)
 }
 \arguments{
 \item{settings}{a multi-settings object}
 
 \item{in.path}{met input path}
-
-\item{start_date}{start date}
-
-\item{end_date}{end date}
 
 \item{out.path}{output path}
 

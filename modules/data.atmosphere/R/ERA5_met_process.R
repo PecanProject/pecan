@@ -2,8 +2,6 @@
 #'
 #' @param settings a multi-settings object
 #' @param in.path met input path
-#' @param start_date start date
-#' @param end_date end date
 #' @param out.path output path
 #' @param Write if write into Bety database
 #'
@@ -11,7 +9,7 @@
 #' @export
 #'
 #' @examples
-ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, Write=FALSE){
+ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   #getting site info
   #getting site ID
   observations <- c()
@@ -58,13 +56,14 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
     
     #initialize Input_IDs object when looping over each site
     Input_IDs <- list()
-    
-    #initialize physical paths for each ERA5 file
-    Clim_paths <- list()
-    
-    #initialize site_outFolder
-    site_outFolder <- c()
   }
+  
+  #initialize physical paths for each ERA5 file
+  Clim_paths <- list()
+  
+  #initializing start and end date from settings
+  start_date <- settings$state.data.assimilation$start.date
+  end_date <- settings$state.data.assimilation$end.date
   
   #setting up met2model function depending on model name from settings
   if(settings$model$type == "SIPNET"){
@@ -84,6 +83,7 @@ ERA5_met_process <- function(settings, in.path, start_date, end_date, out.path, 
       print(paste0("The output files for site ",as.character(site_info$site_id[i])," already exists jump to the next site"))
       
       #grab physical paths of existing ERA5 files
+      #need to be generalized when more models come in.
       Clim_paths[i] <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
       next
     }
