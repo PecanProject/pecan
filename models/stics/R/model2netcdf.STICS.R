@@ -42,7 +42,8 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   
   # check that specified years and output years match
   if (!all(year_seq %in% simulation_years)) {
-    PEcAn.logger::logger.info("Years selected for model run and STICS output years do not match.")
+    # if not fail altogether, so that it won't break ensemble analysis 
+    PEcAn.logger::logger.error("Years selected for model run and STICS output years do not match.")
   }
   
   # determine time step?

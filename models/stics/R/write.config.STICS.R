@@ -205,6 +205,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # there are also "planting" related parameters
     
     # leaves
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "leaves")
+    # unlist(values)
+    
     
     # phyllotherme, thermal duration between the apparition of two successive leaves on the main stem (degree day)
     # assuming this is the same as phyllochron
@@ -230,6 +233,65 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # maximum height of crop
     if ("HTMAX" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "hautmax", pft.traits[which(pft.names == "HTMAX")], overwrite = TRUE)
+    }
+    
+    # minimum temperature at which growth ceases
+    if ("tcmin_growth" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tcmin", pft.traits[which(pft.names == "tcmin_growth")], overwrite = TRUE)
+    }
+    
+    # maximum temperature at which growth ceases
+    if ("tcmax_growth" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tcmax", pft.traits[which(pft.names == "tcmax_growth")], overwrite = TRUE)
+    }
+    
+    # temperature beyond which foliar growth stops
+    if ("tcmax_foliar_growth" %in% pft.names) {
+      #  tcxstop must be > tdmax, priors should be set that way, and we can let the simulation fail afterwards, but putting a warning here
+      tdmax   <- SticsRFiles::get_param_xml(plant_file, param_name="tdmax", select = "formalisme", value = "phasic development")[[1]][[1]]
+      tcxstop <- pft.traits[which(pft.names == "tcmax_foliar_growth")]
+      if(tcxstop < tdmax){
+        PEcAn.logger::logger.warn("tcmax_foliar_growth value (", tcxstop, ") should be greater than tdmax (", tdmax, ").")
+      }
+      SticsRFiles::set_param_xml(plant_file, "tcxstop", tcxstop, overwrite = TRUE)
+      
+    }
+    
+    # ulai at the inflexion point of the function DELTAI=f(ULAI)
+    if ("vlaimax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "vlaimax", pft.traits[which(pft.names == "vlaimax")], overwrite = TRUE)
+    }
+    
+    # parameter of the logistic curve of LAI growth
+    if ("pentlaimax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "pentlaimax", pft.traits[which(pft.names == "pentlaimax")], overwrite = TRUE)
+    }
+    
+    # ulai from which the rate of leaf growth decreases
+    if ("udlaimax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "udlaimax", pft.traits[which(pft.names == "udlaimax")], overwrite = TRUE)
+    }
+    
+    # life span of early leaves expressed as a fraction of the life span of the last leaves emitted DURVIEF
+    if ("early2last_leaflife" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "ratiodurvieI", pft.traits[which(pft.names == "early2last_leaflife")], overwrite = TRUE)
+    }
+    
+    # fraction of senescent biomass (relative to total biomass)
+    if ("senes2total_biomass" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "ratiosen", pft.traits[which(pft.names == "senes2total_biomass")], overwrite = TRUE)
+    }
+    
+    # fraction of senescent leaves falling to the soil
+    # not sure if this is supposed to be a fraction or a percentage in STICS, values look like a fraction but min-max is given as 0-100
+    # treating it like a fraction for now
+    if ("fracLeafFall" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "abscission", pft.traits[which(pft.names == "fracLeafFall")], overwrite = TRUE)
+    }
+    
+    # parameter relating the C/N of dead leaves and the INN (N stress)
+    if ("" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "parazofmorte", pft.traits[which(pft.names == "")], overwrite = TRUE)
     }
     
     # radiation interception
