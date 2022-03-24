@@ -4,24 +4,16 @@
 \alias{Prep_OBS_SDA}
 \title{SDA observation preparation function for LAI and AGB}
 \usage{
-Prep_OBS_SDA(
-  multi.settings,
-  start_year,
-  end_year,
-  out_dir,
-  AGB_dir = "/projectnb/dietzelab/hamzed/LandTrendr/LandTrendr_AGB_data/"
-)
+Prep_OBS_SDA(settings, out_dir, AGB_dir, Search_Window = 30)
 }
 \arguments{
-\item{multi.settings}{settings objects that contains multiple sites info}
-
-\item{start_year}{starting year}
-
-\item{end_year}{ending year}
-
 \item{out_dir}{output dir}
 
 \item{AGB_dir}{AGB data dir}
+
+\item{Search_Window}{search window for locate available LAI values}
+
+\item{multi.settings}{settings objects that contains multiple sites info}
 }
 \value{
 mean and covariance of observations
