@@ -1,90 +1,120 @@
 #' SDA observation preparation function for LAI and AGB
 #'
 #' @param multi.settings settings objects that contains multiple sites info
-#' @param start_year starting year
-#' @param end_year ending year
 #' @param out_dir  output dir
 #' @param AGB_dir  AGB data dir
+#' @param Search_Window search window for locate available LAI values
 #'
 #' @return mean and covariance of observations
 #' @export
 #'
 #' @examples
-Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir = "/projectnb/dietzelab/hamzed/LandTrendr/LandTrendr_AGB_data/"){
+Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   ####working on downloading LAI and extraction AGB
-  settings <- multi.settings #getting it simpler
   
   #getting site ID
   observations <- c()
   for (i in 1:length(settings)) {
-    obs <- settings[[i]]$run$site$id
-    observations <- c(observations,obs)
+    observations <- c(observations,settings[[i]]$run$site$id)
   }
   
-  ##site info query site info
-  obs <- observations
-  dbparms = list()
-  dbparms$dbname = "bety"
-  dbparms$host = "128.197.168.114"
-  dbparms$user = "bety"
-  dbparms$password = "bety"
-  
-  #Connection code copied and pasted from met.process
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                              host     = dbparms$host, 
-                              user     = dbparms$user, 
-                              password = dbparms$password)
+  #query site info
+  bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
+                              host     = settings$database$bety$host,
+                              user     = settings$database$bety$user,
+                              password = settings$database$bety$password)
   con <- bety$con
   
+  #grab site info
+  site_ID <- observations
+  suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
+                                              ids = site_ID, .con = con))
+  suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
+  suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+  site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
+                    lon=qry_results$lon, time_zone=qry_results$time_zone)
+  
   #convert year to YEARDOY
-  start_YEARDOY <- paste0(as.character(start_year), "001")
-  end_YEARDOY <- paste0(as.character(end_year), "365")
+  #setting up start and end date based on settings specs
+  start_date <- as.Date(settings$state.data.assimilation$start.date, tz="UTC")
+  end_date <- as.Date(settings$state.data.assimilation$end.date, tz="UTC")
+  
+  #converting from date to YEAR-DOY(example: 2012-01-01 to 2012001)
+  start_YEARDOY <- paste0(lubridate::year(start_date),sprintf("%03d",lubridate::yday(start_date)))
+  end_YEARDOY <- paste0(lubridate::year(end_date),sprintf("%03d",lubridate::yday(end_date)))
   
   #assigning ncores
-  if(length(obs) <= 10){
-    ncores <- length(obs)
+  if(length(observations) <= 10){
+    ncores <- length(observations)
   }else{ncores <- 10}
   
-  #parallel
-  round.length <- ceiling(length(obs)/ncores)
+  #parallelly download LAI and LAI std bands
+  round.length <- ceiling(length(observations)/ncores)
   
   #initialize lai and lai.sd
   lai_data <- c()
-  sd <- c()
+  lai_sd <- c()
   
   for (i in 1:round.length) {
     #prepare for parallel
     start = (1+((i-1)*ncores))
     end = start+ncores-1
-    obs = observations[start:end]
     
-    #grab site info
-    site_ID <- obs
-    suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
-                                                ids = site_ID, .con = con))
-    suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-    suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-    site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
-                      lon=qry_results$lon, time_zone=qry_results$time_zone)
+    #grab temp site_info for current loop
+    temp_site_info <- furrr::future_pmap(list(site_info, start, end), function(X, start, end){X[start:end]})
     
-    #download LAI
-    lai = PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
+    #download LAI data and LAI std
+    lai_data <- rbind(PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
                      run_parallel = TRUE, ncores = ncores, product = "MOD15A2H", band = "Lai_500m",
-                     package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
-    lai_data <- rbind(lai_data, lai)
+                     package_method = "MODISTools", QC_filter = TRUE, progress = FALSE), lai_data)
     
-    sd = rbind(PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
+    lai_sd = rbind(PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
                           run_parallel = TRUE, ncores = ncores, product = "MOD15A2H", band = "LaiStdDev_500m",
-                          package_method = "MODISTools", QC_filter = TRUE, progress = FALSE), sd)
-    
+                          package_method = "MODISTools", QC_filter = TRUE, progress = FALSE), lai_sd)
   }
-  lai_sd <- sd
+  
+  #format LAI data by "Site_ID", "Date", "Median", "qc", "SD"
+  LAI <- cbind(lai_data[,c(5, 2, 9, 10)], lai_sd$data)
+  colnames(LAI) <- c("Site_ID", "Date", "Median", "qc", "SD")
+  
+  #filter by qc band
+  LAI <- LAI[-(which(LAI$qc=="001")),]
+  
+  #compute peak LAI per year per site
+  peak_lai = data.frame()
+  
+  #loop over each site
+  for (i in 1:length(unique(LAI$Site_ID))) {
+    site_ID <- unique(LAI$Site_ID)[i]
+    site_LAI <- LAI[which(LAI$Site_ID==site_ID),]
+    
+    #loop over each year
+    for (j in 1:length(unique(lubridate::year(site_LAI$Date)))) {
+      site_LAI_year <- site_LAI[which(lubridate::year(site_LAI$Date)==unique(lubridate::year(site_LAI$Date))[j]),]
+      
+      #calculate the difference between target date and record date
+      target_date <- lubridate::date(as.Date(paste0(as.character(unique(lubridate::year(site_LAI$Date))[j]),"/07/15")))
+      diff_days <- abs(lubridate::days(lubridate::date(site_LAI_year$Date)-lubridate::date(target_date))@day)
+      
+      #find records within search window
+      max <- site_LAI_year[which(diff_days<=Search_Window),]
+      
+      #if no record in search window
+      if(nrow(max)==0){
+        peak <- data.frame(Site_ID=site_ID, Date=paste0("Year_", unique(lubridate::year(site_LAI$Date))[j]), Median=NA, SD=NA)
+      }else{#we do have records
+        peak <- data.frame(Site_ID=site_ID, Date=paste0("Year_", unique(lubridate::year(site_LAI$Date))[j]), Median=mean(max$Median), SD=max(max$SD))
+      }
+      peak_lai <- rbind(peak_lai, peak)
+    }
+  }
+  #lower boundaries for LAI std
+  peak_lai$SD[peak_lai$SD < 0.66] = 0.66
   
   #extracting AGB data
-  work_dir <- getwd()
-  med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
-  sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "stdv", buffer = NULL, fun = "mean", AGB_dir, product_dates=start_year:end_year)[[1]]
+  med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", AGB_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]]
+  sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info, "stdv", buffer = NULL, fun = "mean", AGB_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]]
   
   #formatting AGB data
   ndates = colnames(med_agb_data)[-c(1:2)] # getting dates
@@ -98,39 +128,7 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
   names(agb_data) = c("Site_ID", "Date", "Median", "SD")
   agb_data$Date = as.character(agb_data$Date, stringsAsFactors = FALSE)
   
-  #format LAI data
-  names(lai_sd) = c("modis_date", "calendar_date", "band", "tile", "site_id", "lat", "lon", "pixels", "sd", "qc")
-  output = cbind(lai_data, lai_sd$sd)
-  names(output) = c(names(lai_data), "sd")
-  save(output, file = paste0(out_dir,"/all_lai_data.Rdata"))#export all LAI data
-  output = output[,c(5, 2, 9, 11)]
-  colnames(output) = c("Site_ID", "Date", "Median", "SD")
   
-  #compute peak LAI per year
-  data = output
-  peak_lai = data.frame()
-  years = unique(year(as.Date(data$Date, "%Y-%m-%d")))
-  for (i in seq_along(years))
-  {
-    d = data[grep(data$Date, pattern = years[i]),]
-    sites = unique(d$Site_ID)
-    for (j in seq_along(sites))
-    {
-      index = which(d$Site_ID == site_info$site_id[j])
-      site = d[index,]
-      if (length(index) > 0)
-      {
-        # peak lai is the max value that is the value <95th quantile to remove potential outlier values
-        max = site[which(site$Median == max(site$Median[which(site$Median <= stats::quantile(site$Median, probs = 0.95))], na.rm = T))[1],] #which(d$Median == max(d$Median[index], na.rm = T))[1]
-        peak = data.frame(max$Site_ID, Date = paste("Year", years[i], sep = "_"), Median = max$Median, SD = max$SD)
-        peak_lai = rbind(peak_lai, peak)
-        
-      }
-    }
-  }
-  peak_lai$SD[peak_lai$SD < 0.66] = 0.66
-  names(peak_lai) = c("Site_ID", "Date", "Median", "SD")
-  save(peak_lai, file = paste0(out_dir,"/peak_lai_data.Rdata"))
   
   #making obs.mean and obs.cov
   peak_lai$Site_ID = as.numeric(as.character(peak_lai$Site_ID, stringsAsFactors = F))
@@ -169,9 +167,12 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
     {
       na_index = which(!(is.na(obs.mean[[ name]][[site]])))
       colnames = names(obs.mean[[name]][[site]])
+      #we have some records that are not NA
       if (length(na_index) > 0)
       {
         obs.mean[[name]][[site]] = obs.mean[[name]][[site]][na_index]
+      }else if(length(na_index) == 0){#we don't have any observations (they are all NAs), we then just remove the whole site
+        obs.mean[[name]][[site]] <- NULL
       }
     }
   }
@@ -200,6 +201,13 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
   {
     for (site in names(obs.cov[[name]]))
     {
+      #if we don't have any observation (diag(cov)==NA) then we remove the whole site
+      if(length(which(!is.na(diag(obs.cov[[name]][[site]])))) == 0)
+      {
+        obs.cov[[name]][[site]] <- NULL
+        next
+      }
+      #else we do have some records
       bad = which(apply(obs.cov[[name]][[site]], 2, function(x) any(is.na(x))) == TRUE)
       if (length(bad) > 0)
       {
@@ -213,6 +221,7 @@ Prep_OBS_SDA <- function(multi.settings, start_year, end_year, out_dir, AGB_dir 
       }
     }
   }
+  save(peak_lai, file = paste0(out_dir, '/peak_lai.Rdata'))
   save(obs.mean, file = paste0(out_dir, '/obs_mean.Rdata'))
   save(obs.cov, file = paste0(out_dir, '/obs_cov.Rdata'))
   list(cov=obs.cov, mean=obs.mean)
