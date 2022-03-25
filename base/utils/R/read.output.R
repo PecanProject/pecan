@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -11,7 +11,7 @@
 ##'
 ##' Reads the output of a single model run
 ##'
-##' Generic function to convert model output from model-specific format to 
+##' Generic function to convert model output from model-specific format to
 ##' a common PEcAn format. This function uses MsTMIP variables except that units of
 ##'  (kg m-2 d-1)  are converted to kg ha-1 y-1. Currently this function converts
 ##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
@@ -31,7 +31,7 @@
 ##'   variables in output file..
 ##' @param dataframe Logical: if TRUE, will return output in a
 ##'   `data.frame` format with a posix column. Useful for
-##'   [PEcAn.benchmark::align_data()] and plotting.
+##'   `PEcAn.benchmark::align.data` and plotting.
 ##' @param pft.name character string, name of the plant functional
 ##'   type (PFT) to read PFT-specific output. If `NULL` no
 ##'   PFT-specific output will be read even the variable has PFT as a
@@ -236,7 +236,7 @@ read.output <- function(runid, outdir,
         # check if the variable has 'pft' as a dimension
         if ("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")) {
           # means there are PFT specific outputs we want
-          # the variable *PFT* in standard netcdfs has *pft* dimension, 
+          # the variable *PFT* in standard netcdfs has *pft* dimension,
           # numbers as values, and full pft names as an attribute
           # parse pft names and match the requested
           pft.string <- ncdf4::ncatt_get(nc, "PFT", verbose = verbose)
@@ -260,7 +260,7 @@ read.output <- function(runid, outdir,
             }
           }
         } # end of per-pft read
-        
+
         # Dropping attempt to provide more sensible units because of graph unit errors,
         # issue #792
         # if (v %in% c(cflux, wflux)) {
@@ -273,7 +273,7 @@ read.output <- function(runid, outdir,
 
     if (print_summary) {
       result_means <- vapply(result, mean, numeric(1), na.rm = TRUE)
-      result_medians <- vapply(result, median, numeric(1), na.rm = TRUE)
+      result_medians <- vapply(result, stats::median, numeric(1), na.rm = TRUE)
       summary_matrix <- signif(cbind(Mean = result_means, Median = result_medians), 3)
       rownames(summary_matrix) <- names(result)
       PEcAn.logger::logger.info(

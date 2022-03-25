@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -15,6 +15,7 @@
 ##'
 ##' @title Creates an absolute path to a folder
 ##' @name full.path
+##' @param folder folder for file paths.
 ##' @author Rob Kooper
 ##' @return absolute path
 ##' @export
@@ -23,12 +24,12 @@
 full.path <- function(folder) {
   # normalize pathname
   folder <- normalizePath(folder, mustWork = FALSE)
-  
+
   # add cwd if needed
   if (substr(folder, 1, 1) != "/") {
     folder <- file.path(getwd(), folder)
     folder <- normalizePath(folder, mustWork = FALSE)
   }
-  
+
   return(invisible(folder))
 } # full.path

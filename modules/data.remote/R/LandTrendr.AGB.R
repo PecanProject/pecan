@@ -209,10 +209,10 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' 
 ##' # Example 1 - using BETYdb site IDs to extract data
 ##' # Database connection (optional)
-##' bety <- list(user='bety', password='bety', host='localhost',
-##' dbname='bety', driver='PostgreSQL',write=TRUE)
-##' con <- PEcAn.DB::db.open(bety)
-##' bety$con <- con
+##'
+##' con <- PEcAn.DB::db.open(
+##'   list(user='bety', password='bety', host='localhost',
+##'   dbname='bety', driver='PostgreSQL',write=TRUE))
 ##' 
 ##' site_ID <- c(2000000023,1000025731,676,1000005149) # BETYdb site IDs
 ##' suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, 

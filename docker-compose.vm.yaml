@@ -1,0 +1,55 @@
+version: '3.2'
+
+services:
+
+  # executor can compile the code
+  executor:
+    volumes:
+      - 'pecan_home:/pecan/'
+      - 'pecan_lib:/usr/local/lib/R/site-library/'
+
+  # use same for R development in rstudio
+  rstudio:
+    volumes:
+      - 'pecan_home:/pecan/'
+      - 'pecan_home:/home/carya/pecan/'
+      - 'pecan_lib:/usr/local/lib/R/site-library/'
+      - '/home/carya/rserver.conf:/etc/rstudio/rserver.conf'
+
+  # use following as template for other models
+  # this can be used if you are changng the code for a model in PEcAN
+  sipnet:
+    volumes:
+      - 'pecan_lib:/usr/local/lib/R/site-library/'
+
+  # Allow to see all docker containers running, restart and see log files.
+  portainer:
+   image: portainer/portainer:latest
+   command:
+     - --admin-password=${PORTAINER_PASSWORD:-}
+     - --host=unix:///var/run/docker.sock
+   restart: unless-stopped
+   networks:
+     - pecan
+   labels:
+     - "traefik.enable=true"
+     - "traefik.backend=portainer"
+     - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE:-}PathPrefixStrip: /portainer"
+     - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - portainer:/data
+
+volumes:
+  pecan:
+    driver_opts:
+      type: none
+      device: '/home/carya/data'
+      o: bind
+  pecan_home:
+    driver_opts:
+      type: none
+      device: '/home/carya/pecan'
+      o: bind
+  pecan_lib:
+  portainer:

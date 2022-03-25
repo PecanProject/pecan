@@ -4,7 +4,9 @@
 \name{sensor.proper}
 \alias{sensor.proper}
 \title{Sensor list with proper names}
-\format{An object of class \code{character} of length 12.}
+\format{
+An object of class \code{character} of length 12.
+}
 \usage{
 sensor.proper
 }

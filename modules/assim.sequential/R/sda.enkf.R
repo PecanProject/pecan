@@ -20,6 +20,13 @@
 ##' @export
 ##' 
 sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAn.assim.sequential::sda.enkf.original()`.",
+      "Please install it and try again.")
+  }
   
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
@@ -309,7 +316,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   
   ## start model runs
   if(is.null(restart)){
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   }
 
   ###-------------------------------------------------------------------###
@@ -1122,7 +1129,7 @@ for(t in seq_len(nt)) { #
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
       print(paste("Running Model for Year", as.Date(obs.times[t]) + 1))
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     }
     
     ###-------------------------------------------------------------------###

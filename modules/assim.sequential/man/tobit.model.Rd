@@ -4,7 +4,9 @@
 \name{tobit.model}
 \alias{tobit.model}
 \title{TWEnF}
-\format{TBD}
+\format{
+TBD
+}
 \usage{
 tobit.model
 }

@@ -56,6 +56,7 @@
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
+##' @param dbparms list of parameters to use for opening a database connection
 ##'
 ##' @return A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 ##'
@@ -168,7 +169,7 @@ convert.input <-
                                                              hostname = host$name, 
                                                              exact.dates = TRUE,
                                                              pattern = filename_pattern)
-      
+
       if(nrow(existing.dbfile[[i]]) > 0) {
         existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
@@ -273,7 +274,7 @@ convert.input <-
       )
       if ("id" %in% colnames(existing.dbfile)) {
         existing.dbfile <- existing.dbfile %>%
-          dplyr::filter(id==input.args$dbfile.id)
+          dplyr::filter(.data$id==input.args$dbfile.id)
       }
     }else{
       existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,

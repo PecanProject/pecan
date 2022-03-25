@@ -88,9 +88,9 @@ logger.error <- function(msg, ...) {
 ##' Prints an severe message and stops execution.
 ##' 
 ##' This function will print a message and stop execution of the code. This
-##' should only be used if the application should terminate. 
+##' should only be used if the application should terminate.
 ##' 
-##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+##' set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
 ##' the session. This is set by default to TRUE if interactive or running
 ##' inside Rstudio.
 ##'
@@ -140,17 +140,16 @@ logger.severe <- function(msg, ..., wrap = TRUE) {
 ##' }
 logger.message <- function(level, msg, ..., wrap = TRUE) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
-    dump.frames(dumpto = "dump.log")
-    calls <- names(dump.log)
+    calls <- utils::limitedLabels(sys.calls())
     calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
     calls <- calls[!grepl("(severe|error|warn|info|debug)ifnot", calls)]
-    func <- sub("\\(.*", "", tail(calls, 1))
+    func <- sub("\\(.*", "", utils::tail(calls, 1))
     if (length(func) == 0) {
       func <- "console"
     }
     
     stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
-    long.msg <- paste(c(msg, ...), collapse = " ")
+    long.msg <- stringi::stri_trans_general(paste(c(msg, ...), collapse = " "), "latin-ascii")
     if (nchar(long.msg) > 20 && wrap) {
       new.msg <- paste("\n", strwrap(long.msg, width = .utils.logger$width, 
                                      indent = 2, exdent = 2), collapse = " ")
@@ -191,18 +190,15 @@ logger.setLevel <- function(level) {
 } # logger.setLevel
 
 
-##' Returns numeric value for string
-##'
-##' Given the string representation this will return the numeric value
-##' ALL   =  0
-##' DEBUG = 10
-##' INFO  = 20
-##' WARN  = 30
-##' ERROR = 40
-##' ALL   = 99
-##'
-##' @return level the level of the message
-##' @author Rob Kooper
+## Given the string representation this will return the numeric value
+## DEBUG = 10
+## INFO  = 20
+## WARN  = 30
+## ERROR = 40
+## ALL   = 99
+##
+##@return level the level of the message
+##@author Rob Kooper
 logger.getLevelNumber <- function(level) {
   if (toupper(level) == "ALL") {
     return(0)

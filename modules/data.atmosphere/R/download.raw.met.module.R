@@ -118,7 +118,8 @@
       lat.in = lat.in,
       lon.in = lon.in,
       pattern = met, 
-      site_id = site.id
+      site_id = site.id,
+      product = input_met$product
     )
     
   } else {
