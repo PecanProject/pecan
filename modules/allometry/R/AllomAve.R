@@ -60,7 +60,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
   ## 41 = rooting depth (Rd)		
   ## 42 = Rooting volume (Vol)		
   ## 43 = Canopy Area
-  
+
   nested.range <- function(obs) {
     w <- NULL
     for (i in seq_along(obs)) {
