@@ -44,7 +44,6 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    curl,
     REddyProc,
     reshape2,
     rgdal,
