@@ -80,9 +80,8 @@ prepare_pools <- function(nc.path, constants = NULL){
       #Calculate LAI given leaf and sla
       sla <- constants$sla
       if (!is.null(sla) && is.valid(leaf)) {
-        LAI <- leaf * sla
-        
-        IC.params[["LAI"]] <- LAI
+        LAI <- leaf*1000/sla #need to convert from g to kg
+        IC.params[["LAI"]] <- LAI 
       }
       
       # initial pool of woody carbon (kgC/m2)

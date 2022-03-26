@@ -33,7 +33,7 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH") {
   dat_equal <- dat[[2]][dat[[2]]$DBH == 2.5,]
   dbh_equal <- dat_equal$DBH
   #Grab plot size
-  plot_size <- dat[[1]]$area
+  plot_size <- dat[[1]]$subPlot
   #Grab number of plots
   plot_num <- length(unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot)))
   
