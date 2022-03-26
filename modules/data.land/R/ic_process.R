@@ -101,9 +101,10 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     #For debugging purposes I am hard coding in the start and end dates, will revisit and adjust once extract_NEON_veg is working within ic_process
     # start_date = as.Date("2020-01-01")
     # end_date = as.Date("2021-09-01")
-    start_date = as.Date(settings$run$inputs$poolinitcond$startdate)
-    end_date = as.Date(settings$run$inputs$poolinitcond$enddate)
+    start_date = as.Date(input$startdate)
+    end_date = as.Date(input$enddate)
     #Note the start and end dates for ICs are not the same as those for the forecast runs
+    #please check out NEON products DP1.10098.001 for your desired site to check data availability before setting start and end dates
   }else{
     
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)

@@ -43,11 +43,17 @@ extract_veg <- function(new_site, start_date, end_date,
    fcn <- fget(fcnx) #Error cannot find the function
  }
  # extract_* functions need to have standard args
- lon <- as.numeric(new_site$lon)
- lat <- as.numeric(new_site$lat)
- veg_info <- fcn(lon = lon, lat = lat, start_date, end_date, gridres, dbparms)
- 
- #veg_info <- PEcAn.data.land::extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, gridres, dbparms)
+ if(source == "NEON_veg"){
+    #extract_NEON_veg needs a location to store downloaded NEON files, this is not a standard argument, so this if/else statement is a hack but it is meant to ensure the extract_veg function works
+    store_dir <- input_veg$storedir
+    lon <- as.numeric(new_site$lon)
+    lat <- as.numeric(new_site$lat)
+    veg_info <- extract_NEON_veg(lon = new_site$lon, lat = new_site$lat, start_date, end_date, store_dir = store_dir)
+ }else{
+    lon <- as.numeric(new_site$lon)
+    lat <- as.numeric(new_site$lat)
+    veg_info <- fcn(lon = lon, lat = lat, start_date, end_date, gridres, dbparms) 
+ }
  
  #--------------------------------------------------------------------------------------------------#
  # Match species
@@ -68,7 +74,7 @@ extract_veg <- function(new_site, start_date, end_date,
 
  
  # match code to species ID
- spp.info <- PEcAn.data.land::match_species_id(input_codes = obs[[code_col]], format_name = format_name)
+ spp.info <- match_species_id(input_codes = obs[[code_col]], format_name = format_name)
  
  # merge with data
  tmp <- spp.info[ , colnames(spp.info) != "input_code"]
@@ -80,7 +86,7 @@ extract_veg <- function(new_site, start_date, end_date,
  # Write vegettion data as rds, return results to convert.input
  
  # need check for overwrite
- sppfilename <- PEcAn.data.land::write_veg(outfolder, start_date, veg_info = veg_info, source)
+ sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, source)
  
  # Build results dataframe for convert.input
  results <- data.frame(file = sppfilename, 
