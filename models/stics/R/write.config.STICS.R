@@ -289,10 +289,36 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "abscission", pft.traits[which(pft.names == "fracLeafFall")], overwrite = TRUE)
     }
     
-    # parameter relating the C/N of dead leaves and the INN (N stress)
-    if ("" %in% pft.names) {
-      SticsRFiles::set_param_xml(plant_file, "parazofmorte", pft.traits[which(pft.names == "")], overwrite = TRUE)
+    # parameter relating the C/N of dead leaves and the INN
+    if ("parazofmorte" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "parazofmorte", pft.traits[which(pft.names == "parazofmorte")], overwrite = TRUE)
     }
+    
+    # parameter of the N stress function active on leaf expansion (INNLAI), bilinear function vs INN passing through the point (INNmin, INNturgmin)
+    if ("innturgmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "innturgmin", pft.traits[which(pft.names == "innturgmin")], overwrite = TRUE)
+    }
+    
+    # accelerating parameter for the lai growth rate
+    if ("lai_growth_rate_accelerating" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "dlaimin", pft.traits[which(pft.names == "lai_growth_rate_accelerating")], overwrite = TRUE)
+    }
+    
+    # maximum rate of the setting up of LAI
+    if ("lai_max_rate" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "dlaimaxbrut", pft.traits[which(pft.names == "lai_max_rate")], overwrite = TRUE)
+    } 
+    
+    # relative additional lifespan due to N excess in plant (INN > 1)
+    if ("relative_addlifespan_DT_excessN" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "durviesupmax", pft.traits[which(pft.names == "relative_addlifespan_DT_excessN")], overwrite = TRUE)
+    } 
+    
+    # parameter of the N stress function active on senescence (INNsenes), bilinear function vs INN passing through the point (INNmin, INNsen)
+    if ("innsen" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "innsen", pft.traits[which(pft.names == "innsen")], overwrite = TRUE)
+    } 
+    
     
     # radiation interception
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")

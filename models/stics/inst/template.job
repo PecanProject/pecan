@@ -39,7 +39,7 @@ if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
   # copy output
   mv @RUNDIR@/**/mod_b* @OUTDIR@
   mv @RUNDIR@/**/mod_s* @OUTDIR@
-
+  mv @RUNDIR@/**/mod_h* @OUTDIR@
 
   # convert to MsTMIP
   echo "library (PEcAn.STICS)
