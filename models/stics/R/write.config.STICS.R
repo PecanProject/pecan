@@ -570,10 +570,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
             # the following code should give that
             harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
-            harvest_df$hautcoupe <- 0.1 # hardcode for now
-            harvest_df$lairesiduel <- 0.2 # hardcode for now
-            harvest_df$msresiduel <- 0
-            harvest_df$anitcoupe <- 0
+            harvest_df$hautcoupe <- as.numeric(harvest_sub$harvest_cut_height[harvest_sub$date==harvest_sub$date[hrow]]) # # cut height for forage crops
+            harvest_df$hautcoupe <- ifelse(harvest_df$hautcoupe == -99, 0.05, harvest_df$hautcoupe)
+            harvest_df$lairesiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.2, 0.8) # hardcode for now
+            harvest_df$msresiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.05, 0.15) # residual aerial biomass after a cut of a forage crop (t ha-1)
+            harvest_df$anitcoupe <- 0 # amount of mineral N added by fertiliser application at each cut of a forage crop (kg ha-1)
           }
           
           colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
@@ -584,7 +585,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         harvest_tec$codefauche <- 1  # cut crop - 1:yes, 2:no
         harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
         harvest_tec$codemodfauche <- 2 # use calendar days
-        harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops
+        harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
         harvest_tec$stadecoupedf <- "rec"
         
         # DO NOTHING ELSE FOR NOW
