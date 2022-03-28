@@ -49,15 +49,16 @@ psql -d bety -U bety -h localhost -p 5433
 To test this in R, open a Postgres using the analogous parameters:
 
 ```
+library(DBI)
 library(RPostgres)
 con <- dbConnect(
-  Postgres(),
+  drv = Postgres(),
   user = "bety",
   password = "bety",
   dbname = "bety",
   host = "localhost",
   port = 5433
-  )
+)
 dbListTables(con)   # This should return a vector of bety tables
 ```
 

@@ -32,9 +32,12 @@ Imports:
     PEcAn.settings,
     PEcAn.utils,
     reshape2,
+    rlang,
     SimilarityMeasures,
     stringr,
     tidyselect,
+    utils,
+    grDevices,
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
     zoo 
@@ -47,4 +50,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2

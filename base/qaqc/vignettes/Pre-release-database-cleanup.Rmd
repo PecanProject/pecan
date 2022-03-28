@@ -10,12 +10,16 @@ This is an quick script for cleaning up the database. For further documentation 
 
 **Step 1: set up an outdir and a connection to bety**
 The outdir is where temporary editing files will be written, and where a backup of bety will be stored. 
+
 ```{r, eval=FALSE}
-con <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
-dbname = "bety",
-password = 'bety',
-host = 'psql-pecan.bu.edu',
-user = 'bety')
+con <- PEcAn.DB::db.open(
+  params = list(
+	driver = "PostgreSQL",
+	dbname = "bety",
+	password = "bety",
+	host = "psql-pecan.bu.edu",
+	user = "bety")
+)
 outdir<-as.character(getwd()) #set as prefered out directory
 bety_backup_directory<-as.character(getwd()) #set as prefered directory for bety backup.
 

@@ -11,6 +11,7 @@ Author(s): Ayush Prasad, Istem Fer
 from RpTools.merge_files import nc_merge, csv_merge
 from importlib import import_module
 from . appeears2pecan import appeears2pecan
+from . lpdaacdatapool2pecan import lpdaacdatapool2pecan
 import os
 import os.path
 
@@ -85,6 +86,9 @@ def get_remote_data(
 
     if source == "appeears":
         get_datareturn_path = appeears2pecan(geofile=geofile, outdir=outdir, out_filename=raw_file_name, start=start, end=end, product=collection, projection=projection, credfile=credfile)
+
+    if source == "lpdaacdatapool":
+        get_datareturn_path = lpdaacdatapool2pecan(geofile=geofile, outdir=outdir, out_filename=raw_file_name, start=start, end=end, product=collection, credfile=credfile)
 
     if raw_merge == True and raw_merge != "replace":
         # if output file is of csv type use csv_merge, example AppEEARS point AOI type 

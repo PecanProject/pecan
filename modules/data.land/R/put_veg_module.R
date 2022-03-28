@@ -1,5 +1,5 @@
 ##' Match species to PFTs + veg2model module
-##' 
+##'
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB
 ##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
@@ -18,24 +18,19 @@
 ##' @export
 ##' 
 ##' @author Istem Fer
-put_veg_module <- function(getveg.id, dbparms, 
+put_veg_module <- function(getveg.id, dbparms,
                             input_veg, pfts,
                             outfolder, n.ensemble,
                             dir, machine, model,
                             start_date, end_date,
-                            new_site, 
+                            new_site,
                             host, overwrite){
-  
 
-  
+
+
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
-  bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
-                              host     = dbparms$bety$host, 
-                              user     = dbparms$bety$user, 
-                              password = dbparms$bety$password)
-  
-  con <- bety$con
+  con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   # Determine IC file format name and mimetype
@@ -51,11 +46,9 @@ put_veg_module <- function(getveg.id, dbparms,
   
   PEcAn.logger::logger.info("Begin Model Specific Conversion")
   
-  
-  
   # spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   spp.file <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", getveg.id$dbfile.id), con)
-  
+
   pkg  <- "PEcAn.data.land"
   fcn  <- "write_ic"
   
@@ -82,7 +75,8 @@ put_veg_module <- function(getveg.id, dbparms,
                                               host.inputargs = host.inputargs)
   
   
+
   return(putveg.id)
-  
+
 
 }

@@ -4,14 +4,16 @@
 \name{sibcasa_output_vars}
 \alias{sibcasa_output_vars}
 \title{Output variables for SIBCASA}
-\format{data frame with 6 unnamed columns
+\format{
+data frame with 6 unnamed columns
 \describe{
  \item{1}{? (t 0, t 3, etc)}
  \item{2}{short name}
  \item{3}{row number?}
  \item{4}{description}
  \item{5}{units}
- \item{6}{unused}}}
+ \item{6}{unused}}
+}
 \usage{
 sibcasa_output_vars
 }

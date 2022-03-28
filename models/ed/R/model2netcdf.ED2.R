@@ -1067,14 +1067,14 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
-  pfts <- numeric(npft)
-  names(pfts) <- pft_names
+  pfts_nums <- numeric(npft)
+  names(pfts_nums) <- pft_names
   
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(settings$pfts, "[[", "name")
+  xml_pft_names <- lapply(pfts, "[[", "name")
   for (pft in pft_names) {
     which_pft <- which(xml_pft_names == pft)
-    xml_pft <- settings$pfts[[which_pft]]
+    xml_pft <- pfts[[which_pft]]
     if ("ed2_pft_number" %in% names(xml_pft)) {
       pft_number <- as.numeric(xml_pft$ed2_pft_number)
       if (!is.finite(pft_number)) {
@@ -1086,7 +1086,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
     } else {
       pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
     }
-    pfts[pft] <- pft_number
+    pfts_nums[pft] <- pft_number
   }
   # ----- fill list
   
@@ -1120,7 +1120,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
                                     longname = "history time interval endpoint dimensions", 
                                     vals = 1:2, units = "")
-  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, 
+  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts_nums, 
                         longname = "Plant Functional Type", unlim = TRUE)
   
   # NOTE : the order of dimensions is going to be important for read.output

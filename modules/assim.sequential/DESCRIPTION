@@ -21,9 +21,8 @@ Imports:
     PEcAn.remote,
     PEcAn.settings,
     PEcAn.utils,
-    plyr (>= 1.8.4),
+    PEcAn.workflow,
     lubridate (>= 1.6.0),
-    reshape2 (>= 1.4.2),
     sp,
     nimble,
     tidyr,
@@ -32,13 +31,15 @@ Imports:
     XML,
     coda
 Suggests:
-    PEcAn.benchmark,
     corrplot,
     ggrepel,
     gridExtra,
     magic (>= 1.5.0),
     methods,
+    PEcAn.benchmark,
     plotrix,
+    plyr (>= 1.8.4),
+    reshape2 (>= 1.4.2),
     sf,
     testthat,
     tictoc
@@ -47,4 +48,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2

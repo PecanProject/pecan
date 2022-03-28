@@ -17,7 +17,7 @@ docker-compose -p pecan up -d
 # run a model
 curl -v -X POST \
     -F 'hostname=docker' \
-    -F 'modelid=5000000002' \
+    -F 'modelid=1000000014' \
     -F 'sitegroupid=1' \
     -F 'siteid=772' \
     -F 'sitename=Niwot Ridge Forest/LTER NWT1 (US-NR1)' \
