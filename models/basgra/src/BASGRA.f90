@@ -23,7 +23,7 @@ use soil
 use plant
 implicit none
 
-integer, dimension(300,2) :: DAYS_HARVEST
+integer, dimension(300,3) :: DAYS_HARVEST
 real                      :: PARAMS(140)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
@@ -42,7 +42,7 @@ real                      :: y(NDAYS,NOUT)
 real    :: CLV, CLVD, CRES, CRT, CST, CSTUB, LAI, LT50, PHEN
 real    :: ROOTD, TILG1, TILG2, TILV
 integer :: VERN
-real    :: YIELD, YIELD_LAST, YIELD_TOT
+real    :: YIELD, YIELD_POT, YIELD_LAST, YIELD_TOT
 real    :: NRT, NSH
 
 ! Output variables constructed from plant state variables
@@ -59,7 +59,7 @@ real    :: Nfert_TOT
 ! Intermediate and rate variables
 real :: DeHardRate, DLAI, DLV, DPHEN, DRT, DSTUB, dTANAER, DTILV, EVAP, EXPLOR
 real :: Frate, FREEZEL, FREEZEPL, GLAI, GLV, GPHEN, GRES, GRT, GST, GSTUB, GTILV, HardRate
-real :: HARVLA, HARVLV, HARVPH, HARVRE, HARVST, HARVTILG2, INFIL, IRRIG, O2IN
+real :: HARVLA, HARVLV, HARVLVP, HARVPH, HARVRE, HARVREP, HARVST, HARVSTP, HARVTILG2, INFIL, IRRIG, O2IN
 real :: O2OUT, PackMelt, poolDrain, poolInfil, Psnow, reFreeze, RESMOB
 real :: RGRTVG1, RROOTD, SnowMelt, THAWPS, THAWS, TILVG1, TILG1G2, TRAN, Wremain
 real :: NCSHI, NCGSH, NCDSH, NCHARVSH, GNSH, DNSH, HARVNSH, GNRT, DNRT
@@ -164,7 +164,7 @@ do day = 1, NDAYS
   call O2status       (O2,ROOTD)
   ! Plant
   call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
-                                                       GSTUB,HARVLA,HARVLV,HARVPH,HARVRE,HARVST,HARVTILG2)
+                                                       GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
                                                        
       
   CLV     = CLV     - HARVLV
@@ -234,7 +234,8 @@ do day = 1, NDAYS
   if((LAT>0).AND.(doy==305)) VERN = 0  
   if((LAT<0).AND.(doy==122)) VERN = 0  
   if(DAVTMP<TVERN)           VERN = 1
-  YIELD     = (HARVLV + HARVST*HAGERE)/0.45 + HARVRE/0.40
+  YIELD     = YIELD+(HARVLV + HARVST*HAGERE)/0.45 + HARVRE/0.40
+  YIELD_POT = (HARVLVP + HARVSTP*HAGERE)/0.45 + HARVREP/0.40
   if(YIELD>0) YIELD_LAST = YIELD
   YIELD_TOT = YIELD_TOT + YIELD
   
@@ -349,7 +350,7 @@ do day = 1, NDAYS
   y(day,72) = DMST
   y(day,73) = NSH_DMSH
   y(day,74) = Nfert_TOT
-  y(day,75) = YIELD_TOT
+  y(day,75) = YIELD_POT
   y(day,76) = DM_MAX
   
   y(day,77) = F_PROTEIN
