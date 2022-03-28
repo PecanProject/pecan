@@ -16,12 +16,13 @@
 ##'
 ##' @return results object to be passed back to get.veg.module
 ##' @export
-##' @author Istem Fer
+##' @author Istem Fer and Alexis Helgeson
 extract_veg <- function(new_site, start_date, end_date, 
                      source, gridres, format_name = NULL, 
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){
   #code taken from https://stackoverflow.com/questions/14183766/match-fun-provide-error-with-functions-defined-inside-functions
-   fget <- function(name, env = parent.frame()) {
+  #grabs named function and returns error if function cannot be found
+  fget <- function(name, env = parent.frame()) {
       if (identical(env, emptyenv())) {
          stop("Could not find function called ", name, call. = FALSE)
       }
@@ -40,7 +41,7 @@ extract_veg <- function(new_site, start_date, end_date,
  if (!exists(fcnx)) {
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
  }else{
-   fcn <- fget(fcnx) #Error cannot find the function
+   fcn <- fget(fcnx)
  }
  # extract_* functions need to have standard args
  if(source == "NEON_veg"){

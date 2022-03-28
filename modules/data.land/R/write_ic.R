@@ -63,7 +63,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   }
   #check if register,model.xml includes "POOL"
   if (register$initcond == "POOL") {
-    poolinfo <- cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH")
+    poolinfo <- cohort2pool(dat = veg_info, allom_param = NULL, dbh_name = "DBH")
     siteid <- as.numeric(new_site$id)
     out <- fcn(outfolder, poolinfo, siteid, ens = n.ensemble)
     

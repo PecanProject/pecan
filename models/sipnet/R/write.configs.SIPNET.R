@@ -516,12 +516,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   
-  if (!is.null(settings$run$inputs$soilmoisture$path)) {
+  if (!is.null(settings$run$inputs$soilmoisture)) {
     #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
-    soil.path <- settings$run$inputs$soilmoisture$path
-    soilWFrac <- ncdf4::ncvar_get(ncdf4::nc_open(soil.path), varid = "mass_fraction_of_unfrozen_water_in_soil_moisture")
-
-    param[which(param[, 1] == "soilWFracInit"), 2] <- soilWFrac
+    if(!is.null(settings$run$inputs$soilmoisture$path)){
+      soil.path <- settings$run$inputs$soilmoisture$path
+      soilWFrac <- ncdf4::ncvar_get(ncdf4::nc_open(soil.path), varid = "mass_fraction_of_unfrozen_water_in_soil_moisture")
+      
+      param[which(param[, 1] == "soilWFracInit"), 2] <- soilWFrac
+    }
+    
   }
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   

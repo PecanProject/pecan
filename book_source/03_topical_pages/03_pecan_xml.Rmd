@@ -369,7 +369,7 @@ This section provides detailed configuration for the model run, including the si
       <met.end>2004/12/31</met.end>
       <site.pft>
         <pft.name>temperate.needleleaf.evergreen</pft.name>
-        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.ame>
       </site.pft>
     </site>
     <inputs>
@@ -378,10 +378,13 @@ This section provides detailed configuration for the model run, including the si
         <output>SIPNET</output>
       </met>
       <poolinitcond>
-      <source>NEON_veg</source>
-      <output>poolinitcond</output>
-      <ensemble>30</ensemble>
-   </poolinitcond>
+        <source>NEON_veg</source>
+        <output>poolinitcond</output>
+        <ensemble>100</ensemble>
+        <startdate>2019-01-01</startdate>
+        <enddate>2019-12-31</enddate>
+        <storedir>/projectnb/dietzelab/neon_store</storedir>
+      </poolinitcond>
     </inputs>
     <start.date>2004/01/01</start.date>
     <end.date>2004/12/31</end.date>
