@@ -1,5 +1,6 @@
 lai(n)
 masec(n)
+masec_kg_ha
 mafruit
 HR(1)
 HR(2)
@@ -19,6 +20,7 @@ AZnit(4)
 AZnit(5)
 Qles
 QNplante
+CNplante
 azomes
 inn
 chargefruit
