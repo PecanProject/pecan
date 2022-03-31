@@ -825,7 +825,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
   
-  pdf("SDA/SDA.pdf",width = filew, height = fileh)
+  pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
   all.plots.print %>% purrr::map(~print(.x))
   dev.off()
   
