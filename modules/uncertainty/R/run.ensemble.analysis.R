@@ -108,12 +108,12 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       
       hist(my.dat,xlab=units,
            main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
-      box(lwd = 2.2)
+      graphics::box(lwd = 2.2)
       
       boxplot(my.dat,ylab=units,
               boxwex=0.6,col="grey85", cex.axis=1.1,range=2,
               pch=21,cex=1.4, bg="black",cex.lab=1.5)
-      box(lwd=2.2)
+      graphics::box(lwd=2.2)
       
       dev.off()
       
@@ -340,15 +340,15 @@ ensemble.ts <- function(ensemble.ts, observations = NULL, window = 1, ...) {
       ylim <- c(0, ylim[2])
     }
     
-    plot(ens.mean, ylim = ylim, lwd = 2, 
+    graphics::plot(ens.mean, ylim = ylim, lwd = 2, 
          xlab = "time", ylab = variable[j], main = variable[j], 
          type = "l")
     
     ### Code to be updated with polygon (below) for(i in 1:nrow(CI)){
     ### lines(CI[i,],col=2,lty=c(2,1,2),lwd=c(1.2,1.0,1.2)) }
-    lines(CI[1, ], col = 2, lty = 2, lwd = 1.2)
+    graphics::lines(CI[1, ], col = 2, lty = 2, lwd = 1.2)
     # lines(CI[2,],col='dark grey',lty=1,lwd=1.5)
-    lines(CI[3, ], col = 2, lty = 2, lwd = 1.2)
+    graphics::lines(CI[3, ], col = 2, lty = 2, lwd = 1.2)
     
     ## generate plot polygon using CIs dims <- dim(CI) poly <- 1:dims[2]
     ## polygon(c(poly ,rev(poly)),c(CI[3,], rev(CI[1,])),col='#99CC99',border=NA)
@@ -366,15 +366,15 @@ ensemble.ts <- function(ensemble.ts, observations = NULL, window = 1, ...) {
       }
       # lines(filter(observations,rep(1/window,window)),col=2,lwd=1.5)
       # lines(filterNA(observations,window),col=2,lwd=1.5)
-      points(fobs, col = 3, lwd = 1.5)
+      graphics::points(fobs, col = 3, lwd = 1.5)
     }
     
     ## show legend
-    legend("topleft",
-           legend = c("mean", "95% CI", "data"),
+    graphics::legend("topleft",
+           graphics::legend = c("mean", "95% CI", "data"),
            lwd = 3, col = c(1, 2, 3), lty = c(1, 2, 1))
     ## add surrounding box to plot
-    box(lwd = 2.2)
+    graphics::box(lwd = 2.2)
   }
   ensemble.analysis.results <- list()
   ensemble.analysis.results$mean <- ens.mean

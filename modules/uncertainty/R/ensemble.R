@@ -264,11 +264,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     if (!is.null(con)){
       #-- lets first find out what tags are required for this model
       required_tags <- dplyr::tbl(con, 'models') %>%
-        dplyr::filter(id == !!as.numeric(settings$model$id)) %>%
+        dplyr::filter(.data$id == !!as.numeric(settings$model$id)) %>%
         dplyr::inner_join(dplyr::tbl(con, "modeltypes_formats"), by = c('modeltype_id')) %>%
         dplyr::collect() %>%
-        dplyr::filter(required == TRUE) %>%
-        dplyr::pull(tag)
+        dplyr::filter(.data$required == TRUE) %>%
+        dplyr::pull(.data$tag)
       
     }else{
       required_tags<-c("met","parameters")
@@ -306,7 +306,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
     if(!is.null(con)){
       Pft_Site_df <- dplyr::tbl(con, "sites_cultivars")%>%
-        dplyr::filter(site_id == !!settings$run$site$id) %>%
+        dplyr::filter(.data$site_id == !!settings$run$site$id) %>%
         dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = "cultivar_id") %>%
         dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c("pft_id" = "id")) %>%
         dplyr::collect() 

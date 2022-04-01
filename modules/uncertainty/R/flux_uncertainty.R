@@ -92,7 +92,7 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
     
     if (nBin[k] > minBin) {
       ## && sum(!is.na(change[use])) > 50) {
-      errBin[k] <- sd(indErr[use], na.rm = TRUE)
+      errBin[k] <- stats::sd(indErr[use], na.rm = TRUE)
       biasBin[k] <- mean(indErr[use], na.rm = TRUE)
       print(paste(length(magnitude[use]), sum(!is.na(change[use])), 
                   magBin[k], errBin[k]))
@@ -125,11 +125,11 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
                       intercept = intercept)
   
   if(!all(is.na(E2[pos]))){
-    mp <- lm(E2[pos] ~ magBin[pos] - 1)
+    mp <- stats::lm(E2[pos] ~ magBin[pos] - 1)
     return.list$slopeP <- mp$coefficients[1]
   } 
   if(!all(is.na(E2[neg]))){
-    mn <- lm(E2[neg] ~ magBin[neg] - 1)
+    mn <- stats::lm(E2[neg] ~ magBin[neg] - 1)
     return.list$slopeN <- mn$coefficients[1]
   }else{
     return.list$slopeN <- mp$coefficients[1]

@@ -33,7 +33,7 @@ sa.splinefun <- function(quantiles.input, quantiles.output) {
 ##' @author David LeBauer
 ##' @references  Mood, Graybill, Boes 1974 'Introduction to the Theory of Statistics' 3rd ed. p 229; Casella and Berger 'Statistical Inference' p 364 ex. 7.45; 'Reference for Var(s^2)' CrossValidated \url{http://stats.stackexchange.com/q/29905/1381}, 'Calculating required sample size, precision of variance estimate' CrossValidated \url{http://stats.stackexchange.com/q/7004/1381}, 'Variance of Sample Variance?' Mathematics - Stack Exchange \url{http://math.stackexchange.com/q/72975/3733}
 sd.var <- function(x) {
-  return(var(x, na.rm = TRUE)^2 * (2 / (sum(!is.na(x)) - 1) + kurtosis(x) / sum(!is.na(x))))
+  return(stats::var(x, na.rm = TRUE)^2 * (2 / (sum(!is.na(x)) - 1) + kurtosis(x) / sum(!is.na(x))))
 } # sd.var
 
 
@@ -71,7 +71,7 @@ kurtosis <- function(x) {
 ##' @export
 ##' @return numeric estimate of model sensitivity to parameter
 get.sensitivity <- function(trait.samples, sa.splinefun) {
-  sensitivity <- sa.splinefun(median(trait.samples), 1)
+  sensitivity <- sa.splinefun(stats::median(trait.samples), 1)
   return(sensitivity)
 } # get.sensitivity
 
@@ -85,7 +85,7 @@ get.sensitivity <- function(trait.samples, sa.splinefun) {
 ##' @export
 ##' @return coeficient of variance
 get.coef.var <- function(set) {
-  return(sqrt(var(set)) / median(set))
+  return(sqrt(stats::var(set)) / stats::median(set))
 } # get.coef.var
 
 
@@ -101,7 +101,7 @@ get.coef.var <- function(set) {
 ##' @export
 ##' @return elasticity = normalized sensitivity 
 get.elasticity <- function(sensitivity, samples, outputs) {
-  return(sensitivity / (median(outputs) / median(samples)))
+  return(sensitivity / (stats::median(outputs) / stats::median(samples)))
 } # get.elasticity
 
 
@@ -136,7 +136,7 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir) {
                          function(trait) get.elasticity(sensitivities[[trait]], 
                                                         trait.samples[[trait]], 
                                                         spline.estimates[[trait]]))
-  variances <- sapply(traits, function(trait) var(spline.estimates[[trait]]))
+  variances <- sapply(traits, function(trait) stats::var(spline.estimates[[trait]]))
   partial.variances <- variances / sum(variances)
   
   coef.vars <- sapply(trait.samples, get.coef.var)

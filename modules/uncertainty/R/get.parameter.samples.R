@@ -37,7 +37,7 @@ get.parameter.samples <- function(settings,
     if(!is.null(settings$pfts[[i.pft]]$outdir)){
       outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     } else { 
-      outdirs[i.pft] <- unique(dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
+      outdirs[i.pft] <- unique(PEcAn.DB::dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
     }
     
   }  ### End of for loop to extract pft names

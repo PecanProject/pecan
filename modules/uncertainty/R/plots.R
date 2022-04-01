@@ -33,8 +33,8 @@ plot_variance_decomposition <- function(plot.inputs,
                                     panel.border = element_blank()))
   
   traits <- names(plot.inputs$variances)
-  units <- as.character(trait.lookup(traits)$units)
-  trait.labels <- as.character(trait.lookup(traits)$figid)
+  units <- as.character(PEcAn.utils::trait.lookup(traits)$units)
+  trait.labels <- as.character(PEcAn.utils::trait.lookup(traits)$figid)
   plot.data <- data.frame(trait.labels = ifelse(!is.na(trait.labels), 
                                                 trait.labels, 
                                                 traits), 

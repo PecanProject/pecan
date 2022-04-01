@@ -14,7 +14,7 @@
 ##' @return list with variance and sd of variance
 ##' @author David LeBauer
 variance.stats <- function(x){
-  list(var = var(x), sd = sd.var(x))
+  list(var = stats::var(x), sd = sd.var(x))
 }
 
 ##' Calculate distribution of function of a variable
@@ -47,7 +47,7 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
   traits <- names(splinefuns)
   
   ## g_i(phi_i) the spline estimate of model output for value of trait i
-  gi.phii <- t(laply(traits, 
+  gi.phii <- plyr::laply(traits, 
                      function(x) splinefuns[[x]](trait.samples[,x])))
   colnames(gi.phii) <- traits
   return(gi.phii)
