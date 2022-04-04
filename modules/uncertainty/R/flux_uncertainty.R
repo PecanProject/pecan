@@ -16,7 +16,7 @@
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 read.ameriflux.L2 <- function(file.name, year) {
-  data <- as.data.frame(read.table(file.name, header = TRUE, sep = ",", 
+  data <- as.data.frame(utils::read.table(file.name, header = TRUE, sep = ",", 
                                    na.strings = c("-9999", "-6999"), 
                                    stringsAsFactors = FALSE))
   # data$time <- year + (data$DTIME / 366.0)
@@ -149,11 +149,11 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 plot_flux_uncertainty <- function(f, ...) {
-  plot(f$mag, f$err, ...)
+  graphics::plot(f$mag, f$err, ...)
   big <- 10000
-  lines(c(0, big), c(f$intercept, f$slopeP * big))
-  lines(c(0, -big), c(f$intercept, -f$slopeN * big))
-  legend("bottomleft", legend = c("intercept", f$intercept,
+  graphics::lines(c(0, big), c(f$intercept, f$slopeP * big))
+  graphics::lines(c(0, -big), c(f$intercept, -f$slopeN * big))
+  graphics::legend("bottomleft", legend = c("intercept", f$intercept,
                                   "slopeP", f$slopeP, 
                                   "slopeN", f$slopeN))
 } # plot_flux_uncertainty
@@ -198,7 +198,7 @@ tundra.flux.uncertainty <- function() {
     file <- paste0(year, "%20ITEX")
     file <- dir(folder, pattern = file, full.names = TRUE)
     print(file)
-    data <- as.data.frame(read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
+    data <- as.data.frame(utils::read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
     columns <- c("UTC", "ATZ", "location", "site", "treatment", "plot",
                  "year", "julian", "month", "hour")
     colnames(data)[1:length(columns)] <- columns

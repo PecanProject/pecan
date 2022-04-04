@@ -17,7 +17,7 @@
 ##' @export
 ##' @return function   
 sa.splinefun <- function(quantiles.input, quantiles.output) {
-  return(splinefun(quantiles.input, quantiles.output, method = "monoH.FC"))
+  return(stats::splinefun(quantiles.input, quantiles.output, method = "monoH.FC"))
 } # sa.splinefun
 
 
@@ -52,7 +52,7 @@ sd.var <- function(x) {
 ##' @references  NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
 kurtosis <- function(x) {
   kappa <- sum((x - mean(x, na.rm = TRUE)) ^ 4) / 
-    ((sum(!is.na(x)) - 1) * sd(x, na.rm = TRUE) ^ 4) - 3
+    ((sum(!is.na(x)) - 1) * stats::sd(x, na.rm = TRUE) ^ 4) - 3
   return(kappa)
 } # kurtosis
 # ==================================================================================================#
@@ -170,9 +170,9 @@ sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir) {
 ##' x <- c(rgamma(998,1,1), rnorm(10)) 
 ##' min(x) # -0.5238
 ##' min(PEcAn.uncertainty::spline.truncate(x))
-spline.truncate <- function(x, min.quantile = pnorm(-3)) {
-  if (quantile(x, min.quantile) > 0) {
-    x <- zero.truncate(x)
+spline.truncate <- function(x, min.quantile = stats::pnorm(-3)) {
+  if (stats::quantile(x, min.quantile) > 0) {
+    x <- PEcAn.utils::zero.truncate(x)
   }
   return(x)
 } # spline.truncate

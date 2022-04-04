@@ -25,12 +25,12 @@
 ##' do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
 plot_variance_decomposition <- function(plot.inputs, 
                                         fontsize = list(title = 18, axis = 14)) {
-  theme_set(theme_classic() + theme(axis.text.x = element_text(size = fontsize$axis, vjust = -1),
-                                    axis.text.y = element_blank(), axis.ticks = element_blank(), 
-                                    axis.line = element_blank(), axis.title.x = element_blank(), 
-                                    axis.title.y = element_blank(), 
-                                    panel.grid.minor = element_blank(), 
-                                    panel.border = element_blank()))
+  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(axis.text.x = ggplot2::element_text(size = fontsize$axis, vjust = -1),
+                                    axis.text.y = ggplot2::element_blank(), axis.ticks = ggplot2::element_blank(), 
+                                    axis.line = ggplot2::element_blank(), axis.title.x = ggplot2::element_blank(), 
+                                    axis.title.y = ggplot2::element_blank(), 
+                                    panel.grid.minor = ggplot2::element_blank(), 
+                                    panel.border = ggplot2::element_blank()))
   
   traits <- names(plot.inputs$variances)
   units <- as.character(PEcAn.utils::trait.lookup(traits)$units)
@@ -46,24 +46,24 @@ plot_variance_decomposition <- function(plot.inputs,
   
   plot.data <- plot.data[order(plot.data$variances, decreasing = FALSE), ]
   
-  base.plot <- ggplot(plot.data) + coord_flip()
+  base.plot <- ggplot2::ggplot(plot.data) + ggplot2::coord_flip()
   
   
-  trait.plot <- base.plot + ggtitle("Parameter") + 
-    geom_text(aes(y = 1, x = points, label = trait.labels, hjust = 1), size = fontsize$axis/3) + 
-    scale_y_continuous(breaks = c(0, 0), limits = c(0, 1)) + 
-    theme(axis.text.x = element_blank())
-  cv.plot <- base.plot + ggtitle("CV (%)") + 
-    geom_pointrange(aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars), size = 1.25) +
-    theme(plot.title = element_text(size = fontsize$title))
+  trait.plot <- base.plot + ggplot2::ggtitle("Parameter") + 
+    ggplot2::geom_text(ggplot2::aes(y = 1, x = points, label = trait.labels, hjust = 1), size = fontsize$axis/3) + 
+    ggplot2::scale_y_continuous(breaks = c(0, 0), limits = c(0, 1)) + 
+    ggplot2::theme(axis.text.x = ggplot2::element_blank())
+  cv.plot <- base.plot + ggplot2::ggtitle("CV (%)") + 
+    ggplot2::geom_pointrange(ggplot2::aes(x = points, y = coef.vars, ymin = 0, ymax = coef.vars), size = 1.25) +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title))
   
-  el.plot <- base.plot + ggtitle("Elasticity") + 
-    theme(plot.title = element_text(size = fontsize$title)) + 
-    geom_pointrange(aes(x = points, y = elasticities, ymin = 0, ymax = elasticities), size = 1.25)
+  el.plot <- base.plot + ggplot2::ggtitle("Elasticity") + 
+    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
+    ggplot2::geom_pointrange(ggplot2::aes(x = points, y = elasticities, ymin = 0, ymax = elasticities), size = 1.25)
   
-  pv.plot <- base.plot + ggtitle("Variance") + 
-    theme(plot.title = element_text(size = fontsize$title)) + 
-    geom_pointrange(aes(x = points, sqrt(variances), ymin = 0, ymax = sqrt(variances)), size = 1.25)
+  pv.plot <- base.plot + ggplot2::ggtitle("Variance") + 
+    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
+    ggplot2::geom_pointrange(ggplot2::aes(x = points, sqrt(variances), ymin = 0, ymax = sqrt(variances)), size = 1.25)
   
   return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
 } # plot_variance_decomposition
@@ -75,8 +75,8 @@ format.plot.input <- function(plot.inputs, convert.var, trait.order = c()) {
     trait.order <- traits
   }
   plot.data <- data.frame(traits = traits, 
-                          trait.labels = trait.lookup(traits)$figid, 
-                          units = trait.lookup(traits)$units, 
+                          trait.labels = PEcAn.utils::trait.lookup(traits)$figid, 
+                          units = PEcAn.utils::trait.lookup(traits)$units, 
                           coef.vars = abs(plot.inputs$coef.vars * 100),
                           elasticities = (plot.inputs$elasticities), 
                           variances = convert.var(abs(plot.inputs$variances)))
@@ -111,44 +111,44 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
                              linesize = 1, dotsize = 2) {
   LENGTH_OUT <- 1000
   
-  units <- trait.lookup(trait)$units
-  saplot <- ggplot()
+  units <- PEcAn.utils::trait.lookup(trait)$units
+  saplot <- ggplot2::ggplot()
   
   post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
   
   saplot <- saplot + ## plot spline function
-    geom_line(aes(x, y), data = data.frame(x = post.x, y = sa.spline(post.x)), size = linesize) + 
+    ggplot2::geom_line(ggplot2::aes(x, y), data = data.frame(x = post.x, y = sa.spline(post.x)), size = linesize) + 
     ## plot points used to evaluate spline
-    geom_point(aes(x, y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), 
+    ggplot2::geom_point(ggplot2::aes(x, y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), 
                size = dotsize) + # indicate median with larger point
-    geom_point(aes(x, y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), 
+    ggplot2::geom_point(ggplot2::aes(x, y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), 
                size = dotsize * 1.3) + 
-    scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
-    theme_bw() + 
-    ggtitle(trait) +
-    theme(axis.text.x = element_text(size = fontsize$axis),
-          axis.text.y = element_text(size = fontsize$axis), 
-          axis.title.x = element_text(size = fontsize$axis),
-          axis.title.y = element_blank(), 
-          plot.title = element_text(size = fontsize$title), 
-          panel.border = element_blank())
+    ggplot2::scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle(trait) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = fontsize$axis),
+          axis.text.y = ggplot2::element_text(size = fontsize$axis), 
+          axis.title.x = ggplot2::element_text(size = fontsize$axis),
+          axis.title.y = ggplot2::element_blank(), 
+          plot.title = ggplot2::element_text(size = fontsize$title), 
+          panel.border = ggplot2::element_blank())
   
   ## Following conditional can be removed to only plot posterior sa
   prior.x <- post.x
   if (!is.null(prior.sa.sample) & !is.null(prior.sa.spline)) {
     prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot + ## plot spline
-      geom_line(aes(x, y), data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)), 
+      ggplot2::geom_line(ggplot2::aes(x, y), data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)), 
                 size = linesize, color = "grey") + ## plot points used to evaluate spline
-      geom_point(aes(x, y), data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)), 
+      ggplot2::geom_point(ggplot2::aes(x, y), data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)), 
                  size = dotsize, color = "grey") + ## indicate location of medians
-      geom_point(aes(x, y), data = data.frame(x = prior.sa.sample[median.i], y = prior.sa.spline(prior.sa.sample[median.i])), 
+      ggplot2::geom_point(ggplot2::aes(x, y), data = data.frame(x = prior.sa.sample[median.i], y = prior.sa.spline(prior.sa.sample[median.i])), 
                  size = dotsize * 1.5, color = "grey")
   }    
   max.x <- max(prior.x)
   min.x <- min(prior.x)
   x.breaks <- pretty(c(min.x, max.x), 2)
-  saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks), breaks = x.breaks)
+  saplot <- saplot + ggplot2::scale_x_continuous(units, limits = range(x.breaks), breaks = x.breaks)
   # print(saplot)
   return(saplot)
 } # plot_sensitivity

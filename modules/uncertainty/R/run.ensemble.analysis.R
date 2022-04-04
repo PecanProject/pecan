@@ -371,7 +371,7 @@ ensemble.ts <- function(ensemble.ts, observations = NULL, window = 1, ...) {
     
     ## show legend
     graphics::legend("topleft",
-           graphics::legend = c("mean", "95% CI", "data"),
+           legend = c("mean", "95% CI", "data"),
            lwd = 3, col = c(1, 2, 3), lty = c(1, 2, 1))
     ## add surrounding box to plot
     graphics::box(lwd = 2.2)
