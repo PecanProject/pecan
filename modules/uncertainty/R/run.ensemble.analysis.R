@@ -113,7 +113,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       boxplot(my.dat,ylab=units,
               boxwex=0.6,col="grey85", cex.axis=1.1,range=2,
               pch=21,cex=1.4, bg="black",cex.lab=1.5)
-      graphics::box(lwd=2.2)
+      graphics::box(lwd = 2.2)
       
       dev.off()
       
