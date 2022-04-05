@@ -12,6 +12,7 @@
 ##' @param dbparms taken from settings object, passed from ic_process
 ##' @param outfolder passed from ic_process, location where to store files
 ##' @param overwrite DEFAULT = FALSE
+##' @param input_veg passed from input object in ic_process
 ##' @param ... Additional parameters
 ##'
 ##' @return results object to be passed back to get.veg.module
@@ -19,7 +20,7 @@
 ##' @author Istem Fer and Alexis Helgeson
 extract_veg <- function(new_site, start_date, end_date, 
                      source, gridres, format_name = NULL, 
-                     machine_host, dbparms, outfolder, overwrite = FALSE, ...){
+                     machine_host, dbparms, outfolder, overwrite = FALSE, input_veg = input_veg, ...){
   #code taken from https://stackoverflow.com/questions/14183766/match-fun-provide-error-with-functions-defined-inside-functions
   #grabs named function and returns error if function cannot be found
   fget <- function(name, env = parent.frame()) {

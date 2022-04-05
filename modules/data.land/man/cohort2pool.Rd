@@ -4,10 +4,10 @@
 \alias{cohort2pool}
 \title{cohort2pool}
 \usage{
-cohort2pool(veg_info, allom_param = NULL, dbh_name = "DBH")
+cohort2pool(dat, allom_param = NULL, dbh_name = "DBH")
 }
 \arguments{
-\item{veg_info}{veg_info object passed from write_ic}
+\item{dat}{veg_info file}
 
 \item{allom_param}{parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)}
 
