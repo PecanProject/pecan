@@ -371,7 +371,7 @@ This section provides detailed configuration for the model run, including the si
       <met.end>2004/12/31</met.end>
       <site.pft>
         <pft.name>temperate.needleleaf.evergreen</pft.name>
-        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.ame>
       </site.pft>
     </site>
     <inputs>
@@ -379,6 +379,14 @@ This section provides detailed configuration for the model run, including the si
         <source>CRUNCEP</source>
         <output>SIPNET</output>
       </met>
+      <poolinitcond>
+        <source>NEON_veg</source>
+        <output>poolinitcond</output>
+        <ensemble>100</ensemble>
+        <startdate>2019-01-01</startdate>
+        <enddate>2019-12-31</enddate>
+        <storedir>/projectnb/dietzelab/neon_store</storedir>
+      </poolinitcond>
     </inputs>
     <start.date>2004/01/01</start.date>
     <end.date>2004/12/31</end.date>
@@ -429,10 +437,18 @@ The following are the most common types of inputs, along with their correspondin
 
 ##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
 
+##### `poolinitcond`: initial condition inputs {#xml-run-inputs-poolinitcond}
+* `source`: Data source of initial condition .rd veg files ex: NEON_veg, FIA.
+* `output`: This tag can only must match the cooresponding tag in the modeltypes_formats table that matches with your model type ex for SIPNET model tag is poolinitcond.
+* `ensemble`: Number of initial conditions ensemble member files ex: 30.
+
 (Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
+
 ##### `pft.site` Multi-site site / PFT mapping
 
 When performing multi-site runs, it is not uncommon to find that different sites need to be run with different PFTs, rather than running all PFTs at all sites. If you're interested to use a specific PFT for your site/sites you can use the following tag to tell PEcAn which PFT needs to be used for what site.
+
+
 ```
 <pft.site>
   <path>site_pft.csv</path>

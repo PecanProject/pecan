@@ -18,7 +18,7 @@ siteid <- data_prep$siteid_BETY4
 base_dir <- data_prep$base_dir4
 
 #run info 
-start_date = format(Sys.Date()-2, "%Y-%m-%d")
+start_date = format(Sys.Date()-1, "%Y-%m-%d")
 
 for(i in 1:length(sitename)){
 
