@@ -2,14 +2,15 @@
 % Please edit documentation in R/match_pft.R
 \name{match_pft}
 \alias{match_pft}
-\title{Match model PFTs}
+\title{match_pft}
 \usage{
 match_pft(
   bety_species_id,
   pfts,
   query = NULL,
   con = NULL,
-  allow_missing = FALSE
+  allow_missing = FALSE,
+  model = NULL
 )
 }
 \arguments{
@@ -17,9 +18,13 @@ match_pft(
 
 \item{pfts}{settings$pfts.  List of pfts with database matching based on name}
 
+\item{query}{Default is NULL. query to BETY db.}
+
 \item{con}{database connection, if NULL use traits package}
 
 \item{allow_missing}{flag to indicate that settings file does not need to match exactly}
+
+\item{model}{Default is NULL. This is the BETY model ID for matching pfts to the correct model.}
 }
 \value{
 table of BETYdb PFT IDs matched to species IDs

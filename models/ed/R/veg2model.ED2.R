@@ -1,10 +1,16 @@
 #' Writes ED specific IC files
-#'
+#' 
+#' @param veg_info object passed from write_ic includes pft matches
+#' @param start_date "YYYY-MM-DD" passed from write_ic
+#' @param new_site object passed from write_ic includes site id, lat, lon, and sitename
+#' @param source object passed from write_ic
 #' @param outfolder where to write files
+#' @param ens number of ensemble members
+#'
 #' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens){
   
 
   lat       <- as.numeric(as.character(new_site$lat))
@@ -17,7 +23,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste(source, start_year,
+  file.prefix <- paste(source, start_year, ens,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
 
   
@@ -189,7 +195,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   close(site.file.con)
   
   # convert.input inserts only 1 file anyway
-  return(list(filepath = filenames_full[1], filename = filenames[1], 
+  return(list(file = filenames_full[1], dbfile.name = filenames[1], 
               mimetype = "text/plain", formatname = "ED2.cohort"))
 
 }
