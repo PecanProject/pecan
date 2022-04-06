@@ -77,6 +77,13 @@ prepare_pools <- function(nc.path, constants = NULL){
           PEcAn.logger::logger.error("TotLivBiom is less than sum of AbvGrndWood and roots; will use default for leaf biomass")
         }
       }
+      #Calculate LAI given leaf and sla
+      sla <- constants$sla
+      if (!is.null(sla) && is.valid(leaf)) {
+        LAI <- leaf * sla
+        
+        IC.params[["LAI"]] <- LAI
+      }
       
       # initial pool of woody carbon (kgC/m2)
       if (is.valid(wood)){

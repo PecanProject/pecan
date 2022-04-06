@@ -93,7 +93,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       if (!is.null(con)) {
         ### If running within PEcAn, grab the data from the database
         pft.name <- pft$name
-        allom <- query.allom.data(pft.name, component, con)
+        allom <- query.allom.data(pft_name = pft.name, variable = component, con = con)
       } else {
         allom <- read.allom.data(pft, component, field, parm)
       }

@@ -34,6 +34,8 @@ Imports:
     mvtnorm,
     ncdf4 (>= 1.15),
     neonUtilities,
+    neonstore,
+    swfscMisc,
     PEcAn.benchmark,
     PEcAn.data.atmosphere,
     PEcAn.DB,

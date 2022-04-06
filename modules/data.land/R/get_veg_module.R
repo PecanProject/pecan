@@ -9,6 +9,8 @@
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
 ##' @param overwrite logical flag for convert.input
+##' 
+##' @export
 ##'
 ##' @author Istem Fer
 get_veg_module <- function(input_veg,
@@ -32,27 +34,28 @@ get_veg_module <- function(input_veg,
   con <- PEcAn.DB::db.open(dbparms$bety)
 
   # this check might change depending on what other sources that requires querying its own DB we will have
-  if(input_veg$source == "FIA"){
-
+  if(input_veg$source == "FIA" | input_veg$source == "NEON_veg"){ 
+    
     fcn <- "extract_veg"
 
 
-  getveg.id <- convert.input(input.id = NA,
-                               outfolder = outfolder,
-                               formatname = "spp.info",
-                               mimetype = "application/rds",
-                               site.id = site_id,
-                               start_date = start_date, end_date = end_date,
-                               pkg = pkg, fcn = fcn,
-                               con = con, host = host, browndog = NULL,
-                               write = TRUE,
-                               overwrite = overwrite,
-                               # fcn specific args
-                               new_site = new_site,
-                               gridres = input_veg$gridres, dbparms = dbparms,
-                               machine_host = machine_host, input_veg = input,
-                               source = input_veg$source)
-
+  getveg.id <- PEcAn.utils::convert.input(input.id = NA,
+                                outfolder = outfolder,
+                                formatname = "spp.info",
+                                mimetype = "application/rds",
+                                site.id = site_id,
+                                start_date = start_date, end_date = end_date,
+                                pkg = pkg, fcn = fcn,
+                                con = con, host = host, browndog = NULL,
+                                write = TRUE,
+                                overwrite = overwrite,
+                                # fcn specific args
+                                new_site = new_site,
+                                gridres = input_veg$gridres, dbparms = dbparms,
+                                machine_host = machine_host, input_veg = input,
+                                source = input_veg$source)
+  
+    
 
     return(getveg.id)
 
@@ -64,8 +67,8 @@ get_veg_module <- function(input_veg,
     }else{
       PEcAn.logger::logger.error("Must specify input id")
     }
-    getveg.id <- convert.input(input.id = NA,
-                               outfolder = outfolder,
+    getveg.id <- PEcAn.utils::convert.input(input.id = NA,
+                               outfolder = outfolder, 
                                formatname = "spp.info",
                                mimetype = "application/rds",
                                site.id = site_id,
