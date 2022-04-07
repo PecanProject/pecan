@@ -78,14 +78,24 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     # AbvResp = (C_abv / CN_abv) * respcoeff * g(T)
     # using leaf_maintenance_respiration_mass variable from BetyDB (umol [CO2] kg-1 s-1) for this respcoeff
     # no MR rate parameter really have kg N-1 in units but as I'm including N effect here and assume units
-    leaf_maintenance_respiration_mass <- 10000 # hardcoding for development, need a prior on it, note that prior will need to be higher than normal (x ~100)
-    # or pass the normal prior vals but scale it here somehow (maybe with another prior)?
+    
+    # resp par hacks
+    resppar_file <- file.path(outdir, "RespPars.Rdata")
+    if(file.exists(resppar_file)){
+      load(resppar_file)
+    }else{
+      leaf_maintenance_respiration_mass <- 9000 # hardcoding for development, need a prior on it, note that prior will need to be higher than normal (x ~100)
+      # or pass the normal prior vals but scale it here somehow (maybe with another prior)?
+      leaf_respiration_Q10 <- 2.8 # hardcoding for development, need a prior on it
+    }
+
+    #PEcAn.logger::logger.info("Values for leaf_maintenance_respiration_mass and leaf_respiration_Q10 are:", leaf_maintenance_respiration_mass, leaf_respiration_Q10)
     
     # g(T): respiration temperature response function, some Q10 equation, is there something similar in STICS?
     # gtemp = Q10 ^ ([T-25]/10) for testing using Sun et al.
     # Q10: using leaf_respiration_Q10 from BetyDB
     # tcult: crop surface temperature (daily average) degreeC
-    leaf_respiration_Q10 <- 2 # hardcoding for development, need a prior on it
+
     gtemp <- leaf_respiration_Q10 ^ ((stics_output[thisyear, "tcult"] - 25) / 10)
     leafC <- 0.48 # is this calculated by STICS? there is something like Crac: amount of C in roots at harvest
     AbvResp <- (stics_output[thisyear, "masec_kg_ha"] * leafC * (stics_output[thisyear, "CNplante"])/100) * leaf_maintenance_respiration_mass * gtemp

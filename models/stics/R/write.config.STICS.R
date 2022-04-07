@@ -394,6 +394,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "stamflax", pft.traits[which(pft.names == "cum_thermal_growth")], overwrite = TRUE)
     }
     
+    # temporary hack?
+    if ("leaf_maintenance_respiration_mass" %in% pft.names & "leaf_respiration_Q10" %in% pft.names) {
+      leaf_maintenance_respiration_mass <- pft.traits[which(pft.names == "leaf_maintenance_respiration_mass")]
+      leaf_respiration_Q10 <- pft.traits[which(pft.names == "leaf_respiration_Q10")]
+      save(leaf_maintenance_respiration_mass, leaf_respiration_Q10, file=file.path(outdir, "RespPars.Rdata"))
+    }
+    
+    
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
       SticsRFiles::convert_xml2txt(xml_file = plant_file, java_dir = javastics_path)
@@ -573,8 +581,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             harvest_df$hautcoupe <- as.numeric(harvest_sub$harvest_cut_height[harvest_sub$date==harvest_sub$date[hrow]]) # # cut height for forage crops
             harvest_df$hautcoupe <- ifelse(harvest_df$hautcoupe == -99, 0.05, harvest_df$hautcoupe)
             harvest_df$lairesiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.2, 0.8) # hardcode for now
-            harvest_df$msresiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.05, 0.15) # residual aerial biomass after a cut of a forage crop (t ha-1)
-            harvest_df$anitcoupe <- 0 # amount of mineral N added by fertiliser application at each cut of a forage crop (kg ha-1)
+            harvest_df$msresiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.05, 0.3) # residual aerial biomass after a cut of a forage crop (t ha-1)
+            harvest_df$anitcoupe <- 21 # amount of mineral N added by fertiliser application at each cut of a forage crop (kg ha-1)
           }
           
           colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
@@ -588,11 +596,50 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
         harvest_tec$stadecoupedf <- "rec"
         
+        
+      } #harvest-if end
+      
+      if("organic_material" %in% events_sub$mgmt_operations_event |
+         "fertilizer" %in% events_sub$mgmt_operations_event){
+        # param names
+        f_param_names <- c("julapN", # date of fertilization, julian.d
+                           "absolute_value/%")   # cut height for forage crops, m
+        
+        
+        fert_sub <- events_sub[events_sub$mgmt_operations_event %in% c("organic_material", "fertilizer"),]
+        
+        fert_list <- list()
+        for(frow in seq_len(nrow(fert_sub))){
+          
+          # empty
+          fert_df <- data.frame(jul = NA, val = NA) 
+
+          # If given fertilization date is within simulation days
+          if(as.Date(fert_sub$date[frow]) %in% dseq_sub){
+            
+            fert_df$jul   <- which(dseq_sub == as.Date(fert_sub$date[frow])) + lubridate::yday(dseq_sub[1]) - 1
+            
+            if(fert_sub$mgmt_operations_event[frow] == "organic_material"){
+              Nprcnt <- ifelse(as.numeric(fert_sub$organic_material_N_conc[frow]) < 0, 5, as.numeric(fert_sub$organic_material_N_conc[frow]))
+              fert_df$val <- as.numeric(fert_sub$org_material_applic_amnt[frow]) * (Nprcnt/100)
+            }else{
+              fert_df$val <- as.numeric(fert_sub$N_in_applied_fertilizer[frow])
+            }
+            
+          }
+          
+          colnames(fert_df) <- paste0(f_param_names, "_", frow)
+          fert_list[[frow]] <- fert_df
+        }
+        fert_tec <- do.call("cbind", fert_list) 
+      } #fertilizer-if end
+        
+        
         # DO NOTHING ELSE FOR NOW
-        # TODO: ADD OTHER MANAGEMENT, E.G. FERTILIZATION
+        # TODO: ADD OTHER MANAGEMENT
         
         # same usm -> continue columns
-        usm_tec_df <- cbind(tec_df, harvest_tec)
+        usm_tec_df <- cbind(tec_df, harvest_tec, fert_tec)
         
         SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
         
@@ -601,7 +648,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         SticsRFiles::convert_xml2txt(xml_file = file.path(usmdirs[usmi], paste0(defaults$pft$name, "_tec.xml")), 
                                      java_dir = javastics_path)
         
-      } #harvest-if end
+      
      } # end-loop over usms
     } # TODO: if no events file is given modify other harvest parameters, e.g. harvest decision
   
