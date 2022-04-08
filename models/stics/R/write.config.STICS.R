@@ -323,18 +323,52 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # radiation interception
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")
     
+    # extinction coefficient of photosynthetic active radiation in the canopy
+    if ("extinction_coefficient_diffuse" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "extin", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], overwrite = TRUE)
+    } 
+    
     # shoot biomass growth
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "shoot biomass growth")
     
     # optimal temperature (1/2) for plant growth
     if ("teopt" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "teopt", pft.traits[which(pft.names == "teopt")], overwrite = TRUE)
+      # instead of putting own priors, trying this
+      SticsRFiles::set_param_xml(plant_file, "temin", pft.traits[which(pft.names == "teopt")]-11, overwrite = TRUE)
+      SticsRFiles::set_param_xml(plant_file, "temax", pft.traits[which(pft.names == "teopt")]+11, overwrite = TRUE)
     }
     
     # optimal temperature (2/2) for plant growth
     if ("teoptbis" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "teoptbis", pft.traits[which(pft.names == "teoptbis")], overwrite = TRUE)
     }
+    
+    # maximum radiation use efficiency during the juvenile phase
+    if ("RUE_juv" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "efcroijuv", pft.traits[which(pft.names == "RUE_veg")], overwrite = TRUE)
+    }
+    
+    # maximum radiation use efficiency during the vegetative stage
+    if ("RUE_veg" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "efcroiveg", pft.traits[which(pft.names == "RUE_veg")], overwrite = TRUE)
+    }
+    
+    # maximum radiation use efficiency during the grain filling phase
+    if ("RUE_rep" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "efcroirepro", pft.traits[which(pft.names == "RUE_rep")], overwrite = TRUE)
+    }
+    
+    # fraction of daily remobilisable C reserves
+    if ("remobres" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "remobres", pft.traits[which(pft.names == "remobres")], overwrite = TRUE)
+    }
+    
+    # ratio biomass / useful height cut of crops (t.ha-1.m-1)
+    if ("biomass2usefulheight" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "coefmshaut", pft.traits[which(pft.names == "biomass2usefulheight")], overwrite = TRUE)
+    }
+    
     
     # partitioning of biomass in organs
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "partitioning of biomass in organs")
