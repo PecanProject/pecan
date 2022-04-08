@@ -8,7 +8,7 @@
 #' @author Liam P Burke, \email{lpburke@@bu.edu}
 #' @description This function is for formatting purposes. It simply inserts the doi or id that the user wishes to query into Solr format so that it is compatible with the dataoneR query functionality in the PEcAn function 
 #' 
-#' @examples 
+#' 
 format_identifier = function(id){ 
   doi.template <- 'id:"_"' # solr format
   doi1 <<- base::gsub("_", id, doi.template) # replace "_" with the doi or id and store in global environment
@@ -27,7 +27,7 @@ format_identifier = function(id){
 #' @return returns message indicating wether or not the id resolves to data in the DataONE federation and information about said data. 
 #' @export
 #'
-#' @examples
+#' 
 id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
   format_identifier(id) # reformat the id in solr format
   
@@ -58,7 +58,7 @@ id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 #' @return return the resource_map or a message indicating that there is no corresponding resource_map for the given id
 #' @export
 #'
-#' @examples
+#' 
 get_resource_map = function(id, CNode = "PROD"){
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -92,7 +92,7 @@ get_resource_map = function(id, CNode = "PROD"){
 #' @return results of download
 #' @export
 #'
-#' @examples
+#' 
 download_package_rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
                                overwrite_directory = TRUE){
   # Finding the mnId (query)
