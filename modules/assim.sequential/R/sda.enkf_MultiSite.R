@@ -217,7 +217,7 @@ sda.enkf.multisite <- function(settings,
               start.time = start.cut, # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              outpath = paste0("/projectnb/dietzelab/dongchen/All_NEON_SDA/ERA5_2012_2021/Extracted_met/",settings$run$site$id),
+              outpath = paste0("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/Extracted_ERA5/",settings$run$site$id),
               overwrite =F
             )
           )
@@ -360,19 +360,14 @@ sda.enkf.multisite <- function(settings,
       #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
       runs.tmp <- list.dirs(rundir, full.names = F)
       writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-      PEcAn.remote::start.model.runs(settings, write=settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
       
       #------------- Reading - every iteration and for SDA
-      # if(t==1){
-      #   firstrun <- TRUE
-      # }else{
-      #   firstrun <- FALSE
-      # }
         reads <-
           furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
             # Loading the model package - this is required bc of the furrr
             #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-            source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
+            #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
             
             X_tmp <- vector("list", 2)
             
@@ -615,6 +610,7 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
+      source("~/pecan/modules/assim.sequential/R/sda_plotting.R")
       try(post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
