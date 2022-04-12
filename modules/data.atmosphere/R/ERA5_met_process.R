@@ -140,7 +140,7 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
       #loop over each ensemble
       dbfile_IDs <- c()
       for(j in 1:length(Clim_paths[[i]])){
-        dbfileid <- PEcAn.DB:dbfile.insert(
+        dbfileid <- PEcAn.DB::dbfile.insert(
           in.path = Clim_paths[[i]][j], in.prefix = in_prefix, type = "Input", id = inputid,
           con = con, reuse = TRUE, hostname = hostname
         )
