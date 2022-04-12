@@ -75,7 +75,7 @@ Download_multiSites_NEON <- function(settings, main_store_dir){
     }
     #
     print(paste0("find good year: ", closeYear, ", for site: ", tempNEON$siteCode))
-    log_txt <- c(log_txt, paste0("find good year: ", closeYear, "for site: ", tempNEON$siteCode))
+    log_txt <- c(log_txt, paste0("find good year: ", closeYear, ", for site: ", tempNEON$siteCode))
     
     mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = tempNEON$siteCode, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
