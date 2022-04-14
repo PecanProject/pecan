@@ -28,8 +28,7 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
                                               ids = site_ID, .con = con))
-  suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-  suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+  suppressWarnings(qry_results <- PEcAn.DB::db.query(con = con, query = site_qry))#use PEcAn.DB instead
   site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
                     lon=qry_results$lon, time_zone=qry_results$time_zone)
   
@@ -66,10 +65,8 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   end_date <- settings$state.data.assimilation$end.date
   
   #setting up met2model function depending on model name from settings
-  if(settings$model$type == "SIPNET"){
-    met2model_method <- PEcAn.SIPNET::met2model.SIPNET
-  }
-  
+  met2model_method <- paste0("PEcAn.", settings$model$type, "::met2model.", settings$model$type)
+
   #loop over each site
   for (i in 1:length(site_info$site_id)) {
     #check if sub-folder exists, if doesn't then create a new folder specific for each site
@@ -111,12 +108,11 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
       in_prefix <- paste0("ERA5.", ens_num)
       
       #preparing for the met2model.SIPNET function
-      met2model_method(in.path = nc_path,
+      call(met2model_method, in.path = nc_path,
                        in.prefix = in_prefix,
                        outfolder = site_outFolder,
                        start_date = start_date,
-                       end_date = end_date
-      )
+                       end_date = end_date)
       
     }
     # grab physical paths of ERA5 files
