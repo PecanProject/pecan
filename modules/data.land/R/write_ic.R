@@ -55,7 +55,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 # Cohort2Pool -------------------------------------------------------------
   # read in registration xml for pool specific information
   register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
-  if(exists(register.xml)){
+  if(file.exists(register.xml)){
     register     <- PEcAn.data.atmosphere::read.register(register.xml, con = NULL)
     
   }else{
