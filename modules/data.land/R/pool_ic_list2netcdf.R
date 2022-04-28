@@ -5,7 +5,9 @@
 ##'
 ##' @param input list with two elements: list of netcdf dimensions (dims, with named values) and list of variables (vals, with named values)
 ##' @param outdir directory to write netcdf file
+##' @param ens Default is NA. Ensemble members.
 ##' @param siteid site id
+##'
 ##' @author Anne Thomas
 
 pool_ic_list2netcdf <- function(input, outdir, siteid, ens=NA){
