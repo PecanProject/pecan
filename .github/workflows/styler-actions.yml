@@ -12,7 +12,11 @@ jobs:
         uses: trilom/file-changes-action@v1.2.4
       - name: list changed files
         run: echo '${{ steps.file_changes.outputs.files_modified }}'
-      - uses: actions/checkout@v2
+      - name: work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: ''
       - uses: r-lib/actions/pr-fetch@master
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +49,11 @@ jobs:
     runs-on: ubuntu-latest
     container: pecan/depends:develop
     steps:
-      - uses: actions/checkout@v2
+      - name: work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: ''
       - uses: r-lib/actions/pr-fetch@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
