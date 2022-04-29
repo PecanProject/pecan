@@ -4,7 +4,9 @@
 \name{pecan_standard_met_table}
 \alias{pecan_standard_met_table}
 \title{Conversion table for PEcAn standard meteorology}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 18 rows and 8 columns.}
+\format{
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 18 rows and 8 columns.
+}
 \usage{
 pecan_standard_met_table
 }
