@@ -11,7 +11,7 @@ Sys.setenv(RLIB = rlib)
 lapply(c(
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
-'ebimodeling/biocro',
+'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
 'r-lib/testthat@v3.0.4',
 'r-lib/vdiffr@v1.0.2',
