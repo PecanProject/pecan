@@ -4,7 +4,14 @@
 \alias{met2model.LDNDC}
 \title{Write LDNDC met files}
 \usage{
-met2model.LDNDC(in.path, in.prefix, outfolder, overwrite = FALSE)
+met2model.LDNDC(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{in.path}{path on disk where CF file lives}
