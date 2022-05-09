@@ -117,7 +117,6 @@ jobs:
       run: |
         SPACENAMES=`find . -name '* *'`
         if [ -n "$SPACENAMES" ]; then
-          echo "Found files with spaces in their names, which will break our Make-based workflow."
           echo "::error file=${SPACENAMES}::Spaces in filename(s): ${SPACENAMES}. Please rename these, e.g. by converting spaces to underscores."
           exit 1
         fi
