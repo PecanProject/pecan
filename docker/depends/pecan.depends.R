@@ -24,7 +24,6 @@ wanted <- c(
 'abind',
 'amerifluxr',
 'BayesianTools',
-'binaryLogic',
 'BioCro',
 'bit64',
 'BrownDog',
