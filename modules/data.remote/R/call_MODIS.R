@@ -245,7 +245,7 @@ call_MODIS <- function(var, product,
       # QC flags are stored as an 8-bit mask
       # we only care about the 3 least-significant bits
       qc_flags <- intToBits(as.integer(output$qc[i])) # NB big-endian (ones place first)
-      qc_flags <- as.integer(rev(head(qc_flags, 3))) # now ones place last
+      qc_flags <- as.integer(rev(utils::head(qc_flags, 3))) # now ones place last
       output$qc[i] <- paste(qc_flags, collapse = "")
     }
     good <- which(output$qc %in% c("000", "001"))
