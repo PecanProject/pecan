@@ -24,17 +24,7 @@
 ##' @author Henri Kajasilta
 ##-------------------------------------------------------------------------------------------------#
 write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
-  #PEcAn.logger::logger.severe("NOT IMPLEMENTED")
-  # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
-  # Note that `library()` calls should _never_ appear here; instead, put
-  # packages dependencies in the DESCRIPTION file, under "Imports:".
-  # Calls to dependent packages should use a double colon, e.g.
-  #    `packageName::functionName()`.
-  # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-  
-  
+
   
   # Check minimum package required
   MinPackReq <- "1.9"
@@ -43,20 +33,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Create Schedule time
   if(!is.null(settings$run$start.date) & !is.null(settings$run$end.date)){
     
-    steps <- 48
+    steps <- 48 # Hard-coded for now
     ScheduleTime <- paste0(format(as.POSIXlt(settings$run$site$met.start), "%Y-%m-%d"), "/",
                            steps, " -> ", format(as.POSIXlt(settings$run$site$met.end), "%Y-%m-%d"))
   }
 
-  # Source
-  if(!is.null(settings$run$inputs$met$path)){
-    SourcePrefix <- paste0(dirname(settings$run$inputs$met$path), "/Qvidja_")
-    OutputPrefix <- paste0(dirname(settings$run$inputs$met$path), "/Output/Output_")
-  }
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
+  
+  # Source
+  if(!is.null(settings$run$inputs$met$path)){
+    SourcePrefix <- settings$run$inputs$met$path
+    OutputPrefix <- file.path(outdir, "Output/")
+  }
   
   #-----------------------------------------------------------------------
   # create .ldndc template
@@ -124,64 +115,103 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # 
   # jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
-  
+  # Write job.sh file to rundir
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh")) # Permissions
   
   
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
-  for(pft in seq_along(trait.values)){
-    pft.traits <- unlist(trait.values[[pft]])
-    pft.names <- names(pft.traits)
-    
-  }
+  speciesparfile <- readLines(con = system.file("speciesparameter_template.xml", package = "PEcAn.LDNDC"), n = -1)
   
   
+  ###### THIS NEEDS TO BE FUNCTION AT SOME POINT
+  ### PROBABLY SIMILAR FUNCTION FOR siteparameters as well
+  #
+  mnemonic_1 <- "__grasses__"
+  group <- "grass"
+  mnemonic_2 <- "perennialgrass"
   
-  # Specific leaf area under full light
-  SLAMIN <- NA
-  if("SLAMIN" %in% pft.names){
-    SLAMIN <- pft.traits[which(pft.names == "SLAMIN")]
-  }
+  a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
+  b.1 <- paste0("\t\t\t\t\t<species mnemonic='", mnemonic_2, "' > \n")
+  b.2 <- apply(trait.values[[1]], 1, function(x){paste0("\t\t\t\t\t\t<par name='", names(x), "' value='", x, "' /> \n")})
+  b.3 <- paste0("\t\t\t\t</species> \n")
+  a.2 <- paste0("\t\t\t</species>")
+  
+  speciesparfile <- gsub("@Info@", paste(a.1,b.1,b.2,b.3,a.2), speciesparfile)
+  
+  writeLines(speciesparfile, con = file.path(settings$rundir, run.id, "speciesparameters.xml"))
+  
+  # for(pft in seq_along(trait.values)){
+  #   pft.traits <- unlist(trait.values[[pft]])
+  #   pft.names <- names(pft.traits)
+
+
+  ######
+
+  # Default setup file, need to change later on
+  setupfile <- readLines(con = system.file("setup.xml", package = "PEcAn.LDNDC"), n = -1)
+  writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
+  
+  # Default events file, need to change later on
+  eventsfile <- readLines(con = system.file("events.xml", package = "PEcAn.LDNDC"), n = -1)
+  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+  
+  # Default site file, need to change later on
+  sitefile <- readLines(con = system.file("site.xml", package = "PEcAn.LDNDC"), n = -1)
+  writeLines(sitefile, con = file.path(settings$rundir, run.id, "site.xml"))
+  
+  # Default site file, need to change later on
+  siteparfile <- readLines(con = system.file("siteparameters.xml", package = "PEcAn.LDNDC"), n = -1)
+  writeLines(siteparfile, con = file.path(settings$rundir, run.id, "siteparameters.xml"))
+  
+  
+  # Use ready airchemistry file for now
+  airchemistry <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
+  writeLines(airchemistry, con = file.path(settings$rundir, run.id, "airchemistry.txt"))
+  
+  
+  #####
+  
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
-  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-    config.text <- readLines(con = settings$model$config, n = -1)
-  } else {
-    filename <- system.file(settings$model$config, package = "PEcAn.LDNDC")
-    if (filename == "") {
-      if (!is.null(settings$model$revision)) {
-        filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.LDNDC")
-      } else {
-        model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-        filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.LDNDC")
-      }
-    }
-    if (filename == "") {
-      PEcAn.logger::logger.severe("Could not find config template")
-    }
-    PEcAn.logger::logger.info("Using", filename, "as template")
-    config.text <- readLines(con = filename, n = -1)
-  }
+  # if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
+  #   config.text <- readLines(con = settings$model$config, n = -1)
+  # } else {
+  #   filename <- system.file(settings$model$config, package = "PEcAn.LDNDC")
+  #   if (filename == "") {
+  #     if (!is.null(settings$model$revision)) {
+  #       filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.LDNDC")
+  #     } else {
+  #       model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
+  #       filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.LDNDC")
+  #     }
+  #   }
+  #   if (filename == "") {
+  #     PEcAn.logger::logger.severe("Could not find config template")
+  #   }
+  #   PEcAn.logger::logger.info("Using", filename, "as template")
+  #   config.text <- readLines(con = filename, n = -1)
+  # }
+  # 
+  # config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
+  # config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
+  # config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
+  # config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
+  # config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
+  # config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
+  # config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
+  # config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
+  # config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
+  # config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
+  # config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
+  # config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
+  # config.text <- gsub("@ENSNAME@", run.id, config.text)
+  # config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
+  # 
+  # #-----------------------------------------------------------------------
+  # config.file.name <- paste0("CONFIG.", run.id, ".txt")
+  # writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
   
-  config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
-  config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
-  config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
-  config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
-  config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
-  config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
-  config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
-  config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  config.text <- gsub("@ENSNAME@", run.id, config.text)
-  config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  
-  #-----------------------------------------------------------------------
-  config.file.name <- paste0("CONFIG.", run.id, ".txt")
-  writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
 } # write.config.LDNDC
