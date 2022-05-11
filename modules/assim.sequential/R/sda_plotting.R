@@ -769,7 +769,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   
 
   suppressMessages({
-      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAn.assim.sequential"))
   })
   
   #transform site locs into new projection - UTM 2163

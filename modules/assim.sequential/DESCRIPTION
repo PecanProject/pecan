@@ -1,4 +1,4 @@
-Package: PEcAnAssimSequential
+Package: PEcAn.assim.sequential
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.2
