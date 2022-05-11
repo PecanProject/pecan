@@ -6,7 +6,6 @@
 #' @param con connection to bety
 #'
 #' @return pft info with each site
-#' @export pft.csv file
 #'
 #' @examples NLCD <- "/fs/data1/pecan.data/input//nlcd_2001_landcover_2011_edition_2014_10_10/nlcd_2001_landcover_2011_edition_2014_10_10.img"
 #'           Ecoregion <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/eco-region/us_eco_l3_state_boundaries.shp"
