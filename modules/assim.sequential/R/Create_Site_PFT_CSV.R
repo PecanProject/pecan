@@ -56,20 +56,20 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
   #initialize data pool for NLCD
   sites <- as.data.frame(cbind(site_info$site_id,site_info$lon, site_info$lat))
   names(sites) <- c("id", "lon", "lat")
-  coordinates(sites) <- ~lon+lat
-  projection(sites) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs "
+  sp::coordinates(sites) <- ~lon+lat
+  raster::projection(sites) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs "
   cover <- raster::raster(NLCD)
   
   #
-  sites = spTransform(sites, CRS = crs(cover))
+  sites = sp::spTransform(sites, CRS = raster::crs(cover))
   # make sure projections match
-  data = extract(cover, sites)
+  data = raster::extract(cover, sites)
   sites$cover = data
   site_data = sites
   
-  ecoregion = shapefile(Ecoregion)
-  ecoregion = spTransform(ecoregion, CRS = crs(site_data))
-  eco_data = extract(ecoregion, site_data)
+  ecoregion = raster::shapefile(Ecoregion)
+  ecoregion = sp::spTransform(ecoregion, CRS = raster::crs(site_data))
+  eco_data = raster::extract(ecoregion, site_data)
   site_data$region = eco_data$NA_L1CODE
   site_data$name = eco_data$NA_L1NAME
   
@@ -141,6 +141,6 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
   #write into csv file
   out.csv <- cbind(site_data$ID, site_data$pft)
   colnames(out.csv) <- c("site", "pft")
-  write.csv(out.csv, file = paste0(settings$outdir,"/site_pft.csv"), row.names=FALSE)
+  utils::write.csv(out.csv, file = paste0(settings$outdir,"/site_pft.csv"), row.names=FALSE)
   return(site_data)
 }
