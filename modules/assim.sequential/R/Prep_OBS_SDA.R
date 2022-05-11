@@ -6,9 +6,10 @@
 #' @param Search_Window search window for locate available LAI values
 #'
 #' @return mean and covariance of observations
+#'
+#' @importFrom magrittr %>%
 #' @export
 #'
-#' @examples
 Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   ####working on downloading LAI and extraction AGB
   
