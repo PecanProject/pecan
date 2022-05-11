@@ -1,6 +1,6 @@
 #' SDA observation preparation function for LAI and AGB
 #'
-#' @param multi.settings settings objects that contains multiple sites info
+#' @param settings multi.settings objects that contains multiple sites info
 #' @param out_dir  output dir
 #' @param AGB_dir  AGB data dir
 #' @param Search_Window search window for locate available LAI values
