@@ -145,20 +145,24 @@ Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   obs.mean = data.frame(date = observed_data$Date, site_id = observed_data$Site_ID, med_agb = observed_data$med_agb, med_lai = observed_data$med_lai)
   obs.mean$date = as.character(obs.mean$date, stringsAsFactors = FALSE)
   
-  obs.mean = obs.mean %>%
-    split(.$date)
+  obs.mean <- split(obs.mean, obs.mean$date)
   
   # change the dates to be middle of the year
   date.obs <- strsplit(names(obs.mean), "_") %>%
-    purrr::map_chr(~.x[2]) %>% paste0(.,"/07/15")
-  
-  obs.mean = names(obs.mean) %>%
-    purrr::map(function(namesl){
-      obs.mean[[namesl]] %>%
-        split(.$site_id) %>%
-        purrr::map(~.x[3:4] %>% stats::setNames(c("AbvGrndWood", "LAI")) %>% `row.names<-`(NULL))
-      #setNames(site.ids)
-    }) %>% stats::setNames(date.obs)
+    purrr::map_chr(~paste0(.x[2], "/07/15"))
+
+  obs.mean <- purrr::map(
+    names(obs.mean),
+    function(namesl){
+      split(
+        obs.mean[[namesl]],
+        obs.mean[[namesl]]$site_id) %>%
+      purrr::map(
+        ~.x[3:4] %>%
+          stats::setNames(c("AbvGrndWood", "LAI")) %>%
+          `row.names<-`(NULL))
+    }
+  ) %>% stats::setNames(date.obs)
   
   #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
   names = date.obs
@@ -186,15 +190,20 @@ Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   obs.cov = data.frame(date = observed_data$Date, site_id = observed_data$Site_ID, sdev_agb = observed_data$sdev_agb, sdev_lai = observed_data$sdev_lai)#, filler_0)
   obs.cov$date = as.character(obs.cov$date, stringsAsFactors = F)
   
-  obs.cov = obs.cov %>%
-    split(.$date)
-  
-  obs.cov = names(obs.cov) %>%
-    purrr::map(function(namesl){
-      obs.cov[[namesl]] %>%
-        split(.$site_id) %>%
-        purrr::map(~.x[3:4]^2 %>% unlist %>% diag(nrow = 2, ncol = 2) ) 
-    }) %>% stats::setNames(date.obs)
+  obs.cov <- split(obs.cov, obs.cov$date)
+
+  obs.cov <- purrr::map(
+    names(obs.cov),
+    function(namesl){
+      purrr::map(
+        split(
+          obs.cov[[namesl]],
+          obs.cov[[namesl]]$site_id),
+        ~.x[3:4]^2 %>%
+          unlist %>%
+          diag(nrow = 2, ncol = 2))
+    }
+  ) %>% stats::setNames(date.obs)
   
   
   names = date.obs
