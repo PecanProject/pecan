@@ -24,6 +24,18 @@
 #'
 #' @export
 Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
+
+  # Bail out if packages in Suggests not available
+  suggests_needed <- c("DBI", "glue", "raster")
+  suggests_found <- sapply(suggests_needed, requireNamespace, quietly = TRUE)
+  if (!all(suggests_found)) {
+    PEcAn.logger::logger.error(
+      "Can't find package(s)",
+      sQuote(suggests_needed[!suggests_found]),
+      ", needed by PEcAn.assim.sequential::Create_Site_PFT_CSV().",
+      "Please install these and try again.")
+  }
+
   #grab Site IDs from settings
   observations <- c()
   for (i in 1:length(settings)) {
