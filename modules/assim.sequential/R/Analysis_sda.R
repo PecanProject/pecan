@@ -365,7 +365,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   }
   
   #which type of observation do we have at this time point?
-  input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
+  input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]][[1]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
   names(input.order) <- operators
   data_available <- unlist(input.order)
   

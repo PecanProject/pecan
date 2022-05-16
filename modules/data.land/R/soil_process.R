@@ -8,7 +8,7 @@
 #' @return path to soil file
 #' @export
 #'
-#' @examples
+#' 
 soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
 
   # This tries to avoid the problem of having the soil tag under input but not having source in it.

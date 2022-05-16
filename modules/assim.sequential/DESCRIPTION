@@ -1,4 +1,4 @@
-Package: PEcAn.assim.sequential
+Package: PEcAnAssimSequential
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
 Version: 1.7.2
@@ -31,12 +31,16 @@ Imports:
     XML,
     coda
 Suggests:
+    PEcAn.benchmark,
+    PEcAn.data.remote,
+    stats,
+    DBI,
+    glue,
     corrplot,
     ggrepel,
     gridExtra,
     magic (>= 1.5.0),
     methods,
-    PEcAn.benchmark,
     plotrix,
     plyr (>= 1.8.4),
     reshape2 (>= 1.4.2),

@@ -49,7 +49,11 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
 
     # install additional tools needed
     - name: install utils
@@ -102,7 +106,11 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
 
     # install additional tools needed
     - name: install utils
@@ -146,7 +154,11 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
 
     # install additional tools needed
     - name: install utils
@@ -162,10 +174,11 @@ jobs:
 
     # install sipnet
     - name: Check out SIPNET
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: PecanProject/sipnet
         path: sipnet
+        set-safe-directory: false
     - name: install sipnet
       run: |
         cd ${GITHUB_WORKSPACE}/sipnet
