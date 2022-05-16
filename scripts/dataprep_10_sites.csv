@@ -1,0 +1,11 @@
+"","siteid_BETY4","site_name4","base_dir4","met_download","model_id4","model_name4","input_met_source4","input_met_output4","siteid_NEON4"
+"1",646,"HARV","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","dataprep",1000000030,"SIPNET","NOAA_GEFS","SIPNET","HARV"
+"2",679,"LOS","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","metprocess",1000000030,"SIPNET","NOAA_GEFS","SIPNET",NA
+"3",1000026756,"POTATO","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","metprocess",1000000030,"SIPNET","NOAA_GEFS","SIPNET",NA
+"4",622,"SYV","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","metprocess",1000000030,"SIPNET","NOAA_GEFS","SIPNET",NA
+"5",676,"WCR","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","metprocess",1000000030,"SIPNET","NOAA_GEFS","SIPNET",NA
+"6",678,"WLEF","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","metprocess",1000000030,"SIPNET","NOAA_GEFS","SIPNET",NA
+"7",1000004924,"BART","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","dataprep",1000000030,"SIPNET","NOAA_GEFS","SIPNET","BART"
+"8",1000004927,"KONZ","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","dataprep",1000000030,"SIPNET","NOAA_GEFS","SIPNET","KONZ"
+"9",1000004916,"OSBS","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","dataprep",1000000030,"SIPNET","NOAA_GEFS","SIPNET","OSBS"
+"10",1000004876,"SRER","/projectnb/dietzelab/ahelgeso/NOAA_met_data/","dataprep",1000000030,"SIPNET","NOAA_GEFS","SIPNET","SRER"

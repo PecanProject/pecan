@@ -56,6 +56,8 @@ jobs:
       run: Rscript scripts/generate_dependencies.R
     - name: check for out-of-date dependencies files
       uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      run: Rscript docker/depends/pecan.depends.R
 
     # compile PEcAn code
     - name: build

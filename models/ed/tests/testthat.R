@@ -8,6 +8,7 @@
 #-------------------------------------------------------------------------------
 library(testthat)
 library(PEcAn.utils)
+library(PEcAn.ED2)
 
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 test_check("PEcAn.ED2")

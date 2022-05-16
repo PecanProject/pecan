@@ -11,11 +11,10 @@
 ##' @param dryMass_name Default is "dryMass". This is the column name in the veg_file that represents herbaceous dry mass. May differ depending on data source.
 ##'
 ##' @author Saloni Shah
-##'
-##' \dontrun{
+##' @example 
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
-##' }
+##' 
 
 cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_name = "dryMass") {
   
@@ -36,8 +35,8 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
   dat_equal <- dat[[2]][dat[[2]]$DBH == 2.5,]
   dbh_equal <- dat_equal$DBH
   #Grab plot size
-  plot_size <- dat[[1]]$Plot
   herb_plot <- dat[[1]]$herb_clipArea
+  plot_size <- dat[[1]]$subPlot
   #Grab number of plots
   tree_num <- length(unique(dat[[2]]$plot))
   herb_num <- length(unique(dat[[3]]$plot))
@@ -56,11 +55,12 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
     ratio = c(ratio_greater, ratio_equal, ratio_less)
   } else {
     #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
-    allom.fit = #outputs from AllomAve function
-    stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
-    AGB = apply(stand,1,sum)
-    hist(AGB)
-    #print("user provided allometry parameters not yet supported")
+    # allom.fit = #outputs from AllomAve function
+    # stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+    # AGB = apply(stand,1,sum)
+    # hist(AGB)
+    AGB <- NULL
+    print("user provided allometry parameters not yet supported")
     #return(NULL)
     return(AGB)
   }

@@ -48,7 +48,7 @@ vwReg(
 
 \item{mweight}{should the median smoother be visually weighted?}
 
-\item{show.lm}{should the linear regresison line be plotted?}
+\item{show.lm}{should the linear regression line be plotted?}
 
 \item{show.median}{should the median smoother be plotted?}
 
@@ -56,7 +56,7 @@ vwReg(
 
 \item{shape}{shape of points}
 
-\item{show.CI}{should the 95% CI limits be plotted?}
+\item{show.CI}{should the 95\% CI limits be plotted?}
 
 \item{method}{the fitting function for the spaghettis; default: loess}
 

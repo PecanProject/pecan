@@ -51,12 +51,17 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: update dependency lists
         run: Rscript scripts/generate_dependencies.R
+      - name: install any new dependencies
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        run: Rscript docker/depends/pecan.depends.R
       - id: file_changes
         uses: trilom/file-changes-action@v1.2.4
       - name : make
         shell: bash
         env:
           FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo ${FILES} \
           | tr ' ' '\n' \

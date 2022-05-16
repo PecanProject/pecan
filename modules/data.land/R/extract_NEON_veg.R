@@ -1,11 +1,12 @@
 #' extract_NEON_veg
 #' @title extract_NEON_veg
 #' @name extract_NEON_veg
-#' 
-#' @param lon site longitude coordinate passed from get_veg_module
-#' @param lat site latitude coordinate passed from get_veg_module
-#' @param startdate "YYYY-MM-DD", used to download NEON datasets for desired time period
-#' @param enddate "YYYY_MM_DD", used to download NEON datasets for desired time period
+#'
+#' @param lon site longitude, passed from ic_process
+#' @param lat site latitude, passed from ic_process
+#' @param start_date "YYYY-MM-DD", used to download NEON datasets for desired time period
+#' @param end_date "YYYY_MM_DD", used to download NEON datasets for desired time period
+#' @param store_dir location to store downloaded NEON files
 #' @param ... Additional parameters
 #' 
 #' 

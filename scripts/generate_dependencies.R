@@ -79,9 +79,6 @@ for (name in names(depends)) {
   for (p in depends[[name]]) {
     # TEMP HACK: Don't declare known circular deps in utils Suggests
     if (name == "base/utils" && p == "PEcAn.DB") next
-    if (name == "base/utils" && p == "PEcAn.settings") next
-    if (name == "base/utils" && p == "PEcAn.data.atmosphere") next
-    if (name == "base/utils" && p == "PEcAn.data.land") next
     x <- paste0(x, " .install/", pecan[[p]])
   }
   cat(x, file = "Makefile.depends", sep = "\n", append = TRUE)

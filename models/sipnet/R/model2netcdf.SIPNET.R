@@ -149,15 +149,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[10]] <- (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001) + 
       (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC) * 0.001 # Total living C kgC/m2
     output[[11]] <- (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
-    if (revision == "r136") {
-      output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
-    } else {
+    if (revision == "unk") {
       ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
       ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
       ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
       ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
       ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
       output[[12]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+    } else {
+     output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     }
     output[[13]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
     output[[14]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2

@@ -65,7 +65,7 @@ You can now use the command `docker-compose` to work with the containers setup f
 
 ### First time setup
 
-The steps in this section only need to be done the fist time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
 
 * setup .env file
 * create folders to hold the data

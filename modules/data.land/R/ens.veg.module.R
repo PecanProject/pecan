@@ -1,6 +1,4 @@
 ##' Sampling/ensemble module
-##' @title ens_veg_module
-##' @name ens_veg_module
 ##' 
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB

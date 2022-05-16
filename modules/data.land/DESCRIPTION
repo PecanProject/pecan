@@ -1,8 +1,8 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.1
-Date: 2019-09-05
+Version: 1.7.2
+Date: 2021-10-04
 Authors@R: c(person("Mike","Dietze",email="dietze@bu.edu",role="cre"),
              person("David","LeBauer",role="aut"),
              person("Xiaohui", "Feng",role="ctb"),
@@ -27,6 +27,8 @@ Imports:
     mvtnorm,
     ncdf4 (>= 1.15),
     neonUtilities,
+    neonstore,
+    swfscMisc,
     PEcAn.benchmark,
     PEcAn.data.atmosphere,
     PEcAn.DB,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{dhist}
 \alias{dhist}
-\title{Diagonally Cut Histogram}
+\title{Variable-width (diagonally cut) histogram}
 \usage{
 dhist(
   x,
@@ -24,21 +24,18 @@ dhist(
 
 \item{rx}{is the range used for the left of the left-most bin to the right of the right-most bin}
 
-\item{eps}{used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24.}
+\item{eps}{used to set artificial bound on min width / max height of bins as described in Denby and Mallows (2009) on page 24}
 
 \item{xlab}{is label for the x axis}
 
 \item{plot}{= TRUE produces the plot, FALSE returns the heights, breaks and counts}
 
-\item{lab.spikes}{= TRUE labels the % of data in the spikes}
+\item{lab.spikes}{= TRUE labels the \% of data in the spikes}
 }
 \value{
 list with two elements, heights of length n and breaks of length n+1 indicating the heights and break points of the histogram bars.
 }
 \description{
-Variable-width (dagonally cut) histogram
-}
-\details{
 When constructing a histogram, it is common to make all bars the same width.
 One could also choose to make them all have the same area.
 These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.

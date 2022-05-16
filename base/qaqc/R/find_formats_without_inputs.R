@@ -1,7 +1,9 @@
-##' @export find_formats_without_inputs
+##' Find formats in bety that have no input record in bety
+##'
 ##' @author Tempest McCabe
-##' 
-##' @param user_id  Optional parameter to search by user_id
+##'
+##' @param con database connection object
+##' @param user_id_code  Optional parameter to search by user_id
 ##' @param created_after Optional parameter to search by creation date. Date must be in form 'YYYY-MM-DD'.
 ##' @param created_before Optional parameter to search by creation date. Can be used in conjunciton with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.
 ##' @param updated_after Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.
@@ -13,8 +15,7 @@
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
-
-
+##' @export
 find_formats_without_inputs <- function(con, user_id_code = NULL, created_after = NULL, updated_after = NULL, created_before = NULL, updated_before = NULL){
 
   input_command<-dplyr::tbl(con, 'inputs')

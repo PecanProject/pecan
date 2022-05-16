@@ -1,8 +1,8 @@
 Package: PEcAn.STICS
 Type: Package
 Title: PEcAn package for integration of the STICS model
-Version: 1.7.1
-Date: 2019-09-05
+Version: 1.7.2
+Date: 2021-10-04
 Authors@R: c(
   person("Istem", "Fer",
     email = "istem.fer@fmi.fi",

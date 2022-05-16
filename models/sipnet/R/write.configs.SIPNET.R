@@ -451,8 +451,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
-  else if (!is.null(settings$run$inputs$poolinitcond$path$path1)) {
-    IC.path <- settings$run$inputs$poolinitcond$path$path1
+  else if (!is.null(settings$run$inputs$poolinitcond$path)) {
+    xseq <- seq(1, length(settings$run$inputs$poolinitcond[["path"]]), 1)
+    pathEns <- sample(xseq,1,replace=T)
+    
+    IC.path <- settings$run$inputs$poolinitcond$path[[pathEns]]
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
@@ -462,7 +465,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
-      lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      #lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
       }

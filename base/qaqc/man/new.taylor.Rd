@@ -2,12 +2,16 @@
 % Please edit documentation in R/taylor.plot.R
 \name{new.taylor}
 \alias{new.taylor}
-\title{Taylor Diagram}
+\title{Plot taylor diagram for benchmark sites}
 \usage{
 new.taylor(dataset, runid, siteid)
 }
 \arguments{
+\item{dataset}{data to plot}
+
 \item{runid}{a numeric vector with the id(s) of one or more runs (folder in runs) to plot}
+
+\item{siteid}{vector of sites to plot}
 }
 \description{
 Plot taylor diagram for benchmark sites

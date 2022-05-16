@@ -4,12 +4,36 @@
 \alias{read_E_files}
 \title{Function for reading -E- files}
 \usage{
-read_E_files(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, ...)
+read_E_files(
+  yr,
+  yfiles,
+  efiles,
+  outdir,
+  start_date,
+  end_date,
+  pfts,
+  settings = NULL,
+  ...
+)
 }
 \arguments{
 \item{yr}{the year being processed}
 
 \item{yfiles}{the years on the filenames, will be used to matched efiles for that year}
+
+\item{efiles}{names of E h5 files}
+
+\item{outdir}{directory where output will be written to}
+
+\item{start_date}{Start time of the simulation}
+
+\item{end_date}{End time of the simulation}
+
+\item{pfts}{Names of PFTs used in the run, vector}
+
+\item{settings}{pecan settings object}
+
+\item{...}{additional arguments}
 }
 \description{
 Function for reading -E- files
