@@ -112,6 +112,15 @@ jobs:
       with:
         set-safe-directory: false
 
+    # Forbid spaces in names. Yes, *we* know it's not 1980 anymore, but Make doesn't.
+    - name: check for filenames that would confuse Make
+      run: |
+        SPACENAMES=`find . -name '* *'`
+        if [ -n "$SPACENAMES" ]; then
+          echo "::error file=${SPACENAMES}::Spaces in filename(s): ${SPACENAMES}. Please rename these files by converting spaces to underscores."
+          exit 1
+        fi
+
     # install additional tools needed
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf

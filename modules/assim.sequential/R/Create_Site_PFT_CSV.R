@@ -6,15 +6,36 @@
 #' @param con connection to bety
 #'
 #' @return pft info with each site
-#' @export pft.csv file
 #'
-#' @examples NLCD <- "/fs/data1/pecan.data/input//nlcd_2001_landcover_2011_edition_2014_10_10/nlcd_2001_landcover_2011_edition_2014_10_10.img"
-#'           Ecoregion <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/eco-region/us_eco_l3_state_boundaries.shp"
-#'           settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml")
-#'           bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname, host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password)
-#'           con <- bety$con
-#'           site_pft_info <- Create_Site_PFT_CSV(settings, Ecoregion, NLCD, con)
+#' @examples
+#' \dontrun{
+#'  NLCD <- file.path(
+#'    "/fs", "data1", "pecan.data", "input",
+#'    "nlcd_2001_landcover_2011_edition_2014_10_10",
+#'    "nlcd_2001_landcover_2011_edition_2014_10_10.img")
+#'  Ecoregion <- file.path(
+#'    "/projectnb", "dietzelab", "dongchen",
+#'    "All_NEON_SDA", "NEON42", "eco-region", "us_eco_l3_state_boundaries.shp")
+#'  settings <- PEcAn.settings::read.settings(
+#'    "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml")
+#'  con <- PEcAn.DB::db.open(settings$database$bety)
+#'    site_pft_info <- Create_Site_PFT_CSV(settings, Ecoregion, NLCD, con)
+#' }
+#'
+#' @export
 Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
+
+  # Bail out if packages in Suggests not available
+  suggests_needed <- c("DBI", "glue", "raster")
+  suggests_found <- sapply(suggests_needed, requireNamespace, quietly = TRUE)
+  if (!all(suggests_found)) {
+    PEcAn.logger::logger.error(
+      "Can't find package(s)",
+      sQuote(suggests_needed[!suggests_found]),
+      ", needed by PEcAn.assim.sequential::Create_Site_PFT_CSV().",
+      "Please install these and try again.")
+  }
+
   #grab Site IDs from settings
   observations <- c()
   for (i in 1:length(settings)) {
@@ -35,20 +56,20 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
   #initialize data pool for NLCD
   sites <- as.data.frame(cbind(site_info$site_id,site_info$lon, site_info$lat))
   names(sites) <- c("id", "lon", "lat")
-  coordinates(sites) <- ~lon+lat
-  projection(sites) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs "
+  sp::coordinates(sites) <- ~lon+lat
+  raster::projection(sites) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs "
   cover <- raster::raster(NLCD)
   
   #
-  sites = spTransform(sites, CRS = crs(cover))
+  sites = sp::spTransform(sites, CRS = raster::crs(cover))
   # make sure projections match
-  data = extract(cover, sites)
+  data = raster::extract(cover, sites)
   sites$cover = data
   site_data = sites
   
-  ecoregion = shapefile(Ecoregion)
-  ecoregion = spTransform(ecoregion, CRS = crs(site_data))
-  eco_data = extract(ecoregion, site_data)
+  ecoregion = raster::shapefile(Ecoregion)
+  ecoregion = sp::spTransform(ecoregion, CRS = raster::crs(site_data))
+  eco_data = raster::extract(ecoregion, site_data)
   site_data$region = eco_data$NA_L1CODE
   site_data$name = eco_data$NA_L1NAME
   
@@ -120,6 +141,6 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
   #write into csv file
   out.csv <- cbind(site_data$ID, site_data$pft)
   colnames(out.csv) <- c("site", "pft")
-  write.csv(out.csv, file = paste0(settings$outdir,"/site_pft.csv"), row.names=FALSE)
+  utils::write.csv(out.csv, file = paste0(settings$outdir,"/site_pft.csv"), row.names=FALSE)
   return(site_data)
 }

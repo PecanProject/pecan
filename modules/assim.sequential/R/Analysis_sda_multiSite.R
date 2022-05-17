@@ -112,6 +112,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # Reading the extra arguments
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
+  wts <- extraArg$wts/sum(extraArg$wts)
+  if(any(is.na(wts))){
+    PEcAn.logger::logger.warn(
+      "We found an NA in the wts for the ensemble members.",
+      "Is this what you want? For now, we will change the NA to a zero.")
+    wts[is.na(wts)] <- 0
+  }
+  if(sum(wts==0)){
+    wts <- rep(1,nrow(X))/nrow(X)
+  }
   t <- extraArg$t
   nitr.GEF<-extraArg$nitr.GEF
   nthin<-extraArg$nthin

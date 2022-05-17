@@ -7,13 +7,13 @@
 Prep_OBS_SDA(settings, out_dir, AGB_dir, Search_Window = 30)
 }
 \arguments{
+\item{settings}{multi.settings objects that contains multiple sites info}
+
 \item{out_dir}{output dir}
 
 \item{AGB_dir}{AGB data dir}
 
 \item{Search_Window}{search window for locate available LAI values}
-
-\item{multi.settings}{settings objects that contains multiple sites info}
 }
 \value{
 mean and covariance of observations
