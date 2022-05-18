@@ -412,7 +412,7 @@ model{
     for (i in seq_len(nchain)) {
       y.samp <- sample(data$y, length(data$y), replace = TRUE)
       init[[i]] <- list(x = z0, 
-                        tau_add = runif(1, 1, 5) / stats::var(diff(y.samp), na.rm = TRUE),
+                        tau_add = stats::runif(1, 1, 5) / stats::var(diff(y.samp), na.rm = TRUE),
                         tau_dbh = 1, 
                         tau_inc = 1500,
                         tau_ind = 50, 

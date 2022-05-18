@@ -192,27 +192,27 @@ mod.names<-c("MM","H3","H4","Ri","Log","MM.yint","H3.yint","H4.yint","Ri.yint","
 
 #Initial conditions for HH pol band
 MM.HH.init      = list(b1=4, b0=0.1,     tau = 2/stats::var(y)) #for MM
-H4.HH.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
-H3.HH.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
-Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
-Log.HH.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
-MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
-Ri.yint.HH.init = list(a=0.5,  b=0.5,   yint=0.1, tau = 2/var(y)) #for Ri.yint
-Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
+H4.HH.init      = list(a=0.1,b=50,  c=2, tau = 2/stats::var(y)) #for H4
+H3.HH.init      = list(a=0.1,b=100,      tau = 2/stats::var(y)) #for H3
+Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/stats::var(y)) #for Ri
+Log.HH.init     = list(a=0.6,b=1,        tau = 2/stats::var(y)) #for Log
+MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/stats::var(y)) #for MM.yint
+H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/stats::var(y)) #for H3.yint
+H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/stats::var(y)) #for H4.yint
+Ri.yint.HH.init = list(a=0.5,  b=0.5,   yint=0.1, tau = 2/stats::var(y)) #for Ri.yint
+Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/stats::var(y)) #for Log.yint
 
 #Initial conditions for HV pol band
 MM.HV.init      = list(b1=8,   b0=0.04,     tau = 2/stats::var(y)) #for MM
-H3.HV.init      = list(a=0.02, b=100,       tau = 2/var(y)) #for H3
-H4.HV.init      = list(a=0.03, b=0.01, c=2, tau = 2/var(y)) #for H4
-Ri.HV.init      = list(a=0,    b=0,         tau = 2/var(y)) #for Ri
-Log.HV.init     = list(a=0.6,  b=1,         tau = 2/var(y)) #for Log
-MM.yint.HV.init = list(b1=8,   b0=0.04,      yint=0.04,tau = 2/var(y)) #for MM.yint
-H3.yint.HV.init = list(a=0.02, b=100,        yint=0.04, tau = 2/var(y)) #for H3.yint
-H4.yint.HV.init = list(a=0.03, b=0.01, c=2,  yint=0.04, tau = 2/var(y)) #for H4.yint
-Ri.yint.HV.init = list(a=0.5,  b=0.5,        yint=0.04, tau = 2/var(y)) #for Ri.yint
-Log.yint.HV.init= list(a=0.6,  b=1,          yint=0.04, tau = 2/var(y)) #for Log.yint
+H3.HV.init      = list(a=0.02, b=100,       tau = 2/stats::var(y)) #for H3
+H4.HV.init      = list(a=0.03, b=0.01, c=2, tau = 2/stats::var(y)) #for H4
+Ri.HV.init      = list(a=0,    b=0,         tau = 2/stats::var(y)) #for Ri
+Log.HV.init     = list(a=0.6,  b=1,         tau = 2/stats::var(y)) #for Log
+MM.yint.HV.init = list(b1=8,   b0=0.04,      yint=0.04,tau = 2/stats::var(y)) #for MM.yint
+H3.yint.HV.init = list(a=0.02, b=100,        yint=0.04, tau = 2/stats::var(y)) #for H3.yint
+H4.yint.HV.init = list(a=0.03, b=0.01, c=2,  yint=0.04, tau = 2/stats::var(y)) #for H4.yint
+Ri.yint.HV.init = list(a=0.5,  b=0.5,        yint=0.04, tau = 2/stats::var(y)) #for Ri.yint
+Log.yint.HV.init= list(a=0.6,  b=1,          yint=0.04, tau = 2/stats::var(y)) #for Log.yint
 
 MM.var.names<-c("b0","b1","sd") #for MM
 H3.var.names<-c("a","b","sd") #for H3
