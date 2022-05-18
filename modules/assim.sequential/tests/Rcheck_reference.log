@@ -77,7 +77,6 @@ EnKF.MultiSite: no visible global function definition for ‘%>%’
 EnKF.MultiSite: no visible binding for global variable ‘site.ids’
 EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF: no visible global function definition for ‘cov’
-GEF : wish.df: no visible global function definition for ‘var’
 GEF: no visible binding for '<<-' assignment to ‘constants.tobit2space’
 GEF: no visible binding for '<<-' assignment to ‘data.tobit2space’
 GEF: no visible binding for '<<-' assignment to ‘tobit2space_pred’
@@ -118,8 +117,6 @@ GEF: no visible global function definition for ‘plot’
 GEF: no visible global function definition for ‘abline’
 GEF.MultiSite: no visible binding for global variable ‘settings’
 GEF.MultiSite: no visible global function definition for ‘cov’
-GEF.MultiSite : wish.df: no visible global function definition for
-  ‘var’
 GEF.MultiSite: no visible binding for '<<-' assignment to
   ‘tobit2space_pred’
 GEF.MultiSite: no visible binding for global variable
@@ -160,7 +157,6 @@ GEF.MultiSite: no visible binding for global variable ‘Rmcmc’
 GEF.MultiSite: no visible binding for global variable ‘Cmcmc’
 GEF.MultiSite: no visible binding for global variable
   ‘samplerNumberOffset’
-GEF.MultiSite: no visible global function definition for ‘var’
 generate_colors_sda: no visible binding for '<<-' assignment to ‘pink’
 generate_colors_sda: no visible global function definition for
   ‘col2rgb’

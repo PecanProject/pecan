@@ -84,16 +84,15 @@ load.allom: no visible global function definition for ‘as.mcmc’
 query.allom.data: no visible global function definition for ‘db.query’
 read.allom.data: no visible global function definition for ‘read.csv’
 read.allom.data: no visible global function definition for ‘runif’
-read.allom.data: no visible global function definition for ‘var’
 Undefined global functions or variables:
   as.mcmc as.mcmc.list cov db.query dev.off dnorm file_ext is
   is.mcmc.list legend lines mc pdf plot points read.csv rgamma riwish
-  rmvnorm rnorm runif setTxtProgressBar txtProgressBar var vech
+  rmvnorm rnorm runif setTxtProgressBar txtProgressBar vech
 Consider adding
   importFrom("graphics", "legend", "lines", "plot", "points")
   importFrom("grDevices", "dev.off", "pdf")
   importFrom("methods", "is")
-  importFrom("stats", "cov", "dnorm", "rgamma", "rnorm", "runif", "var")
+  importFrom("stats", "cov", "dnorm", "rgamma", "rnorm", "runif")
   importFrom("utils", "read.csv", "setTxtProgressBar", "txtProgressBar")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
