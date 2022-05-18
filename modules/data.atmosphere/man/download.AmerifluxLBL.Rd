@@ -13,6 +13,9 @@ download.AmerifluxLBL(
   verbose = FALSE,
   username = "pecan",
   method,
+  useremail = "@",
+  data_product = "BASE-BADM",
+  data_policy = "CCBY4.0",
   ...
 )
 }
@@ -33,9 +36,18 @@ The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 \item{username}{Ameriflux username}
 
 \item{method}{Optional. download.file() function option.  Use this to set custom programs such as ncftp}
+
+\item{useremail}{Used email, should include 'address sign' for code to be functional}
+
+\item{data_product}{AmeriFlux data product}
+
+\item{data_policy}{Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'}
 }
 \description{
-download.AmerifluxLBL
+download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package
+to download a zip-file of data. The zip-file is extracted to a csv-file that is stored
+to the given outfolder. Details about amf_download_base function can be found here:
+https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
 }
 \details{
 Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
@@ -47,5 +59,5 @@ result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrit
 
 }
 \author{
-Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
+Ankur Desai, Henri Kajasilta based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
 }

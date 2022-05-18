@@ -394,7 +394,22 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }  ## end loop over PFTS
   ####### end parameter update
-  
+  #working on reading soil file (only working for 1 soil file)
+  if(length(settings$run$inputs$soilinitcond$path)==1){
+    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$soilinitcond$path)
+    #SoilWHC and LitterWHC
+    if("volume_fraction_of_water_in_soil_at_saturation"%in%names(soil_IC_list$vals)){
+      #SoilWHC
+      param[which(param[, 1] == "soilWHC"), 2] <- mean(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]))*100
+      
+      #LitterWHC
+      #param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*100
+    }
+    if("soil_hydraulic_conductivity_at_saturation"%in%names(soil_IC_list$vals)){
+      #litwaterDrainrate
+      param[which(param[, 1] == "litWaterDrainRate"), 2] <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1]*100/(3600*24)
+    }
+  }
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
@@ -451,15 +466,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
-  else if (!is.null(settings$run$inputs$poolinitcond$path)) {
-    IC.path <- settings$run$inputs$poolinitcond$path
+  else if (length(settings$run$inputs$poolinitcond$path)>0) {
+    ICs_num <- length(settings$run$inputs$poolinitcond$path)
+    IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "kg m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "g m-2", "g m-2")
       }
       ## laiInit m2/m2
       lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
@@ -473,11 +489,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## litterInit gC/m2
       if ("litter" %in% names(IC.pools)) {
-        param[which(param[, 1] == "litterInit"), 2] <- udunits2::ud.convert(IC.pools$litter, 'kg m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "litterInit"), 2] <- udunits2::ud.convert(IC.pools$litter, 'g m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- udunits2::ud.convert(sum(IC.pools$soil), 'kg m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "soilInit"), 2] <- udunits2::ud.convert(sum(IC.pools$soil), 'g m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
@@ -515,6 +531,17 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     #some stuff about IC file that we can give in lieu of actual ICs
   }
   
+  
+  if (!is.null(settings$run$inputs$soilmoisture)) {
+    #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
+    if(!is.null(settings$run$inputs$soilmoisture$path)){
+      soil.path <- settings$run$inputs$soilmoisture$path
+      soilWFrac <- ncdf4::ncvar_get(ncdf4::nc_open(soil.path), varid = "mass_fraction_of_unfrozen_water_in_soil_moisture")
+      
+      param[which(param[, 1] == "soilWFracInit"), 2] <- soilWFrac
+    }
+    
+  }
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 

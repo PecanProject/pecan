@@ -10,7 +10,8 @@ Sys.setenv(RLIB = rlib)
 # install remotes first in case packages are references in dependencies
 lapply(c(
 'araiho/linkages_package',
-'ebimodeling/biocro',
+'chuhousen/amerifluxr',
+'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
 'r-lib/testthat@v3.0.4',
 'r-lib/vdiffr@v1.0.2',
@@ -21,8 +22,8 @@ lapply(c(
 # install all packages (depends, imports, suggests)
 wanted <- c(
 'abind',
+'amerifluxr',
 'BayesianTools',
-'binaryLogic',
 'BioCro',
 'bit64',
 'BrownDog',
@@ -79,6 +80,7 @@ wanted <- c(
 'mvbutils',
 'mvtnorm',
 'ncdf4',
+'neonstore',
 'neonUtilities',
 'nimble',
 'nneo',
@@ -117,6 +119,7 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'swfscMisc',
 'testthat',
 'tibble',
 'tictoc',
