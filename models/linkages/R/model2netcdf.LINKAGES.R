@@ -125,7 +125,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
      for (i in seq_along(nc_var)) {
       print(i)
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
