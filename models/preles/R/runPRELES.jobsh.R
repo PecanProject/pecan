@@ -181,9 +181,9 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     nc_var[[4]] <- PEcAn.utils::to_ncvar("Evap", dims)
     nc_var[[5]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }

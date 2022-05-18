@@ -118,9 +118,9 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       # print(i)
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")

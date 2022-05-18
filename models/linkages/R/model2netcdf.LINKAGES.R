@@ -119,13 +119,13 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", "var", sep = ".")), "w")
    
-     for (i in seq_along(var)) {
+     for (i in seq_along(nc_var)) {
       print(i)
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
