@@ -102,7 +102,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   R <- Observed$R
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
@@ -501,7 +501,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     if (q.type == single.q){ #if it's a gamma case
       
       aqq[1, 1, t + 1] <- mean(mq)
-      bqq[t + 1] <- var(mq  %>%  as.numeric())
+      bqq[t + 1] <- stats::var(mq  %>%  as.numeric())
       
     } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,
