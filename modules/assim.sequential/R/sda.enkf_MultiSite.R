@@ -199,6 +199,10 @@ sda.enkf.multisite <- function(settings,
   
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
+  #create a folder to store extracted met files
+  if(!file.exists(paste0(settings$outdir, "/Extracted_met"))){
+    dir.create(paste0(settings$outdir, "/Extracted_met"))
+  }
   
   conf.settings<-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
@@ -217,7 +221,7 @@ sda.enkf.multisite <- function(settings,
               start.time = start.cut, # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              outpath = paste0("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/Extracted_ERA5/",settings$run$site$id),
+              outpath = paste0(paste0(settings$outdir, "/Extracted_met"), settings$run$site$id),
               overwrite =F
             )
           )
@@ -470,7 +474,6 @@ sda.enkf.multisite <- function(settings,
         if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF.MultiSite   }
         
         #-analysis function
-        source("~/pecan/modules/assim.sequential/R/Analysis_sda_multiSite.R")
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
@@ -610,7 +613,6 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      source("~/pecan/modules/assim.sequential/R/sda_plotting.R")
       try(post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result

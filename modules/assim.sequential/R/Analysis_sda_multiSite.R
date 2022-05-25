@@ -479,7 +479,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
 
 
   dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
-  browser()
+  #browser()
   #dat <- do.call(rbind, dat)
   
   #---- Saving the chains
