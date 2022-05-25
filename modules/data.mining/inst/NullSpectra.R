@@ -1,4 +1,4 @@
-### generate wavelet spectra of eddy flux data that incorporates uncertainty 
+### generate wavelet spectra of eddy flux data that incorporates uncertainty
 ###
 ### This code is computationally intensive so it is set up to be submitted to a cluster queue
 ### assumes that it is passed an ID for which site is being analyzed and a number range of
@@ -6,7 +6,7 @@
 ###
 ### Michael Dietze
 ###
-### inputs: annual NEE matrices of [time x ensemble member] 
+### inputs: annual NEE matrices of [time x ensemble member]
 ### outputs: mean and quantile spectra
 
 source("ResidSpectra.R")
@@ -27,7 +27,7 @@ site.name <- sub("_NEE.txt", "", site.name)
 site.name <- sub("-", "", site.name)
 prefix <- paste0("NEE_", site.name, "-")
 field  <- paste0("NEEf/", site.name, "/FilledNEE/")
-dat    <- read.table(paste(model.dir, site.files[sitenum], sep = "/"), 
+dat    <- read.table(paste(model.dir, site.files[sitenum], sep = "/"),
                      header = TRUE, na.string = "-999.000")
 day    <- 1 / diff(dat$FDOY[1:2])  ## number of observations per day
 
@@ -43,11 +43,11 @@ dat <- NULL
 ylen <- rep(NA, length(yrs))
 for (i in seq_along(yrs)) {
   print(yrs[i])
-  
+
   db <- readBin(paste0(path, files[i]), "double", size = 4, n = 17569000)
   dbm <- matrix(db, ncol = 1000)
   ylen[i] <- nrow(dbm)
-  
+
   if (is.null(dat)) {
     dat <- dbm
   } else {
@@ -63,10 +63,10 @@ fdat   <- NULL
 fylen  <- rep(NA, length(yrs))
 for (i in seq_along(yrs)) {
   print(yrs[i])
-  
+
   fd <- read.table(paste0(path, field, ffiles[i]), skip = 2, header = FALSE)
   fylen[i] <- nrow(fd)
-  
+
   if (is.null(dat)) {
     fdat <- fd
   } else {
@@ -81,48 +81,48 @@ fdat[fdat == -9999] <- NA
 pspec <- matrix(NA, nrow(dat), ncol(dat))
 Pspec <- matrix(NA, 100, 1000)
 for (i in seq(nstart, length = n2proc, by = 1)) {
-  
+
   print(i)
-  
+
   ### Calculate the error
-  
+
   ## option 3 - normalized residuals (pre) subscripts: t = tower, p = pseudodata
-  
+
   ## normalize tower
   NEEt.bar <- mean(fdat[, 5], na.rm = TRUE)
   NEEt.sd <- NA
   if (is.nan(NEEt.bar)) {
     NEEt.bar <- NA
   } else {
-    NEEt.sd <- sqrt(var(fdat[, 5], na.rm = TRUE))
+    NEEt.sd <- sqrt(stats::var(fdat[, 5], na.rm = TRUE))
   }
   NEEt.norm <- (fdat[, 5] - NEEt.bar)/NEEt.sd
-  
+
   ## normalize model
   NEEp.bar <- mean(dat[, i], na.rm = TRUE)
   NEEp.sd <- NA
   if (is.nan(NEEp.bar)) {
     NEEp.bar <- NA
   } else {
-    NEEp.sd <- sqrt(var(dat[, i], na.rm = TRUE))
+    NEEp.sd <- sqrt(stats::var(dat[, i], na.rm = TRUE))
   }
   NEEp.norm <- (dat[, i] - NEEp.bar)/NEEp.sd  ###########
   y <- NEEp.norm - NEEt.norm  ## calc residuals of normalized
-  
+
   y[is.na(y)] <- 0  ## need to fill in missing values
-  
-  
+
+
   ### Do the wavelet power spectrum
   wv <- ResidSpecta(data = fdat[, 5], model = dat[, i], obsPerDay = day, case = 3)
   ## wv <- WAVE(y,p2=17) ## Calculate wavelet spectrum *************************
   Pglobe <- apply(wv$Power, 2, sum, na.rm = TRUE)
   Pspec[seq_along(Pglobe), i] <- Pglobe
-  
+
   ### Also, do Fourier power spectra
   s <- spectrum(wv$y, plot = FALSE)
   pspec[seq_along(s$spec), i] <- s$spec
   period <- 1 / s$freq/day
-  
+
   save(wv, Power, day, file = paste0("pseudo.", sitenum, ".", i, ".Rdata"))
   save(i, Pspec, pspec, Period, period, file = paste0(site.name, ".", nstart, ".specCI.Rdata"))
 }
@@ -131,7 +131,7 @@ if (FALSE) {
   ## some diagnostics
   period <- 1 / s$freq/48
   pspec  <- pspec[seq_along(period), ]
-  
+
   pbar <- apply(pspec, 1, mean, na.rm = TRUE)
   pCI  <- apply(pspec, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
   plot(period, pbar, log = "xy", ylim = range(pCI), type = "l", ylab = "Power", xlab = "Period (days)")
@@ -139,15 +139,15 @@ if (FALSE) {
   # lines(period,pCI[2,],col=2)
   lines(period, pCI[3, ], col = 4)
   abline(v = c(0.5, 1, 365.25/2, 365.25), col = 2, lty = 2)
-  
+
   sel <- which(period > 0.8 & period < 1.3)
-  
-  plot(period[sel], pbar[sel], log = "xy", ylim = range(pCI), type = "l", 
+
+  plot(period[sel], pbar[sel], log = "xy", ylim = range(pCI), type = "l",
        ylab = "Power", xlab = "Period (days)")
   lines(period[sel], pCI[1, sel], col = 3)
   # lines(period,pCI[2,],col=2)
   lines(period[sel], pCI[3, sel], col = 4)
   abline(v = c(0.5, 1, 365.25/2, 365.25), col = 2, lty = 2)
-  
+
   save.image("USHo1.specCI.Rdata")
 }

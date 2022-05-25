@@ -102,7 +102,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   R <- Observed$R
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
@@ -112,6 +112,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # Reading the extra arguments
   aqq <- extraArg$aqq
   bqq <- extraArg$bqq
+  wts <- extraArg$wts/sum(extraArg$wts)
+  if(any(is.na(wts))){
+    PEcAn.logger::logger.warn(
+      "We found an NA in the wts for the ensemble members.",
+      "Is this what you want? For now, we will change the NA to a zero.")
+    wts[is.na(wts)] <- 0
+  }
+  if(sum(wts==0)){
+    wts <- rep(1,nrow(X))/nrow(X)
+  }
   t <- extraArg$t
   nitr.GEF<-extraArg$nitr.GEF
   nthin<-extraArg$nthin
@@ -491,7 +501,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     if (q.type == single.q){ #if it's a gamma case
       
       aqq[1, 1, t + 1] <- mean(mq)
-      bqq[t + 1] <- var(mq  %>%  as.numeric())
+      bqq[t + 1] <- stats::var(mq  %>%  as.numeric())
       
     } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,

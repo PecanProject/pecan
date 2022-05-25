@@ -373,7 +373,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   rownames(state.interval) <- var.names
   
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   
   sampler_toggle <- nimble::nimbleFunction(

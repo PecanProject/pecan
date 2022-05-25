@@ -68,7 +68,7 @@ ciEnvelope <- function(x,ylo,yhi,...){
 }
 
 wish.df <- function(Om,X,i,j,col){
-  n = (Om[i,j]^2 + Om[i,i]*Om[j,j])/var(X[,col])
+  n = (Om[i,j]^2 + Om[i,i]*Om[j,j])/stats::var(X[,col])
   return(n)
 }
 

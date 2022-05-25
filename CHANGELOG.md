@@ -17,7 +17,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
 ### Fixed
+
 - Replaced the broken ameriflux download pipeline with the new amerifluxr package's function.
+- Fix broken build caused by BioCro updates #2925
 
 ### Changed
 
