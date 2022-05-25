@@ -474,7 +474,6 @@ sda.enkf.multisite <- function(settings,
         if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF.MultiSite   }
         
         #-analysis function
-        source("~/pecan/modules/assim.sequential/R/Analysis_sda_multiSite.R")
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
@@ -614,7 +613,6 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      source("~/pecan/modules/assim.sequential/R/sda_plotting.R")
       try(post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
