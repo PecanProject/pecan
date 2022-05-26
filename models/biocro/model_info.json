@@ -7,7 +7,7 @@
   "creator": "David LeBauer",
   "contributors": ["Deepak Jaiswal", "Christopher Black"],
   "links": {
-    "source": "https://github.com/ebimodeling/biocro",
+    "source": "https://github.com/ebimodeling/biocro@0.951",
     "issues": "https://github.com/ebimodeling/biocro/issues"
   },
   "inputs": {},
