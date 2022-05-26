@@ -4,20 +4,20 @@
 \alias{extract_NEON_veg}
 \title{extract_NEON_veg}
 \usage{
-extract_NEON_veg(lon, lat, start_date, end_date, store_dir, ...)
+extract_NEON_veg(lon, lat, startdate, enddate, ...)
 }
 \arguments{
-\item{lon}{site longitude coordinate passed from get_veg_module}
+\item{lon}{site longitude, passed from ic_process}
 
-\item{lat}{site latitude coordinate passed from get_veg_module}
-
-\item{startdate}{"YYYY-MM-DD", used to download NEON datasets for desired time period}
-
-\item{enddate}{"YYYY_MM_DD", used to download NEON datasets for desired time period}
-
-\item{store_dir}{location to store downloaded NEON files}
+\item{lat}{site latitude, passed from ic_process}
 
 \item{...}{Additional parameters}
+
+\item{start_date}{"YYYY-MM-DD", used to download NEON datasets for desired time period}
+
+\item{end_date}{"YYYY_MM_DD", used to download NEON datasets for desired time period}
+
+\item{store_dir}{location to store downloaded NEON files}
 }
 \value{
 veg_info object to be passed to extract_veg within ic_process
@@ -26,8 +26,7 @@ veg_info object to be passed to extract_veg within ic_process
 extract_NEON_veg
 }
 \examples{
-start_date = as.Date("2020-01-01") 
-end_date = as.Date("2021-09-01")
+start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
 }
 \author{
 Alexis Helgeson and Michael Dietze

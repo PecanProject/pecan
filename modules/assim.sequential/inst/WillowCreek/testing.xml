@@ -91,13 +91,74 @@
   </bety>
   <dbfiles>/projectnb/dietzelab/pecan.data/dbfiles/</dbfiles>
  </database>
+ <host>
+   <name>geo.bu.edu</name>
+   <user>ahelgeso</user>
+   <rundir>/projectnb/dietzelab/ahelgeso/Jobs/rundir</rundir>
+   <scratchdir>/projectnb/dietzelab/ahelgeso/scratchdir</scratchdir>
+   <clearscratch>TRUE</clearscratch>
+   <prerun>module load R/4.1.2</prerun>
+   <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SIPNETrun -S /bin/bash</qsub>
+   <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
+   <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
+   <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
+ </host>
+ <state.data.assimilation>
+   <process.variance>TRUE</process.variance>
+  <sample.parameters>TRUE</sample.parameters>
+  <adjustment>TRUE</adjustment>
+  <data>
+   <format_id>1000000040</format_id>
+   <input.id>1000013298</input.id>
+  </data>
+  <state.variables>
+   <variable>
+    <variable.name>NEE</variable.name>
+    <unit>umol C m-2 s-1</unit>
+    <min_value>-9999</min_value>
+    <max_value>9999</max_value>
+    <scaling_factor>1000000000</scaling_factor>
+   </variable>
+   <variable>
+    <variable.name>Qle</variable.name>
+    <unit>mW m-2</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+    <scaling_factor>100</scaling_factor>
+   </variable>
+   <variable>
+    <variable.name>AbvGrndWood</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>LAI</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>TotSoilCarb</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>SoilMoistFrac</variable.name>
+    <min_value>0</min_value>
+    <max_value>1</max_value>
+   </variable>
+   <variable>
+    <variable.name>litter_carbon_content</variable.name>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+  </state.variables>
+ </state.data.assimilation>
  <pfts>
    <pft>
    <name>temperate.deciduous.ALL</name>
    <constants>
     <num>1</num>
    </constants>
-   <posteriorid>1000012409</posteriorid>
   </pft>
  </pfts>
  <meta.analysis>
