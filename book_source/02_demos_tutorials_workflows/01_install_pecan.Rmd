@@ -70,24 +70,24 @@ This will not go into much detail about about how to use Docker -- for more deta
     Try running the command without `sudo` first.
     If that fails, but running as `sudo` succeeds, see [these instructions](https://docs.docker.com/install/linux/linux-postinstall/) for steps to use Docker as a non-root user.
    
-2. **Install docker-compose**. If you are running this on a Mac or Windows this might be already installed. On Linux you will need to install this it separately; see https://docs.docker.com/compose/install/.
+2. **Install docker compose**. If you are running this on a Mac or Windows this might be already installed. On Linux you will need to install this it separately; see https://docs.docker.com/compose/install/.
 
-    To see if docker-compose is successfully installed, use the following shell command:
+    To see if docker compose is successfully installed, use the following shell command:
 
     ```bash
-    docker-compose -v
+    docker compose version
     ```
 
-    This should print the current version of docker-compose. We have tested the instruction below with versions of docker-compose 1.22 and above.
+    This should print the current version of docker-compose. We have tested the instruction below with versions of docker compose 1.22 and above.
    
-3. **Download the PEcAn docker-compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
+3. **Download the PEcAn docker compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
 
-4. **Initialize the PEcAn database and data images**. The following `docker-compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
+4. **Initialize the PEcAn database and data images**. The following `docker compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
 
     a. Create and start the PEcAn database container (without any data)
 
         ```bash
-        docker-compose up -d postgres
+        docker compose up -d postgres
         ```
         
         If this is successful, the end of the output should look like the following:
@@ -107,15 +107,15 @@ This will not go into much detail about about how to use Docker -- for more deta
         This command succeeded if the output ends with the following (the syntax for creating a new user for accessing BetyDB): 
         
         ```
-        docker-compose run bety user 'login' 'password' 'full name' 'email' 1 1
+        docker compose run bety user 'login' 'password' 'full name' 'email' 1 1
         ```
     c. Add a user to BetyDB using the example syntax provided as the last line of the output of the previous step:
        ```bash
        # guest user
-       docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+       docker compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
        
        # example user
-       docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
+       docker compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
        ```
     d. Download and configure the core PEcAn database files.
     
@@ -144,7 +144,7 @@ This will not go into much detail about about how to use Docker -- for more deta
 5. **Start the PEcAn stack**. Assuming all of the steps above completed successfully, start the full stack by running the following shell command:
 
     ```bash
-    docker-compose up -d
+    docker compose up -d
     ```
     
     If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs (if you run these commands on a remote machine replace localhost with the actual hostname).
