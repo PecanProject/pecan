@@ -141,7 +141,8 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     TotalResp <- AutoResp + HeteroResp
     outlist[[6]] <- TotalResp
     
-    NEE <- -1*(GPP-TotalResp)
+    #NEE <- -1*(GPP-TotalResp)
+    NEE <- -1*(NPP-HeteroResp)
     outlist[[7]] <- NEE
       
 

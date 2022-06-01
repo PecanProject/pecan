@@ -157,7 +157,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # OPTIONAL if you're not using the “Shuttleworth and Wallace” method or the “Penman calculate” method to calculate PET in the station file
       U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
       V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
-      if(is.numeric(U) & is.numeric(V)){
+      if(is.numeric(U) & is.numeric(V) & !all(is.nan(U)) & all(is.nan(V))){
         U  <- U[ydays %in% simdays]
         V  <- V[ydays %in% simdays]
         ws <- sqrt(U ^ 2 + V ^ 2)      

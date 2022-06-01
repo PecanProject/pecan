@@ -262,7 +262,7 @@
         <param format="real" max="1000.0" min="1.0" nom="draclong">12.440</param>
         <param format="real" max="2000.0" min="0.0" nom="debsenrac">1480.000</param>
         <param format="real" max="1.0" min="0.02" nom="lvfront">0.05000</param>
-        <param format="real" max="25000.0" min="250.0" nom="longsperac">@longsperac@</param>
+        <param format="real" max="25000.0" min="250.0" nom="longsperac">24062.000</param>
         <option choix="2" nom="N effect on root distribution" nomParam="codazorac">
           <choix code="1" nom="yes">
             <param format="real" max="1.0" min="0.0" nom="minefnra">0.00000</param>

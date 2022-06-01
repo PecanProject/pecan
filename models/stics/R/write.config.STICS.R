@@ -346,7 +346,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # maximum radiation use efficiency during the juvenile phase
     if ("RUE_juv" %in% pft.names) {
-      SticsRFiles::set_param_xml(plant_file, "efcroijuv", pft.traits[which(pft.names == "RUE_veg")], overwrite = TRUE)
+      SticsRFiles::set_param_xml(plant_file, "efcroijuv", pft.traits[which(pft.names == "RUE_juv")], overwrite = TRUE)
     }
     
     # maximum radiation use efficiency during the vegetative stage
@@ -387,10 +387,48 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "slamin", slamin, overwrite = TRUE)
     }
     
-    # yield formation
+    
+    # ratio stem (structural part)/leaf
+    if ("stem2leaf" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "tigefeuil", pft.traits[which(pft.names == "stem2leaf")], overwrite = TRUE)
+    }
+    
+    # skipping: envfruit, fraction of envelop in grainmaxi (w:w)
+    # skipping: sea, specific area of fruit envelops
+    
+    # yield formation, will get back
     
     # roots
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "roots")
+  
+    
+    # sensanox, index of anoxia sensitivity (0 = insensitive), 0 for now
+    # stoprac, stage when root growth stops (LAX= maximum leaf area index, end of leaf growth or SEN=beginning of leaf senescence)
+    
+    # sensrsec, index of root sensitivity to drought (1=insensitive)
+    if ("rootsens2drought" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "sensrsec", pft.traits[which(pft.names == "rootsens2drought")], overwrite = TRUE)
+    }
+    
+    # contrdamax, maximal reduction in root growth rate due to soil strengthness (high bulk density)
+    if ("db_reduc_rgr_max" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "contrdamax", pft.traits[which(pft.names == "db_reduc_rgr_max")], overwrite = TRUE)
+    }    
+    
+    # draclong, maximum rate of root length production per plant (cm plant-1 degreeD-1)
+    if ("rootlength_prod_max" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "draclong", pft.traits[which(pft.names == "rootlength_prod_max")], overwrite = TRUE)
+    }   
+    
+    # debsenrac, sum of degrees-days defining the beginning of root senescence (root life time) (degreeD)
+    if ("root_sen_dday" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "debsenrac", round(pft.traits[which(pft.names == "root_sen_dday")]), overwrite = TRUE)
+    }  
+    
+    #lvfront, root density at the root apex (cm cm-3)
+    if ("rootdens_at_apex" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "lvfront", pft.traits[which(pft.names == "rootdens_at_apex")], overwrite = TRUE)
+    }  
     
     # longsperac - specific root length (cm g-1)
     if ("SRL" %in% pft.names) {
@@ -399,8 +437,77 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     }
     
     # frost
-    # water
+    
+    # formalism - water
+    
+    # psisto, potential of stomatal closing (absolute value) (bars)
+    # note: units in betyDB are m, but my prior is for testing 
+    if ("psi_stomata_closure" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "psisto", pft.traits[which(pft.names == "psi_stomata_closure")], overwrite = TRUE)
+    }  
+    
+    # psiturg, potential of the beginning of decrease of the cellular extension (absolute value) (bars)
+    # may or may not be leaf_psi_tlp in betyDB
+    if ("leaf_psi_tlp" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "psiturg", pft.traits[which(pft.names == "leaf_psi_tlp")], overwrite = TRUE)
+    }  
+    
+    # h2ofeuilverte, water content of green leaves (relative to fresh matter) (g g-1)
+    # may or may not be water_content_TLP_leaf in betyDB
+    if ("water_content_TLP_leaf" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "h2ofeuilverte", pft.traits[which(pft.names == "water_content_TLP_leaf")], overwrite = TRUE)
+    }  
+    
+    # skipping:
+    # h2ofeuiljaune
+    # h2otigestruc
+    # h2otigestruc
+    # h2ofrvert
+    # deshydbase
+    # tempdeshyd
+    
+    # kmax, maximum crop coefficient for water requirements (=MET/PET)
+    if ("crop_water_max" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "kmax", pft.traits[which(pft.names == "crop_water_max")], overwrite = TRUE)
+    } 
+    
     # nitrogen
+    # masecNmax
+    if ("masecNmax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "masecNmax", pft.traits[which(pft.names == "masecNmax")], overwrite = TRUE)
+    } 
+    
+    # Nreserve
+    if ("Nreserve" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "Nreserve", pft.traits[which(pft.names == "Nreserve")], overwrite = TRUE)
+    } 
+    
+    
+    # Kmabs1
+    if ("Kmabs1" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "Kmabs1", pft.traits[which(pft.names == "Kmabs1")], overwrite = TRUE)
+    } 
+    
+    # adil
+    if ("adil" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "adil", pft.traits[which(pft.names == "adil")], overwrite = TRUE)
+    } 
+    
+    # bdil
+    if ("bdil" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "bdil", pft.traits[which(pft.names == "bdil")], overwrite = TRUE)
+    } 
+    
+    # INNmin
+    if ("INNmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "INNmin", pft.traits[which(pft.names == "INNmin")], overwrite = TRUE)
+    } 
+    
+    # Nmeta
+    if ("Nmeta" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "Nmeta", pft.traits[which(pft.names == "Nmeta")], overwrite = TRUE)
+    } 
+    
     # correspondance code BBCH
     
     # cultivar parameters
