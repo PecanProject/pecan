@@ -19,7 +19,7 @@ plan(multisession)
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
 
-outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/Wcr_SDA_Output/"
+outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 nodata <- FALSE #use this to run SDA with no data
 restart <- FALSE#flag to start from previous run or not
 days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
@@ -46,7 +46,7 @@ c(
 #------------------------------------------------------------------------------------------------
 
 #reading xml
-settings <- read.settings("/projectnb/dietzelab/ahelgeso/SDA/testing.xml")
+settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testing_HF.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -87,17 +87,18 @@ all.previous.sims <- list.dirs(outputPath, recursive = F)
 #     sda.start <- Sys.Date() - 9
 # }
 #to manually change start date 
-sda.start <- Sys.Date() - lubridate::days(15)
+sda.start <- as.Date("2021-06-01")
 sda.end <- sda.start + lubridate::days(5)
 
 # Finding the right end and start date
-met.start <- sda.start - lubridate::days(2)
-met.end <- met.start + lubridate::days(16)
+met.start <- sda.start
+met.end <- met.start + lubridate::days(35)
 
 
 #-----------------------------------------------------------------------------------------------
-#------------------------------------------ Download met and flux ------------------------------
+#------------------------------------------ Download flux ------------------------------
 #-----------------------------------------------------------------------------------------------
+if(settings$run$site$id == 676){
 #Fluxes
 prep.data  <- prep.data.assim(
   sda.start - lubridate::days(90),# it needs at least 90 days for gap filling 
@@ -139,16 +140,39 @@ prep.data <- prep.data %>%
     day.data
   })
 
+###### Pad Observed Data to forecast ############# 
+date <-
+  seq(
+    from = lubridate::force_tz(as.POSIXct(last(names(prep.data)), format = "%Y-%m-%d %H:%M:%S"), tz = "UTC") + lubridate::hours(1),
+    to = lubridate::with_tz(as.POSIXct(first(sda.end) + lubridate::days(1), format = "%Y-%m-%d %H:%M:%S"), tz = "UTC"),
+    by = "1 hour"
+  )
 
+pad.prep <- Axobs.raw %>%
+  tidyr::complete(Date = date) %>%
+  filter(Date %in% date) %>% 
+  mutate(means = NA, covs = NA) %>%
+  dplyr::select(Date, means, covs) %>%
+  dynutils::tibble_as_list() 
+
+names(pad.prep) <-date
+}
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- LAI DATA -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
+# site_info <- list(
+#   site_id = 676,
+#   site_name = "Willow Creek",
+#   lat = 45.805925,
+#   lon = -90.07961,
+#   time_zone = "UTC")
+
 site_info <- list(
-  site_id = 676,
-  site_name = "Willow Creek",
-  lat = 45.805925,
-  lon = -90.07961,
+  site_id = 646,
+  site_name = "Harvard Forest",
+  lat = 42.531453	,
+  lon = -72.188896,
   time_zone = "UTC")
 
   lai <- call_MODIS(outdir = NULL,
@@ -191,23 +215,7 @@ site_info <- list(
     PEcAn.logger::logger.warn(paste0("MODIS standard deviation Data not available for these dates, initialzing NA"))
   }
   
-###### Pad Observed Data to forecast ############# 
-date <-
-  seq(
-    from = lubridate::force_tz(as.POSIXct(last(names(prep.data)), format = "%Y-%m-%d %H:%M:%S"), tz = "UTC") + lubridate::hours(1),
-    to = lubridate::with_tz(as.POSIXct(first(sda.end) + lubridate::days(1), format = "%Y-%m-%d %H:%M:%S"), tz = "UTC"),
-    by = "1 hour"
-  )
-
-pad.prep <- Axobs.raw %>%
-  tidyr::complete(Date = date) %>%
-  filter(Date %in% date) %>% 
-  mutate(means = NA, covs = NA) %>%
-  dplyr::select(Date, means, covs) %>%
-  dynutils::tibble_as_list() 
-
-names(pad.prep) <-date
-
+if(settings$run$site$id == 676){
 #Add in LAI info 
 if(is.na(lai)){
   index <- rep(FALSE, length(names(prep.data)))}else{
@@ -237,9 +245,19 @@ obs.mean <- prep.data %>%
   map('means') %>% 
   setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
-
-
-
+}else{
+  #build obs mean/cov matrix for LAI
+  lai.data <- as.vector(lai$data)
+  obs.mean <- list()
+  obs.mean$date <- matrix(lai.data[], nrow = 1, ncol = 1)
+  names(obs.mean$date) <- c("LAI")
+  names(obs.mean) <- lai$calendar_date[1]
+  obs.mean$date2 <- matrix(lai$data[2], nrow = 1, ncol = 1)
+  
+  lai.cov <- matrix(c(0,0,1), nrow = 1, ncol = 3)
+  rownames(lai.cov) <- c("LAI")
+  colnames(lai.cov) <- c("NEE", "Qle", "LAI")
+}
 
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Fixing the settings --------------------------------
@@ -279,15 +297,15 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
 input_check <- PEcAn.DB::dbfile.input.check(
-  siteid=settings$run$site$id %>% as.character(),
-  startdate = settings$run$site$met.start %>% as.Date,
-  enddate = settings$run$site$met.end %>% as.Date,
+  siteid= site_info$site_id %>% as.character(),
+  startdate = met.start %>% as.Date,
+  enddate = NULL,
   parentid = NA,
   mimetype="text/csv",
   formatname="Sipnet.climna",
   con = con,
   hostname = PEcAn.remote::fqdn(),
-  pattern = "NOAA_GEFS", 
+  pattern = NULL, 
   exact.dates = TRUE,
   return.all=TRUE
 )
@@ -488,7 +506,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = FALSE,
+        debug = TRUE,
         pause=FALSE
       )
     )

@@ -107,7 +107,7 @@ sda.enkf.multisite <- function(settings,
     
   }else{
     conf.settings <- list(settings)
-    # site.ids <- as.character(settings$run$site$id)
+    site.ids <- as.character(settings$run$site$id)
     # site.lat <- as.numeric(settings$run$site$lat)
     # site.lon <- as.numeric(settings$run$site$lon)
     # site.locs <- matrix(NA, nrow = 1, ncol = 2)
@@ -225,7 +225,7 @@ sda.enkf.multisite <- function(settings,
               start.time = start.cut, # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              outpath = paste0("/projectnb/dietzelab/dongchen/All_NEON_SDA/ERA5_2012_2021/Extracted_met/",settings$run$site$id),
+              outpath = settings$outdir,
               overwrite =F
             )
           )
@@ -258,9 +258,9 @@ sda.enkf.multisite <- function(settings,
   #reformatting params
   new.params <- list()
   all.pft.names <- names(ensemble.samples)
-  for (i in 1:length(settings)) {
+  for (i in 1:length(settings$pfts$pft$name)) {
     #match pft name
-    site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+    site.pft.name <- settings$pfts$pft$name[[i]]
     which.pft <- which(all.pft.names==site.pft.name)
     
     site.param <- list()
@@ -290,7 +290,7 @@ sda.enkf.multisite <- function(settings,
   for(t in 1:nt){#sim.time
       obs <- which(!is.na(obs.mean[[t]]))
       obs.t<-names(obs.mean)[t]
-      obs.year <- year(obs.t)
+      obs.year <- lubridate::year(obs.t)
       
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
