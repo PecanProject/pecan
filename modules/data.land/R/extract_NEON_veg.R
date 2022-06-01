@@ -6,7 +6,7 @@
 #' @param lat site latitude, passed from ic_process
 #' @param start_date "YYYY-MM-DD", used to download NEON datasets for desired time period
 #' @param end_date "YYYY_MM_DD", used to download NEON datasets for desired time period
-#' @param store_dir location to store downloaded NEON files
+#' @param store_dir location where you want to store downloaded NEON files
 #' @param ... Additional parameters
 #' 
 #' 
@@ -16,16 +16,16 @@
 #' @export
 #' @examples start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
 
+
 extract_NEON_veg <- function(lon, lat, startdate, enddate, ...){
 
-#Set store_dir to point to dietzelab/neon_store
-store_dir = "/projectnb/dietzelab/neon_data"
 #Set start_date and end_date as Date objects
 start_date = as.Date(startdate)
 end_date = as.Date(enddate)
 #set lat & lon as numeric 
 lon = as.numeric(lon)
 lat = as.numeric(lat)
+
 #Find sitename from lon and lat params using distance
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns

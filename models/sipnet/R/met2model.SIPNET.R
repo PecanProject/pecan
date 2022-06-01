@@ -147,7 +147,9 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       }
       
       Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
+      
       press <- ncdf4::ncvar_get(nc,'air_pressure') ## in pascal
+
       SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
       
       PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
@@ -172,12 +174,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
+
         VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C, press = press/100))
+
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
       VPDsoil <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
-        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT))
+        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT, pres/100))
       
       ncdf4::nc_close(nc)
     } else {

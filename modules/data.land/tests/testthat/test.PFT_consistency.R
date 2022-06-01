@@ -17,7 +17,7 @@ betyparms <- PEcAn.DB::get_postgres_envvars(
   write = FALSE)
 fiaparms <- betyparms
 fiaparms$dbname <- "fia5data"
-if (db.exists(params = betyparms) & db.exists(fiaparms)) {
+if (db.exists(params = betyparms) && db.exists(fiaparms)) {
 
 
   context("Testing consistency of FIA PFTs")

@@ -20,7 +20,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' bety <- PEcAn.DB::betyConnect()
+#' con <- PEcAn.DB::betyConnect()
 #'
 #' formats_variables_tibble <- tibble::tibble(
 #'   variable_id = c(411, 135, 382),
@@ -30,7 +30,7 @@
 #'   column_number = c(2, NA, 4))
 #'
 #' insert.format.vars(
-#'   con = bety$con,
+#'   con = con,
 #'   format_name = "LTER-HFR-103",
 #'   mimetype_id = 1090,
 #'   notes = "NPP from Harvard Forest.",

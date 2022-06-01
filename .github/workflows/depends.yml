@@ -8,11 +8,12 @@ on:
 
   # this runs on the develop branch
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *' # midnight daily
+    - cron: '30 1 * * 1' # 1:30 AM every Monday (devel only)
 
 env:
   # official supported version of R
-  SUPPORTED: 4.0.3
+  SUPPORTED: 4.1
   DOCKERHUB_ORG: pecan
 
 jobs:
@@ -26,14 +27,21 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
+          - "devel"
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: false
 
       # calculate some variables that are used later
       - name: github branch
+        # build Rdevel only on Mondays, others every day (but not twice on Mondays)
+        if: (matrix.R != 'devel' && github.event.schedule == '0 0 * * *') || (matrix.R == 'devel' && github.event.schedule == '30 1 * * 1')
         run: |
           BRANCH=${GITHUB_REF##*/}
           echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
@@ -50,6 +58,7 @@ jobs:
 
       # this will publish to the actor (person) github packages
       - name: Publish to GitHub
+        if: env.TAG != ''
         uses: elgohr/Publish-Docker-Github-Action@2.22
         env:
           R_VERSION: ${{ matrix.R  }}
@@ -64,6 +73,7 @@ jobs:
 
       # this will publish to the clowder dockerhub repo
       - name: Publish to Docker Hub
+        if: env.TAG != ''
         uses: elgohr/Publish-Docker-Github-Action@2.18
         env:
           R_VERSION: ${{ matrix.R  }}

@@ -159,7 +159,7 @@ If no `outdir` is specified, PEcAn defaults to the working directory from which 
 
 #### `bety`: PEcAn database (Bety) configuration {#xml-bety}
 
-The `bety` tag defines the driver to use to connect to the database (the only driver we support, and the default, is `PostgreSQL`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
+The `bety` tag defines the driver to use to connect to the database (we support `PostgreSQL`, which is the default, and `Postgres`) and parameters required to connect to the database. Note that connection parameters are passed *exactly* as entered to the underlying R database driver, and any invalid or extra parameters will result in an error.
 
 In other words, this configuration...
 
@@ -172,21 +172,23 @@ In other words, this configuration...
       <host>postgres</host>
       <dbname>bety</dbname>
       <driver>PostgreSQL</driver>
+      <port>5432</port>
       <write>true</write>
     </bety>
 	...
   </database>
 ```
 
-...will be translated into R code like the following:
+...will be translated (by way of `PEcAn.DB::db.open(settings$database$bety)`) into R code like the following:
 
 ```r
 con <- DBI::dbConnect(
-  DBI::dbDriver("PostgreSQL"),
+  drv = RPostgreSQL::PostgreSQL(),
   user = "bety",
   password = "bety",
   dbname = "bety",
   host = "postgres",
+  port = "5432",
   write = TRUE
 )
 ```
@@ -321,7 +323,7 @@ Some important tags are as follows:
 This information is currently used by the following PEcAn workflow function:
 
 - `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
-- `PEcAn.remote::start.model.runs` -- Begin model run execution
+- `PEcAn.workflow::start_model_runs` -- Begin model run execution
 
 #### Model-specific configuration {#xml-model-specific}
 
@@ -369,7 +371,7 @@ This section provides detailed configuration for the model run, including the si
       <met.end>2004/12/31</met.end>
       <site.pft>
         <pft.name>temperate.needleleaf.evergreen</pft.name>
-        <pft.name>temperate.needleleaf.evergreen.test</pft.name>
+        <pft.name>temperate.needleleaf.evergreen.test</pft.ame>
       </site.pft>
     </site>
     <inputs>
@@ -378,10 +380,13 @@ This section provides detailed configuration for the model run, including the si
         <output>SIPNET</output>
       </met>
       <poolinitcond>
-     <source>NEON_veg</source>
-     <output>poolinitcond</output>
-     <ensemble>30</ensemble>
-   </poolinitcond>
+        <source>NEON_veg</source>
+        <output>poolinitcond</output>
+        <ensemble>100</ensemble>
+        <startdate>2019-01-01</startdate>
+        <enddate>2019-12-31</enddate>
+        <storedir>/projectnb/dietzelab/neon_store</storedir>
+      </poolinitcond>
     </inputs>
     <start.date>2004/01/01</start.date>
     <end.date>2004/12/31</end.date>

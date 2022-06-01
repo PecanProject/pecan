@@ -14,9 +14,8 @@
 #' 
 veg2model.SIPNET <- function(outfolder, poolinfo, siteid, ens){
 
-  outdir <- outfolder
   # Execute pool_ic function
-result <- PEcAn.data.land::pool_ic_list2netcdf(input = poolinfo, outdir = outdir, siteid = siteid, ens = ens)
+result <- PEcAn.data.land::pool_ic_list2netcdf(input = poolinfo, outdir = outfolder, siteid = siteid, ens = ens)
 
 return(result)
 }

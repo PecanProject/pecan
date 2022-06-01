@@ -14,7 +14,7 @@ load.pda.data(settings, bety, external.formats = NULL)
 
 \item{settings}{= PEcAn settings list}
 
-\item{bety}{bety list object}
+\item{bety}{database connection object}
 
 \item{external.formats}{formats list}
 }

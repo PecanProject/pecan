@@ -15,6 +15,7 @@ extract_veg(
   dbparms,
   outfolder,
   overwrite = FALSE,
+  input_veg = input_veg,
   ...
 )
 }
@@ -39,6 +40,8 @@ extract_veg(
 
 \item{overwrite}{DEFAULT = FALSE}
 
+\item{input_veg}{passed from input object in ic_process}
+
 \item{...}{Additional parameters}
 }
 \value{
@@ -48,5 +51,5 @@ results object to be passed back to get.veg.module
 Function queries a DB to extract veg info downstream
 }
 \author{
-Istem Fer
+Istem Fer and Alexis Helgeson
 }

@@ -256,7 +256,7 @@ db.close <- function(con, showWarnings = TRUE) {
 
   id <- attr(con, "pecanid")
   if (showWarnings && is.null(id)) {
-    PEcAn.logger::logger.warn("Connection created outside of PEcAn.DB package")
+    PEcAn.logger::logger.warn("Closing connection created outside of PEcAn.DB package")
   } else {
     deleteme <- which(.db.utils$connections$id == id)
     if (showWarnings && length(deleteme) == 0) {

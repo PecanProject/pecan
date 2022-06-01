@@ -207,6 +207,12 @@ sda.enkf.multisite <- function(settings,
   
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
+
+  #create a folder to store extracted met files
+  if(!file.exists(paste0(settings$outdir, "/Extracted_met"))){
+    dir.create(paste0(settings$outdir, "/Extracted_met"))
+  }
+
   
   conf.settings<-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
@@ -225,7 +231,7 @@ sda.enkf.multisite <- function(settings,
               start.time = start.cut, # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
-              outpath = settings$outdir,
+              outpath = paste0(paste0(settings$outdir, "/Extracted_met"), settings$run$site$id),
               overwrite =F
             )
           )
@@ -261,6 +267,7 @@ sda.enkf.multisite <- function(settings,
   for (i in 1:length(settings$pfts$pft$name)) {
     #match pft name
     site.pft.name <- settings$pfts$pft$name[[i]]
+}
     which.pft <- which(all.pft.names==site.pft.name)
     
     site.param <- list()
@@ -368,19 +375,15 @@ sda.enkf.multisite <- function(settings,
       #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
       runs.tmp <- list.dirs(rundir, full.names = F)
       writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-      PEcAn.remote::start.model.runs(settings, write=settings$database$bety$write)
+
+      PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
       
       #------------- Reading - every iteration and for SDA
-      # if(t==1){
-      #   firstrun <- TRUE
-      # }else{
-      #   firstrun <- FALSE
-      # }
         reads <-
           furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
             # Loading the model package - this is required bc of the furrr
             #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-            source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
+            #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
             
             X_tmp <- vector("list", 2)
             
@@ -483,7 +486,9 @@ sda.enkf.multisite <- function(settings,
         if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF.MultiSite   }
         
         #-analysis function
-        source("~/pecan/modules/assim.sequential/R/Analysis_sda_multiSite.R")
+
+        #source("~/pecan/modules/assim.sequential/R/Analysis_sda_multiSite.R")
+
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,

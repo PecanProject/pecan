@@ -32,18 +32,17 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   # Match PFTs
   #revisit later need to fix species matching first
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-  # 
-  # # # NOTE : match_pft may return NAs for unmatched dead trees
-  #pft.info <- match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
+  # NOTE : match_pft may return NAs for unmatched dead trees
+  pft.info <- match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
 
-  # # ### merge with other stuff
-  # obs$pft <- pft.info$pft
-  # 
-  # veg_info[[2]] <- obs
+  # merge with other stuff
+  obs$pft <- pft.info$pft
+
+  veg_info[[2]] <- obs
   
   #--------------------------------------------------------------------------------------------------#
   # veg2model
-  ## Set model-specific functions
+  # Set model-specific functions
   pkg <- paste0("PEcAn.", model$type)
   do.call("library", list(pkg))
   fcnx <- paste("veg2model.", model$type, sep = "")
@@ -55,7 +54,12 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 # Cohort2Pool -------------------------------------------------------------
   # read in registration xml for pool specific information
   register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
-  register     <- PEcAn.data.atmosphere::read.register(register.xml, con = NULL)
+  if(exists(register.xml)){
+    register     <- PEcAn.data.atmosphere::read.register(register.xml, con = NULL)
+    
+  }else{
+    PEcAn.logger::logger.warn("No model register file found")
+  }
   #check if register,model.xml includes "POOL"
   if (register$initcond == "POOL") {
     poolinfo <- cohort2pool(veg_info = veg_info, allom_param = NULL, dbh_name = "DBH", dryMass_name = "dryMass")

@@ -6,23 +6,28 @@
 ##' @export
 ##'
 ##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
+##' @param dat veg_info file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
+<<<<<<< HEAD
 ##' @param veg_info veg_info object passed from write_ic
 ##' @param dryMass_name Default is "dryMass". This is the column name in the veg_file that represents herbaceous dry mass. May differ depending on data source.
+=======
+>>>>>>> e6ab17f40e988dac2d692b65c9ab2e4f2d87a6ef
 ##'
 ##' @author Saloni Shah
-##' @example 
+##' @examples
+##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
 ##' cohort2pool(veg_File = veg_file, allom_param = NULL)
+##' }
 ##' 
+
 
 cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_name = "dryMass") {
   
   ## load data
   dat <- veg_info
-  
-  # Grab DBH
-  dbh <- dat[[2]][,dbh_name]
+
   # Grab herbaceous dry mass
   dryMass <- dat[[3]][,dryMass_name]
   #filter for DBH < 2.5
@@ -34,6 +39,7 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
   #filter for DBH = 2.5
   dat_equal <- dat[[2]][dat[[2]]$DBH == 2.5,]
   dbh_equal <- dat_equal$DBH
+
   #Grab plot size
   herb_plot <- dat[[1]]$herb_clipArea
   plot_size <- dat[[1]]$subPlot
@@ -49,10 +55,7 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
     #Hard code foliage equation from Jenkins paper
     b0 <- -4.0813
     b1 <- 5.8816
-    ratio_greater = exp(b0 + (b1/dbh_greater))
-    ratio_equal = exp(b0 + (b1/dbh_equal))
-    ratio_less = rep_len(ratio_equal[8], length.out = length(dbh_less)) 
-    ratio = c(ratio_greater, ratio_equal, ratio_less)
+    ratio = ifelse(dbh>=2.5,exp(b0 + (b1/dbh)),exp(b0 + (b1/2.5)))
   } else {
     #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
     # allom.fit = #outputs from AllomAve function

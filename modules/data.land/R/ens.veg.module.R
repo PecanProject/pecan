@@ -1,5 +1,5 @@
 ##' Sampling/ensemble module
-##' 
+##'
 ##' @param getveg.id list, input.id and dbfile.id of the IC file in intermediate pecan standard
 ##' @param dbparms list, settings$database info reqired for opening a connection to DB
 ##' @param input_veg list, this is a sublist of settings$run$inputs that has info about source, id, metadata of the requested IC file
@@ -12,27 +12,22 @@
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' 
 ##' @export
-##' 
+##'
 ##' @author Istem Fer
-ens_veg_module <- function(getveg.id, dbparms, 
-                            input_veg, 
-                            outfolder, 
-                            machine, 
+ens_veg_module <- function(getveg.id, dbparms,
+                            input_veg,
+                            outfolder,
+                            machine,
                             start_date, end_date,
                             n.ensemble,
-                            new_site, 
+                            new_site,
                             host){
-  
+
   machine_host <- machine$hostname
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
-  bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
-                              host     = dbparms$bety$host, 
-                              user     = dbparms$bety$user, 
-                              password = dbparms$bety$password)
-  
-  con <- bety$con
+  con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   PEcAn.logger::logger.info("Begin IC sampling, ensemble member: ", n.ensemble)
@@ -63,7 +58,8 @@ ens_veg_module <- function(getveg.id, dbparms,
                                          source = input_veg$source)
   
   
+
   return(ensveg.id)
-  
-  
+
+
 }
