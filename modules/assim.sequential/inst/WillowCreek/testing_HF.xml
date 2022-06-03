@@ -7,7 +7,7 @@
    <host>psql-pecan.bu.edu</host>
    <dbname>bety</dbname>
    <driver>PostgreSQL</driver>
-   <write>TRUE</write>
+   <write>FALSE</write>
   </bety>
   <dbfiles>/projectnb/dietzelab/pecan.data/dbfiles/</dbfiles>
  </database>
@@ -18,7 +18,7 @@
    <scratchdir>/projectnb/dietzelab/ahelgeso/scratchdir</scratchdir>
    <clearscratch>TRUE</clearscratch>
    <prerun>module load R/4.1.2</prerun>
-   <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SIPNETrun -S /bin/bash</qsub>
+   <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs/qsub -e /projectnb/dietzelab/ahelgeso/Jobs/qsub</qsub>
    <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
    <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
    <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
@@ -27,10 +27,6 @@
    <process.variance>TRUE</process.variance>
   <sample.parameters>TRUE</sample.parameters>
   <adjustment>TRUE</adjustment>
-  <data>
-   <format_id>1000000040</format_id>
-   <input.id>1000013298</input.id>
-  </data>
   <state.variables>
    <variable>
     <variable.name>NEE</variable.name>
@@ -47,31 +43,13 @@
     <scaling_factor>100</scaling_factor>
    </variable>
    <variable>
-    <variable.name>AbvGrndWood</variable.name>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-   </variable>
-   <variable>
     <variable.name>LAI</variable.name>
     <min_value>0</min_value>
     <max_value>9999</max_value>
    </variable>
-   <variable>
-    <variable.name>TotSoilCarb</variable.name>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-   </variable>
-   <variable>
-    <variable.name>SoilMoistFrac</variable.name>
-    <min_value>0</min_value>
-    <max_value>1</max_value>
-   </variable>
-   <variable>
-    <variable.name>litter_carbon_content</variable.name>
-    <min_value>0</min_value>
-    <max_value>9999</max_value>
-   </variable>
   </state.variables>
+  <forecast.time.step>year</forecast.time.step>
+  <n.ensemble>50</n.ensemble>
  </state.data.assimilation>
  <pfts>
    <pft>
@@ -88,8 +66,8 @@
  <ensemble>
   <size>50</size>
   <variable>NEE</variable>
-  <start.year>2018</start.year>
-  <end.year>2018</end.year>
+  <start.year>2021</start.year>
+  <end.year>2021</end.year>
   <samplingspace>
    <parameters>
     <method>uniform</method>
@@ -103,8 +81,12 @@
   </samplingspace>
  </ensemble>
  <model>
-  <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
-  <id>1000000030</id>
+  <id>1000000022</id>
+  <type>SIPNET</type>
+  <revision>ssr</revision>
+  <delete.raw>FALSE</delete.raw>
+  <binary>/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if</binary>
+  <jobtemplate>/projectnb/dietzelab/ahelgeso/sipnet_geo.job</jobtemplate>
  </model>
  <run>
   <site>

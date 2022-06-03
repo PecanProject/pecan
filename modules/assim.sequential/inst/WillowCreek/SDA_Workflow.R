@@ -30,23 +30,23 @@ options(warn=-1)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
 #------------------------------------------------------------------------------------------------
-c(
-  'Utils.R',
-  'download_WCr.R',
-  "gapfill_WCr.R",
-  'prep.data.assim.R'
-) %>% walk( ~ source(
-  system.file("WillowCreek",
-              .x,
-              package = "PEcAn.assim.sequential")
-))
+# c(
+#   'Utils.R',
+#   'download_WCr.R',
+#   "gapfill_WCr.R",
+#   'prep.data.assim.R'
+# ) %>% walk( ~ source(
+#   system.file("WillowCreek",
+#               .x,
+#               package = "PEcAn.assim.sequential")
+# ))
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
 #------------------------------------------------------------------------------------------------
 
 #reading xml
-settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testing_HF.xml")
+settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testingMulti_HF.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -87,7 +87,7 @@ all.previous.sims <- list.dirs(outputPath, recursive = F)
 #     sda.start <- Sys.Date() - 9
 # }
 #to manually change start date 
-sda.start <- as.Date("2021-06-01")
+sda.start <- as.Date("2021-06-02")
 sda.end <- sda.start + lubridate::days(5)
 
 # Finding the right end and start date
@@ -99,6 +99,12 @@ met.end <- met.start + lubridate::days(35)
 #------------------------------------------ Download flux ------------------------------
 #-----------------------------------------------------------------------------------------------
 if(settings$run$site$id == 676){
+  site_info <- list(
+    site_id = 676,
+    site_name = "Willow Creek",
+    lat = 45.805925,
+    lon = -90.07961,
+    time_zone = "UTC")
 #Fluxes
 prep.data  <- prep.data.assim(
   sda.start - lubridate::days(90),# it needs at least 90 days for gap filling 
@@ -160,19 +166,11 @@ names(pad.prep) <-date
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- LAI DATA -------------------------------------
 # --------------------------------------------------------------------------------------------------
-
-# site_info <- list(
-#   site_id = 676,
-#   site_name = "Willow Creek",
-#   lat = 45.805925,
-#   lon = -90.07961,
-#   time_zone = "UTC")
-
 site_info <- list(
-  site_id = 646,
-  site_name = "Harvard Forest",
-  lat = 42.531453	,
-  lon = -72.188896,
+  site_id = settings$run$site$id,
+  site_name = settings$run$site$name,
+  lat = settings$run$site$lat,
+  lon = settings$run$site$lon,
   time_zone = "UTC")
 
   lai <- call_MODIS(outdir = NULL,
@@ -189,6 +187,8 @@ site_info <- list(
   
 #filter for good resolution data
   lai <- lai %>% filter(qc == "000") 
+#filter for lai that matches sda.start
+  lai <- lai %>% filter(calendar_date == sda.start)
 
   if(dim(lai)[1] < 1){
     lai = NA
@@ -209,6 +209,8 @@ site_info <- list(
  
 #filter for good resolution data
   lai_sd <- lai_sd %>% filter(qc == "000")
+#filter for lai.sd that matches sda.start
+  lai_sd <- lai_sd %>% filter(calendar_date == sda.start)
   
   if(dim(lai_sd)[1] < 1){
     lai_sd = NA
@@ -246,17 +248,14 @@ obs.mean <- prep.data %>%
   setNames(names(prep.data))
 obs.cov <- prep.data %>% map('covs') %>% setNames(names(prep.data))
 }else{
-  #build obs mean/cov matrix for LAI
-  lai.data <- as.vector(lai$data)
-  obs.mean <- list()
-  obs.mean$date <- matrix(lai.data[], nrow = 1, ncol = 1)
-  names(obs.mean$date) <- c("LAI")
-  names(obs.mean) <- lai$calendar_date[1]
-  obs.mean$date2 <- matrix(lai$data[2], nrow = 1, ncol = 1)
+#build obs mean/cov matrix for LAI
+  obs.mean <- data.frame(date = lai$calendar_date, site_id = lai$site_id, lai = lai$data)
+  obs.mean$date = as.character(obs.mean$date, stringsAsFactors = FALSE)
+  obs.mean <- split(obs.mean, obs.mean$date)
   
-  lai.cov <- matrix(c(0,0,1), nrow = 1, ncol = 3)
-  rownames(lai.cov) <- c("LAI")
-  colnames(lai.cov) <- c("NEE", "Qle", "LAI")
+  obs.cov <- data.frame(date = lai_sd$calendar_date, site_id = lai_sd$site_id, lai = lai_sd$data)
+  obs.cov$date = as.character(obs.cov$date, stringsAsFactors = FALSE)
+  obs.cov <- split(obs.cov, obs.cov$date)
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -270,19 +269,18 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 
 
 
-
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- PEcAn Workflow -------------------------------------
 # --------------------------------------------------------------------------------------------------
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
-settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
+settings <- PEcAn.settings::prepare.settings(settings, force=TRUE)
 setwd(settings$outdir)
-ggsave(
-  file.path(settings$outdir, "Obs_plot.pdf"),
-  ploting_fluxes(Axobs.raw) ,
-  width = 16,
-  height = 9
-)
+# ggsave(
+#   file.path(settings$outdir, "Obs_plot.pdf"),
+#   ploting_fluxes(Axobs.raw) ,
+#   width = 16,
+#   height = 9
+# )
 
 #Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -490,12 +488,12 @@ source('/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/R/Nimble_co
 
 
 if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
-debugonce(PEcAn.assim.sequential::sda.enkf)
+debugonce(PEcAn.assim.sequential::sda.enkf.multisite)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf(
+    PEcAn.assim.sequential::sda.enkf.multisite(
       settings, 
       restart=FALSE,
       Q=0,
@@ -506,7 +504,7 @@ if ('state.data.assimilation' %in% names(settings)) {
         interactivePlot =FALSE,
         TimeseriesPlot =TRUE,
         BiasPlot =FALSE,
-        debug = TRUE,
+        debug = FALSE,
         pause=FALSE
       )
     )

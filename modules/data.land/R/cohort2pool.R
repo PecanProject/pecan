@@ -6,15 +6,11 @@
 ##' @export
 ##'
 ##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
-##' @param dat veg_info file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
-<<<<<<< HEAD
 ##' @param veg_info veg_info object passed from write_ic
 ##' @param dryMass_name Default is "dryMass". This is the column name in the veg_file that represents herbaceous dry mass. May differ depending on data source.
-=======
->>>>>>> e6ab17f40e988dac2d692b65c9ab2e4f2d87a6ef
 ##'
-##' @author Saloni Shah
+##' @author Saloni Shah and Alexis Helgeson
 ##' @examples
 ##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"

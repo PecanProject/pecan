@@ -266,7 +266,7 @@ sda.enkf.multisite <- function(settings,
   all.pft.names <- names(ensemble.samples)
   for (i in 1:length(settings$pfts$pft$name)) {
     #match pft name
-    site.pft.name <- settings$pfts$pft$name[[i]]
+    site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
 }
     which.pft <- which(all.pft.names==site.pft.name)
     
@@ -277,7 +277,7 @@ sda.enkf.multisite <- function(settings,
         x[j, ] }, n = j)
     } 
     new.params[[i]] <- site.param
-  }
+    
   names(new.params) <- site.ids
   
   
@@ -357,7 +357,7 @@ sda.enkf.multisite <- function(settings,
       if (control$debug) browser()
       out.configs <- conf.settings %>%
         `class<-`(c("list")) %>%
-        furrr::future_map2(restart.list, function(settings, restart.arg) {
+        furrr::future_map2(restart.list, function(settings, restart.arg = FALSE) {
           # Loading the model package - this is required bc of the furrr
           library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
           # wrtting configs for each settings - this does not make a difference with the old code

@@ -155,3 +155,7 @@ extract_veg <- function(new_site, start_date, end_date,
     ### return for convert.inputs
     return(invisible(results)) 
  }
+ 
+ }
+ 
+}

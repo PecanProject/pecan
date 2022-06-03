@@ -12,7 +12,7 @@ cohort2pool(
 )
 }
 \arguments{
-\item{dat}{veg_info file}
+\item{veg_info}{veg_info object passed from write_ic}
 
 \item{allom_param}{parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)}
 
@@ -35,5 +35,5 @@ cohort2pool(veg_File = veg_file, allom_param = NULL)
 
 }
 \author{
-Saloni Shah
+Saloni Shah and Alexis Helgeson
 }
