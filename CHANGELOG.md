@@ -28,6 +28,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Update URL for MERRA downloads (#2888)
 - PEcAn.logger is now BSD-3 License
 - Skipped ICOS and MERRA download tests when running in github actions
+- Converted .zenodo.json to CITATION.cff
 
 ### Removed
 
