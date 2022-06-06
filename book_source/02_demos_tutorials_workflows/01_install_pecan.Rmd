@@ -14,7 +14,7 @@ This set of instructions will help facilitate your path and the steps necessary 
 The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM).
 Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
-1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [http://www.virtualbox.org](http://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
+1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [https://www.virtualbox.org](https://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
   
 2. **Download the PEcAn VM** You can find the download link at [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN), under the "**Files**" header. Click the ".ova" file to begin the download. Note that the file is ~7 GB, so this download can take several minutes to hours depending on your connection speed. Also, the VM requires >4 GB of RAM to operate correctly. Please check current usage of RAM and shutdown processes as needed.
 
