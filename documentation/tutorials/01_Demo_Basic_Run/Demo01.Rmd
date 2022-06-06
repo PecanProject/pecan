@@ -93,7 +93,7 @@ For Sipnet.climna **select “Use AmerifluxLBL”** from the [Available Meteorol
 **Leave all blank for demo run**
 
 1. **Email** sends a message when the run is complete.
-2. **Use Brown Dog** will use the Brown Dog web services in order to do input file conversions. (**Note: Required if you select _Use NARR_ for Weather Data**)
+2. **Use Brown Dog** will use the Brown Dog web services in order to do input file conversions. (**Note: Required if you select _Use NARR_ for Weather Data**) <!-- ERS: this doesn't show up as an option for me -->
 3. **Edit pecan.xml** allows you to configure advanced settings via the PEcAn settings file 
 4. **Edit model config** pauses the workflow after PEcAn has written all model specific settings but before the model runs are called and allows users to configure any additional settings internal to the model. 
 5. **Advanced Setup** controls ensemble and sensitivity run settings discussed in Demo 2.
