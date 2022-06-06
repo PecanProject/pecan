@@ -2,8 +2,8 @@
 
 These instructions are provided to document how to install and setup PEcAn. It includes:
 
-- [Virtual machine](#install-vm)
-- [PEcAn Docker](#install-docker)
+- [Virtual machine](#install-vm) (Recommended for students and new users)
+- [PEcAn Docker](#install-docker) (Recommended for development and production deployment)
 - [PEcAn OS specific installation](#install-native)
 
 The PEcAn code and necessary infrastructure can be obtained and compiled in different ways.
