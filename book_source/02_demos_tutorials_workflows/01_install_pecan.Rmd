@@ -63,7 +63,7 @@ This will not go into much detail about about how to use Docker -- for more deta
     ```
 
     If successful, this should return a message starting with `"Hello from Docker!"`.
-    If this doesn't work, there is something wrong with your configuration.
+    If this doesn't work, there is something wrong with your configuration. You may need to open the Docker desktop app to complete the installation.
     Refer to the Docker documentation for debugging.
 
     NOTE: Depending on how Docker is installed and configured, you may have to run this command as `sudo`.
@@ -82,7 +82,7 @@ This will not go into much detail about about how to use Docker -- for more deta
    
 3. **Download the PEcAn docker-compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
 
-4. **Initialize the PEcAn database and data images**. The following `docker-compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
+4. **Initialize the PEcAn database and data images**. Navigate to the directory you saved `docker-compose.yml` to and use the following `docker-compose` commands to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
 
     a. Create and start the PEcAn database container (without any data)
 
@@ -152,11 +152,12 @@ This will not go into much detail about about how to use Docker -- for more deta
     - PEcAn web interface (running models) -- http://localhost:8000/pecan/ (NOTE: The trailing backslash is necessary.)
     - PEcAn documentation and home page -- http://localhost:8000/
     - BETY web interface -- http://localhost:8000/bety/
-    - File browser (minio) -- http://localhost:8000/minio/
+    - File browser (minio) -- http://localhost:8000/minio/ <!-- ERS: Doesn't work on docker installation -->
     - RabbitMQ management console (for managing queued processes) -- http://localhost:8000/rabbitmq/
     - Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8000/traefik/
     - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://localhost:8000/monitor/
-    
+
+To shut down the docker images run `docker-compose stop`.
 For troubleshooting and advanced configuration, see our [Docker topical pages](#docker-index).
 
 ## (Advanced) Native install {#install-native}
