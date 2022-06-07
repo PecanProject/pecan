@@ -6,7 +6,7 @@ In this tutorial we will compare model outputs to data outside of the PEcAn web 
 
 #### Starting RStudio Server
 
-1. Open RStudio Server in a new window at **URL/rstudio**
+1.  Open RStudio Server in a new window at **[URL](#url-def)/rstudio** <!--ERS: this gives a "bad gateway" error with the docker installation -->
 
 2.	The username is carya and the password is illinois.
 
