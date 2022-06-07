@@ -1,4 +1,4 @@
-## Demo 01: Basic Run PEcAn
+## Demo 01: Basic Run PEcAn {#demo-1}
 
 ```{r echo = FALSE,warning=FALSE}
 library(knitr)
@@ -196,4 +196,4 @@ Follow this tutorial, [Analyze Output] to learn how to **open model output in R 
 
 
 #### DEMO 02
-[Demo 02: Sensitivity and Uncertainty Analysis] will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**
+[Demo 02: Sensitivity and Uncertainty Analysis](#demo-2) will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**
