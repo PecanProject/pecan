@@ -8,7 +8,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 
 ### Run Specification
 
-1. Return to the main menu for the PEcAn web interface: **URL > Run Models** <!--ERS: I don't have this menu or I'm not sure what 'URL > Run Models' means -->
+1. Return to the main menu for the PEcAn web interface: Click the "Start Over" button or navigate back to the starting **[URL](#url-def)**
 
 2. Repeat the steps for site selection and run specification from [Demo 01](#demo-1), but also **click on “Advanced setup”**, then click Next.
 
@@ -81,7 +81,7 @@ This menu shows the contents of the root workflow folder that are not in one of 
 
 ####	Global Sensitivity: Shiny
 
-**Navigate to URL/shiny/global-sensitivity.** <!-- ERS: I don't know what this means -->
+**Navigate to [URL](#url-def)/shiny/global-sensitivity.** <!-- ERS: this doesn't work for me with a VitualBox installation -->
  
 This app uses the output from the ENSEMBLE runs to perform a global Monte Carlo sensitivity analysis. There are three modes controlled by Output type:
 

@@ -10,7 +10,7 @@ opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
 
 We will begin by exploring a set of web-based tools that are designed to run single-site model runs. A lot of the detail about what’s going on under the hood, and all the outputs that PEcAn produces, are left to Demo 2. This demo will also demonstrate how to use PEcAn outputs in additional analyses outside of PEcAn.
 
-#### PEcAn URL
+#### PEcAn URL {#url-def}
 
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
@@ -23,7 +23,7 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 
 #### Start PEcAn:
 
-1. **Enter URL in your web browser**
+1. **Enter [URL](#url-def) in your web browser**
 2. **Click “Run Models”**
 3. **Click the ‘Next’ button** in the sidebar to move to the “Site Selection” page.
 
