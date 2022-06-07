@@ -15,10 +15,10 @@ We will begin by exploring a set of web-based tools that are designed to run sin
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
 *	If you are doing a live demo with the PEcAn team, **URL was provided**
-*	If you are running the PEcAn [virtual machine](#basicvm): **URL = localhost:6480**
+*	If you are running the PEcAn [virtual machine](#pecanvm): **URL = localhost:6480**
 *	If you are running PEcAn using [Amazon Web Services (AWS)](#awsvm), **URL is the Public IP**
-* If you are running PEcAn using [Docker](#dockervm), **URL is localhost:8000**
-*	If you followed instructions found in [Install PEcAn by hand], **URL is your server’s IP**
+* If you are running PEcAn using [Docker](#docker-index), **URL is localhost:8000**
+*	If you followed instructions found in [Install PEcAn by hand](#install-native), **URL is your server’s IP**
 
 
 #### Start PEcAn:
