@@ -65,11 +65,7 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   end_date <- settings$state.data.assimilation$end.date
   
   #setting up met2model function depending on model name from settings
-  met2model_method <- paste0("PEcAn.", settings$model$type, "::met2model.", settings$model$type)
-  package_name <- strsplit(met2model_method, "::")[[1]][1]
-  function_name <- strsplit(met2model_method, "::")[[1]][2]
-  #load library otherwise the eval(call(package::function)) will not work
-  library(package_name, character.only = TRUE)
+  met2model_method <- do.call("::", list(paste0("PEcAn.", settings$model$type), paste0("met2model.", settings$model$type)))
   
   #loop over each site
   for (i in 1:length(site_info$site_id)) {
@@ -112,12 +108,11 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
       in_prefix <- paste0("ERA5.", ens_num)
       
       #preparing for the met2model.SIPNET function
-      eval(call(function_name, in.path = nc_path,
+      met2model_method(in.path = nc_path,
                        in.prefix = in_prefix,
                        outfolder = site_outFolder,
                        start_date = start_date,
-                       end_date = end_date))
-      
+                       end_date = end_date)
     }
     # grab physical paths of ERA5 files
     Clim_paths[i] <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
