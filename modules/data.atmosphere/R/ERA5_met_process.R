@@ -66,7 +66,11 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   
   #setting up met2model function depending on model name from settings
   met2model_method <- paste0("PEcAn.", settings$model$type, "::met2model.", settings$model$type)
-
+  package_name <- strsplit(met2model_method, "::")[[1]][1]
+  function_name <- strsplit(met2model_method, "::")[[1]][2]
+  #load library otherwise the eval(call(package::function)) will not work
+  library(package_name, character.only = TRUE)
+  
   #loop over each site
   for (i in 1:length(site_info$site_id)) {
     #check if sub-folder exists, if doesn't then create a new folder specific for each site
@@ -108,11 +112,11 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
       in_prefix <- paste0("ERA5.", ens_num)
       
       #preparing for the met2model.SIPNET function
-      call(met2model_method, in.path = nc_path,
+      eval(call(function_name, in.path = nc_path,
                        in.prefix = in_prefix,
                        outfolder = site_outFolder,
                        start_date = start_date,
-                       end_date = end_date)
+                       end_date = end_date))
       
     }
     # grab physical paths of ERA5 files
@@ -123,21 +127,26 @@ ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   if(Write){
     #loop over each site
     for (i in 1:length(site_info$site_id)) {
-      #insert into inputs table
-      cmd <- paste0(
-        "INSERT INTO inputs ",
-        "(site_id, format_id, start_date, end_date, name) VALUES (",
-        site_info$site_id[i], ", ", formatid, ", '", start_date, "', '", end_date, "','", paste0('ERA5_',site_info$site_id[i]),
-        "') RETURNING id"
-      )
-      # This is the id that we just registered
-      inputid <- PEcAn.DB::db.query(query = cmd, con = con)
-      
       #loop over each ensemble
+      #initialize arrays to store input and dbfile IDs.
       dbfile_IDs <- c()
+      input_IDs <- c()
       for(j in 1:length(Clim_paths[[i]])){
+        #create input record for each ensemble member
+        #insert into inputs table
+        cmd <- paste0(
+          "INSERT INTO inputs ",
+          "(site_id, format_id, start_date, end_date, name) VALUES (",
+          site_info$site_id[i], ", ", formatid, ", '", start_date, "', '", end_date, "','", paste0('ERA5_',site_info$site_id[i],"_",as.character(j)),
+          "') RETURNING id"
+        )
+        # This is the id that we just registered
+        inputid <- PEcAn.DB::db.query(query = cmd, con = con)
+        input_IDs <- c(input_IDs, inputid)
+        
+        #create dbfiles associated with each ensemble ID
         dbfileid <- PEcAn.DB::dbfile.insert(
-          in.path = Clim_paths[[i]][j], in.prefix = in_prefix, type = "Input", id = inputid,
+          in.path = Clim_paths[[i]][j], in.prefix = paste0("ERA5.", as.character(j)), type = "Input", id = inputid,
           con = con, reuse = TRUE, hostname = hostname
         )
         dbfile_IDs <- c(dbfile_IDs, dbfileid)
