@@ -115,6 +115,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "phasic development")
     # unlist(values)
     
+    SticsRFiles::set_param_xml(plant_file, "codeplante", 'fou', overwrite = TRUE)
+    
     # minimum temperature below which development stops (degree C)
     if ("tdmin" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "tdmin", pft.traits[which(pft.names == "tdmin")], overwrite = TRUE)
@@ -731,7 +733,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         }
         harvest_tec <- do.call("cbind", harvest_list) 
         
-        harvest_tec$codefauche <- 1  # cut crop - 1:yes, 2:no
+        # cut crop - 1:yes, 2:no
+        harvest_tec$codefauche <- 1 
         harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
         harvest_tec$codemodfauche <- 2 # use calendar days
         harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
