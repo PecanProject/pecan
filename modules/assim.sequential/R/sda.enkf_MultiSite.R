@@ -200,8 +200,8 @@ sda.enkf.multisite <- function(settings,
   ### Splitting/Cutting the mets to the start and the end  of SDA       ###
   ###-------------------------------------------------------------------###---- 
   #create a folder to store extracted met files
-  if(!file.exists(paste0(settings$outdir, "/Extracted_met"))){
-    dir.create(paste0(settings$outdir, "/Extracted_met"))
+  if(!file.exists(paste0(settings$outdir, "/Extracted_met/"))){
+    dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
   
   conf.settings<-conf.settings %>%
