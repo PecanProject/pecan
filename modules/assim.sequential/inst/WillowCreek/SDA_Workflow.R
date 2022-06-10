@@ -19,9 +19,10 @@ plan(multisession)
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
 
+forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/April15/"
 outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 nodata <- FALSE #use this to run SDA with no data
-restart <- FALSE#flag to start from previous run or not
+restart <- FALSE#default
 days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
 setwd(outputPath)
 options(warn=-1)
@@ -88,7 +89,7 @@ all.previous.sims <- list.dirs(outputPath, recursive = F)
 # }
 #to manually change start date 
 sda.start <- as.Date("2021-06-02")
-sda.end <- sda.start + lubridate::days(5)
+sda.end <- sda.start + lubridate::days(1)
 
 # Finding the right end and start date
 met.start <- sda.start
@@ -336,7 +337,29 @@ if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
   settings$run$inputs$met$id = index_id
   settings$run$inputs$met$path = clim_check
 }
+
+#query database for previous forecast run (i.e. t=0)
+query.run <- paste0("SELECT * FROM runs WHERE site_id =", site_info$site_id)
+run <- PEcAn.DB::db.query(query.run, con)
+#filter for sda.start
+run <- dplyr::filter(run, start_time == sda.start)
+daydiff <- difftime(Sys.time(), run$created_at, units = "days")
+runday <- which(min(daydiff) == daydiff)
+startday <- run$created_at[runday]
+run <- dplyr::filter(run, as.Date(created_at) == as.Date(startday))
+#add filter for model
+query.ens <- paste0("SELECT * FROM ensembles WHERE id =", run$ensemble_id)
+ens <- PEcAn.DB::db.query(query.ens, con)
+#now that we have the workflow id for forecast run we can close connection to BETY
 PEcAn.DB::db.close(con)
+#list files in output folder
+restart <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+# t0Files <- list.files(t0Path, full.names = TRUE, pattern = "out")
+# t0FilesEns <- list.files(t0Files)
+
+#use default param template plus model output to build new param files to pass to SDA along with met
+
+
 #still want to run this to get the IC files 
 #settings <- PEcAn.workflow::do_conversions(settings)          #end if loop for existing inputs  
 
@@ -349,153 +372,153 @@ PEcAn.DB::db.close(con)
 # PEcAn.DB::db.close(con)
 
 # Query the trait database for data and priors
-if (PEcAn.utils::status.check("TRAIT") == 0) {
-  PEcAn.utils::status.start("TRAIT")
-  settings <- PEcAn.workflow::runModule.get.trait.data(settings)
-  PEcAn.settings::write.settings(settings, outputfile = 'pecan.TRAIT.xml')
-  PEcAn.utils::status.end()
-} else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
-  settings <-
-    PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
-}
-# Run the PEcAn meta.analysis
-if (!is.null(settings$meta.analysis)) {
-  if (PEcAn.utils::status.check("META") == 0) {
-    PEcAn.utils::status.start("META")
-    PEcAn.MA::runModule.run.meta.analysis(settings)
-    PEcAn.utils::status.end()
-  }
-}
-
-#sample from parameters used for both sensitivity analysis and Ens
-get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingspace$parameters$method)
+# if (PEcAn.utils::status.check("TRAIT") == 0) {
+#   PEcAn.utils::status.start("TRAIT")
+#   settings <- PEcAn.workflow::runModule.get.trait.data(settings)
+#   PEcAn.settings::write.settings(settings, outputfile = 'pecan.TRAIT.xml')
+#   PEcAn.utils::status.end()
+# } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
+#   settings <-
+#     PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
+# }
+# # Run the PEcAn meta.analysis
+# if (!is.null(settings$meta.analysis)) {
+#   if (PEcAn.utils::status.check("META") == 0) {
+#     PEcAn.utils::status.start("META")
+#     PEcAn.MA::runModule.run.meta.analysis(settings)
+#     PEcAn.utils::status.end()
+#   }
+# }
+# 
+# #sample from parameters used for both sensitivity analysis and Ens
+# get.parameter.samples(settings, ens.sample.method = settings$ensemble$samplingspace$parameters$method)
 
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
-settings$state.data.assimilation$start.date <-as.character(first(names(obs.mean)))
-settings$state.data.assimilation$end.date <-as.character(last(names(obs.mean)))
+settings$state.data.assimilation$start.date <-as.character(sda.start)
+settings$state.data.assimilation$end.date <-as.character(sda.end)
 
-if (nodata) {
-  obs.mean <- obs.mean %>% map(function(x)
-    return(NA))
-  obs.cov <- obs.cov %>% map(function(x)
-    return(NA))
-}
+# if (nodata) {
+#   obs.mean <- obs.mean %>% map(function(x)
+#     return(NA))
+#   obs.cov <- obs.cov %>% map(function(x)
+#     return(NA))
+# }
 
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Restart -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-if(restart == TRUE){
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
-  
-  #Update the SDA Output to just have last time step 
-  temp<- new.env()
-  load(file.path(restart.path, "SDA", "sda.output.Rdata"), envir = temp)
-  temp <- as.list(temp)
-  
-  #we want ANALYSIS, FORECAST, and enkf.parms to match up with how many days obs data we have
-  # +24 because it's hourly now and we want the next day as the start 
-  if(length(temp$ANALYSIS) > 1){
-    
-    for(i in 1:days.obs + 1){ 
-      temp$ANALYSIS[[i]] <- temp$ANALYSIS[[i + 24]]
-    }
-    for(i in rev((days.obs + 2):length(temp$ANALYSIS))){ 
-      temp$ANALYSIS[[i]] <- NULL
-    }
-    
-    
-    for(i in 1:days.obs + 1){ 
-      temp$FORECAST[[i]] <- temp$FORECAST[[i + 24]]
-    }
-    for(i in rev((days.obs + 2):length(temp$FORECAST))){ 
-      temp$FORECAST[[i]] <- NULL
-    }
-    
-    for(i in 1:days.obs + 1){ 
-      temp$enkf.params[[i]] <- temp$enkf.params[[i + 24]]
-    }
-    for(i in rev((days.obs + 2):length(temp$enkf.params))){ 
-      temp$enkf.params[[i]] <- NULL
-    }    
-    
-  }
-  temp$t = 1 
-  
-  #change inputs path to match sampling met paths 
-  
-  for(i in 1: length(temp$inputs$ids)){
-    
-    temp$inputs$samples[i] <- settings$run$inputs$met$path[temp$inputs$ids[i]]
-    
-  }
-  
-  temp1<- new.env()
-  list2env(temp, envir = temp1)
-  save(list = c("ANALYSIS", 'FORECAST', "enkf.params", "ensemble.id", "ensemble.samples", 'inputs', 'new.params', 'new.state', 'run.id', 'site.locs', 't', 'Viz.output', 'X'),
-       envir = temp1, 
-       file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
-  
-  
-  
-  temp.out <- new.env()
-  load(file.path(restart.path, "SDA", 'outconfig.Rdata'), envir = temp.out)
-  temp.out <- as.list(temp.out)
-  temp.out$outconfig$samples <- NULL
-  
-  temp.out1 <- new.env()
-  list2env(temp.out, envir = temp.out1)
-  save(list = c('outconfig'), 
-       envir = temp.out1, 
-       file = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
-  
-  
-  
-  #copy over run and out folders 
-  
-  if(!dir.exists("run")) dir.create("run",showWarnings = F)
-  
-  files <- list.files(path = file.path(restart.path, "run/"), full.names = T, recursive = T, include.dirs = T, pattern = "sipnet.clim")
-  readfiles <- list.files(path = file.path(restart.path, "run/"), full.names = T, recursive = T, include.dirs = T, pattern = "README.txt")
-  
-  newfiles <- gsub(pattern = restart.path, settings$outdir, files)
-  readnewfiles <- gsub(pattern = restart.path, settings$outdir, readfiles)
-  
-  rundirs <- gsub(pattern = "/sipnet.clim", "", files)
-  rundirs <- gsub(pattern = restart.path, settings$outdir, rundirs)
-  for(i in 1 : length(rundirs)){
-    dir.create(rundirs[i]) 
-    file.copy(from = files[i], to = newfiles[i])
-    file.copy(from = readfiles[i], to = readnewfiles[i])} 
-  file.copy(from = paste0(restart.path, '/run/runs.txt'), to = paste0(settings$outdir,'/run/runs.txt' ))
-  
-  if(!dir.exists("out")) dir.create("out",showWarnings = F)
-  
-  files <- list.files(path = file.path(restart.path, "out/"), full.names = T, recursive = T, include.dirs = T, pattern = "sipnet.out")
-  newfiles <- gsub(pattern = restart.path, settings$outdir, files)
-  outdirs <- gsub(pattern = "/sipnet.out", "", files)
-  outdirs <- gsub(pattern = restart.path, settings$outdir, outdirs)
-  for(i in 1 : length(outdirs)){
-    dir.create(outdirs[i]) 
-    file.copy(from = files[i], to = newfiles[i])} 
-  
-} 
+# if(restart == TRUE){
+#   if(!dir.exists("SDA")) dir.create("SDA",showWarnings = F)
+#   
+#   #Update the SDA Output to just have last time step 
+#   temp<- new.env()
+#   load(file.path(restart.path, "SDA", "sda.output.Rdata"), envir = temp)
+#   temp <- as.list(temp)
+#   
+#   #we want ANALYSIS, FORECAST, and enkf.parms to match up with how many days obs data we have
+#   # +24 because it's hourly now and we want the next day as the start 
+#   if(length(temp$ANALYSIS) > 1){
+#     
+#     for(i in 1:days.obs + 1){ 
+#       temp$ANALYSIS[[i]] <- temp$ANALYSIS[[i + 24]]
+#     }
+#     for(i in rev((days.obs + 2):length(temp$ANALYSIS))){ 
+#       temp$ANALYSIS[[i]] <- NULL
+#     }
+#     
+#     
+#     for(i in 1:days.obs + 1){ 
+#       temp$FORECAST[[i]] <- temp$FORECAST[[i + 24]]
+#     }
+#     for(i in rev((days.obs + 2):length(temp$FORECAST))){ 
+#       temp$FORECAST[[i]] <- NULL
+#     }
+#     
+#     for(i in 1:days.obs + 1){ 
+#       temp$enkf.params[[i]] <- temp$enkf.params[[i + 24]]
+#     }
+#     for(i in rev((days.obs + 2):length(temp$enkf.params))){ 
+#       temp$enkf.params[[i]] <- NULL
+#     }    
+#     
+#   }
+#   temp$t = 1 
+#   
+#   #change inputs path to match sampling met paths 
+#   
+#   for(i in 1: length(temp$inputs$ids)){
+#     
+#     temp$inputs$samples[i] <- settings$run$inputs$met$path[temp$inputs$ids[i]]
+#     
+#   }
+#   
+#   temp1<- new.env()
+#   list2env(temp, envir = temp1)
+#   save(list = c("ANALYSIS", 'FORECAST', "enkf.params", "ensemble.id", "ensemble.samples", 'inputs', 'new.params', 'new.state', 'run.id', 'site.locs', 't', 'Viz.output', 'X'),
+#        envir = temp1, 
+#        file = file.path(settings$outdir, "SDA", "sda.output.Rdata"))  
+#   
+#   
+#   
+#   temp.out <- new.env()
+#   load(file.path(restart.path, "SDA", 'outconfig.Rdata'), envir = temp.out)
+#   temp.out <- as.list(temp.out)
+#   temp.out$outconfig$samples <- NULL
+#   
+#   temp.out1 <- new.env()
+#   list2env(temp.out, envir = temp.out1)
+#   save(list = c('outconfig'), 
+#        envir = temp.out1, 
+#        file = file.path(settings$outdir, "SDA", "outconfig.Rdata"))
+#   
+#   
+#   
+#   #copy over run and out folders 
+#   
+#   if(!dir.exists("run")) dir.create("run",showWarnings = F)
+#   
+#   files <- list.files(path = file.path(restart.path, "run/"), full.names = T, recursive = T, include.dirs = T, pattern = "sipnet.clim")
+#   readfiles <- list.files(path = file.path(restart.path, "run/"), full.names = T, recursive = T, include.dirs = T, pattern = "README.txt")
+#   
+#   newfiles <- gsub(pattern = restart.path, settings$outdir, files)
+#   readnewfiles <- gsub(pattern = restart.path, settings$outdir, readfiles)
+#   
+#   rundirs <- gsub(pattern = "/sipnet.clim", "", files)
+#   rundirs <- gsub(pattern = restart.path, settings$outdir, rundirs)
+#   for(i in 1 : length(rundirs)){
+#     dir.create(rundirs[i]) 
+#     file.copy(from = files[i], to = newfiles[i])
+#     file.copy(from = readfiles[i], to = readnewfiles[i])} 
+#   file.copy(from = paste0(restart.path, '/run/runs.txt'), to = paste0(settings$outdir,'/run/runs.txt' ))
+#   
+#   if(!dir.exists("out")) dir.create("out",showWarnings = F)
+#   
+#   files <- list.files(path = file.path(restart.path, "out/"), full.names = T, recursive = T, include.dirs = T, pattern = "sipnet.out")
+#   newfiles <- gsub(pattern = restart.path, settings$outdir, files)
+#   outdirs <- gsub(pattern = "/sipnet.out", "", files)
+#   outdirs <- gsub(pattern = restart.path, settings$outdir, outdirs)
+#   for(i in 1 : length(outdirs)){
+#     dir.create(outdirs[i]) 
+#     file.copy(from = files[i], to = newfiles[i])} 
+#   
+# } 
 # --------------------------------------------------------------------------------------------------
 #--------------------------------- Run state data assimilation -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-source('/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/R/Nimble_codes.R')
+#source('/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/R/Nimble_codes.R')
 
 
-if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
-debugonce(PEcAn.assim.sequential::sda.enkf.multisite)
+# if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
+# debugonce(PEcAn.assim.sequential::sda.enkf.multisite)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
     PEcAn.assim.sequential::sda.enkf.multisite(
       settings, 
-      restart=FALSE,
+      restart=restart,
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,

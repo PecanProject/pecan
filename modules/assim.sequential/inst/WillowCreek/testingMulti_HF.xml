@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <pecan.multi>
   <state.data.assimilation>
-    <process.varinace>TRUE</process.varinace>
+    <process.variance>TRUE</process.variance>
     <adjustment>TRUE</adjustment>
     <censored.data>FALSE</censored.data>
-    <q.type>SITE</q.type>
+    <q.type>SINGLE</q.type>
     <Localization.FUN>Local.support</Localization.FUN>
     <scalef>1</scalef>
     <data>
@@ -46,11 +46,13 @@
   </database>
   <pfts>
     <pft>
-      <name>temperate.deciduous.ALL</name>
-      <constants>
-        <num>1</num>
-      </constants>
-    </pft>
+   <name>temperate.deciduous.HPDA</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <posteriorid>1000022311</posteriorid>
+   <outdir>/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA</outdir>
+  </pft>
   </pfts>
   <meta.analysis>
     <iter>3000</iter>
@@ -89,6 +91,9 @@
         <name>Harvard Forest (HF)</name>
         <lat>42.50000</lat>
         <lon>-72.15000</lon>
+        <site.pft>
+          <pft.name>temperate.deciduous.HPDA</pft.name>
+        </site.pft>
       </site>
       <inputs>
         <met>

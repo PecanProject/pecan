@@ -1,12 +1,12 @@
 #' @title sda.enkf.multisite
 #' @name  sda.enkf.multisite
-#' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
+#' @author Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
 #' @param obs.mean  List of dataframe of observation means, named with observation datetime.
 #' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
-#' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
+#' @param restart   Used for iterative updating previous forecasts. File path points to previous SDA/forecast output
 #' @param forceRun  Used to force job.sh files that were not run for ensembles in SDA (quick fix) 
 #' @param keepNC    Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
@@ -40,6 +40,13 @@ sda.enkf.multisite <- function(settings,
                                             Profiling = FALSE,
                                             OutlierDetection=FALSE),
                                ...) {
+  #add if/else for when restart points to folder instead if T/F set restart as T
+  if(class(restart) == "character"){
+    old.dir <- restart
+    restart = TRUE
+  }else{
+    restart = FALSE
+  }
   future::plan(multiprocess)
   if (control$debug) browser()
   tictoc::tic("Prepration")
@@ -182,25 +189,47 @@ sda.enkf.multisite <- function(settings,
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
   if (restart){
-    
-    if(!file.exists(file.path(settings$outdir,"SDA", "sda.output.Rdata"))) PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist.")
-    load(file.path(settings$outdir,"SDA", "sda.output.Rdata"))
-    
-    #this is where the old simulation will be moved to
-    old.dir <- lubridate::year(names(FORECAST)) %>% tail(1)
-    #--- Updating the nt and etc
-    if(!dir.exists(file.path(settings$outdir,"SDA",old.dir))) dir.create(file.path(settings$outdir,"SDA",old.dir))
-    # finding/moving files to it's end year dir
-    files.last.sda <- list.files(file.path(settings$outdir,"SDA"))
-    #copying
-    file.copy(file.path(file.path(settings$outdir,"SDA"),files.last.sda),
-              file.path(file.path(settings$outdir,"SDA"),paste0(old.dir,"/",files.last.sda))
-    )
-    params<-new.params
-    sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
-    
-    X <-FORECAST[[length(FORECAST)]]
-    
+    #TO DO grab soil files
+    #add else for when sda.out.Rdata is missing
+    if(!file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
+      load(file.path(old.dir,"SDA", "sda.output.Rdata"))
+      #this is where the old simulation will be moved to
+      old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
+      #--- Updating the nt and etc
+      if(!dir.exists(file.path(old.dir,"SDA",old.sda))) dir.create(file.path(old.dir,"SDA",old.sda))
+      # finding/moving files to it's end year dir
+      files.last.sda <- list.files(file.path(old.dir,"SDA"))
+      #copying
+      file.copy(file.path(file.path(old.dir,"SDA"),files.last.sda),
+                file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
+      )
+      params<-new.params
+      sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+      
+      X <-FORECAST[[length(FORECAST)]]
+    }else{
+      PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
+      #loading param info from previous forecast
+      load(file.path(old.dir, "samples.Rdata"))
+      #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
+      sim.time<-seq_len(nt)
+      #reformatting params
+      new.params <- list()
+      all.pft.names <- names(ensemble.samples)
+      for (i in 1:length(settings$pfts$pft$name)) {
+        #match pft name
+        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+        which.pft <- which(all.pft.names==site.pft.name)
+        
+        site.param <- list()
+        site.samples <- ensemble.samples[which.pft]
+        for (j in seq_len(nens)) {
+          site.param[[j]] <- lapply(site.samples, function(x, n) {
+            x[j, ] }, n = j)
+        } 
+        new.params[[i]] <- site.param
+      }
+      names(new.params) <- site.ids
   }else{
     sim.time<-seq_len(nt)
   }
@@ -209,8 +238,8 @@ sda.enkf.multisite <- function(settings,
   ###-------------------------------------------------------------------###---- 
 
   #create a folder to store extracted met files
-  if(!file.exists(paste0(settings$outdir, "/Extracted_met"))){
-    dir.create(paste0(settings$outdir, "/Extracted_met"))
+  if(!file.exists(paste0(settings$outdir, "/Extracted_met/"))){
+    dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
 
   
@@ -257,44 +286,56 @@ sda.enkf.multisite <- function(settings,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   # Reading param samples------------------------------- 
-  if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
-  #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-  
-  #reformatting params
-  new.params <- list()
-  all.pft.names <- names(ensemble.samples)
-  for (i in 1:length(settings$pfts$pft$name)) {
-    #match pft name
-    site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
-}
-    which.pft <- which(all.pft.names==site.pft.name)
+  #take params code and add to if/else restart above and make sure params are formatted the same way
+  if(restart){
+    #add restart flag match ensemble members from previous met to todays met files
+    # This is gonna be used just for the first round
+    inputs <- conf.settings %>% map(function(setting) {
+      input.ens.gen(
+        settings = setting,
+        input = "met",
+        method = setting$ensemble$samplingspace$met$method,
+        parent_ids = NULL 
+      )
+    }) 
+  }else{
+    #add restart flag
+    if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
+    #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+    load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    #reformatting params
+    new.params <- list()
+    all.pft.names <- names(ensemble.samples)
+    for (i in 1:length(settings$pfts$pft$name)) {
+      #match pft name
+      site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+      which.pft <- which(all.pft.names==site.pft.name)
     
-    site.param <- list()
-    site.samples <- ensemble.samples[which.pft]
-    for (j in seq_len(nens)) {
-      site.param[[j]] <- lapply(site.samples, function(x, n) {
+      site.param <- list()
+      site.samples <- ensemble.samples[which.pft]
+      for (j in seq_len(nens)) {
+        site.param[[j]] <- lapply(site.samples, function(x, n) {
         x[j, ] }, n = j)
     } 
-    new.params[[i]] <- site.param
-    
-  names(new.params) <- site.ids
+      new.params[[i]] <- site.param
+    }
+    names(new.params) <- site.ids
+    #add restart flag match ensemble members from previous met to todays met files
+    # This is gonna be used just for the first round
+    inputs <- conf.settings %>% map(function(setting) {
+      input.ens.gen(
+        settings = setting,
+        input = "met",
+        method = setting$ensemble$samplingspace$met$method,
+        parent_ids = NULL 
+      )
+    }) 
+  }
   
-  
-  # This is gonna be used just for the first round
-  inputs <- conf.settings %>% map(function(setting) {
-    input.ens.gen(
-      settings = setting,
-      input = "met",
-      method = setting$ensemble$samplingspace$met$method,
-      parent_ids = NULL 
-    )
-  }) 
- 
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
-  for(t in 1:nt){#sim.time
+  for(t in sim.time){
       obs <- which(!is.na(obs.mean[[t]]))
       obs.t<-names(obs.mean)[t]
       obs.year <- lubridate::year(obs.t)
@@ -354,31 +395,39 @@ sda.enkf.multisite <- function(settings,
       } else {
         restart.list <- vector("list", length(conf.settings))
       }
-      if (control$debug) browser()
-      out.configs <- conf.settings %>%
-        `class<-`(c("list")) %>%
-        furrr::future_map2(restart.list, function(settings, restart.arg = FALSE) {
-          # Loading the model package - this is required bc of the furrr
-          library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-          # wrtting configs for each settings - this does not make a difference with the old code
-          write.ensemble.configs(
-            defaults = settings$pfts,
-            ensemble.samples = ensemble.samples,
-            settings = settings,
-            model = settings$model$type,
-            write.to.db = settings$database$bety$write,
-            restart = restart.arg
-          )
-        }) %>%
-        setNames(site.ids)
-      
-      #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
-      runs.tmp <- list.dirs(rundir, full.names = F)
-      writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-
-      PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
-      
-      #------------- Reading - every iteration and for SDA
+      #add flag for restart t=1 to skip model runs
+      if(restart & t == 1){
+        #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
+        
+      }else{
+        
+        if (control$debug) browser()
+        out.configs <- conf.settings %>%
+          `class<-`(c("list")) %>%
+          furrr::future_map2(restart.list, function(settings, restart.arg = FALSE) {
+            # Loading the model package - this is required bc of the furrr
+            library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+            # wrtting configs for each settings - this does not make a difference with the old code
+            write.ensemble.configs(
+              defaults = settings$pfts,
+              ensemble.samples = ensemble.samples,
+              settings = settings,
+              model = settings$model$type,
+              write.to.db = settings$database$bety$write,
+              restart = restart.arg
+            )
+          }) %>%
+          setNames(site.ids)
+        
+        #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+        runs.tmp <- list.dirs(rundir, full.names = F)
+        writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+        
+        PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        
+        #------------- Reading - every iteration and for SDA
+        
+        #put building of X into a function that gets called
         reads <-
           furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
             # Loading the model package - this is required bc of the furrr
@@ -402,34 +451,37 @@ sda.enkf.multisite <- function(settings,
             }
             return(X_tmp)
           })
-      
         
-      if (control$debug) browser()
-      #let's read the parameters of each site/ens
-      params.list <- reads %>% map(~.x %>% map("params"))
-      # Now let's read the state variables of site/ens
-      X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+        
+        if (control$debug) browser()
+        #let's read the parameters of each site/ens
+        params.list <- reads %>% map(~.x %>% map("params"))
+        # Now let's read the state variables of site/ens
+        #don't need to build X when t=1
+        X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+        
+        
+        #replacing crazy outliers before it's too late
+        if (control$OutlierDetection) X <- outlier.detector.boxplot(X)
+        
+        # Now we have a matrix that columns are state variables and rows are ensembles.
+        # this matrix looks like this
+        #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
+        #[1,]  3.872521     37.2581  3.872521     37.2581
+        # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
+        if (multi.site.flag)
+          X <- X %>%
+          map_dfc(~.x) %>% 
+          as.matrix() %>%
+          `colnames<-`(c(rep(var.names, length(X)))) %>%
+          `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+        
+        
+        
+        
+        FORECAST[[obs.t]] <- X
+      }
       
-      
-      #replacing crazy outliers before it's too late
-      if (control$OutlierDetection) X <- outlier.detector.boxplot(X)
-      
-      # Now we have a matrix that columns are state variables and rows are ensembles.
-      # this matrix looks like this
-      #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
-      #[1,]  3.872521     37.2581  3.872521     37.2581
-      # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-      if (multi.site.flag)
-        X <- X %>%
-        map_dfc(~.x) %>% 
-        as.matrix() %>%
-        `colnames<-`(c(rep(var.names, length(X)))) %>%
-        `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-      
-      
-      
-      
-      FORECAST[[obs.t]] <- X
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
