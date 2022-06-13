@@ -94,7 +94,7 @@ rabbitmq_send_message <- function(url, auth, body, action = "POST", silent = FAL
       if ("reason" %in% names(output)) {
         PEcAn.logger::logger.error(paste0("error sending message to rabbitmq [", result$status_code, "], ", output$reason))
       } else {
-        PEcAn.logger::logger.error("error sending message to rabbitmq")
+        PEcAn.logger::logger.error("error sending message to rabbitmq [", result$status_code, "]")
       }
     }
     return(NA)
