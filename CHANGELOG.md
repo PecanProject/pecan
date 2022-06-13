@@ -46,6 +46,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Skipped ICOS and MERRA download tests when running in github actions
 - Converted .zenodo.json to CITATION.cff
 - Using traefik 2.5 instead of 1.7
+- api is now open by default (was auth required in the past)
 
 ### Removed
 
