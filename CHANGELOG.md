@@ -35,6 +35,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Replaced the broken ameriflux download pipeline with the new amerifluxr package's function.
 - Fix broken build caused by BioCro updates #2925
 - rstudio was not working behind traefik.
+- plots now work in docker containers
 
 ### Changed
 
