@@ -36,14 +36,15 @@ extract_veg <- function(new_site, start_date, end_date,
    }
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
-  
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
- #Need a better way to check if the function exists
- if (!exists(fcnx)) {
+ 
+ fcn_exist <- try(fcn <- do.call("::", list(paste0("PEcAn.data.land"), paste0(fcnx))))
+ 
+ #detect if function exist
+ if(typeof(fcn_exist)=="character"){
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
- }else{
-   fcn <- fget(fcnx)
  }
+ 
  # extract_* functions need to have standard args
  if(source == "NEON_veg"){
     #extract_NEON_veg needs a location to store downloaded NEON files, this is not a standard argument, so this if/else statement is a hack but it is meant to ensure the extract_veg function works
