@@ -81,7 +81,7 @@ This menu shows the contents of the root workflow folder that are not in one of 
 
 ####	Global Sensitivity: Shiny
 
-**Navigate to [URL](#url-def)/shiny/global-sensitivity.** <!-- ERS: this doesn't work for me with a VitualBox installation -->
+**Navigate to [URL](#url-def)/shiny/global-sensitivity.** <!-- ERS: this doesn't work for me with a VitualBox or Docker installation -->
  
 This app uses the output from the ENSEMBLE runs to perform a global Monte Carlo sensitivity analysis. There are three modes controlled by Output type:
 
