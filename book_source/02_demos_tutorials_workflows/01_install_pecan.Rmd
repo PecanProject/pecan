@@ -93,7 +93,7 @@ This will not go into much detail about about how to use Docker -- for more deta
         If this is successful, the end of the output should look like the following:
         
         ```
-        Creating pecan_postgres_1 ... done
+        Creating pecan-postgres-1 Started
         ```
     
     b. "Initialize" the data for the PEcAn database.
@@ -132,9 +132,12 @@ This will not go into much detail about about how to use Docker -- for more deta
         ###################################################################### 
         ```
     e. Download the [`pecan/docker/env.example`](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker/env.example) & save it as `.env` file.
-       Now, open the `.env` file & uncomment the lines mentioned below:
-       ```{r, echo=FALSE, fig.align='center'}
-       knitr::include_graphics(rep("figures/env-file.PNG"))
+       Now, open the `.env` file & uncomment the following lines:
+       
+       ```
+       COMPOSE_PROJECT_NAME=pecan
+       PECAN_VERSION=develop
+
        ```
        
        Setting `PECAN_VERSION=develop` indicates that you want to run the bleeding-edge `develop` branch, meaning it may have bugs. To go ahead with the stable version you may set `PECAN_VERSION=latest` or `PECAN_VERSION=<release-number>` (For example `1.7.0`). You can look at the list of all the [releases](https://github.com/pecanproject/pecan/releases) of PEcAn to see what options are availble.
