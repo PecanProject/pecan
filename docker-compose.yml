@@ -327,7 +327,7 @@ services:
     environment:
       - PGHOST=${PGHOST:-postgres}
       - HOST_ONLY=${HOST_ONLY:-FALSE}
-      - AUTH_REQ=${AUTH_REQ:-TRUE}
+      - AUTH_REQ=${AUTH_REQ:-FALSE}
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - DATA_DIR=${DATA_DIR:-/data/}
       - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
@@ -359,3 +359,4 @@ volumes:
   rabbitmq:
   pecan:
   rstudio:
+
