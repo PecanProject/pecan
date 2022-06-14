@@ -34,7 +34,7 @@ Suggests:
     PEcAn.DB,
     RPostgreSQL
 Remotes:
-    github::ebimodeling/biocro
+    github::ebimodeling/biocro@0.951
 License: BSD_3_clause + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes

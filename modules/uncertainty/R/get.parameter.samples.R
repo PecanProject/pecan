@@ -37,7 +37,7 @@ get.parameter.samples <- function(settings,
     if(!is.null(settings$pfts[[i.pft]]$outdir)){
       outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     } else { 
-      outdirs[i.pft] <- unique(dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
+      outdirs[i.pft] <- unique(PEcAn.DB::dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
     }
     
   }  ### End of for loop to extract pft names
@@ -168,21 +168,21 @@ get.parameter.samples <- function(settings,
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+    quantiles <- PEcAn.utils::get.quantiles(settings$sensitivity.analysis$quantiles)
     ### Get info on the years to run the sensitivity analysis (if requested)
     sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                            sa.end = settings$sensitivity.analysis$end.year)
     
-    PEcAn.logger::logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
+    PEcAn.logger::logger.info("\n Selected Quantiles: ", PEcAn.utils::vecpaste(round(quantiles, 3)))
     
     ### Generate list of sample quantiles for SA run
-    sa.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 
+    sa.samples <- PEcAn.utils::get.sa.sample.list(pft = trait.samples, env = env.samples, 
                                      quantiles = quantiles)
   }
   if ("ensemble" %in% names(settings)) {
     if (settings$ensemble$size == 1) {
       ## run at median if only one run in ensemble
-      ensemble.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 
+      ensemble.samples <- PEcAn.utils::get.sa.sample.list(pft = trait.samples, env = env.samples, 
                                              quantiles = 0.5)
       #if it's not there it's one probably
       if (is.null(settings$ensemble$size)) settings$ensemble$size<-1
