@@ -33,3 +33,4 @@ services:
       - "traefik.http.routers.default.middlewares=https-redirectscheme@docker"
       - "traefik.http.middlewares.https-redirectscheme.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirectscheme.redirectscheme.permanent=true"
+
