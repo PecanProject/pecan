@@ -41,7 +41,7 @@ extract_veg <- function(new_site, start_date, end_date,
  fcn_exist <- try(fcn <- do.call("::", list(paste0("PEcAn.data.land"), paste0(fcnx))))
  
  #detect if function exist
- if(typeof(fcn_exist)=="character"){
+ if(is.character(fcn_exist)){
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
  }
  
