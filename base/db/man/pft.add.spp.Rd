@@ -13,7 +13,7 @@ pft.add.spp(pft, acronym, test = TRUE, con = NULL, ...)
 
 \item{test}{Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species}
 
-\item{con}{Database connection object.  If not provided will use \code{\link{query.bety.con}} to connect to BETY-db.}
+\item{con}{Database connection object.}
 
 \item{...}{optional arguements for connecting to database (e.g. password, user name, database)}
 }
