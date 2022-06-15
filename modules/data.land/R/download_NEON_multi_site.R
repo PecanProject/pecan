@@ -107,7 +107,7 @@ Download_multiSites_NEON <- function(settings, main_store_dir){
     #write into output
     VEG_INFO[[i]] <- veg_info
   }
-  fileConn <- file("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/NEON_downloads/log.txt")
+  fileConn <- file(paste0(main_store_dir, "/log.txt"))
   writeLines(log_txt, fileConn)
   close(fileConn)
   save(VEG_INFO, file = paste0(main_store_dir,"/VEG_INFO.Rdata"))
