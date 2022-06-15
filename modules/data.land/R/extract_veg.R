@@ -72,8 +72,7 @@ extract_veg <- function(new_site, start_date, end_date,
       code_col    <- "species_USDA_symbol"
       format_name <- "usda"
       obs <- obs[obs$species_USDA_symbol != "2PLANT" &  
-                   obs$species_USDA_symbol != "2PLANT-H" &
-                   obs$species_USDA_symbol != "CATO6", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
+                   obs$species_USDA_symbol != "2PLANT-H", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
    }
  }
 
