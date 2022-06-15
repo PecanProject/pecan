@@ -52,7 +52,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
     species_Element <- ID
   }else if(!is.null(acronym)){
     species_Element <- acronym
-  }else if(is.null(acronym) && is.null(ID)){
+  }else{
     print("please provide species related info!!! (Species' ID or Symbol)")
     return(0)
   }
