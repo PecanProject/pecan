@@ -4,11 +4,7 @@
 #' @param main_store_dir the preferred path to store the downloaded NEON files. the log file and VEG_INFO should also be stored in that path
 #'
 #' @return VEG_INFO: a list object containing veg_info, site IDs of each site.
-#' @export
-#'
-#' @examples main_store_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/NEON_downloads"
-#'           settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml")
-#'           vege_info <- Download_multiSites_NEON(settings, main_store_dir)
+#' @export log.txt file describing the progress of download
 
 Download_multiSites_NEON <- function(settings, main_store_dir){
   #get NEON sites table
