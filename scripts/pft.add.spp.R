@@ -13,31 +13,18 @@
 ##' @title Associate species with a PFT.
 ##' @param pft String name of the PFT in the database
 ##' @param acronym USDA Plants Database Symbol. (standard genus-species acronym) see \url{http://plants.usda.gov}
+##' @param ID a vector of IDs referred to a series of species that need to be inserted into the pft_speceis table
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.
 ##' @param ... optional arguements for connecting to database (e.g. password, user name, database)
-##' @return Function does not return a value but does print out diagnostic statements.
+##' @return InputIDs for each inserted records and diagnostics.
 ##' @author Michael C. Dietze, Dongchen Zhang
-pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
+pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL, ...) {
   
   ## establish database connection
   # default points to psql-pecan.bu.edu.
   if (is.null(con)) {
-    bety <- dplyr::src_postgres(dbname   = "bety",
-                                host     = "psql-pecan.bu.edu",
-                                user     = "bety",
-                                password = "bety")
-    con <- bety$con
-  }
-  
-  #detect if acronym is ID or Symbol
-  if(is.character(acronym[1])){
-    ID_flag <- F
-  }else if(is.numeric(acronym[1])){
-    ID_flag <- T
-  }else{
-    print("can't detect the type of Acronym, please check it!!!")
-    return(0)
+    con <- query.bety.con(...)
   }
   
   ## look up pfts.id based on pfts.name
@@ -60,8 +47,18 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
   bad_species <- c()
   bad_pft_speceis <- c()
   
+  #detect if we input ID or Symbol
+  if(!is.null(ID)){
+    species_Element <- ID
+  }else if(!is.null(acronym)){
+    species_Element <- acronym
+  }else if(is.null(acronym) && is.null(ID)){
+    print("please provide species related info!!! (Species' ID or Symbol)")
+    return(0)
+  }
+  
   ## loop over acronyms
-  for (acro in acronym) {
+  for (acro in species_Element) {
     ## look up species based on acronyms. (can be either Symbols or IDs)
     if(ID_flag){
       species_qry <- glue::glue_sql(paste0("select * from species where \"id\" = '", acro, "'"), .con = con)
