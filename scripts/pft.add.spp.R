@@ -12,7 +12,7 @@
 ##' This function is used to add PFT-Species pairs to the database table 'pfts_species'.  In the initial implementation the PFT has to be defined already and the species are added based on their USDA Symbol (genus/species acronym).  Multiple species can be added at once but only one PFT at a time.
 ##' @title Associate species with a PFT.
 ##' @param pft String name of the PFT in the database
-##' @param acronym USDA Plants Database Symbol. (standard genus-species acronym) see \url{http://plants.usda.gov}
+##' @param acronym Specie's Symbol. (standard genus-species acronym)
 ##' @param ID a vector of IDs referred to a series of species that need to be inserted into the pft_speceis table
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.
