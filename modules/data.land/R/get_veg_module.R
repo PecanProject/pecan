@@ -32,6 +32,8 @@ get_veg_module <- function(input_veg,
   ## Prepare to call convert.inputs
   pkg  <- "PEcAn.data.land"
   con <- PEcAn.DB::db.open(dbparms$bety)
+  on.exit(db.close(con), add = TRUE)
+  
 
   # this check might change depending on what other sources that requires querying its own DB we will have
   if(input_veg$source == "FIA" | input_veg$source == "NEON_veg"){ 
