@@ -17,43 +17,55 @@
 ##' @param in.prefix prefix for each file
 ##' @param outfolder location where model specific output is written.
 ##' @param overwrite logical: replace output files if they already exist?
-##' @return OK if everything was succesful.
+##' @return OK if everything was successful.
 ##' @export
 ##' @author Henri Kajasilta
 ##-------------------------------------------------------------------------------------------------#
-met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE) {
-  #PEcAn.logger::logger.severe("NOT IMPLEMENTED")
+met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, ...) {
   
+  # Logger info
   PEcAn.logger::logger.info("START met2model.LDNDC")
-  
-  #
-  #in.path <- "/data/istem/sandbox/Qvidja/test"
-  #in.prefix <- "FieldObs_Qvidja."
-  
-  #outfolder <- "/data/workflows/PEcAn_15000000076/run/15000215313"
-  
-  
-  
-  #start_date <- "2018-12-08"
-  #end_date <- "2020-02-28"
   
   # Years
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
   
-  
+  # Check the nc-files
   nc_file <- list.files(in.path)[grep("*.nc", list.files(in.path))]
+  
+  # Set-up the outfile that will be returned as results
+  out.file <- paste(in.prefix, format(as.Date(start_date), "%Y-%m-%d"),
+                    format(as.Date(end_date), "%Y-%m-%d"),
+                    "txt",
+                    sep = ".")
+  
+  out.file.full <- file.path(outfolder, out.file)
+  
+  # Results
+  results <- data.frame(file = out.file.full,
+                        host = PEcAn.remote::fqdn(),
+                        mimetype = "text/plain",
+                        formatname = "LDNDC_Climate",
+                        startdate = start_date,
+                        enddate = end_date,
+                        dbfile.name = out.file,
+                        stringsAsFactors = FALSE)
+  
+  
+  
   if(length(nc_file) > 0){
-    # Something something
+    print("At least one nc-file was found from the given path")
   }
+  
   
   for(year in start_year:end_year){
     
+    # Year
     PEcAn.logger::logger.info(year)
     
     
-    old.file <- file.path(in.path, paste0(in.prefix, year, ".nc"))
+    old.file <- file.path(in.path, paste0(in.prefix, ".", year, ".nc"))
     
     
     if(file.exists(old.file)){
@@ -61,10 +73,10 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       ## Open netCDF file
       nc <- ncdf4::nc_open(old.file)
       
-      # Date were the datapoints' time is relative
+      # Data points are relational to this date
       units <- nc$dim$time$units
       
-      # Check that simulation doesn't take place before there are data points
+      # Check that the simulation doesn't take place before there are data points
       if(year == start_year & PEcAn.utils::datetime2cf(start_date, units, tz = "UTC") < 0){
         PEcAn.logger::logger.severe("No data from the start date, consider postponing it")
       }
@@ -83,7 +95,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       
       ## Determine the simulation days and calculate the start and end indexes
-      ## by using start_index and end_index functions.
+      ## by using start_index and end_index functions. These functions are found
+      ## at the end of this file
       
       if(year != start_year & year != end_year){  
         
@@ -110,7 +123,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         
         # Check the function to see how the end index is calculated
         ind_s <- 1
-        ind_e <- end_index(units, start_date, end_date, sec)
+        ind_e <- end_index(units, start_date, end_date, sec, tstep)
         
       }else{
         
@@ -119,7 +132,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         
         # Need to calculate both first and last index by using functions
         ind_s <- start_index(units, start_date, sec)
-        ind_e <- end_index(units, start_date, end_date, sec)
+        ind_e <- end_index(units, start_date, end_date, sec, tstep)
         
       }
       
@@ -135,7 +148,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
         
       
-      ## Info for climate.txt file ##
+      ## Info for climate file that model is using ##
       # Latitude and longitude
       lat <- ncdf4::ncvar_get(nc, "latitude")
       lon <- ncdf4::ncvar_get(nc, "longitude")
@@ -169,7 +182,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
 
       # Gather the vectors to dataframe
-      data <- as.data.frame(do.call("cbind", list(y = y, d = d, s = subd, prec = prec, tavg = tavg,
+      data <- as.data.frame(do.call("cbind", list(y = y, d = d, s = subd, prec = prec*86400/tstep, tavg = tavg,
                                     grad = grad, vpd = VPD/1000, wind = wind, press = press/100)))
       
       # Write prefix before the actual data
@@ -187,15 +200,15 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              "%data \n", sep = "\n")
         
         # Write prefix information before the data
-        cat(data_prefix, file = file.path(outfolder, "climate.txt"))
+        cat(data_prefix, file = file.path(outfolder, out.file))
         
         # For the first year, keep col.names as TRUE
-        data.table::fwrite(x = data, file = file.path(outfolder, "climate.txt"),
+        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
                            sep = "\t", col.names = T, append = T)
         
       }else{
         # For the other year, col.names are FALSE
-        data.table::fwrite(x = data, file = file.path(outfolder, "climate.txt"),
+        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
                            sep = "\t", col.names = F, append = T)
       }
       
@@ -208,7 +221,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     
   }
-  
+
+  return(invisible(results))
   
 } # met2model.LDNDC
 
@@ -217,21 +231,17 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 # netcdf file's starting date and simulation's starting date and converting that
 # difference to seconds. Returns +1 index based on the matching seconds.
 start_index <- function(units, start_date, sec){
-  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC")-1)*86400
+  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400 #)-1)
   if(timediff == 0){
     return(1)
   }else{
-    return(which(sec == timediff)+1)
+    return(which(sec == timediff))  #)+1)
   }
 }
 
 
-end_index <- function(units, start_date, end_date, sec){
-  if(lubridate::year(start_date) == lubridate::year(end_date)){
-    timediff <-PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")*86400
-    return(which(sec == timediff))
-  }else{
-    timediff <-lubridate::yday(end_date)*86400
-    return(which(sec == timediff))
-  }
+end_index <- function(units, start_date, end_date, sec, tstep){
+  #if(lubridate::year(start_date) == lubridate::year(end_date)){
+  timediff <-(PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")+1)*86400
+  return(which(sec == (timediff-86400/tstep)))
 }
