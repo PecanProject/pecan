@@ -27,6 +27,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
 
   
   # Check minimum package required
+  # This is LDNDC specific and just hard-coded for now
+  # Probably now reason to change
   MinPackReq <- "1.9"
   
   
@@ -34,28 +36,35 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   if(!is.null(settings$run$start.date) & !is.null(settings$run$end.date)){
     
     steps <- 48 # Hard-coded for now
-    ScheduleTime <- paste0(format(as.POSIXlt(settings$run$site$met.start), "%Y-%m-%d"), "/",
-                           steps, " -> ", format(as.POSIXlt(settings$run$site$met.end), "%Y-%m-%d"))
+    ScheduleTime <- paste0(format(as.POSIXlt(settings$run$start.date), "%Y-%m-%d"), "/",
+                           steps, " -> ", as.Date(format(as.POSIXlt(settings$run$end.date), "%Y-%m-%d"))+1)
+                          # One day added to end day of simulations, because the simulations will stop the first
+                          # timestep in that day and wouldn't simulate the whole last day otherwise.
+                          # This one observations is taken out it model2netcdf to not include extra observations
+                          # in netcdf file
   }
 
   
-  # find out where to write run/ouput
+  # Find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
   
   # Source
   if(!is.null(settings$run$inputs$met$path)){
-    SourcePrefix <- settings$run$inputs$met$path
+    # For climate data
+    MetPath <- settings$run$inputs$met$path
+    # Info for project file from which directory to read the inputs
+    SourcePrefix <- paste0(rundir, "/")
+    # Model outputs are written into own directory
     OutputPrefix <- file.path(outdir, "Output/")
   }
   
   #-----------------------------------------------------------------------
-  # create .ldndc template
-  #file.copy("~/pecan/models/ldndc/inst/project.ldndc", rundir)
+  ## Fill .ldndc template with the given settings
   projectfile <- readLines(con = system.file("project.ldndc", package = "PEcAn.LDNDC"), n = -1)
   
   
-  # changes
+  # Changes
   projectfile <- gsub('@PackMinVerReq@', MinPackReq, projectfile)
   
   projectfile <- gsub('@ScheduleTime@', ScheduleTime, projectfile)
@@ -70,14 +79,15 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   
   #-----------------------------------------------------------------------
-  # create launch script (which will create symlink)
+  # Create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con = settings$model$jobtemplate, n = -1)
   } else {
     jobsh <- readLines(con = system.file("template.job", package = "PEcAn.LDNDC"), n = -1)
   }
   
-  # create host specific setttings
+  # Create host specific settings
+  # NOT MEANINGFUL HERE -----
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$model$prerun, collapse = "\n"))
@@ -94,7 +104,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
   
-  # create job.sh
+  #------
+  
+  
+  # Create job.sh based on the given settings
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
@@ -106,6 +119,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
+  jobsh <- gsub("@METPATH@", MetPath, jobsh)
   
   jobsh <- gsub("@BINARY@", paste(settings$model$binary, paste0(rundir, "/project.ldndc")), jobsh)
   
@@ -125,6 +139,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   speciesparfile <- readLines(con = system.file("speciesparameter_template.xml", package = "PEcAn.LDNDC"), n = -1)
   
   
+  #----------------------
+    
+  ## Set-up the necessary files in to the run directory so
+  ## model is able to function properly. Later on, these
+  ## files should be populated with initial values.
+    
+  
   ###### THIS NEEDS TO BE FUNCTION AT SOME POINT
   ### PROBABLY SIMILAR FUNCTION FOR siteparameters as well
   #
@@ -142,20 +163,25 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   writeLines(speciesparfile, con = file.path(settings$rundir, run.id, "speciesparameters.xml"))
   
-  # for(pft in seq_along(trait.values)){
-  #   pft.traits <- unlist(trait.values[[pft]])
-  #   pft.names <- names(pft.traits)
+
+  
+  # Default events file, need to change later on. Only takes care of some initial biomass and
+  # then some random events. Not made for real use, but testing.
+  eventsfile <- readLines(con = system.file("events_template.xml", package = "PEcAn.LDNDC"), n = -1)
+  
+  eventsfile <- gsub("@Startdate@", as.Date(settings$run$start.date, format = "%Y/%m/%d"), eventsfile)
+  eventsfile <- gsub("@Event_1_Time@", as.Date(settings$run$start.date, format = "%Y/%m/%d") + sample(120:160, 1), eventsfile)
+  eventsfile <- gsub("@Event_2_Time@", as.Date(settings$run$start.date, format = "%Y/%m/%d") + sample(170:180, 1), eventsfile)
+  eventsfile <- gsub("@Event_3_Time@", as.Date(settings$run$start.date, format = "%Y/%m/%d") + sample(250:300, 1), eventsfile)
+  
+  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
 
 
-  ######
 
   # Default setup file, need to change later on
   setupfile <- readLines(con = system.file("setup.xml", package = "PEcAn.LDNDC"), n = -1)
   writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
-  
-  # Default events file, need to change later on
-  eventsfile <- readLines(con = system.file("events.xml", package = "PEcAn.LDNDC"), n = -1)
-  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+
   
   # Default site file, need to change later on
   sitefile <- readLines(con = system.file("site.xml", package = "PEcAn.LDNDC"), n = -1)
@@ -171,47 +197,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   writeLines(airchemistry, con = file.path(settings$rundir, run.id, "airchemistry.txt"))
   
   
-  #####
-  
-  
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  # if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-  #   config.text <- readLines(con = settings$model$config, n = -1)
-  # } else {
-  #   filename <- system.file(settings$model$config, package = "PEcAn.LDNDC")
-  #   if (filename == "") {
-  #     if (!is.null(settings$model$revision)) {
-  #       filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.LDNDC")
-  #     } else {
-  #       model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-  #       filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.LDNDC")
-  #     }
-  #   }
-  #   if (filename == "") {
-  #     PEcAn.logger::logger.severe("Could not find config template")
-  #   }
-  #   PEcAn.logger::logger.info("Using", filename, "as template")
-  #   config.text <- readLines(con = filename, n = -1)
-  # }
-  # 
-  # config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  # config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  # config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  # config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
-  # config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  # config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
-  # config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
-  # config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
-  # config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
-  # config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
-  # config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
-  # config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  # config.text <- gsub("@ENSNAME@", run.id, config.text)
-  # config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  # 
-  # #-----------------------------------------------------------------------
-  # config.file.name <- paste0("CONFIG.", run.id, ".txt")
-  # writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
+  #------------------------
   
 } # write.config.LDNDC
