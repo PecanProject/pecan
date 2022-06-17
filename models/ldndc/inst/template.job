@@ -10,6 +10,10 @@ exec &> "@OUTDIR@/logfile.txt"
 # create output folder
 mkdir -p "@OUTDIR@"
 
+cd "@RUNDIR@"
+ln -s "@METPATH@" climate.txt
+
+
 # see if application needs running
 if [ ! -e "@OUTDIR@/results.csv" ]; then
   cd "@RUNDIR@"
