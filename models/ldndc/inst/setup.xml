@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ldndcsetup>
     <!-- setup id -->
-    <setup id="0" name="qvidja intensive" >
+    <setup id="0" name="site" >
         <!-- geographical location -->
         <location elevation="10.0" latitude="60.29" longitude="22.39" />
         <models>
