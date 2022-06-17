@@ -23,9 +23,7 @@
 ##'
 ##' @author Henri Kajasilta
 model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  #PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
-  
 
   # File path to Output directory wherein the model results are located 
   output_dir <- file.path(outdir, "Output")
@@ -35,6 +33,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   Subdailyfiles <- list.files(output_dir)[grep("*.-subdaily", list.files(output_dir))]
   
   # Test, if required files are all available subdaily
+  ##---- Currently meant to work only with subdaily timesteps ----##
   if(all(c("physiology-subdaily.txt") %in% Subdailyfiles)){
     PEcAn.logger::logger.info("Files with sub-daily timesteps found: ", Subdailyfiles)
     
@@ -66,7 +65,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   ldndc.out <- physiology %>%
     mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
-    slice(1:(n()-1)) %>% # For some reason, one observation of the day "2021-12-31" is recorded, we take it out
+    slice(1:(n()-1)) %>% # Removing one extra observation
     mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
     select(Year, Day, Step, lai, dC_co2_upt.kgCm.2.)
