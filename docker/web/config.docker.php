@@ -24,6 +24,9 @@ $browndog_password="";
 # R binary
 $Rbinary="/usr/bin/R";
 
+# plotting endpoint, leave blank to use php code
+$api_url="/api/";
+
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
@@ -69,7 +72,7 @@ $fqdn = getenv('FQDN', true) ?: "docker";
 #                additional parameters for the job.sh.
 # - scratchdir : folder to be used for scratchspace when running certain
 #                models (such as ED)
-$hostlist=array($fqdn => 
+$hostlist=array($fqdn =>
                     array("displayname"    => $name,
                           "rabbitmq_uri"   => getenv('RABBITMQ_URI', true) ?: "amqp://guest:guest@rabbitmq/%2F",
                           "rabbitmq_queue" => "pecan"
@@ -81,7 +84,7 @@ $hostlist=array($fqdn =>
                           "qstat"       => "qstat -j @JOBID@ || echo DONE",
                           "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
                           "postrun"     => "sleep 60",
-                          "models"      => 
+                          "models"      =>
                               array("ED2" =>
                                   array("prerun"  => "module load hdf5")
                               )
