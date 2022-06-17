@@ -14,7 +14,7 @@
 	        <module id="watercycle:echy" timemode="subdaily">
 		   <options potentialevapotranspiration="penman" />
 		</module> 
-		<module id="physiology:grasslanddndc" timemode="subdaily" />
+		<module id="physiology:plamox" timemode="subdaily" />
 		<module id="soilchemistry:metrx" timemode="subdaily" />
 
 			<!-- outputs -->
