@@ -26,17 +26,8 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   #PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   
-  #sitelat <- settings$run$site$lat
-  #sitelon <- settings$run$site$lon
-  
-  ####
-  
-  #start_date <- "2018-05-09" #"2018-05-09"
-  #end_date <- "2019-12-31" #"2021-12-31"
-  
-  #outdir <- "/data/istem/sandbox/Qvidja/test"
-  #outdir <- "/data/workflows/PEcAn_15000000076/out/15000215313"
-  
+
+  # File path to Output directory wherein the model results are located 
   output_dir <- file.path(outdir, "Output")
   
   #### Something to check that data has same timesteps. Either take all of the necessary
@@ -75,7 +66,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   ldndc.out <- physiology %>%
     mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
-    #slice(1:(n()-1)) %>% # For some reason, one observation of the day "2021-12-31" is recorded, we take it out
+    slice(1:(n()-1)) %>% # For some reason, one observation of the day "2021-12-31" is recorded, we take it out
     mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
     select(Year, Day, Step, lai, dC_co2_upt.kgCm.2.)
@@ -100,15 +91,15 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   
   
-  ## Output is given daily at this point --- Will see, if this will change later
-  # timesteps in a day
+  ## Output is given sub-daily at this point --- Will see, if this will change later
+  ## timesteps in a day
   out_day <- sum(ldndc.out$Year == simu_years[1] &
                  ldndc.out$Day == unique(ldndc.out$Day)[1],
                  na.rm = T)
   
   timestep.s <- 86400/out_day
   
-  ## Loop over years to in output to create separate netCDF outputs
+  ## Loop over years in output to create separate netCDF outputs
   for(y in year_seq){
     # if file exist and overwrite is F, then move on to the next
     
@@ -134,13 +125,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
       end_d <- PEcAn.utils::days_in_year(y)
     }
     
-    ##
+    ## Subset the years we are interested in
     sub.ldndnc.out <- subset(sub.ldndnc.out, Day >= begin_date & Day <= end_d)
     
     
-    
-    #PEcAn.utils::datetime2cf(start_date, paste0("days since ", lubridate::year(start_date), "-01-01"), tz = "UTC")
-    
+    # Create the tvals that are used in nc-files
     tvals <- sub.ldndnc.out[["Day"]] + sub.ldndnc.out[["Step"]] /out_day -1
     
     
