@@ -32,7 +32,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
   if(!is.null(acronym)){
     Specie_elements <- acronym
     print("Input is Symbol!")
-  } else if(!is.null(ID)){
+  }else if(!is.null(ID)){
     Specie_elements <- ID
     print("Input is ID!")
   }else{
