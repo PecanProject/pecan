@@ -25,8 +25,8 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
   # default points to psql-pecan.bu.edu.
   if (is.null(con)) {
     con <- PEcAn.DB::db.open(...)
+    on.exit(db.close(con), add = TRUE)
   }
-  on.exit(db.close(con), add = TRUE)
   
   #detect if we input Symbol or IDs
   if(!is.null(acronym)){
