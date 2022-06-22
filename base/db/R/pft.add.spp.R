@@ -12,31 +12,31 @@
 ##' This function is used to add PFT-Species pairs to the database table 'pfts_species'.  In the initial implementation the PFT has to be defined already and the species are added based on their USDA Symbol (genus/species acronym).  Multiple species can be added at once but only one PFT at a time.
 ##' @title Associate species with a PFT.
 ##' @param pft String name of the PFT in the database
-##' @param acronym USDA Plants Database Symbol. (standard genus-species acronym) see \url{http://plants.usda.gov}
+##' @param acronym Specie's Symbols.
+##' @param ID Specie's IDs in Bety.
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.
 ##' @param ... optional arguements for connecting to database (e.g. password, user name, database)
 ##' @return Function does not return a value but does print out diagnostic statements.
 ##' @author Michael C. Dietze, Dongchen Zhang
-pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
+pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL, ...) {
   
   ## establish database connection
   # default points to psql-pecan.bu.edu.
   if (is.null(con)) {
-    bety <- dplyr::src_postgres(dbname   = "bety",
-                                host     = "psql-pecan.bu.edu",
-                                user     = "bety",
-                                password = "bety")
-    con <- bety$con
+    con <- PEcAn.DB::db.open(...)
   }
+  on.exit(db.close(con), add = TRUE)
   
-  #detect if acronym is ID or Symbol
-  if(is.character(acronym[1])){
-    ID_flag <- F
-  }else if(is.numeric(acronym[1])){
-    ID_flag <- T
+  #detect if we input Symbol or IDs
+  if(!is.null(acronym)){
+    Specie_elements <- acronym
+    print("Input is Symbol!")
+  } else if(!is.null(ID)){
+    Specie_elements <- ID
+    print("Input is ID!")
   }else{
-    print("can't detect the type of Acronym, please check it!!!")
+    print("No IDs or Symbols imported!, Please check the data input!")
     return(0)
   }
   
@@ -47,7 +47,12 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
   ## if pfts.name does not exist, stop and send error
   if(nrow(my.pft) > 1){
     print("More than one pft matched!!! Please check your pft name and make sure it is unique to all other pfts!!!")
-    return(my.pft)
+    
+    #find similar pfts that might match and return it
+    similar_pft_query <- glue::glue_sql(paste0("select * from pfts where name like \'%", pft, "%\'"), .con = con)
+    similar_pfts <- PEcAn.DB::db.query(con = con, query = similar_pft_query)
+    print("similar pfts are returned, please check that!!!")
+    return(similar_pfts)
   }else if(nrow(my.pft) == 0){
     print("No pft founded that matched the name!!! Please check your pft name!!!")
     return(0)
@@ -63,7 +68,7 @@ pft.add.spp <- function(pft, acronym, test = TRUE, con = NULL, ...) {
   ## loop over acronyms
   for (acro in acronym) {
     ## look up species based on acronyms. (can be either Symbols or IDs)
-    if(ID_flag){
+    if(!is.null(ID)){
       species_qry <- glue::glue_sql(paste0("select * from species where \"id\" = '", acro, "'"), .con = con)
     }else{
       species_qry <- glue::glue_sql(paste0("select * from species where \"Symbol\" = '", acro, "'"), .con = con)
