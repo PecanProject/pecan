@@ -4,12 +4,14 @@
 \alias{pft.add.spp}
 \title{Associate species with a PFT.}
 \usage{
-pft.add.spp(pft, acronym, test = TRUE, con = NULL, ...)
+pft.add.spp(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL, ...)
 }
 \arguments{
 \item{pft}{String name of the PFT in the database}
 
-\item{acronym}{USDA Plants Database Symbol. (standard genus-species acronym) see \url{http://plants.usda.gov}}
+\item{acronym}{Specie's Symbols.}
+
+\item{ID}{Specie's IDs in Bety.}
 
 \item{test}{Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species}
 
