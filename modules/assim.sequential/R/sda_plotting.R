@@ -551,32 +551,37 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   }
   observed_vars = unique(observed_vars)
   
-  for (name in names(obs.mean))
-  {
-    data_mean = obs.mean[name]
-    data_cov = obs.cov[name]
-    sites = names(data_mean[[1]])
-    for (site in sites)
-    {
-      d_mean = data_mean[[1]][[site]]
-      d_cov = data_cov[[1]][[site]]
-      colnames = names(d_mean)
-      if (length(colnames) < length(observed_vars))
-      {
-        missing = which(!(observed_vars %in% colnames))
-        missing_mean = as.data.frame(NA)
-        colnames(missing_mean) = observed_vars[missing]
-        d_mean = cbind(d_mean, missing_mean)
-        
-        missing_cov = matrix(0, nrow = length(observed_vars), ncol = length(observed_vars))
-        diag(missing_cov) = c(diag(d_cov), NA)
-        d_cov = missing_cov
-      }
-      data_mean[[1]][[site]] = d_mean
-      data_cov[[1]][[site]] = d_cov
+  #new diag function: fixed the bug when length==1 then it will return 0x0 matrix
+  diag_fix <- function(vector){
+    if (length(vector)>1){
+      return(diag(vector))
+    }else if (length(vector)==1){
+      return(vector)
     }
-    obs.mean[name] = data_mean
-    obs.cov[name] = data_cov
+  }
+  #bug fixing: detailed commends
+  for (name in names(obs.mean)){
+    for (site in names(obs.mean[[1]])){
+      obs_mean <- obs.mean[[name]][[site]]
+      obs_cov <- obs.cov[[name]][[site]]
+      if(length(names(obs_mean))<length(observed_vars)){
+        missing <- which(!(observed_vars %in% names(obs_mean)))
+        not_missing <- which((observed_vars %in% names(obs_mean)))
+        
+        new_obs_mean <- rep(NA, length(observed_vars))
+        new_obs_mean[not_missing] <- obs_mean
+        names(new_obs_mean) <- observed_vars
+        
+        new_obs_cov <- diag(rep(NA, length(new_obs_mean)))
+        diag(new_obs_cov)[not_missing] <- diag_fix(obs_cov)
+        
+        obs.mean[[name]][[site]] <- new_obs_mean
+        obs.cov[[name]][[site]] <- new_obs_cov
+        next
+      }
+      obs.mean[[name]][[site]] <- obs_mean
+      obs.cov[[name]][[site]] <- obs_cov
+    }
   }
 
   #Defining some colors
@@ -820,12 +825,12 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   all.plots.print <-list(map.plot)
   for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
   
-  pdf("SDA/SDA.pdf",width = filew, height = fileh)
+  pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
   all.plots.print %>% purrr::map(~print(.x))
   dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir, "timeseries.plot.data.Rdata"))
   
   
 }

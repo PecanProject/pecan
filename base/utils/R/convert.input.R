@@ -695,6 +695,7 @@ convert.input <-
     }
      
     arg.string <- listToArgString(fcn.args)
+    PEcAn.logger::logger.debug("input.args converted to string")
     
     if (!missing(format.vars)) {
       arg.string <- paste0(arg.string, ", format=", paste0(list(format.vars)))

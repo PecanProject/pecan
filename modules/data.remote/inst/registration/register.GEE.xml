@@ -35,7 +35,7 @@
      <mimetype>application/x-netcdf</mimetype>
    </raw_format>
   </collection>
-    <collection>
+  <collection>
     <original_name>NASA_USDA/HSL/SMAP_soil_moisture</original_name>
     <pecan_name>smap</pecan_name>
     <coord>
@@ -45,6 +45,18 @@
     <raw_format>
      <id></id>
      <name></name>
+     <mimetype>application/x-netcdf</mimetype>
+   </raw_format>
+  </collection>
+  <collection>
+    <original_name>users/potapovpeter/GEDI_V27</original_name>
+    <pecan_name>gedi</pecan_name>
+    <coord>
+      <coordtype>point</coordtype>
+    </coord>
+    <raw_format>
+     <id>1000000129</id>
+     <name>Remote_generic</name>
      <mimetype>application/x-netcdf</mimetype>
    </raw_format>
   </collection>

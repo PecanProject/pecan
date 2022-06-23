@@ -48,7 +48,7 @@ vwReg(
 
 \item{mweight}{should the median smoother be visually weighted?}
 
-\item{show.lm}{should the linear regresison line be plotted?}
+\item{show.lm}{should the linear regression line be plotted?}
 
 \item{show.median}{should the median smoother be plotted?}
 

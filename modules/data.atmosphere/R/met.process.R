@@ -221,7 +221,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       con,
       hostname = PEcAn.remote::fqdn(),
       exact.dates = TRUE,
-      pattern = met,
+#      pattern = met,
       return.all=TRUE
     ) 
     # If we already had the met downloaded for this site  
@@ -244,7 +244,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
           end_date <= end_date,
           format_id == formatid
         ) %>%
-        filter(grepl(met, name)) %>%
+        filter(grepl(met, "name")) %>%
         inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
         filter(machine_id == machine.id) %>%
         collect()
@@ -287,8 +287,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i],
-                                                                   dbfile.id = cf.id$dbfile.id[i]), 
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+                                                                   dbfile.id = cf.id$id[i]), 
                                        register = register, 
                                        dir = dir, 
                                        met = met, 

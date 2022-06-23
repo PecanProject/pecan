@@ -4,7 +4,7 @@
 \alias{spline.truncate}
 \title{Truncate spline}
 \usage{
-spline.truncate(x, min.quantile = pnorm(-3))
+spline.truncate(x, min.quantile = stats::pnorm(-3))
 }
 \arguments{
 \item{x}{vector}

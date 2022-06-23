@@ -21,6 +21,7 @@ RUN if [ "$(lsb_release -s -c)" = "stretch" ]; then \
 # ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+       cmake \
        curl \
        jags \
        time \

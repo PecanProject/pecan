@@ -313,7 +313,7 @@ sclass <- function(sandfrac,clayfrac){
 #' @return volumetric soil water content
 #' @export
 #'
-#' @examples
+#' 
 mpot2smoist <- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b,volume_fraction_of_water_in_soil_at_saturation){
   smfrac = ( mpot / soil_water_potential_at_saturation) ^ (-1. / soil_hydraulic_b)
   smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation
