@@ -19,7 +19,7 @@ plan(multisession)
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
 
-forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/April15/"
+forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
 outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 nodata <- FALSE #use this to run SDA with no data
 restart <- list()
@@ -51,7 +51,7 @@ settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.seq
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-
+on.exit(db.close(con))
 #Find last SDA Run to get new start date
 sda.start <- NA
 all.previous.sims <- list.dirs(outputPath, recursive = F)
@@ -88,7 +88,7 @@ all.previous.sims <- list.dirs(outputPath, recursive = F)
 #     sda.start <- Sys.Date() - 9
 # }
 #to manually change start date 
-sda.start <- as.Date("2021-06-02")
+sda.start <- as.Date("2021-07-28")
 sda.end <- sda.start + lubridate::days(1)
 
 # Finding the right end and start date
@@ -354,7 +354,9 @@ ens <- PEcAn.DB::db.query(query.ens, con)
 PEcAn.DB::db.close(con)
 #list files in output folder
 restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
-restart$start.cut <- as.Date(obs.mean$`2021-06-02`$date)
+restart$start.cut <- lubridate::as_datetime(obs.mean$`2021-06-02`$date)
+restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
+restart$runids <- run$id
 # t0Files <- list.files(t0Path, full.names = TRUE, pattern = "out")
 # t0FilesEns <- list.files(t0Files)
 

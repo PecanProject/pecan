@@ -3,11 +3,11 @@
 #' @name sda_matchparam
 #' @author Alexis Helgeson
 #' 
-#' @param settings 
-#' @param ensemble.samples 
-#' @param site.ids 
+#' @param settings settings object passed from sda.enkf_MultiSite
+#' @param ensemble.samples taken from sample.Rdata object
+#' @param site.ids character object passed from sda.enkf_MultiSite
 #'
-#' @return
+#' @return new.params object used to 
 #' 
 #'
 #' @examples

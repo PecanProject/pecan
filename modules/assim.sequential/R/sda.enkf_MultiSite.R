@@ -44,6 +44,7 @@ sda.enkf.multisite <- function(settings,
   if(class(restart) == "list"){
     old.dir <- restart$filepath
     start.cut <- restart$start.cut
+    runid <- restart$runids
     restart_flag = TRUE
   }else{
     restart_flag = FALSE
@@ -125,7 +126,7 @@ sda.enkf.multisite <- function(settings,
   #filtering obs data based on years specifited in setting > state.data.assimilation
   if (restart_flag) {
     start.cut <- lubridate::ymd_hms(start.cut) #sda.start taken from restart list as date to begin runs
-    Start.sda <-(lubridate::year(sda.start)) 
+    Start.sda <-lubridate::year(sda.start)
     
   }else{
     start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
@@ -217,10 +218,10 @@ sda.enkf.multisite <- function(settings,
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
   ###-------------------------------------------------------------------###----   
-  if (restart){
+  if (restart_flag){
     #TO DO grab soil files
     #add else for when sda.out.Rdata is missing
-    if(!file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
+    if(file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
       load(file.path(old.dir,"SDA", "sda.output.Rdata"))
       #this is where the old simulation will be moved to
       old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
@@ -242,7 +243,6 @@ sda.enkf.multisite <- function(settings,
       load(file.path(old.dir, "samples.Rdata"))
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       sim.time<-seq_len(nt)
-     
       #create params object using previous forecast ensemble members
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids)
       
@@ -250,7 +250,7 @@ sda.enkf.multisite <- function(settings,
       ####add function here
       
       #build X using previous forecast output
-      X <- build_X(configs, settings, siteparams)
+      X <- build_X(runid, settings, new.params, nens = length(runid), read_restart_times, sim.time)
   }else{
     sim.time<-seq_len(nt)
   }
