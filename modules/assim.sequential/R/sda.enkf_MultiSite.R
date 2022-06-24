@@ -6,7 +6,7 @@
 #' @param obs.mean  List of dataframe of observation means, named with observation datetime.
 #' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
-#' @param restart   Used for iterative updating previous forecasts. File path points to previous SDA/forecast output
+#' @param restart   Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA
 #' @param forceRun  Used to force job.sh files that were not run for ensembles in SDA (quick fix) 
 #' @param keepNC    Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
@@ -25,7 +25,7 @@ sda.enkf.multisite <- function(settings,
                                obs.mean, 
                                obs.cov, 
                                Q = NULL, 
-                               restart = FALSE, 
+                               restart = NULL, 
                                forceRun = TRUE, 
                                keepNC = TRUE,
                                control=list(trace = TRUE,
@@ -41,11 +41,12 @@ sda.enkf.multisite <- function(settings,
                                             OutlierDetection=FALSE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
-  if(class(restart) == "character"){
-    old.dir <- restart
-    restart = TRUE
+  if(class(restart) == "list"){
+    old.dir <- restart$filepath
+    start.cut <- restart$start.cut
+    restart_flag = TRUE
   }else{
-    restart = FALSE
+    restart_flag = FALSE
   }
   future::plan(multiprocess)
   if (control$debug) browser()
@@ -87,9 +88,9 @@ sda.enkf.multisite <- function(settings,
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
   restart.list <- NULL
-  aqq         <- NULL
-
-  #q.bar        <- NULL #default process covariance matrix
+  #create SDA folder to store output
+  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
+  
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
@@ -115,32 +116,48 @@ sda.enkf.multisite <- function(settings,
   }else{
     conf.settings <- list(settings)
     site.ids <- as.character(settings$run$site$id)
-    # site.lat <- as.numeric(settings$run$site$lat)
-    # site.lon <- as.numeric(settings$run$site$lon)
-    # site.locs <- matrix(NA, nrow = 1, ncol = 2)
-    # site.locs[1,1] <- site.lon
-    # site.locs[1,2] <- site.lat
-    # colnames(site.locs) <- (c("Lon","Lat"))
-    # rownames(site.locs) <- site.id
   }
   
-  #filtering obs data based on years specifited in setting > state.data.assimilation
   
-  if (restart) {
-    start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)-1
-    Start.Year <-(lubridate::year(settings$state.data.assimilation$start.date)-1)
+  ###-------------------------------------------------------------------###
+  ### check dates before data assimilation                              ###
+  ###-------------------------------------------------------------------###----  
+  #filtering obs data based on years specifited in setting > state.data.assimilation
+  if (restart_flag) {
+    start.cut <- lubridate::ymd_hms(start.cut) #sda.start taken from restart list as date to begin runs
+    Start.sda <-(lubridate::year(sda.start)) 
     
   }else{
     start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-    Start.Year <- (lubridate::year(settings$state.data.assimilation$start.date))
+    Start.sda <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
   
-  End.Year <- lubridate::year(settings$state.data.assimilation$end.date) # years that assimilations will be done for - obs will be subsetted based on this
-  assimyears <- Start.Year:End.Year
-  obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assimyears))]
-  obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assimyears))]
-  # dir address based on the end date
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
+  End.sda <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
+  assim.sda <- Start.sda:End.sda
+  obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.mean dates against assimyear dates
+  obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.cov dates against assimyear dates
+  #checking that there are dates in obs.mean and adding midnight as the time
+  obs.times <- names(obs.mean)
+  obs.times.POSIX <- lubridate::ymd_hms(obs.times)
+  for (i in seq_along(obs.times)) {
+    if (is.na(obs.times.POSIX[i])) {
+      if (is.na(lubridate::ymd(obs.times[i]))) {
+        PEcAn.logger::logger.warn("Error: no dates associated with observations")
+      } else {
+        ### Data does not have time associated with dates 
+        ### Adding 12:59:59PM assuming next time step starts one second later
+        PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
+        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
+      }
+    }
+  }
+  obs.times <- obs.times.POSIX
+  read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times)
+  nt  <- length(obs.times) #sets length of for loop for Forecast/Analysis
+  if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
+
+# Model Specific Setup ----------------------------------------------------
+
   #--get model specific functions
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
@@ -159,89 +176,11 @@ sda.enkf.multisite <- function(settings,
     PEcAn.logger::logger.warn(my.split_inputs, "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag.")
     
   }
-  
-  ###-------------------------------------------------------------------###
-  ### tests before data assimilation                                    ###
-  ###-------------------------------------------------------------------###----  
-  obs.times <- names(obs.mean)
-  obs.times.POSIX <- lubridate::ymd_hms(obs.times)
-  for (i in seq_along(obs.times)) {
-    if (is.na(obs.times.POSIX[i])) {
-      if (is.na(lubridate::ymd(obs.times[i]))) {
-        PEcAn.logger::logger.warn("Error: no dates associated with observations")
-      } else {
-        ### Data does not have time associated with dates 
-        ### Adding 12:59:59PM assuming next time step starts one second later
-        PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
-        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
-      }
-    }
-  }
-  obs.times <- obs.times.POSIX
-  read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times)
-  #obs.times <- c(start.cut, obs.times)
-  nt          <- length(obs.times)
-  if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
-  bqq         <- numeric(nt + 1)
-  
-
-  ###-------------------------------------------------------------------###
-  ### If this is a restart - Picking up were we left last time          ###
-  ###-------------------------------------------------------------------###----   
-  if (restart){
-    #TO DO grab soil files
-    #add else for when sda.out.Rdata is missing
-    if(!file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
-      load(file.path(old.dir,"SDA", "sda.output.Rdata"))
-      #this is where the old simulation will be moved to
-      old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
-      #--- Updating the nt and etc
-      if(!dir.exists(file.path(old.dir,"SDA",old.sda))) dir.create(file.path(old.dir,"SDA",old.sda))
-      # finding/moving files to it's end year dir
-      files.last.sda <- list.files(file.path(old.dir,"SDA"))
-      #copying
-      file.copy(file.path(file.path(old.dir,"SDA"),files.last.sda),
-                file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
-      )
-      params<-new.params
-      sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
-      
-      X <-FORECAST[[length(FORECAST)]]
-    }else{
-      PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
-      #loading param info from previous forecast
-      load(file.path(old.dir, "samples.Rdata"))
-      #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
-      sim.time<-seq_len(nt)
-      #reformatting params
-      new.params <- list()
-      all.pft.names <- names(ensemble.samples)
-      for (i in 1:length(settings$pfts$pft$name)) {
-        #match pft name
-        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
-        which.pft <- which(all.pft.names==site.pft.name)
-        
-        site.param <- list()
-        site.samples <- ensemble.samples[which.pft]
-        for (j in seq_len(nens)) {
-          site.param[[j]] <- lapply(site.samples, function(x, n) {
-            x[j, ] }, n = j)
-        } 
-        new.params[[i]] <- site.param
-      }
-      names(new.params) <- site.ids
-  }else{
-    sim.time<-seq_len(nt)
-  }
-  
-  ### Splitting/Cutting the mets to the start and the end  of SDA       ###
-  ###-------------------------------------------------------------------###---- 
-
+  #split met if model calls for it
   #create a folder to store extracted met files
   if(!file.exists(paste0(settings$outdir, "/Extracted_met/"))){
     dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
-
   
   conf.settings<-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
@@ -274,54 +213,68 @@ sda.enkf.multisite <- function(settings,
       }
       settings
     })
-  
-  conf.settings<-PEcAn.settings::as.MultiSettings(conf.settings)
-  
-  
+  conf.settings<- PEcAn.settings::as.MultiSettings(conf.settings)
   ###-------------------------------------------------------------------###
-
+  ### If this is a restart - Picking up were we left last time          ###
+  ###-------------------------------------------------------------------###----   
+  if (restart){
+    #TO DO grab soil files
+    #add else for when sda.out.Rdata is missing
+    if(!file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
+      load(file.path(old.dir,"SDA", "sda.output.Rdata"))
+      #this is where the old simulation will be moved to
+      old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
+      #--- Updating the nt and etc
+      if(!dir.exists(file.path(old.dir,"SDA",old.sda))) dir.create(file.path(old.dir,"SDA",old.sda))
+      # finding/moving files to it's end year dir
+      files.last.sda <- list.files(file.path(old.dir,"SDA"))
+      #copying
+      file.copy(file.path(file.path(old.dir,"SDA"),files.last.sda),
+                file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
+      )
+      params<-new.params
+      sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+      
+      X <-FORECAST[[length(FORECAST)]]
+    }else{
+      PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
+      #loading param info from previous forecast
+      load(file.path(old.dir, "samples.Rdata"))
+      #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
+      sim.time<-seq_len(nt)
+     
+      #create params object using previous forecast ensemble members
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids)
+      
+      #create inputs object for met using previous forecast ensemble members
+      ####add function here
+      
+      #build X using previous forecast output
+      X <- build_X(configs, settings, siteparams)
+  }else{
+    sim.time<-seq_len(nt)
+  }
+  
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###----
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   # Reading param samples------------------------------- 
+  
   #take params code and add to if/else restart above and make sure params are formatted the same way
   if(restart){
-    #add restart flag match ensemble members from previous met to todays met files
-    # This is gonna be used just for the first round
-    inputs <- conf.settings %>% map(function(setting) {
-      input.ens.gen(
-        settings = setting,
-        input = "met",
-        method = setting$ensemble$samplingspace$met$method,
-        parent_ids = NULL 
-      )
-    }) 
+    #if restart = TRUE X, inputs, and new.params already exist in environmemt
+    inputs = inputs
+    new.params = new.params
   }else{
-    #add restart flag
     if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
     #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
     load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-    #reformatting params
-    new.params <- list()
-    all.pft.names <- names(ensemble.samples)
-    for (i in 1:length(settings$pfts$pft$name)) {
-      #match pft name
-      site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
-      which.pft <- which(all.pft.names==site.pft.name)
     
-      site.param <- list()
-      site.samples <- ensemble.samples[which.pft]
-      for (j in seq_len(nens)) {
-        site.param[[j]] <- lapply(site.samples, function(x, n) {
-        x[j, ] }, n = j)
-    } 
-      new.params[[i]] <- site.param
-    }
-    names(new.params) <- site.ids
-    #add restart flag match ensemble members from previous met to todays met files
-    # This is gonna be used just for the first round
+    #create params object using samples generated from TRAITS functions
+    new.params <- sda_matchparam(settings, ensemble.samples, site.ids)
+    #sample met ensemble members
     inputs <- conf.settings %>% map(function(setting) {
       input.ens.gen(
         settings = setting,
@@ -476,11 +429,11 @@ sda.enkf.multisite <- function(settings,
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
         
+      }  ## end else from restart & t==1
         
         
-        
-        FORECAST[[obs.t]] <- X
-      }
+      FORECAST[[obs.t]] <- X
+      
       
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
@@ -498,7 +451,7 @@ sda.enkf.multisite <- function(settings,
           diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         }
         # making the mapping operator
-        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
+        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]]) #works for only 1 site 
         
         aqq         <- NULL
         bqq         <- numeric(nt + 1)

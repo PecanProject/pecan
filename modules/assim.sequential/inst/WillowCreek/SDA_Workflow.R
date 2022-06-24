@@ -22,7 +22,7 @@ plan(multisession)
 forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/April15/"
 outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 nodata <- FALSE #use this to run SDA with no data
-restart <- FALSE#default
+restart <- list()
 days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
 setwd(outputPath)
 options(warn=-1)
@@ -353,7 +353,8 @@ ens <- PEcAn.DB::db.query(query.ens, con)
 #now that we have the workflow id for forecast run we can close connection to BETY
 PEcAn.DB::db.close(con)
 #list files in output folder
-restart <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+restart$start.cut <- as.Date(obs.mean$`2021-06-02`$date)
 # t0Files <- list.files(t0Path, full.names = TRUE, pattern = "out")
 # t0FilesEns <- list.files(t0Files)
 

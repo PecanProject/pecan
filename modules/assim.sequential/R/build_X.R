@@ -10,7 +10,7 @@
 #' @param siteparams 
 #'
 #' @return
-#' @export
+#' 
 #'
 #' @examples
 build_X <- function(configs, settings, siteparams){
@@ -55,6 +55,5 @@ build_X <- function(configs, settings, siteparams){
       
       
       
-      
-      FORECAST[[obs.t]] <- X
+      return(X)
 }
