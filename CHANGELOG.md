@@ -36,6 +36,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Fix broken build caused by BioCro updates #2925
 - rstudio was not working behind traefik.
 - plots now work in docker containers
+- when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
 
 ### Changed
 
