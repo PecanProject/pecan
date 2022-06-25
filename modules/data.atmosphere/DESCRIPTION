@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    curl,
     data.table,
     dplyr,
     geonames (> 0.998),
