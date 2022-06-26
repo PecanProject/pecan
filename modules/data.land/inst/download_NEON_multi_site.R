@@ -6,7 +6,7 @@
 #' @return VEG_INFO: a list object containing veg_info, site IDs of each site.
 #' @export log.txt file describing the progress of download
 
-Download_multiSites_NEON <- function(settings, main_store_dir){
+Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
   #get NEON sites table
   neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   
@@ -37,6 +37,10 @@ Download_multiSites_NEON <- function(settings, main_store_dir){
     if(length(which(dataProducts$dataProductCode=="DP1.10098.001")) == 0){
       print(paste0("no data available for site: ", tempNEON$siteCode, ". jump to the next site!"))
       log_txt <- c(log_txt, paste0("no data available for site: ", tempNEON$siteCode, ". jump to the next site!"))
+      
+      #write incrementally
+      fileConn <- file(paste0(main_store_dir, "/log.txt"))
+      writeLines(log_txt, fileConn)
       next
     }
     NEON_dates <- lubridate::date(paste0(dataProducts$availableMonths[[which(dataProducts$dataProductCode=="DP1.10098.001")]], "-01"))
@@ -103,8 +107,6 @@ Download_multiSites_NEON <- function(settings, main_store_dir){
     #write into output
     VEG_INFO[[i]] <- veg_info
   }
-  fileConn <- file(paste0(main_store_dir, "/log.txt"))
-  writeLines(log_txt, fileConn)
   close(fileConn)
   save(VEG_INFO, file = paste0(main_store_dir,"/VEG_INFO.Rdata"))
   return(VEG_INFO)
