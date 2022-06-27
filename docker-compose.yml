@@ -4,44 +4,33 @@ services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
-    image: traefik:1.7
+    image: "traefik:v2.5"
     command:
-      - --loglevel=INFO
-      - --api
+      - --log.level=INFO
+      - --api=true
+      - --api.dashboard=true
       # Entrypoints
-      - --defaultentrypoints=https,http
-      - --entryPoints=Name:http Address::${TRAEFIK_HTTP_PORT:-8000} ${TRAEFIK_HTTP_REDIRECT:-""}
-      - --entryPoints=Name:https Address::${TRAEFIK_HTTPS_PORT:-8443} ${TRAEFIK_HTTPS_OPTIONS:-TLS}
-      # Configuration for acme (https://letsencrypt.org/)
-      - --acme=${TRAEFIK_ACME_ENABLE:-false}
-      #- --acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      - --acme.email=${TRAEFIK_ACME_EMAIL:-""}
-      - --acme.entrypoint=https
-      - --acme.onhostrule=true
-      - --acme.storage=/config/acme.json
-      - --acme.httpchallenge.entrypoint=http
-      - --acme.storage=/config/acme.json
-      - --acme.acmelogging=true
-      # DOCKER
-      - --docker=true
-      - --docker.endpoint=unix:///var/run/docker.sock
-      - --docker.exposedbydefault=false
-      - --docker.watch=true
-    restart: unless-stopped
+      - --entrypoints.web.address=:80
+      # Docker setup
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+    restart: "unless-stopped"
     networks:
       - pecan
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - "${TRAEFIK_HTTP_PORT-8000}:${TRAEFIK_HTTP_PORT:-8000}"
-      - "${TRAEFIK_HTTPS_PORT-8443}:${TRAEFIK_HTTPS_PORT:-8443}"
+      - "${TRAEFIK_HTTP_PORT-80}:80"
+    volumes:
+      - "traefik:/config"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=traefik"
-      - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip: /traefik"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik:/config
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.pecan.localhost`)"
+      - "traefik.http.routers.traefik.service=api@internal"
 
   # ----------------------------------------------------------------------
   # Access to the files generated and used by PEcAn, both through a
@@ -61,9 +50,8 @@ services:
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-illinois}
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=minio"
-      - "traefik.port=9000"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/minio/"
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+      - "traefik.http.routers.minio.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/minio/`)"
     volumes:
       - pecan:/data
 
@@ -78,9 +66,8 @@ services:
       - pecan:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.port=8080"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/thredds"
-      - "traefik.backend=thredds"
+      - "traefik.http.services.thredds.loadbalancer.server.port=8080"
+      - "traefik.http.routers.thredds.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/thredds/`)"
 
   # ----------------------------------------------------------------------
   # Job management system. Jobs are distributed through the message
@@ -95,15 +82,13 @@ services:
     networks:
       - pecan
     environment:
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management path_prefix "/rabbitmq"
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=rabbitmq"
-      - "traefik.port=15672"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/rabbitmq"
-      - "traefik.website.frontend.whiteList.sourceRange=${TRAEFIK_IPFILTER:-172.16.0.0/12}"
+      - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
+      - "traefik.http.routers.rabbitmq.entrypoints=web"
+      - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.pecan.localhost`)"
     volumes:
       - rabbitmq:/var/lib/rabbitmq
 
@@ -137,8 +122,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/bety/"
-      - "traefik.backend=bety"
+      - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
 
   # ----------------------------------------------------------------------
   # RStudio
@@ -155,7 +139,7 @@ services:
     environment:
       - KEEP_ENV=RABBITMQ_URI RABBITMQ_PREFIX RABBITMQ_PORT FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
-      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PREFIX=/
       - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
@@ -168,10 +152,17 @@ services:
       - rstudio:/home
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=rstudio"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip:/rstudio"
- 
+      - "traefik.http.routers.rstudio.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/rstudio/`)"
+      - "traefik.http.routers.rstudio.service=rstudio"
+      - "traefik.http.routers.rstudio.middlewares=rstudio-stripprefix,rstudio-headers"
+      - "traefik.http.services.rstudio.loadbalancer.server.port=8787"
+      - "traefik.http.middlewares.rstudio-headers.headers.customrequestheaders.X-RStudio-Root-Path=/rstudio"
+      - "traefik.http.middlewares.rstudio-stripprefix.stripprefix.prefixes=/rstudio"
+      - "traefik.http.routers.rstudio-local.entrypoints=web"
+      - "traefik.http.routers.rstudio-local.rule=Host(`rstudio.pecan.localhost`)"
+      - "traefik.http.routers.rstudio-local.service=rstudio-local"
+      - "traefik.http.services.rstudio-local.loadbalancer.server.port=8787"
+
   # ----------------------------------------------------------------------
   # PEcAn application
   # ----------------------------------------------------------------------
@@ -184,11 +175,11 @@ services:
       - pecan
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/"
-      - "traefik.backend=docs"
+      - "traefik.http.services.docs.loadbalancer.server.port=80"
+      - "traefik.http.routers.docs.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/`)"
 
   # PEcAn web front end, this is just the PHP code
-  web:
+  pecan:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -203,10 +194,9 @@ services:
        - postgres
        - rabbitmq
     labels:
-      - "traefik.port=8080"
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/pecan/"
-      - "traefik.backend=pecan"
+      - "traefik.http.services.pecan.loadbalancer.server.port=8080"
+      - "traefik.http.routers.pecan.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/pecan/`)"
     volumes:
       - pecan:/data
       - pecan:/var/www/html/pecan/data
@@ -225,8 +215,9 @@ services:
        - rabbitmq
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip:/monitor/"
-      - "traefik.backend=monitor"
+      - "traefik.http.routers.monitor.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/monitor/`)"
+      - "traefik.http.routers.monitor.middlewares=monitor-stripprefix"
+      - "traefik.http.middlewares.monitor-stripprefix.stripprefix.prefixes=/monitor"
     volumes:
       - pecan:/data
 
@@ -239,7 +230,7 @@ services:
       - pecan
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
-      - RABBITMQ_PREFIX=/rabbitmq
+      - RABBITMQ_PREFIX=/
       - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
@@ -321,9 +312,9 @@ services:
        - postgres
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=dbsync"
-      - "traefik.port=3838"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefixStrip:/dbsync/"
+      - "traefik.http.routers.dbsync.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/dbsync/`)"
+      - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
+      - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/monitor"
 
   # ----------------------------------------------------------------------
   # PEcAn API
@@ -336,16 +327,15 @@ services:
     environment:
       - PGHOST=${PGHOST:-postgres}
       - HOST_ONLY=${HOST_ONLY:-FALSE}
-      - AUTH_REQ=${AUTH_REQ:-TRUE}
+      - AUTH_REQ=${AUTH_REQ:-FALSE}
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - DATA_DIR=${DATA_DIR:-/data/}
       - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
       - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=${TRAEFIK_HOST:-}PathPrefix:/api"
-      - "traefik.backend=api"
-      - "traefik.port=8000"
+      - "traefik.http.routers.api.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/api/`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
     depends_on:
       - postgres
     volumes:
@@ -369,3 +359,4 @@ volumes:
   rabbitmq:
   pecan:
   rstudio:
+
