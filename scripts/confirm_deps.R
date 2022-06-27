@@ -48,7 +48,7 @@ confirm_deps <- function(pkg,
   deps <- desc::desc_get_deps(pkg)
   deps <- deps[deps$type %in% dependencies, ]
 
-  pkgs <- as.data.frame(installed.packages())[, c("Package", "Version")]
+  pkgs <- as.data.frame(installed.packages(), stringsAsFactors = FALSE)[, c("Package", "Version")]
   colnames(pkgs) <- c("package", "installed_version")
   colnames(deps)[colnames(deps) == "version"] <- "needed_version"
   deps <- merge(deps, pkgs, all.x = TRUE)
