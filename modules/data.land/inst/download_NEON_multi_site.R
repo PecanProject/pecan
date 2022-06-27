@@ -6,7 +6,7 @@
 #' @return VEG_INFO: a list object containing veg_info, site IDs of each site.
 #' @export log.txt file describing the progress of download
 
-Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
+Download_multiSites_NEON_Veg <- function(settings, main_store_dir, search_window){
   #get NEON sites table
   neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   
@@ -37,15 +37,11 @@ Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
     if(length(which(dataProducts$dataProductCode=="DP1.10098.001")) == 0){
       print(paste0("no data available for site: ", tempNEON$siteCode, ". jump to the next site!"))
       log_txt <- c(log_txt, paste0("no data available for site: ", tempNEON$siteCode, ". jump to the next site!"))
-      
-      #write incrementally
-      fileConn <- file(paste0(main_store_dir, "/log.txt"))
-      writeLines(log_txt, fileConn)
       next
     }
     NEON_dates <- lubridate::date(paste0(dataProducts$availableMonths[[which(dataProducts$dataProductCode=="DP1.10098.001")]], "-01"))
     closeYear <- unique(lubridate::year(NEON_dates)[which(abs(lubridate::year(NEON_dates)-lubridate::year(settings$state.data.assimilation$start.date)) == min(abs(lubridate::year(NEON_dates)-lubridate::year(settings$state.data.assimilation$start.date))))])
-    target_date <- lubridate::date(paste0(closeYear,"-07-15"))
+    target_date <- gsub(lubridate::year(settings$state.data.assimilation$start.date), closeYear, settings$state.data.assimilation$start.date)
     daysDiff <- abs(lubridate::days(lubridate::date(NEON_dates)-lubridate::date(target_date))@day)
     
     #search within 1 month
@@ -77,6 +73,11 @@ Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
     print(paste0("find good year: ", closeYear, ", for site: ", tempNEON$siteCode))
     log_txt <- c(log_txt, paste0("find good year: ", closeYear, ", for site: ", tempNEON$siteCode))
     
+    #write incrementally
+    fileConn <- file(paste0(main_store_dir, "/log.txt"))
+    writeLines(log_txt, fileConn)
+    close(fileConn)
+    
     mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = tempNEON$siteCode, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
     
@@ -99,7 +100,7 @@ Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
     veg_info[[2]] <- filter.date
     
     #Set plot size as veg_info[[1]]
-    veg_info[[1]] <- list(area = 400)
+    veg_info[[1]] <- list(area = 100)
     
     #set site ID
     veg_info[[3]] <- settings[[i]]$run$site$id
@@ -107,7 +108,6 @@ Download_multiSites_NEON_Veg <- function(settings, main_store_dir){
     #write into output
     VEG_INFO[[i]] <- veg_info
   }
-  close(fileConn)
   save(VEG_INFO, file = paste0(main_store_dir,"/VEG_INFO.Rdata"))
   return(VEG_INFO)
 }
