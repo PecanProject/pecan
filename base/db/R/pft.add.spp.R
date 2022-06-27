@@ -12,12 +12,14 @@
 ##' This function is used to add PFT-Species pairs to the database table 'pfts_species'.  In the initial implementation the PFT has to be defined already and the species are added based on their USDA Symbol (genus/species acronym).  Multiple species can be added at once but only one PFT at a time.
 ##' @title Associate species with a PFT.
 ##' @param pft String name of the PFT in the database
-##' @param acronym Specie's Symbols.
-##' @param ID Specie's IDs in Bety.
+##' @param acronym Specie's Symbols. see \url{http://plants.usda.gov}
+##' @param ID Species IDs in Bety. You can provide either IDs or Symbols as input, if you provide both ID and acronym, only acronym will be used.
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.
 ##' @param ... optional arguements for connecting to database (e.g. password, user name, database)
 ##' @return Function does not return a value but does print out diagnostic statements.
+##' @details 
+##' The Symbols object are 
 ##' @author Michael C. Dietze, Dongchen Zhang
 pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL, ...) {
   
