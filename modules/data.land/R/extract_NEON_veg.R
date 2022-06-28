@@ -49,7 +49,7 @@ veg_info <- list()
 #Set filter.date as veg_info[[2]]
 veg_info[[2]] <- filter.date
 #Set plot size as veg_info[[1]]
-veg_info[[1]] <- list(area = 100)
+veg_info[[1]] <- list(area = 400)
 
 return(veg_info)
 }
