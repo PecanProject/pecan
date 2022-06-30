@@ -1,0 +1,36 @@
+# Use this file to enable https
+version: "3.2"
+
+services:
+  traefik:
+    command:
+      - --log.level=INFO
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      # Docker setup
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+      # https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.certresolver=myresolver
+      # letsencrypt
+      - --certificatesresolvers.myresolver.acme.email=${TRAEFIK_ACME_EMAIL:-"cert@example.com"}
+      - --certificatesresolvers.myresolver.acme.storage=/config/acme.json
+      # uncomment to use testing certs
+      # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+    ports:
+      - "${TRAEFIK_HTTPS_PORT-443}:443"
+    labels:
+      - "traefik.http.routers.default.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`)"
+      - "traefik.http.routers.default.entrypoints=web"
+      - "traefik.http.routers.default.middlewares=https-redirectscheme@docker"
+      - "traefik.http.middlewares.https-redirectscheme.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirectscheme.redirectscheme.permanent=true"
+

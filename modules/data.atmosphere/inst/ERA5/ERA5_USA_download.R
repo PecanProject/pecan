@@ -2,10 +2,10 @@ library(reticulate)
 library(future)
 library(purrr)
 library(furrr)
-setwd("/projectnb/dietzelab/hamzed/ERA5/Data") # change this to your own working directory
+setwd("/projectnb/dietzelab/hamzed/ERA5/Data/Ensemble") # change this to your own working directory
 plan(multiprocess)
 
-c(1986:2010) %>%
+c(2020:2021) %>%
   future_map(function(year) {
     
     # you need to have an account for downloaing the files

@@ -102,6 +102,9 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           "traits::betydb_query(",
           column, "='", translation$input_code[i],
           "', table = 'species', user = 'bety', pwd = 'bety')")))
+        if(length(foo) == 0){
+          PEcAn.logger::logger.error(msg = "Match.species.id translation query returns empty for ", column, "='", translation$input_code[i])
+        }
         translation$bety_species_id[i] <- foo$id
         translation$genus[i]           <- foo$genus
         translation$species[i]         <- foo$species
@@ -117,7 +120,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       "species",
       "input_code",
       dplyr::everything())
-  merge_table <- dplyr::left_join(input_table, translation)
+  merge_table <- dplyr::left_join(input_table, translation, by = "input_code")
   if (sum(is.na(merge_table$bety_species_id)) > 0) {
     bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
     PEcAn.logger::logger.error(

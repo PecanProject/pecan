@@ -3,7 +3,7 @@
 #' @param x Vector defining CI center
 #' @param ylo Vector defining bottom of CI envelope
 #' @param yhi Vector defining top of CI envelope
-#' @param ... further arguments passed on to `graphics::polygon`
+#' @param ... Further arguments passed on to `graphics::polygon`
 #'
 #' @export
 #' @author Michael Dietze, David LeBauer

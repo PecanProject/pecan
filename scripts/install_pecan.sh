@@ -433,7 +433,7 @@ make clean
 echo "######################################################################"
 echo "BioCro"
 echo "######################################################################"
-echo 'devtools::install_github("ebimodeling/biocro")' | R --vanilla
+echo 'devtools::install_github("ebimodeling/biocro@0.951")' | R --vanilla
 
 echo "######################################################################"
 echo "Linkages"
