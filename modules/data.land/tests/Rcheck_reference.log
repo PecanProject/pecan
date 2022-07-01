@@ -96,9 +96,6 @@ EPA_ecoregion_finder: no visible global function definition for
 extract_FIA: no visible global function definition for ‘db.close’
 extract_FIA: no visible global function definition for ‘db.query’
 extract_soil_gssurgo: no visible global function definition for ‘as’
-extract_soil_gssurgo: no visible binding for global variable ‘hzdept_r’
-extract_soil_gssurgo: no visible binding for global variable
-  ‘comppct_r’
 extract_soil_gssurgo: no visible global function definition for
   ‘complete.cases’
 extract_soil_gssurgo: no visible global function definition for
@@ -144,14 +141,6 @@ get_veg_module: no visible global function definition for
   ‘convert.input’
 get_veg_module: no visible binding for global variable ‘input’
 get_veg_module: no visible binding for global variable ‘new.site’
-gSSURGO.Query: no visible global function definition for ‘xmlTreeParse’
-gSSURGO.Query: no visible global function definition for ‘xmlRoot’
-gSSURGO.Query: no visible global function definition for ‘getNodeSet’
-gSSURGO.Query : <anonymous>: no visible global function definition for
-  ‘xmlToList’
-gSSURGO.Query: no visible binding for global variable ‘comppct_r’
-gSSURGO.Query: no visible binding for global variable ‘mukey’
-gSSURGO.Query: no visible binding for global variable ‘aws050wta’
 ic_process: no visible global function definition for ‘db.close’
 ic_process: no visible global function definition for ‘db.query’
 id_resolveable: no visible binding for global variable ‘doi1’
@@ -263,19 +252,18 @@ soil_process: no visible global function definition for ‘db.query’
 write_ic: no visible binding for global variable ‘input_veg’
 Undefined global functions or variables:
   . aa abline air.cond air.hcap Area as as_Spatial as.mcmc.list
-  aws050wta bagitFile boxplot clay.cond clay.hcap coda.samples coef
+  bagitFile boxplot clay.cond clay.hcap coda.samples coef
   combine.rwl complete.cases comppct_r convert.input cor data DATAVALUE
   db.close db.query dbfile.input.insert density dgamma doi1 fieldcp.K
-  filter gelman.diag genus getNodeSet grav GROUP_ID h2o.cond hist
+  filter gelman.diag genus grav GROUP_ID h2o.cond hist
   hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt land
   layout legend lines lm load.module mcmc.list2init median met.nc mn
-  mnId mukey mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1 over
+  mnId mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1 over
   pairs par pdf pftmapping points quantile read.csv read.fwf
   resource_map runif sand.cond sand.hcap sd setNames settings
   setTxtProgressBar silt.cond silt.hcap SITE_ID soil.name soilcp.MPa
   soilwp.MPa species text texture title txtProgressBar var VARIABLE
-  VARIABLE_GROUP write.table wrld_simpl xclay.def xmlRoot xmlToList
-  xmlTreeParse xsand.def zip_contents
+  VARIABLE_GROUP write.table wrld_simpl xclay.def xsand.def zip_contents
 Consider adding
   importFrom("graphics", "abline", "boxplot", "hist", "layout", "legend",
              "lines", "pairs", "par", "points", "text", "title")

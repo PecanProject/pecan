@@ -37,6 +37,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- `PEcAn.data.land::Query.gSSURGO` has been updated to work again after changes to the gSSURGO API.
 
 ### Changed
 

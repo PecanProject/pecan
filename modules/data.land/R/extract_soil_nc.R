@@ -8,7 +8,8 @@
 #' @param depths  Standard set of soil depths in m to create the ensemble of soil profiles with.
 #'
 #' @return It returns the address for the generated soil netcdf file
-#' @export
+#'
+#' @importFrom rlang .data
 #'
 #' @examples
 #' \dontrun{
@@ -18,6 +19,7 @@
 #'    PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
 #' }
 #' @author Hamze Dokoohaki
+#' @export
 #' 
 extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.60)){
   # I keep all the ensembles here 
@@ -93,23 +95,21 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
   }
   
   # calling the query function sending the mapunit keys
-  soilprop <- gSSURGO.Query(mukeys,c("chorizon.sandtotal_r",
-                                    "chorizon.silttotal_r",
-                                    "chorizon.claytotal_r",
-                                    "chorizon.hzdept_r"))
+  soilprop <- gSSURGO.Query(
+    mukeys,
+    c("chorizon.sandtotal_r",
+      "chorizon.silttotal_r",
+      "chorizon.claytotal_r",
+      "chorizon.hzdept_r"))
 
   soilprop.new <- soilprop %>%
-    dplyr::arrange(hzdept_r) %>%
-    dplyr::select(-comppct_r) %>%
-    `colnames<-`(
-      c(
-        "fraction_of_sand_in_soil",
-        "fraction_of_silt_in_soil",
-        "fraction_of_clay_in_soil",
-        "soil_depth",
-        "mukey"
-      )
-    )
+    dplyr::arrange(.data$hzdept_r) %>%
+    dplyr::select(
+      fraction_of_sand_in_soil = .data$sandtotal_r,
+      fraction_of_silt_in_soil = .data$silttotal_r,
+      fraction_of_clay_in_soil = .data$claytotal_r,
+      soil_depth = .data$hzdept_r,
+      mukey = .data$mukey)
   #unit conversion
   soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,
                     "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" ,
