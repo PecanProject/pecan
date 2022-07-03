@@ -2,8 +2,8 @@
 
 ## Fixed
 
-* `Query.gSSURGO()` now always returns all columns requested, even ones that are NA in all rows
-* Updated `Query.gSSURGO()` to work with formatting changes in the underlying gSSURGO API
+* `gSSURGO.Query()` now always returns all the columns requested, even ones that are all NA. It also now always requires `mukeys` to be specified.
+* Updated `gSSURGO.Query()` and `extract_soil_gssurgo()` to work again after formatting changes in the underlying gSSURGO API
 
 # PEcAn.data.land 1.7.1
 

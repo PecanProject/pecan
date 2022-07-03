@@ -79,11 +79,11 @@ gSSURGO.Query <- function(mukeys,
         dfs <- purrr::map_dfr(
             tables,
             function(tbl){
-              #converting the xml obj to list
               lst <- purrr::map(
                 XML::xmlToList(tbl),
-                function(v)ifelse(is.null(v), NA, v))} #avoid dropping empty columns
-              lst[names(lst) != ".attrs"]
+                function(v)ifelse(is.null(v), NA, v)) #avoid dropping empty columns
+
+              lst[names(lst) != ".attrs"]}
           )
           dfs <- dplyr::mutate(dfs, dplyr::across(dplyr::everything(), as.numeric))
       })

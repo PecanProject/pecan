@@ -25,7 +25,7 @@ Full documention of available tables and their relationships can be found here \
 There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
 to be implemneted here.
 Fields need to be defined with their associate tables. For example, sandtotal is a field in chorizon table which needs to be defined as chorizon.sandotal_(r/l/h), where 
-r stands for the representative value, l stand for low and h stands for high. At the moment fields from mapunit, component, muaggatt, and chorizon tables can be extracted.
+r stands for the representative value, l stands for low and h stands for high. At the moment fields from mapunit, component, muaggatt, and chorizon tables can be extracted.
 }
 \examples{
 \dontrun{
