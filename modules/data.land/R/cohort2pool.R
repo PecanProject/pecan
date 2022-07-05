@@ -61,9 +61,12 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   AGB = (tot_biomass/(plot_num*plot_size))/2
   wood_biomass = AGB - leaf_biomass
   
+  #grab soil carbon info
+  soil_carbon = dat[[3]] #conversion done in extract_NEON_veg (gC/m^2)
+  
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
-  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass)
+  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass, soil_organic_carbon_content = soil_carbon)
   input <- list(dims = dims,
                 vals = variables)
   

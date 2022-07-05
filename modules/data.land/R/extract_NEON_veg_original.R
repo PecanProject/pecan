@@ -44,12 +44,24 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
   #Rename NEON column names to match pecan functions
   colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+  
+  # #soil carbon
+  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), type = "basic",api = "https://data.neonscience.org/api/v0")
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = "/projectnb/dietzelab/ahelgeso/test_download/")
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = "/projectnb/dietzelab/ahelgeso/test_download/")
+  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2014-12-31"), dir = "/projectnb/dietzelab/ahelgeso/test_download/")
+  joined.soil <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
+  joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
+  soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000)/1000 #convert from gram to kilogram
+  
   #Create veg_info object as a list
   veg_info <- list()
   #Set filter.date as veg_info[[2]]
   veg_info[[2]] <- filter.date
   #Set plot size as veg_info[[1]]
   veg_info[[1]] <- list(area = 400)
+  veg_info[[3]] <- soilcarbon.per.m2
+  
   
   return(veg_info)
 }
