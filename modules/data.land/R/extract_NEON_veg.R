@@ -37,7 +37,7 @@ apparentindividual <- neonstore::neon_read(table = "apparentindividual", product
 mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
 joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
 #Filter joined.veg for required information: DBH, tree height, and species
-filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
+filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID.x, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
 #Filter for most recent record
 filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
 #Create year column
