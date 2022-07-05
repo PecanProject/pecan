@@ -3,12 +3,12 @@
 %   R/extract_NEON_veg_original.R
 \name{extract_NEON_veg}
 \alias{extract_NEON_veg}
-\alias{extract_NEON_veg_orginal}
+\alias{extract_NEON_veg_withHerb}
 \title{extract_NEON_veg}
 \usage{
-extract_NEON_veg(lon, lat, start_date, end_date, store_dir, ...)
+extract_NEON_veg_withHerb(lon, lat, start_date, end_date, store_dir, ...)
 
-extract_NEON_veg_orginal(lon, lat, start_date, end_date, store_dir, ...)
+extract_NEON_veg(lon, lat, start_date, end_date, store_dir, ...)
 }
 \arguments{
 \item{lon}{site longitude, passed from ic_process}
