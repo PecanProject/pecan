@@ -513,8 +513,9 @@ The following provides a quick overview of XML tags related to remote execution.
 The `host` section has the following tags:
 
 * `name`: [optional] name of host server where model is located and executed, if not specified localhost is assumed.
-* `rundir`: [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.
-* `outdir`: [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
+* `folder`: ???
+* `rundir`: [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required. If not specified, this will be generated starting at the path specified in `folder`.
+* `outdir`: [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required. If not specified, this will be generated starting at the path specified in `folder`.
 * `scratchdir`: [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
 * `clearscratch`: [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
 * `qsub`: [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (`<qsub/>`) in which case it will use the default value is `qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash`.
