@@ -2,6 +2,7 @@
 % Please edit documentation in R/sample_ic.R, R/sample_ic_herb_tree.R
 \name{sample_ic}
 \alias{sample_ic}
+\alias{sample_ic_herb_tree}
 \title{sample_ic}
 \usage{
 sample_ic(
@@ -18,7 +19,7 @@ sample_ic(
   ...
 )
 
-sample_ic(
+sample_ic_herb_tree(
   in.path,
   in.name,
   start_date,
