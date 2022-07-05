@@ -23,6 +23,13 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   dbh <- dat[[2]][,dbh_name]
   #Grab plot size
   plot_size <- dat[[1]]$area
+  if(sort(unique(dat[[2]]$Subplot)) == c(31, 32, 40, 41)){
+    plot_size <- 100
+  }else if(sort(unique(dat[[2]]$Subplot)) == c(21, 23, 39, 41)){
+    plot_size <- 400
+  }else{
+    print("Unknow subplot area")
+  }
   #Grab number of plots
   plot_num <- length(unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot)))
   
