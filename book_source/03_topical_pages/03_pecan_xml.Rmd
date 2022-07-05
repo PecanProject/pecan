@@ -819,10 +819,10 @@ This section describes the tags required for configuring `remote_process`.
 ```
 
 * `out_get_data`: (required) type of raw output requested, e.g, bands, smap
-* `source`: (required) source of remote data, e.g., gee or appeears 
-* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
+* `source`: (required) source of remote data, e.g., gee or AppEEARS 
+* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for AppEEARS
 * `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2
-* `projection`: (optional) type of projection. Only required for appeears polygon AOI type
+* `projection`: (optional) type of projection. Only required for AppEEARS polygon AOI type
 * `qc`: (optional) quality control parameter, required for some gee collections
 * `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 
