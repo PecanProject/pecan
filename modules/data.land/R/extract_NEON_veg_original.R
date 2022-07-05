@@ -46,10 +46,10 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
   
   # #soil carbon
-  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
-  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", type = "basic",api = "https://data.neonscience.org/api/v0")
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
+  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
   joined.soil <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
   joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
   soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000)/1000 #convert from gram to kilogram
