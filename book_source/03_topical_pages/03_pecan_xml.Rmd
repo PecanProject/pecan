@@ -322,20 +322,20 @@ Some important tags are as follows:
 
 This information is currently used by the following PEcAn workflow function:
 
-- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
+- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write [model-specific configuration files](#pecan-write-configs)
 - `PEcAn.workflow::start_model_runs` -- Begin model run execution
 
 #### Model-specific configuration {#xml-model-specific}
 
 See the following:
 
-* [ED2][ED2 Configuration]
-* [SIPNET][SIPNET Configuration]
-* [BIOCRO][BioCro Configuration]
+* [ED2 Configuration](#models-ed)
+* [SIPNET Configuration](#models-sipnet)
+* [BIOCRO Configuration](#models-biocro)
 
 #### ED2 specific tags {#xml-ed}
 
-Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
+Following variables are ED specific and are used in the [ED2 Configuration](#models-ed).
 
 Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includes, veg, soil, psscss, inputs.
 
@@ -402,7 +402,7 @@ This contains the following tags:
 - `name` -- The name of the site, as a string.
 - `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
 - `met.start`, `met.end` -- ???
-- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an exmaple of how this tag can be added to the PEcAn xml :
+- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an example of how this tag can be added to the PEcAn xml :
 
 ```xml
     <site.pft>
