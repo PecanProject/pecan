@@ -15,7 +15,7 @@
 ##' 
 ##' @export
 ##' @author Istem Fer
-sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
+sample_ic_herb_tree <- function(in.path, in.name, start_date, end_date, outfolder,
                       n.ensemble, machine_host, source, bin_var = "DBH", bin_size = 10, ...){
   
   
