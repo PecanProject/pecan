@@ -199,7 +199,7 @@ ens <- PEcAn.DB::db.query(query.ens, con)
 PEcAn.DB::db.close(con)
 #list files in output folder
 restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
-restart$start.cut <- lubridate::as_datetime(obs.mean$`2021-06-02`$date)
+restart$start.cut <- lubridate::as_datetime(lai$calendar_date)
 restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
 restart$runids <- run$id
 
@@ -210,7 +210,7 @@ settings$state.data.assimilation$end.date <-as.character(sda.end)
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf.multisite(
+    PEcAn.assim.sequential::sda.enkf_Multisite(
       settings, 
       restart=restart,
       Q=0,

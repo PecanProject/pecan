@@ -238,7 +238,7 @@ sda.enkf.multisite <- function(settings,
       
       X <-FORECAST[[length(FORECAST)]]
     }else{
-      PEcAn.logger::logger.severe("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
+      PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
       load(file.path(old.dir, "samples.Rdata"))
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
@@ -250,7 +250,7 @@ sda.enkf.multisite <- function(settings,
       ####add function here
       
       #build X using previous forecast output
-      X <- build_X(runid, settings, new.params, nens = length(runid), read_restart_times, sim.time)
+      X <- build_X(runid, settings, new.params, nens = length(runid), read_restart_times, sim.time, outdir = paste0(old.dir, "out/"))
   }else{
     sim.time<-seq_len(nt)
   }

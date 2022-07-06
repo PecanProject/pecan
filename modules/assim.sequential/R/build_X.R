@@ -5,12 +5,13 @@
 #' 
 #' @description builds X matrix for SDA
 #'
-#' @param runid vector contain runids from model runs to assimilate
+#' @param runid vector contain runids from model runs to assimilate, taken from restart object
 #' @param new.params object created from sda_matchparam, passed from sda.enkf_MultiSite
 #' @param nens number of ensemble members i.e. runs
 #' @param read_restart_times passed from sda.enkf_MultiSite
 #' @param settings settings object, passed from sda.enkf_MultiSite
 #' @param sim.time passed from sda.enkf_MultiSite
+#' @param outdir location of previous run output folder containing .nc files
 #'
 #' @return X ready to be passed to SDA Analysis code
 #' 
@@ -22,7 +23,7 @@ build_X <- function(runid, settings, new.params, nens, read_restart_times, sim.t
     X_tmp <- vector("list", 2)
     
     for (i in seq_len(nens)) {
-      X_tmp[[i]] <- do.call( my.read_restart,
+      X_tmp[[i]] <- do.call(my.read_restart,
                              args = list(
                                outdir = old.dir,
                                runid = runid[i] %>% as.character(),
