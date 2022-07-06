@@ -251,6 +251,7 @@ sda.enkf.multisite <- function(settings,
       
       #build X using previous forecast output
       X <- build_X(runid, settings, new.params, nens = length(runid), read_restart_times, sim.time, outdir = paste0(old.dir, "out/"))
+    }
   }
   
   ###-------------------------------------------------------------------###
