@@ -4,6 +4,7 @@ These instructions are provided to document how to install and setup PEcAn. It i
 
 - [Virtual machine](#install-vm) (Recommended for students and new users)
 - [PEcAn Docker](#install-docker) (Recommended for development and production deployment)
+- [Local installation from r-universe](#r-universe) (Recommended for development only)
 - [PEcAn OS specific installation](#install-native)
 
 The PEcAn code and necessary infrastructure can be obtained and compiled in different ways.
@@ -160,6 +161,21 @@ This will not go into much detail about about how to use Docker -- for more deta
 
 To shut down the docker images run `docker-compose stop`.
 For troubleshooting and advanced configuration, see our [Docker topical pages](#docker-index).
+
+## Installation From r-universe {#r-universe}
+
+`PEcAn.all` and all it's dependencies can be installed from [r-universe](https://pecanproject.r-universe.dev/) with the following code:
+
+```r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.all in R
+install.packages('PEcAn.all')
+```
+
+However, functionality will be limited without a connection to a BETYdb instance.  [Instructions to install BETY](#install-bety).
 
 ## (Advanced) Native install {#install-native}
 
