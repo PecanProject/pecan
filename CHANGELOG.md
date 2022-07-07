@@ -37,6 +37,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- fixed the pagination error in the next_page field of the workflows, inputs and runs Rest API.
 
 ### Changed
 
