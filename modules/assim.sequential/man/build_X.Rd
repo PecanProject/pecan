@@ -5,17 +5,18 @@
 \title{build_X}
 \usage{
 build_X(
-  runid,
+  out.configs,
   settings,
   new.params,
   nens,
   read_restart_times,
-  sim.time,
-  outdir
+  outdir = paste0(old.dir, "out/"),
+  t = 1,
+  multi.site.flag = TRUE
 )
 }
 \arguments{
-\item{runid}{vector contain runids from model runs to assimilate, taken from restart object}
+\item{out.configs}{object created for build_X passed from sda.enkf_MultiSite}
 
 \item{settings}{settings object, passed from sda.enkf_MultiSite}
 
@@ -25,9 +26,11 @@ build_X(
 
 \item{read_restart_times}{passed from sda.enkf_MultiSite}
 
-\item{sim.time}{passed from sda.enkf_MultiSite}
-
 \item{outdir}{location of previous run output folder containing .nc files}
+
+\item{t}{Default t=1, for function to work within time loop}
+
+\item{multi.site.flag}{Default TRUE}
 }
 \value{
 X ready to be passed to SDA Analysis code

@@ -4,7 +4,7 @@
 \alias{sda_matchparam}
 \title{sda_matchparam}
 \usage{
-sda_matchparam(settings, ensemble.samples, site.ids)
+sda_matchparam(settings, ensemble.samples, site.ids, nens)
 }
 \arguments{
 \item{settings}{settings object passed from sda.enkf_MultiSite}
@@ -12,6 +12,8 @@ sda_matchparam(settings, ensemble.samples, site.ids)
 \item{ensemble.samples}{taken from sample.Rdata object}
 
 \item{site.ids}{character object passed from sda.enkf_MultiSite}
+
+\item{nens}{number of ensemble members in model runs, taken from restart$runids}
 }
 \value{
 new.params object used to

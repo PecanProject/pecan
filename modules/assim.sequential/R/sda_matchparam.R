@@ -6,12 +6,14 @@
 #' @param settings settings object passed from sda.enkf_MultiSite
 #' @param ensemble.samples taken from sample.Rdata object
 #' @param site.ids character object passed from sda.enkf_MultiSite
+#' @param nens number of ensemble members in model runs, taken from restart$runids
 #'
 #' @return new.params object used to 
+#' @export
 #' 
 #'
 #' @examples
-sda_matchparam <- function(settings, ensemble.samples, site.ids){
+sda_matchparam <- function(settings, ensemble.samples, site.ids, nens){
   #reformatting params
   new.params <- list()
   all.pft.names <- names(ensemble.samples)

@@ -44,7 +44,7 @@ sda.enkf.multisite <- function(settings,
   if(class(restart) == "list"){
     old.dir <- restart$filepath
     start.cut <- restart$start.cut
-    runid <- restart$runids
+    runids <- restart$runids
     restart_flag = TRUE
   }else{
     restart_flag = FALSE
@@ -234,7 +234,7 @@ sda.enkf.multisite <- function(settings,
                 file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
       )
       params<-new.params
-      sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
+      #sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
       
       X <-FORECAST[[length(FORECAST)]]
     }else{
@@ -242,15 +242,34 @@ sda.enkf.multisite <- function(settings,
       #loading param info from previous forecast
       load(file.path(old.dir, "samples.Rdata"))
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
-      sim.time<-seq_len(nt)
+      #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids)
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
       
       #create inputs object for met using previous forecast ensemble members
-      ####add function here
+      ####add function here, pause on this feature until we add feature to model runs that saves driver ensemble members
       
       #build X using previous forecast output
-      X <- build_X(runid, settings, new.params, nens = length(runid), read_restart_times, sim.time, outdir = paste0(old.dir, "out/"))
+      #out.configs object required to build X and restart.list object required for build X
+      restart.list <- vector("list", length(conf.settings))
+      out.configs <- conf.settings %>%
+        `class<-`(c("list")) %>%
+        furrr::future_map2(restart.list, function(settings, restart.arg) {
+          # Loading the model package - this is required bc of the furrr
+          library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+          # wrtting configs for each settings - this does not make a difference with the old code
+          write.ensemble.configs(
+            defaults = settings$pfts,
+            ensemble.samples = ensemble.samples,
+            settings = settings,
+            model = settings$model$type,
+            write.to.db = settings$database$bety$write,
+            restart = restart.arg
+          )
+        }) %>%
+        setNames(site.ids)
+      #now all build_X args are properly formatted for the function to return X
+      X <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1)
     }
   }
   
@@ -260,19 +279,15 @@ sda.enkf.multisite <- function(settings,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   # Reading param samples------------------------------- 
-  
-  #take params code and add to if/else restart above and make sure params are formatted the same way
-  if(restart){
-    #if restart = TRUE X, inputs, and new.params already exist in environmemt
-    inputs = inputs
-    new.params = new.params
-  }else{
-    if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
-    #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-    load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-    
     #create params object using samples generated from TRAITS functions
-    new.params <- sda_matchparam(settings, ensemble.samples, site.ids)
+    if(restart_flag){
+      new.params <- new.params
+    }else{
+      if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
+      #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens) 
+    }
     #sample met ensemble members
     inputs <- conf.settings %>% map(function(setting) {
       input.ens.gen(
@@ -282,12 +297,12 @@ sda.enkf.multisite <- function(settings,
         parent_ids = NULL 
       )
     }) 
-  }
+  
   
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
-  for(t in sim.time){
+  for(t in 1:nt){
       obs <- which(!is.na(obs.mean[[t]]))
       obs.t<-names(obs.mean)[t]
       obs.year <- lubridate::year(obs.t)
@@ -348,9 +363,9 @@ sda.enkf.multisite <- function(settings,
         restart.list <- vector("list", length(conf.settings))
       }
       #add flag for restart t=1 to skip model runs
-      if(restart & t == 1){
+      if(restart_flag & t == 1){
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
-        
+        next
       }else{
         
         if (control$debug) browser()

@@ -108,9 +108,74 @@ site_info <- list(
   obs.mean$date = as.character(obs.mean$date, stringsAsFactors = FALSE)
   obs.mean <- split(obs.mean, obs.mean$date)
   
+  date.obs <- names(obs.mean)
+  
+  obs.mean <- purrr::map(
+    names(obs.mean),
+    function(namesl){
+      split(
+        obs.mean[[namesl]],
+        obs.mean[[namesl]]$site_id) %>%
+        purrr::map(
+          ~.x[3] %>%
+            stats::setNames(c("LAI")) %>%
+            `row.names<-`(NULL))
+    }
+  ) %>% stats::setNames(date.obs)
+  
+  #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
+  names = date.obs
+  for (name in names){
+    for (site in names(obs.mean[[name]])){
+      na_index = which(!(is.na(obs.mean[[ name]][[site]])))
+      colnames = names(obs.mean[[name]][[site]])
+      #we have some records that are not NA
+      if (length(na_index) > 0){
+        obs.mean[[name]][[site]] = obs.mean[[name]][[site]][na_index]
+      }else if(length(na_index) == 0){#we don't have any observations (they are all NAs), we then just remove the whole site
+        obs.mean[[name]][[site]] <- NULL
+      }
+    }
+  }
+  
   obs.cov <- data.frame(date = lai_sd$calendar_date, site_id = lai_sd$site_id, lai = lai_sd$data)
   obs.cov$date = as.character(obs.cov$date, stringsAsFactors = FALSE)
   obs.cov <- split(obs.cov, obs.cov$date)
+  
+  obs.cov <- purrr::map(
+    names(obs.cov),
+    function(namesl){
+      purrr::map(
+        split(
+          obs.cov[[namesl]],
+          obs.cov[[namesl]]$site_id),
+        ~.x[3]^2 %>%
+          unlist %>%
+          diag(nrow = 2, ncol = 2))
+    }
+  ) %>% stats::setNames(date.obs)
+  
+  
+  names = date.obs
+  for (name in names){
+    for (site in names(obs.cov[[name]])){
+      #if we don't have any observation (diag(cov)==NA) then we remove the whole site
+      if(length(which(!is.na(diag(obs.cov[[name]][[site]])))) == 0){
+        obs.cov[[name]][[site]] <- NULL
+        next
+      }
+      #else we do have some records
+      bad = which(apply(obs.cov[[name]][[site]], 2, function(x) any(is.na(x))) == TRUE)
+      if (length(bad) > 0){
+        obs.cov[[name]][[site]] = obs.cov[[name]][[site]][,-bad]
+        if (is.null(dim(obs.cov[[name]][[site]]))){
+          obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad]
+        } else {
+          obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad,]
+        }
+      }
+    }
+  }
 
 
 #-----------------------------------------------------------------------------------------------
@@ -201,8 +266,13 @@ PEcAn.DB::db.close(con)
 restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
 restart$start.cut <- lubridate::as_datetime(lai$calendar_date)
 restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
-restart$runids <- run$id
-
+#add runs ids from previous forecast to settings object to be passed to build X
+run_id <- list()
+for (k in 1:length(run$id)) {
+  run_id[[k]] = as.character(run$id[k])
+}
+names(run_id) = sprintf("id%s",seq(1:length(run$id))) #rename list
+settings$runs$id = run_id
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(sda.start)
 settings$state.data.assimilation$end.date <-as.character(sda.end)
@@ -216,14 +286,19 @@ if ('state.data.assimilation' %in% names(settings)) {
       Q=0,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
-      control = list(
-        trace = TRUE,
-        interactivePlot =FALSE,
-        TimeseriesPlot =TRUE,
-        BiasPlot =FALSE,
-        debug = FALSE,
-        pause=FALSE
-      )
+      forceRun = TRUE, 
+      keepNC = TRUE,
+      control=list(trace = TRUE,
+                   FF = FALSE,
+                   interactivePlot = FALSE,
+                   TimeseriesPlot = FALSE,
+                   BiasPlot = FALSE,
+                   plot.title = NULL,
+                   facet.plots = FALSE,
+                   debug = FALSE,
+                   pause = FALSE,
+                   Profiling = FALSE,
+                   OutlierDetection=FALSE)
     )
     
     PEcAn.utils::status.end()
