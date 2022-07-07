@@ -64,6 +64,7 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
+settings <- read.settings("pecan.xml")
 convert.input <-
   function(input.id,
            outfolder,
@@ -88,6 +89,7 @@ convert.input <-
            ensemble = FALSE,
            ensemble_name = NULL,
            dbparms=NULL,
+           settings,
            ...
   ) {
 
