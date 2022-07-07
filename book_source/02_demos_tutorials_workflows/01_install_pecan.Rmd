@@ -94,7 +94,7 @@ This will not go into much detail about about how to use Docker -- for more deta
         If this is successful, the end of the output should look like the following:
         
         ```
-        Creating pecan-postgres-1 Started
+        Creating pecan-postgres-1 ... done
         ```
     
     b. "Initialize" the data for the PEcAn database.
