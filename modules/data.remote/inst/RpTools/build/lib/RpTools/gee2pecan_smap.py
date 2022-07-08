@@ -15,7 +15,7 @@ import xarray as xr
 import datetime
 import time
 
-ee.Initialize()
+# ee.Initialize()
 
 
 def gee2pecan_smap(geofile, outdir, filename, start, end):
@@ -153,8 +153,8 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
         datadf, coords=coords, attrs={"site_name": site_name, "AOI": AOI,},
     )
 
-    # if siteid is None:
-    #     sitedid = site_name
+    if siteid is None:
+        sitedid = site_name
 
     # if specified output path does not exist create it
     if not os.path.exists(outdir):
