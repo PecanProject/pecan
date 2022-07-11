@@ -283,7 +283,7 @@ if ('state.data.assimilation' %in% names(settings)) {
     PEcAn.assim.sequential::sda.enkf_Multisite(
       settings, 
       restart=restart,
-      Q=0,
+      Q=NULL,
       obs.mean = obs.mean,
       obs.cov = obs.cov,
       forceRun = TRUE, 
