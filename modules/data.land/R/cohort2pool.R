@@ -21,18 +21,20 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   
   ## Grab DBH
   dbh <- dat[[2]][,dbh_name]
-  #Grab plot size
-  plot_size <- dat[[1]]$area
-  if(sort(unique(dat[[2]]$Subplot)) == c(31, 32, 40, 41)){
-    plot_size <- 100
-  }else if(sort(unique(dat[[2]]$Subplot)) == c(21, 23, 39, 41)){
-    plot_size <- 400
-  }else{
-    print("Unknow subplot area")
-  }
-  #Grab number of plots
-  plot_num <- length(unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot)))
   
+  #calculate total area
+  unique_subplot <- unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot))
+  area <- c()
+  for (i in 1:length(unique_subplot)) {
+    subplot_ID <- strsplit(unique_subplot[i], " ")[[1]][3]
+    if(subplot_ID %in% c(31, 32, 40, 41)){
+      area <- c(area, 100)
+    }else if(subplot_ID %in% c(21, 23, 39)){
+      area <- c(area, 400)
+    }
+  }
+  total_area <- sum(area)
+
   ## Grab allometry
   if(is.null(allom_param)){
     a <- -2.0127                        
@@ -64,8 +66,8 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   tot_leaf <- sum(leaf,na.rm = TRUE)
   
   #Divide by plot area, divide by 2 to convert from kg to kgC
-  leaf_biomass = (tot_leaf/(plot_num*plot_size))/2
-  AGB = (tot_biomass/(plot_num*plot_size))/2
+  leaf_biomass = (tot_leaf/(total_area))/2
+  AGB = (tot_biomass/(total_area))/2
   wood_biomass = AGB - leaf_biomass
   
   #grab soil carbon info
