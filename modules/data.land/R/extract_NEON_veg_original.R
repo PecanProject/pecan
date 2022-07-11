@@ -40,6 +40,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
   #Filter for most recent record
   filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
+  filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
   #Create year column
   filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
   #Rename NEON column names to match pecan functions
@@ -50,16 +51,21 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
   perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
   perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
+  if(is.null(perbiogeosample)){
+    print("no soil carbon data found!")
+  }
   joined.soil <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
   joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
-  soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000)/1000 #convert from gram to kilogram
+  
+  #remove NA from soil data
+  soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
   
   #Create veg_info object as a list
   veg_info <- list()
   #Set filter.date as veg_info[[2]]
   veg_info[[2]] <- filter.date
   #Set plot size as veg_info[[1]]
-  veg_info[[1]] <- list(area = 400)
+  veg_info[[1]] <- 400
   veg_info[[3]] <- soilcarbon.per.m2
   
   
