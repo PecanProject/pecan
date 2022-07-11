@@ -33,13 +33,15 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
   
-  year <- lubridate::year(start_date)
+  year.start <- lubridate::year(start_date)
+  year.end <- lubridate::year(end_date)
   
   # subset samples for the year 
-  samples <- obs[obs$year == year, ]
+  samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
   
   # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
-  samples <- samples[complete.cases(samples), ]
+  #samples <- samples[complete.cases(samples), ]
+  samples <- samples[!is.na(samples$DBH), ]
   
   # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
   if(!is.null(samples$Subplot)){
