@@ -43,23 +43,23 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
       }
       return(X_tmp)
     })
-  #let's read the parameters of each site/ens
-  params.list <- reads %>% map(~.x %>% map("params"))
-  # Now let's read the state variables of site/ens
-  X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
-  
-  # Now we have a matrix that columns are state variables and rows are ensembles.
-  # this matrix looks like this
-  #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
-  #[1,]  3.872521     37.2581  3.872521     37.2581
-  # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-  if (multi.site.flag){
-    X <- X %>%
-      map_dfc(~.x) %>% 
-      as.matrix() %>%
-      `colnames<-`(c(rep(var.names, length(X)))) %>%
-      `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-  }
+  # #let's read the parameters of each site/ens
+  # params.list <- reads %>% map(~.x %>% map("params"))
+  # # Now let's read the state variables of site/ens
+  # X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+  # 
+  # # Now we have a matrix that columns are state variables and rows are ensembles.
+  # # this matrix looks like this
+  # #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
+  # #[1,]  3.872521     37.2581  3.872521     37.2581
+  # # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
+  # if (multi.site.flag){
+  #   X <- X %>%
+  #     map_dfc(~.x) %>% 
+  #     as.matrix() %>%
+  #     `colnames<-`(c(rep(var.names, length(X)))) %>%
+  #     `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+  # }
     
-  return(X)
+  return(reads)
 }

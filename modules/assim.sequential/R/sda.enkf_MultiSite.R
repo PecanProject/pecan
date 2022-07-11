@@ -269,7 +269,24 @@ sda.enkf.multisite <- function(settings,
         }) %>%
         setNames(site.ids)
       #now all build_X args are properly formatted for the function to return X
-      X <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1)
+      reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1)
+      #let's read the parameters of each site/ens
+      params.list <- reads %>% map(~.x %>% map("params"))
+      # Now let's read the state variables of site/ens
+      X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+      
+      # Now we have a matrix that columns are state variables and rows are ensembles.
+      # this matrix looks like this
+      #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
+      #[1,]  3.872521     37.2581  3.872521     37.2581
+      # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
+      if (multi.site.flag){
+        X <- X %>%
+          map_dfc(~.x) %>% 
+          as.matrix() %>%
+          `colnames<-`(c(rep(var.names, length(X)))) %>%
+          `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+      }
     }
   }
   
