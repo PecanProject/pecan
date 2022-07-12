@@ -26,6 +26,7 @@
 ##'  settings$meta.analysis$threshold)
 ##' }
 ##' @author David LeBauer, Shawn Serbin
+globalVariables(c("ggmcmc","is.mcmc.list","theme_set","theme_bw","ggs","pdf","box","dev.off"))
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
   
   fail <- rep(FALSE, length(mcmc.object))
