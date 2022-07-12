@@ -36,7 +36,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
   for (trait in names(mcmc.object)) {
     
     if (gg) {
-      gg <- require(ggmcmc)
+      gg <- requireNamespace(ggmcmc)
     }
     ## new diagnostic plots. But very slow & !any(grepl('^gg', dir(outdir)))){
     if (gg) {

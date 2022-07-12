@@ -235,15 +235,12 @@ runModule.run.meta.analysis <- function(settings) {
 ##'
 ##' used to compare data to prior, meta analysis posterior to prior
 ##' @title find quantile of point within prior distribution
-##' @param point 
+##' @param point quantile of given prior to return
 ##' @param prior list of distn, parama, paramb
 ##' @return result of p<distn>(point, parama, paramb)
 ##' @export p.point.in.prior
 ##' @author David LeBauer
 p.point.in.prior <- function(point, prior) {
-  # Why is this (below) called, and then never used?
-  prior.median <- do.call(paste0("q", prior$distn),
-                          list(0.5, prior$parama, prior$paramb))
   out <- do.call(paste0("p", prior$distn), 
                  list(point, prior$parama, prior$paramb))
   return(out)
