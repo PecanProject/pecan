@@ -36,7 +36,12 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
   for (trait in names(mcmc.object)) {
     
     if (gg) {
-      gg <- requireNamespace(ggmcmc)
+      if (!requireNamespace(ggmcmc, quietly = TRUE)) {
+        PEcAn.logger::logger.severe(
+          "Can't find package 'ggmcmc',",
+          "needed by `PEcAn.MA::meta.analysis.summary()` when `gg = TRUE`.",
+          "Please install it and try again.")
+      }
     }
     ## new diagnostic plots. But very slow & !any(grepl('^gg', dir(outdir)))){
     if (gg) {
