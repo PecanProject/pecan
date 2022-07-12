@@ -1,6 +1,6 @@
 ##' Given input_id, return formats table and table of variables and units
 ##'
-##' @param input_id,format.id numeric. Defaults to format.id if both provided
+##' @param format.id numeric. Defaults to format.id if both provided
 ##' @param bety database connection
 ##' @param var.ids optional vector of variable IDs. If provided, limits results to these variables
 ##' @export query.format.vars
