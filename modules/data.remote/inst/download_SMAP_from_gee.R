@@ -30,7 +30,7 @@
 
 ## site_id has been changed to site_info
 ## if site_info is only one id, connect to database and collect into
-download_SMAP_gee2pecan <- function(start, end,
+download_SMAP_from_gee <- function(start, end,
                                     site_info, 
                                     geoJSON_outdir, smap_outdir) {
   
@@ -55,20 +55,19 @@ download_SMAP_gee2pecan <- function(start, end,
   # Create geoJSON file for site
   site_GeoJSON <- data.frame(site_info$lon, site_info$lat) %>%
     setNames(c("lon","lat")) %>% 
-    leafletR::toGeoJSON(name = site_info$site_name, dest = geoJSON_outdir, overwrite = TRUE) %>%
+    leafletR::toGeoJSON(name = site_info$name, dest = geoJSON_outdir, overwrite = TRUE) %>%
     rgdal::readOGR()
-  site_GeoJSON$name = site_info$site_name
+  site_GeoJSON$name = site_info$name
   site_GeoJSON = site_GeoJSON[-1] %>%
-    leafletR::toGeoJSON(name = site_info$site_name, dest = geoJSON_outdir, overwrite = TRUE)
+    leafletR::toGeoJSON(name = site_info$name, dest = geoJSON_outdir, overwrite = TRUE)
 
   # Locate gee2pecan_smap.py function and load into 
   # script.path = file.path(system.file("gee2pecan_smap.py", package = "PEcAn.data.remote"))
   reticulate::source_python('~/pecan/modules/data.remote/inst/RpTools/RpTools/gee2pecan_smap.py')
   reticulate::source_python('~/pecan/modules/data.remote/inst/RpTools/RpTools/gee2pecan_smap.py')
   
-  ## In the works
   ## code taken out of this line of code (var = var ## an arg of gee2pecan_smap)
-  var_filename <- paste0('smap_', site_info$site_name)
+  var_filename <- paste0('smap_', site_info$name)
   nc.file <- gee2pecan_smap(geofile = site_GeoJSON, outdir = smap_outdir, filename = var_filename, start = start, end = end)
   
   # Run gee2pecan_smap function

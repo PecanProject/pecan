@@ -10,34 +10,53 @@ library(tidyr)
 library(dplyr)
 library(ncdf4)
 
-download_SMAP <- function(){
+download_SMAP <- function(start, end){
   
   #set start and end dates
   ## 2015-04-01 is first available smap data
-  start <- '2015-04-01'
-  end <- '2022-04-01'# as.character(Sys.Date())
+  # start <- '2016-01-02'
+  # end <- '2016-07-16'# as.character(Sys.Date()) for current date
   
-  # 2016-01-02
-  # 2016-07-16
+  geoJSON_outdir = "/projectnb/dietzelab/jbowers1/geoFiles/" 
+  smap_outdir = "/projectnb/dietzelab/jbowers1/smap_ncFiles/"
   
-  ##############################
-  ########    HARVARD   ########
-  ##############################
   
-  ######## Download SMAP data ########
-  geoJSON_outdir = "/projectnb/dietzelab/jbowers1/" 
-  smap_outdir = "/projectnb/dietzelab/jbowers1/"
+  ######## Download CONUS SMAP data########
+
+  # read in CONUS sites from xml file
+  all_sites <- PEcAn.settings::read.settings("~/pecan.xml")
   
-  site_info <- list(
-    site_id = 1126,
-    site_name = "Harvard_Forest",
-    lat = 42.531453,
-    lon = -72.188896,
-    time_zone = "UTC")
+  # Initialize empty list
+  output_smap <- list()
   
   source('~/pecan/modules/data.remote/inst/download_SMAP_from_gee.R')
   
-  harv.smap_sm <- download_SMAP_gee2pecan(start, end, site_info, geoJSON_outdir, smap_outdir)
-  return(harv.smap_sm)
+  for (index in 1:length(all_sites)) {
+    print(all_sites[[index]]$run$site$id)
+  }
+  
+  all_sites[[10]]$run$site
+  
+  # Inupt each site's info as a new list
+  for(index in 1:length(all_sites)){ # There are 39 sites in the CONUS
+    
+    if (index != 4 & index != 33 & index != 37) { # sites 4, 33, and 37 don't seem to be available smap coords
+      output_smap[[length(output_smap) + 1]] <-  
+        download_SMAP_from_gee(start, end, all_sites[[index]]$run$site, geoJSON_outdir, smap_outdir)
+      names(output_smap)[length(output_smap)] <- all_sites[[index]]$run$site$id
+    }
+    
+  }
+  
+  # site_info <- list(
+  #   id = 1126,
+  #   name = "Harvard Forest",
+  #   lat = 42.531453,
+  #   lon = -72.188896,
+  #   time_zone = "UTC")
+  # 
+  # hf.data <- download_SMAP_from_gee(start, end, site_info, geoJSON_outdir, smap_outdir)
+
+  return(output_smap)
 }
 
