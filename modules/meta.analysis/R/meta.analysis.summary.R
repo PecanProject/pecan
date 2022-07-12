@@ -27,7 +27,7 @@
 ##' }
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
-  
+  ggmcmc <- is.mcmc.list <- theme_set <- theme_bw <- ggs <- pdf<- box <- dev.off <- NULL
   fail <- rep(FALSE, length(mcmc.object))
   names(fail) <- names(mcmc.object)
   not.converged <- data.frame()
