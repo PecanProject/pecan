@@ -94,7 +94,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Check that data is consistent with prior
   for (trait in names(jagged.data)) {
-    data.median <- median(jagged.data[[trait]]$Y)
+    data.median <- stats::median(jagged.data[[trait]]$Y)
     prior       <- prior.distns[trait, ]
     check       <- check_consistent(data.median, prior, trait, "data")
     if (is.na(check)) {
@@ -123,7 +123,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ### Check that meta-analysis posteriors are consistent with priors
   for (trait in names(trait.mcmc)) {
-    post.median <- median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
+    post.median <- stats::median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
     prior       <- prior.distns[trait, ]
     check <- check_consistent(post.median, prior, trait, "data")
     if (is.na(check)) {
@@ -157,7 +157,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(pathname, file, "Posterior", pft$posteriorid, dbcon)
+    PEcAn.DB::dbfile.insert(pathname, file, "Posterior", pft$posteriorid, dbcon)
   }
 } # run.meta.analysis.pft
 
@@ -185,8 +185,8 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @author Shawn Serbin, David LeBauer
 run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE) {
   # process all pfts
-  dbcon <- db.open(database)
-  on.exit(db.close(dbcon), add = TRUE)
+  dbcon <- PEcAn.DB::db.open(database)
+  on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
   result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
                    threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)
