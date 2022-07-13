@@ -412,30 +412,7 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <-
-          furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
-            # Loading the model package - this is required bc of the furrr
-            #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-            #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
-            
-            X_tmp <- vector("list", 2)
-            
-            for (i in seq_len(nens)) {
-              X_tmp[[i]] <- do.call( my.read_restart,
-                                     args = list(
-                                       outdir = outdir,
-                                       runid = configs$runs$id[i] %>% as.character(),
-                                       stop.time = read_restart_times[t+1],
-                                       settings = settings,
-                                       var.names = var.names,
-                                       params = siteparams[[i]]
-                                     )
-              )
-              
-            }
-            return(X_tmp)
-          })
-        
+        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = t)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -606,7 +583,7 @@ sda.enkf.multisite <- function(settings,
         ### No Observations --                                                ###----
         ###-----------------------------------------------------------------### 
         ### no process variance -- forecast is the same as the analysis ###
-        if (processvar=="FALSE") {
+        if (processvar==FALSE) {
           mu.a <- mu.f
           Pa   <- Pf + Q
           ### yes process variance -- no data
@@ -615,8 +592,10 @@ sda.enkf.multisite <- function(settings,
           if(is.null(q.bar)){
             q.bar <- diag(ncol(X))
             PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
-          } 
-          Pa   <- Pf + solve(q.bar)
+          }
+          # Pa   <- Pf + matrix(solve(q.bar), dim(Pf)[1], dim(Pf)[2])
+          #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
+          Pa <- Pf + solve(q.bar)
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
         

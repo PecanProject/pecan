@@ -11,8 +11,7 @@ build_X(
   nens,
   read_restart_times,
   outdir = paste0(old.dir, "out/"),
-  t = 1,
-  multi.site.flag = TRUE
+  t = 1
 )
 }
 \arguments{
@@ -29,8 +28,6 @@ build_X(
 \item{outdir}{location of previous run output folder containing .nc files}
 
 \item{t}{Default t=1, for function to work within time loop}
-
-\item{multi.site.flag}{Default TRUE}
 }
 \value{
 X ready to be passed to SDA Analysis code

@@ -12,6 +12,8 @@ library("furrr")
 library("R.utils")
 library("dynutils")
 library('nimble')
+library("sp")
+library("sf")
 plan(multisession)
 
 
