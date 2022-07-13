@@ -34,7 +34,8 @@ Imports:
     PEcAn.logger,
     MASS,
     PEcAn.settings,
-    rjags
+    rjags,
+    ggplot2
 Suggests:
     ggmcmc,
     testthat (>= 1.0.2)
