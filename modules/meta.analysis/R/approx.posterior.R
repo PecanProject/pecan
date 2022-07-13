@@ -119,7 +119,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
   }  ## end trait loop
   
   if (do.plot) {
-    imguR::dev.off()
+    grDevices::dev.off()
   }
   
   return(posteriors)

@@ -51,7 +51,7 @@ Nothing, but as a side effect, the model is written
 Convert template ma.model.template.R to a JAGS model.
 }
 \details{
-Writes a meta-analysis model based on available data and prior specification. Adapted from \code{\link[R2WinBUGS]{write.model}}
+Writes a meta-analysis model based on available data and prior specification. Adapted from \code{R2WinBUGS::write.model}
 }
 \author{
 David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.

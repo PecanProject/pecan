@@ -74,7 +74,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     lattice::xyplot(mcmc.object[[trait]])
     lattice::densityplot(mcmc.object[[trait]])
     coda::acfplot(mcmc.object[[trait]])
-    imguR::dev.off()
+    grDevices::dev.off()
 
     ## G-R diagnostics to ensure convergence
     gd            <- coda::gelman.diag(mcmc.object[[trait]])
