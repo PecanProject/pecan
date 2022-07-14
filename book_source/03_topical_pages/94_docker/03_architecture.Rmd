@@ -167,7 +167,7 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["minio"], stdout())
 ```
 
-The Minio interface is accessible by browsing to `pecan.localhost/minio/`.
+The Minio interface is accessible by browsing to `minio.pecan.localhost`.
 From there, you can browse directories and download files.
 You can also upload files by clicking the red "+" in the bottom-right corner.
 
