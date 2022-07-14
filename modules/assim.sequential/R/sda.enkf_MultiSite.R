@@ -412,7 +412,7 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = t)
+        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = 1, var.names = var.names, my.read_restart = my.read_restart)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
