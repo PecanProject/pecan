@@ -149,7 +149,7 @@ runs <- function(bety, workflow_id) {
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
 #' @param query Named vector or list of workflow IDs
-#' @param all.ids
+#' @param all.ids seems to determine whether you get a list of all workflow_ids in the BETY database (TRUE) or just those that are part of the query (FALSE)
 #' @export
 get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
