@@ -154,7 +154,7 @@ This will not go into much detail about about how to use Docker -- for more deta
     If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs (if you run these commands on a remote machine replace localhost with the actual hostname).
 
     - PEcAn documentation and home page -- http://pecan.localhost
-    - PEcAn web interface (running models) -- http://pecan.localhost/pecan/ (NOTE: The trailing backslash is necessary.)
+    - PEcAn web interface (running models) -- http://pecan.localhost/pecan/ (NOTE: The trailing slash is necessary.)
     - BETY web interface -- http://pecan.localhost/bety/ (Default username: carya, default password: illinois)
     - RStudio interface -- http://pecan.localhost/rstudio/ (Default username: carya, default password: illinois)
     - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://pecan.localhost/monitor/
