@@ -6,6 +6,11 @@
 \usage{
 ncdays2date(time, unit)
 }
+\arguments{
+\item{time}{time if dimension requests it}
+
+\item{unit}{CF style unit (e.g. "days since 2010-01-01")}
+}
 \description{
 Convert netcdf number of days to date
 }

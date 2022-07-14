@@ -17,6 +17,9 @@
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
 ##'
 ##' @param trait is the trait name used in the database, stored in variables.name
+##' @param con Database connection object
+##' @param update.check.only if TRUE, returns results but does not print summaries
+##' @param ... further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##' @param ids_are_cultivars if TRUE, the IDs in spstr are cultivar IDs, otherwise they are species IDs. Passed on to \code{\link{query.data}}
 ##'

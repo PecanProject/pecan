@@ -57,6 +57,8 @@ dplyr.count <- function(df) {
 
 
 #' Convert netcdf number of days to date
+#' @param time time if dimension requests it
+#' @param unit CF style unit (e.g. "days since 2010-01-01")
 #' @export
 ncdays2date <- function(time, unit) {
   date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
@@ -147,6 +149,7 @@ runs <- function(bety, workflow_id) {
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
 #' @param query Named vector or list of workflow IDs
+#' @param all.ids
 #' @export
 get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
@@ -260,7 +263,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   # lat/lon often cause trouble (like with JULES) but aren't needed for this basic plotting
   var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude"))
   outputfolder <- file.path(workflow$folder, 'out', run_id)
-  out <- read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
+  out <- PEcAn.utils::read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
 

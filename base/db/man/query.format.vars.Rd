@@ -9,6 +9,8 @@ query.format.vars(bety, input.id = NA, format.id = NA, var.ids = NA)
 \arguments{
 \item{bety}{database connection}
 
+\item{input.id}{The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.}
+
 \item{format.id}{numeric. Defaults to format.id if both provided}
 
 \item{var.ids}{optional vector of variable IDs. If provided, limits results to these variables}

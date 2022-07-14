@@ -7,6 +7,8 @@
 query.site(site.id, con)
 }
 \arguments{
+\item{site.id}{The id of the site}
+
 \item{con}{: database connection}
 }
 \description{

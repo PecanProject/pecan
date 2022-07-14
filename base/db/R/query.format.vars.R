@@ -1,6 +1,7 @@
 ##' Given input_id, return formats table and table of variables and units
 ##'
 ##' @param format.id numeric. Defaults to format.id if both provided
+##' @param input.id The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.
 ##' @param bety database connection
 ##' @param var.ids optional vector of variable IDs. If provided, limits results to these variables
 ##' @export query.format.vars
