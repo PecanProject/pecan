@@ -37,7 +37,7 @@
         <max_value>9999</max_value>
       </variable>
     </state.variables>
-    <forecast.time.step>year</forecast.time.step>
+    <forecast.time.step>daily</forecast.time.step>
   </state.data.assimilation>
   <database>
     <bety>
@@ -58,6 +58,14 @@
    </constants>
    <posteriorid>1000022311</posteriorid>
    <outdir>/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA</outdir>
+  </pft>
+  <pft>
+   <name>soil.HPDA</name>
+   <constants>
+    <num>1</num>
+   </constants>
+   <posteriorid>1000022310</posteriorid>
+   <outdir>/fs/data2/output//PEcAn_1000010530/pft/soil.HPDA</outdir>
   </pft>
   </pfts>
   <meta.analysis>
@@ -99,6 +107,7 @@
         <lon>-72.15000</lon>
         <site.pft>
           <pft.name>temperate.deciduous.HPDA</pft.name>
+          <pft.name>soil.HPDA</pft.name>
         </site.pft>
       </site>
       <inputs>

@@ -39,13 +39,10 @@ settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.seq
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 on.exit(db.close(con))
-#Find last SDA Run to get new start date
-sda.start <- NA
-all.previous.sims <- list.dirs(outputPath, recursive = F)
 
 #to manually change start date 
-sda.start <- as.Date("2021-07-28")
-sda.end <- sda.start + lubridate::days(1)
+sda.start <- as.Date("2021-07-01")
+#sda.end <- sda.start + lubridate::days(1)
 
 # Finding the right end and start date
 met.start <- sda.start
@@ -76,7 +73,7 @@ site_info <- list(
 #filter for good resolution data
   lai <- lai %>% filter(qc == "000") 
 #filter for lai that matches sda.start
-  lai <- lai %>% filter(calendar_date == sda.start)
+  #lai <- lai %>% filter(calendar_date == sda.start)
 
   if(dim(lai)[1] < 1){
     lai = NA
@@ -98,7 +95,7 @@ site_info <- list(
 #filter for good resolution data
   lai_sd <- lai_sd %>% filter(qc == "000")
 #filter for lai.sd that matches sda.start
-  lai_sd <- lai_sd %>% filter(calendar_date == sda.start)
+  #lai_sd <- lai_sd %>% filter(calendar_date == sda.start)
   
   if(dim(lai_sd)[1] < 1){
     lai_sd = NA
@@ -266,7 +263,7 @@ ens <- PEcAn.DB::db.query(query.ens, con)
 PEcAn.DB::db.close(con)
 #list files in output folder
 restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
-restart$start.cut <- lubridate::as_datetime(lai$calendar_date)
+restart$start.cut <- lubridate::as_datetime(min(lai$calendar_date))
 restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
 #add runs ids from previous forecast to settings object to be passed to build X
 run_id <- list()
@@ -277,35 +274,28 @@ names(run_id) = sprintf("id%s",seq(1:length(run$id))) #rename list
 settings$runs$id = run_id
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(sda.start)
+sda.end <- as.Date(max(lai$calendar_date))
 settings$state.data.assimilation$end.date <-as.character(sda.end)
 
-if ('state.data.assimilation' %in% names(settings)) {
-  if (PEcAn.utils::status.check("SDA") == 0) {
-    PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf_Multisite(
-      settings, 
-      restart=restart,
-      Q=NULL,
-      obs.mean = obs.mean,
-      obs.cov = obs.cov,
-      forceRun = TRUE, 
-      keepNC = TRUE,
-      control=list(trace = TRUE,
-                   FF = FALSE,
-                   interactivePlot = FALSE,
-                   TimeseriesPlot = FALSE,
-                   BiasPlot = FALSE,
-                   plot.title = NULL,
-                   facet.plots = FALSE,
-                   debug = FALSE,
-                   pause = FALSE,
-                   Profiling = FALSE,
-                   OutlierDetection=FALSE)
-    )
-    
-    PEcAn.utils::status.end()
-  }
-}
+#run sda function
+sda.enkf.multisite(settings = settings, 
+                   obs.mean = obs.mean, 
+                   obs.cov = obs.cov, 
+                   Q = NULL, 
+                   restart = restart, 
+                   forceRun = TRUE, 
+                   keepNC = TRUE, 
+                   control = list(trace = TRUE,
+                                  FF = FALSE,
+                                  interactivePlot = FALSE,
+                                  TimeseriesPlot = FALSE,
+                                  BiasPlot = FALSE,
+                                  plot.title = NULL,
+                                  facet.plots = FALSE,
+                                  debug = FALSE,
+                                  pause = FALSE,
+                                  Profiling = FALSE,
+                                  OutlierDetection=FALSE))
 
 
 

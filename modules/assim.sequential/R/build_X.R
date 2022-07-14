@@ -12,12 +12,14 @@
 #' @param outdir location of previous run output folder containing .nc files
 #' @param out.configs object created for build_X passed from sda.enkf_MultiSite
 #' @param t Default t=1, for function to work within time loop
+#' @param var.names list of state variables taken from settings object
+#' @param my.read_restart object that points to the model restart function i.e. read_restart.SIPNET
 #'
 #' @return X ready to be passed to SDA Analysis code
 #' @export
 #'
 #' @examples
-build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir = paste0(old.dir, "out/"), t = 1){
+build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names, my.read_restart){
 
   reads <-
     furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {

@@ -11,7 +11,9 @@ build_X(
   nens,
   read_restart_times,
   outdir = paste0(old.dir, "out/"),
-  t = 1
+  t = 1,
+  var.names,
+  my.read_restart
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ build_X(
 \item{outdir}{location of previous run output folder containing .nc files}
 
 \item{t}{Default t=1, for function to work within time loop}
+
+\item{var.names}{list of state variables taken from settings object}
+
+\item{my.read_restart}{object that points to the model restart function i.e. read_restart.SIPNET}
 }
 \value{
 X ready to be passed to SDA Analysis code

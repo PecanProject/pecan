@@ -269,7 +269,7 @@ sda.enkf.multisite <- function(settings,
         }) %>%
         setNames(site.ids)
       #now all build_X args are properly formatted for the function to return X
-      reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1)
+      reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names = var.names, my.read_restart = my.read_restart)
       #let's read the parameters of each site/ens
       params.list <- reads %>% map(~.x %>% map("params"))
       # Now let's read the state variables of site/ens
@@ -382,7 +382,7 @@ sda.enkf.multisite <- function(settings,
       #add flag for restart t=1 to skip model runs
       if(restart_flag & t == 1){
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
-        next
+        X <- X
       }else{
         
         if (control$debug) browser()
