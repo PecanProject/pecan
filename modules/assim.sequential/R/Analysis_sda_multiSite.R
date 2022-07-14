@@ -439,32 +439,22 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     conf$addMonitors(c("X","Xall","q","Xs")) 
     samplerNumberOffset <<- length(conf$getSamplers())
     
-    #cannot use toggle when y.censored is 1
-    if(constants.tobit$YN == 1){
-      #adding a random walk sampler to node y.censored[1]
-      conf$addSampler("y.censored[1]", "RW")
-    }else{
       for(i in 1:length(y.ind)) {
         node <- paste0('y.censored[',i,']')
         conf$addSampler(node, 'toggle', control=list(type='RW'))
       }
-    }
+
 
     conf$printSamplers()
 
     Rmcmc <<- buildMCMC(conf)
     Cmodel <<- compileNimble(model_pred)
-    Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
+    Cmcmc <<- compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
     
-    if(constants.tobit$YN == 1){
-        #not sure what "toggle" is but does not work when YN = 1
-        #valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+1]], 'toggle', y.ind[1])
-      PEcAn.logger::logger.debug("toggle setting on RW does not work with length(y.censored) = 1, not using for now.")
-    }else{
       for(i in 1:length(y.ind)) {
         valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
       }
-    }
+
     
     
     save(
