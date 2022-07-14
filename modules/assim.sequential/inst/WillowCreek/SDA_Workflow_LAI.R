@@ -4,7 +4,7 @@
 library("PEcAn.all")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
-library("PEcAn.assim.sequential")
+library("PEcAnAssimSequential")
 library("RCurl")
 library("REddyProc")
 library("tidyverse")
@@ -41,7 +41,7 @@ con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 on.exit(db.close(con))
 
 #to manually change start date 
-sda.start <- as.Date("2021-07-01")
+sda.start <- as.Date("2021-07-28")
 #sda.end <- sda.start + lubridate::days(1)
 
 # Finding the right end and start date

@@ -59,14 +59,6 @@
    <posteriorid>1000022311</posteriorid>
    <outdir>/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA</outdir>
   </pft>
-  <pft>
-   <name>soil.HPDA</name>
-   <constants>
-    <num>1</num>
-   </constants>
-   <posteriorid>1000022310</posteriorid>
-   <outdir>/fs/data2/output//PEcAn_1000010530/pft/soil.HPDA</outdir>
-  </pft>
   </pfts>
   <meta.analysis>
     <iter>3000</iter>
@@ -107,7 +99,6 @@
         <lon>-72.15000</lon>
         <site.pft>
           <pft.name>temperate.deciduous.HPDA</pft.name>
-          <pft.name>soil.HPDA</pft.name>
         </site.pft>
       </site>
       <inputs>
@@ -121,11 +112,11 @@
   <host>
     <name>geo.bu.edu</name>
     <user>ahelgeso</user>
-    <rundir>/projectnb/dietzelab/ahelgeso/Jobs/run</rundir>
-    <scratchdir>/projectnb/dietzelab/ahelgeso/scratchdir</scratchdir>
+    <rundir>/projectnb/dietzelab/ahelgeso/Jobs_SDA/run</rundir>
+    <scratchdir>/projectnb/dietzelab/ahelgeso/Jobs_SDA/scratchdir</scratchdir>
     <clearscratch>TRUE</clearscratch>
     <prerun>module load R/4.1.2</prerun>
-    <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs/qsub -e /projectnb/dietzelab/ahelgeso/Jobs/qsub</qsub>
+    <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub -e /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub</qsub>
     <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
     <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
     <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
