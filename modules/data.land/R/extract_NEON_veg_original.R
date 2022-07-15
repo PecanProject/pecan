@@ -19,10 +19,12 @@
 #' @examples start_date = as.Date("2020-01-01") 
 #' end_date = as.Date("2021-09-01")
 
-extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
+extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsites = NULL, ...){
   
   #Find sitename from lon and lat params using distance
-  neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
+  if(is.null(neonsites)){
+    neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
+  }
   neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns
   betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
   mindist <- min(betyneondist)
@@ -34,23 +36,62 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   #Load in NEON datasets
   neonstore::neon_download("DP1.10098.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
   apparentindividual <- neonstore::neon_read(table = "apparentindividual", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
-  #Filter joined.veg for required information: DBH, tree height, and species
-  filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
-  #Filter for most recent record
-  filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
-  filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
-  #Create year column
-  filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
-  #Rename NEON column names to match pecan functions
-  colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+  if(is.null(apparentindividual)){
+    filter.date <- NA
+  }else{
+    mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+    joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
+    #Filter joined.veg for required information: DBH, tree height, and species
+    filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
+    #Filter for most recent record
+    filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
+    filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
+    #Create year column
+    filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
+    #Rename NEON column names to match pecan functions
+    colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+  }
+   
+  #herb AGB
+  neonstore::neon_download("DP1.10023.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+  massdata <- neonstore::neon_read(table = "massdata", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  if(is.null(massdata)){
+    filter.herb <- NA
+  }else{
+    perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+    joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
+    filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, plotType.x, clipArea, dryMass, collectDate.y)
+    #Create year column
+    filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
+    #Rename NEON column names to match pecan functions
+    colnames(filter.herb) <- c("site_name", "plot", "Subplot", "plotType", "clipArea", "dryMass", "date", "year")
+  }
+  
+  # #species info
+  # neonstore::neon_download("DP1.10058.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+  # div_1m2 <- neonstore::neon_read(table = "div_1m2", product = "DP1.10058.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  # 
+  # #check if species info is available for herb plots
+  # herb.plot <- unique(filter.herb$plotID.x)
+  # check.species <- herb.plot %in% filter.species$plotID
+  # colnames(filter.herb)[2] <- "plotID"
+  # if (TRUE %in% check.species) {
+  #   #add species info to filter.herb if it exists
+  #   filter.herb <- dplyr::left_join(filter.herb, filter.species, by = "plotID")
+  # }else{
+  #   PEcAn.logger::logger.info(paste0("No herbacious species info available for ", sitename))
+  # }
+  # 
+  # #remove NAs from species column only, next step species matching does not like NAs
+  # filter.herb <- filter.herb[!is.na(filter.herb$scientificName),]
+  # filter.date <- filter.date[!is.na(filter.date$scientificName),]
+  
   
   # #soil carbon
-  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", type = "basic",api = "https://data.neonscience.org/api/v0")
-  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
-  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
-  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = "2012-01-01", end_date = "2021-01-01", dir = store_dir)
+  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
   if(is.null(perbiogeosample)){
     print("no soil carbon data found!")
   }
@@ -65,8 +106,9 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, ...){
   #Set filter.date as veg_info[[2]]
   veg_info[[2]] <- filter.date
   #Set plot size as veg_info[[1]]
-  veg_info[[1]] <- 400
+  veg_info[[1]] <- filter.herb
   veg_info[[3]] <- soilcarbon.per.m2
+  veg_info[[4]] <- joined.soil
   
   
   return(veg_info)

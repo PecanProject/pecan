@@ -8,7 +8,15 @@
 \usage{
 extract_NEON_veg_withHerb(lon, lat, start_date, end_date, store_dir, ...)
 
-extract_NEON_veg(lon, lat, start_date, end_date, store_dir, ...)
+extract_NEON_veg(
+  lon,
+  lat,
+  start_date,
+  end_date,
+  store_dir,
+  neonsites = NULL,
+  ...
+)
 }
 \arguments{
 \item{lon}{site longitude, passed from ic_process}
