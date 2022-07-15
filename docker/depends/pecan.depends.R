@@ -45,7 +45,6 @@ wanted <- c(
 'geonames',
 'getPass',
 'ggmap',
-'ggmcmc',
 'ggplot2',
 'ggrepel',
 'glue',
