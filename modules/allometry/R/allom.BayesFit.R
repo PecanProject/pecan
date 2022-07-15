@@ -260,7 +260,7 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
         
         ## Update study-level error
         u1 <- u1 + nrow(X) / 2
-        u2 <- u2 + 0.5 * crossprod(Y - X %*% beta)
+        u2 <- u2 + as.numeric(0.5 * crossprod(Y - X %*% beta))
         
         ## Calculate Deviance
         D[j] <- -2 * sum(stats::dnorm(Y, X %*% beta, sqrt(sigma), log = TRUE))
