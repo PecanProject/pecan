@@ -3,7 +3,7 @@ Downloads SMAP Global Soil Moisture Data from Google Earth Engine and saves it i
 
 Data retrieved: ssm, susm, smp, ssma, susma
 
-# Requires Python3
+Requires Python3
 
 Author: Ayush Prasad
 """
@@ -25,7 +25,7 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
     Parameters
     ----------
     geofile (str) -- path to the geosjon file containing the name and coordinates of ROI
-
+    
     outdir (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
 
     filename (str) -- filename of the output file
@@ -33,7 +33,7 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
     start (str) -- starting date of the data request in the form YYYY-MM-dd
 
     end (str) -- ending date areaof the data request in the form YYYY-MM-dd
-
+  
     Returns
     -------
     Absolute path to the output file.
@@ -153,8 +153,8 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
         datadf, coords=coords, attrs={"site_name": site_name, "AOI": AOI,},
     )
 
-    # if siteid is None:
-    #     sitedid = site_name
+    if siteid is None:
+        sitedid = site_name
 
     # if specified output path does not exist create it
     if not os.path.exists(outdir):
