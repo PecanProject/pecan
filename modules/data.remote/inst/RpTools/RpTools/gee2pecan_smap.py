@@ -3,7 +3,7 @@ Downloads SMAP Global Soil Moisture Data from Google Earth Engine and saves it i
 
 Data retrieved: ssm, susm, smp, ssma, susma
 
-# Requires Python3
+Requires Python3
 
 Author: Ayush Prasad
 """

@@ -14,8 +14,8 @@ download_SMAP <- function(start, end){
   
   #set start and end dates
   ## 2015-04-01 is first available smap data
-  # start <- '2016-01-02'
-  # end <- '2016-07-16'# as.character(Sys.Date()) for current date
+  start <- '2016-01-02'
+  end <- '2016-07-16'# as.character(Sys.Date()) for current date
   
   geoJSON_outdir = "/projectnb/dietzelab/jbowers1/geoFiles/" 
   smap_outdir = "/projectnb/dietzelab/jbowers1/smap_ncFiles/"
@@ -31,12 +31,6 @@ download_SMAP <- function(start, end){
   
   source('~/pecan/modules/data.remote/inst/download_SMAP_from_gee.R')
   
-  for (index in 1:length(all_sites)) {
-    print(all_sites[[index]]$run$site$id)
-  }
-  
-  all_sites[[10]]$run$site
-  
   # Inupt each site's info as a new list
   for(index in 1:length(all_sites)){ # There are 39 sites in the CONUS
     
@@ -47,15 +41,6 @@ download_SMAP <- function(start, end){
     }
     
   }
-  
-  # site_info <- list(
-  #   id = 1126,
-  #   name = "Harvard Forest",
-  #   lat = 42.531453,
-  #   lon = -72.188896,
-  #   time_zone = "UTC")
-  # 
-  # hf.data <- download_SMAP_from_gee(start, end, site_info, geoJSON_outdir, smap_outdir)
 
   return(output_smap)
 }
