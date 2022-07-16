@@ -9,9 +9,7 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Synthesize allometric equations or fit allometries to data.
 Imports:
-    PEcAn.logger,
     coda (>= 0.18),
-    XML (>= 3.98-1.4),
     grDevices,
     graphics,
     methods,
