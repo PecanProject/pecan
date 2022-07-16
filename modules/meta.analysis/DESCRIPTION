@@ -37,6 +37,7 @@ Imports:
     rjags
 Suggests:
     ggmcmc,
+    rmarkdown,
     knitr,
     ggplot2,
     testthat (>= 1.0.2)
