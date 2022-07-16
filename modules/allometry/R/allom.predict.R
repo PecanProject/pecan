@@ -294,8 +294,9 @@ load.allom <- function(object) {
         tmp[[k]] <- list()
         names(tmp)[k] <- my.pft
       }
-      load(my.files[j])
-      tmp[[k]][[my.comp]] <- mc
+      tmp_env <- new.env()
+      load(my.files[j], envir = tmp_env)
+      tmp[[k]][[my.comp]] <- tmp_env$mc
     }
   }
   

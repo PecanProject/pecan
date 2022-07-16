@@ -131,12 +131,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       
       allom.stats[[pft.name]][[component]] <- summary(mc)
       allom.stats[[pft.name]][[component]]$cov <- stats::cov(as.matrix(mc))
-      
-      ## Save Posterior information (Pass to update.posterior module)
-      if (FALSE) {
-        
-      }
-      
+
       ## Analysis/visualization
       pdffile <- file.path(outdir, paste("Allom", pft.name, component, "MCMC", "pdf", sep = "."))
       print(c("saving diagnostic graphs to", pdffile))

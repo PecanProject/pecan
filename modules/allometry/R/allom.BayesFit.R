@@ -227,17 +227,17 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
     
     if (FALSE) {
       # diagnostics
-      pdf("DvBscatter.pdf")
+      grDevices::pdf("DvBscatter.pdf")
       plot(1, 1, type = "n", log = "xy", xlim = c(0.1, 1000), ylim = c(1e-04, 1e+05))
       BETA <- matrix(NA, nsite, 2)
       for (i in seq_len(nsite)) {
-        points(data[[i]]$x, data[[i]]$y, col = i)
+        graphics::points(data[[i]]$x, data[[i]]$y, col = i)
         BETA[i, ] <- coef(lm(log10(data[[i]]$y) ~ log10(data[[i]]$x)))
       }
       hist(BETA[, 1], breaks = 20)
       hist(BETA[, 2], breaks = 20)
       plot(BETA)
-      dev.off()
+      grDevices::dev.off()
     }
     
     if (nsite > 1)

@@ -26,9 +26,7 @@ Suggests:
     markdown,
     rmarkdown,
     testthat (>= 1.0.2),
-    knitr,
-    rmarkdown,
-    markdown
+    withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
