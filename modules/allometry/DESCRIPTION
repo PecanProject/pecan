@@ -7,7 +7,7 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Shashank", "Singh", role = c("ctb")),
              person("University of Illinois, NCSA", role = c("cph")))
-Description: Synthesize allometric equations or fit allometries to data
+Description: Synthesize allometric equations or fit allometries to data.
 Imports:
     PEcAn.logger,
     coda (>= 0.18),
