@@ -318,7 +318,9 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
     SgGIBBS[g]   <- Sg
     DgGIBBS[g]   <- Dg
     
-    utils::setTxtProgressBar(pb, g)
+    if(interactive()) {
+      utils::setTxtProgressBar(pb, g)
+    }
   }  ## END MCMC LOOP
   close(pb)
   
