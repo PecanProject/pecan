@@ -309,7 +309,7 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
     littlev <- SgI * t(X) %*% Y + V0Imu0
     Bg      <- t(mvtnorm::rmvnorm(1, bigV %*% littlev, bigV))
     u1      <- s1 + nrow(X) / 2
-    u2      <- s2 + 0.5 * crossprod(Y - X %*% Bg)
+    u2      <- s2 + as.numeric(0.5 * crossprod(Y - X %*% Bg))
     SgI     <- stats::rgamma(1, u1, u2)  ## precision
     Sg      <- 1 / SgI  ## variance
     Dg      <- -2 * sum(stats::dnorm(Y, X %*% Bg, sqrt(Sg), log = TRUE))
