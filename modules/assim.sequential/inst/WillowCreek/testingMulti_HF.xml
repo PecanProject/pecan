@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <pecan.multi>
+  <info>
+  <notes>SDA Forecast</notes>
+  <userid>1000012038</userid>
+  <username>ahelgeso</username>
+  <date>2021/05/10 20:42:37 +0000</date>
+ </info>
   <state.data.assimilation>
     <process.variance>TRUE</process.variance>
     <adjustment>TRUE</adjustment>
@@ -40,16 +46,16 @@
     <forecast.time.step>daily</forecast.time.step>
   </state.data.assimilation>
   <database>
-    <bety>
-      <user>bety</user>
-      <password>bety</password>
-      <host>psql-pecan.bu.edu</host>
-      <dbname>bety</dbname>
-      <driver>PostgreSQL</driver>
-      <write>FALSE</write>
-    </bety>
-    <dbfiles>/projectnb/dietzelab/pecan.data/dbfiles/</dbfiles>
-  </database>
+  <bety>
+   <user>bety</user>
+   <password>bety</password>
+   <host>psql-pecan.bu.edu</host>
+   <dbname>bety</dbname>
+   <driver>PostgreSQL</driver>
+   <write>false</write>
+  </bety>
+  <dbfiles>/fs/data3/kzarada/pecan.data/dbfiles/</dbfiles>
+ </database>
   <pfts>
     <pft>
    <name>temperate.deciduous.HPDA</name>
@@ -83,13 +89,13 @@
     <variable>NEE</variable>
   </sensitivity.analysis>
   <model>
-    <id>1000000022</id>
-    <type>SIPNET</type>
-    <revision>ssr</revision>
-    <delete.raw>FALSE</delete.raw>
-    <binary>/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if</binary>
-    <jobtemplate>/projectnb/dietzelab/ahelgeso/sipnet_geo.job</jobtemplate>
-  </model>
+  <id>1000000022</id>
+  <type>SIPNET</type>
+  <revision>ssr</revision>
+  <delete.raw>FALSE</delete.raw>
+  <binary>/usr2/postdoc/istfer/SIPNET/trunk/sipnet_if</binary>
+  <jobtemplate>/projectnb/dietzelab/ahelgeso/sipnet_geo.job</jobtemplate>
+ </model>
   <run>
     <settings.646>
       <site>
@@ -112,9 +118,6 @@
   <host>
     <name>geo.bu.edu</name>
     <user>ahelgeso</user>
-    <rundir>/projectnb/dietzelab/ahelgeso/Jobs_SDA/run</rundir>
-    <scratchdir>/projectnb/dietzelab/ahelgeso/Jobs_SDA/scratchdir</scratchdir>
-    <clearscratch>TRUE</clearscratch>
     <prerun>module load R/4.1.2</prerun>
     <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub -e /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub</qsub>
     <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
@@ -122,4 +125,9 @@
     <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
   </host>
   <multisettings>run</multisettings>
+  <settings.info>
+  <deprecated.settings.fixed>TRUE</deprecated.settings.fixed>
+  <settings.updated>TRUE</settings.updated>
+  <checked>TRUE</checked>
+ </settings.info>
 </pecan.multi>

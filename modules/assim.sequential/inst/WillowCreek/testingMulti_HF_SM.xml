@@ -118,9 +118,6 @@
   <host>
     <name>geo.bu.edu</name>
     <user>ahelgeso</user>
-    <rundir>/projectnb/dietzelab/ahelgeso/Jobs/run</rundir>
-    <scratchdir>/projectnb/dietzelab/ahelgeso/scratchdir</scratchdir>
-    <clearscratch>TRUE</clearscratch>
     <prerun>module load R/4.1.2</prerun>
     <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs/qsub -e /projectnb/dietzelab/ahelgeso/Jobs/qsub</qsub>
     <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
