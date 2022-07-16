@@ -197,8 +197,8 @@ sda.enkf.multisite <- function(settings,
             my.split_inputs,
             args = list(
               settings = settings,
-              start.time = start.cut, # This depends if we are restart or not
-              stop.time = lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3),
+              start.time = settings$run$site$met.start, # This depends if we are restart or not
+              stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
               outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
               overwrite =F
@@ -349,7 +349,7 @@ sda.enkf.multisite <- function(settings,
                   args = list(
                     settings = settings,
                     start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
-                    stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
+                    stop.time =   lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
                     inputs = inputs$samples[[i]])
                 )
               }
@@ -412,7 +412,7 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = 1, var.names = var.names, my.read_restart = my.read_restart)
+        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = t, var.names = var.names, my.read_restart = my.read_restart)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
