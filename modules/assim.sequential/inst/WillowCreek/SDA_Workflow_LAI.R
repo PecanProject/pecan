@@ -14,6 +14,7 @@ library("dynutils")
 library('nimble')
 library("sp")
 library("sf")
+library("lubridate")
 plan(multisession)
 
 
@@ -23,40 +24,66 @@ plan(multisession)
 
 forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
 outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
-nodata <- FALSE #use this to run SDA with no data
 restart <- list()
-#days.obs <- 3 #how many of observed data *BY HOURS* to include -- not including today
 setwd(outputPath)
-options(warn=-1)
+#to manually change start date 
+runDays <- c("2021-07-27", "2021-07-28")
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
 #------------------------------------------------------------------------------------------------
-
+for (s in 1:length(runDays)) {
+  
+#set sda.start
+sda.start <- as.Date(runDays[s])
 #reading xml
 settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testingMulti_HF.xml")
 
-#connecting to DB
-con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-on.exit(db.close(con))
-
-#to manually change start date 
-sda.start <- as.Date("2021-07-28")
-#sda.end <- sda.start + lubridate::days(1)
-
-# Finding the right end and start date
-met.start <- sda.start
-met.end <- met.start + lubridate::days(35)
-
-# --------------------------------------------------------------------------------------------------
-#---------------------------------------------- LAI DATA -------------------------------------
-# --------------------------------------------------------------------------------------------------
+#grab site info
 site_info <- list(
   site_id = settings$run$site$id,
   site_name = settings$run$site$name,
   lat = settings$run$site$lat,
   lon = settings$run$site$lon,
   time_zone = "UTC")
+
+#connecting to DB
+con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+on.exit(db.close(con))
+
+#query database for previous forecast run (i.e. t=0)
+query.run <- paste0("SELECT * FROM runs WHERE site_id =", site_info$site_id)
+run <- PEcAn.DB::db.query(query.run, con)
+#filter for sda.start
+run <- dplyr::filter(run, start_time == as.Date(sda.start -1))
+daydiff <- difftime(Sys.time(), run$created_at, units = "days")
+runday <- which(min(daydiff) == daydiff)
+startday <- run$created_at[runday]
+run <- dplyr::filter(run, as.Date(created_at) == as.Date(startday))
+#add filter for model
+query.ens <- paste0("SELECT * FROM ensembles WHERE id =", run$ensemble_id)
+ens <- PEcAn.DB::db.query(query.ens, con)
+#now that we have the workflow id for forecast run we can close connection to BETY
+PEcAn.DB::db.close(con)
+#add filepath to restart object, this is where SDA will look for runs for t=1
+restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+
+#check if all ensemble members are present
+ensPresent <- list()
+for(k in 1:length(run$ensemble_id)){
+  ensPresent[[k]] <- file.exists(paste0(restart$filepath, "out/", run$id[k], "/2021.nc"))
+}
+if(FALSE %in% ensPresent){
+  next
+}
+#set met.start & met.end
+met.start <- sda.start - 1
+met.end <- met.start + lubridate::days(35)
+
+# --------------------------------------------------------------------------------------------------
+#---------------------------------------------- LAI DATA -------------------------------------
+# --------------------------------------------------------------------------------------------------
+
 
   lai <- call_MODIS(outdir = NULL,
                     var = 'lai', 
@@ -73,10 +100,10 @@ site_info <- list(
 #filter for good resolution data
   lai <- lai %>% filter(qc == "000") 
 #filter for lai that matches sda.start
-  #lai <- lai %>% filter(calendar_date == sda.start)
+  lai <- lai %>% filter(calendar_date == sda.start)
 
   if(dim(lai)[1] < 1){
-    lai = NA
+    lai = data.frame(calendar_date = sda.start, site_id = site_info$site_id, data = NA)
     PEcAn.logger::logger.warn(paste0("MODIS mean Data not available for these dates, initialzing NA"))
   }
 
@@ -95,15 +122,18 @@ site_info <- list(
 #filter for good resolution data
   lai_sd <- lai_sd %>% filter(qc == "000")
 #filter for lai.sd that matches sda.start
-  #lai_sd <- lai_sd %>% filter(calendar_date == sda.start)
+  lai_sd <- lai_sd %>% filter(calendar_date == sda.start)
   
   if(dim(lai_sd)[1] < 1){
-    lai_sd = NA
+    lai_sd = data.frame(calendar_date = sda.start, site_id = site_info$site_id, data = NA)
     PEcAn.logger::logger.warn(paste0("MODIS standard deviation Data not available for these dates, initialzing NA"))
   }
 
 #build obs mean/cov matrix for LAI
-  obs.mean <- data.frame(date = lai$calendar_date, site_id = lai$site_id, lai = lai$data)
+  #add NA obs for 1 day after LAI obs available
+  na.date <- as.Date(sda.start + 1)
+  na.date <- as.character(na.date)
+  obs.mean <- data.frame(date = c(lai$calendar_date, na.date), site_id = c(lai$site_id, lai$site_id), lai = c(lai$data, NA))
   obs.mean$date = as.character(obs.mean$date, stringsAsFactors = FALSE)
   obs.mean <- split(obs.mean, obs.mean$date)
   
@@ -122,22 +152,22 @@ site_info <- list(
     }
   ) %>% stats::setNames(date.obs)
   
-  #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
-  names = date.obs
-  for (name in names){
-    for (site in names(obs.mean[[name]])){
-      na_index = which(!(is.na(obs.mean[[ name]][[site]])))
-      colnames = names(obs.mean[[name]][[site]])
-      #we have some records that are not NA
-      if (length(na_index) > 0){
-        obs.mean[[name]][[site]] = obs.mean[[name]][[site]][na_index]
-      }else if(length(na_index) == 0){#we don't have any observations (they are all NAs), we then just remove the whole site
-        obs.mean[[name]][[site]] <- NULL
-      }
-    }
-  }
+  # #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
+  # names = date.obs
+  # for (name in names){
+  #   for (site in names(obs.mean[[name]])){
+  #     na_index = which(!(is.na(obs.mean[[ name]][[site]])))
+  #     colnames = names(obs.mean[[name]][[site]])
+  #     #we have some records that are not NA
+  #     if (length(na_index) > 0){
+  #       obs.mean[[name]][[site]] = obs.mean[[name]][[site]][na_index]
+  #     }else if(length(na_index) == 0){#we don't have any observations (they are all NAs), we then just remove the whole site
+  #       obs.mean[[name]][[site]] <- NULL
+  #     }
+  #   }
+  # }
   
-  obs.cov <- data.frame(date = lai_sd$calendar_date, site_id = lai_sd$site_id, lai = lai_sd$data)
+  obs.cov <- data.frame(date = c(lai_sd$calendar_date, na.date), site_id = c(lai_sd$site_id, lai_sd$site_id), lai = c(lai_sd$data, NA))
   obs.cov$date = as.character(obs.cov$date, stringsAsFactors = FALSE)
   obs.cov <- split(obs.cov, obs.cov$date)
   
@@ -155,27 +185,30 @@ site_info <- list(
   ) %>% stats::setNames(date.obs)
   
   
-  names = date.obs
-  for (name in names){
-    for (site in names(obs.cov[[name]])){
-      #if we don't have any observation (diag(cov)==NA) then we remove the whole site
-      if(length(which(!is.na(diag(obs.cov[[name]][[site]])))) == 0){
-        obs.cov[[name]][[site]] <- NULL
-        next
-      }
-      #else we do have some records
-      bad = which(apply(obs.cov[[name]][[site]], 2, function(x) any(is.na(x))) == TRUE)
-      if (length(bad) > 0){
-        obs.cov[[name]][[site]] = obs.cov[[name]][[site]][,-bad]
-        if (is.null(dim(obs.cov[[name]][[site]]))){
-          obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad]
-        } else {
-          obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad,]
-        }
-      }
-    }
-  }
-
+  # names = date.obs
+  # for (name in names){
+  #   for (site in names(obs.cov[[name]])){
+  #     #if we don't have any observation (diag(cov)==NA) then we remove the whole site
+  #     if(length(which(!is.na(diag(obs.cov[[name]][[site]])))) == 0){
+  #       obs.cov[[name]][[site]] <- NULL
+  #       next
+  #     }
+  #     #else we do have some records
+  #     bad = which(apply(obs.cov[[name]][[site]], 2, function(x) any(is.na(x))) == TRUE)
+  #     if (length(bad) > 0){
+  #       obs.cov[[name]][[site]] = obs.cov[[name]][[site]][,-bad]
+  #       if (is.null(dim(obs.cov[[name]][[site]]))){
+  #         obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad]
+  #       } else {
+  #         obs.cov[[name]][[site]] = obs.cov[[name]][[site]][-bad,]
+  #       }
+  #     }
+  #   }
+  # }
+  #add start.cut to restart list
+  restart$start.cut <- lubridate::as_datetime(min(lai$calendar_date))
+  restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
+  
 
 #-----------------------------------------------------------------------------------------------
 #------------------------------------------ Fixing the settings --------------------------------
@@ -185,12 +218,19 @@ settings$run$site$met.start <- as.character(met.start)
 settings$run$site$met.end <- as.character(met.end)
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
+# Setting dates in assimilation tags - This will help with preprocess split in SDA code
+settings$state.data.assimilation$start.date <-as.character(sda.start)
+sda.end <- max(names(obs.mean))
+settings$state.data.assimilation$end.date <-as.character(sda.end)
 
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- PEcAn Workflow -------------------------------------
 # --------------------------------------------------------------------------------------------------
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
-settings <- PEcAn.settings::prepare.settings(settings, force=TRUE)
+settings <- PEcAn.settings::prepare.settings(settings, force = TRUE)
+settings$host$rundir <- settings$rundir
+settings$host$outdir <- settings$modeloutdir
+settings$host$folder <- settings$modeloutdir
 setwd(settings$outdir)
 #Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -199,7 +239,6 @@ statusFile <- file.path(settings$outdir, "STATUS")
 if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)) {
   file.remove(statusFile)
 }
-
 
 #manually add in clim files 
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -247,24 +286,7 @@ if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
   settings$run$inputs$met$path = clim_check
 }
 
-#query database for previous forecast run (i.e. t=0)
-query.run <- paste0("SELECT * FROM runs WHERE site_id =", site_info$site_id)
-run <- PEcAn.DB::db.query(query.run, con)
-#filter for sda.start
-run <- dplyr::filter(run, start_time == sda.start)
-daydiff <- difftime(Sys.time(), run$created_at, units = "days")
-runday <- which(min(daydiff) == daydiff)
-startday <- run$created_at[runday]
-run <- dplyr::filter(run, as.Date(created_at) == as.Date(startday))
-#add filter for model
-query.ens <- paste0("SELECT * FROM ensembles WHERE id =", run$ensemble_id)
-ens <- PEcAn.DB::db.query(query.ens, con)
-#now that we have the workflow id for forecast run we can close connection to BETY
-PEcAn.DB::db.close(con)
-#list files in output folder
-restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
-restart$start.cut <- lubridate::as_datetime(min(lai$calendar_date))
-restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "EST")
+
 #add runs ids from previous forecast to settings object to be passed to build X
 run_id <- list()
 for (k in 1:length(run$id)) {
@@ -272,10 +294,6 @@ for (k in 1:length(run$id)) {
 }
 names(run_id) = sprintf("id%s",seq(1:length(run$id))) #rename list
 settings$runs$id = run_id
-# Setting dates in assimilation tags - This will help with preprocess split in SDA code
-settings$state.data.assimilation$start.date <-as.character(sda.start)
-sda.end <- as.Date(max(lai$calendar_date))
-settings$state.data.assimilation$end.date <-as.character(sda.end)
 
 #run sda function
 sda.enkf.multisite(settings = settings, 
@@ -301,3 +319,4 @@ sda.enkf.multisite(settings = settings,
 
 
 
+}
