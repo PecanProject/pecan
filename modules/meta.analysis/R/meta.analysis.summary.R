@@ -35,7 +35,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
   for (trait in names(mcmc.object)) {
     
     if (gg) {
-      if (!requireNamespace(ggmcmc, quietly = TRUE)) {
+      if (!requireNamespace("ggmcmc", quietly = TRUE)) {
         PEcAn.logger::logger.severe(
           "Can't find package 'ggmcmc',",
           "needed by `PEcAn.MA::meta.analysis.summary()` when `gg = TRUE`.",
