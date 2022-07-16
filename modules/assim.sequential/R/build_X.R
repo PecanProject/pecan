@@ -21,29 +21,57 @@
 #' @examples
 build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names, my.read_restart){
 
-  reads <-
-    furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
-      # Loading the model package - this is required bc of the furrr
-      #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-      #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
-      
-      X_tmp <- vector("list", 2)
-      
-      for (i in seq_len(nens)) {
-        X_tmp[[i]] <- do.call( my.read_restart,
-                               args = list(
-                                 outdir = outdir,
-                                 runid = settings$runs$id[i] %>% as.character(),
-                                 stop.time = read_restart_times[t+1],
-                                 settings = settings,
-                                 var.names = var.names,
-                                 params = siteparams[[i]]
-                               )
-        )
+  if(t == 1){
+    reads <-
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+        # Loading the model package - this is required bc of the furrr
+        #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+        #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
         
-      }
-      return(X_tmp)
-    })
+        X_tmp <- vector("list", 2)
+        
+        for (i in seq_len(nens)) {
+          X_tmp[[i]] <- do.call( my.read_restart,
+                                 args = list(
+                                   outdir = outdir,
+                                   runid = settings$runs$id[i] %>% as.character(),
+                                   stop.time = read_restart_times[t+1],
+                                   settings = settings,
+                                   var.names = var.names,
+                                   params = siteparams[[i]]
+                                 )
+          )
+          
+        }
+        return(X_tmp)
+      })
+    
+  }else{
+    reads <-
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+        # Loading the model package - this is required bc of the furrr
+        #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+        #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
+        
+        X_tmp <- vector("list", 2)
+        
+        for (i in seq_len(nens)) {
+          X_tmp[[i]] <- do.call( my.read_restart,
+                                 args = list(
+                                   outdir = outdir,
+                                   runid = configs$runs$id[i] %>% as.character(),
+                                   stop.time = read_restart_times[t+1],
+                                   settings = settings,
+                                   var.names = var.names,
+                                   params = siteparams[[i]]
+                                 )
+          )
+          
+        }
+        return(X_tmp)
+      })
+  }
+  
   # #let's read the parameters of each site/ens
   # params.list <- reads %>% map(~.x %>% map("params"))
   # # Now let's read the state variables of site/ens
