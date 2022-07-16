@@ -192,7 +192,11 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
                    threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)
 } # run.meta.analysis.R
 ## ==================================================================================================#
-
+#' Run meta-analysis on all PFTs in a (list of) PEcAn settings
+#'
+##' @param settings a PEcAn settings or MultiSettings object
+##' @return list of PFTs, invisibly;
+##'  saves MA results to `settings$pft$outdir` as a side effect
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
