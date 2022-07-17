@@ -29,71 +29,38 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
   # Basically I think of this as me going around and taking soil samples within 500m of my site.
   #https://sdmdataaccess.nrcs.usda.gov/SpatialFilterHelp.htm
   mu.Path <- paste0(
-    "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-    lon ,
-    ",",
-    lat,
-    "</gml:coordinates></gml:Point><Distance%20units=%27m%27>",radius,"</Distance></DWithin></Filter>"
+    "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?",
+    "SERVICE=WFS",
+    "&VERSION=1.1.0",
+    "&REQUEST=GetFeature&TYPENAME=MapunitPoly",
+    "&FILTER=",
+      "<Filter>",
+        "<DWithin>",
+          "<PropertyName>Geometry</PropertyName>",
+          "<gml:Point>",
+            "<gml:coordinates>", lon, ",", lat, "</gml:coordinates>",
+          "</gml:Point>",
+          "<Distance%20units=%27m%27>", radius, "</Distance>",
+        "</DWithin>",
+      "</Filter>",
+    "&OUTPUTFORMAT=XMLMukeyList"
   )
-  # We are trying to find the mapunit key here. Either using rgdal if the driver is defined or parsing it's gml
   
-  if ("GML" %in% rgdal::ogrDrivers()$name) {
-    
-    suppressMessages({
+  xmll <- RCurl::getURL(
+    mu.Path,
+    ssl.verifyhost = FALSE,
+    ssl.verifypeer = FALSE)
 
-    #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
-    #idk why but gssurgo api seems to fail for no reason, that'w why I try 3 times.
-      for(i in 1:3){
-       # try to read the polygon to get the mukey
-       sarea <-try(rgdal::readOGR(mu.Path, disambiguateFIDs=T), silent = TRUE)
-       if( class(sarea) != "try-error" ) break;
-       PEcAn.logger::logger.warn(paste0(i, " attemp was unsuccessful"))
-       Sys.sleep(1)
-     }
+  mukey_str <- XML::xpathApply(
+    doc = XML::xmlParse(xmll),
+    path = "//MapUnitKeyList",
+    fun = XML::xmlValue)
+  mukeys <- strsplit(mukey_str, ",")[[1]]
 
-      # flipping the coordinates 
-      # gdal reads the gSSUGO layers with fliped coordinateds
-      for (i in seq_along(sarea@polygons)){
-        for (j in seq_along(sarea@polygons[[i]]@Polygons)){
-          # flip the coordinates
-          sarea@polygons[[i]]@Polygons[[j]]@coords <- sarea@polygons[[i]]@Polygons[[j]]@coords[, c(2,1)]
-        }
-      }
-      
-      areasf <-sf::st_as_sf(sarea)
-      # getting the site point ready
-      site = sf::st_as_sf(data.frame(long=lon, lat=lat), coords=c("long","lat"))
-      
-      #buffer the radius around site / and clip the study area based on buffer
-      site_buffer = sf::st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
-      site_area = sf::st_intersection(site_buffer, areasf)
-      # calculating areas again for the clipped regions
-     mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
-                              mukey=site_area$mukey)
-
-    })
-    
-    mukeys <- mukey_area$mukey %>% as.character()
-  }else{
-    #reading the mapunit based on latitude and longitude of the site
-    #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
-    #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
-    xmll <-
-      RCurl::getURL(mu.Path,
-                    ssl.verifyhost = FALSE,
-                    ssl.verifypeer = FALSE
-      )
-    
-    startp <- regexpr('<ms:mukey>', xmll)
-    stopp <- regexpr('</ms:mukey>', xmll)
-    
-    #if you found the mapunit key
-    if (startp == -1 |
-        stopp == -1)
-      PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
-    mukeys <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
+  if (length(mukeys) == 0) {
+    PEcAn.logger::logger.error("No mapunit keys were found for this site.")
   }
-  
+
   # calling the query function sending the mapunit keys
   soilprop <- gSSURGO.Query(
     mukeys,
