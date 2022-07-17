@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
@@ -18,7 +18,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   # check to see if run.meta.analysis can be skipped
   if (file.exists(file.path(pft$outdir, "trait.mcmc.Rdata")) && 
       file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
-      settings$meta.analysis$update != TRUE) {
+      update == TRUE) {
     PEcAn.logger::logger.info("Assuming get.trait copied results already")
     return(pft)
   }
@@ -43,10 +43,12 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   PEcAn.logger::logger.info("-------------------------------------------------------------------")
   
   ## Load trait data for PFT
-  load(file.path(pft$outdir, "trait.data.Rdata"))
-  load(file.path(pft$outdir, "prior.distns.Rdata"))
+  trait_env <- new.env()
+  load(file.path(pft$outdir, "trait.data.Rdata"),envir = trait_env)
+  prior_env <- new.env()
+  load(file.path(pft$outdir, "prior.distns.Rdata"),envir = prior_env)
   
-  if (length(trait.data) == 0) {
+  if (length(trait_env$trait.data) == 0) {
     PEcAn.logger::logger.info("no trait data for PFT", pft$name, "\n so no meta-analysis will be performed")
     return(NA)
   }
@@ -56,7 +58,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
   
   ## Convert data to format expected by pecan.ma
-  jagged.data <- lapply(trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
+  jagged.data <- lapply(trait_env$trait.data, PEcAn.MA::jagify, use_ghs = use_ghs)
   
   ## Save the jagged.data object, replaces previous madata.Rdata object
   ## First 6 columns are equivalent and direct inputs into the meta-analysis
@@ -95,7 +97,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ## Check that data is consistent with prior
   for (trait in names(jagged.data)) {
     data.median <- stats::median(jagged.data[[trait]]$Y)
-    prior       <- prior.distns[trait, ]
+    prior       <- prior_env$prior.distns[trait, ]
     check       <- check_consistent(data.median, prior, trait, "data")
     if (is.na(check)) {
       return(NA)
@@ -107,15 +109,15 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Set gamma distribution prior
   tau_value <- 0.01
-  prior.variances <- as.data.frame(rep(1, nrow(prior.distns)))
-  row.names(prior.variances) <- row.names(prior.distns)
+  prior.variances <- as.data.frame(rep(1, nrow(prior_env$prior.distns)))
+  row.names(prior.variances) <- row.names(prior_env$prior.distns)
   prior.variances[names(trait.average), ] <- 0.001 * trait.average ^ 2
   prior.variances["seedling_mortality", 1] <- 1
   taupriors <- list(tauA = tau_value, tauB = apply(prior.variances, 1, function(x) min(tau_value, x)))
   
   ### Run the meta-analysis
   trait.mcmc <- pecan.ma(jagged.data,
-                         prior.distns,
+                         prior_env$prior.distns,
                          taupriors, 
                          j.iter = iterations, 
                          outdir = pft$outdir, 
@@ -124,7 +126,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ### Check that meta-analysis posteriors are consistent with priors
   for (trait in names(trait.mcmc)) {
     post.median <- stats::median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
-    prior       <- prior.distns[trait, ]
+    prior       <- prior_env$prior.distns[trait, ]
     check <- check_consistent(post.median, prior, trait, "data")
     if (is.na(check)) {
       return(NA)
@@ -137,7 +139,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   ### Save the meta.analysis output
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
   
-  post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
+  post.distns <- approx.posterior(trait.mcmc, prior_env$prior.distns, jagged.data, pft$outdir)
   dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
   save(post.distns, file = dist_MA_path)
 
