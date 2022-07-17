@@ -76,11 +76,12 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
       fraction_of_silt_in_soil = .data$silttotal_r,
       fraction_of_clay_in_soil = .data$claytotal_r,
       soil_depth = .data$hzdept_r,
-      mukey = .data$mukey)
-  #unit conversion
-  soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,
-                    "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" ,
-                                                        "fraction_of_clay_in_soil" , "soil_depth")]/100
+      mukey = .data$mukey) %>%
+    dplyr::mutate(dplyr::across(
+        c(dplyr::starts_with("fraction_of"),
+          "soil_depth"),
+        function(x) x / 100))
+
   soilprop.new <- soilprop.new[ complete.cases(soilprop.new) , ]
   #converting it to list
   soil.data.gssurgo <- names(soilprop.new)[1:4] %>%
