@@ -56,6 +56,9 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
         # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
         #samples <- samples[complete.cases(samples), ]
         samples <- samples[!is.na(samples[bin_Var]), ]
+        if(bin_Var == "dryMass"){
+          samples$Subplot <- samples$Plot
+        }
         
         # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
         if(!is.null(samples$Subplot)){
