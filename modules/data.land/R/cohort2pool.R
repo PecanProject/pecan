@@ -19,42 +19,55 @@
 
 cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   
-  ## Grab DBH
-  dbh <- dat[[2]][,dbh_name]
-  
-  #calculate total area
-  unique_subplot <- unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot))
-  area <- c()
-  for (i in 1:length(unique_subplot)) {
-    subplot_ID <- strsplit(unique_subplot[i], " ")[[1]][3]
-    if(subplot_ID %in% c(31, 32, 40, 41)){
-      area <- c(area, 100)
-    }else if(subplot_ID %in% c(21, 23, 39)){
-      area <- c(area, 400)
+  #Grab plot size
+  herb_plot <- dat[[1]]$clipArea[1]
+  #Grab number of plots
+  herb_num <- length(unique(dat[[1]]$plot))
+  #
+  if(is.na(dat[[2]])){
+    biomass <- 0
+    total_area <- 1
+    ratio <- 0
+  }else{
+    ## Grab DBH
+    dbh <- dat[[2]][,dbh_name]
+    
+    #calculate total area
+    unique_subplot <- unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot))
+    area <- c()
+    for (i in 1:length(unique_subplot)) {
+      subplot_ID <- strsplit(unique_subplot[i], " ")[[1]][3]
+      if(subplot_ID %in% c(31, 32, 40, 41)){
+        area <- c(area, 100)
+      }else if(subplot_ID %in% c(21, 23, 39)){
+        area <- c(area, 400)
+      }
+    }
+    total_area <- sum(area)
+    
+    ## Grab allometry
+    if(is.null(allom_param)){
+      a <- -2.0127                        
+      b <- 2.4342
+      biomass = exp(a + b*log(dbh))
+      #Hard code foliage equation from Jenkins paper
+      b0 <- -4.0813
+      b1 <- 5.8816
+      ratio = ifelse(dbh>=2.5,exp(b0 + (b1/dbh)),exp(b0 + (b1/2.5)))
+    } else {
+      #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
+      # allom.fit = #outputs from AllomAve function
+      # stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
+      # AGB = apply(stand,1,sum)
+      # hist(AGB)
+      AGB <- NULL
+      print("user provided allometry parameters not yet supported")
+      #return(NULL)
+      return(AGB)
     }
   }
-  total_area <- sum(area)
-
-  ## Grab allometry
-  if(is.null(allom_param)){
-    a <- -2.0127                        
-    b <- 2.4342
-    biomass = exp(a + b*log(dbh))
-    #Hard code foliage equation from Jenkins paper
-    b0 <- -4.0813
-    b1 <- 5.8816
-    ratio = ifelse(dbh>=2.5,exp(b0 + (b1/dbh)),exp(b0 + (b1/2.5)))
-  } else {
-    #Predict AGB using allom.predit code taken from Allom.Vignette.Rmd
-    # allom.fit = #outputs from AllomAve function
-    # stand = allom.predict(allom.fit,dbh = dbh,pft = "LH",component = 3,use = "Bg",interval = "prediction")
-    # AGB = apply(stand,1,sum)
-    # hist(AGB)
-    AGB <- NULL
-    print("user provided allometry parameters not yet supported")
-    #return(NULL)
-    return(AGB)
-  }
+  #calculate total herbaceous biomass, already in gC
+  tot_herb <- sum(dat[[1]][,"dryMass"])/(herb_plot*herb_num)
   
   #Calculate AGB
   biomass[is.na(biomass)] <- 0
@@ -66,8 +79,13 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   tot_leaf <- sum(leaf,na.rm = TRUE)
   
   #Divide by plot area, divide by 2 to convert from kg to kgC
-  leaf_biomass = (tot_leaf/(total_area))/2
-  AGB = (tot_biomass/(total_area))/2
+  leaf_biomass = (tot_leaf/(total_area))/2 + tot_herb/1000
+  
+  if(tot_biomass == 0){
+    AGB <- leaf_biomass
+  }else{
+    AGB = (tot_biomass/(total_area))/2
+  }
   wood_biomass = AGB - leaf_biomass
   
   #grab soil carbon info
