@@ -36,6 +36,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
     sppfilename <- rep(NA, n.ensemble)
     for (ens in 1:n.ensemble) {
       
+      veg_ens <- veg_info
       #try multiple bin_vars
       for (bin_Var in bin_var) {
         # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
@@ -57,7 +58,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
         #samples <- samples[complete.cases(samples), ]
         samples <- samples[!is.na(samples[bin_Var]), ]
         if(bin_Var == "dryMass"){
-          samples$Subplot <- samples$Plot
+          samples$Subplot <- samples$plot
         }
         
         # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
@@ -70,7 +71,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
           subplot.n <- 1
         }
         sub.list <- list()
-        veg_ens <- veg_info
+        
         for(np in seq_len(n.subplot)){
           samples_sub <- samples[samples$Subplot == subplot.n[np],] 
           
