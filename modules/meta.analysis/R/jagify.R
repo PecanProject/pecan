@@ -34,15 +34,15 @@ jagify <- function(result, use_ghs = TRUE) {
   r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
   r <- subset(transform(r, 
-                        stat = as.numeric(stat), 
-                        n = as.numeric(n), 
-                        site_id = as.integer(factor(site_id, unique(site_id))), 
-                        greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
+                        r$stat <- as.numeric(r$stat), 
+                        r$n <- as.numeric(r$n), 
+                        r$site_id <- as.integer(factor(r$site_id, unique(r$site_id))), 
+                        r$greenhouse <- as.integer(factor(r$greenhouse, unique(r$greenhouse))),
                         mean = mean, 
-                        citation_id = citation_id,
-                        ghs = greenhouse,
-                        site = site_id,
-                        trt_name = name), 
+                        r$citation_id <- r$citation_id,
+                        ghs = r$greenhouse,
+                        site = r$site_id,
+                        trt_name = r$name), 
               select = c("stat", "n", "site_id", "trt_id", "mean", "citation_id", "greenhouse", 
                          "ghs", "treatment_id", "site", "trt_name")) # original versions of greenhouse, treatment_id, site_id, and name
   

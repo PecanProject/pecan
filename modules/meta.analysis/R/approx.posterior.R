@@ -67,8 +67,8 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
         if (!is.null(trait.data)) {
           graphics::rug(trait.data[[trait]]$Y, lwd = 2, col = "purple")
         }
-        graphics::lines(x, dbeta(x, fit$estimate[1], fit$estimate[2]), lwd = 2, type = "l")
-        graphics::lines(x, dbeta(x, pparm[1], pparm[2]), lwd = 3, type = "l", col = 3)
+        graphics::lines(x, stats::dbeta(x, fit$estimate[1], fit$estimate[2]), lwd = 2, type = "l")
+        graphics::lines(x, stats::dbeta(x, pparm[1], pparm[2]), lwd = 3, type = "l", col = 3)
         graphics::legend("topleft", 
                legend = c("data", "prior", "post", "approx"), 
                col = c("purple", 3, 2, 1), lwd = 2)
@@ -93,7 +93,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       dist.names <- dist.names[!failfit.bool]
       
       fparm <- lapply(fit, function(x) { as.numeric(x$estimate) })
-      fAIC <- lapply(fit, AIC) 
+      fAIC <- lapply(fit, stats::AIC)
       
       bestfit <- which.min(fAIC)
       posteriors[ptrait, "distn"] <- dist.names[bestfit]
