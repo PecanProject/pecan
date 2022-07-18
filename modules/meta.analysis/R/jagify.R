@@ -39,7 +39,7 @@ jagify <- function(result, use_ghs = TRUE) {
                         site_id = as.integer(factor(site_id, unique(site_id))), 
                         greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
                         mean = mean, 
-                        citation_id = =citation_id,
+                        citation_id = citation_id,
                         ghs = greenhouse,
                         site = site_id,
                         trt_name = name), 
