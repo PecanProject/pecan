@@ -12,7 +12,7 @@ run.meta.analysis(
   dbfiles,
   database,
   use_ghs = TRUE,
-  update
+  update = FALSE
 )
 }
 \arguments{
