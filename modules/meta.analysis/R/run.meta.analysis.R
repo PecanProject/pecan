@@ -190,8 +190,8 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
   dbcon <- PEcAn.DB::db.open(database)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
-  result <- lapply(pfts, run.meta.analysis.pft(update = settings$meta.analysis$update), iterations = iterations, random = random, 
-                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)
+  result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
+                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs, update = settings$meta.analysis$update)
 } # run.meta.analysis.R
 ## ==================================================================================================#
 #' Run meta-analysis on all PFTs in a (list of) PEcAn settings
