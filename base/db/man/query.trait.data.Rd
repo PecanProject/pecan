@@ -18,7 +18,7 @@ query.trait.data(
 
 \item{spstr}{is the species.id integer or string of integers associated with the species}
 
-\item{con}{Database connection object}
+\item{con}{database connection object}
 
 \item{update.check.only}{if TRUE, returns results but does not print summaries}
 

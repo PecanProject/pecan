@@ -7,7 +7,7 @@
 query.file.path(input.id, host_name, con)
 }
 \arguments{
-\item{input.id}{The database id of the input file of the parent of the file being processed here. The parent will have the same data, but in a different format.}
+\item{input.id}{database id of the file ("container") to find}
 
 \item{host_name}{character: machine where the file lives}
 
