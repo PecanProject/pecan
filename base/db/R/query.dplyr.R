@@ -57,8 +57,8 @@ dplyr.count <- function(df) {
 
 
 #' Convert netcdf number of days to a datetime
-#' @param time time if dimension requests it
-#' @param unit CF style unit (e.g. "days since 2010-01-01")
+#' @param time number of time units elapsed since origin
+#' @param unit string containing CF-style time unit including origin (e.g. "days since 2010-01-01")
 #' @export
 ncdays2date <- function(time, unit) {
   date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
