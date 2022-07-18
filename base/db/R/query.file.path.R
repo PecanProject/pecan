@@ -2,7 +2,7 @@
 ##'
 ##' @param host_name character: machine where the file lives
 ##' @param con : database connection
-##' @param input.id The database id of the input file of the parent of the file being processed here. The parent will have the same data, but in a different format.
+##' @param input.id database id of the file ("container") to find
 ##' @export query.file.path
 ##'
 ##' @author Betsy Cowdery
