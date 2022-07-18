@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update = FALSE) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
@@ -18,7 +18,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   # check to see if run.meta.analysis can be skipped
   if (file.exists(file.path(pft$outdir, "trait.mcmc.Rdata")) && 
       file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
-      update == TRUE) {
+      update != TRUE) {
     PEcAn.logger::logger.info("Assuming get.trait copied results already")
     return(pft)
   }
@@ -190,7 +190,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
   dbcon <- PEcAn.DB::db.open(database)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
-  result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
+  result <- lapply(pfts, run.meta.analysis.pft(update = settings$meta.analysis$update), iterations = iterations, random = random, 
                    threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs)
 } # run.meta.analysis.R
 ## ==================================================================================================#
