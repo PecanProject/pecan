@@ -177,6 +177,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @param use_ghs do not exclude greenhouse data if TRUE
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
+##' @param update logical: Rerun the meta-analysis if result files already exist?
 ##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
 ##'   \code{\link{pecan.ma.summary}}
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
@@ -185,13 +186,13 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##'   and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE) {
+run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE , update = FALSE) {
   # process all pfts
   dbcon <- PEcAn.DB::db.open(database)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
 
   result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
-                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs, update = settings$meta.analysis$update)
+                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs, update = update)
 } # run.meta.analysis.R
 ## ==================================================================================================#
 #' Run meta-analysis on all PFTs in a (list of) PEcAn settings
@@ -230,7 +231,7 @@ runModule.run.meta.analysis <- function(settings) {
     threshold  <- settings$meta.analysis$threshold
     dbfiles    <- settings$database$dbfiles
     database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs, update = settings$meta.analysis$update)
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }
