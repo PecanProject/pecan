@@ -56,7 +56,7 @@ dplyr.count <- function(df) {
 }  # dplyr.count
 
 
-#' Convert netcdf number of days to date
+#' Convert netcdf number of days to a datetime
 #' @param time time if dimension requests it
 #' @param unit CF style unit (e.g. "days since 2010-01-01")
 #' @export
