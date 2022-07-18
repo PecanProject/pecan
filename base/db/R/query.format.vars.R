@@ -1,4 +1,4 @@
-##' Given input_id, return formats table and table of variables and units
+##' Look up names and units of input variables from a format id or input id
 ##'
 ##' @param format.id numeric. Defaults to format.id if both provided
 ##' @param input.id The database id of the input file of the parent of the file being processed here.  The parent will have the same data, but in a different format.
