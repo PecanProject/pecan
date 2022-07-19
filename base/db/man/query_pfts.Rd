@@ -14,6 +14,10 @@ query_pfts(dbcon, pft_names, modeltype = NULL, strict = FALSE)
 \item{modeltype}{character.
 If specified, only returns PFTs matching this modeltype.
 If NULL, considers all modeltypes.}
+
+\item{strict}{(Logical) If `TRUE`, throw an error if any of the
+input `pft_names/ids` or `traits` are missing from the output. If
+`FALSE` (default), only throw a warning.}
 }
 \value{
 `data.frame` containing PFT ID (`id`), type (`pft_type`),
