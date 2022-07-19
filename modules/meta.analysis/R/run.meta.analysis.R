@@ -96,7 +96,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Check that data is consistent with prior
   for (trait in names(jagged.data)) {
-    data.median <- stats::median(jagged.data[[trait]]$Y)
+    data.median <- stats::median(jagged.data[[trait]][ , 'Y'])
     prior       <- prior_env$prior.distns[trait, ]
     check       <- check_consistent(data.median, prior, trait, "data")
     if (is.na(check)) {
