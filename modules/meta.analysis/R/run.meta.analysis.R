@@ -44,7 +44,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Load trait data for PFT
   trait_env <- new.env()
-  load(file.path(pft$outdir, "trait.data.Rdata"),envir = trait_env)
+  load(file.path(pft$outdir, "trait.data.Rdata"), envir = trait_env)
   prior_env <- new.env()
   load(file.path(pft$outdir, "prior.distns.Rdata"),envir = prior_env)
   
