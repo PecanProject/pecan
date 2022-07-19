@@ -14,11 +14,12 @@
 ##'run with this script.
 ##'
 ##'Inputs:
-##'1. Data range to be analyized.
+##'1. Data range to be analyized as (String)
 ##'2. File location for ensemble netCDF files 
 ##'3. File location containing XML file of all 39 CONUS NEON sites and their information 
 ##'4. File location to place output analytial data
-##'
+##'5. File location for output of NEON site geoJson files
+##'6. File location for output of SMAP netCDF files
 ##'
 ##'@author Joshua Bowers
 ##'
@@ -57,10 +58,11 @@ library(hydroGOF)
 library(Metrics)
 library(verification)
 
-# Cross-function Initialization
+
+#################### INPUTS #################### 
 ## Set Date Range ##
-start <- as.Date('2016-01-02')
-end <- as.Date('2016-07-16')
+start <- '2016-01-02'
+end <- '2016-07-16'
 
 ## Directory of Ensembles Files ##
 ensamble_dir <- '/projectnb2/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun/out/'
@@ -71,11 +73,18 @@ input_dir <- '~/pecan/modules/data.remote/inst/conus_sites.xml'
 ## File Directory to Place Output PDFs In ##
 output_dir <- '/projectnb/dietzelab/jbowers1/graphic_output/'
 
+## Output Directories for geoJson Files ##
+geoJSON_outdir <- '/projectnb/dietzelab/jbowers1/geoFiles/'
+
+## Output Directories for SMAP netCDF Files ##
+smap_outdir <- '/projectnb/dietzelab/jbowers1/smap_ncFiles/'
+
 ## Download SMAP data ##
 source('~/pecan/modules/data.remote/inst/download_SMAP.R')
-all_smap_data <- download_SMAP(start, end, '/projectnb/dietzelab/jbowers1/geoFiles/', 
-                               '/projectnb/dietzelab/jbowers1/smap_ncFiles/')
-
+all_smap_data <- download_SMAP(start, end, geoJSON_outdir, smap_outdir)
+####################^ INPUTS ^####################
+start <- as.Date(start)
+end <- as.Date(end)
 
 
 #' @title extractSoilMoist
