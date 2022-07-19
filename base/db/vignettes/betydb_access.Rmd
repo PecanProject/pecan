@@ -2,7 +2,11 @@
 title: "BETYdb Access"
 author: "David LeBauer"
 date: "7/30/2015"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Ways to Access BETYdb from R}
+  %\usepackage[utf8]{inputenc}
 ---
 
 Ways to Access BETYdb from R

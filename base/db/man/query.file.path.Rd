@@ -7,11 +7,11 @@
 query.file.path(input.id, host_name, con)
 }
 \arguments{
+\item{input.id}{database id of the file ("container") to find}
+
 \item{host_name}{character: machine where the file lives}
 
 \item{con}{: database connection}
-
-\item{input_id}{numeric: BETY id of the file ("container") to find}
 }
 \description{
 Get file path given id and machine
