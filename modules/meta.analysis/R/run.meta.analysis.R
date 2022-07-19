@@ -245,7 +245,6 @@ runModule.run.meta.analysis <- function(settings) {
 ##' @param point quantile of given prior to return
 ##' @param prior list of distn, parama, paramb
 ##' @return result of p<distn>(point, parama, paramb)
-##' @export p.point.in.prior
 ##' @author David LeBauer
 p.point.in.prior <- function(point, prior) {
   out <- do.call(paste0("p", prior$distn), 
