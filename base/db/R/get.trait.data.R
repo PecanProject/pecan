@@ -56,7 +56,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
     # `query_priors`, but haven't done so yet because that requires
     # prepared statements and therefore requires the Postgres driver. 
     all_priors_list <- lapply(format(pft_ids, scientific = FALSE), query.priors,
-                              con = dbcon, trstr = trait.names)
+                              con = dbcon, trstr = trait.names, update = settings$db$update)
     trait.names <- unique(unlist(lapply(all_priors_list, rownames)))
     # Eventually, can replace with this:
     # all_priors <- query_priors(pfts, params = database)

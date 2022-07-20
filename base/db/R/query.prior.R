@@ -22,6 +22,7 @@
 ##' @param con Database connection object.
 ##' @param ... Optional arguments for connecting to database (e.g.
 ##'   password, user name, database).
+##' @param update 
 ##'
 ##' @return `data.frame` of priors for each trait and the given PFT.
 ##' @export query.priors
@@ -31,7 +32,7 @@
 ##'   con <- db.open(...)
 ##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
-query.priors <- function(pft, trstr = NULL, con = NULL, ...){
+query.priors <- function(pft, trstr = NULL, con = NULL, ..., update){
 
   if (inherits(pft, "integer64")) {
     # Convert to character with correct representation
@@ -50,7 +51,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
           "`settings` object not found. Unable to connect to database."
         )
       }
-      params <- settings[[c("database", "bety")]]
+      params <- update[[c("database", "bety")]]
     }
     con <- db.open(params)
     on.exit(db.close(con), add = TRUE)
