@@ -14,7 +14,6 @@
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
 ##' @param use_ghs (Logical) If `FALSE`, exclude all greenhouse data. If `TRUE`, use all data, including greenhouse data.
-##' @export
 ##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @author David LeBauer
 jagify <- function(result, use_ghs = TRUE) {
@@ -33,16 +32,16 @@ jagify <- function(result, use_ghs = TRUE) {
   
   r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
-  r <- subset(transform(r, 
-                        stat = as.numeric(stat), 
-                        n = as.numeric(n), 
-                        site_id = as.integer(factor(site_id, unique(site_id))), 
-                        greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
-                        mean = mean, 
-                        citation_id = citation_id,
-                        ghs = greenhouse,
-                        site = site_id,
-                        trt_name = name), 
+  r <- subset(dplyr::mutate(r, 
+                        stat = as.numeric(.data$stat), 
+                        n = as.numeric(.data$n), 
+                        site_id = as.integer(factor(.data$site_id, unique(.data$site_id))), 
+                        greenhouse = as.integer(factor(.data$greenhouse, unique(.data$greenhouse))),
+                        mean = .data$mean,
+                        citation_id = .data$citation_id,
+                        ghs = .data$greenhouse,
+                        site = .data$site_id,
+                        trt_name = .data$name), 
               select = c("stat", "n", "site_id", "trt_id", "mean", "citation_id", "greenhouse", 
                          "ghs", "treatment_id", "site", "trt_name")) # original versions of greenhouse, treatment_id, site_id, and name
   
