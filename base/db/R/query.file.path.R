@@ -1,8 +1,8 @@
 ##' Get file path given id and machine
 ##'
-##' @param input_id numeric: BETY id of the file ("container") to find
 ##' @param host_name character: machine where the file lives
 ##' @param con : database connection
+##' @param input.id database id of the file ("container") to find
 ##' @export query.file.path
 ##'
 ##' @author Betsy Cowdery

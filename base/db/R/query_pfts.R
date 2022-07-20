@@ -1,6 +1,9 @@
 #' Retrieve PFT ID, name, and type from BETY
 #'
 #' @param dbcon Database connection object
+#' @param strict (Logical) If `TRUE`, throw an error if any of the
+#'   input `pft_names/ids` or `traits` are missing from the output. If
+#'   `FALSE` (default), only throw a warning.
 #' @param pft_names character vector of PFT names
 #' @param modeltype character.
 #'   If specified, only returns PFTs matching this modeltype.
