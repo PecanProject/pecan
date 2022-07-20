@@ -15,27 +15,30 @@ library('nimble')
 library("sp")
 library("sf")
 library("lubridate")
-plan(multisession)
+#plan(multisession)
 
 
 # ----------------------------------------------------------------------------------------------
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
-
-forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
-outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
-restart <- list()
-setwd(outputPath)
+#forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
+SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA/"
+#manually set to previous run settings$info$date it creates the filepath to previous run
+next.oldir <- "2022-07-20-09-05-48"
 #to manually change start date 
-runDays <- c("2021-07-27", "2021-07-28")
+runDays <- seq(as.Date("2021-08-01"), as.Date("2021-08-31"), by="days")
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
 #------------------------------------------------------------------------------------------------
 for (s in 1:length(runDays)) {
-  
+restart <- list()
+outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA"
+setwd(outputPath)
 #set sda.start
 sda.start <- as.Date(runDays[s])
+#sda.start <- as.Date("2021-07-15")
+
 #reading xml
 settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testingMulti_HF.xml")
 
@@ -47,35 +50,43 @@ site_info <- list(
   lon = settings$run$site$lon,
   time_zone = "UTC")
 
+#grab old.dir filepath from previous SDA run
+# sda.runs <- list.files(SDApath, full.names = TRUE)
+# previous <- sda.runs[2]
+restart$filepath <- paste0(SDApath, "PEcAn_", next.oldir, "/")
+# previous.ens <- list.files(paste0(previous, "/out"))
+
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 on.exit(db.close(con))
 
-#query database for previous forecast run (i.e. t=0)
-query.run <- paste0("SELECT * FROM runs WHERE site_id =", site_info$site_id)
-run <- PEcAn.DB::db.query(query.run, con)
-#filter for sda.start
-run <- dplyr::filter(run, start_time == as.Date(sda.start -1))
-daydiff <- difftime(Sys.time(), run$created_at, units = "days")
-runday <- which(min(daydiff) == daydiff)
-startday <- run$created_at[runday]
-run <- dplyr::filter(run, as.Date(created_at) == as.Date(startday))
-#add filter for model
-query.ens <- paste0("SELECT * FROM ensembles WHERE id =", run$ensemble_id)
-ens <- PEcAn.DB::db.query(query.ens, con)
-#now that we have the workflow id for forecast run we can close connection to BETY
-PEcAn.DB::db.close(con)
-#add filepath to restart object, this is where SDA will look for runs for t=1
-restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+# #query database for previous forecast run (i.e. t=0)
+# query.run <- paste0("SELECT * FROM runs WHERE site_id =", site_info$site_id)
+# run <- PEcAn.DB::db.query(query.run, con)
+# #filter for sda.start
+# run <- dplyr::filter(run, start_time == as.Date(sda.start -1))
+# daydiff <- difftime(Sys.time(), run$created_at, units = "days")
+# runday <- which(min(daydiff) == daydiff)
+# startday <- run$created_at[runday]
+# run <- dplyr::filter(run, as.Date(created_at) == as.Date(startday))
+# run <- dplyr::filter(run, !is.na(finished_at))
+# #add filter for model
+# query.ens <- paste0("SELECT * FROM ensembles WHERE id =", run$ensemble_id)
+# ens <- PEcAn.DB::db.query(query.ens, con)
+# #now that we have the workflow id for forecast run we can close connection to BETY
+# PEcAn.DB::db.close(con)
+# #add filepath to restart object, this is where SDA will look for runs for t=1
+# restart$filepath <- paste0(forecastPath, "PEcAn_", ens$workflow_id, "/")
+# #restart$filepath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/PEcAn_1000022323/"
+# #check if all ensemble members are present
+# ensPresent <- list()
+# for(k in 1:length(run$ensemble_id)){
+#   ensPresent[[k]] <- file.exists(paste0(restart$filepath, "out/", run$id[k], "/2021.nc"))
+# }
+# if(FALSE %in% ensPresent){
+#   next
+# }
 
-#check if all ensemble members are present
-ensPresent <- list()
-for(k in 1:length(run$ensemble_id)){
-  ensPresent[[k]] <- file.exists(paste0(restart$filepath, "out/", run$id[k], "/2021.nc"))
-}
-if(FALSE %in% ensPresent){
-  next
-}
 #set met.start & met.end
 met.start <- sda.start - 1
 met.end <- met.start + lubridate::days(35)
@@ -216,8 +227,7 @@ met.end <- met.start + lubridate::days(35)
 #Using the found dates to run - this will help to download mets
 settings$run$site$met.start <- as.character(met.start)
 settings$run$site$met.end <- as.character(met.end)
-#info
-settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
+
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
 settings$state.data.assimilation$start.date <-as.character(sda.start)
 sda.end <- max(names(obs.mean))
@@ -226,11 +236,14 @@ settings$state.data.assimilation$end.date <-as.character(sda.end)
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- PEcAn Workflow -------------------------------------
 # --------------------------------------------------------------------------------------------------
+#info
+settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"))
+next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M-%S"))
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force = TRUE)
-settings$host$rundir <- settings$rundir
-settings$host$outdir <- settings$modeloutdir
-settings$host$folder <- settings$modeloutdir
+#settings$host$rundir <- settings$rundir
+#settings$host$outdir <- settings$modeloutdir
+#settings$host$folder <- settings$modeloutdir
 setwd(settings$outdir)
 #Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -287,13 +300,21 @@ if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
 }
 
 
-#add runs ids from previous forecast to settings object to be passed to build X
-run_id <- list()
-for (k in 1:length(run$id)) {
-  run_id[[k]] = as.character(run$id[k])
-}
-names(run_id) = sprintf("id%s",seq(1:length(run$id))) #rename list
-settings$runs$id = run_id
+# #add runs ids from previous forecast to settings object to be passed to build X
+# run_id <- list()
+# for (k in 1:length(run$id)) {
+#   run_id[[k]] = as.character(run$id[k])
+# }
+# names(run_id) = sprintf("id%s",seq(1:length(run$id))) #rename list
+# settings$runs$id = run_id
+
+# #add run ids from previous sda to settings object to be passed to build X
+# run_id <- list()
+# for (k in 1:length(previous.ens)) {
+#   run_id[[k]] = as.character(previous.ens[k])
+# }
+# names(run_id) = sprintf("id%s",seq(1:length(previous.ens))) #rename list
+# settings$runs$id = run_id
 
 #run sda function
 sda.enkf.multisite(settings = settings, 

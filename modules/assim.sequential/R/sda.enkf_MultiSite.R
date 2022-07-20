@@ -44,7 +44,6 @@ sda.enkf.multisite <- function(settings,
   if(class(restart) == "list"){
     old.dir <- restart$filepath
     start.cut <- restart$start.cut
-    runids <- restart$runids
     restart_flag = TRUE
   }else{
     restart_flag = FALSE
@@ -221,21 +220,20 @@ sda.enkf.multisite <- function(settings,
   if (restart_flag){
     #TO DO grab soil files
     #add else for when sda.out.Rdata is missing
-    if(file.exists(file.path(old.dir,"SDA", "sda.output.Rdata"))){
-      load(file.path(old.dir,"SDA", "sda.output.Rdata"))
-      #this is where the old simulation will be moved to
-      old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
-      #--- Updating the nt and etc
-      if(!dir.exists(file.path(old.dir,"SDA",old.sda))) dir.create(file.path(old.dir,"SDA",old.sda))
-      # finding/moving files to it's end year dir
-      files.last.sda <- list.files(file.path(old.dir,"SDA"))
-      #copying
-      file.copy(file.path(file.path(old.dir,"SDA"),files.last.sda),
-                file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
-      )
-      params<-new.params
+    if(file.exists(file.path(old.dir,"sda.output.Rdata"))){
+      load(file.path(old.dir,"sda.output.Rdata"))
+      # #this is where the old simulation will be moved to
+      # old.sda <- lubridate::year(names(FORECAST)) %>% tail(1)
+      # #--- Updating the nt and etc
+      # if(!dir.exists(file.path(old.dir,"SDA",old.sda))) dir.create(file.path(old.dir,"SDA",old.sda))
+      # # finding/moving files to it's end year dir
+      # files.last.sda <- list.files(file.path(old.dir,"out"))
+      # #copying
+      # file.copy(file.path(file.path(old.dir,"out"),files.last.sda),
+      #           file.path(file.path(settings$outdir,"SDA"),paste0(old.sda,"/",files.last.sda))
+      # )
       #sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
-      
+      #new.params and params.list are already loaded in the environment only need to grab X
       X <-FORECAST[[length(FORECAST)]]
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
@@ -320,7 +318,8 @@ sda.enkf.multisite <- function(settings,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
-      obs <- which(!is.na(obs.mean[[t]]))
+      obs <- obs.mean[[t]]
+      obs.check <- obs[[1]]
       obs.t<-names(obs.mean)[t]
       obs.year <- lubridate::year(obs.t)
       
@@ -398,7 +397,7 @@ sda.enkf.multisite <- function(settings,
               settings = settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
-              restart = restart.arg
+              restart = NULL
             )
           }) %>%
           setNames(site.ids)
@@ -446,7 +445,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (any(obs)) {
+      if (!is.na(obs.check)) {
         if (control$debug) browser()
         #Making R and Y
         Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
@@ -588,14 +587,18 @@ sda.enkf.multisite <- function(settings,
           Pa   <- Pf + Q
           ### yes process variance -- no data
         } else {
+          mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
           mu.a <- mu.f
-          if(is.null(q.bar)){
+          if(is.null(Q)){
             q.bar <- diag(ncol(X))
             PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
           }
           # Pa   <- Pf + matrix(solve(q.bar), dim(Pf)[1], dim(Pf)[2])
           #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
-          Pa <- Pf + solve(q.bar)
+          #Pa <- Pf + solve(q.bar)
+          #hack have Pa = Pf for now
+          Pf = cov(X) # Cov Forecast - This is used as an initial condition
+          Pa <- Pf
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
         

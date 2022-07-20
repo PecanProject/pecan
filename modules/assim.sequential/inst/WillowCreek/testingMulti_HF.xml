@@ -89,12 +89,11 @@
     <variable>NEE</variable>
   </sensitivity.analysis>
   <model>
-  <id>1000000022</id>
+  <id>1000000030</id>
+  <default.param>/fs/data3/kzarada/US_WCr/data/WillowCreek.param</default.param>
   <type>SIPNET</type>
-  <revision>ssr</revision>
   <delete.raw>FALSE</delete.raw>
-  <binary>/usr2/postdoc/istfer/SIPNET/trunk/sipnet_if</binary>
-  <jobtemplate>/projectnb/dietzelab/ahelgeso/sipnet_geo.job</jobtemplate>
+  <binary>/fs/data5/pecan.models/sipnet_unk/sipnet</binary>
  </model>
   <run>
     <settings.646>
@@ -116,13 +115,7 @@
     </settings.646>
   </run>
   <host>
-    <name>geo.bu.edu</name>
-    <user>ahelgeso</user>
-    <prerun>module load R/4.1.2</prerun>
-    <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SDArun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub -e /projectnb/dietzelab/ahelgeso/Jobs_SDA/qsub</qsub>
-    <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
-    <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
-    <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
+    <name>localhost</name>
   </host>
   <multisettings>run</multisettings>
   <settings.info>
