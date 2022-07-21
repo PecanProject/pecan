@@ -4,7 +4,7 @@
 \alias{query.priors}
 \title{Query Priors}
 \usage{
-query.priors(pft, trstr = NULL, con = NULL, ..., update)
+query.priors(pft, trstr = NULL, con = NULL, update, ...)
 }
 \arguments{
 \item{pft}{ID number of the PFT in the database}
@@ -15,10 +15,10 @@ using [PEcAn.utils::vecpaste()].}
 
 \item{con}{Database connection object.}
 
+\item{update}{}
+
 \item{...}{Optional arguments for connecting to database (e.g.
 password, user name, database).}
-
-\item{update}{}
 }
 \value{
 `data.frame` of priors for each trait and the given PFT.
