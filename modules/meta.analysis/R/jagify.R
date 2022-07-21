@@ -19,6 +19,7 @@
 jagify <- function(result, use_ghs = TRUE) {
   
 
+  .data <- NULL
   ## Create new column "trt_id" from column 'name'.  Remove NAs. Assign treatments.
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
   r <- result[!is.na(result$mean), ]
