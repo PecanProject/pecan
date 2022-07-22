@@ -1,8 +1,15 @@
+
 outdir <- file.path(tempdir(), "ed")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
-file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
-
-model2netcdf.ED2(outdir, 40, -88.5, "2010-01-01", "2010-12-31")
+# file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
+file.copy(dir("models/ed/tests/testthat/data", pattern = "*.h5$", full.names = TRUE), outdir)
+file.copy(dir("models/ed/tests/testthat/data", pattern = "README.txt", full.names = TRUE), outdir)
+list.files(outdir,recursive = TRUE, full.names = T)
+pfts <- list(pft = list(name = "SetariaWT", ed2_pft_number = "1", outdir = "/data/output/pecan_runs/transect_runs/ed2_testout/pft/SetariaWT", 
+                        posteriorid = 9000001259), pft = list(name = "ebifarm.c3grass", 
+                                                              ed2_pft_number = "5", outdir = "/data/output/pecan_runs/transect_runs/ed2_testout/pft/ebifarm.c3grass", 
+                                                              posteriorid = 9000001260))
+model2netcdf.ED2(outdir, "40.0637", "-88.202", "2004-07-01", "2004-07-07", pfts)
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
   skip("tests are broken #1329")
