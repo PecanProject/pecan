@@ -57,7 +57,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   if ((is.null(cI) && is.null(pI)) || gp$method == "MLE") {
     psibar <- NULL
     if (isotropic) {
-      psibar <- median(psi)
+      psibar <- stats::median(psi)
     } else {
       if (is.matrix(psi)) {
         psibar <- apply(psi, 2, median)
@@ -65,7 +65,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
         psibar <- psi
       }
     }
-    tauwbar <- median(tauw)
+    tauwbar <- stats::median(tauw)
     Sprime <- calcSpatialCov(dprime, psibar, tauwbar)
     S12 <- Sprime[1:(npred * dim), (npred * dim + 1):(n.unique + npred * dim)]
     S22 <- Sprime[(npred * dim + 1):(n.unique + npred * dim),
@@ -74,7 +74,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
     if (gp$zeroMean) {
       ey <- eyprime <- 0
     } else {
-      ey <- eyprime <- median(mu)  #mean(y)
+      ey <- eyprime <- stats::median(mu)  #mean(y)
     }
     ybar <- tapply(y, x.id, mean)
     yprime <- eyprime + S12 %*% S22inv %*% (ybar - ey)
@@ -142,12 +142,12 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
     }
     
     if (nugget) {
-      Wprime    <- rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
+      Wprime    <- SimDesign::rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
       cInt[j, ] <- mu[i] + Wprime + y.trend
-      pInt[j, ] <- rnorm(npred * dim, cInt[j, ], sqrt(tauv1))
+      pInt[j, ] <- stats::rnorm(npred * dim, cInt[j, ], sqrt(tauv1))
     } else {
       cInt[j, ] <- mu[i] + S12 %*% S22inv %*% (y - mu[i]) + y.trend
-      mypred <- try(rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
+      mypred <- try(SimDesign::rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
       if (is.numeric(mypred)) {
         pInt[j, ] <- mypred
       }

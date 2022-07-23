@@ -30,7 +30,7 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   
   psibar <- NULL
   if (isotropic) {
-    psibar <- median(psi)
+    psibar <- stats::median(psi)
   } else {
     if (is.matrix(psi)) {
       psibar <- apply(psi, 2, median)
@@ -38,7 +38,7 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
       psibar <- psi
     }
   }
-  tauwbar <- median(tauw)
+  tauwbar <- stats::median(tauw)
   S <- calcSpatialCov(gp$d, psibar, tauwbar)
   # S12 <- Sprime[1:(npred*dim),(npred*dim+1):(n.unique+npred*dim)] S22 <-
   # Sprime[(npred*dim+1):(n.unique+npred*dim),(npred*dim+1):(n.unique+npred*dim)]
@@ -51,7 +51,7 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   ybar <- tapply(gp$y, gp$x.id, mean)
   k    <- S22inv %*% (ybar - ey)
   
-  nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
+  stats::nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
       x = gp$x.compact, rng = rng, splinefcns = splinefcns)
 } # minimize.GP
 
@@ -133,13 +133,13 @@ get_ss <- function(gp, xnew, pos.check) {
         return(-Inf)
       }
       repeat {
-        SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+        SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
         if (SS[igp] > 0) {
           break
         }
       }
     }else{
-      SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+      SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
     }
   }
   return(SS)
@@ -151,7 +151,7 @@ get_ss <- function(gp, xnew, pos.check) {
 ##' @export
 get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
   
-  likelihood <- pda.calc.llik(SSnew, llik.fn, llik.par)
+  likelihood <- PEcAn.assim.batch::pda.calc.llik(SSnew, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
   posterior.prob <- likelihood + prior.prob
@@ -168,7 +168,7 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @export
 is.accepted <- function(ycurr, ynew, format = "lin") {
   a <- exp(ynew - ycurr)
-  a > runif(1)
+  a > stats::runif(1)
 } # is.accepted
 
 ##' Function to sample from a GP model
@@ -222,7 +222,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   currSS <- get_ss(gp, x0, pos.check)
   
   
-  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+  currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
   pcurr   <- unlist(sapply(currllp, `[[` , "par"))
   
   xcurr <- unlist(x0)
@@ -261,7 +261,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g - 1), ]
         colnames(params.recent) <- names(x0)
         # accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
-        jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
+        jcov <- PEcAn.assim.batch::pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
         
         # make sure precision is not going to be an issue
@@ -288,7 +288,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       newSS  <- get_ss(gp, xnew, pos.check)
       if(all(newSS != -Inf)){
         
-        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
+        newllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         HRnew <- TruncatedNormal::dtmvnorm(c(xcurr), c(xnew), jcov,
                                            lb = rng[,1], ub = rng[,2], log = TRUE, B = 1e2)
@@ -300,7 +300,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         }
         
         # now update currllp | xcurr
-        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+        currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
         pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       }
       # } mix = each
@@ -308,7 +308,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       for (i in seq_len(dim)) {
         ## propose new
         repeat {
-          xnew[i] <- rnorm(1, xcurr[[i]], p(jmp)[i])
+          xnew[i] <- stats::rnorm(1, xcurr[[i]], p(jmp)[i])
           if (bounded(xnew[i], rng[i, , drop = FALSE])) {
             break
           }
@@ -322,14 +322,14 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         newSS  <- get_ss(gp, xnew, pos.check)
         
         
-        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
+        newllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
           xcurr  <- xnew
           currSS <- newSS
         }
         
-        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+        currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
         pcurr   <- unlist(sapply(currllp, `[[` , "par"))
         
         # }
@@ -371,16 +371,16 @@ bounded <- function(xnew, rng) {
 ##' 
 ##' @author Michael Dietze
 plot.mvjump <- function(jmp) {
-  par(mfrow = c(1, 2))
+  graphics::par(mfrow = c(1, 2))
   plot(attr(jmp, "history")[, 1], ylab = "Jump Parameter", main = "Jump Parameter")
-  abline(h = mean(attr(jmp, "history")[, 1], na.rm = TRUE))
-  text(0.9 * length(attr(jmp, "history")[, 1]), 
+  graphics::abline(h = mean(attr(jmp, "history")[, 1], na.rm = TRUE))
+  graphics::text(0.9 * length(attr(jmp, "history")[, 1]), 
        min(attr(jmp, "history")[, 1]) + 0.8 * 
          (max(attr(jmp, "history")[, 1]) - min(attr(jmp, "history")[, 1])), 
        paste("mean=", mean(attr(jmp, "history")[, 1])))
   plot(attr(jmp, "arate"), ylab = "Acceptance Rate", 
        main = "Acceptance Rate", 
        ylim = c(0, 1))
-  abline(h = attr(jmp, "target"))
-  abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
+  graphics::abline(h = attr(jmp, "target"))
+  graphics::abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
 } # plot.mvjump

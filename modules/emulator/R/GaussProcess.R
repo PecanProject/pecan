@@ -79,8 +79,8 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
   av    <- bv <- 0.001  #nugget IG prior
   aw    <- bw <- 0.001  #covariance IG prior
   ap    <- bp <- 0.01  #spatial IG prior
-  mu.V0 <- 10 ^ ceiling(log10(var(y)) + 2)  #mean prior variance
-  tauw  <- tauv <- var(y) * 0.5
+  mu.V0 <- 10 ^ ceiling(log10(stats::var(y)) + 2)  #mean prior variance
+  tauw  <- tauv <- stats::var(y) * 0.5
   if (is.null(psi)) {
     psi <- rep(1, dim)
   }
@@ -98,7 +98,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
     if (nugget) {
       parm <- c(tauw, tauv, psi)
     }
-    nmin <- nlm(gp_mle2, parm, d = d, nugget = nugget, myY = y, maxval = 1e+30)
+    nmin <- stats::nlm(gp_mle2, parm, d = d, nugget = nugget, myY = y, maxval = 1e+30)
     mu <- 0
     tauw <- abs(nmin$estimate[1])
     if (nugget) {
@@ -113,7 +113,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
     if (nugget) {
       parm <- c(mu, tauw, tauv, psi)
     }
-    nmin <- nlm(gp_mle, parm, d = d, nugget = nugget, myY = y, maxval = 1e+30)
+    nmin <- stats::nlm(gp_mle, parm, d = d, nugget = nugget, myY = y, maxval = 1e+30)
     mu <- nmin$estimate[1]
     tauw <- abs(nmin$estimate[2])
     if (nugget) {
@@ -197,7 +197,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
     cc <- 2
     ## draw psi
     if (mix == "joint") {
-      psistar <- exp(rnorm(dim, log(psi), p(psijump)))
+      psistar <- exp(stats::rnorm(dim, log(psi), p(psijump)))
       Sstar <- calcSpatialCov(d, psistar, tauw)
       ##anum.p <- try(sum(log(dinvgamma(psistar,ap,bp))) + dmvnorm(as.vector(W),rep(0,n.unique),Sstar,log=TRUE),TRUE)
       ##aden.p <- sum(log(dinvgamma(psi,ap,bp))) + dmvnorm(as.vector(W),rep(0,n.unique),S,log=TRUE)      anum.p <- aden.p <- 0  ## inproper uniform prior
@@ -209,18 +209,18 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       aden.p <- mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
       if (is.numeric(anum.p) && 
           is.finite(anum.p) && 
-          exp(anum.p - aden.p) > runif(1) && 
+          exp(anum.p - aden.p) > stats::runif(1) && 
           min(psistar) > 0) {
         psi <- psistar
         S   <- Sstar
       }
       psigibbs[g, ] <- psi
-      psijump <- update(psijump, psigibbs)
+      psijump <- stats::update(psijump, psigibbs)
     } else {
       ## mix = each
       psistar <- psi
       for (i in seq_len(dim)) {
-        psistar[i] <- exp(rnorm(1, log(psi), p(psijump)[i]))
+        psistar[i] <- exp(stats::rnorm(1, log(psi), p(psijump)[i]))
         Sstar      <- calcSpatialCov(d, psistar, tauw)
         anum.p     <- aden.p <- 0  ## inproper uniform prior
         if (prior == "IG") {
@@ -231,7 +231,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         aden.p <- mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE) + aden.p
         if (is.numeric(anum.p) && 
             is.finite(anum.p) && 
-            exp(anum.p - aden.p) > runif(1) && 
+            exp(anum.p - aden.p) > stats::runif(1) && 
             min(psistar) > 0) {
           psi <- psistar
           S <- Sstar
@@ -240,12 +240,12 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         }
       }
       psigibbs[g, ] <- psi
-      psijump <- update(psijump, psigibbs)
+      psijump <- stats::update(psijump, psigibbs)
     }
     
     cc <- 3
     ## draw tauw
-    taustar <- exp(rnorm(1, log(tauw), p(tauwjump)))
+    taustar <- exp(stats::rnorm(1, log(tauw), p(tauwjump)))
     Sstar   <- calcSpatialCov(d, psi, taustar)
     anum    <- aden <- 0
     if (prior == "IG") {
@@ -256,17 +256,17 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
     aden <- aden + mvtnorm::dmvnorm(as.vector(W), rep(0, n.unique), S, log = TRUE)
     if (is.numeric(anum) && 
         is.finite(anum) && 
-        exp(anum - aden) > runif(1)) {
+        exp(anum - aden) > stats::runif(1)) {
       tauw <- taustar
       S <- Sstar
     }
     tauwgibbs[g, ] <- tauw
-    tauwjump <- update(tauwjump, tauwgibbs)
+    tauwjump <- stats::update(tauwjump, tauwgibbs)
     
     cc <- 4
     ## draw tauv
     if (nugget) {
-      tauv <- rinvgamma(1, av + n / 2, bv + 0.5 * sum((y - rep(mu, n) - W.full) ^ 2))
+      tauv <- MCMCpack::rinvgamma(1, av + n / 2, bv + 0.5 * sum((y - rep(mu, n) - W.full) ^ 2))
       Tinv <- diag(1 / tauv, n)
     }
     
@@ -278,12 +278,12 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       if (nugget) {
         M <- 1 / (n / tauv + 1 / mu.V0)
         m <- sum(y - W.full) / tauv
-        mu <- rnorm(1, M * m, M)
+        mu <- stats::rnorm(1, M * m, M)
       } else {
         Sinv <- solve(S)
         M <- solve(t(X) %*% Sinv %*% X + 1 / mu.V0)
         m <- t(X) %*% Sinv %*% y  ##[1:10]
-        mu <- rnorm(1, M * m, M)
+        mu <- stats::rnorm(1, M * m, M)
       }
     }
     
