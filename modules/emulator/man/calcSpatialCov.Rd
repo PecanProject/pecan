@@ -6,6 +6,11 @@
 \usage{
 calcSpatialCov(x, ...)
 }
+\arguments{
+\item{x}{Name of variable to plot on X axis}
+
+\item{...}{Adiitional arguments}
+}
 \description{
 calcSpatialCov
 }

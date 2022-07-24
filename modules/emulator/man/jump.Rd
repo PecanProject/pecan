@@ -7,7 +7,7 @@
 jump(ic = 0, rate = 0.4, ...)
 }
 \arguments{
-\item{rate}{}
+\item{...}{Addtional arguments}
 }
 \description{
 jump

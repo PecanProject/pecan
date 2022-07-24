@@ -6,6 +6,9 @@
 \usage{
 is.accepted(ycurr, ynew, format = "lin")
 }
+\arguments{
+\item{format}{lin = lnlike fcn, log = log(lnlike)}
+}
 \description{
 is.accepted
 }

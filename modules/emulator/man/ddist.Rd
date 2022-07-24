@@ -6,6 +6,11 @@
 \usage{
 ddist(x, prior)
 }
+\arguments{
+\item{x}{Name of variable to plot on X axis}
+
+\item{prior}{'unif', 'IG'}
+}
 \description{
 ddist
 }

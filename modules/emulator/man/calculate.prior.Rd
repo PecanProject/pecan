@@ -6,6 +6,11 @@
 \usage{
 calculate.prior(samples, priors)
 }
+\arguments{
+\item{samples}{Matrix of MCMC samples}
+
+\item{priors}{prior list}
+}
 \description{
 calculate.prior
 }

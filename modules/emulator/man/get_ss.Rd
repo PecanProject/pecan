@@ -6,6 +6,9 @@
 \usage{
 get_ss(gp, xnew, pos.check)
 }
+\arguments{
+\item{gp}{Gaussian Process}
+}
 \description{
 get_ss
 }

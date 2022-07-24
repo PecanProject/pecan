@@ -6,6 +6,9 @@
 \usage{
 arate(x)
 }
+\arguments{
+\item{x}{Name of variable to plot on X axis}
+}
 \description{
 Acceptance rate
 }

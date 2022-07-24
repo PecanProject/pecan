@@ -2,10 +2,10 @@
 ##' @title minimize.GP
 ##' @export
 ##'
-##' @param gp
-##' @param rng
-##' @param x0 
-##' @param splinefuns
+##' @param gp Gaussian Process
+##' @param rng range
+##' @param x0 initial values
+##' @param splinefuns spline functions
 ##' 
 ##' @author Michael Dietze
 minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
@@ -63,13 +63,13 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
 ##' @export
 ##'
 ##' @param xnew
-##' @param k
-##' @param mu
-##' @param tau
-##' @param psi
-##' @param x
+##' @param k Specific absorption coefficient (400 - 2500nm)
+##' @param mu The mean parameter of the distribution; NOTE this is not equal to the mean
+##' @param tau spatial var
+##' @param psi spatial corr
+##' @param x Name of variable to plot on X axis
 ##' @param rng range
-##' @param splinefcns
+##' @param splinefcns spline functions
 ##' 
 ##' @author Michael Dietze 
 gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
@@ -97,6 +97,9 @@ gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
 ##' @name ddist
 ##' @title ddist
 ##' @export
+##' 
+##' @param x Name of variable to plot on X axis
+##' @param prior 'unif', 'IG'
 ddist <- function(x, prior) {
   eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
 } # ddist
@@ -109,6 +112,9 @@ ddist <- function(x, prior) {
 ##' @name calculate.prior
 ##' @title calculate.prior
 ##' @export
+##' 
+##' @param samples Matrix of MCMC samples
+##' @param priors prior list
 calculate.prior <- function(samples, priors) {
   sum(sapply(seq_along(priors), function(i) eval(priors[[i]], list(x = samples[[i]]))))
 } # calculate.prior
@@ -116,6 +122,10 @@ calculate.prior <- function(samples, priors) {
 ##' @name get_ss
 ##' @title get_ss
 ##' @export
+##' 
+##' @param gp Gaussian Process
+##' @param xnew
+##' @param pos.check
 get_ss <- function(gp, xnew, pos.check) {
   
   SS <- numeric(length(gp))
@@ -149,6 +159,12 @@ get_ss <- function(gp, xnew, pos.check) {
 ##' @name get_y
 ##' @title get_y
 ##' @export
+##' 
+##' @param SSnew
+##' @param xnew
+##' @param llik.fn list that contains likelihood functions
+##' @param priors prior list
+##' @param llik.par parameters to be passed llik functions
 get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
   
   likelihood <- pda.calc.llik(SSnew, llik.fn, llik.par)
@@ -166,6 +182,10 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @name is.accepted
 ##' @title is.accepted
 ##' @export
+##' 
+##' @param ycurr
+##' @param ynew
+##' @param format lin = lnlike fcn, log = log(lnlike)
 is.accepted <- function(ycurr, ynew, format = "lin") {
   a <- exp(ynew - ycurr)
   a > runif(1)
@@ -355,6 +375,9 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
 ##' @name bounded
 ##' @title bounded
 ##' @export
+##' 
+##' @param xnew
+##' @param rng range
 bounded <- function(xnew, rng) {
   xnew <- as.vector(as.matrix(xnew))
   down <- xnew > rng[, 1]
@@ -367,7 +390,7 @@ bounded <- function(xnew, rng) {
 ##' @title plot.mvjump
 ##' @export
 ##'
-##' @param jmp
+##' @param jmp jump parameter
 ##' 
 ##' @author Michael Dietze
 plot.mvjump <- function(jmp) {

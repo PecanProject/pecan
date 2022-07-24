@@ -2,20 +2,21 @@
 ##' @title GaussProcess
 ##' @export
 ##'
-##' @param x
-##' @param y
+##' @param x Name of variable to plot on X axis
+##' @param y Name of variable to plot on Y axis
 ##' @param isotropic
 ##' @param nugget allows additional error in Y rather than fix interpolation to go through points
-##' @param method
-##' @param ngibbs
-##' @param burnin
-##' @param thin
+##' @param method method for calculating correlations
+##' @param ngibbs number of MCMC iterations (per chain) to run
+##' @param burnin Number of samples to discard as burnin (auto must be FALSE)
+##' @param thin thinning of the matrix to make things faster. Default is to thin to 1
 ##' @param jump.ic
 ##' @param prior 'unif', 'IG'
 ##' @param mix joint=mix over psi simultanously, each=mix over psi individually
-##' @param psi
+##' @param psi spatial corr
 ##' @param zeroMean
 ##' @param exclude
+##' @param ... Additional arguments
 ##'
 ##' @author Michael Dietze
 GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes", ngibbs = 5000, 

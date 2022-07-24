@@ -2,7 +2,7 @@
 ##' @title summarize.GP
 ##' @export
 ##' 
-##' @param gp
+##' @param gp Gaussian Process
 ##' @param pdf_file
 ##' @param txt_file
 ##' 

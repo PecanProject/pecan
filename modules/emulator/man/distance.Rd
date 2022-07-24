@@ -7,6 +7,8 @@
 distance(x, power = 1)
 }
 \arguments{
+\item{x}{Name of variable to plot on X axis}
+
 \item{power}{}
 }
 \value{

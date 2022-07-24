@@ -7,9 +7,19 @@
 gpeval(xnew, k, mu, tau, psi, x, rng, splinefcns)
 }
 \arguments{
+\item{k}{Specific absorption coefficient (400 - 2500nm)}
+
+\item{mu}{The mean parameter of the distribution; NOTE this is not equal to the mean}
+
+\item{tau}{spatial var}
+
+\item{psi}{spatial corr}
+
+\item{x}{Name of variable to plot on X axis}
+
 \item{rng}{range}
 
-\item{splinefcns}{}
+\item{splinefcns}{spline functions}
 }
 \description{
 Calculates the probability of a set of parameter values, given by xnew

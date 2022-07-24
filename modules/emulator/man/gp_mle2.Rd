@@ -6,6 +6,13 @@
 \usage{
 gp_mle2(theta, d, nugget, myY, maxval = Inf)
 }
+\arguments{
+\item{d}{spatial distance matrix}
+
+\item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
+
+\item{myY}{}
+}
 \description{
 zero mean version
 }

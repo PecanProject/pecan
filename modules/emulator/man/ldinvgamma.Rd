@@ -7,7 +7,11 @@
 ldinvgamma(x, shape, scale = 1)
 }
 \arguments{
-\item{scale}{}
+\item{x}{Name of variable to plot on X axis}
+
+\item{shape}{shape of points}
+
+\item{scale}{scale, NULL by default}
 }
 \value{
 log.density

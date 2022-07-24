@@ -2,7 +2,7 @@
 ##' @title distance
 ##' @export
 ##'
-##' @param x
+##' @param x Name of variable to plot on X axis
 ##' @param power
 ##'
 ##' @return dst

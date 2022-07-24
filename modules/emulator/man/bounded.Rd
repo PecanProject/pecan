@@ -6,6 +6,9 @@
 \usage{
 bounded(xnew, rng)
 }
+\arguments{
+\item{rng}{range}
+}
 \description{
 bounded
 }

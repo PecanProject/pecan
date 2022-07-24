@@ -8,6 +8,8 @@
 distance.matrix(x, power = 1, dim = 2)
 }
 \arguments{
+\item{x}{Name of variable to plot on X axis}
+
 \item{dim}{}
 }
 \value{

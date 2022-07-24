@@ -4,9 +4,9 @@
 ##' @title ldinvgamma
 ##' @export
 ##'
-##' @param x
-##' @param shape
-##' @param scale
+##' @param x Name of variable to plot on X axis
+##' @param shape shape of points
+##' @param scale scale, NULL by default
 ##' 
 ##' @return log.density
 ##' 

@@ -23,13 +23,27 @@ GaussProcess(
 )
 }
 \arguments{
+\item{x}{Name of variable to plot on X axis}
+
+\item{y}{Name of variable to plot on Y axis}
+
 \item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
+
+\item{method}{method for calculating correlations}
+
+\item{ngibbs}{number of MCMC iterations (per chain) to run}
+
+\item{burnin}{Number of samples to discard as burnin (auto must be FALSE)}
+
+\item{thin}{thinning of the matrix to make things faster. Default is to thin to 1}
 
 \item{prior}{'unif', 'IG'}
 
 \item{mix}{joint=mix over psi simultanously, each=mix over psi individually}
 
-\item{exclude}{}
+\item{psi}{spatial corr}
+
+\item{...}{Additional arguments}
 }
 \description{
 GaussProcess

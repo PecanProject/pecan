@@ -2,7 +2,7 @@
 ##' @title distance12.matrix
 ##' @export
 ##'
-##' @param x
+##' @param x Name of variable to plot on X axis
 ##' @param n1
 ##' @param power
 ##' 

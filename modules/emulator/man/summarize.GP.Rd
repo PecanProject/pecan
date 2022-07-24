@@ -7,6 +7,8 @@
 summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 }
 \arguments{
+\item{gp}{Gaussian Process}
+
 \item{txt_file}{}
 }
 \description{
