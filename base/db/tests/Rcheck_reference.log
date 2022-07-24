@@ -47,20 +47,6 @@ File 'LICENSE':
 Strong dependencies not in mainstream repositories:
   PEcAn.logger, PEcAn.remote, PEcAn.utils
 
-Found the following (possibly) invalid URLs:
-  URL: https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html
-    From: inst/doc/betydb_access.html
-    Status: 404
-    Message: Not Found
-    CRAN URL not in canonical form
-  The canonical URL of the CRAN page for a package is
-    https://CRAN.R-project.org/package=pkgname
-
-The Title field should be in title case. Current version is:
-‘PEcAn functions used for ecological forecasts and reanalysis’
-In title case that is:
-‘PEcAn Functions Used for Ecological Forecasts and Reanalysis’
-
 The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... WARNING

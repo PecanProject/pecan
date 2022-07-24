@@ -47,11 +47,6 @@ File 'LICENSE':
 Strong dependencies not in mainstream repositories:
   PEcAn.utils, PEcAn.DB, PEcAn.logger, PEcAn.settings
 
-The Title field should be in title case. Current version is:
-‘PEcAn functions used for meta-analysis’
-In title case that is:
-‘PEcAn Functions Used for Meta-Analysis’
-
 The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... WARNING
