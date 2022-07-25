@@ -54,6 +54,7 @@ Imports:
     XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2)
+Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
@@ -61,4 +62,5 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3
 
