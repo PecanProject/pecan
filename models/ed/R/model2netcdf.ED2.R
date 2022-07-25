@@ -8,19 +8,22 @@
 #-------------------------------------------------------------------------------
 
 
-##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
-##'
-##' @name model2netcdf.ED2
-##' @title Code to convert ED2's -T- HDF5 output into netCDF format
+##' Code to convert ED2's -T- HDF5 output into netCDF format
+##' 
+##' Modified from Code to convert ED2.1's HDF5 output into the NACP
+##' Intercomparison format (ALMA using netCDF)
 ##'
 ##' @param outdir Location of ED model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts Names of PFTs used in the run, vector
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings pecan settings object
 ##' @export
+##'
+##' @details if \code{settings} is provided, then values for missing arguments
+##'   will be taken from it
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
@@ -29,7 +32,18 @@
 ##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
                              end_date, pfts, settings = NULL) {
-
+  if(!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(sitelat)) sitelat <- settings$run$site$lat
+    if(missing(sitelon)) sitelon <- settings$run$site$lon
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
+  
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
 
@@ -851,39 +865,40 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
 ##' Function for reading -E- files
 ##'
-##' @details
-##'  e.g.     yr = 1999
-##'      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
-##'      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
-##'               "analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
-##'               "analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
-##'               "analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
-##'               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
-##'               "analysis-E-2000-04-00-000000-g01.h5"
+##' Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
+##' file per year.
 ##'
-##' pft_names  : character vector with names of PFTs
-##' pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
-##'
-##' @param yr the year being processed
-##' @param yfiles the years on the filenames, will be used to matched efiles for that year
-##' @param efiles names of E h5 files
+##' @param yr length 1 numeric vector; the year being processed
+##' @param yfiles numeric vector of the years on the filenames, will be used to
+##'   matched efiles for that year
+##' @param efiles character vector of names of E h5 files (e.g.
+##'   "analysis-E-1999-06-00-000000-g01.h5")
 ##' @param outdir directory where output will be written to
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts Names of PFTs used in the run, vector
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings pecan settings object
 ##' @param ... currently unused
 ##'
+##' @details if \code{settings} is provided, then values for missing arguments
+##'   will be taken from it
 ##' @export
+##' 
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
                          pfts, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
-  if(missing(outdir)) outdir <- settings$outdir
-  if(missing(start_date)) start_date <- settings$run$start.date
-  if(missing(end_date)) end_date <- settings$run$end.date
-  if(missing(pfts)) pfts <- settings$pfts
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
+  
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
             !is.null(pfts))
   
@@ -1047,18 +1062,31 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param lon longitude of site
 ##' @param begins start time of simulation
 ##' @param ends end time of simulation
-##' @param pfts manually input list of Pecan PFT numbers
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings Pecan settings object
-##' @param ... additional arguments
+##' @param ... currently unused
 ##' 
 ##' @export
 put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
+  #TODO: deprecate `begins` and `ends` and change to `start_date` and `end_date` for consistency.
+  #TODO: deprecate `out` and change to `outdir` for consistency
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(out)) out <- settings$outdir
+    if(missing(lat)) lat <- settings$lat
+    if(missing(lon)) lon <- settings$lon
+    if(missing(begins)) begins <- settings$run$start.date
+    if(missing(ends)) ends <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
   
   s <- length(nc_var)
   
   # even if this is a SA run for soil, currently we are not reading any variable that has a soil dimension
   # "soil" will be passed to read.output as pft.name from upstream, when it's not part of the attribute it will read the sum
-  pft_names <- pfts$pft$name
+  pft_names <- pfts$pft$name #TODO this should pull from a list
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
     # for now keep soil out
@@ -1071,6 +1099,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   names(pfts_nums) <- pft_names
   
   # Extract the PFT names and numbers for all PFTs
+  #TODO this should be only done once, above
   xml_pft_names <- lapply(pfts, "[[", "name")
   for (pft in pft_names) {
     which_pft <- which(xml_pft_names == pft)
@@ -1159,16 +1188,23 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
 #' 
 #' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
 #' @param outdir path to run outdir, where the -S- file is
-#' @param pfts Names of PFTs used in the run, vector
+#' @param pfts the \code{pfts} element from a pecan settings object
 #' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
 #' @param settings pecan settings object
-#' @param ... additional arguments
+#' @param ... currently unused
 #' 
 #' @export
 read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
-  
+
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(pfts)) pfts <- settings$pfts
+  }
   # commonly used vars
   if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
   
