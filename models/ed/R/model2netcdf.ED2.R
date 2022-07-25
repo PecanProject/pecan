@@ -83,11 +83,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   out_list <- vector("list", length(ed_res_flag))
   names(out_list) <- ed_res_flag
 
-  # if run failed there might be less years, no output case is handled above
-  # we can process whatever is there
-  # but of course this upsets ensemble.ts because the outputs are not of
-  # same length now
-  # two options:
+  # If run failed there might be less years, no output case is handled above we
+  # can process whatever is there, but of course this upsets ensemble.ts because
+  # the outputs are not of same length now.
+  # Two options:
   # (i)  don't process anything
   #      return(NULL)
   # (ii) check whether this is an ensemble run, then return null, otherwise
@@ -169,11 +168,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     out <- unlist(out_list, recursive = FALSE)
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
-    # define time_bouds for -T- outputs, if exists
+    # define time_bounds for -T- outputs, if exists
     if (file.check[["-T-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
     }
-    # define time_bouds for -E- outputs, if exists
+    # define time_bounds for -E- outputs, if exists
     if (file.check[["-E-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
@@ -1186,8 +1185,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
       "PFT",
       units = "",
       dim = list(p),
-      longname = paste(pft_names, collapse =
-                         ",")
+      longname = paste(pft_names, collapse = ",")
     )
   out_length <- length(out)
   out[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
