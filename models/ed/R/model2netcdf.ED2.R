@@ -965,36 +965,21 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     ncdf4::nc_close(nc)
   } # end ysel-loop
   
-  # for now this function does not read any ED variable that has soil as a dimension
-  pft_names <- pfts$pft$name
-  soil.check <- grepl("soil", pft_names)
-  if (any(soil.check)) {
-    # for now keep soil out
-    pft_names <- pft_names[!(soil.check)]
-  }
-  
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts_nums <- numeric(npft)
-  names(pfts_nums) <- pft_names
-  
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
+  
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pft_nums) <- pft_names
+  npft <- length(pft_names)
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    #TODO: print a message??
+    pft_names <- pft_names[!(soil.check)]
   }
   
   out <- list()
@@ -1023,7 +1008,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
 
       for (k in 1:npft) {
-        ind <- (pft == pfts_nums[k])
+        ind <- (pft == pft_nums[k])
         
         if (any(ind)) {
           for (varname in varnames) {
@@ -1045,7 +1030,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     
   }
   
-  out$PFT <- pfts_nums # will write this to the .nc file
+  out$PFT <- pft_nums # will write this to the .nc file
   
   return(out)
   
@@ -1082,41 +1067,23 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
     if(missing(pfts)) pfts <- settings$pfts
   }
   
-  s <- length(nc_var)
+
+  # Extract the PFT names and numbers for all PFTs
   
-  # even if this is a SA run for soil, currently we are not reading any variable that has a soil dimension
-  # "soil" will be passed to read.output as pft.name from upstream, when it's not part of the attribute it will read the sum
-  pft_names <- pfts$pft$name #TODO this should pull from a list
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pfts_nums) <- pft_names
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
     # for now keep soil out
+    #TODO: print a message??
     pft_names <- pft_names[!(soil.check)]
   }
   
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts_nums <- numeric(npft)
-  names(pfts_nums) <- pft_names
-  
-  # Extract the PFT names and numbers for all PFTs
-  #TODO this should be only done once, above
-  xml_pft_names <- lapply(pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
-  }
   # ----- fill list
   
   ##### setup output time and time bounds
@@ -1159,6 +1126,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   # lon / lat / time / pft 
   # from read.output's perspective, dimension of pft will be the same for NEE there and DBH here
 
+  s <- length(nc_var)
   
   nc_var[[s + 1]] <- ncdf4::ncvar_def("DBH", units = "cm", dim = list(lon, lat, t, p), missval = -999, 
                                    longname = "Diameter at breast height")
@@ -1359,5 +1327,26 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   return(out)
   
 } # read_S_files
+
+#helper fun to extract pft numbers or match based on pft name
+get_pft_num <- function(x) {
+  data(pftmapping, package = "PEcAn.ED2")
+  pft_number <- x[["ed2_pft_number"]]
+  pft_name <- x[["name"]]
+  if(!is.null(pft_number)) {
+    pft_number <- as.numeric(pft_number)
+    if (!is.finite(pft_number)) {
+      PEcAn.logger::logger.severe(
+        "ED2 PFT number present but not parseable as number. Value was ",
+        pft_number
+      )
+    }
+  } else {
+    pft_number <- pftmapping$ED[pftmapping$PEcAn == pft_name]
+  }
+  
+  pft_number
+}
+
 ##-------------------------------------------------------------------------------------------------#
 ### EOF
