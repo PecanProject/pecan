@@ -64,7 +64,7 @@ dims <- tmp.nc$dim
 
 test_that("nc files have correct attributes", {
   testthat::local_edition(3)
-  expect_equal(class(tmp.nc), "ncdf4")
+  expect_s3_class(tmp.nc, "ncdf4")
   time <- ncdf4::ncvar_get(tmp.nc, "time")
   gpp  <- ncdf4::ncvar_get(tmp.nc, "GPP")
   expect_equal(length(gpp), length(time))
@@ -74,9 +74,11 @@ test_that("nc files have correct attributes", {
   expect_equal(ncdf4::ncvar_get(tmp.nc, "lon"),
                as.numeric(settings$run$site$lon),
                ignore_attr = TRUE)
-  ncdf4::ncvar_get(tmp.nc, "PFT")
 })
 
+test_that("all PFTs are found in nc files", {
+  expect_s3_class(ncdf4::ncvar_get(tmp.nc, "PFT"), "array")
+})
 
 test_that("dimenstions have MsTMIP standard units", {
   testthat::local_edition(3)
