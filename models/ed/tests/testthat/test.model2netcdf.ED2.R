@@ -1,18 +1,34 @@
-
+library(stringr)
+#set up tempdir
 outdir <- file.path(tempdir(), "ed")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
-# file.copy(dir("data", pattern = "*.h5$", full.names = TRUE), outdir)
+
+#copy over example ED2 output
 file.copy(dir("models/ed/tests/testthat/data", pattern = "*.h5$", full.names = TRUE), outdir)
 file.copy(dir("models/ed/tests/testthat/data", pattern = "README.txt", full.names = TRUE), outdir)
-list.files(outdir,recursive = TRUE, full.names = T)
-pfts <- list(pft = list(name = "SetariaWT", ed2_pft_number = "1", outdir = "/data/output/pecan_runs/transect_runs/ed2_testout/pft/SetariaWT", 
-                        posteriorid = 9000001259), pft = list(name = "ebifarm.c3grass", 
-                                                              ed2_pft_number = "5", outdir = "/data/output/pecan_runs/transect_runs/ed2_testout/pft/ebifarm.c3grass", 
-                                                              posteriorid = 9000001260))
-model2netcdf.ED2(outdir, "40.0637", "-88.202", "2004-07-01", "2004-07-07", pfts)
+
+#copy over settings that generated ED2 output
+file.copy(dir("models/ed/tests/testthat/data", "pecan_checked.xml", full.names = TRUE), outdir)
+list.files(outdir)
+settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+settings$outdir <- outdir
+
+
+test_that("model2netcdf.ED2 runs without error", {
+  #hacky way to check for errors b/c PEcAn.logger errors are actually R messages
+  #testthat::expect_message() doesn't work here
+  x <- capture.output(
+    model2netcdf.ED2(settings = settings),
+    type = "message"
+  )
+  expect_false(any(str_detect(x, "ERROR")))
+})
+
+#run function to create outputs
+model2netcdf.ED2(settings = settings)
+
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
-  skip("tests are broken #1329")
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
   nc_files <- dir(outdir, pattern = ".nc$")
   nc_var_files <- dir(outdir, pattern = ".nc.var$")
@@ -20,8 +36,8 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
   expect_equal(length(h5_T_files), length(nc_files))
   expect_equal(length(h5_T_files), length(nc_var_files))
 
-  h5years <- sapply(h5_T_files, function(x) gsub("[A-Za-z.h5-]", "", x)) 
-  ncyears <- sapply(nc_files, function(x) gsub(".nc", "", x))
+  h5years <- str_extract(h5_T_files, "\\d{4}") 
+  ncyears <- str_extract(nc_files, "\\d{4}") 
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 
   ncvaryears <- sapply(nc_var_files, function(x) gsub(".nc.var", "", x))
