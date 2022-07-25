@@ -3,12 +3,16 @@ library(stringr)
 outdir <- file.path(tempdir(), "ed")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
+datadir <- "data"
+#for local debug
+# datadir <- "models/ed/test/testthat/data"
+
 #copy over example ED2 output
-file.copy(dir("models/ed/tests/testthat/data", pattern = "*.h5$", full.names = TRUE), outdir)
-file.copy(dir("models/ed/tests/testthat/data", pattern = "README.txt", full.names = TRUE), outdir)
+file.copy(dir(datadir, pattern = "*.h5$", full.names = TRUE), outdir)
+file.copy(dir(datadir, pattern = "README.txt", full.names = TRUE), outdir)
 
 #copy over settings that generated ED2 output
-file.copy(dir("models/ed/tests/testthat/data", "pecan_checked.xml", full.names = TRUE), outdir)
+file.copy(dir(datadir, "pecan_checked.xml", full.names = TRUE), outdir)
 list.files(outdir)
 settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 settings$outdir <- outdir
@@ -40,27 +44,30 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
   ncyears <- str_extract(nc_files, "\\d{4}") 
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 
-  ncvaryears <- sapply(nc_var_files, function(x) gsub(".nc.var", "", x))
+  ncvaryears <- str_extract(nc_var_files, "\\d{4}")
   expect_equal(as.numeric(ncvaryears), as.numeric(h5years))
 })
 
-# test_that("read.output extracts data from nc file",{
-#   vars <- c("GPP", "NEE", "DOC_flux", "Evap", "TVeg", "Qsb", "Rainf")
-#   x <- read.output(runid = runid, outdir = ed.outdir, variables = vars)
-#   expect_true(all(names(x) %in% vars))
-# })
+test_that("read.output extracts data from nc file",{
+  vars <- c("GPP", "NEE", "DOC_flux", "Evap", "TVeg", "Qsb", "Rainf")
+  x <-
+    PEcAn.utils::read.output(runid = runid,
+                             outdir = outdir,
+                             variables = vars)
+  expect_true(all(names(x) %in% vars))
+})
 
-# nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
-# tmp.nc <- nc_open(nc_files[1])
-# vars <- tmp.nc$var
-# dims <- tmp.nc$dim
+nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
+tmp.nc <- ncdf4::nc_open(nc_files[1])
+vars <- tmp.nc$var
+dims <- tmp.nc$dim
 
 test_that("nc files have correct attributes",{
-  skip("tests are broken #1329")
+
   expect_equal(class(tmp.nc), "ncdf4")
-  time <- ncvar_get(tmp.nc, "time")
-  gpp  <- ncvar_get(tmp.nc, "GPP")
-  nee  <- ncvar_get(tmp.nc, "NEE")
+  time <- ncdf4::ncvar_get(tmp.nc, "time")
+  gpp  <- ncdf4::ncvar_get(tmp.nc, "GPP")
+  nee  <- ncdf4::ncvar_get(tmp.nc, "NEE")
   expect_equal(length(gpp), length(time))
   
 })
