@@ -62,8 +62,8 @@ tmp.nc <- ncdf4::nc_open(nc_files[1])
 vars <- tmp.nc$var
 dims <- tmp.nc$dim
 
-test_that("nc files have correct attributes",{
-
+test_that("nc files have correct attributes", {
+  testthat::local_edition(3)
   expect_equal(class(tmp.nc), "ncdf4")
   time <- ncdf4::ncvar_get(tmp.nc, "time")
   gpp  <- ncdf4::ncvar_get(tmp.nc, "GPP")
@@ -78,13 +78,15 @@ test_that("nc files have correct attributes",{
 })
 
 
-test_that("dimenstions have MsTMIP standard units",{
+test_that("dimenstions have MsTMIP standard units", {
+  testthat::local_edition(3)
   expect_equal(dims$lat$units, "degrees_north", ignore_attr = TRUE)
   expect_equal(dims$lon$units, "degrees_east", ignore_attr = TRUE)
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units",{
+  testthat::local_edition(3)
   data(standard_vars, package = "PEcAn.utils")
   #exclude dimensions
   std_var_names <- !standard_vars$Variable.Name %in% c("lat", "lon", "time")
