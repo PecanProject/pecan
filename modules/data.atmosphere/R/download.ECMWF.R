@@ -1,15 +1,47 @@
-#' Download ECMWF Open Data 15 day forecast data products
+#' Downloads ECMWF Open Data 15 day forecast data products 
+#' https://confluence.ecmwf.int/display/DAC/ECMWF+open+data%3A+real-time+forecasts
+#' 
+#' https://github.com/ecmwf/ecmwf-opendata
+#' Under the hood, this function uses the Python `ecmwf-opendata` module,
+#' which can be installed via `pip` (`pip install --user ecmwf-opendata`). The
+#' module is accessed via the `reticulate` package.
 #'
+#' @param outfolder location on disk where outputs will be stored
+#' @param lat.in,lon.in site coordinates, decimal degrees (numeric)
+#' @param fchour reference time of the forecasts. Values are 00, 12 for 15 day forecast.
+#' @param stream  forecasting system that produces the data. Current value is `"enfo"`
+#' @param type the type of forecast data. Current values: `cf` (controlled forecast), `pf` (perturbed forecast)
+#' @param parameters character vector of product types, or `"all"`.
+#' @param reticulate_python Path to Python binary for `reticulate`
+#'   (passed to [reticulate::use_python()]). If `NULL` (default), use
+#'   the system default.
+#' @param overwrite Logical. If `FALSE` (default), skip any files with
+#'   the same target name (i.e. same variable) that already exist in
+#'   `outfolder`. If `TRUE`, silently overwrite existing files.
+#' @return information about the output file
+#' @export
+#' @examples
+#' 
+#' \dontrun{
+#' files <- download.ECMWF(
+#'   "ECMWF_output",
+#'   lat.in = 0,
+#'   lon.in = 180,
+#'   fchour = 00,
+#'   stream = "enfo"
+#'   type = c("cf", "pf"), 
+#'   parameters = "all", 
+#' )
+#' }
 #' @author Swarnalee Mazumder
 #'
 
-library(reticulate)
-# py_install("ecmwf-opendata",pip = TRUE)
-
 download.ECMWF <- function(outfolder, 
+                           lat.in,
+                           lon.in,
                            fchour, 
-                           stream, 
-                           type = "pf", 
+                           stream = "enfo", 
+                           type = c("cf", "pf"), 
                            parameters = "all", 
                            overwrite = FALSE, 
                            reticulate_python = NULL,...)
@@ -67,19 +99,19 @@ download.ECMWF <- function(outfolder,
     ))
   }
   
-  
   if (stream == "enfo"){
     time <- time
     step <- 360
     type <- type
   }  else{ 
     PEcAn.logger::logger.severe(sprintf(
-      "Invalid data stream."
+      "Invalid data stream. Currently, data stream `enfo` is supported."
     ))
   }
   
   # Python script "download_ecmwf.py" to get latest forecast date and download forecast datasets
-  source_python("download_ecmwf.py")
+  script.path = file.path(system.file("download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
+  reticulate::source_python(script.path)
   
   date_latestdata <- ecmwflatest(time, step, stream, type, all_parameters)
   latest_filedate <- strtoi(gsub("-", "", substr(as.character.Date(date_latestdata), 1, 10)))
@@ -100,30 +132,70 @@ download.ECMWF <- function(outfolder,
   ))
   }
   
+  # Removes any already existing files with base name same as `latest_filedate``
+  if ((length(list.files(path = outfolder, pattern = as.character(latest_filedate)) ) > 0) == TRUE){
+    file.remove(list.files(outfolder, pattern = as.character(latest_filedate)))
+  }
+  
   fname <- paste(latest_filedate, time, step, stream, type, sep = "_")
   
-  grib_fname <- paste0(fname, ".grib2")
-  data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, grib_fname)
+  in_filename <- paste0(fname, ".grib2")
+  
+  data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, in_filename)
   
   # Python script "ecmwf_grib2nc.py" to convert grib2 to netCDF
   # Converting Grib2 file to ensemble wise NetCDF file
-  source_python("ecmwf_grib2nc.py")
-  nc_ecmwf <- grib2nc_ecmwf(grib_fname)
+  script.path = file.path(system.file("ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
+  reticulate::source_python(script.path)
+  
+  nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename)
+  
+  
+  rows    <- 1
+  results <- data.frame(
+    file = character(rows),
+    host = character(rows),
+    mimetype = character(rows),
+    formatname = character(rows),
+    startdate = character(rows),
+    enddate = character(rows),
+    dbfile.name = "ECMWF",
+    stringsAsFactors = FALSE
+  )
+  
+  firstdate_st <- latest_filedate
+  lastdate_st <- ymd(firstdate_st) + days(15)
+  
+  results$file[rows]       <-
+    file.path(outfolder, out_file_names)
+  results$host[rows]       <- PEcAn.remote::fqdn()
+  results$startdate[rows]  <- firstdate_st
+  results$enddate[rows]    <- lastdate_st
+  results$mimetype[rows]   <- "application/x-netcd"
+  results$formatname[rows] <- "CF Meteorology"
+  
+  return(results)
   
 }
 
-### code to reproduce
+
+######### code to reproduce 
+# library(reticulate)
 # date <- -1
 # time <- 0
 # step <- 360
 # stream <- "enfo"
-# type <- "pf"
+# type <- c("cf","pf")
 # 
-# all_parameters <-  c("tp", "10u", "10v", "q", "r", "sp")
-# grib_fname <- "trial_ecmwfod.grib2"
+# all_parameters <-  c("2t", "tp", "10u", "10v", "q", "r", "sp")
+# in_filename <- "trial_ecmwfod.grib2"
 # 
-# source_python("download_ecmwf.py")
-# data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, grib_fname)
+# script.path = file.path(system.file("download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
+# reticulate::source_python(script.path)
+# data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, in_filename)
 # 
-# source_python("ecmwf_grib2nc.py")
-# nc_ecmwf <- grib2nc_ecmwf(grib_fname)
+# out_filename <- "trial_ecmwfod"
+#
+# script.path = file.path(system.file("ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
+# reticulate::source_python(script.path)
+# nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename, lat_in, lon_in)

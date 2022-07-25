@@ -48,6 +48,7 @@ Imports:
     RCurl,
     REddyProc,
     reshape2,
+    reticulate,
     rgdal,
     rlang (>= 0.2.0),
     sp,
@@ -66,7 +67,6 @@ Suggests:
     foreach,
     parallel,
     progress,
-    reticulate
 Remotes:
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
