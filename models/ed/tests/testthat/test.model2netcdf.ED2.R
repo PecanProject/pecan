@@ -68,40 +68,44 @@ test_that("nc files have correct attributes",{
   time <- ncdf4::ncvar_get(tmp.nc, "time")
   gpp  <- ncdf4::ncvar_get(tmp.nc, "GPP")
   expect_equal(length(gpp), length(time))
-  expect_equivalent(ncdf4::ncvar_get(tmp.nc, "lat"),
-                    as.numeric(settings$run$site$lat))
-  expect_equivalent(ncdf4::ncvar_get(tmp.nc, "lon"),
-                    as.numeric(settings$run$site$lon))
+  expect_equal(ncdf4::ncvar_get(tmp.nc, "lat"),
+               as.numeric(settings$run$site$lat),
+               ignore_attr = TRUE)
+  expect_equal(ncdf4::ncvar_get(tmp.nc, "lon"),
+               as.numeric(settings$run$site$lon),
+               ignore_attr = TRUE)
   ncdf4::ncvar_get(tmp.nc, "PFT")
 })
 
 
-
-
-
 test_that("dimenstions have MsTMIP standard units",{
-  expect_equal(dims$lat$units, "degrees_north")
-  expect_equal(dims$lon$units, "degrees_east")
+  expect_equal(dims$lat$units, "degrees_north", ignore_attr = TRUE)
+  expect_equal(dims$lon$units, "degrees_east", ignore_attr = TRUE)
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units",{
   data(standard_vars, package = "PEcAn.utils")
-  for(var in vars){
-    if(var$name %in% standard_vars$Variable.Name){
-      ms.units <-  standard_vars[standard_vars$Variable.Name == var$name, "Units"]
-      if(!(ms.units ==  var$units)) {
-        ed.output.message <- paste(var$name, "units", var$units, "do not match MsTMIP Units", ms.units)
-        PEcAn.logger::logger.warn(ed.output.message)
-      }
-    }
-  }
+  #exclude dimensions
+  std_var_names <- !standard_vars$Variable.Name %in% c("lat", "lon", "time")
   
-  # The following test should pass if MsTMIP units / dimname standards are used
-  expect_true(
-    var$units == standard_vars[standard_vars$Variable.Name == var$name, "Units"]
+  #drop any vars not in standard_vars
+  std_vars <- purrr::keep(vars, ~.x[["name"]] %in% std_var_names)
+  
+  #make dataframes for comparison
+  x <- std_vars %>% purrr::map_chr(~.x[["units"]])
+  out_units <- data.frame(Variable.Name = names(x), Units = as.character(x))
+  std_units <-
+    standard_vars[standard_vars$Variable.Name %in% names(x), c("Variable.Name", "Units")]
+  
+  #check for equality
+  expect_equal(
+    dplyr::arrange(out_units, Variable.Name),
+    dplyr::arrange(std_units, Variable.Name),
+    ignore_attr = TRUE
   )
 })
+
 
 #cleanup
 ncdf4::nc_close(tmp.nc)
