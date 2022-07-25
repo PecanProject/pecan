@@ -117,6 +117,22 @@ test_that("mstmipvar works with defaults", {
 })
 
 test_that("mstmipvar works with args specified", {
+  lat <- 
+    ncdf4::ncdim_def(
+      name = "lat",
+      longname = "station_latitude",
+      units = "degrees_north",
+      vals = 40,
+      unlim = FALSE
+    )
+  lon <-
+    ncdf4::ncdim_def(
+      name = "lon",
+      longname = "station_longitude",
+      units = "degrees_east",
+      vals = -80,
+      unlim = FALSE
+    )
   time <-
     ncdf4::ncdim_def(
       name = "time",
@@ -125,7 +141,7 @@ test_that("mstmipvar works with args specified", {
       calendar = "standard",
       unlim = TRUE
     )
-  soil <- 
+  nsoil <- 
     ncdf4::ncdim_def(
       name = "SoilLayerMidpoint",
       longname = "SoilLayerMidpoint",
@@ -134,7 +150,8 @@ test_that("mstmipvar works with args specified", {
       unlim = FALSE
     )
   
-  expect_s3_class(mstmipvar("NPP", lat = 40, lon = -80, time = time, nsoil = soil))
+  expect_s3_class(mstmipvar("NPP", lat = lat, lon = lon, time = time, nsoil = nsoil),
+                  "ncvar4")
 })
 
 # doesn't work because PEcAn.logger doesn't use message()
