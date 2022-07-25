@@ -1072,7 +1072,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   
   pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
-  names(pfts_nums) <- pft_names
+  names(pft_nums) <- pft_names
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
@@ -1087,16 +1087,25 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   # ----- fill list
   
   ##### setup output time and time bounds
-  ## Create a date vector that contains each month of the model run (e.g. "2001-07-01" "2001-08-01" "2001-09-01"....)
-  ## and which is the correct length for each full or partial year
-  output_date_vector <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
-  ## Create a vector of the number of days in each month by year
-  ## (e.g. 31 31 30 31 30 31)
+  ## Create a date vector that contains each month of the model run (e.g.
+  ## "2001-07-01" "2001-08-01" "2001-09-01"....) and which is the correct length
+  ## for each full or partial year
+  output_date_vector <-
+    seq(
+      lubridate::floor_date(begins, "month"),
+      by = "month",
+      length.out = dim(out[[1]])[1]
+    )
+  ## Create a vector of the number of days in each month by year (e.g. 31 31 30
+  ## 31 30 31)
   num_days_per_month <- lubridate::days_in_month(output_date_vector)
-  ## Update num_days_per_month and output_date_vector if model run did not start on the first day of a month
-  ## e.g. "2001-07-15" "2001-08-01", 17 31
+  ## Update num_days_per_month and output_date_vector if model run did not start
+  ## on the first day of a month e.g. "2001-07-15" "2001-08-01", 17 31
   if (lubridate::yday(begins) != lubridate::yday(output_date_vector[1])) {
-    temp <- num_days_per_month[1] - ((lubridate::yday(begins) - lubridate::yday(output_date_vector[1])))
+    temp <-
+      num_days_per_month[1] - ((
+        lubridate::yday(begins) - lubridate::yday(output_date_vector[1])
+      ))
     num_days_per_month[1] <- temp
     output_date_vector[1] <- begins
   }
@@ -1108,42 +1117,88 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   bounds <- array(data = NA, dim = c(length(dtvals), 2))
   bounds[, 1] <- dtvals 
   bounds[, 2] <- bounds[, 1] + num_days_per_month 
-  bounds <- round(bounds, 4) # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  bounds <- round(bounds, 4) 
   #####
   
-  t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = dtvals, calendar = "standard", unlim = TRUE)
-  time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
-                                    longname = "history time interval endpoint dimensions", 
-                                    vals = 1:2, units = "")
-  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts_nums, 
-                        longname = "Plant Functional Type", unlim = TRUE)
+  t <-
+    ncdf4::ncdim_def(
+      name = "dtime",
+      units = paste0("days since ", yr, "-01-01 00:00:00"),
+      vals = dtvals,
+      calendar = "standard",
+      unlim = TRUE
+    )
+  time_interval <- ncdf4::ncdim_def(
+    name = "hist_interval",
+    longname = "history time interval endpoint dimensions",
+    vals = 1:2,
+    units = ""
+  )
+  p <-
+    ncdf4::ncdim_def(
+      name = "pft",
+      units = "unitless",
+      vals = pft_nums,
+      longname = "Plant Functional Type",
+      unlim = TRUE
+    )
   
-  # NOTE : the order of dimensions is going to be important for read.output
-  # this was the fist case of reading pft-specific outputs at the time
-  # but checking base/utils/data/standard_vars.csv "pft" should come after "time" as a dimension
-  # e.g. when NEE is pft-specific for some model output it will be the 4th dimension
+  # NOTE : the order of dimensions is going to be important for read.output.
+  # This was the fist case of reading pft-specific outputs at the time, but
+  # checking base/utils/data/standard_vars.csv "pft" should come after "time" as
+  # a dimension e.g. when NEE is pft-specific for some model output it will be
+  # the 4th dimension
   # lon / lat / time / pft 
-  # from read.output's perspective, dimension of pft will be the same for NEE there and DBH here
+  # From read.output's perspective, dimension of pft will be the same for NEE
+  # there and DBH here
 
   s <- length(nc_var)
   
-  nc_var[[s + 1]] <- ncdf4::ncvar_def("DBH", units = "cm", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Diameter at breast height")
-  nc_var[[s + 2]] <- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Rate of change in dbh")
-  nc_var[[s + 3]] <- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Plant density")
+  nc_var[[s + 1]] <-
+    ncdf4::ncvar_def(
+      "DBH",
+      units = "cm",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Diameter at breast height"
+    )
+  nc_var[[s + 2]] <-
+    ncdf4::ncvar_def(
+      "DDBH_DT",
+      units = "cm yr-1",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Rate of change in dbh"
+    )
+  nc_var[[s + 3]] <-
+    ncdf4::ncvar_def(
+      "NPLANT",
+      units = "plant m-2",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Plant density"
+    )
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
-  nc_var[[s + 4]] <- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
-                                   longname = paste(pft_names, collapse=",")) 
+  nc_var[[s + 4]] <-
+    ncdf4::ncvar_def(
+      "PFT",
+      units = "",
+      dim = list(p),
+      longname = paste(pft_names, collapse =
+                         ",")
+    )
   out_length <- length(out)
   out[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
-  nc_var[[s + 5]] <- ncdf4::ncvar_def(name = "dtime_bounds", units = "", 
-                                      longname = "monthly history time interval endpoints", 
-                                      dim = list(time_interval,dtime = t), 
-                                      prec = "double")
+  nc_var[[s + 5]] <-
+    ncdf4::ncvar_def(
+      name = "dtime_bounds",
+      units = "",
+      longname = "monthly history time interval endpoints",
+      dim = list(time_interval, dtime = t),
+      prec = "double"
+    )
   return(list(nc_var = nc_var, out = out))
   
 } # put_E_values
@@ -1207,37 +1262,20 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   
   ncdf4::nc_close(nc)
   
-  
-  # for now this function does not read any ED variable that has soil as a dimension
-  pft_names <- pfts$pft$name
-  soil.check <- grepl("soil", pft_names)
-  if (any(soil.check)) {
-    # for now keep soil out
-    pft_names <- pft_names[!(soil.check)]
-  }
-  
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts <- numeric(npft)
-  names(pfts) <- pft_names
-  
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(settings$pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- settings$pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
+  
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pft_nums) <- pft_names
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    #TODO: print a message??
+    pft_names <- pft_names[!(soil.check)]
   }
   
   out <- list()
