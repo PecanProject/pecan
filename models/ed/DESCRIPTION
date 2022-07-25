@@ -18,6 +18,9 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "sserbin@bnl.gov"),
              person("Alexey", "Shiklomanov", role = c("aut"),
                      email = "alexey.shiklomanov@pnnl.gov"),
+             person("Eric", "Scott", "R", role = c("ctb"),
+                     email = "ericrscott@arizona.edu",
+                     comment = c(ORCID = "0000-0002-7430-7879")),
              person("University of Illinois, NCSA", role = c("cph")))
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov

@@ -116,6 +116,10 @@ authors:
   - given-names: Yan Zhao
   - affiliation: Uber
     given-names: Jing Xia
+  - given-names: Eric R. Scott
+    affiliation: University of Arizona
+    orcid: 'https://orcid.org/0000-0002-7430-7879'
+  
 preferred-citation:
   type: article
   title: Facilitating feedbacks between field measurements and ecosystem models
