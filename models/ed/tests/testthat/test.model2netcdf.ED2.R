@@ -1,19 +1,19 @@
 library(stringr)
 #set up tempdir
-outdir <- file.path(tempdir(), "ed")
-dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-datadir <- "data"
-#for local debug
-# datadir <- "models/ed/test/testthat/data"
+outdir <- tempdir()
+ED2_files <- c("analysis-E-2004-07-00-000000-g01.h5",
+               "analysis-T-2004-00-00-000000-g01.h5", 
+               "history-S-2004-07-01-000000-g01.h5",
+               "README.txt",
+               "pecan_checked.xml")
 
-#copy over example ED2 output
-file.copy(dir(datadir, pattern = "*.h5$", full.names = TRUE), outdir)
-file.copy(dir(datadir, pattern = "README.txt", full.names = TRUE), outdir)
+purrr::map(ED2_files, ~{
+  path <- base::system.file("tests/testthat/data", .x, package = "PEcAn.ED2")
+  file.copy(path, file.path(outdir, .x))
+})
 
-#copy over settings that generated ED2 output
-file.copy(dir(datadir, "pecan_checked.xml", full.names = TRUE), outdir)
-list.files(outdir)
+
 settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 settings$outdir <- outdir
 
@@ -76,8 +76,9 @@ test_that("nc files have correct attributes", {
                ignore_attr = TRUE)
 })
 
-test_that("all PFTs are found in nc files", {
-  expect_s3_class(ncdf4::ncvar_get(tmp.nc, "PFT"), "array")
+test_that("both PFTs are found in nc files", {
+  expect_type(ncdf4::ncvar_get(tmp.nc, "PFT"), "double")
+  expect_length(ncdf4::ncvar_get(tmp.nc, "PFT"), 2)
 })
 
 test_that("dimenstions have MsTMIP standard units", {
