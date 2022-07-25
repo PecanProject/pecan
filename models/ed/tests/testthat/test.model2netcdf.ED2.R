@@ -9,7 +9,8 @@ ED2_files <- c("analysis-E-2004-07-00-000000-g01.h5",
                "pecan_checked.xml")
 
 purrr::map(ED2_files, ~{
-  path <- base::system.file("tests/testthat/data", .x, package = "PEcAn.ED2")
+  path <- file.path("data", .x)
+  # path <- system.file("tests/testthat/data", .x, package = "PEcAn.ED2")
   file.copy(path, file.path(outdir, .x))
 })
 
