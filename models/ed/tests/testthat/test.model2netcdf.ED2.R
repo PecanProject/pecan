@@ -19,8 +19,8 @@ settings$outdir <- outdir
 
 
 test_that("model2netcdf.ED2 runs without error", {
-  #hacky way to check for errors b/c PEcAn.logger errors are actually R messages
-  #testthat::expect_message() doesn't work here
+  #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
+  #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
     model2netcdf.ED2(settings = settings),
     type = "message"
@@ -67,24 +67,25 @@ test_that("nc files have correct attributes",{
   expect_equal(class(tmp.nc), "ncdf4")
   time <- ncdf4::ncvar_get(tmp.nc, "time")
   gpp  <- ncdf4::ncvar_get(tmp.nc, "GPP")
-  nee  <- ncdf4::ncvar_get(tmp.nc, "NEE")
   expect_equal(length(gpp), length(time))
-  
+  expect_equivalent(ncdf4::ncvar_get(tmp.nc, "lat"),
+                    as.numeric(settings$run$site$lat))
+  expect_equivalent(ncdf4::ncvar_get(tmp.nc, "lon"),
+                    as.numeric(settings$run$site$lon))
+  ncdf4::ncvar_get(tmp.nc, "PFT")
 })
 
 
 
+
+
 test_that("dimenstions have MsTMIP standard units",{
-  skip("tests are broken #1329")
-  
   expect_equal(dims$lat$units, "degrees_north")
   expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units",{
-  skip("tests are broken #1329")
-
   data(standard_vars, package = "PEcAn.utils")
   for(var in vars){
     if(var$name %in% standard_vars$Variable.Name){
@@ -96,8 +97,11 @@ test_that("variables have MsTMIP standard units",{
     }
   }
   
-  ## The following test should pass if MsTMIP units / dimname standards are used
-  ##     expect_true(
-  ##       var$units == standard_vars[standard_vars$Variable.Name == var$name, "Units"]
-  ##       )
+  # The following test should pass if MsTMIP units / dimname standards are used
+  expect_true(
+    var$units == standard_vars[standard_vars$Variable.Name == var$name, "Units"]
+  )
 })
+
+#cleanup
+ncdf4::nc_close(tmp.nc)
