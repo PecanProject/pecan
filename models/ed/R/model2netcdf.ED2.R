@@ -872,7 +872,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##' @param end_date End time of the simulation
 ##' @param pfts Names of PFTs used in the run, vector
 ##' @param settings pecan settings object
-##' @param ... additional arguments
+##' @param ... currently unused
 ##'
 ##' @export
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 

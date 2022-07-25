@@ -33,7 +33,7 @@ read_E_files(
 
 \item{settings}{pecan settings object}
 
-\item{...}{additional arguments}
+\item{...}{currently unused}
 }
 \description{
 Function for reading -E- files
