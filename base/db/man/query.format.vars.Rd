@@ -2,19 +2,19 @@
 % Please edit documentation in R/query.format.vars.R
 \name{query.format.vars}
 \alias{query.format.vars}
-\title{Given input_id, return formats table and table of variables and units}
+\title{Look up names and units of input variables from a format id or input id}
 \usage{
 query.format.vars(bety, input.id = NA, format.id = NA, var.ids = NA)
 }
 \arguments{
 \item{bety}{database connection}
 
-\item{var.ids}{optional vector of variable IDs. If provided, limits results to these variables}
+\item{input.id, format.id}{numeric. Defaults to format.id if both provided}
 
-\item{input_id, format.id}{numeric. Defaults to format.id if both provided}
+\item{var.ids}{optional vector of variable IDs. If provided, limits results to these variables}
 }
 \description{
-Given input_id, return formats table and table of variables and units
+Look up names and units of input variables from a format id or input id
 }
 \author{
 Betsy Cowdery, Ankur Desai, Istem Fer
