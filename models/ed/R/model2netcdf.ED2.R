@@ -1265,6 +1265,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
   names(pft_nums) <- pft_names
+  npft <- length(pft_names)
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
@@ -1366,7 +1367,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
 
 #helper fun to extract pft numbers or match based on pft name
 get_pft_num <- function(x) {
-  data(pftmapping, package = "PEcAn.ED2")
+  utils::data("pftmapping", package = "PEcAn.ED2", envir = environment())
   pft_number <- x[["ed2_pft_number"]]
   pft_name <- x[["name"]]
   if(!is.null(pft_number)) {
