@@ -1,23 +1,11 @@
 library(stringr)
 #set up tempdir
-
 outdir <- tempdir()
-ED2_files <- c("analysis-E-2004-07-00-000000-g01.h5",
-               "analysis-T-2004-00-00-000000-g01.h5", 
-               "history-S-2004-07-01-000000-g01.h5",
-               "README.txt",
-               "pecan_checked.xml")
-
-purrr::map(ED2_files, ~{
-  path <- file.path("data", .x)
-  # path <- system.file("tests/testthat/data", .x, package = "PEcAn.ED2")
-  file.copy(path, file.path(outdir, .x))
-})
-
+unzip("data/ed2_run_output.zip", exdir = outdir)
+file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 
 settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 settings$outdir <- outdir
-
 
 test_that("model2netcdf.ED2 runs without error", {
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and

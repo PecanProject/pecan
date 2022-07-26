@@ -1,11 +1,8 @@
 outdir <- tempdir()
+unzip("data/ed2_run_output.zip", exdir = outdir)
+file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 h5_file <- "analysis-E-2004-07-00-000000-g01.h5"
-ED2_files <- c(h5_file,
-               "pecan_checked.xml")
-purrr::map(ED2_files, ~{
-  path <- file.path("data", .x)
-  file.copy(path, file.path(outdir, .x))
-})
+
 test_settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 test_settings$outdir <- outdir
 
