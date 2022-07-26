@@ -60,7 +60,7 @@ Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
-LazyData: FALSE
+LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
