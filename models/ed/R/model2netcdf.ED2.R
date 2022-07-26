@@ -1300,7 +1300,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   # remove non-pft sublists
   pars[names(pars) != "pft"] <- NULL
   # pass pft numbers as sublist names
-  names(pars) <- pfts_nums
+  names(pars) <- pft_nums
   
   # Aggregate
   for (l in seq_along(pecan_names)) {
@@ -1317,7 +1317,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
       
     } else {# per-pft vars
       for(k in seq_len(npft)) {
-        ind <- (pft == pfts_nums[k])
+        ind <- (pft == pft_nums[k])
         
         if (any(ind)) {
           # check for different variables/units?
@@ -1368,6 +1368,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
 #helper fun to extract pft numbers or match based on pft name
 get_pft_num <- function(x) {
   utils::data("pftmapping", package = "PEcAn.ED2", envir = environment())
+  pftmapping <- pftmapping #get rid of no visible binding warning
   pft_number <- x[["ed2_pft_number"]]
   pft_name <- x[["name"]]
   if(!is.null(pft_number)) {
