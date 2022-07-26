@@ -1,3 +1,4 @@
 ^Dockerfile$
 ^model_info\.json$
 ^scripts$
+^data-raw$
