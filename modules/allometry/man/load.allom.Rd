@@ -24,7 +24,7 @@ loads allom files
 \dontrun{
   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
   allom.mcmc = load.allom(object)
-  
+
 }
 
 }
