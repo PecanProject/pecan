@@ -110,7 +110,7 @@ download.ECMWF <- function(outfolder,
   }
   
   # Python script "download_ecmwf.py" to get latest forecast date and download forecast datasets
-  script.path = file.path(system.file("download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
+  script.path = file.path(system.file("ECMWF/download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
   reticulate::source_python(script.path)
   
   date_latestdata <- ecmwflatest(time, step, stream, type, all_parameters)
