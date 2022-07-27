@@ -18,7 +18,6 @@ Depends:
     PEcAn.logger,
     PEcAn.utils
 Imports:
-    udunits2 (>= 0.11),
     ncdf4 (>= 1.15)
 Suggests:
     testthat (>= 1.0.2)

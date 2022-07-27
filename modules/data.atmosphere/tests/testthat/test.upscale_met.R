@@ -20,7 +20,7 @@ ncdf4::nc_close(scaled)
 test_that("output is scaled correctly", {
   orig_dt <- mean(diff(otime$vals))
   sc_dt <- mean(diff(stime$vals))
-  sc_dt_hours <- udunits2::ud.convert(
+  sc_dt_hours <- PEcAn.utils::ud_convert(
     sc_dt,
     stime$units,
     sub("^.* since", "hours since", stime$units))
@@ -38,5 +38,5 @@ test_that("output is scaled correctly", {
 test_that("units are preserved", {
   # only checking if preserved well enough to parse --
   # OK if not string identical
-  expect_equal(udunits2::ud.convert(1, stime$units, otime$units), 1)
+  expect_equal(PEcAn.utils::ud_convert(1, stime$units, otime$units), 1)
 })
