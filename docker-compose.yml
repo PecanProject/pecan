@@ -299,6 +299,20 @@ services:
     volumes:
       - pecan:/data
 
+  # PEcAn BioCro model runner
+  biocro:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
   # ----------------------------------------------------------------------
   # Shiny Apps
   # ----------------------------------------------------------------------
