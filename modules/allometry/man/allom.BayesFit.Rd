@@ -12,7 +12,7 @@ allom.BayesFit(allom, nrep = 10000, form = "power", dmin = 0.1, dmax = 500)
   'field' - contains a list, each entry for which is
             a data frame with 'x' and 'y'. Can be NULL
   'parm' -  a single data frame with the following components:
-  \itemize{         
+  \itemize{
          \item{n}     {sample size}
          \item{a}     {eqn coefficient}
          \item{b}     {eqn coefficient}
