@@ -39,7 +39,7 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
   
   S <- calcSpatialCov(d, phi, tauw)
   
-  val <- try(-sum(emdbook::dmvnorm(myY, rep(mu, n), S + diag(tauv, n), log = TRUE)))
+  val <- try(-sum(mvtnorm::dmvnorm(myY, rep(mu, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)
   }
@@ -84,7 +84,7 @@ gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
   
   S <- calcSpatialCov(d, phi, tauw)
   
-  val <- try(-sum(emdbook::dmvnorm(myY, rep(0, n), S + diag(tauv, n), log = TRUE)))
+  val <- try(-sum(mvtnorm::dmvnorm(myY, rep(0, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)
   }

@@ -240,7 +240,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         }
       }
       psigibbs[g, ] <- psi
-      psijump <- stats::update(psijump, psigibbs)
+      psijump <- update(psijump, psigibbs)
     }
     
     cc <- 3
@@ -261,7 +261,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       S <- Sstar
     }
     tauwgibbs[g, ] <- tauw
-    tauwjump <- stats::update(tauwjump, tauwgibbs)
+    tauwjump <- update(tauwjump, tauwgibbs)
     
     cc <- 4
     ## draw tauv

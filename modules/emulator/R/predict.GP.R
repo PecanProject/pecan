@@ -142,12 +142,12 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
     }
     
     if (nugget) {
-      Wprime    <- SimDesign::rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
+      Wprime    <- mvtnorm::rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
       cInt[j, ] <- mu[i] + Wprime + y.trend
       pInt[j, ] <- stats::rnorm(npred * dim, cInt[j, ], sqrt(tauv1))
     } else {
       cInt[j, ] <- mu[i] + S12 %*% S22inv %*% (y - mu[i]) + y.trend
-      mypred <- try(SimDesign::rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
+      mypred <- try(mvtnorm::rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
       if (is.numeric(mypred)) {
         pInt[j, ] <- mypred
       }
