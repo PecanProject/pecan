@@ -145,7 +145,7 @@ download.ECMWF <- function(outfolder,
   
   # Python script "ecmwf_grib2nc.py" to convert grib2 to netCDF
   # Converting Grib2 file to ensemble wise NetCDF file
-  script.path = file.path(system.file("ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
+  script.path = file.path(system.file("ECMWF/ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
   reticulate::source_python(script.path)
   
   nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename)
