@@ -32,7 +32,7 @@
 ##'   con <- db.open(...)
 ##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
-query.priors <- function(pft, trstr = NULL, con = NULL, update, ...){
+query.priors <- function(pft, trstr = NULL, con = NULL, update = FALSE, ...){
 
   if (inherits(pft, "integer64")) {
     # Convert to character with correct representation
