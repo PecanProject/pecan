@@ -51,7 +51,11 @@ download.ECMWF <- function(outfolder,
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
-  
+  if(is.null(product)){
+    stream <- "enfo"
+  } else{
+    stream <- product
+  }
   tryCatch({
     ecmwfod <- reticulate::import("ecmwf.opendata")
   }, error = function(e) {
