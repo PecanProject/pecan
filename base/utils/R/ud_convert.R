@@ -3,10 +3,9 @@
 ##' Unit conversion to replace the now-unmaintained `udunits2::ud.convert`
 ##' @author Chris Black
 ##' 
-##' @param x numeric vector with units `u1` to be converted to units `u2`
-##' @param u1 string which is parseable into a `units` compatible unit.
-##' @param u2 string which is parseable into a `units` compatible unit,
-##'   and for which there exists a defined transformation from the units represented by `u1`.
+##' @param x numeric vector
+##' @param u1 string parseable as the units in which `x` is provided
+##' @param u2 string parseable as the units to convert to
 ##' 
 ##' @return numeric vector stripped of units
 ##' @export
