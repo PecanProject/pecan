@@ -10,7 +10,8 @@ met2model.LDNDC(
   outfolder,
   start_date,
   end_date,
-  overwrite = FALSE
+  overwrite = FALSE,
+  ...
 )
 }
 \arguments{
@@ -20,10 +21,16 @@ met2model.LDNDC(
 
 \item{outfolder}{location where model specific output is written.}
 
+\item{start_date}{start date of the results}
+
+\item{end_date}{end date of the results}
+
 \item{overwrite}{logical: replace output files if they already exist?}
+
+\item{...}{Other arguments}
 }
 \value{
-OK if everything was succesful.
+invisible(results)
 }
 \description{
 Converts a met CF file to a model specific met file. The input

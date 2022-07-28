@@ -2,9 +2,16 @@
 % Please edit documentation in R/model2netcdf.LDNDC.R
 \name{model2netcdf.LDNDC}
 \alias{model2netcdf.LDNDC}
-\title{Code to convert LDNDCS's output into netCDF format}
+\title{Code to convert LDNDC's output into netCDF format}
 \usage{
-model2netcdf.LDNDC(outdir, sitelat, sitelon, start_date, end_date)
+model2netcdf.LDNDC(
+  outdir,
+  sitelat,
+  sitelon,
+  start_date,
+  end_date,
+  delete.raw = FALSE
+)
 }
 \arguments{
 \item{outdir}{Location of model output}
@@ -16,6 +23,8 @@ model2netcdf.LDNDC(outdir, sitelat, sitelon, start_date, end_date)
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{delete.raw}{TRUE if raw model results will be deleted}
 }
 \description{
 Convert LDNDC output into the NACP Intercomparison format (ALMA using netCDF)
