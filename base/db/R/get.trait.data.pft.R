@@ -17,11 +17,12 @@
 ##' @param dbcon database connection
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
 ##' @param trait.names list of trait names to retrieve
+##' @param update logical: Rerun the db if result files already exist?
 ##' @return updated pft with posteriorid
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
-                               forceupdate = FALSE) {
+                               forceupdate = FALSE, update = FALSE) {
 
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
@@ -72,7 +73,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     pft = pftid,
     trstr = PEcAn.utils::vecpaste(trait.names),
     con = dbcon,
-    update = settings$db$update)
+    update = update)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
   traits <- rownames(prior.distns)
 

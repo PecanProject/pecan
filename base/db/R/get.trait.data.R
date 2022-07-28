@@ -27,11 +27,12 @@
 ##' @param trait.names Character vector of trait names to search. If
 ##'   `NULL` (default), use all traits that have a prior for at least
 ##'   one of the `pfts`.
+##' @param update logical: Rerun the db if result files already exist?
 ##' @return list of PFTs with update posteriorids
 ##' @author David LeBauer, Shawn Serbin, Alexey Shiklomanov
 ##' @export
 get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
-                           trait.names = NULL) {
+                           trait.names = NULL, update = FALSE) {
   if (!is.list(pfts)) {
     PEcAn.logger::logger.severe('pfts must be a list')
   }
@@ -56,7 +57,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
     # `query_priors`, but haven't done so yet because that requires
     # prepared statements and therefore requires the Postgres driver. 
     all_priors_list <- lapply(format(pft_ids, scientific = FALSE), query.priors,
-                              con = dbcon, trstr = trait.names, update = settings$db$update)
+                              con = dbcon, trstr = trait.names, update = update)
     trait.names <- unique(unlist(lapply(all_priors_list, rownames)))
     # Eventually, can replace with this:
     # all_priors <- query_priors(pfts, params = database)
@@ -69,7 +70,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
                    dbfiles = dbfiles,
                    dbcon = dbcon,
                    forceupdate = forceupdate,
-                   trait.names = trait.names)
+                   trait.names = trait.names,
+                   update = update)
   
   invisible(result)
 }

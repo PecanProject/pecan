@@ -22,7 +22,7 @@
 ##' @param con Database connection object.
 ##' @param ... Optional arguments for connecting to database (e.g.
 ##'   password, user name, database).
-##' @param update 
+##' @param update logical: Rerun the db if result files already exist?
 ##'
 ##' @return `data.frame` of priors for each trait and the given PFT.
 ##' @export query.priors

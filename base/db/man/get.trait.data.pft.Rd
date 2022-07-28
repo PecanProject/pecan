@@ -10,7 +10,8 @@ get.trait.data.pft(
   dbfiles,
   dbcon,
   trait.names,
-  forceupdate = FALSE
+  forceupdate = FALSE,
+  update = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ get.trait.data.pft(
 \item{trait.names}{list of trait names to retrieve}
 
 \item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
+
+\item{update}{logical: Rerun the db if result files already exist?}
 }
 \value{
 updated pft with posteriorid

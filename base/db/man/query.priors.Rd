@@ -4,7 +4,7 @@
 \alias{query.priors}
 \title{Query Priors}
 \usage{
-query.priors(pft, trstr = NULL, con = NULL, update, ...)
+query.priors(pft, trstr = NULL, con = NULL, update = FALSE, ...)
 }
 \arguments{
 \item{pft}{ID number of the PFT in the database}
@@ -15,7 +15,7 @@ using [PEcAn.utils::vecpaste()].}
 
 \item{con}{Database connection object.}
 
-\item{update}{}
+\item{update}{logical: Rerun the db if result files already exist?}
 
 \item{...}{Optional arguments for connecting to database (e.g.
 password, user name, database).}
