@@ -1,6 +1,6 @@
 ##' Convert units
 ##'
-##' This function takes the numeric argument `x`, quantified in units `u1` and converts it to be of units `u2`.
+##' Unit conversion to replace the now-unmaintained `udunits2::ud.convert`
 ##' @author Chris Black
 ##' 
 ##' @param x numeric vector with units `u1` to be converted to units `u2`
