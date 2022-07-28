@@ -29,7 +29,7 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
 
   # convert to MsTMIP
   echo "require (PEcAn.LDNDC)
-model2netcdf.LDNDC('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+model2netcdf.LDNDC('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', '@DELETE_RAW')
 " | R --vanilla
 fi
 
