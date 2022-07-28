@@ -126,7 +126,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       u1 <- formats_variables[1,"unit"]
       u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id, units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
 
-      if(!units::install_unit(u1)){
+      if(!units::as_units(u1)){
         PEcAn.logger::logger.error(
           "Units not parseable. Please enter a unit that is parseable by the udunits library."
         )
