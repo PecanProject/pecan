@@ -1,31 +1,25 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert LDNDC output into the NACP Intercomparison format (ALMA using netCDF)
 ##' 
 ##' @name model2netcdf.LDNDC
-##' @title Code to convert LDNDCS's output into netCDF format
+##' @title Code to convert LDNDC's output into netCDF format
 ##'
 ##' @param outdir Location of model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @import dplyr
+##' @param delete.raw TRUE if raw model results will be deleted
+##' @importFrom dplyr %>%
+##' @importFrom utils read.csv
 ##' @export
 ##'
 ##' @author Henri Kajasilta
-model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE) {
 
 
-  # File path to Output directory wherein the model results are located 
+  # File path to Output directory wherein the raw model results are located 
   output_dir <- file.path(outdir, "Output")
   
   #### Something to check that data has same timesteps. Either take all of the necessary
@@ -37,7 +31,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   if(all(c("physiology-subdaily.txt") %in% Subdailyfiles)){
     PEcAn.logger::logger.info("Files with sub-daily timesteps found: ", Subdailyfiles)
     
-    # Physiology data: LAI, Photo synthesis rate
+    # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
                          select = c(datetime, lai, dC_co2_upt.kgCm.2.))
   } else{
@@ -62,32 +56,20 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   #          Step = rep(0:(length(Date)/length(unique(Date))-1),length(unique(Date)))) %>%
   #   select(Year, Day, Step, dC_NEE.kgCha.1., C_total.kgCha.1., lai)
   
-  
   ldndc.out <- physiology %>%
-    mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
-    slice(1:(n()-1)) %>% # Removing one extra observation
-    mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
+    dplyr:: mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
+    dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
+    dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
-    select(Year, Day, Step, lai, dC_co2_upt.kgCm.2.)
+    dplyr::select(Year, Day, Step, lai, dC_co2_upt.kgCm.2.)
   
-  
-  
-  ## Write about storing the data to the correct folder
-  #outfile <- file.path(outdir, "ldndc.out")
   
   
   
   ## Check that the data match, based on the years we want
-  num_years <- length(unique(ldndc.out$Year))
   simu_years <- unique(ldndc.out$Year)
   
   year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
-  
-  if(!all(year_seq %in% simu_years)){
-    cat("Not matching")
-  }
-  
-  
   
   
   ## Output is given sub-daily at this point --- Will see, if this will change later
@@ -186,8 +168,15 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     for(i in seq_along(nc_var)){
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
+    close(varfile)
+    ncdf4::nc_close(nc)
     
+  }
+  # Delete the raw results
+  if (delete.raw) {
+    unlink(output_dir, recursive=TRUE)
   }
   
 } # model2netcdf.LDNDC
