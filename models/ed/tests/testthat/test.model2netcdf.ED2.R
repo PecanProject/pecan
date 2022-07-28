@@ -103,3 +103,4 @@ test_that("variables have MsTMIP standard units",{
 
 #cleanup
 ncdf4::nc_close(tmp.nc)
+unlink(outdir, recursive = TRUE)

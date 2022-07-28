@@ -55,3 +55,6 @@ test_that("fail to read E files without ED2 pft number", {
   expect_error(read_E_files(year, year_files, h5_file, outdir, start_date, 
                             end_date, pft))
 })
+
+unlink(outdir, recursive = TRUE)
+
