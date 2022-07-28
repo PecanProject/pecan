@@ -11,6 +11,8 @@
 ##' @export
 ud_convert <- function(x, u1, u2) {
   stopifnot(units::ud_are_convertible(u1, u2))
-  a <- units::set_units(x, value = u1, mode = "standard")
-  units::drop_units(units::set_units(a, value = u2, mode = "standard"))
-} # ud_convert
+  x1 <- units::set_units(x, value = u1, mode = "standard")
+  x2 <- units::set_units(x1, value = u2, mode = "standard")
+  
+  units::drop_units(x2)
+  } # ud_convert
