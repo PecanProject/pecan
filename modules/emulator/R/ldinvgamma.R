@@ -4,9 +4,8 @@
 ##' @title ldinvgamma
 ##' @export
 ##'
-##' @param x Name of variable to plot on X axis
-##' @param shape shape of points
-##' @param scale scale, NULL by default
+##' @param x vector of quantiles
+##' @param shape,scale shape and scale parameters for the inverse Gamma distribution
 ##' 
 ##' @return log.density
 ##' 
