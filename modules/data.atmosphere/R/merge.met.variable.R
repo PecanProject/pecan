@@ -48,7 +48,6 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   merge.time.attr <- ncdf4::ncatt_get(merge.nc,"time")
   merge.data <- ncdf4::ncvar_get(merge.nc,varid = merge.vars[1])
   
-  units::install_unit(merge.time.attr$units)
   origin <- "1970-01-01 00:00:00 UTC"
   merge.time.std <- PEcAn.utils::ud_convert(merge.time,
                                          merge.time.attr$units,
