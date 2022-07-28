@@ -1,11 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a LDNDC config file.
@@ -26,10 +18,12 @@
 write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
 
   
-  # Check minimum package required
-  # This is LDNDC specific and just hard-coded for now
-  # Probably now reason to change
-  MinPackReq <- "1.9"
+  # To enforce minimum version to be used in simulations.
+  # Should not be necessary, but informs users who want to
+  # inspect input files closer (or do simulatons on different
+  # environment. Set based on current model version (1.33)
+  # and probably no reason to change.
+  MinPackReq <- "1.3" # Current version 1.33
   
   
   # Create Schedule time
@@ -38,14 +32,15 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     steps <- 48 # Hard-coded for now
     ScheduleTime <- paste0(format(as.POSIXlt(settings$run$start.date), "%Y-%m-%d"), "/",
                            steps, " -> ", as.Date(format(as.POSIXlt(settings$run$end.date), "%Y-%m-%d"))+1)
-                          # One day added to end day of simulations, because the simulations will stop the first
-                          # timestep in that day and wouldn't simulate the whole last day otherwise.
-                          # This one observations is taken out it model2netcdf to not include extra observations
+                          # One extra day added to the end day of simulations, because the simulations will stop to
+                          # the first timestep in a given end day. As a result we  got our real end date simulated
+                          # and one extra output line from the day after.
+                          # This one extra output line is taken out it model2netcdf to not include extra values
                           # in netcdf file
   }
 
   
-  # Find out where to write run/ouput
+  # Find out where to write run/ouput dirs
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
   
@@ -55,7 +50,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     MetPath <- settings$run$inputs$met$path
     # Info for project file from which directory to read the inputs
     SourcePrefix <- paste0(rundir, "/")
-    # Model outputs are written into own directory
+    # Raw model outputs are written into own directory
     OutputPrefix <- file.path(outdir, "Output/")
   }
   
@@ -87,7 +82,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   }
   
   # Create host specific settings
-  # NOT MEANINGFUL HERE -----
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$model$prerun, collapse = "\n"))
@@ -104,7 +98,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
   
-  #------
   
   
   # Create job.sh based on the given settings
@@ -123,15 +116,15 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@BINARY@", paste(settings$model$binary, paste0(rundir, "/project.ldndc")), jobsh)
   
-  # if(is.null(settings$model$delete.raw)){
-  #   settings$model$delete.raw <- FALSE
-  # }
-  # 
-  # jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
+  if(is.null(settings$model$delete.raw)){
+    settings$model$delete.raw <- FALSE
+  }
+  
+  jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
   # Write job.sh file to rundir
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh")) # Permissions
+  Sys.chmod(file.path(rundir, "job.sh")) # Permissions
   
   
   
@@ -155,9 +148,26 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
   b.1 <- paste0("\t\t\t\t\t<species mnemonic='", mnemonic_2, "' > \n")
-  b.2 <- apply(trait.values[[1]], 1, function(x){paste0("\t\t\t\t\t\t<par name='", names(x), "' value='", x, "' /> \n")})
+  b.2 <- ""
+  # Keep old version as a reference this need to reconstruct at some point properly anyway
+  #b.2 <- apply(trait.values[[1]], 1, function(x){paste0("\t\t\t\t\t\t<par name='", names(x), "' value='", x, "' /> \n")})
   b.3 <- paste0("\t\t\t\t</species> \n")
   a.2 <- paste0("\t\t\t</species>")
+  
+  
+  for (pft in seq_along(trait.values)) {
+    
+    pft.traits <- unlist(trait.values[[pft]])
+    pft.names <- names(pft.traits)
+    
+    if ("SLAMIN" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLAMIN' value='", pft.traits[which(pft.names == "SLAMIN")], "' /> \n"), collapse="")
+    }
+    
+    if ("extinction_coefficient_diffuse" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='EXT' value='", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], "' /> \n"), collapse="")
+    }
+  }
   
   speciesparfile <- gsub("@Info@", paste(a.1,b.1,b.2,b.3,a.2), speciesparfile)
   
