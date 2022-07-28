@@ -2,16 +2,21 @@ Package: PEcAn.LDNDC
 Type: Package
 Title: PEcAn package for integration of the LDNDC model
 Version: 1.7.2
-Date: 2021-10-04
+Date: 2022-07-28
 Authors@R: c(person("Henri", "Kajasilta", role = c("aut", "cre"),
-                    email = "henri.kajasilta@fmi.fi"),
-             person("John", "Doe", role = c("aut")))
+                    email = "henri.kajasilta@fmi.fi"))
 Description: This module provides functions to link the (LDNDC) to PEcAn.
 Imports:
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
-    dplyr
+    dplyr,
+    lubridate,
+    ncdf4,
+    data.table,
+    PEcAn.remote,
+    PEcAn.data.atmosphere,
+    udunits2
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: LDNDC
