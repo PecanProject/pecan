@@ -1,4 +1,4 @@
-##' @title Convert units
+##' Convert units
 ##'
 ##' This function takes the numeric argument `x`, quantified in units `u1` and converts it to be of units `u2`.
 ##' @author Chris Black
