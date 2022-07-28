@@ -1,11 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Converts a met CF file to a model specific met file. The input
@@ -16,8 +8,11 @@
 ##' @param in.path path on disk where CF file lives
 ##' @param in.prefix prefix for each file
 ##' @param outfolder location where model specific output is written.
+##' @param start_date start date of the results
+##' @param end_date end date of the results
 ##' @param overwrite logical: replace output files if they already exist?
-##' @return OK if everything was successful.
+##' @param ... Other arguments
+##' @return invisible(results)
 ##' @export
 ##' @author Henri Kajasilta
 ##-------------------------------------------------------------------------------------------------#
@@ -54,8 +49,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   
   
-  if(length(nc_file) > 0){
-    print("At least one nc-file was found from the given path")
+  if(length(nc_file) == 0){
+    PEcAn.logger::logger.severe("Based on the given file path, nc-files was not found")
   }
   
   
@@ -78,13 +73,14 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Check that the simulation doesn't take place before there are data points
       if(year == start_year & PEcAn.utils::datetime2cf(start_date, units, tz = "UTC") < 0){
-        PEcAn.logger::logger.severe("No data from the start date, consider postponing it")
+        PEcAn.logger::logger.severe("Data in the met drivers seem not to be available
+                                    for given start date specified in simulation. Consider applying a later start date")
       }
       
       
       # Convert the time fractions to be seconds by starting from the date in file's units
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- udunits2::ud.convert(sec, unlist(strsplit(units, " "))[1], "seconds")
       
     
       # Calculate the time steps
@@ -119,7 +115,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       }else if(year != start_year & year == end_year){
         
         # Simulation days
-        simu_days <- seq(1:lubridate::yday(end_date))
+        simu_days <- seq(1,lubridate::yday(end_date))
         
         # Check the function to see how the end index is calculated
         ind_s <- 1
@@ -160,6 +156,13 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Wind speed
       wind <- try(ncdf4::ncvar_get(nc, "wind_speed"))[ind]
+      if (!is.numeric(wind)) {
+        U <- ncdf4::ncvar_get(nc, "eastward_wind")[ind]
+        V <- ncdf4::ncvar_get(nc, "northward_wind")[ind]
+        wind <- sqrt(U ^ 2 + V ^ 2)
+        PEcAn.logger::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
+      }
+      #wind <- try(ncdf4::ncvar_get(nc, "wind_speed"))[ind]
       
       # Precipation
       prec <- ncdf4::ncvar_get(nc, "precipitation_flux")[ind]
@@ -167,23 +170,39 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # Global radiation
       grad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")[ind]  ## in W/m2
       
-      # Vapor Pressure Deficit Pa ---> kPa, need to ne divided by 1000
+      # Air pressure Pa ---> mbar, needs to be converted
+      press <- ncdf4::ncvar_get(nc, "air_pressure")[ind]
+      press <- udunits2::ud.convert(press, "Pa", "millibar")
+      
+      # Vapor Pressure Deficit Pa ---> kPa, needs to be converted, check below
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))[ind]  ## in Pa
+      if (!is.numeric(VPD)) {
+        
+        # Fetch these values in order to construct VPD
+        Qair <-ncdf4::ncvar_get(nc, "specific_humidity")[ind]  #humidity (kg/kg)
+        SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(tavg), "millibar", "Pa")  ## Saturation vapor pressure
+        
+        # VPD calculated, if not directly found from the nc-file
+        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, tavg, press))
+        PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
+      }
+      VPD <- udunits2::ud.convert(VPD, "Pa", "kPa") # Pa ---> kPa
       
       # Relative humidity (%)
       rhum <- ncdf4::ncvar_get(nc, "relative_humidity")[ind]
-      
-      # Air pressure Pa ---> mbar, needs to divided by 100
-      press <- ncdf4::ncvar_get(nc, "air_pressure")[ind]
-      
       
       # Close connection after all necessary values have been fetch
       ncdf4::nc_close(nc)
       
 
       # Gather the vectors to dataframe
-      data <- as.data.frame(do.call("cbind", list(y = y, d = d, s = subd, prec = prec*86400/tstep, tavg = tavg,
-                                    grad = grad, vpd = VPD/1000, wind = wind, press = press/100)))
+      data <- as.data.frame(do.call("cbind", list(y = y, d = d, s = subd,
+                                                  prec = prec*86400/tstep, #mm
+                                                  tavg = tavg, #degC
+                                                  grad = grad, #W m-2
+                                                  vpd = VPD/1000, #kPa
+                                                  wind = wind, #m s-1
+                                                  press = press))) #mbar
       
       # Write prefix before the actual data
       if(year == start_year){
@@ -194,7 +213,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         prefix_latitude <- paste0('\t latitude = "', lat, '"')
         prefix_longitude <- paste0('\t longitude = "', lon, '"')
         
-        data_prefix <- paste(#"%global", prefix_global,
+        data_prefix <- paste(#"%global", prefix_global, # global includes the global time, but this is already got
+                             # from elsewhere and not necessary here.
                              "%climate", prefix_climate,
                              "%attributes", prefix_latitude, prefix_longitude,
                              "%data \n", sep = "\n")
@@ -215,7 +235,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       
     } else{
-      PEcAn.logger::logger.info(paste(old.file, "file does not exist"))
+      PEcAn.logger::logger.severe(paste(old.file, "file does not exist"))
     }
     
     
@@ -231,11 +251,11 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 # netcdf file's starting date and simulation's starting date and converting that
 # difference to seconds. Returns +1 index based on the matching seconds.
 start_index <- function(units, start_date, sec){
-  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400 #)-1)
+  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400
   if(timediff == 0){
     return(1)
   }else{
-    return(which(sec == timediff))  #)+1)
+    return(which(sec == timediff))
   }
 }
 
