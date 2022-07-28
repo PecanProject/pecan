@@ -2,27 +2,22 @@
 % Please edit documentation in R/ud_convert.R
 \name{ud_convert}
 \alias{ud_convert}
-\title{Convert units
-
-This function takes the numeric argument \code{x}, quantified in units \code{u1} and converts it to be of units \code{u2}.}
+\title{Convert units}
 \usage{
 ud_convert(x, u1, u2)
 }
 \arguments{
-\item{x}{numeric vector with units \code{u1} to be converted to units \code{u2}}
+\item{x}{numeric vector}
 
-\item{u1}{string which is parseable into a \code{units} compatible unit.}
+\item{u1}{string parseable as the units in which \code{x} is provided}
 
-\item{u2}{string which is parseable into a \code{units} compatible unit,
-and for which there exists a defined transformation from the units represented by \code{u1}.}
+\item{u2}{string parseable as the units to convert to}
 }
 \value{
-numeric vector stripped of units
+numeric vector with values converted to units in \code{u2}
 }
 \description{
-Convert units
-
-This function takes the numeric argument \code{x}, quantified in units \code{u1} and converts it to be of units \code{u2}.
+Unit conversion to replace the now-unmaintained \code{udunits2::ud.convert}
 }
 \author{
 Chris Black
