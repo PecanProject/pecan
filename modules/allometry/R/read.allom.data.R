@@ -43,7 +43,7 @@ read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
     for (i in seq_along(field)) {
       
       ## load data
-      dat <- read.csv(field[i])
+      dat <- utils::read.csv(field[i])
       
       ## grab the response component
       y <- switch(as.character(component), 
@@ -75,10 +75,10 @@ read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
   
   if (!is.null(parm)) 
   {
-    allom$parm <- read.csv(parm, skip = 2, as.is = TRUE)
+    allom$parm <- utils::read.csv(parm, skip = 2, as.is = TRUE)
     
     ## debugging hack allom$parm <-
-    ## read.csv('/home/mdietze/stats/AllomAve/Table3_GTR-NE-319.csv',skip=2)
+    ## utils::read.csv('/home/mdietze/stats/AllomAve/Table3_GTR-NE-319.csv',skip=2)
     
     ## Match TALLY data to PFT
     allompft <- rep(NA, nrow(allom$parm))
@@ -165,7 +165,7 @@ read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
     Rratio <- (1 - R2) / R2
     for (i in seq_along(sel)) {
       
-      x <- runif(nsim, rng[1, i], rng[2, i])
+      x <- stats::runif(nsim, rng[1, i], rng[2, i])
       if (!is.na(Xcor[i])) {
         x <- Xcor[i] * x
       } else {
