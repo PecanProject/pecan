@@ -2,7 +2,6 @@
 
 export(met2model.LDNDC)
 export(model2netcdf.LDNDC)
-export(read_restart.ModelName)
 export(write.config.LDNDC)
-export(write_restart.ModelName)
-import(dplyr)
+importFrom(dplyr,"%>%")
+importFrom(utils,read.csv)
