@@ -7,7 +7,7 @@
 ##' @param u1 string parseable as the units in which `x` is provided
 ##' @param u2 string parseable as the units to convert to
 ##' 
-##' @return numeric vector stripped of units
+##' @return numeric vector with values converted to units in `u2`
 ##' @export
 ud_convert <- function(x, u1, u2) {
   stopifnot(units::ud_are_convertible(u1, u2))
