@@ -68,6 +68,7 @@ wanted <- c(
 'magrittr',
 'maps',
 'maptools',
+'markdown',
 'MASS',
 'Matrix',
 'mclust',

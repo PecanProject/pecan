@@ -175,7 +175,9 @@ options(repos = c(
 install.packages('PEcAn.all')
 ```
 
-However, functionality will be limited without a connection to a BETYdb instance.  [Instructions to install BETY](#install-bety).
+If you are planning on working on PEcAn development with a local install, consider adding the above `options()` to a project-level .Rprofile as well.  For example, by using `usethis::edit_r_profile("project")`.  This will allow `devtools` to install dependencies from r-universe, for example `devtools::install_deps("models/ed")` should work when "https://pecanproject.r-universe.dev" is set as a repo.
+
+**NOTE:** functionality of a local install will be limited without a connection to a BETYdb instance.  [Instructions to install BETY](#install-bety).
 
 ## (Advanced) Native install {#install-native}
 
