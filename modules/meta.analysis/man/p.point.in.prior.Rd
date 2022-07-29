@@ -4,7 +4,7 @@
 \alias{p.point.in.prior}
 \title{find quantile of point within prior distribution}
 \usage{
-p.point.in.prior(point, prior)
+\method{p}{point.in.prior}(point, prior)
 }
 \arguments{
 \item{point}{quantile of given prior to return}
