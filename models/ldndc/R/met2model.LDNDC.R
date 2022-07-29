@@ -200,7 +200,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                                                   prec = prec*86400/tstep, #mm
                                                   tavg = tavg, #degC
                                                   grad = grad, #W m-2
-                                                  vpd = VPD/1000, #kPa
+                                                  vpd = VPD, #kPa
                                                   wind = wind, #m s-1
                                                   press = press))) #mbar
       
