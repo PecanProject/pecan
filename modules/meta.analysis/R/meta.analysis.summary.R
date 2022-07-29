@@ -27,7 +27,6 @@
 ##' }
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE) {
-  
   fail <- rep(FALSE, length(mcmc.object))
   names(fail) <- names(mcmc.object)
   not.converged <- data.frame()
@@ -36,13 +35,18 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
   for (trait in names(mcmc.object)) {
     
     if (gg) {
-      gg <- require(ggmcmc)
+      if (!requireNamespace("ggmcmc", quietly = TRUE)) {
+        PEcAn.logger::logger.severe(
+          "Can't find package 'ggmcmc',",
+          "needed by `PEcAn.MA::meta.analysis.summary()` when `gg = TRUE`.",
+          "Please install it and try again.")
+      }
     }
     ## new diagnostic plots. But very slow & !any(grepl('^gg', dir(outdir)))){
     if (gg) {
-      if (is.mcmc.list(mcmc.object[[trait]])) {
-        theme_set(theme_bw())
-        ggmcmc(ggs(mcmc.object[[trait]]), 
+      if (coda::is.mcmc.list(mcmc.object[[trait]])) {
+        ggplot2::theme_set(ggplot2::theme_bw())
+        ggmcmc::ggmcmc(ggmcmc::ggs(mcmc.object[[trait]]), 
                plot = c("ggs_density", "ggs_traceplot", "ggs_autocorrelation", "ggs_Rhat", "ggs_geweke"), 
                file.path(outdir, paste0("gg.ma.summaryplots.", trait, ".pdf")))
       }
@@ -54,23 +58,23 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     maparms  <- .maparms[c(which(.maparms %in% .parms), which(!.maparms %in% .parms))]
     
     ## plots for mcmc diagnosis
-    pdf(file.path(outdir, paste0("ma.summaryplots.", trait, ".pdf")))
+    grDevices::pdf(file.path(outdir, paste0("ma.summaryplots.", trait, ".pdf")))
 
     for (i in maparms) {
       plot(mcmc.object[[trait]][, i],
            trace = FALSE,
            density = TRUE,
            main = paste("summary plots of", i, "for", pft, trait))
-      box(lwd = 2)
+      graphics::box(lwd = 2)
       plot(mcmc.object[[trait]][, i], density = FALSE)
-      box(lwd = 2)
+      graphics::box(lwd = 2)
       coda::autocorr.plot(mcmc.object[[trait]][, i][1], xlim = c(1, 50))
-      box(lwd = 2)
+      graphics::box(lwd = 2)
     }
     lattice::xyplot(mcmc.object[[trait]])
     lattice::densityplot(mcmc.object[[trait]])
     coda::acfplot(mcmc.object[[trait]])
-    dev.off()
+    grDevices::dev.off()
 
     ## G-R diagnostics to ensure convergence
     gd            <- coda::gelman.diag(mcmc.object[[trait]])

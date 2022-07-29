@@ -92,7 +92,7 @@ Following are some example snippets to call the PEcAn API endpoints:
 #### R Snippet
 
 ```R
-res <- httr::GET("http://localhost:8000/api/ping")
+res <- httr::GET("http://pecan.localhost/api/ping")
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
@@ -105,7 +105,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 #### Python Snippet
 
 ```python
-response = requests.get("http://localhost:8000/api/ping")
+response = requests.get("http://pecan.localhost/api/ping")
 print(json.dumps(response.json(), indent=2))
 ```
 ```
@@ -122,7 +122,7 @@ print(json.dumps(response.json(), indent=2))
 #### R Snippet
 
 ```R
-res <- httr::GET("http://localhost:8000/api/status")
+res <- httr::GET("http://pecan.localhost/api/status")
 print(jsonlite::fromJSON(rawToChar(res$content)))
 ```
 ```
@@ -157,7 +157,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 #### Python Snippet
 
 ```python
-response = requests.get("http://localhost:8000/api/status")
+response = requests.get("http://pecan.localhost/api/status")
 print(json.dumps(response.json(), indent=2))
 ```
 ```
@@ -187,7 +187,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Search model(s) with `model_name` containing "sip" & `revision` containing "ssr"
 res <- httr::GET(
-         "http://localhost:8000/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
+         "http://pecan.localhost/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -206,7 +206,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Search model(s) with `model_name` containing "sip" & `revision` containing "ssr"
 response = requests.get(
-             "http://localhost:8000/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
+             "http://pecan.localhost/api/models/?model_name=sip&revision=ssr&ignore_case=TRUE",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -233,7 +233,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Fetch the details of PEcAn model with id = 1000000022
 res <- httr::GET(
-         "http://localhost:8000/api/models/1000000022",
+         "http://pecan.localhost/api/models/1000000022",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -265,7 +265,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Fetch the details of PEcAn model with id = 1000000022
 response = requests.get(
-             "http://localhost:8000/api/models/1000000022",
+             "http://pecan.localhost/api/models/1000000022",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -299,7 +299,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Search site(s) with `site_name` containing "willow"
 res <- httr::GET(
-         "http://localhost:8000/api/sites/?sitename=willow&ignore_case=TRUE",
+         "http://pecan.localhost/api/sites/?sitename=willow&ignore_case=TRUE",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -322,7 +322,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Search site(s) with `site_name` containing "willow"
 response = requests.get(
-             "http://localhost:8000/api/models/?sitename=willow&ignore_case=TRUE",
+             "http://pecan.localhost/api/models/?sitename=willow&ignore_case=TRUE",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -364,7 +364,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Fetch the details of PEcAn site with id = 676
 res <- httr::GET(
-         "http://localhost:8000/api/sites/676",
+         "http://pecan.localhost/api/sites/676",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -421,7 +421,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Fetch the details of PEcAn site with id = 676
 response = requests.get(
-             "http://localhost:8000/api/sites/676",
+             "http://pecan.localhost/api/sites/676",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -454,7 +454,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
 res <- httr::GET(
-         "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+         "http://pecan.localhost/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -480,7 +480,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Search pft(s) of "plant" type with `pft_name` containing "temperate" & belonging to `model_type` "SIPNET"
 response = requests.get(
-             "http://localhost:8000/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
+             "http://pecan.localhost/api/pfts/?pft_name=temperate&pft_type=plant&model_type=sipnet&ignore_case=TRUE",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -509,7 +509,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Fetch the details of PEcAn PFT with id = 2000000045
 res <- httr::GET(
-         "http://localhost:8000/api/pfts/2000000045",
+         "http://pecan.localhost/api/pfts/2000000045",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -536,7 +536,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Fetch the details of PEcAn PFT with id = 2000000045
 response = requests.get(
-             "http://localhost:8000/api/pfts/2000000045",
+             "http://pecan.localhost/api/pfts/2000000045",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -560,7 +560,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Search format(s) with name containing 'ameriflux' & mime type containing 'csv'
 res <- httr::GET(
-         "http://localhost:8000/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
+         "http://pecan.localhost/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -584,7 +584,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # # Search format(s) with name containing 'ameriflux' & mime type containing 'csv'
 response = requests.get(
-             "http://localhost:8000/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
+             "http://pecan.localhost/api/formats/?format_name=ameriflux&mimetype=csv&ignore_case=TRUE",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -618,7 +618,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Fetch the details of PEcAn format with id = 19
 res <- httr::GET(
-         "http://localhost:8000/api/formats/19",
+         "http://pecan.localhost/api/formats/19",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -654,7 +654,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Fetch the details of PEcAn format with id = 19
 response = requests.get(
-             "http://localhost:8000/api/formats/19",
+             "http://pecan.localhost/api/formats/19",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -686,7 +686,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
 res <- httr::GET(
-         "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+         "http://pecan.localhost/api/inputs/?model_id=1000000022&site_id=676",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -707,7 +707,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```R
 # Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
 res <- httr::GET(
-         "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
+         "http://pecan.localhost/api/inputs/?format_id=5000000002&host_id=99000000001",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -728,7 +728,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get the inputs needed for a workflow with model_id = 1000000022 & site_id = 676
 response = requests.get(
-             "http://localhost:8000/api/inputs/?model_id=1000000022&site_id=676",
+             "http://pecan.localhost/api/inputs/?model_id=1000000022&site_id=676",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -760,7 +760,7 @@ print(json.dumps(response.json(), indent=2))
 ```python
 # Get the inputs needed for a workflow with format_id = 5000000002 (AMERIFLUX_BASE_HH) & host_id = 99000000001 (docker)
 response = requests.get(
-             "http://localhost:8000/api/inputs/?format_id=5000000002&host_id=99000000001",
+             "http://pecan.localhost/api/inputs/?format_id=5000000002&host_id=99000000001",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -794,14 +794,14 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Download the input file with id = 99000000003
 res <- httr::GET(
-         "http://localhost:8000/api/inputs/99000000003",
+         "http://pecan.localhost/api/inputs/99000000003",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.2002.nc")
 
 # Download the file 'fraction.plantation' from the input directory with id = 295
 res <- httr::GET(
-         "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
+         "http://pecan.localhost/api/inputs/295?filename=fraction.plantation",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.fraction.plantation")
@@ -812,7 +812,7 @@ writeBin(res$content, "test.fraction.plantation")
 ```python
 # Download the input file for with id = 99000000003
 response = requests.get(
-             "http://localhost:8000/api/inputs/99000000003",
+             "http://pecan.localhost/api/inputs/99000000003",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.2002.nc", "wb") as file:
@@ -820,7 +820,7 @@ with open("test.2002.nc", "wb") as file:
   
 # Download the file 'fraction.plantation' from the input directory with id = 295
 response = requests.get(
-             "http://localhost:8000/api/inputs/295?filename=fraction.plantation",
+             "http://pecan.localhost/api/inputs/295?filename=fraction.plantation",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.2002.nc", "wb") as file:
@@ -836,7 +836,7 @@ with open("test.2002.nc", "wb") as file:
 ```R
 # Get workflow(s) that use `model_id` = 1000000022 [SIPNET] & `site_id` = 676 [Willow Creek (US-WCr)]
 res <- httr::GET(
-         "http://localhost:8000/api/workflows/?model_id=1000000022&site_id=676",
+         "http://pecan.localhost/api/workflows/?model_id=1000000022&site_id=676",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -857,7 +857,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get workflow(s) that use `model_id` = 1000000022 [SIPNET] & `site_id` = 676 [Willow Creek (US-WCr)]
 response = requests.get(
-             "http://localhost:8000/api/workflows/?model_id=1000000022&site_id=676",
+             "http://pecan.localhost/api/workflows/?model_id=1000000022&site_id=676",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -892,7 +892,7 @@ print(json.dumps(response.json(), indent=2))
 xmlFile <- "pecan/tests/api.sipnet.xml"
 xml_string <- paste0(xml2::read_xml(xmlFile))
 res <- httr::POST(
-         "http://localhost:8000/api/workflows/",
+         "http://pecan.localhost/api/workflows/",
          httr::authenticate("carya", "illinois"),
          httr::content_type("application/xml"),
          body = xml_string
@@ -914,7 +914,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 xml_file = "pecan/tests/api.sipnet.xml"
 root = xml.etree.ElementTree.parse(xml_file).getroot()
 response = requests.post(
-             "http://localhost:8000/api/workflows/",
+             "http://pecan.localhost/api/workflows/",
              auth=HTTPBasicAuth('carya', 'illinois'),
              headers = {'Content-Type': 'application/xml'},
              data = xml.etree.ElementTree.tostring(root, encoding='unicode', method='xml')
@@ -937,7 +937,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Get details of workflow with `id` = '1000009172'
 res <- httr::GET(
-         "http://localhost:8000/api/workflows/1000009172",
+         "http://pecan.localhost/api/workflows/1000009172",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -1009,7 +1009,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get details of workflow with `id` = '1000009172'
 response = requests.get(
-             "http://localhost:8000/api/workflows/1000009172",
+             "http://pecan.localhost/api/workflows/1000009172",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -1051,7 +1051,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Get list of run belonging to the workflow with `workflow_id` = '99000000001'
 res <- httr::GET(
-         "http://localhost:8000/api/workflows/99000000001/status",
+         "http://pecan.localhost/api/workflows/99000000001/status",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -1076,7 +1076,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get list of run belonging to the workflow with `workflow_id` = '99000000001'
 response = requests.get(
-             "http://localhost:8000/api/workflows/99000000001/status",
+             "http://pecan.localhost/api/workflows/99000000001/status",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -1105,7 +1105,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
 res <- httr::GET(
-         "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+         "http://pecan.localhost/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.ensemble.ts.99000000017.NPP.2002.2002.Rdata")
@@ -1116,7 +1116,7 @@ writeBin(res$content, "test.ensemble.ts.99000000017.NPP.2002.2002.Rdata")
 ```python
 # Download the 'ensemble.ts.99000000017.NPP.2002.2002.Rdata' output file for the workflow with id = 99000000031
 response = requests.get(
-             "http://localhost:8000/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
+             "http://pecan.localhost/api/workflows/99000000031/file/ensemble.ts.99000000017.NPP.2002.2002.Rdata",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.ensemble.ts.99000000017.NPP.2002.2002.Rdata", "wb") as file:
@@ -1132,7 +1132,7 @@ with open("test.ensemble.ts.99000000017.NPP.2002.2002.Rdata", "wb") as file:
 ```R
 # Get list of run belonging to the workflow with `workflow_id` = '1000009172'
 res <- httr::GET(
-         "http://localhost:8000/api/runs/?workflow_id=1000009172",
+         "http://pecan.localhost/api/runs/?workflow_id=1000009172",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -1154,7 +1154,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get list of run belonging to the workflow with `workflow_id` = '1000009172'
 response = requests.get(
-             "http://localhost:8000/api/runs/?workflow_id=1000009172",
+             "http://pecan.localhost/api/runs/?workflow_id=1000009172",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -1176,7 +1176,7 @@ print(json.dumps(response.json(), indent=2))
 ##     ...
 ##   ]
 ##   "count": 50,
-##   "next_page": "http://localhost:8000/api/workflows/?workflow_id=1000009172&offset=50&limit=50"
+##   "next_page": "http://pecan.localhost/api/workflows/?workflow_id=1000009172&offset=50&limit=50"
 ## }
 ```
 
@@ -1189,7 +1189,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Get details of run belonging with `id` = '99000000282'
 res <- httr::GET(
-         "http://localhost:8000/api/runs/99000000282",
+         "http://pecan.localhost/api/runs/99000000282",
          httr::authenticate("carya", "illinois")
        )
 print(jsonlite::fromJSON(rawToChar(res$content)))
@@ -1262,7 +1262,7 @@ print(jsonlite::fromJSON(rawToChar(res$content)))
 ```python
 # Get details of run with `id` = '1002042201'
 response = requests.get(
-             "http://localhost:8000/api/runs/1002042201",
+             "http://pecan.localhost/api/runs/1002042201",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 print(json.dumps(response.json(), indent=2))
@@ -1313,7 +1313,7 @@ print(json.dumps(response.json(), indent=2))
 ```R
 # Download the 'sipnet.in' input file for the run with id = 99000000282
 res <- httr::GET(
-         "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+         "http://pecan.localhost/api/runs/99000000282/input/sipnet.in",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.sipnet.in")
@@ -1324,7 +1324,7 @@ writeBin(res$content, "test.sipnet.in")
 ```python
 # Download the 'sipnet.in' input file for the run with id = 99000000282
 response = requests.get(
-             "http://localhost:8000/api/runs/99000000282/input/sipnet.in",
+             "http://pecan.localhost/api/runs/99000000282/input/sipnet.in",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.sipnet.in", "wb") as file:
@@ -1340,7 +1340,7 @@ with open("test.sipnet.in", "wb") as file:
 ```R
 # Download the '2002.nc' output file for the run with id = 99000000282
 res <- httr::GET(
-         "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+         "http://pecan.localhost/api/runs/99000000282/output/2002.nc",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.2002.nc")
@@ -1351,7 +1351,7 @@ writeBin(res$content, "test.2002.nc")
 ```python
 # Download the '2002.nc' output file for the run with id = 99000000282
 response = requests.get(
-             "http://localhost:8000/api/runs/99000000282/output/2002.nc",
+             "http://pecan.localhost/api/runs/99000000282/output/2002.nc",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.2002.nc", "wb") as file:
@@ -1367,7 +1367,7 @@ with open("test.2002.nc", "wb") as file:
 ```R
 # Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
 res <- httr::GET(
-         "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+         "http://pecan.localhost/api/runs/99000000282/graph/2002/GPP",
          httr::authenticate("carya", "illinois")
        )
 writeBin(res$content, "test.png")
@@ -1381,7 +1381,7 @@ knitr::include_graphics(rep("figures/run_output_plot.png"))
 ```python
 # Plot the Gross Primary Productivity vs Time for the run with ID `99000000282` for the year 2002
 response = requests.get(
-             "http://localhost:8000/api/runs/99000000282/graph/2002/GPP",
+             "http://pecan.localhost/api/runs/99000000282/graph/2002/GPP",
              auth=HTTPBasicAuth('carya', 'illinois')
            )
 with open("test.png", "wb") as file:

@@ -6,13 +6,13 @@ In this tutorial we will compare model outputs to data outside of the PEcAn web 
 
 #### Starting RStudio Server
 
-1. Open RStudio Server in a new window at **URL/rstudio**
+1.  Open RStudio Server in a new window at **[URL](#url-def)/rstudio** <!--ERS: this gives a "bad gateway" error with the docker installation -->
 
 2.	The username is carya and the password is illinois.
 
 3.	To open a new R script click File > New File > R Script
 
-4.	Use the Files browser on the lower right pane to find where your run(s) are located
+4.	Use the Files browser on the lower right pane to find where your run(s) are located <!--ERS: I don't see anything that looks like run outputs after successfully running Demo 01-->
 
   + All PEcAn outputs are stored in the output folder. Click on this to open it up.
 
