@@ -140,3 +140,5 @@ Scale: Global
 Resolution: 6 hour, 0.4 degree
 
 Availability: Varies by [day](https://data.ecmwf.int/)
+
+Notes: 15 day forecast is provided at two hours 00 and 12, but current implementation only uses forecast hour 00 when download function is called from within the PEcAn workflow

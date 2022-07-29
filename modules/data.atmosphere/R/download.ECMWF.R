@@ -2,24 +2,39 @@
 #' https://confluence.ecmwf.int/display/DAC/ECMWF+open+data%3A+real-time+forecasts
 #' 
 #' https://github.com/ecmwf/ecmwf-opendata
-#' Under the hood, this function uses the Python `ecmwf-opendata` module,
-#' which can be installed via `pip` (`pip install --user ecmwf-opendata`). The
-#' module is accessed via the `reticulate` package.
-#'
+#' Under the hood, this function uses the Python `ecmwf-opendata` module.
+#' The module and dependencies can be accessed via the `reticulate` package.
+#' 
+#' `reticulate::conda_install(c("scipy", "xarray", "eccodes", "cfgrib", "ecmwf-opendata"), envname = "r-reticulate", pip = TRUE)`
+#' `reticulate::use_condaenv("r-reticulate")`
+#'  
+#' 
 #' @param outfolder location on disk where outputs will be stored
+#' 
 #' @param lat.in,lon.in site coordinates, decimal degrees (numeric)
+#' 
 #' @param fchour reference time of the forecasts. Values are 00, 12 for 15 day forecast.
-#' @param stream  forecasting system that produces the data. Current value is `"enfo"`
+#' `fchour` is not passed via upstream functions and we are using 00 by default when the function is called from within the pecan workflow.
+#' 
 #' @param type the type of forecast data. Current values: `cf` (controlled forecast), `pf` (perturbed forecast)
+#' 
 #' @param parameters character vector of product types, or `"all"`.
+#' 
 #' @param reticulate_python Path to Python binary for `reticulate`
 #'   (passed to [reticulate::use_python()]). If `NULL` (default), use
 #'   the system default.
+#' 
 #' @param overwrite Logical. If `FALSE` (default), skip any files with
 #'   the same target name (i.e. same variable) that already exist in
 #'   `outfolder`. If `TRUE`, silently overwrite existing files.
+#' 
+#' Forecast hour is reference time of the forecasts. Values are 00, 12 for 15 day forecast. 
+# `fchour` is not passed via upstream functions currently as we are using 00 by default (time <- 0) for function calls from within the pecan workflow
+#' 
 #' @return information about the output file
+#' 
 #' @export
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -28,7 +43,7 @@
 #'   lat.in = 0,
 #'   lon.in = 180,
 #'   fchour = 00,
-#'   stream = "enfo"
+#'   product = "NULL,
 #'   type = c("cf", "pf"), 
 #'   parameters = "all", 
 #' )
@@ -39,8 +54,8 @@
 download.ECMWF <- function(outfolder, 
                            lat.in,
                            lon.in,
-                           fchour, 
-                           stream = "enfo", 
+                           fchour = 00,
+                           product = NULL, 
                            type = c("cf", "pf"), 
                            parameters = "all", 
                            overwrite = FALSE, 
@@ -51,42 +66,65 @@ download.ECMWF <- function(outfolder,
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
-  if(is.null(product)){
-    stream <- "enfo"
-  } else{
-    stream <- product
-  }
-  tryCatch({
-    ecmwfod <- reticulate::import("ecmwf.opendata")
-  }, error = function(e) {
-    PEcAn.logger::logger.severe(
-      "Failed to load `ecmwfod` Python library. ",
-      "Please make sure it is installed to a location accessible to `reticulate`.",
-      "You should be able to install it with the following command: ",
-      "`pip install --user ecmwf-opendata`.",
-      "The following error was thrown by `reticulate::import(\"ecmwf.opendata\")`: ",
-      conditionMessage(e)
-    )
-  })
+  ############## Forecast Hour ################
   
-  hour <- fchour
+  # 15 day forecast hours can be 00h or 12h. Here forecast hour is assigned to 00
+  # hence the time variable required by the download function becomes 0
   
-  all_hours <- c(00, 12)
+  # all_hours <- c(00, 12)
+  # if (any(!hour %in% all_hours)) {
+  #   bad_hours <- setdiff(hour, all_hours)
+  #   PEcAn.logger::logger.severe(sprintf(
+  #     "Invalid forecast hours  %s. 15 day forecast hours must be one of the following: %s",
+  #     paste0("`", bad_hours, "`", collapse = ", "),
+  #     paste0("`", all_hours, "`", collapse = ", ")
+  #   ))
+  # }
   
-  if (any(!hour %in% all_hours)) {
-    bad_hours <- setdiff(hour, all_hours)
+  # for forecast hour = 00 
+  if (fchour == 00){
+    time <- 0
+  } else {
     PEcAn.logger::logger.severe(sprintf(
-      "Invalid forecast hours  %s. 15 day forecast hours must be one of the following: %s",
-      paste0("`", bad_hours, "`", collapse = ", "),
-      paste0("`", all_hours, "`", collapse = ", ")
+      "Invalid forecast hour. Currently, forecast hour 00 is the default."
     ))
   }
   
-  if (fchour == 00){
-    time <- 0
-  } else if (fchour == 12){
-    time <- 12
+  ############## Product (Forecasting system) ################
+  
+  # For product = NULL,the stream is set to "enfo"
+  # stream is forecasting system that produces the data. Current value is `"enfo"`
+  
+  if(is.null(product)){
+    stream <- "enfo"
+  } else{
+    PEcAn.logger::logger.severe(sprintf(
+      "Invalid data stream. Currently, data stream `enfo` is supported."
+    ))
   }
+  
+  if (stream == "enfo"){
+    time <- time
+    step <- 360
+    type <- type # type of forecast here c("cf", "pf")
+  } else{
+    PEcAn.logger::logger.severe(sprintf(
+      "Invalid data stream. Currently, data stream `enfo` is supported."
+    ))
+  }
+  
+  
+  ############## Product Types ################
+  
+  # Currently supported parameters are
+  # "2t" - 2 metre temperature 
+  # "tp" - total precipitation
+  # "10u" - 10 metre U wind component
+  # "10v" - 10 metre V wind component
+  # "q" - Specific humidity
+  # "r" - Relative humidity
+  # "sp" - Surface Pressure
+  
   
   all_parameters <- c("2t", "tp", "10u", "10v", "q", "r", "sp")
   
@@ -103,15 +141,6 @@ download.ECMWF <- function(outfolder,
     ))
   }
   
-  if (stream == "enfo"){
-    time <- time
-    step <- 360
-    type <- type
-  }  else{ 
-    PEcAn.logger::logger.severe(sprintf(
-      "Invalid data stream. Currently, data stream `enfo` is supported."
-    ))
-  }
   
   # Python script "download_ecmwf.py" to get latest forecast date and download forecast datasets
   script.path = file.path(system.file("ECMWF/download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
@@ -136,15 +165,17 @@ download.ECMWF <- function(outfolder,
   ))
   }
   
-  # Removes any already existing files with base name same as `latest_filedate``
+  # Skip download if there is any already existing file with base name same as `latest_filedate``
   if ((length(list.files(path = outfolder, pattern = as.character(latest_filedate)) ) > 0) == TRUE){
-    file.remove(list.files(outfolder, pattern = as.character(latest_filedate)))
-  }
+    PEcAn.logger::logger.severe(sprintf(
+      "Files already exist for %s",
+      latest_filedate
+    ))
+  } else {
   
   fname <- paste(latest_filedate, time, step, stream, type, sep = "_")
   
-  in_filename <- paste0(fname, ".grib2")
-  
+  in_filename <- file.path(outfolder, paste0(fname, ".grib2"))  
   data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, in_filename)
   
   # Python script "ecmwf_grib2nc.py" to convert grib2 to netCDF
@@ -152,7 +183,8 @@ download.ECMWF <- function(outfolder,
   script.path = file.path(system.file("ECMWF/ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
   reticulate::source_python(script.path)
   
-  nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename)
+  out_filename <- file.path(outfolder, fname)
+  nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename, lat_in, lon_in)
   
   
   rows    <- 1
@@ -179,6 +211,8 @@ download.ECMWF <- function(outfolder,
   results$formatname[rows] <- "CF Meteorology"
   
   return(results)
+  
+  }
   
 }
 
