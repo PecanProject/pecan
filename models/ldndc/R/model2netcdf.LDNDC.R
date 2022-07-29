@@ -162,6 +162,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     ## Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
     
     
