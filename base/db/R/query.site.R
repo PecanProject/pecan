@@ -1,7 +1,7 @@
 ##' Given site_id, return site table
 ##'
-##' @param site_id numeric
 ##' @param con : database connection
+##' @param site.id The id of the site
 ##' @export query.site
 ##'
 ##' @author Betsy Cowdery

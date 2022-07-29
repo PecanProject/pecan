@@ -1,8 +1,9 @@
 ##' @name add_icon
 ##' @title add_icon
+##' 
 ##' @param x x-coordinate of logo
 ##' @param y y-coordinate of logo
-##' @param id additional plot identificaition (URL, database ID, etc)
+##' @param id additional plot identification (URL, database ID, etc)
 ##' @export 
 ##' @author Mike Dietze
 ##' 

@@ -6,6 +6,10 @@
 \usage{
 pda.bayesian.tools(
   settings,
+  external.data = NULL,
+  external.priors = NULL,
+  external.formats = NULL,
+  ensemble.id = NULL,
   params.id = NULL,
   param.names = NULL,
   prior.id = NULL,
@@ -15,11 +19,20 @@ pda.bayesian.tools(
   adj.min = NULL,
   ar.target = NULL,
   jvar = NULL,
-  n.knot = NULL
+  remote = FALSE,
+  ...
 )
 }
 \arguments{
 \item{settings}{= a pecan settings list}
+
+\item{external.data}{list of external inputs}
+
+\item{external.priors}{list of external priors}
+
+\item{external.formats}{bety formats used when function is used without a DB connection, e.g. remote}
+
+\item{ensemble.id}{ensemble IDs}
 
 \item{params.id}{id of pars}
 
@@ -39,11 +52,12 @@ pda.bayesian.tools(
 
 \item{jvar}{jump variance}
 
-\item{n.knot}{number of knots requested}
+\item{remote}{logical, if TRUE no DB connection is established}
+
+\item{...}{additional arguments}
 }
 \value{
-nothing. Diagnostic plots, MCMC samples, and posterior distributions
-are saved as files and db records.
+settings
 }
 \description{
 Paramater Data Assimilation using BayesianTools R Package
