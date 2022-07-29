@@ -299,11 +299,13 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       }
     }
     if (haveTime) {
-      prevTime <- utils::txtProgressBar(g/ngibbs, prevTime)
+      pb <- utils::txtProgressBar(min = 0, max = ngibbs, style = 3)
+      prevTime <- utils::setTxtProgressBar(pb , g)
     }
   }
   if (haveTime) {
-    utils::txtProgressBar(1.1, prevTime)
+    pb <- utils::txtProgressBar(min = 0, max = 1, style = 3)
+    utils::txtProgressBar(pb , 1.1)
   }
   
   return(list(method = method, tauwjump = tauwjump, tauw = tauwgibbs, 

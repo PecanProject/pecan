@@ -153,7 +153,8 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       }
     }
     if (haveTime) {
-      prevTime <- utils::txtProgressBar(i/length(samp), prevTime)
+      pb <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
+      prevTime <- utils::setTxtProgressBar(pb , i)
     }
   }
   cIntQuant <- pIntQuant <- NULL
