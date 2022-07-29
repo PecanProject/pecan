@@ -1,6 +1,7 @@
 library(stringr)
 #set up tempdir
-outdir <- tempdir()
+outdir <- tempfile()
+withr::defer(unlink(outdir, recursive = TRUE))
 unzip("data/ed2_run_output.zip", exdir = outdir)
 file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 
@@ -47,7 +48,10 @@ test_that("read.output extracts data from nc file",{
 })
 
 nc_files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
+
 tmp.nc <- ncdf4::nc_open(nc_files[1])
+withr::defer(ncdf4::nc_close(tmp.nc))
+
 vars <- tmp.nc$var
 dims <- tmp.nc$dim
 
@@ -101,6 +105,3 @@ test_that("variables have MsTMIP standard units",{
 })
 
 
-#cleanup
-ncdf4::nc_close(tmp.nc)
-unlink(outdir, recursive = TRUE)

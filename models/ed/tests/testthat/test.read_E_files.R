@@ -1,4 +1,5 @@
-outdir <- tempdir()
+outdir <- tempfile()
+withr::defer(unlink(outdir, recursive = TRUE))
 unzip("data/ed2_run_output.zip", exdir = outdir)
 file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 h5_file <- "analysis-E-2004-07-00-000000-g01.h5"
@@ -56,5 +57,4 @@ test_that("fail to read E files without ED2 pft number", {
                             end_date, pft))
 })
 
-unlink(outdir, recursive = TRUE)
 

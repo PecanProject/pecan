@@ -55,7 +55,8 @@ Imports:
     utils,
     XML (>= 3.98-1.4)
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr
 Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
