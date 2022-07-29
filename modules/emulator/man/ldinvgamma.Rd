@@ -7,11 +7,9 @@
 ldinvgamma(x, shape, scale = 1)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{vector of quantiles}
 
-\item{shape}{shape of points}
-
-\item{scale}{scale, NULL by default}
+\item{shape, scale}{shape and scale parameters for the inverse Gamma distribution}
 }
 \value{
 log.density
