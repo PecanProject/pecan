@@ -156,7 +156,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
   haveTime <- require("time")
   prevTime <- NULL
   if (haveTime) {
-    prevTime <- progressBar()
+    prevTime <- utils::txtProgressBar()
   }
   
   ## Gibbs loop
@@ -299,11 +299,11 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
       }
     }
     if (haveTime) {
-      prevTime <- progressBar(g/ngibbs, prevTime)
+      prevTime <- utils::txtProgressBar(g/ngibbs, prevTime)
     }
   }
   if (haveTime) {
-    progressBar(1.1, prevTime)
+    utils::txtProgressBar(1.1, prevTime)
   }
   
   return(list(method = method, tauwjump = tauwjump, tauw = tauwgibbs, 

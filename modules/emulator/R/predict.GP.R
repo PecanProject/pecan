@@ -102,7 +102,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   haveTime     <- require(time)
   prevTime     <- NULL
   if (haveTime) {
-    prevTime <- progressBar()
+    prevTime <- utils::txtProgressBar()
   }
   for (g in samp) {
     j <- i <- which(g == samp)
@@ -153,7 +153,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       }
     }
     if (haveTime) {
-      prevTime <- progressBar(i/length(samp), prevTime)
+      prevTime <- utils::txtProgressBar(i/length(samp), prevTime)
     }
   }
   cIntQuant <- pIntQuant <- NULL
