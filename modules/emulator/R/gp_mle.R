@@ -6,7 +6,7 @@
 ##' @param d spatial distance matrix
 ##' @param nugget allows additional error in Y rather than fix interpolation to go through points
 ##' @param myY 
-##' @param maxval
+##' @param maxval maximum value
 ##' 
 ##' @return val
 ##' 
@@ -61,7 +61,7 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
 ##' @param d spatial distance matrix
 ##' @param nugget allows additional error in Y rather than fix interpolation to go through points
 ##' @param myY 
-##' @param maxval
+##' @param maxval maximum value
 gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
   
   ## get parms

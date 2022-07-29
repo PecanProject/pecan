@@ -7,6 +7,8 @@
 mvjump(ic = 0, rate = 0.4, nc = 2, ...)
 }
 \arguments{
+\item{ic}{optional data vector}
+
 \item{nc}{NetCDF object containing target variable}
 
 \item{...}{Additional arguments}

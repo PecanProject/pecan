@@ -7,6 +7,8 @@
 bounded(xnew, rng)
 }
 \arguments{
+\item{xnew}{new x coordinate}
+
 \item{rng}{range}
 }
 \description{

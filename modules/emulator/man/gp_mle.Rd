@@ -13,7 +13,7 @@ gp_mle(theta, d, nugget, myY, maxval = Inf)
 
 \item{myY}{}
 
-\item{maxval}{}
+\item{maxval}{maximum value}
 }
 \value{
 val

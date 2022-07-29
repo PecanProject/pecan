@@ -2,7 +2,7 @@
 ##' @title jump
 ##' @export
 ##'
-##' @param ic
+##' @param ic optional data vector
 ##' @param rate
 ##' @param ... Addtional arguments
 ##' 
@@ -15,7 +15,7 @@ jump <- function(ic = 0, rate = 0.4, ...) {
 ##' @title mvjump 
 ##' @export
 ##' 
-##' @param ic
+##' @param ic optional data vector
 ##' @param rate
 ##' @param nc NetCDF object containing target variable
 ##' @param ... Additional arguments

@@ -62,7 +62,7 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
 ##' @title gpeval
 ##' @export
 ##'
-##' @param xnew
+##' @param xnew new x coordinate
 ##' @param k Specific absorption coefficient (400 - 2500nm)
 ##' @param mu The mean parameter of the distribution; NOTE this is not equal to the mean
 ##' @param tau spatial var
@@ -124,7 +124,7 @@ calculate.prior <- function(samples, priors) {
 ##' @export
 ##' 
 ##' @param gp Gaussian Process
-##' @param xnew
+##' @param xnew new x coordinate
 ##' @param pos.check
 get_ss <- function(gp, xnew, pos.check) {
   
@@ -161,7 +161,7 @@ get_ss <- function(gp, xnew, pos.check) {
 ##' @export
 ##' 
 ##' @param SSnew
-##' @param xnew
+##' @param xnew new x coordinate
 ##' @param llik.fn list that contains likelihood functions
 ##' @param priors prior list
 ##' @param llik.par parameters to be passed llik functions
@@ -183,8 +183,9 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @title is.accepted
 ##' @export
 ##' 
-##' @param ycurr
-##' @param ynew
+##' @param ycurr current value on y axis
+##' @param ynew new y coordinate
+
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 is.accepted <- function(ycurr, ynew, format = "lin") {
   a <- exp(ynew - ycurr)
@@ -376,7 +377,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
 ##' @title bounded
 ##' @export
 ##' 
-##' @param xnew
+##' @param xnew new x coordinate
 ##' @param rng range
 bounded <- function(xnew, rng) {
   xnew <- as.vector(as.matrix(xnew))

@@ -5,7 +5,7 @@
 ##' @export
 ##' 
 ##' @param den
-##' @param xnew
+##' @param xnew new x coordinate
 ##' 
 ##' @return ynew
 ##'

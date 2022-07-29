@@ -7,6 +7,8 @@
 gpeval(xnew, k, mu, tau, psi, x, rng, splinefcns)
 }
 \arguments{
+\item{xnew}{new x coordinate}
+
 \item{k}{Specific absorption coefficient (400 - 2500nm)}
 
 \item{mu}{The mean parameter of the distribution; NOTE this is not equal to the mean}

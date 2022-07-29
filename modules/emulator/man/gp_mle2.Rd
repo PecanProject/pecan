@@ -12,6 +12,8 @@ gp_mle2(theta, d, nugget, myY, maxval = Inf)
 \item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
 
 \item{myY}{}
+
+\item{maxval}{maximum value}
 }
 \description{
 zero mean version
