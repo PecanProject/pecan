@@ -23,4 +23,5 @@ test_that("output is type numeric and not class \"units\"", {
   x <- ud_convert(23, "degC", "K")
   testthat::expect_failure(expect_s3_class(x, "units"))
   testthat::expect_type(x, "double")
+
 })
