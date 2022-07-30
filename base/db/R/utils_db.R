@@ -322,7 +322,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
   }
 
   #check table's privilege about read and write permission
-  user.permission <<- tryCatch({
+  assign("user.permission" , tryCatch({
     invisible(db.query(
       paste0("SELECT privilege_type FROM information_schema.role_table_grants ",
              "WHERE grantee='", params$user,
@@ -334,7 +334,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
     PEcAn.logger::logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
-  })
+  }))
 
   # If table is NA, this is just a generic check for database access,
   # so we're done!
@@ -346,7 +346,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
   write.perm <- FALSE
 
   # check read permission
-  user_privilege <- user.permission[["privilege_type"]]
+  user_privilege <- .data$user.permission[["privilege_type"]]
   if ("SELECT" %in% user_privilege) {
     read.perm <- TRUE
   }
