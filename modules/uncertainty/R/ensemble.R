@@ -78,27 +78,31 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
 ##' @author David LeBauer, Istem Fer
-get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", param.names = NULL, ...) {
+get.ensemble.samples <- function(ensemble.size, pft.samples,method = "uniform",
+                                 env.samples = NULL, param.names = NULL, ...) {
   
-  if (is.null(method)) {
-    PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
-    method <- "uniform"
-  }
-  
-  ## force as numeric for compatibility with Fortran code in halton()
-  ensemble.size <- as.numeric(ensemble.size)
-  if (ensemble.size <= 0) {
-    ans <- NULL
-  } else if (ensemble.size == 1) {
-    ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
-  } else {
-    pft.samples[[length(pft.samples) + 1]] <- env.samples
-    names(pft.samples)[length(pft.samples)] <- "env"
-    pft2col <- NULL
-    for (i in seq_along(pft.samples)) {
-      pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
+    if (is.null(method)) {
+        PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
+        method <- "uniform"
     }
+    
+    ## force as numeric for compatibility with Fortran code in halton()
+    ensemble.size <- as.numeric(ensemble.size)
+    
+    if(!is.null(env.samples)){
+        if (ensemble.size <= 0) {
+            ans <- NULL
+            } else if (ensemble.size == 1) {
+                ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
+                } else {
+                    pft.samples[[length(pft.samples) + 1]] <- env.samples
+                    names(pft.samples)[length(pft.samples)] <- "env"
+                    pft2col <- NULL
+                    for (i in seq_along(pft.samples)) {
+                        pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
+                    }
+                }
+        }
     
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
