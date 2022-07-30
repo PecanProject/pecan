@@ -128,7 +128,8 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
 
       if(!units::as_units(u1)){
         PEcAn.logger::logger.error(
-          "Units not parseable. Please enter a unit that is parseable by the udunits library."
+          "Units '", u1,  "' not parseable.",
+          "Please provide a unit that is parseable by the udunits library."
         )
       }
       # Grab the bety units and
