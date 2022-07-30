@@ -81,7 +81,7 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   ## name and variable conversions
   if(toupper(merge.vars[1]) == "CO2"){
     merge.vars[1] <- "mole_fraction_of_carbon_dioxide_in_air"
-    merge.data <- PEcAn.utils::ud_convert(merge.data,merge.attr$units,"mol/mol")
+    merge.data <- PEcAn.utils::ud_convert(merge.data, merge.attr$units, "mol/mol")
     merge.attr$units = "mol/mol"
   }
   
