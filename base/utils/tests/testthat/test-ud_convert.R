@@ -13,10 +13,8 @@ test_that("unit conversion invariants", {
   expect_equal(ud_convert(Inf, "g", "kg") Inf)
 })
 
-test_that("trying to convert into different type",
-  {
-    expect_error(ud_convert(1, "miles", "grams"))
-    expect_error(ud_convert(1, "radians", "degC"))
-    expect_error(ud_convert(1, "in", "grams"))
-  }
-)
+test_that("incompatible units", {
+  expect_error(ud_convert(1, "miles", "grams"))
+  expect_error(ud_convert(1, "radians", "degC"))
+  expect_error(ud_convert(1, "in", "grams"))
+})
