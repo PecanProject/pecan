@@ -10,8 +10,7 @@ get.trait.data(
   dbfiles,
   database,
   forceupdate,
-  trait.names = NULL,
-  update = FALSE
+  trait.names = NULL
 )
 }
 \arguments{
@@ -31,8 +30,6 @@ update is needed.}
 \item{trait.names}{Character vector of trait names to search. If
 `NULL` (default), use all traits that have a prior for at least
 one of the `pfts`.}
-
-\item{update}{logical: Rerun the db if result files already exist?}
 }
 \value{
 list of PFTs with update posteriorids

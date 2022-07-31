@@ -22,7 +22,6 @@
 ##' @param con Database connection object.
 ##' @param ... Optional arguments for connecting to database (e.g.
 ##'   password, user name, database).
-##' @param update logical: Rerun the db if result files already exist?
 ##'
 ##' @return `data.frame` of priors for each trait and the given PFT.
 ##' @export query.priors
@@ -32,7 +31,7 @@
 ##'   con <- db.open(...)
 ##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
-query.priors <- function(pft, trstr = NULL, con = NULL, update = FALSE, ...){
+query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 
   if (inherits(pft, "integer64")) {
     # Convert to character with correct representation
