@@ -268,7 +268,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
 
-  globalDF <- tidyr::gather(out, key = .data$var_name, value = .data$vals, names(out)[names(out) != "posix"]) %>%
+  globalDF <- tidyr::gather(out, key = "var_name", value = "vals", names(out)[names(out) != "posix"]) %>%
     dplyr::rename(dates = .data$posix)
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id
