@@ -48,6 +48,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Converted .zenodo.json to CITATION.cff
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
+- Installation instructions updated in documentation
 
 ### Removed
 

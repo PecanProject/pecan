@@ -14,8 +14,8 @@
 ##' @title Prepare trait data for JAGS meta-analysis
 ##' @param result input trait data
 ##' @param use_ghs (Logical) If `FALSE`, exclude all greenhouse data. If `TRUE`, use all data, including greenhouse data.
-##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @export
+##' @return result transformed to meet requirements of PEcAn meta-analysis model
 ##' @author David LeBauer
 jagify <- function(result, use_ghs = TRUE) {
   

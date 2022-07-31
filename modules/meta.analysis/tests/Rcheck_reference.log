@@ -1,12 +1,53 @@
-* using log directory ‘/tmp/RtmpgQ8jGx/PEcAn.MA.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.MA.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.MA/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.MA’ version ‘1.7.0’
+* this is package ‘PEcAn.MA’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘David LeBauer <dlebauer@email.arizona.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.utils, PEcAn.DB, PEcAn.logger, PEcAn.settings
+
+The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... WARNING
 Requires (indirectly) orphaned package: ‘udunits2’
@@ -20,10 +61,9 @@ Requires (indirectly) orphaned package: ‘udunits2’
 * checking whether package ‘PEcAn.MA’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking for future file timestamps ... OK
+* checking ‘build’ directory ... OK
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -36,113 +76,41 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'library' or 'require' call not declared from: ‘ggmcmc’
-'library' or 'require' call to ‘ggmcmc’ in package code.
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Packages in Depends field not imported from:
-  ‘lattice’ ‘MASS’ ‘PEcAn.DB’ ‘PEcAn.utils’ ‘XML’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... NOTE
+Namespace in Imports field not imported from: ‘XML’
+  All declared Imports should be used.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-.dens_plot: no visible global function definition for ‘plot’
-.dens_plot: no visible global function definition for ‘density’
-.dens_plot: no visible global function definition for ‘rug’
-.dens_plot: no visible global function definition for ‘lines’
-.dens_plot: no visible global function definition for ‘legend’
-approx.posterior: no visible global function definition for ‘pdf’
-approx.posterior: no visible global function definition for ‘var’
-approx.posterior: no visible global function definition for ‘plot’
-approx.posterior: no visible global function definition for ‘density’
-approx.posterior: no visible global function definition for ‘rug’
-approx.posterior: no visible global function definition for ‘lines’
-approx.posterior: no visible global function definition for ‘dbeta’
-approx.posterior: no visible global function definition for ‘legend’
-approx.posterior: no visible binding for global variable ‘AIC’
-approx.posterior: no visible global function definition for ‘sd’
-approx.posterior: no visible global function definition for ‘dev.off’
 jagify: no visible binding for global variable ‘stat’
 jagify: no visible binding for global variable ‘n’
 jagify: no visible binding for global variable ‘site_id’
 jagify: no visible binding for global variable ‘greenhouse’
 jagify: no visible binding for global variable ‘citation_id’
 jagify: no visible binding for global variable ‘name’
-pecan.ma: no visible global function definition for ‘stem’
-pecan.ma: no visible global function definition for ‘window’
-pecan.ma.summary: no visible global function definition for
-  ‘is.mcmc.list’
-pecan.ma.summary: no visible global function definition for ‘theme_set’
-pecan.ma.summary: no visible global function definition for ‘theme_bw’
-pecan.ma.summary: no visible global function definition for ‘ggmcmc’
-pecan.ma.summary: no visible global function definition for ‘ggs’
-pecan.ma.summary: no visible global function definition for ‘pdf’
-pecan.ma.summary: no visible global function definition for ‘plot’
-pecan.ma.summary: no visible global function definition for ‘box’
-pecan.ma.summary: no visible global function definition for ‘dev.off’
-run.meta.analysis: no visible global function definition for ‘db.open’
-run.meta.analysis: no visible global function definition for ‘db.close’
-run.meta.analysis.pft: no visible binding for global variable
-  ‘settings’
-run.meta.analysis.pft: no visible binding for global variable
-  ‘trait.data’
-run.meta.analysis.pft: no visible global function definition for
-  ‘median’
-run.meta.analysis.pft: no visible binding for global variable
-  ‘prior.distns’
-run.meta.analysis.pft: no visible global function definition for
-  ‘dbfile.insert’
 Undefined global functions or variables:
-  AIC box citation_id db.close db.open dbeta dbfile.insert density
-  dev.off ggmcmc ggs greenhouse is.mcmc.list legend lines median n pdf
-  plot prior.distns rug sd settings site_id stat stem theme_bw
-  theme_set trait.data var window
-Consider adding
-  importFrom("graphics", "box", "legend", "lines", "plot", "rug", "stem")
-  importFrom("grDevices", "dev.off", "pdf")
-  importFrom("stats", "AIC", "dbeta", "density", "median", "sd", "var",
-             "window")
-to your NAMESPACE file.
+  citation_id greenhouse n name site_id stat
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... NOTE
-Package unavailable to check Rd xrefs: ‘R2WinBUGS’
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘runModule.run.meta.analysis’
-Undocumented data sets:
-  ‘ma.testdata’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'single.MA'
-  ‘data’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'p.point.in.prior':
-  ‘point’
-
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking contents of ‘data’ directory ... OK
-* checking data for non-ASCII characters ... OK
-* checking data for ASCII and uncompressed saves ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘single.MA_demo.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking installed files from ‘inst/doc’ ... OK
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ‘inst/doc’ ... OK
+* checking re-building of vignette outputs ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 5 WARNINGs, 3 NOTEs
+
+Status: 2 WARNINGs, 2 NOTEs
