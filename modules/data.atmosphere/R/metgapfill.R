@@ -384,8 +384,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     tunit <- ncdf4::ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
     origin <- "1900-01-01 00:00:00"
     time <- round(as.POSIXlt(PEcAn.utils::ud_convert(time, tunit$value, paste("seconds since", origin)),
-                             origin = origin, tz = "UTC"), units = "mins")
-    dtime <- diff(time)
+                             origin = origin, tz = "UTC"))
+    dtime <- as.numeric(diff(time), units = "mins")
     if (dtime[1] == 30) {
       DTS.n <- 48
       time <- 30 * 60 + time
