@@ -39,7 +39,6 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
 - Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
 - Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
-- A global variable "settings" is fixed from PEcAn.DB package (#2971).
 
 ### Changed
 
