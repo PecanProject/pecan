@@ -273,7 +273,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id
   globalDF$xlab <- "Time"
-  globalDF$ylab <- unlist(sapply(globalDF$.data$var_name, function(x){
+  globalDF$ylab <- unlist(sapply(globalDF$var_name, function(x){
     if(!is.null(nc$var[[x]]$units)){
       return(nc$var[[x]]$units)
     }else{
