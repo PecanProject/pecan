@@ -37,9 +37,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
-- transform() function from jagify.R in meta-analysis is removed (#2973).
-- fixed vignettes warning from PEcAn.DB package (#2966).
-- All the warnings from PEcAn.MA package is fixed except maintainers warning(#2965, #2973).
+- Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
+- Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
 - A global variable "settings" is fixed from PEcAn.DB package (#2971).
 
 ### Changed
