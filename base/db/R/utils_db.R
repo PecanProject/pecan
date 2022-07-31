@@ -346,7 +346,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
   write.perm <- FALSE
 
   # check read permission
-  user_privilege <- .data$user.permission[["privilege_type"]]
+  user_privilege <- user.permission[["privilege_type"]]
   if ("SELECT" %in% user_privilege) {
     read.perm <- TRUE
   }
