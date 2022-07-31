@@ -334,7 +334,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
     PEcAn.logger::logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
-  }))
+  })
 
   # If table is NA, this is just a generic check for database access,
   # so we're done!
