@@ -72,7 +72,9 @@ put_veg_module <- function(getveg.id, dbparms,
                                               pfts = pfts,
                                               source = input_veg$source,
                                               n.ensemble = n.ensemble,
-                                              host.inputargs = host.inputargs)
+                                              host.inputargs = host.inputargs,
+                                              Rbinary = "R"
+                                              )
   
   
 

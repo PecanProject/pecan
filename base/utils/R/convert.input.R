@@ -99,7 +99,7 @@ convert.input <-
                      mimetype, site.id, start_date, end_date))
   
   # TODO see issue #18
-  Rbinary <- ifelse(!exists("settings") || is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
+
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {

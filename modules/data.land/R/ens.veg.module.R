@@ -55,7 +55,9 @@ ens_veg_module <- function(getveg.id, dbparms,
                                          in.name = spp.file$file_name,
                                          n.ensemble = n.ensemble,
                                          machine_host = machine_host,
-                                         source = input_veg$source)
+                                         source = input_veg$source,
+                                         Rbinary = "R"
+                                         )
   
   
 
