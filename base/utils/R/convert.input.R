@@ -64,7 +64,6 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-settings <- read.settings("pecan.xml")
 convert.input <-
   function(input.id,
            outfolder,
@@ -89,7 +88,7 @@ convert.input <-
            ensemble = FALSE,
            ensemble_name = NULL,
            dbparms=NULL,
-           settings,
+           Rbinary = "R",
            ...
   ) {
 
@@ -99,7 +98,11 @@ convert.input <-
                      mimetype, site.id, start_date, end_date))
   
   # TODO see issue #18
+<<<<<<< HEAD
 
+=======
+  if(!is.null(settings$host$Rbinary) Rbinary <- settings$host$Rbinary)
+>>>>>>> 2b99f71be00158bc828ac24fedfdc679def23484
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {
