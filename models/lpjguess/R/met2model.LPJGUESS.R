@@ -29,7 +29,7 @@
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
 
-  library(PEcAn.utils)
+  # library(PEcAn.utils)
 
   print("START met2model.LPJGUESS")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
