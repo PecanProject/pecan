@@ -95,7 +95,6 @@ wanted <- c(
 'progress',
 'purrr',
 'pwr',
-'R',
 'R.utils',
 'randtoolbox',
 'raster',
