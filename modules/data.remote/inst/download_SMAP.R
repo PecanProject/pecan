@@ -9,7 +9,7 @@
 ##'@author Joshua Bowers
 
 ## read in CONUS sites from xml file ##
-all_sites <- PEcAn.settings::read.settings('~/pecan/modules/data.remote/inst/conus_sites.xml')
+conus_sites <- PEcAn.settings::read.settings('~/pecan/modules/data.remote/inst/conus_sites.xml')
 
 #load necessities 
 library(tidyverse)
@@ -25,8 +25,9 @@ library(ncdf4)
 
 #' @title download_SMAP
 #'
-#' @param start start date of analysis as (Date) or (String) 
-#' @param end end date of analysis as (Date) or (String)
+#' @param input_sites site ID(s) at locations for which download SMAP data as (vector)
+#' @param start start date of analysis YYYY-MM-DD as (String) 
+#' @param end end date of analysis YYYY-MM-DD as (String)
 #' @param geoJSON_outdir file directory to store output site geoJSON files
 #' @param smap_outdir file directory to store output SMAP netCDF file
 #'
@@ -37,27 +38,32 @@ library(ncdf4)
 #' all_smap_data <- download_SMAP('2016-01-02', '2016-07-16', 
 #' '/projectnb/dietzelab/jbowers1/geoFiles/', '/projectnb/dietzelab/jbowers1/smap_ncFiles/')
 #' 
-download_SMAP <- function(start, end, geoJSON_outdir, smap_outdir){
+download_SMAP <- function(input_sites, start, end, geoJSON_outdir, smap_outdir){
   ## 2015-04-01 is first available smap data
   
-  ######## Download CONUS SMAP data########
+  ######## Download CONUS SMAP data ########
   
   # Initialize empty list
   output_smap <- list()
   
-  source('~/pecan/modules/data.remote/inst/download_SMAP_from_gee.R')
+  source('~/pecan/modules/data.remote/inst/download_SMAP_gee2pecan.R')
   
   # Inupt each site's info as a new list
-  for(index in 1:length(all_sites)){ # There are 39 sites in the CONUS
+  for(index in 1:length(conus_sites)){ # There are 39 sites in the CONUS
     
-    if (index != 4 & index != 33 & index != 37) { # sites 4, 33, and 37 don't seem to be accessible smap coords
-      output_smap[[length(output_smap) + 1]] <-  
-        download_SMAP_from_gee(start, end, all_sites[[index]]$run$site, geoJSON_outdir, smap_outdir)
-      names(output_smap)[length(output_smap)] <- all_sites[[index]]$run$site$id
+    if (index != 4 & index != 33 & index != 37) { # 4, 33, and 37 = sites in D17 where SMAP is not available
+      
+      if(conus_sites[[index]]$run$site$id %in% input_sites){ # adds only input sites 
+        
+        output_smap[[length(output_smap) + 1]] <-  
+          download_SMAP_gee2pecan(start, end, conus_sites[[index]]$run$site, geoJSON_outdir, smap_outdir)
+        names(output_smap)[length(output_smap)] <- conus_sites[[index]]$run$site$id
+        
+      }
+      
     }
     
   }
 
   return(output_smap)
 }
-
