@@ -41,7 +41,7 @@ Imports:
     RCurl,
     rlang,
     stringi,
-    udunits2 (>= 0.11),
+    units,
     XML
 Suggests:
     coda (>= 0.18),

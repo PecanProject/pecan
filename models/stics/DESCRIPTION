@@ -18,7 +18,6 @@ Imports:
     ncdf4,
     purrr,
     XML,
-    udunits2,
     dplyr
 Suggests:
     testthat (>= 1.0.2)

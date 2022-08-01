@@ -44,9 +44,9 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   ## convert to days
   if (!base.units == "days") {
-    time.idx <- udunits2::ud.convert(time.idx, basetime.string, paste("days since ", base.date))
+    time.idx <- PEcAn.utils::ud_convert(time.idx, basetime.string, paste("days since ", base.date))
   }
-  time.idx <- udunits2::ud.convert(time.idx, "days", "seconds")
+  time.idx <- PEcAn.utils::ud_convert(time.idx, "days", "seconds")
   date <- as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
 
   ## data table warns not to use POSIXlt, which is induced by round() 
