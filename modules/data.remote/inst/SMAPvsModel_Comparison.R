@@ -5,41 +5,53 @@
 ##'produce an additional 5 graphs and a set of comparative statistics including: pbias, 
 ##'RMSE, CRPS, Correlation, and r-squared values.
 ##'
-##'This script is broken into 4 functions: extractSoilMoist, extractEnsambles, 
-##'runAnalysis, and main. The functions can be used separately, however, it is 
-##'meant for the main method to be run with the desired CONUS NEON sites id's in vector form.
+##'This script is broken into 2 functions: runSMAPvalidation and main.  runSMAPvalidation can
+##'be run on its own, however, the main method was developed to make utilizing runSMAPvalidation
+##'more streamlined.
+##'
+##'This script also utilize the download_SMAP.R and netCDFvarExtraction scripts.
 ##'
 ##'WARNING! D17 NEON sites including Lower Teakettle, Soaproot Saddle, and San Joaquin 
 ##'Experimental Range are not available available in SMAP and thus should not be
 ##'run with this script.
 ##'
-##'Inputs:
-##'1. Data range to be analyized as (String)
-##'2. File location for ensemble netCDF files 
-##'3. File location containing XML file of all 39 CONUS NEON sites and their information 
-##'4. File location to place output analytial data
-##'5. File location for output of NEON site geoJson files
-##'6. File location for output of SMAP netCDF files
-##'
 ##'@author Joshua Bowers
 ##'
 ##'@examples
 ##'
-##'# Run all CONUS NEON sites at once
-##'all_sites <- PEcAn.settings::read.settings("~/pecan.xml")
+##'## Desired Date Range ##
+##'test_start <- '2016-01-02'
+##'test_end <- '2016-07-16'
+##'
+##'## Directory of Ensembles Files ##
+##'test_ensemble_dir <- '/projectnb2/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun/out/'
+##'
+##'## CONUS NEON Sites XML File Location ## - could also be vector of all conus site IDs
+##'test_input_dir <- '~/pecan/modules/data.remote/inst/conus_sites.xml'
+##'
+##'## File Directory to Place Output PDFs In ##
+##'test_output_dir <- '/projectnb/dietzelab/jbowers1/graphic_output/'
+##'
+##'## Output Directories for geoJson Files ##
+##'test_geoJSON_outdir <- '/projectnb/dietzelab/jbowers1/geoFiles/'
+##'
+##'## Output Directories for SMAP netCDF Files ##
+##'test_smap_outdir <- '/projectnb/dietzelab/jbowers1/smap_ncFiles/'
+##'
+##'# Running All Sites #
+##'all_sites <- PEcAn.settings::read.settings(test_input_dir)
 ##'sites_vector <- c()
+##'
 ##'for (index in 1:length(all_sites)) {
-##'sites_vector <- append(sites_vector, all_sites[[index]]$run$site$id) 
+##'sites_vector <- append(sites_vector, all_sites[[index]]$run$site$id)
 ##'}
+##'
 ##'sites_vector <- sites_vector[c(-4, -33, -37)] # Removes D17 sites that are not collected by SMAP
-##'main(sites_vector, compare = TRUE, pdf_output = '/projectnb/dietzelab/jbowers1/graphic_output/')\
-##'
-##'# Or run individual outputs printed to your screen
-##'var <- runAnalysis('1000004945') # harvard
-##'var1 <- runAnalysis('1000004876') # santa rita
-##'var2 <- runAnalysis('1000004927') # konza
-##'var3 <- runAnalysis('1000004916') # ordway
-##'
+##'main_test_all <- main(sites_vector, test_start, test_end,
+##'pdf_output = test_output_dir,
+##'geoJSON_outdir = test_geoJSON_outdir,
+##'smap_outdir = test_smap_outdir,
+##'ensemble_dir = test_ensemble_dir)
 ##'
 
 # load necessary packages
@@ -58,145 +70,52 @@ library(hydroGOF)
 library(Metrics)
 library(verification)
 
-
-#################### INPUTS #################### 
-## Set Date Range ##
-start <- '2016-01-02'
-end <- '2016-07-16'
-
-## Directory of Ensembles Files ##
-ensamble_dir <- '/projectnb2/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun/out/'
-
-## CONUS NEON Sites XML File Location ##
-input_dir <- '~/pecan/modules/data.remote/inst/conus_sites.xml'
-
-## File Directory to Place Output PDFs In ##
-output_dir <- '/projectnb/dietzelab/jbowers1/graphic_output/'
-
-## Output Directories for geoJson Files ##
-geoJSON_outdir <- '/projectnb/dietzelab/jbowers1/geoFiles/'
-
-## Output Directories for SMAP netCDF Files ##
-smap_outdir <- '/projectnb/dietzelab/jbowers1/smap_ncFiles/'
-
-## Download SMAP data ##
-source('~/pecan/modules/data.remote/inst/download_SMAP.R')
-all_smap_data <- download_SMAP(start, end, geoJSON_outdir, smap_outdir)
-####################^ INPUTS ^####################
-start <- as.Date(start)
-end <- as.Date(end)
-
-
-#' @title extractSoilMoist
-#' @description extracts a single ensamble member during the given year range from a specified file location
-#'
-#' @param betySiteId bety site id for the desired location (String)
-#' @param yearStart starting year YYYY as (date) or (numeric)
-#' @param yearEnd ending year YYYY as (date) or (numeric)
-#' @param ENS ensamble member front padded with 0's to five values (String)
-#'
-#' @return A list containing soil moisture and time values
-#'
-#' @examples 
-#' extractSoilMoist(betySiteId = '1000004945', yearStart = 2016, yearEnd = 2017, ENS = '25')
+#' @title runSMAPvalidation
 #' 
-#' This extracts soil moisture values and time values from the 25th ensamble member netCDF file 
-#' in a specified file directory for the Harvard Forest ('1000004945') site during the years 
-#' 2016 and 2017.
-#' 
-extractSoilMoist <- function(betySiteId, yearStart, yearEnd, ENS){
-
-  for (x in 0:(yearEnd - yearStart)) {
-    nc.file <- paste0(ensamble_dir, 'ENS-', ENS, '-', betySiteId, '/', yearStart + x,'.nc')
-    nc <- nc_open(nc.file)
-    if (x == 0) {
-      soilMoist <- ncvar_get(nc,'SoilMoist')
-      time <- PEcAn.utils::cf2datetime(nc[["dim"]][["time"]][["vals"]],nc$dim$time$units)
-    } else {
-      soilMoist <- append(soilMoist, ncvar_get(nc,'SoilMoist'))
-      time <- append(time, PEcAn.utils::cf2datetime(nc[["dim"]][["time"]][["vals"]],nc$dim$time$units))
-    }
-  }
-  return(list(time, soilMoist))
-}
-
-
-#' @title extractEnsamlbes
-#' @description utilizes extractSoilMoist function to extract an entire ensamble of a specified
-#' over the course of a specified date range.
-#'
-#' @param betySiteId bety site id for the desired location as (String)
-#' @param ENSnum number of members in the ensamble as (numeric)
-#'
-#' @return a data frame consisting of the soil mositure as well as their date-time values 
-#' during the specified date range
-#' 
-#'
-#' @examples 
-#' extractEnsambles(betySiteId = '1000004945', start = as.Date('2016-01-02'), end = as.Date('2016-07-01'))
-#' 
-#' Extracts all 25 ensample members (default) from the Harvard Forest (1000004945) site between the
-#' '2016-01-02' - '2016-07-01' date range.
-#' 
-extractEnsambles <- function(betySiteId, ENSnum=25){
-  for (x in 1:ENSnum) {
-    newEns <- extractSoilMoist(betySiteId = betySiteId, yearStart = as.numeric(format(start, '%Y')), 
-                               yearEnd = as.numeric(format(end, '%Y')), ENS = str_pad(x, 5, pad = '0'))
-    
-    if (x == 1){
-      moisture_time <- newEns
-    } else {
-      moisture_time[[1]] <- append(moisture_time[[1]], newEns[[1]])
-      moisture_time[[2]] <- append(moisture_time[[2]], newEns[[2]]) 
-    }
-  }
-  
-  # Eliminate extraneous date range values #
-  vtr <- as.data.frame(moisture_time, col.names = c('time', 'moisture'))
-  vtr <- vtr[vtr$time >= as.Date(start) & vtr$time <= as.Date(end), ]
-  
-  return(vtr)
-}
-
-
-#' @title runAnalysis
-#' 
-#' @description Runs multiple analyses on the specified site during a given date range
+#' @description runs multiple analyses on the specified site during a given date range
 #' and has the functionality to compare those values to actual soil moisture values
-#' collected from SMAP
+#' collected from SMAP.  If smpa_data is left as default, no comparison will be made
+#' and only forcast specific analyses will be run.
 #'
 #' @param betySiteId bety site id for the desired location as (String)
-#' @param compare (boolean) to turn on/off comparison to actual smap data
+#' @param start start date of validation and comparison analysis YYYY-MM-DD as (Date)
+#' @param end end date of validation and comparison analysis YYYY-MM-DD as (Date)
+#' @param smap_data downloaded SMAP data as (data.frame) -- see download_SMAP.R module 
+#' @param ensemble_dir directory of ensembles to run validation as (String)
 #'
-#' @return returns a list consisting of all of the analysis plots and statistics
+#' @return returns a list consisting all analysis plots and statistics
 #'
 #' @examples 
-#' var <- runAnalysis('1000004945', '2016-01-02', '2016-07-16', TRUE)
-#' This runs an analysis on the Harvard Forest (1000004945) site with results between
-#' the date range of '2016-01-02' and '2016-07-16'
+#' harv.var <- runSMAPvalidation('1000004945', as.Date('2016-01-02'), as.Date('2016-07-16'), 
+#' download_SMAP('1000004945', '2016-01-02', '2016-07-16', 
+#'    '/projectnb/dietzelab/jbowers1/geoFiles/', 
+#'    '/projectnb/dietzelab/jbowers1/smap_ncFiles/'), 
+#' '/projectnb2/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun/out/')
 #' 
-runAnalysis <- function(betySiteId, compare = TRUE){
+runSMAPvalidation <- function(betySiteId, start, end, smap_data = NULL, ensemble_dir){
   
-  moistureFrame <- extractEnsambles(betySiteId)
+  source('~/pecan/modules/data.remote/inst/netCDFvarExtraction.R')
+  moistureFrame <- extractVariableENS(betySiteId = betySiteId, predictVar = 'SoilMoist', 
+                                      start = start, end = end, ensemble_dir = ensemble_dir)
   
   ## Grouping data by Date ##
   grouped_ENS <- moistureFrame %>% 
     group_by(time) %>% 
-    mutate(max = max(moisture)) %>%
-    mutate(min = min(moisture))
+    mutate(max = max(SoilMoist)) %>%
+    mutate(min = min(SoilMoist))
   
   ## Calculating Mean Per Ensemble ##
-  mean_per_ENS <- summarize(grouped_ENS, mean = mean(moisture))
+  mean_per_ENS <- summarize(grouped_ENS, mean = mean(SoilMoist))
   
   ## Calculating Standard Deviation ##
-  sd_per_ENS <- summarize(grouped_ENS, sd = sd(moisture))
+  sd_per_ENS <- summarize(grouped_ENS, sd = sd(SoilMoist))
   
   ## Calculating .025 and .975 Quantiles ##
-  quantiles_lower <- summarize(grouped_ENS, q_lower = quantile(moisture, .025))
-  quantiles_upper <- summarize(grouped_ENS, q_upper = quantile(moisture, .975))
+  quantiles_lower <- summarize(grouped_ENS, q_lower = quantile(SoilMoist, .025))
+  quantiles_upper <- summarize(grouped_ENS, q_upper = quantile(SoilMoist, .975))
   
   ## Hex Data Distribution with Mean-line Highlighted ##
-  p1 <- ggplot(moistureFrame, aes(x = time, y = moisture)) + geom_hex() + theme_bw() + 
+  p1 <- ggplot(moistureFrame, aes(x = time, y = SoilMoist)) + geom_hex() + theme_bw() + 
     guides(fill=guide_legend(title = 'Frequency of Model Data')) + 
     theme(plot.title = element_text(hjust = 0.5)) +
     ggtitle('Hex Distribution of Model Data') +
@@ -206,7 +125,7 @@ runAnalysis <- function(betySiteId, compare = TRUE){
   print(p1)
   
   ## Min/Max Values with 95% Quantile Range ## Still has messed up color legend
-  p2 <- ggplot(grouped_ENS, aes(x = time, y = moisture)) + theme_bw() + 
+  p2 <- ggplot(grouped_ENS, aes(x = time, y = SoilMoist)) + theme_bw() + 
     ggtitle('Daily Min and Max Values with 95% Quantile Range in Black') +
     theme(legend.position = c(0.87, 0.75),
           legend.background = element_rect(fill = "white", color = "black"),
@@ -220,9 +139,9 @@ runAnalysis <- function(betySiteId, compare = TRUE){
     labs(colour = 'Legend')
   print(p2)
   
-  if (compare) {
+  if (!is.null(smap_data)) {
     ## Analyses Requiring Actual SMAP Data ##
-    smap_data <- all_smap_data[[betySiteId]]
+    smap_data <- smap_data[[betySiteId]]
     
       
     ## Quick Plot of Actual SMAP Data ##
@@ -231,7 +150,7 @@ runAnalysis <- function(betySiteId, compare = TRUE){
     p3 <- recordPlot()
     
     ## Hex distribution of Model Data with Actual Values as well as Mean and Quantile Range (Way too much) ##
-    p4 <- ggplot(moistureFrame, aes(x = time, y = moisture)) + geom_hex() + theme_bw() + 
+    p4 <- ggplot(moistureFrame, aes(x = time, y = SoilMoist)) + geom_hex() + theme_bw() +
       geom_line(data = mean_per_ENS, aes(x = time, y = mean, color = 'Mean of Model Data')) +
       geom_line(data = quantiles_lower, aes(x = time, y = q_lower, color = '95% Quantile Range')) + 
       geom_line(data = quantiles_upper, aes(x = time, y = q_upper, color = '95% Quantile Range')) +
@@ -307,47 +226,74 @@ runAnalysis <- function(betySiteId, compare = TRUE){
          ylab = 'Residuals of SMAP and Model Data') + abline(h = 0, lty = 2)
     p7 <- recordPlot()
     
-    vtr <- list(p1, p2, p3, p4, p5, p6, p7, pbias, RMSE, CRPS, correlation, r.squared)
+    vtr <- list(betySiteId, p1, p2, p3, p4, p5, p6, p7, pbias, RMSE, CRPS, correlation, r.squared)
     
-    names(vtr) <-  c('Plot1', 'Plot2', 'Plot3', 'Plot4', 'Plot5', 'Plot6', 'Plot7',
+    names(vtr) <-  c('betySiteId', 'Plot1', 'Plot2', 'Plot3', 'Plot4', 'Plot5', 'Plot6', 'Plot7',
                      'pbias','RMSE', 'CRPS', 'correlation', 'r.squared')
     
   } else {
-    vtr <- list(p1, p2)
     
-    names(vtr) <- c('Plot1', 'Plot2')
+    vtr <- list(betySiteId, p1, p2)
+    
+    names(vtr) <- c('betySiteId', 'Plot1', 'Plot2')
   }
   return(vtr)
 }
 
-
 #' @title main
 #'
 #' @param sites a vector of site id numbers to run the analysis on
-#' @param compare (boolean) to determine whether the user wishes to compare to actual 
-#' SMAP data or simply look at the model data
-#' @param pdf_output directory for pdf of output graphics
+#' @param start start date of validation and comparison analysis YYYY-MM-DD as (String)
+#' @param end end date of validation and comparison analysis YYYY-MM-DD as (String)
+#' @param pdf_output directory for pdf of output graphics as (String)
+#' @param geoJSON_outdir directory to place geoJSON files necessary for SMAP download as (String)
+#' @param smap_outdir directory to place SMPA output netCDF files as (String)
+#' @param ensemble_dir directory of ensembles to run validation as (String)
+#' 
+#' @return data frame object containing stats for each site
 #'
 #' @examples 
-#' main(c('1000004945', '1000004876', '1000004927', '1000004916'), compare = TRUE, 
-#' pdf_output = '/projectnb/dietzelab/jbowers1/graphic_output/')
+#'## runs validation on 1000004945, 1000004876, 1000004927, 1000004927 sites ##
+#'main_test_sample <- main(c('1000004945', '1000004876', '1000004927', '1000004927'), 
+#'start = '2016-01-02', 
+#'end = '2016-07-16', 
+#'pdf_output = '/projectnb/dietzelab/jbowers1/graphic_output/', 
+#'geoJSON_outdir = '/projectnb/dietzelab/jbowers1/geoFiles/', 
+#'smap_outdir = '/projectnb/dietzelab/jbowers1/smap_ncFiles/', 
+#'ensemble_dir = '/projectnb2/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun/out/')
+#'
 #' 
-main <- function(sites, compare = TRUE, pdf_output){
+main <- function(sites, start, end, pdf_output, geoJSON_outdir, smap_outdir, ensemble_dir){
+  ## Downloads SMAP data for sites ##
+  source('~/pecan/modules/data.remote/inst/download_SMAP.R')
+  smap_data <- download_SMAP(sites, start, end, geoJSON_outdir, smap_outdir)
+  
+  ## Convert to Date for Validation ##
+  start <- as.Date(start)
+  end <- as.Date(end)
+  
+  stat_frame <- data.frame(site_id = character(),
+                   pbias = double(), 
+                   RMSE = double(), 
+                   CRPS = double(),
+                   correlation = double(),
+                   r.squared = double())
   
   ## run analysis on each specified site ##
+  count <- 0
   for (site in sites) {
+    count <- count + 1
+    ## Prints graphics to pdf and stats to returned df ##
     pdf(paste0(pdf_output, site,'.pdf'), width = 7.5, height = 5)
-    runAnalysis(site, compare)
+    temp_run <- runSMAPvalidation(site, start, end, smap_data, ensemble_dir)
+    stat_frame[count, ] <- list(temp_run$betySiteId, 
+                                temp_run$pbias, 
+                                temp_run$RMSE, 
+                                temp_run$CRPS,
+                                temp_run$correlation,
+                                temp_run$r.squared)
     dev.off()
   }
+  return(stat_frame)
 }
-
-# Running All Sites #
-all_sites <- PEcAn.settings::read.settings(input_dir)
-sites_vector <- c()
-for (index in 1:length(all_sites)) {
- sites_vector <- append(sites_vector, all_sites[[index]]$run$site$id) 
-}
-sites_vector <- sites_vector[c(-4, -33, -37)] # Removes D17 sites that are not collected by SMAP
-main(sites_vector, compare = TRUE, pdf_output = output_dir)
 
