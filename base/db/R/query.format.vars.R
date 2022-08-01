@@ -133,7 +133,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
         # This would be a good place to put a test for valid sotrage types. Currently not implemented.
 
-      } else if (udunits2::ud.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE) {
+      } else if (units::ud_are_convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE) {
 
         if (PEcAn.utils::misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE) {
           PEcAn.logger::logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])

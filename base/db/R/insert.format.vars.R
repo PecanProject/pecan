@@ -126,13 +126,15 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
       u1 <- formats_variables[1,"unit"]
       u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id, units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
 
-      if(!udunits2::ud.is.parseable(u1)){
+      u1_recognized <- tryCatch(units::as_units(u1), error = function(e) FALSE)
+      if(!u1_recognized){
         PEcAn.logger::logger.error(
-          "Units not parseable. Please enter a unit that is parseable by the udunits library."
+          "Units '", u1,  "' not parseable.",
+          "Please provide a unit that is parseable by the udunits library."
         )
       }
       # Grab the bety units and
-      if(!udunits2::ud.are.convertible(u1, u2)){
+      if(!units::ud_are_convertible(u1, u2)){
         PEcAn.logger::logger.error(
           "Units are not convertable."
         )
