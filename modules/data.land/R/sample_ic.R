@@ -37,16 +37,11 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
     for (ens in 1:n.ensemble) {
       
       veg_ens <- veg_info
-      #try multiple bin_vars
-      for (bin_Var in bin_var) {
-        # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
-        if(bin_Var == "dryMass"){
-          veg_info_ind <- 1
-        }else if(bin_Var == "DBH"){
-          veg_info_ind <- 2
-        }
-        
-        obs <- as.data.frame(veg_info[[veg_info_ind]], stringsAsFactors = FALSE)
+      
+      #sample DBH
+      if("DBH" %in% bin_var){
+        bin_Var <- "DBH"
+        obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
         
         year.start <- lubridate::year(start_date)
         year.end <- lubridate::year(end_date)
@@ -57,10 +52,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
         # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
         #samples <- samples[complete.cases(samples), ]
         samples <- samples[!is.na(samples[bin_Var]), ]
-        if(bin_Var == "dryMass"){
-          samples$Subplot <- samples$plot
-        }
-        
+  
         # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
         if(!is.null(samples$Subplot)){
           n.subplot <- length(unique(samples$Subplot))
@@ -75,23 +67,6 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
         for(np in seq_len(n.subplot)){
           samples_sub <- samples[samples$Subplot == subplot.n[np],] 
           
-          ############################################
-          #  
-          #  samples_sub is in this format (there are other columns):
-          # 
-          #   DBH  MCMC_iteration ... Tree_number ...
-          #    36               1 ...           1 ...
-          #  16.1               1 ...           2 ...
-          #    24               1 ...           3 ...
-          #   ...             ... ...         ... ...
-          #  36.5               2 ...           1 ...
-          #  16.2               2 ...           2 ...
-          #   ...             ... ...         ... ...
-          #  35.9            1000 ...           1 ...
-          #    16            1000 ...           2 ...
-          #   ...             ... ...         ... ...
-          #   6.8            1000 ...         170 ...   
-          #
           #  we can use Tree_number as the index for tapply and sample 1 from MCMC samples
           if (!is.null(samples_sub$Tree_number)) {
             samp_ind    <- tapply(seq_along(samples_sub$Tree_number), samples_sub$Tree_number, sample, 1)
@@ -106,12 +81,46 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
           
           sub.list[[np]]  <- sub_samp
         }
-        veg_ens[[veg_info_ind]] <- do.call("rbind", sub.list)
+        veg_ens[[2]] <- do.call("rbind", sub.list)
       }
       
-      
-      
-      
+      #sample Herb
+      if("dryMass" %in% bin_var){
+        bin_Var <- "dryMass"
+        obs <- as.data.frame(veg_info[[1]], stringsAsFactors = FALSE)
+        
+        year.start <- lubridate::year(start_date)
+        year.end <- lubridate::year(end_date)
+        
+        # subset samples for the year 
+        samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
+        
+        # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
+        #samples <- samples[complete.cases(samples), ]
+        samples <- samples[!is.na(samples[bin_Var]), ]
+        
+        # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
+        if(!is.null(samples$plot)){
+          n.plot <- length(unique(samples$plot))
+          plot.n <- unique(samples$plot)
+        }else{
+          n.plot <- 1
+          samples$plot <- 1
+          plot.n <- 1
+        }
+        if(n.plot>bin_size){
+          herb_plot_bin_size <- bin_size
+        }else{
+          herb_plot_bin_size <- ceiling(n.plot/5)
+        }
+        sub.list <- list()
+        sample_plots <- sample(plot.n, herb_plot_bin_size)
+        for(np in 1:length(sample_plots)){
+          samples_sub <- samples[samples$plot == sample_plots[np],] 
+          sub.list[[np]]  <- samples_sub
+        }
+        veg_ens[[1]] <- do.call("rbind", sub.list)
+      }
       #--------------------------------------------------------------------------------------------------#
       # Write vegettion data as rds, return results to convert.input
       
