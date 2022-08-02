@@ -88,10 +88,10 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   
   
   # #soil carbon
-  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = start_date, end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
-  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
-  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
+  neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
+  perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
   if(is.null(perbiogeosample)){
     print("no soil carbon data found!")
   }
