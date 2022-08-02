@@ -24,7 +24,7 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   #Grab number of plots
   herb_num <- length(unique(dat[[1]]$plot))
   #
-  if(sum(is.na(dat[[2]]))){
+  if(sum(!is.na(dat[[2]]))==0){
     biomass <- 0
     total_area <- 1
     ratio <- 0
@@ -82,9 +82,9 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   leaf_biomass = (tot_leaf/(total_area))/2 + tot_herb/1000
   
   if(tot_biomass == 0){
-    AGB <- leaf_biomass
+    AGB <- tot_herb/1000
   }else{
-    AGB = (tot_biomass/(total_area))/2
+    AGB <- (tot_biomass/(total_area))/2 + tot_herb/1000
   }
   wood_biomass = AGB - leaf_biomass
   
