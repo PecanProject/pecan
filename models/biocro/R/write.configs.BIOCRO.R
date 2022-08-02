@@ -28,10 +28,10 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("cuticular_cond" %in% trait.names) {
-    trait.samples$cuticular_cond = udunits2::ud.convert(trait.samples$cuticular_cond, "umol", "mol")
+    trait.samples$cuticular_cond = PEcAn.utils::ud_convert(trait.samples$cuticular_cond, "umol", "mol")
   }
   if ("SLA" %in% trait.names) {
-    trait.samples$SLA = udunits2::ud.convert(trait.samples$SLA, "kg/m2", "g/cm2")
+    trait.samples$SLA = PEcAn.utils::ud_convert(trait.samples$SLA, "kg/m2", "g/cm2")
   }
 
   ## rename bety variables to match active version of biocro

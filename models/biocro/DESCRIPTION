@@ -20,7 +20,6 @@ Imports:
     PEcAn.settings,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
-    udunits2 (>= 0.11),
     ncdf4 (>= 1.15),
     lubridate (>= 1.7.0),
     data.table,

@@ -19,7 +19,6 @@ Imports:
     PEcAn.remote,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
 Suggests:
     testthat (>= 1.0.2),
     linkages
