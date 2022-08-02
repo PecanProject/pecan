@@ -93,7 +93,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         ## convert time to seconds
         sec <- nc$dim$time$vals
-        sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+        sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
         
         dt <- diff(sec)[1]
         tstep <- round(86400 / dt)
@@ -121,7 +121,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
         Tair   <- Tair[ydays %in% simdays]
-        Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+        Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
         
         
         #in BASGRA tmin and tmax is only used to calculate the average daily temperature, see environment.f90
@@ -360,36 +360,36 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
     
     CropYield     <- output[thisyear, which(outputNames == "YIELD_POT")] # (g DM m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(CropYield, "g m-2", "kg m-2")  
     
     clitt         <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clitt, "g m-2", "kg m-2")  
     
     cstub         <- output[thisyear, which(outputNames == "CSTUB")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(cstub, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cstub, "g m-2", "kg m-2")  
     
     cst           <- output[thisyear, which(outputNames == "CST")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(cst, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cst, "g m-2", "kg m-2") 
     
     crt           <- output[thisyear, which(outputNames == "CRT")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(crt, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(crt, "g m-2", "kg m-2") 
     
     cres          <- output[thisyear, which(outputNames == "CRES")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(cres, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cres, "g m-2", "kg m-2") 
     
     clv           <- output[thisyear, which(outputNames == "CLV")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(clv, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clv, "g m-2", "kg m-2") 
     
     clvd         <- output[thisyear, which(outputNames == "CLVD")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(clvd, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clvd, "g m-2", "kg m-2") 
     
     csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
     
     csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
     
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(csomf + csoms, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf + csoms, "g m-2", "kg m-2") 
     
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG1")] 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG2")] 
@@ -401,11 +401,11 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     
     # Soil Respiration in kgC/m2/s
     rsoil         <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(rsoil, "g m-2", "kg m-2") / sec_in_day
     
     # Autotrophic Respiration in kgC/m2/s
     rplantaer     <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
     
     # NEE in kgC/m2/s
     # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
@@ -413,10 +413,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I just want NEE for now, so it's OK
     phot          <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
     nee           <- -1.0 * (phot - (rsoil + rplantaer))
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nee, "g m-2", "kg m-2") / sec_in_day
     
     # again this is not technically GPP
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(phot, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(phot, "g m-2", "kg m-2") / sec_in_day
     
     # Qle W/m2
     outlist[[length(outlist)+1]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
@@ -425,7 +425,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # SoilMoist (!!! only liquid water !!!) kg m-2
     # during the groowing season its depth will mainly be equal to the rooting depth, but during winter its depth will be ROOTD-Fdepth
     soilm <- output[thisyear, which(outputNames == "WAL")] # mm
-    outlist[[length(outlist)+1]]  <- udunits2::ud.convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 

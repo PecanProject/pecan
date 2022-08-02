@@ -1,4 +1,4 @@
-## Demo 02: Sensitivity and Uncertainty Analysis
+## Demo 02: Sensitivity and Uncertainty Analysis {#demo-2}
 
 In Demo 2 we will be looking at how PEcAn can use information about parameter uncertainty to perform three automated analyses:
 
@@ -6,11 +6,11 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 *	**Sensitivity Analysis**: Repeats numerous model runs to assess how changes in model parameters will affect model outputs. **Allows us to identify which parameters the model is most sensitive to.**
 *	**Uncertainty Analysis**: Combines information about model sensitivity with information about parameter uncertainty to determine the contribution of each model parameter to the uncertainty in model outputs. **Allow us to identify which parameters are driving model uncertainty.**
 
-#### Run Specification
+### Run Specification
 
-1. Return to the main menu for the PEcAn web interface: **URL > Run Models**
+1. Return to the main menu for the PEcAn web interface: Click the "Start Over" button or navigate back to **[URL](#url-def)/pecan/**
 
-2. Repeat the steps for site selection and run specification from Demo 01, but also **click on “Advanced setup”**, then click Next.
+2. Repeat the steps for site selection and run specification from [Demo 01](#demo-1), but also **click on “Advanced setup”**, then click Next.
 
 3. By clicking Advanced setup, PEcAn will first show an Analysis Menu, where we are going to specify new settings.
 
@@ -22,7 +22,7 @@ In Demo 2 we will be looking at how PEcAn can use information about parameter un
 
 **Click Next**
 
-#### Additional Outputs:
+### Additional Outputs:
 
 The PEcAn workflow will take considerably longer to complete since we have just asked for over a hundred model runs. Once the runs are complete you will return to the output visualization page were there will be a few new outputs to explore, as well as outputs that were present earlier that we’ll explore in greater details:
 
@@ -32,7 +32,7 @@ While the sensitivity and ensemble analyses synthesize across runs, you can also
 #### Inputs:
 This menu shows the contents of /run which lets you look at and download:
 
-1. A summary file (README.txt) describing each run: location, run ID, model, dates, whether it was in the sensitivity or ensemble analysis, variables modifed, etc.
+1. A summary file (README.txt) describing each run: location, run ID, model, dates, whether it was in the sensitivity or ensemble analysis, variables modified, etc.
 2. The model-specific input files fed into the model
 3. The jobs.sh file used to submit the model run
 
@@ -81,7 +81,7 @@ This menu shows the contents of the root workflow folder that are not in one of 
 
 ####	Global Sensitivity: Shiny
 
-**Navigate to URL/shiny/global-sensitivity.**
+**Navigate to [URL](#url-def)/shiny/global-sensitivity.** <!-- ERS: this doesn't work for me with a VitualBox or Docker installation -->
  
 This app uses the output from the ENSEMBLE runs to perform a global Monte Carlo sensitivity analysis. There are three modes controlled by Output type:
 
@@ -93,7 +93,7 @@ In all of these analyses, the app also fits a linear regression to these scatter
 
 #### Next Steps
 
-The next set of tutorials will focus on the process of data assimilation and parameter estimation. The next two steps are in “.Rmd” files which can be viewed online. 
+The [next set of tutorials](#demo-table) will focus on the process of data assimilation and parameter estimation. The next two steps are in “.Rmd” files which can be viewed online. 
 
 #### Assimilation 'by hand'
 

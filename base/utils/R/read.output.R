@@ -218,7 +218,7 @@ read.output <- function(runid, outdir,
       }
 
       if (dataframe) {
-        seconds <- udunits2::ud.convert(
+        seconds <- ud_convert(
           nc$dim$time$vals,
           nc$dim$time$units,
           paste("seconds since", run_origin)
@@ -264,7 +264,7 @@ read.output <- function(runid, outdir,
         # Dropping attempt to provide more sensible units because of graph unit errors,
         # issue #792
         # if (v %in% c(cflux, wflux)) {
-        #   newresult <- udunits2::ud.convert(newresult, 'kg m-2 s-1', 'kg ha-1 yr-1')
+        #   newresult <- ud_convert(newresult, 'kg m-2 s-1', 'kg ha-1 yr-1')
         # }
         result[[v]] <- abind::abind(result[[v]], newresult)
       }

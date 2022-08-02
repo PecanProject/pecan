@@ -13,7 +13,6 @@ Imports:
     PEcAn.utils (>= 1.4.8),
     lubridate,
     ncdf4,
-    udunits2
 Suggests:
     testthat (>= 1.0.2)
 OS_type: unix

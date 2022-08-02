@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2015 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -10,7 +10,7 @@
 #' @title allom.predict
 #' @name  allom.predict
 #' @aliases allom.predict
-#' 
+#'
 #' @param object Allometry model object. Option includes
 #'\itemize{
 #'   \item{'list of mcmc'}{ - mcmc outputs in a list by PFT then component}
@@ -23,30 +23,29 @@
 #' @param n Number of Monte Carlo samples. Defaults to the same number as in the MCMC object
 #' @param use  c('Bg','mu','best')
 #' @param interval c('none','confidence','prediction') default is prediction
-#' 
+#'
 #' @return matrix of Monte Carlo predictions that has n rows and one column per DBH
 #'
 #' @description Function for making tree-level Monte Carlo predictions
 #' from allometric equations estimated from the PEcAn allometry module
-#' 
-#' @examples 
-#' 
+#'
+#' @examples
+#'
 #' \dontrun{
 #'   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
 #'   dbh = seq(10,50,by=5)
 #'   mass = allom.predict(object,dbh,n=100)
-#'   
+#'
 #' }
-#' 
+#'
 #' @author Michael Dietze, Christy Rollinson
-#' 
+#'
 #' @export
-#' 
+#'
 # allom.predict(allom.fit[pft],dbh = dbh,pft = 'BEAL',component = 6,use = 'Bg',interval =
 # 'prediction',single.tree=TRUE)
-allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, use = "Bg", 
+allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, use = "Bg",
                           interval = "prediction", single.tree = FALSE) {
-  library(tools)
   
   if (is.character(object)) {
     object <- load.allom(object)
@@ -88,8 +87,8 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   for (i in seq_len(npft)) {
     pftByComp[i, ] <- !sapply(object[[i]], is.null)
     for (j in which(pftByComp[i, ])) {
-      if (is.mcmc.list(object[[i]][[j]])) {
-        object[[i]][[j]] <- as.mcmc(as.matrix(object[[i]][[j]]))
+      if (coda::is.mcmc.list(object[[i]][[j]])) {
+        object[[i]][[j]] <- coda::as.mcmc(as.matrix(object[[i]][[j]]))
       }
     }
   }
@@ -160,13 +159,12 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
       if (use[i] == "Bg") {
         params[[i]] <- object[[i]][[component]][sel, c("Bg0", "Bg1", "Sg")]
       } else if (use[i] == "mu") {
-        library(mvtnorm)
         p <- object[[i]][[component]][sel, c("mu0", "mu1", "sigma", "tau11", "tau12", "tau22")]
         ## pre-sample random effect variability
         mu <- matrix(NA, n, 2)
         for (j in seq_len(n)) {
           tau <- matrix(p[j, c("tau11", "tau12", "tau12", "tau22")], 2, 2)
-          mu[j, ] <- rmvnorm(1, p[j, c("mu0", "mu1")], tau)
+          mu[j, ] <- mvtnorm::rmvnorm(1, p[j, c("mu0", "mu1")], tau)
         }
         params[[i]] <- cbind(mu, p[, "sigma"])
       } else {
@@ -181,7 +179,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   names(params) <- names(object)
   
   ### perform actual allometric calculation
-  if (is(dbh, "list")) {
+  if (methods::is(dbh, "list")) {
     out <- list(length(dbh))
   } else {
     out <- matrix(NA, n, length(dbh))
@@ -195,14 +193,14 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
     } else {
       s <- 0
     }
-        
-    if (is(dbh, "list")) {
+    
+    if (methods::is(dbh, "list")) {
       for (j in 1:length(sel)) {
-        if ((is(dbh[[sel[j]]], "numeric")) & (all(is.na(dbh[[sel[j]]])))) {
+        if ((methods::is(dbh[[sel[j]]], "numeric")) & (all(is.na(dbh[[sel[j]]])))) {
           out[[sel[j]]] <- array(NA, c(n,1,length(dbh[[sel[j]]])))
           out[[sel[j]]][,,] <- NA
           next
-        } else if (is(dbh[[sel[j]]], "numeric")) {
+        } else if (methods::is(dbh[[sel[j]]], "numeric")) {
           ntrees <- 1
           nyears <- length(dbh[[sel[j]]])
         } else {
@@ -213,8 +211,8 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
         out[[sel[j]]] <- array(NA, c(n,ntrees,nyears))
         
         for (k in 1:ntrees) {
-          epsilon <- rnorm(n, 0, s) # don't fix this for a single tree; fix for a single iteration for a single site across all trees
-          if (is(dbh[[sel[j]]], "numeric")) {
+          epsilon <- stats::rnorm(n, 0, s) # don't fix this for a single tree; fix for a single iteration for a single site across all trees
+          if (methods::is(dbh[[sel[j]]], "numeric")) {
             dbh_sel_k <- dbh[[sel[j]]]
           } else {
             dbh_sel_k <- dbh[[sel[j]]][k,]
@@ -226,14 +224,14 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
       }
     } else if (single.tree == TRUE) {
       # for a dbh time-series for a single tree, fix error for each draw
-      epsilon = rnorm(n, 0, s)
+      epsilon = stats::rnorm(n, 0, s)
       for (i in 1:n) {
         out[i,] <- exp(a[i]+b[i]*log(dbh) + epsilon[i])
       }
     } else {
       # for a dbh time-series for different trees, error not fixed across draws
       for (i in sel) {
-        out[,i] <- exp(rnorm(n, a+b*log(dbh[i]),s))
+        out[,i] <- exp(stats::rnorm(n, a+b*log(dbh[i]),s))
       }
     }
     
@@ -244,35 +242,35 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
 
 #' @title load.allom
 #' @name  load.allom
-#' 
+#'
 #' @param object Allometry model object. Option includes
 #'\itemize{
 #'   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
 #'   \item{'directory where files are located}{ - }
 #' }
-#' 
+#'
 #' @return mcmc outputs in a list by PFT then component
 #'
 #' @description loads allom files
-#'   
-#' @examples 
-#' 
+#'
+#' @examples
+#'
 #' \dontrun{
 #'   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
 #'   allom.mcmc = load.allom(object)
-#'   
+#'
 #' }
-#' 
+#'
 #' @author Michael Dietze
-#' 
+#'
 #' @export
-#' 
+#'
 load.allom <- function(object) {
   ## assuming object is file path, load up
   tmp <- list()
   for (i in seq_along(object)) {
     
-    if (tolower(file_ext(object[i])) == "rdata") {
+    if (tolower(tools::file_ext(object[i])) == "rdata") {
       my.files <- object[i]
     } else {
       my.files <- dir(object[i], "Allom.*.Rdata", full.names = TRUE)
@@ -296,16 +294,17 @@ load.allom <- function(object) {
         tmp[[k]] <- list()
         names(tmp)[k] <- my.pft
       }
-      load(my.files[j])
-      tmp[[k]][[my.comp]] <- mc
+      tmp_env <- new.env()
+      load(my.files[j], envir = tmp_env)
+      tmp[[k]][[my.comp]] <- tmp_env$mc
     }
   }
   
   ## convert mcmclist objects to mcmc
   for (i in seq_along(tmp)) {
     for (j in which(!sapply(tmp[[i]], is.null))) {
-      if (is.mcmc.list(tmp[[i]][[j]])) {
-        tmp[[i]][[j]] <- as.mcmc(as.matrix(tmp[[i]][[j]]))
+      if (coda::is.mcmc.list(tmp[[i]][[j]])) {
+        tmp[[i]][[j]] <- coda::as.mcmc(as.matrix(tmp[[i]][[j]]))
       }
     }
   }

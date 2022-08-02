@@ -322,20 +322,20 @@ Some important tags are as follows:
 
 This information is currently used by the following PEcAn workflow function:
 
-- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write model-specific configuration files {#pecan-write-configs}
+- `PEcAn.<MODEL>::write.config.<MODEL>` -- Write [model-specific configuration files](#pecan-write-configs)
 - `PEcAn.workflow::start_model_runs` -- Begin model run execution
 
 #### Model-specific configuration {#xml-model-specific}
 
 See the following:
 
-* [ED2][ED2 Configuration]
-* [SIPNET][SIPNET Configuration]
-* [BIOCRO][BioCro Configuration]
+* [ED2 Configuration](#models-ed)
+* [SIPNET Configuration](#models-sipnet)
+* [BIOCRO Configuration](#models-biocro)
 
 #### ED2 specific tags {#xml-ed}
 
-Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
+Following variables are ED specific and are used in the [ED2 Configuration](#models-ed).
 
 Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includes, veg, soil, psscss, inputs.
 
@@ -402,7 +402,7 @@ This contains the following tags:
 - `name` -- The name of the site, as a string.
 - `lat`, `lon` -- The latitude and longitude coordinates of the site, as decimals.
 - `met.start`, `met.end` -- ???
-- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an exmaple of how this tag can be added to the PEcAn xml :
+- `<site.pft>` (optional) If this tag is found under the site tag, then PEcAn automatically makes sure that only PFTs defined under this tag is used for generating parameter's samples. Following shows an example of how this tag can be added to the PEcAn xml :
 
 ```xml
     <site.pft>
@@ -513,8 +513,9 @@ The following provides a quick overview of XML tags related to remote execution.
 The `host` section has the following tags:
 
 * `name`: [optional] name of host server where model is located and executed, if not specified localhost is assumed.
-* `rundir`: [optional/required] location where all the configuration files are written. For localhost this is optional (`<outdir>/run` is the default), for any other host this is required.
-* `outdir`: [optional/required] location where all the outputs of the model are written. For localhost this is optional (`<outdir>/out` is the default), for any other host this is required.
+* `folder`: [required] The location to store files on the remote machine. For localhost this is optional (`<outdir>` is the default), for any other host this is required.
+* `rundir`: [optional] location where all the configuration files are written. If not specified, this will be generated starting at the path specified in `folder`.
+* `outdir`: [optional] location where all the outputs of the model are written. If not specified, this will be generated starting at the path specified in `folder`.
 * `scratchdir`: [optional] location where output is written. If specified the output from the model is written to this folder and copied to the outdir when the model is finished, this could significantly speed up the model execution (by using local or ram disk).
 * `clearscratch`: [optional] if set to TRUE the scratchfolder is cleaned up after copying the results to the outdir, otherwise the folder will be left. The default is to clean up after copying.
 * `qsub`: [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (`<qsub/>`) in which case it will use the default value is `qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash`.
@@ -525,9 +526,10 @@ The `host` section has the following tags:
 
 The `modellauncher` section if specified will group all runs together and only submit a single job to the HPC cluster. This single job will leverage of a MPI program that will execute a single run. Some HPC systems will place a limit on the number of jobs that can be executed in parallel, this will only submit a single job (using multiple nodes). In case there is no limit on the number of jobs, a single PEcAn run could potentially submit a lot of jobs resulting in the full cluster running jobs for a single PEcAn run, preventing others from executing on the cluster.
 
-The `modellauncher` has 2 arguements:
+The `modellauncher` has 3 arguments:
 * `binary` : [required] The full path to the binary modellauncher. Source code for this file can be found in `pecan/contrib/modellauncher`](https://github.com/PecanProject/pecan/tree/develop/contrib/modellauncher).
 * `qsub.extra` : [optional] Additional flags to pass to qsub besides those specified in the `qsub` tag in host. This option can be used to specify that the MPI environment needs to be used and the number of nodes that should be used.
+* `mpirun`: [optional] Additional commands to be added to the front of `launcher.sh`.  Default is `mpirun <path to binary> <path to joblist.txt>`.  Edit this to, for example, load necessary modules to run `mpirun`.
 
 ## Advanced features {#xml-advanced}
 
@@ -817,10 +819,10 @@ This section describes the tags required for configuring `remote_process`.
 ```
 
 * `out_get_data`: (required) type of raw output requested, e.g, bands, smap
-* `source`: (required) source of remote data, e.g., gee or appeears 
-* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for appeears
+* `source`: (required) source of remote data, e.g., gee or AppEEARS 
+* `collection`: (required) dataset or product name as it is provided on the source, e.g. "COPERNICUS/S2_SR" for gee or "SPL3SMP_E.003" for AppEEARS
 * `scale`: (optional) pixel resolution required for some gee collections, recommended to use 10 for Sentinel 2
-* `projection`: (optional) type of projection. Only required for appeears polygon AOI type
+* `projection`: (optional) type of projection. Only required for AppEEARS polygon AOI type
 * `qc`: (optional) quality control parameter, required for some gee collections
 * `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 

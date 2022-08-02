@@ -136,7 +136,7 @@ The following describes in general terms what happens during a typical run of th
 1. The user initializes all containers with `docker-compose up`.
 All the services that interact with RabbitMQ (`executor` and all models) run `receiver.py` in the foreground, waiting for messages to tell them what to do.
 
-2. The user browses to http://localhost:8000/pecan/ and steps through the web interface.
+2. The user browses to http://pecan.localhost/pecan/ and steps through the web interface.
 All the pages up to the `04-runpecan.php` run on the `web` container, and are primarily for setting up the `pecan.xml` file.
 
 3. Once the user starts the PEcAn workflow at `04-runpecan.php`, the underlying PHP code connects to RabbitMQ (based on the URI provided in `config.php`) and posts the following message to the `pecan` queue:

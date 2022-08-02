@@ -170,7 +170,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     rh <- rh/100
     ta <- ncdf4::ncvar_get(nc = nc1, varid = "TA")
     ta[ta == -6999 | ta == -9999] <- NA
-    ta <- udunits2::ud.convert(ta, "degC", "K")
+    ta <- PEcAn.utils::ud_convert(ta, "degC", "K")
     sh <- rh2qair(rh = rh, T = ta)
     var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg/kg", dim = dim,
                      missval = -6999, verbose = verbose)
@@ -180,14 +180,14 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # convert TA to air_temperature
     copyvals(nc1 = nc1, var1 = "TA", nc2 = nc2,
              var2 = "air_temperature", units2 = "K",
-             dim2 = dim, conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
+             dim2 = dim, conv = function(x) { PEcAn.utils::ud_convert(x, "degC", "K") },
              verbose = verbose)
 
     # convert PRESS to air_pressure
     copyvals(nc1 = nc1, var1 = "PRESS", nc2 = nc2,
              var2 = "air_pressure", units2 = "Pa",
              dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "kPa", "Pa") },
+             conv = function(x) { PEcAn.utils::ud_convert(x, "kPa", "Pa") },
              verbose = verbose)
 
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
@@ -195,14 +195,14 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
              var2 = "mole_fraction_of_carbon_dioxide_in_air",
              units2 = "mole/mole",
              dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "ppm", "mol/mol") },
+             conv = function(x) { PEcAn.utils::ud_convert(x, "ppm", "mol/mol") },
              verbose = verbose)
 
     # convert TS1 to soil_temperature
     copyvals(nc1 = nc1, var1 = "TS1", nc2 = nc2,
              var2 = "soil_temperature", units2 = "K",
              dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
+             conv = function(x) { PEcAn.utils::ud_convert(x, "degC", "K") },
              verbose = verbose)
 
     # copy RH to relative_humidity
@@ -215,7 +215,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1 = nc1, var1 = "VPD", nc2 = nc2,
              var2 = "water_vapor_saturation_deficit", units2 = "Pa",
              dim2 = dim,
-             conv = function(x) { ifelse(x < 0, NA, udunits2::ud.convert(x, "kPa", "Pa")) },
+             conv = function(x) { ifelse(x < 0, NA, PEcAn.utils::ud_convert(x, "kPa", "Pa")) },
              verbose = verbose)
 
     # copy Rg to surface_downwelling_shortwave_flux_in_air
@@ -234,7 +234,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1 = nc1, var1 = "PAR", nc2 = nc2,
              var2 = "surface_downwelling_photosynthetic_photon_flux_in_air", units2 = "mol m-2 s-1",
              dim2 = dim,
-             conv = function(x) { udunits2::ud.convert(x, "umol m-2 s-1", "mol m-2 s-1") },
+             conv = function(x) { PEcAn.utils::ud_convert(x, "umol m-2 s-1", "mol m-2 s-1") },
              verbose = verbose)
 
     # copy WD to wind_direction (not official CF)

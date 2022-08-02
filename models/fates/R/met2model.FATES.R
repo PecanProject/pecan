@@ -31,7 +31,6 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # close
   # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
-  library(PEcAn.utils)
   
   insert <- function(ncout, name, unit, data) {
     var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
