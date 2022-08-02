@@ -103,7 +103,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 
     ## convert time to seconds
     sec <- nc$dim$time$vals
-    sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     timestep.s <- 86400  # seconds in a day
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
     tstep <- round(timestep.s / dt)
@@ -147,9 +147,9 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     doy <- rep(seq_len(diy), each = timestep.s / dt)[seq_along(sec)]
 
     ## Aggregate variables up to daily
-    Tmean        <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")
-    Tmin         <- udunits2::ud.convert(tapply(Tair, doy, min, na.rm = TRUE), "Kelvin", "Celsius")
-    Tmax         <- udunits2::ud.convert(tapply(Tair, doy, max, na.rm = TRUE), "Kelvin", "Celsius")
+    Tmean        <- PEcAn.utils::ud_convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")
+    Tmin         <- PEcAn.utils::ud_convert(tapply(Tair, doy, min, na.rm = TRUE), "Kelvin", "Celsius")
+    Tmax         <- PEcAn.utils::ud_convert(tapply(Tair, doy, max, na.rm = TRUE), "Kelvin", "Celsius")
     Rin          <- tapply(SW, doy, sum) * dt * 1e-06  # J/m2/s * s * MJ/J
     LeafWaterPot <- tapply(LeafWaterPot, doy, mean)
     CO2          <- tapply(CO2, doy, mean)

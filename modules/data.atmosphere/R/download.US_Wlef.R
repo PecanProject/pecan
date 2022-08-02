@@ -39,7 +39,7 @@ download.US_Wlef <- function(start_date, end_date, timestep = 1) {
     if (is.null(influx)) { #Error encountered in data fetching.
       PEcAn.logger::logger.warn(paste0("Data not avaliable for year ", year, ". All values for ", year, " will be NA."))
       # Determine the number of days in the year
-      rows_in_year <- udunits2::ud.convert(lubridate::as.duration(lubridate::interval(as.POSIXct(paste0(year, "-01-01")), as.POSIXct(paste0(year + 1, "-01-01")))), "s", "day")
+      rows_in_year <- PEcAn.utils::ud_convert(lubridate::as.duration(lubridate::interval(as.POSIXct(paste0(year, "-01-01")), as.POSIXct(paste0(year + 1, "-01-01")))), "s", "day")
       rows_in_year = rows_in_year * 24 # 48 measurements per day, one every half hour.
       influx <- matrix(rep(-999, rows_in_year * 13), nrow=rows_in_year, ncol = 13)
     }
@@ -58,16 +58,16 @@ download.US_Wlef <- function(start_date, end_date, timestep = 1) {
   
   start_interval <- lubridate::interval(year_start, start_date)
   days <- lubridate::as.duration(start_interval)  # Actually returns a number of seconds
-  days <- udunits2::ud.convert(as.integer(days), "s", "day") # Days, including fractional part, if any.
-  hours <- floor(udunits2::ud.convert(days - floor(days), "day", "hr"))  # Extract the hour component, round to the previous hour.
+  days <- PEcAn.utils::ud_convert(as.integer(days), "s", "day") # Days, including fractional part, if any.
+  hours <- floor(PEcAn.utils::ud_convert(days - floor(days), "day", "hr"))  # Extract the hour component, round to the previous hour.
   days <- floor(days) # Extract the whole day component
   
   start_row <- as.integer(days * 24 + hours)
   
   data_interval <- lubridate::interval(start_date, end_date)
   days <- lubridate::as.duration(data_interval) # a number of seconds
-  days <- udunits2::ud.convert(as.integer(days), "s", "day")
-  hours <- floor(udunits2::ud.convert(as.integer(days - floor(days)), "day", "hr")) # Round down to the nearest half hour
+  days <- PEcAn.utils::ud_convert(as.integer(days), "s", "day")
+  hours <- floor(PEcAn.utils::ud_convert(as.integer(days - floor(days)), "day", "hr")) # Round down to the nearest half hour
   days <- floor(days)
   end_row <- start_row + as.integer(days * 24 + hours)
   

@@ -8,6 +8,6 @@
 #' @author Alexey Shiklomanov
 #' @export
 units_are_equivalent <- function(x, y) {
-  x2y <- udunits2::ud.convert(1, x, y)
+  x2y <- ud_convert(1, x, y)
   1 == x2y
 }

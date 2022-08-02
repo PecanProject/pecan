@@ -46,7 +46,6 @@ Imports:
     prodlim,
     MCMCpack,
     TruncatedNormal (>= 2.2),
-    udunits2 (>= 0.11),
     utils,
     XML,
     lqmm,

@@ -23,7 +23,6 @@ Imports:
     PEcAn.logger,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11),
     PEcAn.data.atmosphere,
     PEcAn.utils
 Suggests:

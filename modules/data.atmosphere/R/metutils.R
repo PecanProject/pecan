@@ -44,7 +44,7 @@ qair2rh <- function(qair, temp, press = 1013.25) {
 ##' @aliases rh2rv
 rh2qair <- function(rh, T, press = 101325) {
   stopifnot(T[!is.na(T)] >= 0)
-  Tc <- udunits2::ud.convert(T, "K", "degC")
+  Tc <- PEcAn.utils::ud_convert(T, "K", "degC")
   es <- 6.112 * exp((17.67 * Tc) / (Tc + 243.5))
   e <- rh * es
   p_mb <- press / 100
@@ -158,7 +158,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
   ppfd <- watts/(2.35 * 10^5)
-  return(udunits2::ud.convert(ppfd, "mol ", "umol"))
+  return(PEcAn.utils::ud_convert(ppfd, "mol ", "umol"))
 } # par2ppfd
 
 
@@ -244,6 +244,6 @@ AirDens <- function(pres, T, rv) {
 ##' @author Istem Fer
 ##' @return lV   latent heat of vaporization (J kg-1)
 get.lv <- function(airtemp = 268.6465) {
-  airtemp_C <- udunits2::ud.convert(airtemp, "K", "degC")
+  airtemp_C <- PEcAn.utils::ud_convert(airtemp, "K", "degC")
   return((94.21 * (365 - airtemp_C) ^ 0.31249) * 4.183 * 1000)
 } # get.lv

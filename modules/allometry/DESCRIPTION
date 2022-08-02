@@ -1,25 +1,29 @@
 Package: PEcAn.allometry
 Type: Package
-Title: PEcAn allometry functions
+Title: PEcAn Allometry Functions
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
+             person("Shashank", "Singh", role = c("ctb")),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Mike Dietze <dietze@bu.edu>
-Maintainer: Mike Dietze <dietze@bu.edu>
-Description: Synthesize allometric equations or fit allometries to data
-Depends:
+Description: Synthesize allometric equations or fit allometries to data.
+Imports:
+    coda (>= 0.18),
+    grDevices,
+    graphics,
+    methods,
+    stats,
+    utils,
     MCMCpack,
     mvtnorm,
-    tools
-Imports:
-    PEcAn.logger,
-    coda (>= 0.18),
-    XML (>= 3.98-1.4)
+    tools,
+    PEcAn.DB
 Suggests:
+    knitr,
+    markdown,
+    rmarkdown,
     testthat (>= 1.0.2),
-    PEcAn.DB,
     withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
@@ -27,3 +31,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+VignetteBuilder: knitr
