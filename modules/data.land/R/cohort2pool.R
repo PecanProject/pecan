@@ -24,7 +24,7 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   #Grab number of plots
   herb_num <- length(unique(dat[[1]]$plot))
   #
-  if(is.na(dat[[2]])){
+  if(sum(is.na(dat[[2]]))){
     biomass <- 0
     total_area <- 1
     ratio <- 0
