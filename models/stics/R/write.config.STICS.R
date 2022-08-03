@@ -35,19 +35,77 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   bindir  <- file.path(settings$host$rundir, run.id, "bin")
   outdir  <- file.path(settings$host$outdir, run.id)
   
-  # will think about multiple PFT case, currently considering successive (>2 years) case only
-  usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
-  # In STICS, it is 1 UMS per crop cycle, where the cycle can be 2-years max
+  
+  ########## Determining number of USMs (could be made its own function)
+  
+  # In STICS, it is 1 UMS per crop cycle, where each cycle can be 2-years max
   # If we have a consecutive monoculture for > 2 years, we still need to divide it into 2-year USMs
+  # If there are multiple pfts, this is a strong clue that there are multiple crop cycles
+  # but it can also be the case that there is one cycle with intercropping
+  
   years_requested <- unique(lubridate::year(dseq))
+  # we always pass two climate files to STICS, repeat the same year twice if the last crop cycle has 1 year only
   if(length(years_requested) %%2 == 1) years_requested <- c(years_requested, years_requested[length(years_requested)])
   
-  if(length(years_requested) > 2){
-    years_indices <- rep(seq(1, length(years_requested), by=2), each=2)
-    usmdirs <- tapply(years_requested, years_indices, function(x)  paste0(usmdir_root, paste(x, collapse = '-')))
-  }else{
-    usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
-  } 
+  # Could the events file hierarchy be organized by crop cycle? Need to check how ACE-json does
+  if(!is.null(settings$run$inputs$fielddata)){
+    events_file <- jsonlite::read_json(settings$run$inputs$fielddata$path, simplifyVector = TRUE)[[1]]
+    
+    # events file can have info from other years, subset
+    sub_events <- events_file$events[(lubridate::year(events_file$events$date) %in% years_requested),]
+    
+   
+    crops <- c(sub_events$planted_crop, sub_events$harvest_crop)
+    if(!is.null(crops)){
+      crops <- crops[!is.na(crops)] # filter NAs caused by flattening the json
+      # for now taking a simplistic assumption that if there are more than 1 harvested + planted crops, there are multiple crop cycles
+      if(length(unique(crops)) > 1){
+        # we probably have multiple pfts passed via settings, usmdir_root will be an array
+        usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, sapply(settings$pfts, `[[`, "name")), "_") 
+        # !!! IMPORTANT: document also elsewhere
+        # I'm making STICS PFT names to match fieldactivity names, or more broadly whatever is in the events json file!!!
+        # e.g. barley is not barley but bar
+        # alternatively I can start a LUT to match bety-pft names to match events species codes
+        # we need to pass right parameters under right USM!
+        
+        if(length(years_requested) <= 2){
+          # multiple usms due to crop rotation only
+          # associate spp and year
+          usmdirs <- sapply(crops, function(x){
+            crop_yr <- lubridate::year(sub_events$date[(sub_events$planted_crop %in% x) | (sub_events$harvest_crop %in% x)])
+            crop_usm <- paste0(usmdir_root[grep(tolower(x), usmdir_root)], crop_yr)
+            return(crop_usm)
+            })
+        }else{
+          # multiple usms due to crop rotation and multiple cropping seasons per rotation
+          # not implemented yet
+          PEcAn.logger::logger.severe("write.config.STICS is under development for this case.")
+        }
+        
+      }else{
+        # single crop, single usmdir_root
+        usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
+        if(length(years_requested) > 2){
+          # multiple usms because more than 2 years of simulation
+          years_indices <- rep(seq(1, length(years_requested), by=2), each=2)
+          usmdirs <- tapply(years_requested, years_indices, function(x)  paste0(usmdir_root, paste(x, collapse = '-')))
+        }else{
+          # single usm because less than 2 years of simulation
+          usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
+        } 
+      }
+      
+    }else{
+      # somehow events have no crop identifiers, e.g. only fertilization and tilling events are passed 
+      # most likely a partial year & crop cycle
+      usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
+      # single usm
+      usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
+    }
+  }
+  
+    
+
   
   ## make sure rundir and outdir exist
   dir.create(rundir, showWarnings = FALSE, recursive = TRUE)
