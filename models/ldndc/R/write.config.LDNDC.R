@@ -155,18 +155,69 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   a.2 <- paste0("\t\t\t</species>")
   
   
+  
   for (pft in seq_along(trait.values)) {
     
     pft.traits <- unlist(trait.values[[pft]])
     pft.names <- names(pft.traits)
     
+    
+    # Number at the beginning refers to the number of species parameters in LDNDC guide book.
+    # First there is name in LDNDC and the second is name in BETY database
+    
+    #18 ALB (-) - SW_albedo (-)
+    if ("SW_albedo" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='ALB' value='", pft.traits[which(pft.names == "SW_albedo")], "' /> \n"), collapse="")
+    }
+    
+    #34 DIAMMAX (m) - stem_diameter (cm)
+    if ("stem_diameter" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DIAMMAX' value='",
+                               udunits2::ud.convert(
+                                 pft.traits[which(pft.names == "stem_diameter")], "m", "cm"
+                                 ),"' /> \n"), collapse="")
+    }
+    
+    #58 EXT - extinction_coefficient_diffuse
+    if ("extinction_coefficient_diffuse" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='EXT' value='", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], "' /> \n"), collapse="")
+    }
+    
+    #79 FRACTION_ROOT - root_biomass_fraction
+    if ("root_biomass_fraction" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FRACTION_ROOT' value='", pft.traits[which(pft.names == "root_biomass_fraction")], "' /> \n"), collapse="")
+    }
+    
+    #89 GDD_BASE_TEMPERATURE (C) - gdd_tbase (C)
+    if ("gdd_tbase" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_BASE_TEMPERATURE' value='", pft.traits[which(pft.names == "gdd_tbase")], "' /> \n"), collapse="")
+    }
+    
+    #167 PSNTMAX (C) -  pstemp_max (C)
+    if ("pstemp_max" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PSNTMAX' value='", pft.traits[which(pft.names == "pstemp_max")], "' /> \n"), collapse="")
+    }
+    
+    #168 PSNTMIN (C) -  pstemp_min (C)
+    if ("pstemp_min" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PSNTMIN' value='", pft.traits[which(pft.names == "pstemp_min")], "' /> \n"), collapse="")
+    }
+    
+    #169 PSNTOPT (C) -  psnTOpt (C)
+    if ("psnTOpt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PSNTOPT' value='", pft.traits[which(pft.names == "psnTOpt")], "' /> \n"), collapse="")
+    }
+    
+    #193 SLAMAX (m2 kg-1) -  SLAMAX (m2 kg-1)
+    if ("SLAMAX" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLAMAX' value='", pft.traits[which(pft.names == "SLAMAX")], "' /> \n"), collapse="")
+    }
+    
+    #194 SLAMIN (m2 kg-1) -  SLAMIN (m2 kg-1)
     if ("SLAMIN" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLAMIN' value='", pft.traits[which(pft.names == "SLAMIN")], "' /> \n"), collapse="")
     }
     
-    if ("extinction_coefficient_diffuse" %in% pft.names) {
-      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='EXT' value='", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], "' /> \n"), collapse="")
-    }
   }
   
   speciesparfile <- gsub("@Info@", paste(a.1,b.1,b.2,b.3,a.2), speciesparfile)
