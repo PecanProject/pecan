@@ -13,7 +13,9 @@ Maintainer: Tobey Carman <tcarman2@alaska.edu>, Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the dvmdostem model to
     PEcAn.
 Imports:
+    lubridate,
     ncdf4,
+    PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
     rjson
 Suggests:

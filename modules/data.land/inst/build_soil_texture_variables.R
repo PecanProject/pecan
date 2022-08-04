@@ -123,7 +123,7 @@ texture <- read.csv("~/pecan/modules/data.land/data/texture.csv",header=TRUE,str
 soil.key  = c("Sa","LSa","SaL","SiL","L","SaCL","SiCL","CL","SaC","SiC","C","P","BR"
               ,"Si","CC","CSa","CSi")
 #----- Define some constants. ----------------------------------------------------------#
-fieldcp.K  = udunits2::ud.convert(0.1,"mm/day","meters/second")  
+fieldcp.K  = PEcAn.utils::ud_convert(0.1,"mm/day","meters/second")  
                   # hydraulic conduct. at field capacity                       [ mm/day]
 soilcp.MPa = 3.1  # soil-water potential for air dry soil                      [    MPa]
 soilwp.MPa = 1.5  # soil-water potential at wilting point                      [    MPa]

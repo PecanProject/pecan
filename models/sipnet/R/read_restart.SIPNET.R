@@ -42,7 +42,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
+    forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
     
     # calculate fractions, store in params, will use in write_restart
@@ -59,7 +59,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("GWBI" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+    forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
     names(forecast[[length(forecast)]]) <- c("GWBI")
   }
   
@@ -104,7 +104,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotLivBiom" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$TotLivBiom[last],  "kg/m^2", "Mg/ha")
+    forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(ens$TotLivBiom[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("TotLivBiom")
   }
   
