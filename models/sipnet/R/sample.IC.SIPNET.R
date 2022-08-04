@@ -32,7 +32,7 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
   # reminder : when working with kgC m-2 s-1 as NPP units singularity issues pop up in sda.enkf
   # using MgC ha-1 yr-1 for NPP in SDA and also brought back AbvGrndWood to MgC ha-1 for sanity reasons
   AbvGrndWood <- ifelse(rep("AbvGrndWood" %in% names(state), ne), 
-                        udunits2::ud.convert(state$AbvGrndWood[sample.int(length(state$AbvGrndWood), ne)],  "Mg/ha", "g/m^2"), 
+                        PEcAn.utils::ud_convert(state$AbvGrndWood[sample.int(length(state$AbvGrndWood), ne)],  "Mg/ha", "g/m^2"), 
                         runif(ne, 700, 15000))  ## prior
   
   # sipnet accepts a plantWoodC pool that is above-ground + roots

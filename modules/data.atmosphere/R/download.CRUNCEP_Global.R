@@ -221,7 +221,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
       if (dap$dim$time$len != ntime) {
         PEcAn.logger::logger.severe("Expected", ntime, "observations, but", url,  "contained", dap$dim$time$len)
       }
-      dap_time <- udunits2::ud.convert(dap$dim$time$vals,
+      dap_time <- PEcAn.utils::ud_convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
       if (!isTRUE(all.equal(dap_time, time$vals))){

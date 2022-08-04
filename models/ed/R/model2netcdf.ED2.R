@@ -683,8 +683,8 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   ## Conversion factor for umol C -> kg C
   Mc <- 12.017  #molar mass of C, g/mol
-  umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
-  yr2s      <- udunits2::ud.convert(1, "s", "yr")
+  umol2kg_C <- Mc * PEcAn.utils::ud_convert(1, "umol", "mol") * PEcAn.utils::ud_convert(1, "g", "kg")
+  yr2s      <- PEcAn.utils::ud_convert(1, "s", "yr")
   
   # TODO - remove this function and replace with ifelse statements inline below (SPS)
   conversion <- function(col, mult) {
@@ -744,7 +744,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
   # ----- fill list
   
-  out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
+  out <- conversion(1, PEcAn.utils::ud_convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
   nc_var[[s + 1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
   out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
