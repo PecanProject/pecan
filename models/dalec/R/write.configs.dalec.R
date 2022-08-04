@@ -116,10 +116,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     #grab SLA from parameters and convert to PECAN standard
     sla <- NULL
     if("SLA" %in% names(params)){
-      sla <- udunits2::ud.convert(params[1,"SLA"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (revert convert.samples conversion to dalec default; need standard for prepare.pools)
+      sla <- PEcAn.utils::ud_convert(params[1,"SLA"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (revert convert.samples conversion to dalec default; need standard for prepare.pools)
     } else{
       default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
-      sla <- udunits2::ud.convert(default.param[which(default.param$cmdFlag == "SLA"),"val"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (dalec default)
+      sla <- PEcAn.utils::ud_convert(default.param[which(default.param$cmdFlag == "SLA"),"val"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (dalec default)
     }
 
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = sla))
@@ -129,31 +129,31 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
 
       # cf0 initial canopy foliar carbon (g/m2)
       if ("leaf" %in% names(IC.pools)) {
-        IC.params[["cf0"]] <- udunits2::ud.convert(IC.pools$leaf, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+        IC.params[["cf0"]] <- PEcAn.utils::ud_convert(IC.pools$leaf, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
       }
 
       # cw0 initial pool of woody carbon (g/m2)
       if ("wood" %in% names(IC.pools)) {
-        IC.params[["cw0"]] <- udunits2::ud.convert(IC.pools$wood, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+        IC.params[["cw0"]] <- PEcAn.utils::ud_convert(IC.pools$wood, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
       }
 
       # cr0 initial pool of fine root carbon (g/m2)
       if ("fine.roots" %in% names(IC.pools)) {
-        IC.params[["cr0"]] <- udunits2::ud.convert(IC.pools$fine.roots, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+        IC.params[["cr0"]] <- PEcAn.utils::ud_convert(IC.pools$fine.roots, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
       }
 
       ###non-living variables
       # cl0 initial pool of litter carbon (g/m2)
       if ("litter" %in% names(IC.pools)) {
-        IC.params[["cl0"]] <- udunits2::ud.convert(IC.pools$litter, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+        IC.params[["cl0"]] <- PEcAn.utils::ud_convert(IC.pools$litter, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
       }
 
       # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
       if("soil" %in%  names(IC.pools)){
         if("wood.debris" %in%  names(IC.pools)){
-          IC.params[["cs0"]] <- udunits2::ud.convert(IC.pools$soil + sum(IC.pools$wood.debris), 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+          IC.params[["cs0"]] <- PEcAn.utils::ud_convert(IC.pools$soil + sum(IC.pools$wood.debris), 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
         } else {
-          IC.params[["cs0"]] <- udunits2::ud.convert(IC.pools$soil, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
+          IC.params[["cs0"]] <- PEcAn.utils::ud_convert(IC.pools$soil, 'kg m-2', 'g m-2') #from PEcAn standard kg C m-2
           PEcAn.logger::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
         }
       }

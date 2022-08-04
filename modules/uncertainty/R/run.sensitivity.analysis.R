@@ -95,7 +95,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
           C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
           if(any(C.units)){
             for(x in which(C.units)) {
-              trait.samples[[pft$name]][[x]] <- udunits2::ud.convert(trait.samples[[pft$name]][[x]], "degC", "K")
+              trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
             }
           }
           

@@ -62,8 +62,8 @@ dplyr.count <- function(df) {
 #' @export
 ncdays2date <- function(time, unit) {
   date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
-  days    <- udunits2::ud.convert(time, unit, paste("days since ", date))
-  seconds <- udunits2::ud.convert(days, "days", "seconds")
+  days    <- PEcAn.utils::ud_convert(time, unit, paste("days since ", date))
+  seconds <- PEcAn.utils::ud_convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
 }  # ncdays2date
 
@@ -268,7 +268,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
 
-  globalDF <- tidyr::gather(out, key = var_name, value = vals, names(out)[names(out) != "posix"]) %>%
+  globalDF <- tidyr::gather(out, key = "var_name", value = "vals", names(out)[names(out) != "posix"]) %>%
     dplyr::rename(dates = .data$posix)
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id

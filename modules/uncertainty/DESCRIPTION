@@ -44,8 +44,7 @@ Imports:
     plyr (>= 1.8.4),
     purrr,
     randtoolbox,
-    rlang,
-    udunits2
+    rlang
 Suggests:
     testthat (>= 1.0.2),
 License: BSD_3_clause + file LICENSE

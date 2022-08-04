@@ -229,12 +229,12 @@ convert.samples.dvmdostem <- function(trait_values) {
   
   if("vpd_open" %in% names(trait_values)) {
     # Convert from kPa to Pa
-    trait_values[["vpd_open"]] <- udunits2::ud.convert(trait_values[["vpd_open"]],"kPa","Pa")
+    trait_values[["vpd_open"]] <- PEcAn.utils::ud_convert(trait_values[["vpd_open"]],"kPa","Pa")
   }
   
   if("vpd_close" %in% names(trait_values)) {
     # Convert from kPa to Pa
-    trait_values[["vpd_close"]] <- udunits2::ud.convert(trait_values[["vpd_close"]],"kPa","Pa")
+    trait_values[["vpd_close"]] <- PEcAn.utils::ud_convert(trait_values[["vpd_close"]],"kPa","Pa")
   }
   
   # Return the modifed version
