@@ -132,7 +132,7 @@ wanted <- c(
 'traits',
 'TruncatedNormal',
 'truncnorm',
-'udunits2',
+'units',
 'urltools',
 'utils',
 'vdiffr',

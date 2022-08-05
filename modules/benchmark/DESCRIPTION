@@ -36,9 +36,9 @@ Imports:
     SimilarityMeasures,
     stringr,
     tidyselect,
+    units,
     utils,
     grDevices,
-    udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
     zoo 
 Suggests:

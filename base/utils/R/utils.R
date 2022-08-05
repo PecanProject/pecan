@@ -389,8 +389,8 @@ tabnum <- function(x, n = 3) {
 ##' @export
 ##' @author unknown
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
-  new.temp.K <- udunits2::ud.convert(new.temp, "degC", "K")
-  old.temp.K <- udunits2::ud.convert(old.temp, "degC", "K")
+  new.temp.K <- ud_convert(new.temp, "degC", "K")
+  old.temp.K <- ud_convert(old.temp, "degC", "K")
   return(observed.value / exp(3000 * (1 / (new.temp.K) - 1 / (old.temp.K))))
 } # arrhenius.scaling
 #--------------------------------------------------------------------------------------------------#
@@ -558,21 +558,21 @@ misc.convert <- function(x, u1, u2) {
   mmH2O <- 18.01528 # molar mass of H2O, g/mol
   
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "ug", "kg") * amC
+    val <- ud_convert(x, "ug", "kg") * amC
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "ug") / amC
+    val <- ud_convert(x, "kg", "ug") / amC
   } else if (u1 == "mol H2O m-2 s-1" & u2 == "kg H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "g", "kg") * mmH2O
+    val <- ud_convert(x, "g", "kg") * mmH2O
   } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "g") / mmH2O
+    val <- ud_convert(x, "kg", "g") / mmH2O
   } else if (u1 == "Mg ha-1" & u2 == "kg C m-2") {
-    val <- x * udunits2::ud.convert(1, "Mg", "kg") * udunits2::ud.convert(1, "ha-1", "m-2")
+    val <- x * ud_convert(1, "Mg", "kg") * ud_convert(1, "ha-1", "m-2")
   } else if (u1 == "kg C m-2" & u2 == "Mg ha-1") {
-    val <- x * udunits2::ud.convert(1, "kg", "Mg") * udunits2::ud.convert(1, "m-2", "ha-1")
+    val <- x * ud_convert(1, "kg", "Mg") * ud_convert(1, "m-2", "ha-1")
   } else {
     u1 <- gsub("gC","g*12",u1)
     u2 <- gsub("gC","g*12",u2)
-    val <- udunits2::ud.convert(x,u1,u2)
+    val <- ud_convert(x,u1,u2)
     
     
     #    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
