@@ -34,7 +34,6 @@ observeEvent(input$var_name_model, {
 
 # Check that new units are parsible and can be used for conversion
 observeEvent(input$units_model,{
-  parseable <- ifelse(PEcAn.utils::unit_is_parseable(input$units_model), "can", "cannot")
   if(PEcAn.utils::unit_is_parseable(input$units_model)){
     model.df <- load.model()
     default.unit <- model.df %>% filter(var_name == input$var_name_model) %>% pull(ylab) %>% unique()
