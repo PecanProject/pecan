@@ -43,10 +43,10 @@ observeEvent(input$var_name_modeldata, {
 
 # Check that new units are parsible and can be used for conversion
 observeEvent(input$units_modeldata,{
-  if(udunits2::ud.is.parseable(input$units_modeldata)){
+  if(PEcAn.utils::unit_is_parseable(input$units_modeldata)){
     model.df <- load.model()
     default.unit <- model.df %>% filter(var_name == input$var_name_modeldata) %>% pull(ylab) %>% unique()
-    if(udunits2::ud.are.convertible(default.unit, input$units_modeldata)){
+    if(units::ud_are_convertible(default.unit, input$units_modeldata)){
       output$unit_text2 <-  renderText({"Conversion possible"})
     }else{
       output$unit_text2 <-  renderText({"Units are parsible but conversion is not possible"})
@@ -169,8 +169,8 @@ observeEvent(input$ex_plot_modeldata,{
                        })
                        
                        unit <- ylab
-                       if(input$units_modeldata != unit & udunits2::ud.are.convertible(unit, input$units_modeldata)){
-                         aligned_data$value <- udunits2::ud.convert(aligned_data$value,unit,input$units_modeldata)
+                       if(input$units_modeldata != unit & units::ud_are_convertible(unit, input$units_modeldata)){
+                         aligned_data$value <- PEcAn.utils::ud_convert(aligned_data$value,unit,input$units_modeldata)
                          ylab <- input$units_modeldata
                        }
                        
