@@ -1,4 +1,4 @@
-##' Check whether a unit string is parseable
+##' Check whether a string can be interpreted as a unit
 ##' 
 ##' Function will replace the now-unmaintained `udunits2::ud.is.parseable`
 ##' @author Tanishq Jain
