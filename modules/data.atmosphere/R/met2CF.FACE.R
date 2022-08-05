@@ -84,11 +84,11 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
         } else {
           u1 <- vars_used$input_units[i]
           u2 <- vars_used$pecan_units[i]
-          if (udunits2::ud.are.convertible(u1, u2)) {
+          if (units::ud_are_convertible(u1, u2)) {
             print(sprintf("convert %s %s to %s %s",
                           vars_used$input_name[i], vars_used$input_units[i], 
                           vars_used$pecan_name[i], vars_used$pecan_units[i]))
-            vals <- udunits2::ud.convert(vals, u1, u2)
+            vals <- PEcAn.utils::ud_convert(vals, u1, u2)
           } else if (PEcAn.utils::misc.are.convertible(u1, u2)) {
             print(sprintf("convert %s %s to %s %s", 
                           vars_used$input_name[i], u1, 

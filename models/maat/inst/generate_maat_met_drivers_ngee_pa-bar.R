@@ -52,7 +52,7 @@ met_drivers$Prec_mm <- met_drivers$RA_mm_d/24  # converting to mm per 1 hour per
 
 # get additional variables
 if (pressure){
-  met_drivers$Press_Pa <- udunits2::ud.convert(met_drivers$BP_hPa, "mmHg", "Pa")  # need to match this with source, when availible 
+  met_drivers$Press_Pa <- PEcAn.utils::ud_convert(met_drivers$BP_hPa, "mmHg", "Pa")  # need to match this with source, when availible 
 } else {
   met_drivers$Press_Pa <- rep(101325,length(met_drivers$Time))  # just use standard atmospheric pressure at sea level
 }

@@ -79,7 +79,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       nc <- ncdf4::nc_open(old.file)
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
       dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(86400 / dt)
@@ -107,11 +107,11 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
         PAR <- PEcAn.data.atmosphere::sw2par(RAD)
       } else {
         # convert
-        PAR <- udunits2::ud.convert(PAR, "mol", "umol")
+        PAR <- PEcAn.utils::ud_convert(PAR, "mol", "umol")
       }
 
       # Convert air temperature to Celsius
-      TAIR <- udunits2::ud.convert(TAIR, "kelvin", "celsius")
+      TAIR <- PEcAn.utils::ud_convert(TAIR, "kelvin", "celsius")
 
       #### ppm. atmospheric CO2 concentration.
       ### Constant from Environ namelist used instead if CA is nonexistent
