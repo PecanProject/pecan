@@ -2,18 +2,23 @@
 % Please edit documentation in R/unit_is_parseable.R
 \name{unit_is_parseable}
 \alias{unit_is_parseable}
-\title{Check whether a unit string is parseable}
+\title{Check whether a string can be interpreted as a unit}
 \usage{
-unit_is_parseable(u1)
+unit_is_parseable(unit)
 }
 \arguments{
-\item{u1}{A character string representing a type of units}
+\item{unit}{A character string representing a type of units}
 }
 \value{
 TRUE if the units is parseable, FALSE otherwise.
 }
 \description{
 Function will replace the now-unmaintained \code{udunits2::ud.is.parseable}
+}
+\examples{
+  unit_is_parseable("g/sec^2")
+  unit_is_parseable("kiglometters")
+
 }
 \author{
 Tanishq Jain
