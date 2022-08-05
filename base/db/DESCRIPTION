@@ -58,7 +58,7 @@ Imports:
     rlang,
     tibble,
     tidyr,
-    udunits2,
+    units
 Suggests:
     bit64,
     data.table,

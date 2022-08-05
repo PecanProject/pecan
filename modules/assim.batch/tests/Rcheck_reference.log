@@ -11,12 +11,12 @@
 * checking package dependencies ... WARNING
 Requires orphaned package: ‘udunits2’
 
-Imports includes 28 non-default packages.
+Imports includes 27 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
 * checking package dependencies ... NOTE
-Imports includes 28 non-default packages.
+Imports includes 27 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.

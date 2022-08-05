@@ -49,7 +49,6 @@ for(loni in 1:192){
 
     weather <- data.table(read.csv(file.path(weather.dir, "rawweather.csv")))
 
-    library(udunits2)
     ## unit conversion
     Tmin <- min(weather$temp - 273.15, 0)
 
@@ -79,11 +78,11 @@ for(loni in 1:192){
                        Tavg = qctemp(temp),
                        Tmax = qctemp(tempmax),
                        Tmin = qctemp(tempmin),
-                       solarR   = udunits2::ud.convert(qcsolar(solar),
+                       solarR   = PEcAn.utils::ud_convert(qcsolar(solar),
                            "watt day",
                            "megajoule"), 
                        WS  = sqrt(qcwind(uwind)^2 + qcwind(vwind)^2),
-                       precip = udunits2::ud.convert(qcprecip(precip), "mm s-1", "mm day-1")),
+                       precip = PEcAn.utils::ud_convert(qcprecip(precip), "mm s-1", "mm day-1")),
                  qcshum(shum),
                  qcrh(rh)]
 

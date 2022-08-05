@@ -118,7 +118,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     mysoil$soil_water_potential_at_saturation[z]  <- -0.01 * (10.^(2.17 - 0.63*mysoil$fraction_of_clay_in_soil[z] - 1.58*mysoil$fraction_of_sand_in_soil[z]))
     
     # Hydraulic conductivity at saturation [ m/s ]
-    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$fraction_of_sand_in_soil[z] - 0.64*mysoil$fraction_of_clay_in_soil[z]),
+    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- PEcAn.utils::ud_convert(10.^(-0.60 + 1.26*mysoil$fraction_of_sand_in_soil[z] - 0.64*mysoil$fraction_of_clay_in_soil[z]),
                                            "inch/hour","meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
