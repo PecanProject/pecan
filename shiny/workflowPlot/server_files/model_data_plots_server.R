@@ -43,7 +43,7 @@ observeEvent(input$var_name_modeldata, {
 
 # Check that new units are parsible and can be used for conversion
 observeEvent(input$units_modeldata,{
-  if( PEcAn.utils::ud_convert(1, input$units_modeldata, input$units_modeldata)){
+  if(PEcAn.utils::unit_is_parseable(input$units_modeldata)){
     model.df <- load.model()
     default.unit <- model.df %>% filter(var_name == input$var_name_modeldata) %>% pull(ylab) %>% unique()
     if(units::ud_are_convertible(default.unit, input$units_modeldata)){
