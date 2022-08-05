@@ -19,7 +19,3 @@ test_that("Non-parseable unit", {
   expect_false(unit_is_parseable(""))
 })
 
-# This differ from `udunits2::ud.is.parseable`
-#test_that("incompatiable unit to parse", {
-#  expect_error(unit_is_parseable(""))
-#})
