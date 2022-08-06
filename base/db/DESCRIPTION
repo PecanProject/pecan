@@ -54,11 +54,13 @@ Imports:
     PEcAn.remote,
     PEcAn.utils,
     purrr,
+    RCurl,
     R.utils,
     rlang,
     tibble,
     tidyr,
-    units
+    units,
+    XML
 Suggests:
     bit64,
     data.table,
