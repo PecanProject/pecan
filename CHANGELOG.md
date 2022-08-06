@@ -44,6 +44,11 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
   Note that both `units` and `udunits2` interface with the same underlying
   compiled code, so the `udunits2` *system library* is still required.
   (#2989; @nanu1605)
+- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
+  (#3002; @nanu1605)
+- To remove the cyclic dependency between PEcAn.DB and PEcAn.utils `convert.input` function is moved
+  from PEcAn.utils to PEcAn.DB.
+  (#3009; @nanu1605)
 
 ### Changed
 
