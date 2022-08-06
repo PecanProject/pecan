@@ -54,7 +54,7 @@ put_veg_module <- function(getveg.id, dbparms,
   
   host.inputargs = host
   
-  putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id$input.id,
+  putveg.id <- PEcAn.DB::convert.input(input.id = getveg.id$input.id,
                                          outfolder = spp.file$file_path, 
                                          formatname = formatname, 
                                          mimetype = mimetype,
