@@ -656,7 +656,7 @@ met.conv <- function(x, orig, bety, CF) {
   if (nchar(orig) == 0) {
     orig <- bety  ## if units not provided, default is that they were the same units as bety
   }
-  if (units::install_unit(orig)) {
+  if (PEcAn.utils::unit_is_parseable(orig)) {
     if (units::ud_are_convertible(orig, bety)) {
       return(PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(x, orig, bety), bety, CF))
     } else {
