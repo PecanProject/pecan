@@ -69,7 +69,7 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 
 \item{insert.new.file}{Logical: force creation of a new database record even if one already exists?}
 
-\item{pattern}{A regular expression, passed to \code{PEcAn.DB::dbfile.input.check}, used to match the name of the input file.}
+\item{pattern}{A regular expression, passed to \code{dbfile.input.check}, used to match the name of the input file.}
 
 \item{forecast}{Logical: Is the data product a forecast?}
 
@@ -85,7 +85,8 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 A list of two BETY IDs (input.id, dbfile.id) identifying a pre-existing file if one was available, or a newly created file if not.  Each id may be a vector of ids if the function is processing an entire ensemble at once.
 }
 \description{
-\code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
+\code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database.
+It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
 To minimize downloading and storing duplicate data, it first checks to see if a given file is already in the
 database before applying \code{fcn}.
 }

@@ -1,6 +1,7 @@
 ##' Convert between formats, reusing existing files where possible
 ##'
-##' \code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database. It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
+##' \code{convert.input} is a relatively generic function that applies the function \code{fcn} and inserts a record of it into the database.
+##' It is primarily designed for converting meteorological data between formats and can be used on observed data, forecasts, and ensembles of forecasts.
 ##' To minimize downloading and storing duplicate data, it first checks to see if a given file is already in the
 ##' database before applying \code{fcn}.
 ##' 
@@ -51,7 +52,7 @@
 ##' @param exact.dates Ignore time-span appending and enforce exact start and end dates on the database input file? (logical)
 ##' @param allow.conflicting.dates Should overlapping years ignore time-span appending and exist as separate input files? (logical)
 ##' @param insert.new.file Logical: force creation of a new database record even if one already exists?
-##' @param pattern A regular expression, passed to \code{PEcAn.DB::dbfile.input.check}, used to match the name of the input file.
+##' @param pattern A regular expression, passed to \code{dbfile.input.check}, used to match the name of the input file.
 ##' @param forecast Logical: Is the data product a forecast?
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
@@ -159,7 +160,7 @@ convert.input <-
         filename_pattern = paste0(filename_pattern, i, "($|\\.)")
       }
       
-      existing.dbfile[[i]] <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      existing.dbfile[[i]] <- dbfile.input.check(siteid = site.id,
                                                              mimetype = mimetype, 
                                                              formatname = formatname, 
                                                              parentid = input.id, 
@@ -171,7 +172,7 @@ convert.input <-
                                                              pattern = filename_pattern)
 
       if(nrow(existing.dbfile[[i]]) > 0) {
-        existing.input[[i]] <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
+        existing.input[[i]] <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[[i]]$container_id),con)
         
         # Date/time processing for existing input
         existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$start_date), "UTC")
@@ -179,12 +180,12 @@ convert.input <-
         
         ## Obtain machine information
         #Grab machine info of file that exists
-        existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
+        existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                                       existing.dbfile[[i]]$machine_id, "'"), con)
         
         #Grab machine info of host machine
         machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
+        machine <- db.query(paste0("SELECT * from machines where hostname = '",
                                              machine.host, "'"), con)
         
         
@@ -261,7 +262,7 @@ convert.input <-
 
     #--- This is for met2model part
     if(!is.null(input.args$dbfile.id)){
-      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      existing.dbfile <- dbfile.input.check(siteid = site.id,
                                                       mimetype = mimetype, 
                                                       formatname = formatname, 
                                                       parentid = input.id, 
@@ -277,7 +278,7 @@ convert.input <-
           dplyr::filter(.data$id==input.args$dbfile.id)
       }
     }else{
-      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      existing.dbfile <- dbfile.input.check(siteid = site.id,
                                                       mimetype = mimetype, 
                                                       formatname = formatname, 
                                                       parentid = input.id, 
@@ -301,7 +302,7 @@ convert.input <-
     
     if (nrow(existing.dbfile) > 0) {
       
-      existing.input <- PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
@@ -349,12 +350,12 @@ convert.input <-
       
       
       #Grab machine info of file that exists
-      existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
+      existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                           existing.dbfile$machine_id, "'"), con)
       
       #Grab machine info of host machine
       machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-      machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
+      machine <- db.query(paste0("SELECT * from machines where hostname = '",
                                  machine.host, "'"), con)
       
       if (existing.machine$id != machine$id) {
@@ -387,7 +388,7 @@ convert.input <-
     }else{
       return.all <- FALSE
     }
-      existing.dbfile <- PEcAn.DB::dbfile.input.check(siteid = site.id,
+      existing.dbfile <- dbfile.input.check(siteid = site.id,
                                                       mimetype = mimetype, 
                                                       formatname = formatname,
                                                       parentid = input.id,
@@ -416,12 +417,12 @@ convert.input <-
         existing.input <- existing.dbfile[["container_id"]] %>%
           unique() %>%
           purrr::map_dfr(function(one.cont.id) {
-            PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", one.cont.id), con)
+            db.query(paste0("SELECT * FROM inputs WHERE id=", one.cont.id), con)
           })
         
       } else{
         existing.input <-
-          PEcAn.DB::db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]), con)
+          db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]), con)
       }
       
       
@@ -472,12 +473,12 @@ convert.input <-
                  (end_date <= existing.input$end_date)) {
         
         #Grab machine info of file that exists
-        existing.machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where id  = '",
+        existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                             existing.dbfile$machine_id, "'"), con)
         
         #Grab machine info of 
         machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
+        machine <- db.query(paste0("SELECT * from machines where hostname = '",
                                    machine.host, "'"), con)
         
         if(existing.machine$id != machine$id){
@@ -522,7 +523,7 @@ convert.input <-
   # Get machine information
 
   machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
+  machine <- db.query(paste0("SELECT * from machines where hostname = '",
                              machine.host, "'"), con)
   
   if (nrow(machine) == 0) {
@@ -533,7 +534,7 @@ convert.input <-
   if (missing(input.id) || is.na(input.id) || is.null(input.id)) {
     input <- dbfile <- NULL
   } else {
-    input <- PEcAn.DB::db.query(paste("SELECT * from inputs where id =", input.id), con)
+    input <- db.query(paste("SELECT * from inputs where id =", input.id), con)
     if (nrow(input) == 0) {
       PEcAn.logger::logger.error("input not found", input.id)
       return(NULL)
@@ -541,7 +542,7 @@ convert.input <-
     
     if(!is.null(input.args$dbfile.id)){
       dbfile <-
-        PEcAn.DB::db.query(
+        db.query(
           paste(
             "SELECT * from dbfiles where id=",input.args$dbfile.id," and container_id =",
             input.id,
@@ -552,7 +553,7 @@ convert.input <-
         )  
     }else{
       dbfile <-
-        PEcAn.DB::db.query(
+        db.query(
           paste(
             "SELECT * from dbfiles where container_id =",
             input.id,
@@ -643,7 +644,7 @@ convert.input <-
     
     # download converted file
     outfile <- file.path(outfolder, unlist(strsplit(basename(link), "_"))[2])
-    download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)
+    PEcAn.utils::download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)
     
     # unzip downloaded file if necessary
     if (file.exists(outfile)) {
@@ -682,7 +683,7 @@ convert.input <-
       fcn.args$year.fragment = TRUE                           # such as met2model conversions; arguments will be extraneous otherwise.
     }
      
-    arg.string <- listToArgString(fcn.args)
+    arg.string <- PEcAn.utils::listToArgString(fcn.args)
     PEcAn.logger::logger.debug("input.args converted to string")
     
     if (!missing(format.vars)) {
@@ -774,7 +775,7 @@ convert.input <-
           (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
         
         # Updating record with new dates
-        PEcAn.DB::db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
+        db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
                                   end_date, "'  WHERE id=", existing.input[[i]]$id), 
                            con)
         id_not_added = FALSE
@@ -788,13 +789,13 @@ convert.input <-
         # A bit hacky, but need to make sure that all fields are updated to expected
         # values (i.e., what they'd be if convert.input was creating a new record)
         if (exists("existing.input") && nrow(existing.input[[i]]) > 0) {
-            PEcAn.DB::db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
+            db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
                                       "' WHERE id=", existing.input[[i]]$id), con)
           
         }
         
         if (exists("existing.dbfile") && nrow(existing.dbfile[[i]]) > 0) {
-            PEcAn.DB::db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
+            db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
                                       "', ", "file_name='", result[[i]]$dbfile.name[1], 
                                       "' WHERE id=", existing.dbfile[[i]]$id), con)
           
@@ -816,7 +817,7 @@ convert.input <-
       }
       
       if (insert.new.file && id_not_added) {
-        dbfile.id <- PEcAn.DB::dbfile.insert(in.path = dirname(result[[i]]$file[1]),
+        dbfile.id <- dbfile.insert(in.path = dirname(result[[i]]$file[1]),
                                              in.prefix = result[[i]]$dbfile.name[1], 
                                              'Input', existing.input[[i]]$id, 
                                              con, reuse=TRUE, hostname = machine$hostname)
@@ -833,7 +834,7 @@ convert.input <-
         ens.flag <- FALSE
       }
        
-        new_entry <- PEcAn.DB::dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
+        new_entry <- dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
                                                    in.prefix = result[[i]]$dbfile.name[1], 
                                                    siteid = site.id, 
                                                    startdate = start_date,
