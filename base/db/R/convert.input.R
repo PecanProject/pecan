@@ -737,7 +737,7 @@ convert.input <-
     log_format_df = function(df){
       df  %>%
         format() %>%
-        rbind(colnames(.), .) %>%
+        rbind(colnames(.data$.), .data$.) %>%
         purrr::reduce( paste, sep=" ") %>%
         paste(collapse="\n")
     }
