@@ -27,6 +27,8 @@ see if you need to change any of these:
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
+  (#3002; @nanu1605)
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
@@ -44,11 +46,6 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
   Note that both `units` and `udunits2` interface with the same underlying
   compiled code, so the `udunits2` *system library* is still required.
   (#2989; @nanu1605)
-- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
-  (#3002; @nanu1605)
-- To remove the cyclic dependency between PEcAn.DB and PEcAn.utils `convert.input` function is moved
-  from PEcAn.utils to PEcAn.DB.
-  (#3009; @nanu1605)
 
 ### Changed
 
@@ -61,6 +58,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
+- `convert.input` is moved from PEcAn.utils to PEcAn.DB, this was needed to resolve a cyclic dependency    between PEcAn.DB and PEcAn.utils.
+  (#3009; @nanu1605)
 
 ### Removed
 
