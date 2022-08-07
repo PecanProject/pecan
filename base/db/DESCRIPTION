@@ -49,6 +49,7 @@ Imports:
     knitr,
     lubridate,
     magrittr,
+    methods,
     ncdf4,
     PEcAn.logger,
     PEcAn.remote,
