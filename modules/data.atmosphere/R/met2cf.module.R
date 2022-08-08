@@ -82,7 +82,8 @@
                           write = TRUE, 
                           lat = lat, lon = lon, 
                           format.vars = format.vars, 
-                          overwrite = overwrite, exact.dates = FALSE,
+                          overwrite = overwrite,
+                          exact.dates = FALSE,
                           Rbinary = "R"
                           )
   }
