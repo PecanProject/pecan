@@ -79,8 +79,8 @@ state <- plot2AGB(combined, out[, sel], settings$outdir, list(allom.stats[[2]]),
 
 biomass2carbon <- 0.48
 
-state$NPP <- udunits2::ud.convert(state$NPP,'Mg/ha/yr','kg/m^2/s') * biomass2carbon# kgC/m^2/s 
-state$AGB <- udunits2::ud.convert(state$AGB,'Mg/ha','kg/m^2') * biomass2carbon# kgC/m2
+state$NPP <- PEcAn.utils::ud_convert(state$NPP,'Mg/ha/yr','kg/m^2/s') * biomass2carbon# kgC/m^2/s 
+state$AGB <- PEcAn.utils::ud_convert(state$AGB,'Mg/ha','kg/m^2') * biomass2carbon# kgC/m2
 
 NPP <- apply(state$NPP[1, , ], 2, mean, na.rm = TRUE)
 AGB <- apply(state$AGB[1, , ], 2, mean, na.rm = TRUE)
