@@ -51,7 +51,8 @@
                            start_date = start_date, end_date =  end_date, 
                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
                            write = TRUE, 
-                           overwrite = overwrite, exact.dates = FALSE,
+                           overwrite = overwrite,
+                           exact.dates = FALSE,
                            Rbinary = "R"
                            )
     
