@@ -55,6 +55,7 @@
 ##' @param forecast Logical: Is the data product a forecast?
 ##' @param ensemble An integer representing the number of ensembles, or FALSE if it data product is not an ensemble.
 ##' @param ensemble_name If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.
+##' @param Rbinary command (including path, if needed) to call the R executable on `host`
 ##' @param ... Additional arguments, passed unchanged to \code{fcn}
 ##' @param dbparms list of parameters to use for opening a database connection
 ##'
