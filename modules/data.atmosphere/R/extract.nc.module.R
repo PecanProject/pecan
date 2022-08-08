@@ -39,8 +39,7 @@ if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
                             overwrite = overwrite,
                             exact.dates = FALSE, 
                             ensemble = register$ensemble %>% as.numeric(),
-                            Rbinary = "R"
-                            )
+                            Rbinary = "R")
   
   PEcAn.logger::logger.info("Finished Extracting Met")
   

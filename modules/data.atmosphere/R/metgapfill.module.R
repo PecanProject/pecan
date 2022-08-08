@@ -38,8 +38,7 @@
                             pattern = met,
                             ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
                             ensemble_name = ensemble_name,
-                            Rbinary = "R"
-                            )
+                            Rbinary = "R")
   
   print(ready.id)
   

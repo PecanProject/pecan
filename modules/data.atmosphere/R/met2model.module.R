@@ -65,8 +65,7 @@
                               ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
                               ensemble_name = ensemble_name,
                               dbfile.id=ready.id$dbfile.id,
-                              Rbinary = "R"
-                              )
+                              Rbinary = "R")
   }
   
   PEcAn.logger::logger.info(paste("Finished Model Specific Conversion", model.id[1]))
