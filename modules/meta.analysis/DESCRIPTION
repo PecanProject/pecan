@@ -27,7 +27,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     the functions used in the Bayesian meta-analysis of trait data.
 Imports:
     coda (>= 0.18),
-    XML,
     lattice,
     PEcAn.utils,
     PEcAn.DB,

@@ -50,13 +50,13 @@ met2CF.ERA5<- function(lat,
         ens[, "tp"] <-
           ens[, "tp"] * 1000 / 3 # divided by 3 because we have 3 hours data
         ens[, "tp"] <-
-          udunits2::ud.convert(ens[, "tp"], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
+          PEcAn.utils::ud_convert(ens[, "tp"], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
         #RH
         #Adopted from weathermetrics/R/moisture_conversions.R
         t <-
-          udunits2::ud.convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
+          PEcAn.utils::ud_convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
         dewpoint  <-
-          udunits2::ud.convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
+          PEcAn.utils::ud_convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
         beta <- (112 - (0.1 * t) + dewpoint) / (112 + (0.9 * t))
         relative.humidity <- beta ^ 8
         #specific humidity
