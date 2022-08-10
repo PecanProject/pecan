@@ -57,6 +57,9 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   #          Step = rep(0:(length(Date)/length(unique(Date))-1),length(unique(Date)))) %>%
   #   select(Year, Day, Step, dC_NEE.kgCha.1., C_total.kgCha.1., lai)
   
+  # Temporary solution to get "no visible binding" note off from the variables: 'Date', 'Year' and 'Day'
+  Date <- Year <- Day <- NULL
+  
   ldndc.out <- physiology %>%
     dplyr:: mutate(Date = format(as.POSIXlt(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
