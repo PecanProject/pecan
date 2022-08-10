@@ -12,6 +12,7 @@
 ##' @param end_date End time of the simulation
 ##' @param delete.raw TRUE if raw model results will be deleted
 ##' @importFrom dplyr %>%
+##' @importFrom rlang .data
 ##' @importFrom utils read.csv
 ##' @export
 ##'
@@ -33,19 +34,19 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
-                         select = c(datetime, lai, dC_co2_upt.kgCm.2.))
+                         select = c('datetime', 'lai', 'dC_co2_upt.kgCm.2.'))
   } else{
     PEcAn.logger::logger.info("Files with daily timesteps used")
     
     
     ## Ecosystem subset
     ecosystem <- subset(read.csv("ecosystem-daily.txt", header = T, sep = "\t"),
-                        select = c(datetime, dC_NEE.kgCha.1., C_total.kgCha.1.))
+                        select = c('datetime', 'dC_NEE.kgCha.1.', 'C_total.kgCha.1.'))
   
   
     ## Physiology subset
     physiology <- subset(read.csv("physiology-daily.txt", header = T, sep = "\t"),
-                         select = c(datetime, lai))
+                         select = c('datetime', 'lai'))
   }
   
   
@@ -57,11 +58,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   #   select(Year, Day, Step, dC_NEE.kgCha.1., C_total.kgCha.1., lai)
   
   ldndc.out <- physiology %>%
-    dplyr:: mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
+    dplyr:: mutate(Date = format(as.POSIXlt(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
-    dplyr::select(Year, Day, Step, lai, dC_co2_upt.kgCm.2.)
+    dplyr::select('Year', 'Day', 'Step', 'lai', 'dC_co2_upt.kgCm.2.')
   
   
   
