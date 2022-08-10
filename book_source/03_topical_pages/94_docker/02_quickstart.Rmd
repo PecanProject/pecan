@@ -27,7 +27,7 @@ curl -v -X POST \
     -F 'input_met=5000000005' \
     -F 'email=' \
     -F 'notes=' \
-    'http://localhost:8000/pecan/04-runpecan.php'
+    'http://pecan.localhost/pecan/04-runpecan.php'
 ```    
 
 
@@ -184,13 +184,13 @@ Once this is done you have a working instance of PEcAn.
 
 If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs (if you run these commands on a remote machine replace localhost with the actual hostname).
 
-- PEcAn web interface (running models) -- http://localhost:8000/pecan/ (NOTE: The trailing backslash is necessary.)
-- PEcAn documentation and home page -- http://localhost:8000/
-- BETY web interface -- http://localhost:8000/bety/
-- File browser (minio) -- http://localhost:8000/minio/
-- RabbitMQ management console (for managing queued processes) -- http://localhost:8000/rabbitmq/
-- Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8000/traefik/
-- Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://localhost:8000/monitor/
+- PEcAn web interface (running models) -- http://pecan.localhost/pecan/ (NOTE: The trailing backslash is necessary.)
+- PEcAn documentation and home page -- http://pecan.localhost/
+- BETY web interface -- http://pecan.localhost/bety/
+<!-- - File browser (minio) -- http://pecan.localhost/minio/ -->
+<!-- - RabbitMQ management console (for managing queued processes) -- http://pecan.localhost/rabbitmq/ -->
+<!-- - Traefik, webserver showing maps from URLs onto their respective containers -- http://pecan.localhost/traefik/ -->
+- Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://pecan.localhost/monitor/
 
 
 #### Start model runs using curl {#curl-model-runs}
@@ -210,10 +210,10 @@ curl -v -X POST \
     -F 'input_met=5000000005' \
     -F 'email=' \
     -F 'notes=' \
-    'http://localhost:8000/pecan/04-runpecan.php'
+    'http://pecan.localhost/pecan/04-runpecan.php'
 ```
 
-This should return some text with in there `Location:` this is shows the workflow id, you can prepend http://localhost:8000/pecan/ to the front of this, for example: http://localhost:8000/pecan/05-running.php?workflowid=99000000001. Here you will be able to see the progress of the workflow.
+This should return some text with in there `Location:` this is shows the workflow id, you can prepend http://pecan.localhost/pecan/ to the front of this, for example: http://pecan.localhost/pecan/05-running.php?workflowid=99000000001. Here you will be able to see the progress of the workflow.
 
 To see what is happening behind the scenes you can use look at the log file of the specific docker containers, once of interest are `pecan_executor_1` this is the container that will execute a single workflow and `pecan_sipnet_1` which executes the sipnet mode. To see the logs you use `docker logs pecan_executor_1` Following is an example output:
 

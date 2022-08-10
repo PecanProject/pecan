@@ -129,7 +129,7 @@ Read.IC.info.BADM <-function(lat, long){
           
           
           PlantWoodIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
@@ -139,16 +139,16 @@ Read.IC.info.BADM <-function(lat, long){
             as.numeric()
           
           if (length(val) > 0)
-            SoilIni <- udunits2::ud.convert(val*cov.factor,  "g/m^2", "kg/m^2")
+            SoilIni <- PEcAn.utils::ud_convert(val*cov.factor,  "g/m^2", "kg/m^2")
           
         } else if (type == "*_LIT_BIOMASS") {
           litterIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1] %>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1] %>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         } else if (type == "*_ROOT_BIOMASS") {
           Rootini <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         }

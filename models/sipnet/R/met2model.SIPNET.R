@@ -118,7 +118,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       # Calculate the delta time.  If using whole-year data, the appropriate length in seconds is 
       # fetched; otherwise, it is assumed that the length of time provided in the time dimension of
@@ -136,7 +136,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       lat <- ncdf4::ncvar_get(nc, "latitude")
       lon <- ncdf4::ncvar_get(nc, "longitude")
       Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+      Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
       Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
       ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
       if (!is.numeric(ws)) {
@@ -163,20 +163,20 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
         soilT <- convolve(Tair, filt)
-        soilT <- udunits2::ud.convert(soilT, "K", "degC")
+        soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
-        soilT <- udunits2::ud.convert(soilT, "K", "degC")
+        soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
       }
       
-      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C, pres/100))
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
-      VPDsoil <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
+      VPDsoil <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
         (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT, pres/100))
       
       ncdf4::nc_close(nc)

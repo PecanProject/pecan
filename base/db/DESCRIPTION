@@ -1,6 +1,6 @@
 Package: PEcAn.DB
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
@@ -42,33 +42,36 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation.
 Imports:
     DBI,
-    PEcAn.logger,
-    PEcAn.remote,
-    PEcAn.utils,
     dbplyr,
     dplyr,
     fs,
     glue,
+    knitr,
     lubridate,
     magrittr,
     ncdf4,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.utils,
     purrr,
     R.utils,
     rlang,
     tibble,
     tidyr,
-    udunits2
+    units
 Suggests:
-    RPostgreSQL,
-    RPostgres,
-    RSQLite,
     bit64,
     data.table,
     here,
+    RPostgreSQL,
+    RPostgres,
+    RSQLite,
     rcrossref,
+    rmarkdown,
     testthat (>= 2.0.0),
     tidyverse
 License: BSD_3_clause + file LICENSE
+VignetteBuilder: knitr
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE

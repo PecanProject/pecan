@@ -37,6 +37,13 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
+- Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
+- Updated unit conversions throughout PEcAn to use the `units` R package
+  instead of the unmaintained `udunits2`.
+  Note that both `units` and `udunits2` interface with the same underlying
+  compiled code, so the `udunits2` *system library* is still required.
+  (#2989; @nanu1605)
 
 ### Changed
 
@@ -48,6 +55,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Converted .zenodo.json to CITATION.cff
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
+- Installation instructions updated in documentation
 
 ### Removed
 
