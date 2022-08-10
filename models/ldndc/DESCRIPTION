@@ -15,7 +15,8 @@ Imports:
     ncdf4,
     data.table,
     PEcAn.remote,
-    PEcAn.data.atmosphere
+    PEcAn.data.atmosphere,
+    rlang
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: LDNDC
