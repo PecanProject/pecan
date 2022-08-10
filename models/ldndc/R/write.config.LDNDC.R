@@ -173,7 +173,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #34 DIAMMAX (m) - stem_diameter (cm)
     if ("stem_diameter" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DIAMMAX' value='",
-                               udunits2::ud.convert(
+                               PEcAn.utils::ud_convert(
                                  pft.traits[which(pft.names == "stem_diameter")], "m", "cm"
                                  ),"' /> \n"), collapse="")
     }

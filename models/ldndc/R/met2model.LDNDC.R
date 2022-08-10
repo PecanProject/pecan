@@ -80,7 +80,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Convert the time fractions to be seconds by starting from the date in file's units
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(units, " "))[1], "seconds")
       
     
       # Calculate the time steps
@@ -152,7 +152,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Average air temperature
       Tair <-ncdf4::ncvar_get(nc, "air_temperature")[ind]  ## in Kelvin
-      tavg <- udunits2::ud.convert(Tair, "K", "degC")
+      tavg <- PEcAn.utils::ud_convert(Tair, "K", "degC")
       
       # Wind speed
       wind <- try(ncdf4::ncvar_get(nc, "wind_speed"))[ind]
@@ -172,7 +172,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Air pressure Pa ---> mbar, needs to be converted
       press <- ncdf4::ncvar_get(nc, "air_pressure")[ind]
-      press <- udunits2::ud.convert(press, "Pa", "millibar")
+      press <- PEcAn.utils::ud_convert(press, "Pa", "millibar")
       
       # Vapor Pressure Deficit Pa ---> kPa, needs to be converted, check below
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))[ind]  ## in Pa
@@ -180,13 +180,13 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         
         # Fetch these values in order to construct VPD
         Qair <-ncdf4::ncvar_get(nc, "specific_humidity")[ind]  #humidity (kg/kg)
-        SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(tavg), "millibar", "Pa")  ## Saturation vapor pressure
+        SVP <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(tavg), "millibar", "Pa")  ## Saturation vapor pressure
         
         # VPD calculated, if not directly found from the nc-file
         VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, tavg, press))
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
-      VPD <- udunits2::ud.convert(VPD, "Pa", "kPa") # Pa ---> kPa
+      VPD <- PEcAn.utils::ud_convert(VPD, "Pa", "kPa") # Pa ---> kPa
       
       # Relative humidity (%)
       rhum <- ncdf4::ncvar_get(nc, "relative_humidity")[ind]
