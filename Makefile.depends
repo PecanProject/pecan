@@ -32,6 +32,7 @@ $(call depends,models/ed): | .install/modules/data.atmosphere .install/modules/d
 $(call depends,models/fates): | .install/base/utils .install/base/logger .install/base/remote
 $(call depends,models/gday): | .install/base/utils .install/base/logger .install/base/remote
 $(call depends,models/jules): | .install/base/utils .install/base/logger .install/base/remote
+$(call depends,models/ldndc): | .install/base/db .install/base/logger .install/base/utils .install/base/remote .install/modules/data.atmosphere
 $(call depends,models/linkages): | .install/base/utils .install/modules/data.atmosphere .install/base/logger .install/base/remote
 $(call depends,models/lpjguess): | .install/base/utils .install/base/logger .install/base/remote
 $(call depends,models/maat): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/settings .install/base/utils
