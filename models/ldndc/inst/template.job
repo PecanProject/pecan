@@ -15,7 +15,7 @@ ln -s "@METPATH@" climate.txt
 
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/results.csv" ]; then
+if [ ! -e "@OUTDIR@/Output" ]; then
   cd "@RUNDIR@"
   
   @BINARY@
