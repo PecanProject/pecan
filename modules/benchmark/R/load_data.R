@@ -83,11 +83,11 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       x <- as.matrix(out[col])
       u1 <- vars_used$input_units[i]
       u2 <- vars_used$pecan_units[i]
-      if (udunits2::ud.are.convertible(u1, u2)) {
+      if (units::ud_are_convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s",
                       vars_used$input_name[i], vars_used$input_units[i], 
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(as.numeric(x), u1, u2)
+        out[col] <- PEcAn.utils::ud_convert(as.numeric(x), u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else if (PEcAn.utils::misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 

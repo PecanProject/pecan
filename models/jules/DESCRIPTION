@@ -9,13 +9,13 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
-Depends:
-    PEcAn.utils
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
-    ncdf4 (>= 1.15),
+    ncdf4 (>= 1.15)
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: JULES

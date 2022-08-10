@@ -48,9 +48,8 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   merge.time.attr <- ncdf4::ncatt_get(merge.nc,"time")
   merge.data <- ncdf4::ncvar_get(merge.nc,varid = merge.vars[1])
   
-  udunits2::ud.is.parseable(merge.time.attr$units)
   origin <- "1970-01-01 00:00:00 UTC"
-  merge.time.std <- udunits2::ud.convert(merge.time,
+  merge.time.std <- PEcAn.utils::ud_convert(merge.time,
                                          merge.time.attr$units,
                                          paste0("seconds since ",origin))
   
@@ -82,7 +81,7 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   ## name and variable conversions
   if(toupper(merge.vars[1]) == "CO2"){
     merge.vars[1] <- "mole_fraction_of_carbon_dioxide_in_air"
-    merge.data <- udunits2::ud.convert(merge.data,merge.attr$units,"mol/mol")
+    merge.data <- PEcAn.utils::ud_convert(merge.data, merge.attr$units, "mol/mol")
     merge.attr$units = "mol/mol"
   }
   
@@ -117,7 +116,7 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     ##extract target time
     target.time <- ncdf4::ncvar_get(nc,"time")
     target.time.attr <- ncdf4::ncatt_get(nc,"time")
-    target.time.std <- udunits2::ud.convert(target.time,
+    target.time.std <- PEcAn.utils::ud_convert(target.time,
                                            target.time.attr$units,
                                            paste0("seconds since ",origin))
     target.time.std <- as.POSIXct(target.time.std,tz = "UTC",origin=origin) 

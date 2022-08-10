@@ -16,11 +16,11 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the FATES model to PEcAn.
-Depends:
-    PEcAn.utils
 Imports:
+    stringr,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15)
 Suggests:

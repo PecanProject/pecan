@@ -57,7 +57,7 @@ Imports:
     tidyr,
     tidyselect,
     truncnorm,
-    udunits2 (>= 0.11),
+    units,
     XML (>= 3.98-1.4),
     xts,
     zoo
