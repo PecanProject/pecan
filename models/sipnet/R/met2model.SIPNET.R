@@ -152,7 +152,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       
       PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
       if (!is.numeric(PAR)) {
-        PAR <- udunits2::ud.convert(PEcAn.data.atmosphere::sw2ppfd(SW), "umol", "mol")
+        PAR <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::sw2ppfd(SW), "umol ", "mol")
         PEcAn.logger::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
       }
       
