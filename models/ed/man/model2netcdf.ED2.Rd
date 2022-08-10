@@ -30,7 +30,7 @@ model2netcdf.ED2(
 \item{settings}{pecan settings object}
 }
 \description{
-Modified from Code to convert ED2.1's HDF5 output into the NACP
+Modified from code to convert ED2's HDF5 output into the NACP
 Intercomparison format (ALMA using netCDF)
 }
 \details{
