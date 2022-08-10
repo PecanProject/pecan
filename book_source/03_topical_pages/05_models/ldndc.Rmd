@@ -77,8 +77,6 @@ Templates are located at `models/ldndc/inst/` and are copied to the simulation's
 
 ### Installation notes
 
-Obtaining LDNDC program requires credentials, which the user is able to request from the authors of the model. With the credentials, the pre-compiled  LDNDC program can be downloaded here: https://ldndc.imk-ifu.kit.edu/download/download-model.php
+Obtaining LDNDC program requires credentials, which the user is able to request from the developers of the model. With the credentials, the pre-compiled  LDNDC program can be downloaded here: https://ldndc.imk-ifu.kit.edu/download/download-model.php
 
 After obtaining the necessary files, the user should execute the install script that is found from the ldndc-'_version-number_' directory. With linux, executing would happen with command `sh install.sh`. Succesfull installation will create a `.ldndc` directory to the user's home directory. Running the simulations happens by calling the ldndc executable (found from the `/bin` directory) and giving the path file to the project file that contains the specs of the simulation. Instructions in detail and how to play with these setups are explained more broadly in the user guide.
-
-**VM**
