@@ -13,6 +13,7 @@
 ##' @param delete.raw TRUE if raw model results will be deleted
 ##' @importFrom dplyr %>%
 ##' @importFrom utils read.csv
+##' @importFrom utils head
 ##' @export
 ##'
 ##' @author Henri Kajasilta
@@ -88,8 +89,6 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     # Subset data for prosessing
     sub.ldndnc.out <- subset(ldndc.out, Year == y)
-    dayfrac <- 1/out_day
-    step <- head(seq(0,1, by = dayfrac), -1)
     
     
     
