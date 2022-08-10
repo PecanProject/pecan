@@ -41,6 +41,22 @@ validate_crypt_pass <- function(username, crypt_pass) {
   return(NA)
 }
 
+#* Check if the API key exists
+#* @param api_key API Key
+#* @return user details if apikey exists, else Invalid API Key
+#* @author Nihar Sanda
+validate_api_key <- function(api_key) {
+  res <- tbl(global_db_pool, "users") %>%
+    filter(apikey == api_key) %>%
+    collect()
+  
+  if (nrow(res) == 1) {
+    return(res)
+  }
+  
+  return(NA) 
+}
+
 #* Filter to authenticate a user calling the PEcAn API
 #* @param req The request
 #* @param res The response to be set
@@ -79,6 +95,22 @@ authenticate_user <- function(req, res) {
       return(plumber::forward())
     }
     
+  }
+  
+  if(!is.null(req$HTTP_X_API_KEY)) {
+    key <- req$HTTP_X_API_KEY
+    # HTTP_X_API_KEY is of the form "api_key"
+    user <- validate_api_key(key)
+    userid <- user$id
+    username <- user$login
+    print(userid)
+    print(username)
+      
+    if(! is.na(userid)){
+      req$user$userid <- userid
+      req$user$username <- username
+      return(plumber::forward())
+    }
   }
   
   res$status <- 401 # Unauthorized
