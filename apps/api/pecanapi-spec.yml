@@ -1109,7 +1109,7 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflows not found
+          description: Posteriors not found
   
   /api/posteriors/{posterior_id}:
     get:
