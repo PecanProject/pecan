@@ -13,7 +13,6 @@
 ##' @param delete.raw TRUE if raw model results will be deleted
 ##' @importFrom dplyr %>%
 ##' @importFrom utils read.csv
-##' @importFrom utils head
 ##' @export
 ##'
 ##' @author Henri Kajasilta
