@@ -3,7 +3,7 @@
 ##' @export
 ##' 
 ##' @param gp Gaussian Process
-##' @param xpred
+##' @param xpred value of x where prediction should be made
 ##' @param cI credible interval
 ##' @param pI prediction interval
 ##' @param splinefcns spline functions

@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param x Name of variable to plot on X axis
-##' @param power
+##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##'
 ##' @return dst
 ##'  

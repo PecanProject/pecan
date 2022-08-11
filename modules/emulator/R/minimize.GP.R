@@ -125,7 +125,7 @@ calculate.prior <- function(samples, priors) {
 ##' 
 ##' @param gp Gaussian Process
 ##' @param xnew new x coordinate
-##' @param pos.check
+##' @param pos.check check if value needs to be positive (if TRUE, returns -Inf when GP is negative)
 get_ss <- function(gp, xnew, pos.check) {
   
   SS <- numeric(length(gp))
@@ -160,7 +160,7 @@ get_ss <- function(gp, xnew, pos.check) {
 ##' @title get_y
 ##' @export
 ##' 
-##' @param SSnew
+##' @param SSnew new summary statistic
 ##' @param xnew new x coordinate
 ##' @param llik.fn list that contains likelihood functions
 ##' @param priors prior list

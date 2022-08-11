@@ -10,11 +10,11 @@
 ##' @param ngibbs number of MCMC iterations (per chain) to run
 ##' @param burnin Number of samples to discard as burnin (auto must be FALSE)
 ##' @param thin thinning of the matrix to make things faster. Default is to thin to 1
-##' @param jump.ic
+##' @param jump.ic initial condition for jump standard deviation.
 ##' @param prior 'unif', 'IG'
 ##' @param mix joint=mix over psi simultanously, each=mix over psi individually
 ##' @param psi spatial corr
-##' @param zeroMean
+##' @param zeroMean True if mean is 0, else false
 ##' @param exclude
 ##' @param ... Additional arguments
 ##'

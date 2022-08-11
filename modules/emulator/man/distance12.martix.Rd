@@ -10,7 +10,7 @@ distance12.matrix(x, n1, power = 1)
 \arguments{
 \item{x}{Name of variable to plot on X axis}
 
-\item{power}{}
+\item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 }
 \value{
 d

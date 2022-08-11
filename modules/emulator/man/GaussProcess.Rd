@@ -37,11 +37,15 @@ GaussProcess(
 
 \item{thin}{thinning of the matrix to make things faster. Default is to thin to 1}
 
+\item{jump.ic}{initial condition for jump standard deviation.}
+
 \item{prior}{'unif', 'IG'}
 
 \item{mix}{joint=mix over psi simultanously, each=mix over psi individually}
 
 \item{psi}{spatial corr}
+
+\item{zeroMean}{True if mean is 0, else false}
 
 \item{...}{Additional arguments}
 }

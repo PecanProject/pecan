@@ -3,7 +3,7 @@
 ##' @export
 ##' 
 ##' @param gp Gaussian Process
-##' @param pdf_file
+##' @param pdf_file filename you want figures written out to
 ##' @param txt_file
 ##' 
 ##' @author Michael Dietze

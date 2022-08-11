@@ -9,6 +9,8 @@
 \arguments{
 \item{gp}{Gaussian Process}
 
+\item{xpred}{value of x where prediction should be made}
+
 \item{cI}{credible interval}
 
 \item{pI}{prediction interval}

@@ -4,7 +4,7 @@
 ##' @title predict.density
 ##' @export
 ##' 
-##' @param den
+##' @param den density object
 ##' @param xnew new x coordinate
 ##' 
 ##' @return ynew
