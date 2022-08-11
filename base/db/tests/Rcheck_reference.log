@@ -76,25 +76,11 @@ The Date field is over a month old.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
-* checking dependencies in R code ... NOTE
-Namespaces in Imports field not imported from:
-  ‘glue’ ‘knitr’
-  All declared Imports should be used.
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-convert.input: no visible binding for global variable ‘settings’
-convert.input : log_format_df: no visible binding for global variable
-  ‘.’
-match_dbcols: no visible binding for global variable ‘.’
-match_dbcols: no visible binding for global variable ‘as’
-Undefined global functions or variables:
-  . as settings
-Consider adding
-  importFrom("methods", "as")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -118,4 +104,4 @@ contains 'methods').
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 1 WARNING, 2 NOTEs
+Status: 1 WARNING
