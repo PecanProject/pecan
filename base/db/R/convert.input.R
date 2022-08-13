@@ -735,8 +735,6 @@ convert.input <-
   
   if (any(result_sizes$missing) || any(result_sizes$empty)){
     log_format_df = function(df){
-      df  %>%
-        format() %>%
         rbind(colnames(df), format(df))
         purrr::reduce( paste, sep=" ") %>%
         paste(collapse="\n")
