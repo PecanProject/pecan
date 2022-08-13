@@ -49,7 +49,8 @@ Strong dependencies not in mainstream repositories:
 
 The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... WARNING
+Requires orphaned package: ‘udunits2’
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -77,10 +78,14 @@ The Date field is over a month old.
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
 * checking dependencies in R code ... OK
+  All declared Imports should be used.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... OK
+* checking R code for possible problems ... NOTE
+convert.input: no visible binding for global variable ‘settings’
+Undefined global functions or variables:
+  settings
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -104,4 +109,4 @@ The Date field is over a month old.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 1 WARNING
+Status: 2 WARNINGs, 1 NOTEs
