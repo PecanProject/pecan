@@ -5,8 +5,9 @@
 * New functions `stamp_started` and `stamp_finished`, used to record the start
   and end time of model runs in the database. Both used to live in
   `PEcAn.remote` and were moved to resolve a circular dependency.
-* To Convert between formats and reuse existing files where possible we moved `convert.input` function
-  from `PEcAn.utils` to `PEcAn.DB`. (#3009; @nanu1605)
+* New function `convert.input`, used to convert between formats while reusing
+  existing files where possible. It previously lived in package `PEcAn.DB`,
+  but was moved here to simplify dependencies. (#3009; @nanu1605)
 
 # PEcAn.DB 1.7.2
 
