@@ -12,7 +12,7 @@ distance.matrix(x, power = 1, dim = 2)
 
 \item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 
-\item{dim}{}
+\item{dim}{dimenstion}
 }
 \value{
 d

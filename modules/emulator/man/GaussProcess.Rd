@@ -27,6 +27,8 @@ GaussProcess(
 
 \item{y}{Name of variable to plot on Y axis}
 
+\item{isotropic}{Boolean indicating whether the GP is fit isotropically. If FALSE, distances are calculated deparately for each direction}
+
 \item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
 
 \item{method}{method for calculating correlations}
@@ -46,6 +48,8 @@ GaussProcess(
 \item{psi}{spatial corr}
 
 \item{zeroMean}{True if mean is 0, else false}
+
+\item{exclude}{<- isn't used anywhere, should be dropped}
 
 \item{...}{Additional arguments}
 }

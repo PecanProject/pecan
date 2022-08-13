@@ -4,7 +4,7 @@
 ##'
 ##' @param x Name of variable to plot on X axis
 ##' @param y Name of variable to plot on Y axis
-##' @param isotropic
+##' @param isotropic Boolean indicating whether the GP is fit isotropically. If FALSE, distances are calculated deparately for each direction
 ##' @param nugget allows additional error in Y rather than fix interpolation to go through points
 ##' @param method method for calculating correlations
 ##' @param ngibbs number of MCMC iterations (per chain) to run
@@ -15,7 +15,7 @@
 ##' @param mix joint=mix over psi simultanously, each=mix over psi individually
 ##' @param psi spatial corr
 ##' @param zeroMean True if mean is 0, else false
-##' @param exclude
+##' @param exclude <- isn't used anywhere, should be dropped
 ##' @param ... Additional arguments
 ##'
 ##' @author Michael Dietze

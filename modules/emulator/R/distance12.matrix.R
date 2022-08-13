@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param x Name of variable to plot on X axis
-##' @param n1
+##' @param n1 number of rows in the original dataset
 ##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##' 
 ##' @return d

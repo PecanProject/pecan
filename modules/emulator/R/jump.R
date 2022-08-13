@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param ic optional data vector
-##' @param rate
+##' @param rate target acceptance rate
 ##' @param ... Addtional arguments
 ##' 
 ##' @author Michael Dietze
@@ -16,7 +16,7 @@ jump <- function(ic = 0, rate = 0.4, ...) {
 ##' @export
 ##' 
 ##' @param ic optional data vector
-##' @param rate
+##' @param rate target acceptance rate
 ##' @param nc NetCDF object containing target variable
 ##' @param ... Additional arguments
 mvjump <- function(ic = 0, rate = 0.4, nc = 2, ...) {
