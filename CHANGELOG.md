@@ -58,7 +58,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
-- `convert.input` is moved from PEcAn.utils to PEcAn.DB, this was needed to resolve a cyclic dependency    between PEcAn.DB and PEcAn.utils.
+- `convert.input` is moved from PEcAn.utils to PEcAn.DB.
+  This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
   (#3009; @nanu1605)
 
 ### Removed
