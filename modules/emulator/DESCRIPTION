@@ -9,6 +9,7 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Imports:
+    PEcAn.assim.batch,
     PEcAn.logger,
     methods,
     mvtnorm,

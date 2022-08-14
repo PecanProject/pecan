@@ -99,11 +99,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   nsamp <- length(samp)
   # cInt <- pInt <- matrix(NA,nsamp,npred*dim)
   cInt <- pInt <- matrix(NA, nsamp, npred)
-  haveTime     <- require(time)
-  prevTime     <- NULL
-  if (haveTime) {
-    prevTime <- utils::txtProgressBar()
-  }
+  progress_bar <- utils::txtProgressBar()
   for (g in samp) {
     j <- i <- which(g == samp)
     if (dim == 1) {
@@ -152,10 +148,8 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
         pInt[j, ] <- mypred
       }
     }
-    if (haveTime) {
-      pb <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
-      prevTime <- utils::setTxtProgressBar(pb , i)
-    }
+    pb <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
+    progress_bar <- utils::setTxtProgressBar(pb , i)
   }
   cIntQuant <- pIntQuant <- NULL
   if (!is.null(cI)) {

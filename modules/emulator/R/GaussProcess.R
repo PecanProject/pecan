@@ -153,11 +153,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
   S <- calcSpatialCov(d, psi, tauw)
   
   ## progress bar
-  haveTime <- require("time")
-  prevTime <- NULL
-  if (haveTime) {
-    prevTime <- utils::txtProgressBar()
-  }
+  progress_bar <- utils::txtProgressBar()
   
   ## Gibbs loop
   for (g in seq_len(ngibbs)) {
@@ -298,15 +294,11 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
         Wgibbs[i, ] <- W
       }
     }
-    if (haveTime) {
-      pb <- utils::txtProgressBar(min = 0, max = ngibbs, style = 3)
-      prevTime <- utils::setTxtProgressBar(pb , g)
-    }
+    pb <- utils::txtProgressBar(min = 0, max = ngibbs, style = 3)
+    progress_bar <- utils::setTxtProgressBar(pb , g)
   }
-  if (haveTime) {
-    pb <- utils::txtProgressBar(min = 0, max = 1, style = 3)
-    utils::txtProgressBar(pb , 1.1)
-  }
+  pb <- utils::txtProgressBar(min = 0, max = 1, style = 3)
+  utils::txtProgressBar(pb , 1.1)
   
   return(list(method = method, tauwjump = tauwjump, tauw = tauwgibbs, 
               psijump = psijump, psi = psigibbs, mu = mugibbs, tauv = tauvgibbs,
