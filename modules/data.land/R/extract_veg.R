@@ -85,12 +85,12 @@ extract_veg <- function(new_site, start_date, end_date,
  
  
  #--------------------------------------------------------------------------------------------------#
- # Write vegettion data as rds, return results to convert.input
+ # Write vegettion data as rds, return results to convert_input
  
  # need check for overwrite
  sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, source)
  
- # Build results dataframe for convert.input
+ # Build results dataframe for convert_input
  results <- data.frame(file = sppfilename, 
                        host = machine_host, 
                        mimetype = "application/rds", 
@@ -100,7 +100,7 @@ extract_veg <- function(new_site, start_date, end_date,
                        dbfile.name = basename(sppfilename), 
                        stringsAsFactors = FALSE)
  
- ### return for convert.inputs
+ ### return for convert_inputs
  return(invisible(results))  
  
   

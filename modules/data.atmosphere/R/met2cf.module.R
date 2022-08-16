@@ -26,7 +26,7 @@
       PEcAn.logger::logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
     }
     
-    cf0.id <- PEcAn.DB::convert.input(input.id = input.id, 
+    cf0.id <- PEcAn.DB::convert_input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname,
                             mimetype = mimetype, 
@@ -41,7 +41,7 @@
     fcn <- "permute.nc"
     outfolder <- file.path(dir, input_name)
     
-    cf.id <- PEcAn.DB::convert.input(input.id = cf0.id$input.id, 
+    cf.id <- PEcAn.DB::convert_input(input.id = cf0.id$input.id, 
                            outfolder = outfolder, 
                            formatname = formatname, 
                            mimetype = mimetype, 
@@ -67,7 +67,7 @@
         PEcAn.logger::logger.error("met2CF function ", fcn1, " or ", fcn2, " doesn't exists")
       }
     format <- PEcAn.DB::query.format.vars(input.id = input.id, bety = bety)
-    cf.id <- PEcAn.DB::convert.input(input.id = input.id,
+    cf.id <- PEcAn.DB::convert_input(input.id = input.id,
                           outfolder = outfolder,
                           formatname = formatname,
                           mimetype = mimetype, 

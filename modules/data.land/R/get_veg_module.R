@@ -8,7 +8,7 @@
 ##' @param new_site data frame, id/lat/lon/name info about the site
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
-##' @param overwrite logical flag for convert.input
+##' @param overwrite logical flag for convert_input
 ##' 
 ##' @export
 ##'
@@ -23,13 +23,13 @@ get_veg_module <- function(input_veg,
 
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections
-  # can be passed to convert.inputs now because process IC locally
+  # can be passed to convert_inputs now because process IC locally
 
   lat       <- new_site$lat
   lon       <- new_site$lon
   site_id   <- new_site$id
   site_name <- new_site$name
-  ## Prepare to call convert.inputs
+  ## Prepare to call convert_inputs
   pkg  <- "PEcAn.data.land"
   con <- PEcAn.DB::db.open(dbparms$bety)
 
@@ -39,7 +39,7 @@ get_veg_module <- function(input_veg,
     fcn <- "extract_veg"
 
 
-  getveg.id <- PEcAn.DB::convert.input(input.id = NA,
+  getveg.id <- PEcAn.DB::convert_input(input.id = NA,
                                 outfolder = outfolder,
                                 formatname = "spp.info",
                                 mimetype = "application/rds",
@@ -67,7 +67,7 @@ get_veg_module <- function(input_veg,
     }else{
       PEcAn.logger::logger.error("Must specify input id")
     }
-    getveg.id <- PEcAn.DB::convert.input(input.id = NA,
+    getveg.id <- PEcAn.DB::convert_input(input.id = NA,
                                outfolder = outfolder, 
                                formatname = "spp.info",
                                mimetype = "application/rds",
