@@ -2,7 +2,7 @@
 * using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.all/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘PEcAn.all’ version ‘1.7.2.9000’
@@ -123,7 +123,9 @@ Packages in Depends field not imported from:
 * checking data for ASCII and uncompressed saves ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
