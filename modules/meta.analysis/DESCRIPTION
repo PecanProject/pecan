@@ -1,39 +1,50 @@
 Package: PEcAn.MA
 Type: Package
-Title: PEcAn functions used for meta-analysis
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze", role = c("aut")),
-             person("David", "LeBauer", role = c("aut", "cre"), email = "dlebauer@email.arizona.edu"),
-             person("Xiaohui", "Feng", role = c("aut")),
-             person("Dan"," Wang", role = c("aut")),
-             person("Carl", "Davidson", role = c("aut")),
-             person("Rob","Kooper", role = c("aut")),
-             person("Shawn", "Serbin", role = c("aut")),
-             person("Shashank", "Singh", role = c("aut")))
+Title: PEcAn Functions Used for Meta-Analysis
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut", "cre"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Shashank", "Singh", role = c("aut"),
+                     email = "shashanksingh819@gmail.com"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. The PEcAn.MA package contains
     the functions used in the Bayesian meta-analysis of trait data.
-Depends:
-    XML,
-    lattice,
-    MASS,
-    PEcAn.utils,
-    PEcAn.DB
 Imports:
     coda (>= 0.18),
+    lattice,
+    PEcAn.utils,
+    PEcAn.DB,
     PEcAn.logger,
+    MASS,
     PEcAn.settings,
     rjags
 Suggests:
+    ggmcmc,
+    ggplot2,
+    knitr,
+    rmarkdown,
     testthat (>= 1.0.2)
 SystemRequirements: JAGS
 License: BSD_3_clause + file LICENSE
+VignetteBuilder: knitr
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)

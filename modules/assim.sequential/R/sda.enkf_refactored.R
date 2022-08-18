@@ -336,7 +336,7 @@ sda.enkf <- function(settings,
       
       if(control$debug) browser()
       #-------------------------------------------- RUN
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
       
       
       

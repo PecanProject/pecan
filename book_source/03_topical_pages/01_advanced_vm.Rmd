@@ -49,15 +49,16 @@ psql -d bety -U bety -h localhost -p 5433
 To test this in R, open a Postgres using the analogous parameters:
 
 ```
+library(DBI)
 library(RPostgres)
 con <- dbConnect(
-  Postgres(),
+  drv = Postgres(),
   user = "bety",
   password = "bety",
   dbname = "bety",
   host = "localhost",
   port = 5433
-  )
+)
 dbListTables(con)   # This should return a vector of bety tables
 ```
 
@@ -90,9 +91,9 @@ Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select 
 +	Click “Add Rule”, leave the pull down on “Custom TCP Rule”, and then change the Port Range from 0 to 8787. Set “Source” to Anywhere. This rule allows you to access RStudio Server on PEcAn.
 +	Click “Review and Launch”  . You will then see this pop-up:
   
-  ```{r, echo=FALSE,fig.align='center'}
+```{r, echo = FALSE, fig.align = 'center'}
 knitr::include_graphics(rep("figures/pic2.jpg"))
-```    
+```
 
 Select the default drive volume type and click Next
 

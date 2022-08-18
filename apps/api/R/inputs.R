@@ -5,68 +5,66 @@ library(dplyr)
 #' @param site_id Site Id (character)
 #' @param offset
 #' @param limit
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return Information about Inputs based on model & site
 #' @author Tezan Sahu
 #* @get /
-searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_id=NULL, offset=0, limit=50, res,
-                         dbcon = global_db_pool){
+searchInputs <- function(req, model_id=NA, site_id=NA, format_id=NA, host_id=NA, offset=0, limit=50, res){
   if (! limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
   
-  inputs <- tbl(dbcon, "inputs") %>%
+  inputs <- tbl(global_db_pool, "inputs") %>%
     select(input_name=name, id, site_id, format_id, start_date, end_date)
   
-  inputs <- tbl(dbcon, "dbfiles") %>%
+  inputs <- tbl(global_db_pool, "dbfiles") %>%
     select(file_name, file_path, container_type, id=container_id, machine_id) %>%
     inner_join(inputs, by = "id") %>%
     filter(container_type == 'Input') %>%
     select(-container_type)
   
-  inputs <- tbl(dbcon, "machines") %>%
+  inputs <- tbl(global_db_pool, "machines") %>%
     select(hostname, machine_id=id) %>%
     inner_join(inputs, by='machine_id')
   
-  inputs <- tbl(dbcon, "formats") %>%
+  inputs <- tbl(global_db_pool, "formats") %>%
     select(format_id = id, format_name = name, mimetype_id) %>%
     inner_join(inputs, by='format_id')
   
-  inputs <- tbl(dbcon, "mimetypes") %>%
+  inputs <- tbl(global_db_pool, "mimetypes") %>%
     select(mimetype_id = id, mimetype = type_string) %>%
     inner_join(inputs, by='mimetype_id') %>%
     select(-mimetype_id)
   
-  inputs <- tbl(dbcon, "sites") %>%
+  inputs <- tbl(global_db_pool, "sites") %>%
     select(site_id = id, sitename) %>%
     inner_join(inputs, by='site_id')
   
-  if(! is.null(model_id)) {
-    inputs <- tbl(dbcon, "modeltypes_formats") %>%
+  if(! is.na(model_id)) {
+    inputs <- tbl(global_db_pool, "modeltypes_formats") %>%
       select(tag, modeltype_id, format_id, input) %>%
       inner_join(inputs, by='format_id') %>%
       filter(input) %>%
       select(-input)
     
-    inputs <- tbl(dbcon, "models") %>%
+    inputs <- tbl(global_db_pool, "models") %>%
       select(model_id = id, modeltype_id, model_name, revision) %>%
       inner_join(inputs, by='modeltype_id') %>%
       filter(model_id == !!model_id) %>%
       select(-modeltype_id, -model_id)
   }
   
-  if(! is.null(site_id)) {
+  if(! is.na(site_id)) {
     inputs <- inputs %>%
       filter(site_id == !!site_id)
   }
   
-  if(! is.null(format_id)) {
+  if(! is.na(format_id)) {
     inputs <- inputs %>%
       filter(format_id == !!format_id)
   }
   
-  if(! is.null(host_id)) {
+  if(! is.na(host_id)) {
     inputs <- inputs %>%
       filter(machine_id == !!host_id)
   }
@@ -130,18 +128,17 @@ searchInputs <- function(req, model_id=NULL, site_id=NULL, format_id=NULL, host_
 #' @param id Input id (character)
 #' @param filename Optional filename specified if the id points to a folder instead of file (character)
 #' If this is passed with an id that actually points to a file, this name will be ignored
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return Input file specified by user
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<input_id>
-downloadInput <- function(input_id, filename="", req, res, dbcon = global_db_pool){
-  db_hostid <- PEcAn.DB::dbHostInfo(dbcon)$hostid
+downloadInput <- function(input_id, filename="", req, res){
+  db_hostid <- PEcAn.DB::dbHostInfo(global_db_pool)$hostid
   
   # This is just for temporary testing due to the existing issue in dbHostInfo()
   db_hostid <- ifelse(db_hostid == 99, 99000000001, db_hostid)
   
-  input <- tbl(dbcon, "dbfiles") %>%
+  input <- tbl(global_db_pool, "dbfiles") %>%
     select(file_name, file_path, container_id, machine_id, container_type) %>%
     filter(machine_id == !!db_hostid) %>%
     filter(container_type == "Input") %>%

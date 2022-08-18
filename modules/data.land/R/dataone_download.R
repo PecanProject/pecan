@@ -40,7 +40,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode
     PEcAn.logger::logger.info("Files located.")
 
   ### make new directory within this directory
-  newdir_D1 <<- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
+  newdir_D1 <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir_D1)
   
   ### download the data with wget 

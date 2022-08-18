@@ -34,12 +34,12 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 
 ## Connect to BETY database and retrieve appropriate format for AmerifluxLBL datasets [TODO: Update to work with R-OpenSci traits BETY]
 ```{r bety}
-bety <- list(user='bety', password='bety', host='localhost',
-             dbname='bety', driver='PostgreSQL',write=TRUE)
-con <- PEcAn.DB::db.open(bety)
-bety$con <- con
+
+con <- PEcAn.DB::db.open(
+   list(user='bety', password='bety', host='localhost',
+        dbname='bety', driver='PostgreSQL',write=TRUE))
 format.id <- 5000000002
-format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = con)
 format$time_zone <- "America/Chicago"
 ```
 

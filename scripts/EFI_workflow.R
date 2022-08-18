@@ -1,5 +1,5 @@
 #You must run this script in the terminal using the code:
-#Rscript --vanilla EFI_workflow.R "[file path to site xml]" "[file path to output folder]" [start_date] [end_date]
+#Rscript --vanilla EFI_workflow.R "/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/Site_XMLS/harvard.xml" "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/" 2021-07-01 2021-08-01
 
 library("PEcAn.all")
 library("PEcAn.utils")
@@ -113,7 +113,7 @@ if(length(input_check$id) > 0){
   
   settings$run$inputs$met$id = index_id
   settings$run$inputs$met$path = clim_check
-}else{PEcAn.utils::logger.error("No met file found")}
+}else{PEcAn.logger::logger.error("No met file found")}
 #settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
 
 if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
@@ -166,7 +166,7 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
       stop_on_error <- FALSE
     }
   }
-  PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = stop_on_error)
+  PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)
   PEcAn.utils::status.end()
 }
 
@@ -225,50 +225,50 @@ db.print.connections()
 print("---------- PEcAn Workflow Complete ----------")
 
 
-#EFI Output Configuration
-library("ggplot2")
-library("plotly")
-library("gganimate")
-library("thematic")
-thematic_on()
-source("/projectnb/dietzelab/ahelgeso/pecan/scripts/efi_data_process.R")
-#Load Output args
-site.num <- settings$run$site$id
-outdir <- args$outputPath
-site.name <- settings$run$site$name
-wid <- settings$workflow$id
-
-output_args = c(as.character(wid), site.num, outdir)
-
-data = efi.data.process(output_args)
-
-#Run SIPNET Outputs
-data.final = data %>%
-  mutate(date = as.Date(date)) %>%
-  filter(date < end_date) %>%
-  arrange(ensemble, date) %>%
-  mutate(time = as.POSIXct(paste(date, Time, sep = " "), format = "%Y-%m-%d %H %M")) %>%
-  mutate(siteID = site.name,
-         forecast = 1,
-         data_assimilation = 0,
-         time = lubridate::force_tz(time, tz = "UTC"))
-#re-order columns and delete unnecessary columns in data.final
-datacols <- c("date", "time", "siteID", "ensemble", "nee", "le", "vswc", "forecast", "data_assimilation")
-data.final = data.final[datacols]
-
-############ Plots to check out reliability of forecast #########################
-
-# ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
-#   geom_line(aes(x = time, y = nee, color = ensemble))
-#
-# ggplot(data.final, aes(x = time, y = le, group = ensemble)) +
-#   geom_line(aes(x = time, y = le, color = ensemble))
-#
-# ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
-#   geom_line(aes(x = time, y = vswc, color = ensemble))
-
-########### Export data.final  ###############
-
-write.csv(data.final, file = paste0(site.name, "-", start_date, "-", end_date, ".csv"))
-
-
+# #EFI Output Configuration
+# library("ggplot2")
+# library("plotly")
+# library("gganimate")
+# library("thematic")
+# thematic_on()
+# source("/projectnb/dietzelab/ahelgeso/pecan/scripts/efi_data_process.R")
+# #Load Output args
+# site.num <- settings$run$site$id
+# outdir <- args$outputPath
+# site.name <- settings$run$site$name
+# wid <- settings$workflow$id
+# 
+# output_args = c(as.character(wid), site.num, outdir)
+# 
+# data = efi.data.process(output_args)
+# 
+# #Run SIPNET Outputs
+# data.final = data %>%
+#   mutate(date = as.Date(date)) %>%
+#   filter(date < end_date) %>%
+#   arrange(ensemble, date) %>%
+#   mutate(time = as.POSIXct(paste(date, Time, sep = " "), format = "%Y-%m-%d %H %M")) %>%
+#   mutate(siteID = site.name,
+#          forecast = 1,
+#          data_assimilation = 0,
+#          time = lubridate::force_tz(time, tz = "UTC"))
+# #re-order columns and delete unnecessary columns in data.final
+# datacols <- c("date", "time", "siteID", "ensemble", "nee", "le", "vswc", "forecast", "data_assimilation")
+# data.final = data.final[datacols]
+# 
+# ############ Plots to check out reliability of forecast #########################
+# 
+# # ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
+# #   geom_line(aes(x = time, y = nee, color = ensemble))
+# #
+# # ggplot(data.final, aes(x = time, y = le, group = ensemble)) +
+# #   geom_line(aes(x = time, y = le, color = ensemble))
+# #
+# # ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
+# #   geom_line(aes(x = time, y = vswc, color = ensemble))
+# 
+# ########### Export data.final  ###############
+# 
+# write.csv(data.final, file = paste0(site.name, "-", start_date, "-", end_date, ".csv"))
+# 
+# 

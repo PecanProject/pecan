@@ -1,14 +1,19 @@
 Package: PEcAn.remote
 Type: Package
-Title: PEcAn model execution utilities
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("David","LeBauer"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
-Author: Alexey Shiklomanov, Rob Kooper, Shawn Serbin, David LeBauer
-Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
+Title: PEcAn Model Execution Utilities
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Rob", "Kooper", role = c("aut", "cre"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("Shashank", "Singh", role = "aut"),
+             person("Chris", "Black", role = "aut"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
     In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
 Imports:
@@ -24,4 +29,4 @@ License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2

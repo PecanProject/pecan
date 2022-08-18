@@ -1,0 +1,29 @@
+Package: PEcAn.SIBCASA
+Type: Package
+Title: PEcAn package for integration of the SiBCASA model
+Version: 0.0.1
+Date: 2021-10-07
+Authors@R: c(person("Rob", "Kooper", role = "cre",
+                email = "kooper@illinois.edu"),
+             person("Tony", "Gardella", role = c("aut"),
+                email = "tonygard@bu.edu"),
+             person("Yasin", "Elshorabany", role = c("aut")),
+             person("Chris", "Black", role = c("aut"),
+                     email = "chris@ckblack.org"),
+             person("University of Illinois, NCSA", role = c("cph")))
+Description: This module provides functions to link (SiBCASA) to PEcAn.
+    It is a work in progress and is not yet fully functional.
+Imports:
+    ncdf4,
+    PEcAn.logger,
+    PEcAn.utils (>= 1.4.8)
+Suggests:
+    testthat (>= 3.0.0),
+    withr
+SystemRequirements: SiBCASA
+OS_type: unix
+License: BSD_3_clause + file LICENSE
+Copyright: Authors
+LazyData: TRUE
+Encoding: UTF-8
+RoxygenNote: 7.1.2

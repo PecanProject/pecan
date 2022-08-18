@@ -5,16 +5,20 @@
 \title{S-file contents are not written to standard netcdfs but are used by read_restart
 from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files}
 \usage{
-read_S_files(sfile, outdir, pft_names, pecan_names = NULL)
+read_S_files(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...)
 }
 \arguments{
 \item{sfile}{history file name e.g. "history-S-1961-01-01-000000-g01.h5"}
 
 \item{outdir}{path to run outdir, where the -S- file is}
 
-\item{pft_names}{string vector, names of ED2 pfts in the run, e.g. c("temperate.Early_Hardwood", "temperate.Late_Conifer")}
+\item{pfts}{Names of PFTs used in the run, vector}
 
 \item{pecan_names}{string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")}
+
+\item{settings}{pecan settings object}
+
+\item{...}{additional arguments}
 }
 \description{
 S-file contents are not written to standard netcdfs but are used by read_restart

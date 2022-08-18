@@ -5,10 +5,9 @@ library(dplyr)
 #' @param filepath Absolute path to file on target machine
 #' @param userid User ID associated with file (typically the same as the user
 #'   running the corresponding workflow)
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return Raw binary file contents
 #' @author Tezan Sehu
-get.file <- function(filepath, userid, dbcon = global_db_pool) {
+get.file <- function(filepath, userid) {
   # Check if the file path is valid
   if(! file.exists(filepath)){
     return(list(status = "Error", message = "File not found"))
@@ -21,13 +20,13 @@ get.file <- function(filepath, userid, dbcon = global_db_pool) {
   
   if(Sys.getenv("AUTH_REQ") == TRUE) {
 
-    Run <- tbl(dbcon, "runs") %>%
+    Run <- tbl(global_db_pool, "runs") %>%
       filter(id == !!run_id)
-    Run <- tbl(dbcon, "ensembles") %>%
+    Run <- tbl(global_db_pool, "ensembles") %>%
       select(ensemble_id=id, workflow_id) %>%
       full_join(Run, by="ensemble_id")  %>%
       filter(id == !!run_id)
-    user_id <- tbl(dbcon, "workflows") %>%
+    user_id <- tbl(global_db_pool, "workflows") %>%
       select(workflow_id=id, user_id) %>% full_join(Run, by="workflow_id")  %>%
       filter(id == !!run_id) %>%
       pull(user_id)

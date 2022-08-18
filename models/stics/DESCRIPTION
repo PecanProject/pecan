@@ -1,8 +1,8 @@
 Package: PEcAn.STICS
 Type: Package
 Title: PEcAn package for integration of the STICS model
-Version: 1.7.1
-Date: 2019-09-05
+Version: 1.7.2
+Date: 2021-10-04
 Authors@R: c(
   person("Istem", "Fer",
     email = "istem.fer@fmi.fi",
@@ -18,7 +18,6 @@ Imports:
     ncdf4,
     purrr,
     XML,
-    udunits2,
     dplyr
 Suggests:
     testthat (>= 1.0.2)
@@ -29,4 +28,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2

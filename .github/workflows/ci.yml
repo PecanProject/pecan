@@ -23,57 +23,21 @@ env:
   CI: true
 
 jobs:
-
-  # ----------------------------------------------------------------------
-  # R BUILD
-  # ----------------------------------------------------------------------
-  build:
-    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        R:
-          - "4.0.3"
-          - "4.0.4"
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - uses: actions/checkout@v2
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf curl
-
-    # check dependencies
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
-    - name: check for out-of-date dependencies files
-      uses: infotroph/tree-is-clean@v1
-
-    # compile PEcAn code
-    - name: build
-      run: make -j1
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
-
   # ----------------------------------------------------------------------
   # R TEST
   # ----------------------------------------------------------------------
   test:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
@@ -85,13 +49,21 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
 
     # install additional tools needed
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
+    - name: check for out-of-date dependencies files
+      uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      run: Rscript docker/depends/pecan.depends.R
 
     # initialize database
     - name: db setup
@@ -116,10 +88,11 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
@@ -133,18 +106,26 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
+
+    # Forbid spaces in names. Yes, *we* know it's not 1980 anymore, but Make doesn't.
+    - name: check for filenames that would confuse Make
+      run: |
+        SPACENAMES=`find . -name '* *'`
+        if [ -n "$SPACENAMES" ]; then
+          echo "::error file=${SPACENAMES}::Spaces in filename(s): ${SPACENAMES}. Please rename these files by converting spaces to underscores."
+          exit 1
+        fi
 
     # install additional tools needed
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-    # need processx > 3.5.2 to avoid cryptic errors from
-    # https://github.com/r-lib/rcmdcheck/issues/140
-    # Remove when https://github.com/r-lib/processx/pull/299 reaches CRAN
-    - name: update processx
-      run: Rscript -e 'devtools::install_github("r-lib/processx")'
 
     # run PEcAn checks
     - name: check
@@ -162,13 +143,15 @@ jobs:
   sipnet:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
       matrix:
         R:
-          - "4.0.3"
-          - "4.0.4"
+          - "4.0"
+          - "4.1"
 
     services:
       postgres:
@@ -180,7 +163,11 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
 
     # install additional tools needed
     - name: install utils
@@ -196,10 +183,11 @@ jobs:
 
     # install sipnet
     - name: Check out SIPNET
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: PecanProject/sipnet
         path: sipnet
+        set-safe-directory: false
     - name: install sipnet
       run: |
         cd ${GITHUB_WORKSPACE}/sipnet

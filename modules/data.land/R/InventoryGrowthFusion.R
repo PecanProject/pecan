@@ -29,7 +29,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   }
   max.chunks <- ceiling(n.iter/n.chunk)
   if(max.chunks < k_restart){
-    PEcAn.utils::logger.warn("MCMC already complete",max.chunks,k_restart)
+    PEcAn.logger::logger.warn("MCMC already complete",max.chunks,k_restart)
     return(NULL)
   }
   avail.chunks <- k_restart:ceiling(n.iter/n.chunk)
@@ -412,7 +412,7 @@ model{
     for (i in seq_len(nchain)) {
       y.samp <- sample(data$y, length(data$y), replace = TRUE)
       init[[i]] <- list(x = z0, 
-                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_add = stats::runif(1, 1, 5) / stats::var(diff(y.samp), na.rm = TRUE),
                         tau_dbh = 1, 
                         tau_inc = 1500,
                         tau_ind = 50, 

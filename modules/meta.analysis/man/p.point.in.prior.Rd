@@ -7,7 +7,7 @@
 p.point.in.prior(point, prior)
 }
 \arguments{
-\item{point}{}
+\item{point}{quantile of given prior to return}
 
 \item{prior}{list of distn, parama, paramb}
 }

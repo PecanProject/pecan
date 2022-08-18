@@ -1,9 +1,11 @@
 Package: PEcAn.CLM45
 Type: Package
 Title: PEcAn package for integration of CLM4.5 model
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -16,7 +18,6 @@ Depends:
     PEcAn.logger,
     PEcAn.utils
 Imports:
-    udunits2 (>= 0.11),
     ncdf4 (>= 1.15)
 Suggests:
     testthat (>= 1.0.2)
@@ -25,4 +26,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2

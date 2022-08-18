@@ -6,7 +6,13 @@
 \alias{narr_sfc_vars}
 \alias{narr_all_vars}
 \title{NARR flux and sfc variables}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5 rows and 3 columns.}
+\format{
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 5 rows and 3 columns.
+
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 3 rows and 3 columns.
+
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 8 rows and 3 columns.
+}
 \usage{
 narr_flx_vars
 

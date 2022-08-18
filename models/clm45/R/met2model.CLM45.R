@@ -55,7 +55,7 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #
 #       ## convert time to seconds
 #       sec   <- nc$dim$time$vals
-#       sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+#       sec = PEcAn.utils::ud_convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
 #
 #
 #

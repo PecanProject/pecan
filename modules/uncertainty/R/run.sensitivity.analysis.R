@@ -75,7 +75,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         if(!exists("sa.run.ids"))   sa.run.ids <- runs.samples$sa
         
         ### Load parsed model results
-        variables <- convert.expr(variable)
+        variables <- PEcAn.utils::convert.expr(variable)
         variable.fn <- variables$variable.drv
         
         fname <- sensitivity.filename(
@@ -95,7 +95,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
           C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
           if(any(C.units)){
             for(x in which(C.units)) {
-              trait.samples[[pft$name]][[x]] <- udunits2::ud.convert(trait.samples[[pft$name]][[x]], "degC", "K")
+              trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
             }
           }
           

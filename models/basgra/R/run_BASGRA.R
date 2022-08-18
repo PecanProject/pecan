@@ -30,11 +30,15 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                        sitelat, sitelon, co2_file = NULL){
   
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
+  if(lubridate::hour(start_date) == 23){ 
+    # could be made more sophisticated but if it is specified to the hour this is probably coming from SDA
+    start_date <- lubridate::ceiling_date(start_date, "day")
+  }
   end_date    <- as.POSIXlt(end_date, tz = "UTC")
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
   
-
+  if(co2_file == "NULL") co2_file <- NULL
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
@@ -56,14 +60,14 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         if(year == start_year & year == end_year){
           simdays <- seq(lubridate::yday(start_date), lubridate::yday(end_date))
         }else{
-          simdays <- 1:365 #seq_len(PEcAn.utils::days_in_year(year))
+          simdays <- seq_len(PEcAn.utils::days_in_year(year))
         }
         
       }
       
       
       NDAYS          <- length(simdays)
-      NWEATHER       <- as.integer(8)
+      NWEATHER       <- as.integer(9)
       matrix_weather <- matrix( 0., nrow = NDAYS, ncol = NWEATHER )
       
       
@@ -73,7 +77,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       matrix_weather[ ,1] <- rep(year, NDAYS) # year
       matrix_weather[ ,2] <- simdays
       
-      old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
+      if(grepl(year, basename(file_path))){
+        # we probably have a (near-term) forecast met
+        old.file <- file_path
+      }else{
+        old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
+      }
+      
       
       if (file.exists(old.file)) {
         
@@ -83,54 +93,66 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         ## convert time to seconds
         sec <- nc$dim$time$vals
-        sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+        sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
         
-        dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
+        dt <- diff(sec)[1]
         tstep <- round(86400 / dt)
         dt <- 86400 / tstep
         
         ind <- rep(simdays, each = tstep)
         
+        if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
+          #this should always be the case, but just in case
+          origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
+          ydays <- lubridate::yday(origin_dt + sec)
+
+        }else{
+          PEcAn.logger::logger.error("Check units of time in the weather data.")
+        }
+
+        
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         # temporary hack, not sure if it will generalize with other data products
         # function might need a splitting arg
-        gr  <- gr[nc$dim$time$vals %in% simdays] 
+        gr  <- gr[ydays %in% simdays] 
         
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-        Tair   <- Tair[nc$dim$time$vals %in% simdays]
-        Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+        Tair   <- Tair[ydays %in% simdays]
+        Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
         
         
         #in BASGRA tmin and tmax is only used to calculate the average daily temperature, see environment.f90
         t_dmean <- round(tapply(Tair_C, ind, mean, na.rm = TRUE), digits = 2) # maybe round these numbers 
-        matrix_weather[ ,4] <- t_dmean # mean temperature (degrees Celsius)
-        matrix_weather[ ,5] <- t_dmean # that's what they had in read_weather_Bioforsk
+        t_dmin <- round(tapply(Tair_C, ind, min, na.rm = TRUE), digits = 2)
+        t_dmax <- round(tapply(Tair_C, ind, max, na.rm = TRUE), digits = 2)
+        matrix_weather[ ,4] <- t_dmin # mean temperature (degrees Celsius)
+        matrix_weather[ ,5] <- t_dmax # that's what they had in read_weather_Bioforsk
         
-        RH <-ncdf4::ncvar_get(nc, "relative_humidity")  # %
-        RH <- RH[nc$dim$time$vals %in% simdays]
+        RH <- ncdf4::ncvar_get(nc, "relative_humidity")  # %
+        RH <- RH[ydays %in% simdays]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
-        
+     
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
         matrix_weather[ ,6] <- round(exp(17.27*t_dmean/(t_dmean+239)) * 0.6108 * RH / 100, digits = 2)
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
-        Rain  <- Rain[nc$dim$time$vals %in% simdays]
+        Rain  <- Rain[ydays %in% simdays]
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- round(raini, digits = 2) # precipitation (mm d-1)	
         
         U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
         V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
         if(is.numeric(U) & is.numeric(V)){
-          U  <- U[nc$dim$time$vals %in% simdays]
-          V  <- V[nc$dim$time$vals %in% simdays]
+          U  <- U[ydays %in% simdays]
+          V  <- V[ydays %in% simdays]
           ws <- sqrt(U ^ 2 + V ^ 2)      
         }else{
           ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
-          ws <- ws[nc$dim$time$vals %in% simdays]
+          ws <- ws[ydays %in% simdays]
           if (is.numeric(ws)) {
             PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
           }else{
@@ -140,6 +162,18 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         
         matrix_weather[ ,8] <- round(tapply(ws, ind, mean,  na.rm = TRUE), digits = 2) # mean wind speed (m s-1)			
+        
+        # CO2
+        co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+        if(is.numeric(co2)){
+          co2 <- co2[ydays %in% simdays] / 1e-06 # ppm
+          co2 <- round(tapply(co2, ind, mean, na.rm = TRUE), digits = 2) 
+        }else{
+          co2 <- NA
+        }
+        
+        # This is new BASGRA code that can be passed CO2 cals
+        matrix_weather[ ,9] <- co2
         
         ncdf4::nc_close(nc)
       } else {
@@ -162,7 +196,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                 "simulation days. Limiting the run to the first ", NMAXDAYS, "days of the requested period.")
     }else{
       # append zeros at the end
-      matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 8 ))
+      matrix_weather <- rbind(matrix_weather, matrix( 0., nrow = (NMAXDAYS - nmw), ncol = 9 ))
     }
     
     return(matrix_weather)
@@ -187,7 +221,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "NCGSH"      , "NCDSH", "NCHARVSH",
     "fNgrowth","RGRTV","FSPOT","RESNOR","TV2TIL","NSHNOR","KNMAX","KN",    # 63:70
     "DMLV"       , "DMST"             , "NSH_DMSH"    ,                    # 71:73
-    "Nfert_TOT"  , "YIELD_TOT"        , "DM_MAX"      ,                    # 74:76
+    "Nfert_TOT"  , "YIELD_POT"        , "DM_MAX"      ,                    # 74:76
     "F_PROTEIN"  , "F_ASH"            ,                                    # 77:78
     "F_WALL_DM"  , "F_WALL_DMSH"      , "F_WALL_LV"   , "F_WALL_ST",       # 79:82
     "F_DIGEST_DM", "F_DIGEST_DMSH"    ,                                    # 83:84
@@ -242,8 +276,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   
   NDAYS <- as.integer(sum(matrix_weather[,1] != 0))
   
-  matrix_weather <- cbind( matrix_weather, matrix_weather[,8]) #add a col
-  if(!is.null(co2_file)){
+  if(!is.null(co2_file)){ # if a separate co2 file was passed use that
     co2val <- utils::read.table(co2_file, header=TRUE, sep = ",")
     
     weird_line <- which(!paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]) %in% paste0(co2val[,1], co2val[,2]))
@@ -252,11 +285,14 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       NDAYS <- NDAYS-length(weird_line)
     }
     matrix_weather[1:NDAYS,9] <- co2val[paste0(co2val[,1], co2val[,2]) %in% paste0(matrix_weather[1:NDAYS,1], matrix_weather[1:NDAYS,2]),3]
-  }else{
-    PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 350 ppm.")
-    matrix_weather[1:NDAYS,9] <- 350
+  }else if(all(is.na(matrix_weather[1:NDAYS,9]))){ # this means there were no CO2 in the netcdf as well
+    PEcAn.logger::logger.info("No atmospheric CO2 concentration was provided. Using default 420 ppm.")
+    matrix_weather[1:NDAYS,9] <- 420
   }
 
+  # checking/debugging met
+  # write.table(matrix_weather[1:NDAYS,], file=paste0(outdir,"/clim",start_date,".",substr(end_date, 1,10),".csv"), 
+  #            sep=",", row.names = FALSE, col.names=FALSE)
   
   calendar_fert     <- matrix( 0, nrow=300, ncol=3 )
   
@@ -268,32 +304,29 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   #calendar_Ndep[1,] <- c(1900,  1,0)
   #calendar_Ndep[2,] <- c(2100, 366, 0)
   
-  # hardcoding these for now, should be able to modify later on
+  # hardcoding these for now to be 0, should be able to modify later on
   #    calendar_fert[3,] <- c( 2001, 123, 0*1000/ 10000      ) # 0 kg N ha-1 applied on day 123
-  calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  2 kg N ha-1 y-1 N-deposition in 1900
-  calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 1980
-  calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) # 20 kg N ha-1 y-1 N-deposition in 2100
+  calendar_Ndep[1,] <- c( 1900,   1,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 1900
+  calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 1980
+  calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 2100
   
-  days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 2)
+  days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 3)
   # read in harvest days
   h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
-  days_harvest[1:nrow(h_days),] <- h_days[,1:2]
-
-  days_harvest <- as.integer(days_harvest)
+  days_harvest[1:nrow(h_days),1:2] <- h_days[,1:2]
   
   # This is a management specific parameter
+  # CLAIV is used to determine LAI remaining after harvest
+  # I modified BASGRA code to use different values for different harvests
   # I'll pass it via harvest file as the 3rd column
-  # even though it won't change from harvest to harvest, it may change from run to run
   # but just in case users forgot to add the third column to the harvest file:
-  if(ncol(h_days) > 2){
-    run_params[names(run_params) == "CLAIV"]     <- h_days[1,3]
-    run_params[names(run_params) == "TRANCO"]    <- h_days[1,4]
-    run_params[names(run_params) == "SLAMAX"]    <- h_days[1,5]
-    run_params[names(run_params) == "FSOMFSOMS"] <- h_days[1,6]
+  if(ncol(h_days) == 3){
+    days_harvest[1:nrow(h_days),3] <- h_days[,3]*10 # as.integer
   }else{
-    PEcAn.logger::logger.info("CLAIV, TRANCO, SLAMAX not provided via harvest file. Using defaults.")
+    PEcAn.logger::logger.info("CLAIV not provided via harvest file. Using defaults.")
+    days_harvest[1:nrow(h_days),3] <- run_params[names(run_params) == "CLAIV"] 
   }
-  
+  days_harvest <- as.integer(days_harvest)
   
   # run  model
   output <- .Fortran('BASGRA',
@@ -324,29 +357,55 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     thisyear <- output[ , outputNames == "year"] == y
     
     outlist <- list()
-    outlist[[1]]  <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
+    outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "LAI")]  # LAI in (m2 m-2)
     
-    CropYield     <- output[thisyear, which(outputNames == "YIELD")] # (g DM m-2)
-    outlist[[2]]  <- udunits2::ud.convert(CropYield, "g m-2", "kg m-2")  
+    CropYield     <- output[thisyear, which(outputNames == "YIELD_POT")] # (g DM m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(CropYield, "g m-2", "kg m-2")  
     
     clitt         <- output[thisyear, which(outputNames == "CLITT")] # (g C m-2)
-    outlist[[3]]  <- udunits2::ud.convert(clitt, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clitt, "g m-2", "kg m-2")  
+    
+    cstub         <- output[thisyear, which(outputNames == "CSTUB")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cstub, "g m-2", "kg m-2")  
+    
+    cst           <- output[thisyear, which(outputNames == "CST")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cst, "g m-2", "kg m-2") 
+    
+    crt           <- output[thisyear, which(outputNames == "CRT")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(crt, "g m-2", "kg m-2") 
+    
+    cres          <- output[thisyear, which(outputNames == "CRES")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(cres, "g m-2", "kg m-2") 
+    
+    clv           <- output[thisyear, which(outputNames == "CLV")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clv, "g m-2", "kg m-2") 
+    
+    clvd         <- output[thisyear, which(outputNames == "CLVD")] # (g C m-2)
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clvd, "g m-2", "kg m-2") 
     
     csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
-    outlist[[4]]  <- udunits2::ud.convert(csomf, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
     
     csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
-    outlist[[5]]  <- udunits2::ud.convert(csoms, "g m-2", "kg m-2")  
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
     
-    outlist[[6]]  <- udunits2::ud.convert(csomf + csoms, "g m-2", "kg m-2") 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf + csoms, "g m-2", "kg m-2") 
+    
+    outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG1")] 
+    outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG2")] 
+    outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILV")] 
+    outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "PHEN")] 
+    
+    outlist[[length(outlist) + 1]] <- output[thisyear, which(outputNames == "TILG1")] + 
+      output[thisyear, which(outputNames == "TILG2")] + output[thisyear, which(outputNames == "TILV")]
     
     # Soil Respiration in kgC/m2/s
     rsoil         <- output[thisyear, which(outputNames == "Rsoil")] # (g C m-2 d-1)
-    outlist[[7]]  <- udunits2::ud.convert(rsoil, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(rsoil, "g m-2", "kg m-2") / sec_in_day
     
     # Autotrophic Respiration in kgC/m2/s
     rplantaer     <- output[thisyear, which(outputNames == "RplantAer")] # (g C m-2 d-1)
-    outlist[[8]]  <- udunits2::ud.convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(rplantaer, "g m-2", "kg m-2") / sec_in_day
     
     # NEE in kgC/m2/s
     # NOTE: According to BASGRA_N documentation: LUEMXQ (used in PHOT calculation) accounts for carbon lost to maintenance respiration, 
@@ -354,14 +413,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # So this is not really GPP, but it wasn't obvious to add what to get GPP, but I just want NEE for now, so it's OK
     phot          <- output[thisyear, which(outputNames == "PHOT")] # (g C m-2 d-1)
     nee           <- -1.0 * (phot - (rsoil + rplantaer))
-    outlist[[9]]  <- udunits2::ud.convert(nee, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nee, "g m-2", "kg m-2") / sec_in_day
     
     # again this is not technically GPP
-    outlist[[10]]  <- udunits2::ud.convert(phot, "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(phot, "g m-2", "kg m-2") / sec_in_day
     
     # Qle W/m2
-    outlist[[11]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
+    outlist[[length(outlist)+1]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
                           PEcAn.data.atmosphere::get.lv()) / sec_in_day  
+    
+    # SoilMoist (!!! only liquid water !!!) kg m-2
+    # during the groowing season its depth will mainly be equal to the rooting depth, but during winter its depth will be ROOTD-Fdepth
+    soilm <- output[thisyear, which(outputNames == "WAL")] # mm
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -377,17 +441,39 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     dims <- list(lon = lon, lat = lat, time = t)
     
     nc_var <- list()
-    nc_var[[1]]   <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[2]]   <- PEcAn.utils::to_ncvar("CropYield", dims)
-    nc_var[[3]]   <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[4]]   <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
-    nc_var[[5]]   <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    nc_var[[6]]   <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    nc_var[[7]]   <- PEcAn.utils::to_ncvar("SoilResp", dims)
-    nc_var[[8]]   <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    nc_var[[9]]   <- PEcAn.utils::to_ncvar("NEE", dims)
-    nc_var[[10]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    nc_var[[11]]  <- PEcAn.utils::to_ncvar("Qle", dims)
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("CropYield", dims)
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("stubble_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+                        longname = "Stubble Carbon Content")
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("stem_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+                                      longname = "Stem Carbon Content")
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("root_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("reserve_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+                                      longname = "Reserve Carbon Content")
+    nc_var[[length(nc_var)+1]]   <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]   <- ncdf4::ncvar_def("dead_leaf_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+                                      longname = "Dead Leaf Carbon Content")
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
+                                      longname = "Non-elongating generative tiller density") 
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("elongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
+                                      longname = "Elongating generative tiller density") 
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_vegetative_tiller", units = "m-2", dim = dims, missval = -999,
+                                      longname = "Non-elongating vegetative tiller density")
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("phenological_stage", units = "-", dim = dims, missval = -999,
+                                      longname = "Phenological stage")
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("tiller_density", units = "m-2", dim = dims, missval = -999,
+                                                    longname = "Tiller density")
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("SoilResp", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("Qle", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
+                                      longname = "Average Layer Soil Moisture")
     
     # ******************** Declare netCDF variables ********************#
     

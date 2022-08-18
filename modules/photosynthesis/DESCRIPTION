@@ -1,12 +1,15 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze", role = c("aut", "cre"),
+             person("University of Illinois, NCSA", role = c("cph")))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
-             person("Xiaohui", "Feng", role = c("aut")),
-             person("Shawn", "Serbin", role = c("aut")),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
              person("Shashank", "Singh", role = c("aut")),
              person("Chris", "Black", role = c("ctb")),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -38,5 +41,5 @@ Collate:
     Licor.QC.R
     plots.R
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr

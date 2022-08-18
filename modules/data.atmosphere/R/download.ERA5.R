@@ -51,7 +51,7 @@ download.ERA5.old <- function(outfolder, start_date, end_date, lat.in, lon.in,
     "This function is an incomplete prototype! Use with caution!"
   )
 
-  PEcAn.utils:::need_packages("reticulate")
+  need_packages("reticulate")
   
   if (!is.null(reticulate_python)) {
     reticulate::use_python(reticulate_python)

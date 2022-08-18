@@ -2,17 +2,16 @@ library(dplyr)
 
 #' Retrieve the details of a PEcAn PFT, based on pft_id
 #' @param pft_id PFT ID (character)
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return PFT details
 #' @author Tezan Sahu
 #* @get /<pft_id>
-getPfts <- function(pft_id, res, dbcon = global_db_pool){
+getPfts <- function(pft_id, res){
   
-  pft <- tbl(dbcon, "pfts") %>%
+  pft <- tbl(global_db_pool, "pfts") %>%
     select(pft_id = id, pft_name = name, definition, pft_type, modeltype_id) %>%
     filter(pft_id == !!pft_id)
   
-  pft <- tbl(dbcon, "modeltypes") %>%
+  pft <- tbl(global_db_pool, "modeltypes") %>%
     select(modeltype_id = id, model_type = name) %>%
     inner_join(pft, by = "modeltype_id")
   
@@ -42,12 +41,10 @@ getPfts <- function(pft_id, res, dbcon = global_db_pool){
 #' @param pft_type PFT type (either 'plant' or 'cultivar') (character)
 #' @param model_type Model type serch string (character)
 #' @param ignore_case Logical. If `TRUE` (default) use case-insensitive search otherwise, use case-sensitive search
-#' @param dbcon Database connection object. Default is global database pool.
 #' @return PFT subset matching the searc criteria
 #' @author Tezan Sahu
 #* @get /
-searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE, res,
-                       dbcon = global_db_pool){
+searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE, res){
   pft_name <- URLdecode(pft_name)
   pft_type <- URLdecode(pft_type)
   model_type <- URLdecode(model_type)
@@ -57,10 +54,10 @@ searchPfts <- function(pft_name="", pft_type="", model_type="", ignore_case=TRUE
     return(list(error = "Invalid pft_type"))
   }
   
-  pfts <- tbl(dbcon, "pfts") %>%
+  pfts <- tbl(global_db_pool, "pfts") %>%
     select(pft_id = id, pft_name = name, pft_type, modeltype_id)
   
-  pfts <- tbl(dbcon, "modeltypes") %>%
+  pfts <- tbl(global_db_pool, "modeltypes") %>%
     select(modeltype_id = id, model_type = name) %>%
     inner_join(pfts, by = "modeltype_id")
   

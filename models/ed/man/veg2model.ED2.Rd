@@ -4,10 +4,20 @@
 \alias{veg2model.ED2}
 \title{Writes ED specific IC files}
 \usage{
-veg2model.ED2(outfolder, veg_info, start_date, new_site, source)
+veg2model.ED2(outfolder, veg_info, start_date, new_site, source, ens)
 }
 \arguments{
 \item{outfolder}{where to write files}
+
+\item{veg_info}{object passed from write_ic includes pft matches}
+
+\item{start_date}{"YYYY-MM-DD" passed from write_ic}
+
+\item{new_site}{object passed from write_ic includes site id, lat, lon, and sitename}
+
+\item{source}{object passed from write_ic}
+
+\item{ens}{number of ensemble members}
 }
 \value{
 filenames

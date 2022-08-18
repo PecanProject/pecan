@@ -13,9 +13,9 @@ bugs.rdist(
 \arguments{
 \item{prior}{dataframe with distribution name and parameters}
 
-\item{n.iter}{number of samples, output will have n.iter/4 samples}
+\item{n.iter}{number of MCMC samples. Output will have n.iter/4 samples}
 
-\item{n}{}
+\item{n}{number of randomly chosen samples to return.}
 }
 \value{
 vector of samples

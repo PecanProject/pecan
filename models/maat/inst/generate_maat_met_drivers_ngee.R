@@ -46,13 +46,13 @@ met_drivers$Prec_mm <- met_drivers$Rain..mm.min.*30  # converting to mm per 30 m
 
 # get additional variables
 if (pressure){
-  met_drivers$Press_Pa <- udunits2::ud.convert(met_drivers$BP_hPa, "mmHg", "Pa")  # need to match this with source, when availible 
+  met_drivers$Press_Pa <- PEcAn.utils::ud_convert(met_drivers$BP_hPa, "mmHg", "Pa")  # need to match this with source, when availible 
 } else {
   met_drivers$Press_Pa <- rep(101325,length(met_drivers$Time))
 }
 
 if (wind) {
-  met_drivers$Windspeed_m_s <- udunits2::ud.convert(met_drivers$WS..km.h., "km/h", "m/s")
+  met_drivers$Windspeed_m_s <- PEcAn.utils::ud_convert(met_drivers$WS..km.h., "km/h", "m/s")
 }
 
 # subset
