@@ -29,20 +29,14 @@ check_css <- function(css, pss = NULL) {
 #' @rdname check_css
 #' @export
 check_pss <- function(pss, site = NULL) {
-  testthat::test_that(
-    "pss file is formatted correctly",
-    {
-      testthat::expect_is(pss, "data.frame")
-      testthat::expect_gte(nrow(pss), 1)
-    }
-  )
+  if(!inherits(pss, "data.frame") | nrow(pss) == 0) {
+    stop("css file should be a data frame")
+  }
   if (!is.null(site)) {
-    testthat::test_that(
-      "pss and site files are compatible",
-      {
-        testthat::expect_true(all(unique(pss$site) %in% unique(site$sitenum)))
-      }
-    )
+    
+    if(!all(unique(pss$site) %in% unique(site$sitenum))) {
+      stop("pss and site files are not compatible")
+    }
   }
 }
 
