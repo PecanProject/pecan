@@ -43,13 +43,8 @@ check_pss <- function(pss, site = NULL) {
 #' @rdname check_css
 #' @export
 check_site <- function(site) {
-  testthat::test_that(
-    "site file is formatted correctly",
-    {
-      testthat::expect_gte(nrow(site), 1)
-      testthat::expect_true(!is.null(attributes(site)))
-      testthat::expect_is(attr(site, "nsite"), "numeric")
-      testthat::expect_true(attr(site, "file_format") %in% c(1, 2, 3))
-    }
-  )
+      stopifnot(nrow(site) >= 1)
+      stopifnot(!is.null(attributes(site)))
+      stopifnot(attr(site, "nsite") == "numeric")
+      stopifnot(attr(site, "file_format") %in% c(1, 2, 3))
 }
