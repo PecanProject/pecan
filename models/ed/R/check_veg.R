@@ -9,27 +9,21 @@
 #' @return `NULL` (invisibly)
 #' @export
 check_css <- function(css, pss = NULL) {
-  testthat::test_that(
-    "css file is formatted correctly",
-    {
-      testthat::expect_is(css, "data.frame")
-      testthat::expect_gte(nrow(css), 1)
-      testthat::expect_equal(
-        colnames(css),
-        c("time", "patch", "cohort", "dbh", "hite", "pft",
-          "n", "bdead", "balive", "lai")
-      )
-    }
-  )
-  if (!is.null(pss)) {
-    testthat::test_that(
-      "css file and pss file are compatible",
-      {
-        # All cohort patches are defined in patch file
-        testthat::expect_true(all(unique(css$patch) %in% unique(pss$patch)))
-      }
-    )
+  if(!inherits(css, "data.frame") | nrow(css) == 0) {
+    stop("css file should be a data frame")
   }
+  
+  if(colnames(css) != c("time", "patch", "cohort", "dbh", "hite", "pft",
+                        "n", "bdead", "balive", "lai")) {
+    stop("css file is formatted incorrectly")
+  }
+  
+  if (!is.null(pss)) {
+    if(!all(unique(css$patch) %in% unique(pss$patch))) {
+      stop("css file and pss file are not compatible")
+    }
+  }
+  
 }
 
 #' @rdname check_css
