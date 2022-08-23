@@ -66,6 +66,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     ed_res_flag <- names(flist)[file.check]
 
     # extract year info from the file names
+    #TODO: refactor to simplify.  Dates are predictible in output filenames.  Doesn't need a for loop.
     ylist <- lapply(ed_res_flag, function(f) {
       yr <- rep(NA, length(flist[[f]]))
       for (i in seq_along(flist[[f]])) {
@@ -92,7 +93,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   # (ii) check whether this is an ensemble run, then return null, otherwise
   # process whatever there is
   # for now I'm going with this, do failed runs also provide information
-  # on parameters?
+  # on parameters? 
+  #TODO: failed runs may not be failing at random.  Should be *warning*, not info.
   year_check <- unique(unlist(ylist))
   if (max(year_check) < end_year) {
     PEcAn.logger::logger.info("Run failed with some outputs.")
@@ -121,6 +123,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     for (i in seq_along(out_list)) {
       rflag <- ed_res_flag[i]
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
+      #TODO would doing this with do.call() be better for speed/memory usage?
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]],
                                outdir, start_date, end_date,
@@ -166,6 +169,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     PEcAn.logger::logger.info("*** Writing netCDF file ***")
 
     out <- unlist(out_list, recursive = FALSE)
+    #TODO: Is there a reason the nc_var list can't be used in nc_create?
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
     # define time_bounds for -T- outputs, if exists
@@ -177,6 +181,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+    #TODO: seems like there should be a more efficient way to do this.  Doesn't nc_create() take a list?  Wasn't that the point of making the list?
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
@@ -214,6 +219,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 
   PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
 
+  #TODO: rename add() to something more descriptive
   # add
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
@@ -315,7 +321,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     if(!is.null(vars_detected)){
       PEcAn.logger::logger.warn(paste("Found variable(s): ", paste(vars_detected, collapse = " "), ", now processing FMEAN* named variables. Note that varible naming conventions may change with ED2 version."))
     }
-    
+    #TODO: return not needed here
     return(name_convention)
   }
 
@@ -324,7 +330,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
   if (yr < strftime(start_date, "%Y")) {
     PEcAn.logger::logger.info(yr, "<", strftime(start_date, "%Y"))
-    next
+    next #TODO: what does next do??
   }
   
   if (yr > strftime(end_date, "%Y")) {
@@ -349,7 +355,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
   if (file.exists(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))) {
     ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))
-    slzdata <- getHdf5Data(ncY, "SLZ")
+    slzdata <- getHdf5Data(ncY, "SLZ") #TODO: what is SLZ?
     ncdf4::nc_close(ncY)
   } else {
     PEcAn.logger::logger.warn("Could not find SLZ in Y file, 
@@ -365,6 +371,8 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   dz <- dz[dz != 0]
   
   if (!is.null(ED2vc)) {
+    #TODO: Why are some of these rows commented out?  What does this section do?  Can this be done more programmatically?
+    #TODO: are these elements of out not named?  Should they be?  I'm worried about editing this and losing track of what is what.
     ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yr) ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_BDEAD_PY"), 1, row, yr)  ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 2, row, yr)  ## AutoResp
@@ -384,6 +392,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     out <- add(getHdf5Data(ncT, "FAST_SOIL_C_PY") + getHdf5Data(ncT, "STRUCT_SOIL_C_PY") + 
                  getHdf5Data(ncT, "SLOW_SOIL_C_PY"), 12, row, yr)  ## TotSoilCarb
     
+    #TODO: should this be split out into a separate function?  What does it do?
     ## depth from surface to frozen layer
     tdepth <- 0
     fdepth <- 0
@@ -393,6 +402,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
       tdepth <- array(0, dim = dim(soiltemp)[1:2])
       for (t in 1:dim(soiltemp)[1]) { # time
         for (p in 1:dim(soiltemp)[2]) { # polygon
+          #TODO: This is a big loop and just doing logical comparisons over elements of an array.  Likely candidate for optimization
           for (i in dim(soiltemp)[3]:2) { # depth
             if (fdepth[t, p] == 0 & soiltemp[t, p, i] < 273.15 & 
                 soiltemp[t, p, i - 1] > 273.13) {
@@ -915,7 +925,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   
   # lets make it work for a subset of vars fist
   # TODO :  read all (or more) variables, functionality exists, see below
-  varnames <- c("DBH", "DDBH_DT", "NPLANT")
+  varnames <- c("DBH", "DDBH_DT", "NPLANT", "MMEAN_MORT_RATE_CO")
   
   # List of vars to extract includes the requested one, plus others needed below 
   vars <- c(varnames, "PFT", "AREA", "PACO_N")
@@ -931,7 +941,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
     if (length(ed.dat) == 0){
-      
+      #TODO: I don't think this needs to be a for loop, but not sure how much it matters
       for (j in 1:length(allvars)) {
         ed.dat[[j]] <- list()
         ed.dat[[j]][[1]] <- ncdf4::ncvar_get(nc, allvars[j])
@@ -1016,10 +1026,14 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
               out$NPLANT[i,k] <- sum(nplant[ind])
             } else if (varname == "MMEAN_MORT_RATE_CO") {
               # Sum over all columns 
+              #TODO: isn't colSums() faster than this?
+              #TODO: current method gives a length 3 vector with 2 pfts (only first element is non-zero).  Seems incorrect.  Also, there's no need for this to be run separately by pft. Maybe this should be done outside of this loop first.
+              #TODO if a variable is a matrix AND per/plant (not sure if one exists), how to handle that?
               mort <- apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm = T)
               out$MMEAN_MORT_RATE_CO[i,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
             } else {
               # For all others, just get mean weighted by nplant
+              #TODO why is this step *weighting* by nplant instead of just converting to per area units?
               out[[varname]][i,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
             }
             dimnames(out[[varname]]) <- list(months = times[ysel], pft = pft_names)
@@ -1041,24 +1055,24 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' 
 ##' @param yr the year being processed
 ##' @param nc_var list of .nc files
-##' @param out path to run outdir
+##' @param out path to run outdir #TODO: I don't think this is correct.  It's the "out" object containing the variables to write, no?  Does outdir also need to exist?
 ##' @param lat latitude of site
 ##' @param lon longitude of site
 ##' @param begins start time of simulation
 ##' @param ends end time of simulation
-##' @param pfts the \code{pfts} element from a pecan settings object
+##' @param pfts the \code{pfts} element from a pecan settings object #TODO: get from `out$PFT` instead?
 ##' @param settings Pecan settings object
 ##' @param ... currently unused
 ##' 
 ##' @export
 put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
   #TODO: deprecate `begins` and `ends` and change to `start_date` and `end_date` for consistency.
-  #TODO: deprecate `out` and change to `outdir` for consistency
+  #TODO: add outdir argument for consistency
   if (!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(out)) out <- settings$outdir
+    if(missing(out)) out <- settings$outdir #TODO: I don't think this is write (see params)
     if(missing(lat)) lat <- settings$lat
     if(missing(lon)) lon <- settings$lon
     if(missing(begins)) begins <- settings$run$start.date
@@ -1068,7 +1082,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   
 
   # Extract the PFT names and numbers for all PFTs
-  
+  #TODO: does this need to happen again?  I think this info is in `out$PFT` at this point?
   pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
   names(pft_nums) <- pft_names
@@ -1153,7 +1167,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   # there and DBH here
 
   s <- length(nc_var)
-  
+  #TODO: this will need to be done programmatically instead of manually by variable, right?
   nc_var[[s + 1]] <-
     ncdf4::ncvar_def(
       "DBH",
