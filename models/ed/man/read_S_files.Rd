@@ -12,13 +12,13 @@ read_S_files(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...)
 
 \item{outdir}{path to run outdir, where the -S- file is}
 
-\item{pfts}{Names of PFTs used in the run, vector}
+\item{pfts}{the \code{pfts} element from a pecan settings object}
 
 \item{pecan_names}{string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")}
 
 \item{settings}{pecan settings object}
 
-\item{...}{additional arguments}
+\item{...}{currently unused}
 }
 \description{
 S-file contents are not written to standard netcdfs but are used by read_restart

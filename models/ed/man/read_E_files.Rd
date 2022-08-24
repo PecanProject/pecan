@@ -17,11 +17,13 @@ read_E_files(
 )
 }
 \arguments{
-\item{yr}{the year being processed}
+\item{yr}{length 1 numeric vector; the year being processed}
 
-\item{yfiles}{the years on the filenames, will be used to matched efiles for that year}
+\item{yfiles}{numeric vector of the years on the filenames, will be used to
+matched efiles for that year}
 
-\item{efiles}{names of E h5 files}
+\item{efiles}{character vector of names of E h5 files (e.g.
+"analysis-E-1999-06-00-000000-g01.h5")}
 
 \item{outdir}{directory where output will be written to}
 
@@ -29,25 +31,17 @@ read_E_files(
 
 \item{end_date}{End time of the simulation}
 
-\item{pfts}{Names of PFTs used in the run, vector}
+\item{pfts}{the \code{pfts} element from a pecan settings object}
 
 \item{settings}{pecan settings object}
 
-\item{...}{additional arguments}
+\item{...}{currently unused}
 }
 \description{
-Function for reading -E- files
+Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
+file per year.
 }
 \details{
-e.g.     yr = 1999
-yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
-efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
-"analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
-"analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
-"analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
-"analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
-"analysis-E-2000-04-00-000000-g01.h5"
-
-pft_names  : character vector with names of PFTs
-pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+if \code{settings} is provided, then values for missing arguments
+will be taken from it
 }
