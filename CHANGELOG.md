@@ -39,6 +39,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- bugs in `model2ncdf.ED2()` that were causing it to both error and also only
+convert data for a single PFT fixed (#1329, #2974, #2981)
 - Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
 - Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
 - Updated unit conversions throughout PEcAn to use the `units` R package
