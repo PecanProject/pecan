@@ -25,6 +25,14 @@
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  tryCatch({
+    con <- PEcAn.DB::db.open(settings$database$bety)
+    on.exit(PEcAn.DB::db.close(con), add = TRUE)
+  }, error = function(e) {
+    PEcAn.logger::logger.severe(
+      "Connection requested, but failed to open with the following error: ",
+      conditionMessage(e))
+  })
   
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
@@ -32,15 +40,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
-        
-        tryCatch({
-          con <- PEcAn.DB::db.open(settings$database$bety)
-          on.exit(PEcAn.DB::db.close(con), add = TRUE)
-        }, error = function(e) {
-          PEcAn.logger::logger.severe(
-            "Connection requested, but failed to open with the following error: ",
-            conditionMessage(e))
-        })
   
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
