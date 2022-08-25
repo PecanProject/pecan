@@ -330,7 +330,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
   if (yr < strftime(start_date, "%Y")) {
     PEcAn.logger::logger.info(yr, "<", strftime(start_date, "%Y"))
-    next #TODO: what does next do??
+    next #TODO: This is almost certainly an incorrect use of `next`
   }
   
   if (yr > strftime(end_date, "%Y")) {
