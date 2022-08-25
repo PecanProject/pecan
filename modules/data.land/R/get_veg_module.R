@@ -53,8 +53,7 @@ get_veg_module <- function(input_veg,
                                 new_site = new_site,
                                 gridres = input_veg$gridres, dbparms = dbparms,
                                 machine_host = machine_host, input_veg = input,
-                                source = input_veg$source,
-                                Rbinary = "R")
+                                source = input_veg$source)
   
     
 
@@ -93,8 +92,7 @@ get_veg_module <- function(input_veg,
                                ##   <age>70</age>
                                ##  </metadata>
                                ##
-                               icmeta = input_veg$metadata,
-                               Rbinary = "R")
+                               icmeta = input_veg$metadata)
 
 
     return(getveg.id)

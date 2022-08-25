@@ -91,8 +91,7 @@
       method = input_met$method,
       pattern = met,
       dbparms=dbparms,
-      ensemble = ensemble,
-      Rbinary = "R"
+      ensemble = ensemble
     )
     
   } else if (register$scale == "site") {
@@ -120,8 +119,7 @@
       lon.in = lon.in,
       pattern = met, 
       site_id = site.id,
-      product = input_met$product,
-      Rbinary = "R"
+      product = input_met$product
     )
     
   } else {

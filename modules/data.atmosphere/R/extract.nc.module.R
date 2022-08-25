@@ -38,8 +38,7 @@ if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
                             newsite = new.site$id, 
                             overwrite = overwrite,
                             exact.dates = FALSE, 
-                            ensemble = register$ensemble %>% as.numeric(),
-                            Rbinary = "R")
+                            ensemble = register$ensemble %>% as.numeric())
   
   PEcAn.logger::logger.info("Finished Extracting Met")
   

@@ -37,8 +37,7 @@
                             forecast = forecast,
                             pattern = met,
                             ensemble = !is.null(register$ensemble) && as.logical(register$ensemble),
-                            ensemble_name = ensemble_name,
-                            Rbinary = "R")
+                            ensemble_name = ensemble_name)
   
   print(ready.id)
   
