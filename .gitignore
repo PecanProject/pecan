@@ -102,3 +102,6 @@ contrib/modellauncher/modellauncher
 
 # don't checkin python venv used by CodeSpaces
 /.venv*
+
+# don't track project level .Rprofile
+.Rprofile
