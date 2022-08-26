@@ -8,8 +8,6 @@ https://github.com/RS-eco/processNC/blob/main/R/mergeNC.R
 }
 \usage{
 mergeNC(files, outfile)
-
-mergeNC(files, outfile)
 }
 \arguments{
 \item{files}{\code{character}. List of filepaths, which should lead to NetCDF files.}
@@ -18,22 +16,11 @@ mergeNC(files, outfile)
 }
 \value{
 A NetCDF file containing all of the merged data.
-
-A NetCDF file containing all of the merged data.
 }
 \description{
 Merge multiple NetCDF files into one
-
-Merge multiple NetCDF files into one
 }
 \examples{
-\dontrun{
-files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
-                    pattern="tas.*\\\\.nc", full.names=TRUE)
-temp <- tempfile(fileext=".nc")
-mergeNC(files=files, outfile=temp)
-terra::rast(temp) 
-}
 \dontrun{
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
                     pattern="tas.*\\\\.nc", full.names=TRUE)
