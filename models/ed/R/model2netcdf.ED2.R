@@ -933,10 +933,26 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   
   # lets make it work for a subset of vars fist
   # TODO :  read all (or more) variables, functionality exists, see below
-  varnames <- c("DBH", "DDBH_DT", "NPLANT", "MMEAN_MORT_RATE_CO")
+  varnames <-
+    c(
+      "DBH", #diameter at breast height (cm)
+      "DDBH_DT", #change in DBH (cm/plant/yr)
+      # "MMEAN_MORT_RATE_CO", #cohort level mortality rate (1/yr)
+      "AGB_CO", #cohort level above ground biomass (kgC/plant)
+      "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/m2/yr)
+      "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/m2/s)
+      "BSEEDS_CO" #seed biomass in units of (kgC/plant)
+    )
   
   # List of vars to extract includes the requested one, plus others needed below 
-  vars <- c(varnames, "PFT", "AREA", "PACO_N")
+  vars <- c(
+    varnames,
+    "PFT", #pft numbers
+    "NPLANT", #plant density (plants/m2)
+    "AREA", #patch area relative to site area (unitless)
+    "AREA_SI", #site area relative to polygon area (unitless)
+    "PACO_N" #number of cohorts in each patch
+    )
   
   # list to collect outputs
   ed.dat <- list()
@@ -945,17 +961,17 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   for(i in ysel) {
     
     nc <- ncdf4::nc_open(file.path(outdir, efiles[i]))
+    on.exit(ncdf4::nc_close(nc))
     allvars <- names(nc$var)
     if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
+    # extract all the data into list
     if (length(ed.dat) == 0){
-      #TODO: I don't think this needs to be a for loop, but not sure how much it matters
       for (j in 1:length(allvars)) {
         ed.dat[[j]] <- list()
         ed.dat[[j]][[1]] <- ncdf4::ncvar_get(nc, allvars[j])
       }
       names(ed.dat) <- allvars
-      
     } else {
       
       # 2nd and more months
@@ -974,16 +990,16 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
           ed.dat[[length(ed.dat)+1]] <- list()    # Add space for new ed.datiable
           ed.dat[[length(ed.dat)]][1:(t-1)] <- NA # Give NA for all previous time points
           ed.dat[[length(ed.dat)]][t] <- ncdf4::ncvar_get(nc, allvars[j]) # Assign the value of the new ed.datiable at this time point
-          names(ed.dat)[length(ed.dat)] <- allvars[j]
+          names(ed.dat)[[length(ed.dat)]] <- allvars[j] 
           
         }
       }      
     }
-    ncdf4::nc_close(nc)
+    
   } # end ysel-loop
   
   # Extract the PFT names and numbers for all PFTs
-  
+  #TODO some of this might not be used anymore
   pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
   names(pft_nums) <- pft_names
@@ -999,6 +1015,8 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     pft_names <- pft_names[!(soil.check)]
   }
   
+  #TODO probbaly can be deleted
+  #create output list with one slot per PFT 
   out <- list()
   for (varname in varnames) {
     out[[varname]] <- array(NA, c(length(ysel), npft))
@@ -1006,52 +1024,105 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   
   # Aggregate over PFT and DBH bins  
   for (i in seq_along(ysel)) {
-    # Get additional cohort-level variables required
-    pft        <- ed.dat$PFT[[i]]
-    dbh        <- ed.dat$DBH[[i]]      # cm / plant --unused?
-    plant.dens <- ed.dat$NPLANT[[i]]   # plant / m2
+ 
     
-    # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
-    patch.area <- ed.dat$AREA[[i]]    # m2  -- one entry per patch
-    pacoN      <- ed.dat$PACO_N[[i]]  # number of cohorts per patch
-    patch.area <- rep(patch.area, pacoN)  # patch areas, repped out to one entry per cohort
+    #TODO: refactor variable conversion
+    #At this point, every element in ed.dat is a list of variables each having
+    #one element per month that is usually a vector but sometimes a matrix. For
+    #each variable, the following needs to be mapped to to each month:
+    #' 1) Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
+    #' 2) Is the variable in per-plant units? If so, it needs converting to per area units
+    #' 3) Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
+    #' 4) group by PFT and sum cohorts
     
-    # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
-    nplant <- plant.dens * patch.area
-    
-
-    # Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
-    # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT. 
-    # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
-
-      for (k in 1:npft) {
-        ind <- (pft == pft_nums[k])
-        
-        if (any(ind)) {
-          for (varname in varnames) {
-            if(varname == "NPLANT") {
-              # Return the total number of plants in the bin
-              out$NPLANT[i,k] <- sum(nplant[ind])
-            } else if (varname == "MMEAN_MORT_RATE_CO") {
-              # Sum over all columns 
-              #TODO: isn't colSums() faster than this?
-              #TODO: current method gives a length 3 vector with 2 pfts (only first element is non-zero).  Seems incorrect.  Also, there's no need for this to be run separately by pft. Maybe this should be done outside of this loop first.
-              #TODO if a variable is a matrix AND per/plant (not sure if one exists), how to handle that?
-              mort <- apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm = T)
-              out$MMEAN_MORT_RATE_CO[i,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
-            } else {
-              # For all others, just get mean weighted by nplant
-              #TODO why is this step *weighting* by nplant instead of just converting to per area units?
-              out[[varname]][i,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
-            }
-            dimnames(out[[varname]]) <- list(months = times[ysel], pft = pft_names)
-          }
+    #TODO: some of these steps only apply to cohort-level variables.  Should this be generalized?
+    out <- 
+      purrr::imap(ed.dat[names(ed.dat) %in% varnames], ~{ 
+        #.x is elements of ed.dat and .y is names of ed.dat
+        #1) collapse matrix variables into vector
+        if (all(purrr::map_lgl(.x, is.matrix))) {
+          var <- purrr::map(.x, colSums)
+        } else {
+          var <- .x
         }
-      }
+        
+        #2) do per plant -> per area correction
+        if (.y %in% c("BSEEDS_CO", "AGB_CO")) {
+          var <- purrr::map2(var, ed.dat$NPLANT, `*`)
+        }
+        
+        
+        #TODO mortality is in units of 1/yr (plants per year???) in ED2 output but PEcAn standard units are 1/ha (plants per ha???).  Need to convert using patch area and number of days in month maybe?  Or just skip mortality rate for now
+        
+        #3) convert units to PEcAn standard if necessary
+        #input units are according to the ED2 source code: https://raw.githubusercontent.com/EDmodel/ED2/master/ED/src/memory/ed_state_vars.F90, output units are according to PEcAn.utils::standard_vars
+        
+        #so far only one var needs unit conversion
+        if(.y == "MMEAN_NPPDAILY_CO") {
+          var <- map(var, ~ PEcAn.utils::ud_convert(.x, u1 = "kg/m2/yr", u2 = "kg/m2/s"))
+        }
+        #return
+        var
+      }) 
+    
+    #sum cohorts by PFT
+    out <- 
+      map(.x = out, #for each variable in `out`
+          ~map2(.x = .x, .y = ed.dat$PFT, #for each month in each variable
+                ~ tapply(.x, .y, sum) #sum variable by PFT number
+          ))
+    
+    
+    
+    # # Get additional cohort-level variables required
+    # pft        <- ed.dat$PFT[[i]]
+    # plant.dens <- ed.dat$NPLANT[[i]]   # plant / m2
+    # 
+    # # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finagling to convert patch-level AREA to a cohort-length variable. 
+    # patch.area <- ed.dat$AREA[[i]]    # m2  -- one entry per patch
+    # pacoN      <- ed.dat$PACO_N[[i]]  # number of cohorts per patch
+    # patch.area <- rep(patch.area, pacoN)  # patch areas, repped out to one entry per cohort
+    # 
+    # # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
+    # # nplant <- plant.dens * patch.area #  I don't think this calculation is necessary.  I think NPLANT is already plants/m2.
+    # 
+    # 
+    # # Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
+    # # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT. 
+    # # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting.
+      # for (k in 1:npft) {
+      #   ind <- (pft == pft_nums[k])
+      #   
+      #   if (any(ind)) {
+      #     for (varname in varnames) { 
+      #       
+      #       if(varname == "NPLANT") {
+      #         # Return the total number of plants in the bin
+      #         out$NPLANT[i,k] <- sum(nplant[ind])
+      #       } else if (varname == "MMEAN_MORT_RATE_CO") {
+      #         # Sum over all columns
+      #         #TODO: isn't colSums() faster than this?
+      #         #TODO: current method gives a length 3 vector with 2 pfts (only first element is non-zero).  Seems incorrect.  Also, there's no need for this to be run separately by pft. Maybe this should be done outside of this loop first.
+      #         #TODO if a variable is a matrix AND per/plant (not sure if one exists), how to handle that?
+      #         mort <- apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm = T)
+      #         out$MMEAN_MORT_RATE_CO[i,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
+      #       } else {
+      #         # For all others, just get mean weighted by nplant
+      #         #TODO why is this step *weighting* by nplant instead of just converting to per area units?
+      #         out[[varname]][i,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
+      #       }
+      #       
+      #       
+      #       
+      #       dimnames(out[[varname]]) <- list(months = times[ysel], pft = pft_names)
+      #     }
+      #   }
+      # }
     
   }
   
-  out$PFT <- pft_nums # will write this to the .nc file
+  #TODO: check that these are in correct order
+  out$PFT <- pft_nums # will write this to the .nc file 
   
   return(out)
   
