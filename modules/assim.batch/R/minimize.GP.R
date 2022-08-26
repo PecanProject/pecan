@@ -39,7 +39,7 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
     }
   }
   tauwbar <- median(tauw)
-  S <- calcSpatialCov(gp$d, psibar, tauwbar)
+  S <- PEcAn.emulator::calcSpatialCov(gp$d, psibar, tauwbar)
   # S12 <- Sprime[1:(npred*dim),(npred*dim+1):(n.unique+npred*dim)] S22 <-
   # Sprime[(npred*dim+1):(n.unique+npred*dim),(npred*dim+1):(n.unique+npred*dim)]
   S22inv <- solve(S)

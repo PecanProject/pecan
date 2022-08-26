@@ -39,6 +39,7 @@ Imports:
     PEcAn.settings,
     PEcAn.uncertainty,
     PEcAn.utils,
+    PEcAn.emulator,
     PEcAn.workflow,
     rjags,
     stats,
