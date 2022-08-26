@@ -37,11 +37,18 @@ matched efiles for that year}
 
 \item{...}{currently unused}
 }
+\value{
+a list
+}
 \description{
-Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
-file per year.
+This function reads in monthly output (-E- .h5 files) from ED2, does unit
+conversions, and returns a list to be passed to \code{\link[=put_E_values]{put_E_values()}}.  Cohort
+level variables (i.e. those ending in "_CO") are often (always?) in
+per-plant units rather than per area. This function converts them to per
+area using the plant density and patch area before converting units to PEcAn
+standards.
 }
 \details{
 if \code{settings} is provided, then values for missing arguments
-will be taken from it
+for \code{outdir}, \code{start_date}, \code{end_date}, and \code{pfts} will be taken from it
 }

@@ -2,31 +2,52 @@
 % Please edit documentation in R/model2netcdf.ED2.R
 \name{put_E_values}
 \alias{put_E_values}
-\title{Function for put -E- values to nc_var list}
+\title{Put -E- values to nc_var list}
 \usage{
-put_E_values(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...)
+put_E_values(
+  yr,
+  nc_var,
+  e_list,
+  lat,
+  lon,
+  start_date,
+  end_date,
+  pfts,
+  settings,
+  begins,
+  ends,
+  out,
+  ...
+)
 }
 \arguments{
 \item{yr}{the year being processed}
 
 \item{nc_var}{list of .nc files}
 
-\item{out}{path to run outdir}
+\item{e_list}{list returned by \code{\link[=read_E_files]{read_E_files()}}}
 
 \item{lat}{latitude of site}
 
 \item{lon}{longitude of site}
 
-\item{begins}{start time of simulation}
+\item{start_date}{start time of simulation}
 
-\item{ends}{end time of simulation}
+\item{end_date}{end time of simulation}
 
 \item{pfts}{the \code{pfts} element from a pecan settings object}
 
 \item{settings}{Pecan settings object}
 
+\item{begins}{deprecated; use \code{start_date} instead}
+
+\item{ends}{deprecated; use \code{end_date} instead}
+
+\item{out}{deprecated; use \code{e_list} instead}
+
 \item{...}{currently unused}
 }
 \description{
-Function for put -E- values to nc_var list
+Puts a select number of variables from the monthly -E- files into a \code{nc_var}
+list to be written to a .nc file.
 }
