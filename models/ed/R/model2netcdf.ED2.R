@@ -1049,7 +1049,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   
 } # read_E_files
 
-##-------------------------------------------------------------------------------------------------#
+
 
 ##' Function for put -E- values to nc_var list
 ##' 
@@ -1058,15 +1058,22 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param out path to run outdir #TODO: I don't think this is correct.  It's the "out" object containing the variables to write, no?  Does outdir also need to exist?
 ##' @param lat latitude of site
 ##' @param lon longitude of site
-##' @param begins start time of simulation
-##' @param ends end time of simulation
+##' @param start_date start time of simulation
+##' @param end_date end time of simulation
 ##' @param pfts the \code{pfts} element from a pecan settings object #TODO: get from `out$PFT` instead?
 ##' @param settings Pecan settings object
-##' @param ... currently unused
+##' @param ... to absorb deprecated arguments
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
-  #TODO: deprecate `begins` and `ends` and change to `start_date` and `end_date` for consistency.
+put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, settings, ...){
+  if(!missing(begins)) {
+    warning("`begins` is deprecated, using `start_date` instead")
+    start_date <- begins
+  }
+  if(!missing(ends)) {
+    warning("`ends` is deprecated, using `end_date` isntead")
+    end_date <- ends
+  }
   #TODO: add outdir argument for consistency
   if (!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
@@ -1075,8 +1082,8 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
     if(missing(out)) out <- settings$outdir #TODO: I don't think this is write (see params)
     if(missing(lat)) lat <- settings$lat
     if(missing(lon)) lon <- settings$lon
-    if(missing(begins)) begins <- settings$run$start.date
-    if(missing(ends)) ends <- settings$run$end.date
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date #TODO: this isn't actually used in this function
     if(missing(pfts)) pfts <- settings$pfts
   }
   
@@ -1105,7 +1112,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   ## for each full or partial year
   output_date_vector <-
     seq(
-      lubridate::floor_date(begins, "month"),
+      lubridate::floor_date(start_date, "month"),
       by = "month",
       length.out = dim(out[[1]])[1]
     )
@@ -1114,13 +1121,13 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   num_days_per_month <- lubridate::days_in_month(output_date_vector)
   ## Update num_days_per_month and output_date_vector if model run did not start
   ## on the first day of a month e.g. "2001-07-15" "2001-08-01", 17 31
-  if (lubridate::yday(begins) != lubridate::yday(output_date_vector[1])) {
+  if (lubridate::yday(start_date) != lubridate::yday(output_date_vector[1])) {
     temp <-
       num_days_per_month[1] - ((
-        lubridate::yday(begins) - lubridate::yday(output_date_vector[1])
+        lubridate::yday(start_date) - lubridate::yday(output_date_vector[1])
       ))
     num_days_per_month[1] <- temp
-    output_date_vector[1] <- begins
+    output_date_vector[1] <- start_date
   }
   ## Create a vector of output month julian dates (e.g. 196 213 244 274 305 335)
   jdates <- lubridate::yday(output_date_vector)
