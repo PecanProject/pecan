@@ -876,8 +876,12 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
 ##' Function for reading -E- files
 ##'
-##' Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
-##' file per year.
+##' This function reads in monthly output (-E- .h5 files) from ED2, does unit
+##' conversions, and returns a list to be passed to [put_E_values()].  Cohort
+##' level variables (i.e. those ending in "_CO") are often (always?) in
+##' per-plant units rather than per area. This function converts them to per
+##' area using the plant density and patch area before converting units to PEcAn
+##' standards.
 ##'
 ##' @param yr length 1 numeric vector; the year being processed
 ##' @param yfiles numeric vector of the years on the filenames, will be used to
@@ -892,7 +896,9 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 ##' @param ... currently unused
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
-##'   will be taken from it
+##'   for `outdir`, `start_date`, `end_date`, and `pfts` will be taken from it
+##'   
+##' @return a list
 ##' @export
 ##' 
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
@@ -1055,32 +1061,37 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 
 ##' Put -E- values to nc_var list
 ##' 
-##' Puts a select number of variables from the monthly -E- files into a `nc_var` list to be written to a .nc file.
+##' Puts a select number of variables from the monthly -E- files into a `nc_var`
+##' list to be written to a .nc file.
 ##' 
 ##' @param yr the year being processed
 ##' @param nc_var list of .nc files
-##' @param out list returned by `read_E_files()`
+##' @param e_list list returned by [read_E_files()]
 ##' @param lat latitude of site
 ##' @param lon longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
-##' @param pfts the \code{pfts} element from a pecan settings object #TODO: get from `out$PFT` instead?
+##' @param pfts the `pfts` element from a pecan settings object
 ##' @param settings Pecan settings object
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
+##' @param out deprecated; use `e_list` instead
 ##' @param ... currently unused
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, settings, begins, ends, ...){
+put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
   }
   if(!missing(ends)) {
-    warning("`ends` is deprecated, using `end_date` isntead")
+    warning("`ends` is deprecated, using `end_date` instead")
     end_date <- ends
   }
-  #TODO: add outdir argument for consistency
+  if(!missing(out)) {
+    warning("`out` is deprecated, using `e_list` instead")
+    e_list <- out
+  }
   if (!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
@@ -1089,12 +1100,12 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
     if(missing(lon)) lon <- settings$lon
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date #TODO: this isn't actually used in this function
-    if(missing(pfts)) pfts <- settings$pfts
+    if(missing(pfts)) pfts <- settings$pfts #TODO: get from `e_list$PFT` instead?
   }
   
 
   # Extract the PFT names and numbers for all PFTs
-  #TODO: does this need to happen again?  I think this info is in `out$PFT` at this point?
+  #TODO: does this need to happen again?  I think this info is in `e_list$PFT` at this point?
   pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
   names(pft_nums) <- pft_names
@@ -1120,7 +1131,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
     seq(
       lubridate::floor_date(start_date, "month"),
       by = "month",
-      length.out = dim(out[[1]])[1]
+      length.out = dim(e_list[[1]])[1]
     )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
   ## 31 30 31)
@@ -1213,8 +1224,8 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
       dim = list(p),
       longname = paste(pft_names, collapse = ",")
     )
-  out_length <- length(out)
-  out[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
+  out_length <- length(e_list)
+  e_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
   nc_var[[s + 5]] <-
     ncdf4::ncvar_def(
       name = "dtime_bounds",
@@ -1223,7 +1234,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
       dim = list(time_interval, dtime = t),
       prec = "double"
     )
-  return(list(nc_var = nc_var, out = out))
+  return(list(nc_var = nc_var, out = e_list))
   
 } # put_E_values
 
