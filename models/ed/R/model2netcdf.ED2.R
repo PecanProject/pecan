@@ -66,7 +66,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     ed_res_flag <- names(flist)[file.check]
 
     # extract year info from the file names
-    #TODO: refactor to simplify.  Dates are predictible in output filenames.  Doesn't need a for loop.
+    #TODO: refactor to simplify.  Dates are predictable in output filenames.  Doesn't need a for loop.
     ylist <- lapply(ed_res_flag, function(f) {
       yr <- rep(NA, length(flist[[f]]))
       for (i in seq_along(flist[[f]])) {
@@ -122,6 +122,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     # ----- read values from ED output files
     for (i in seq_along(out_list)) {
       rflag <- ed_res_flag[i]
+      # fcnx is either read_T_files() or read_E_files()
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
       #TODO would doing this with do.call() be better for speed/memory usage?
       fcn   <- match.fun(fcnx)
@@ -155,6 +156,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     nc_var <- list()
     for (i in seq_along(out_list)) {
       rflag   <- ed_res_flag[i]
+      #fcnx is either put_T_values() or put_E_values()
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]],
@@ -1051,21 +1053,25 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 
 
 
-##' Function for put -E- values to nc_var list
+##' Put -E- values to nc_var list
+##' 
+##' Puts a select number of variables from the monthly -E- files into a `nc_var` list to be written to a .nc file.
 ##' 
 ##' @param yr the year being processed
 ##' @param nc_var list of .nc files
-##' @param out path to run outdir #TODO: I don't think this is correct.  It's the "out" object containing the variables to write, no?  Does outdir also need to exist?
+##' @param out list returned by `read_E_files()`
 ##' @param lat latitude of site
 ##' @param lon longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
 ##' @param pfts the \code{pfts} element from a pecan settings object #TODO: get from `out$PFT` instead?
 ##' @param settings Pecan settings object
-##' @param ... to absorb deprecated arguments
+##' @param begins deprecated; use `start_date` instead
+##' @param ends deprecated; use `end_date` instead
+##' @param ... currently unused
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, settings, ...){
+put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, settings, begins, ends, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -1079,7 +1085,6 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(out)) out <- settings$outdir #TODO: I don't think this is write (see params)
     if(missing(lat)) lat <- settings$lat
     if(missing(lon)) lon <- settings$lon
     if(missing(start_date)) start_date <- settings$run$start.date
@@ -1094,6 +1099,7 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
   pft_nums <- sapply(pfts, get_pft_num)
   names(pft_nums) <- pft_names
   
+  #TODO: isn't this check already done in read_E_files()?  It shouldn't need to be done again.
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
   # from upstream, when it's not part of the attribute it will read the sum
@@ -1139,7 +1145,6 @@ put_E_values <- function(yr, nc_var, out, lat, lon, start_date, end_date, pfts, 
   bounds[, 2] <- bounds[, 1] + num_days_per_month 
   # create time bounds for each timestep in t, t+1; t+1, t+2... format
   bounds <- round(bounds, 4) 
-  #####
   
   t <-
     ncdf4::ncdim_def(
