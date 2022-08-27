@@ -22,18 +22,18 @@ library("lubridate")
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
 #forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
-SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA/"
+SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA"
 #manually set to previous run settings$info$date it creates the filepath to previous run
-next.oldir <- "2022-07-20-09-05-48"
+next.oldir <- "2022-07-20-12-51-27"
 #to manually change start date 
-runDays <- seq(as.Date("2021-08-01"), as.Date("2021-08-31"), by="days")
+runDays <- seq(as.Date("2021-08-05"), as.Date("2021-12-31"), by="days")
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
 #------------------------------------------------------------------------------------------------
 for (s in 1:length(runDays)) {
 restart <- list()
-outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA"
+outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 setwd(outputPath)
 #set sda.start
 sda.start <- as.Date(runDays[s])
@@ -51,9 +51,9 @@ site_info <- list(
   time_zone = "UTC")
 
 #grab old.dir filepath from previous SDA run
-# sda.runs <- list.files(SDApath, full.names = TRUE)
+sda.runs <- list.files(SDApath, full.names = TRUE, pattern = paste0("PEcAn_", next.oldir))
 # previous <- sda.runs[2]
-restart$filepath <- paste0(SDApath, "PEcAn_", next.oldir, "/")
+restart$filepath <- sda.runs
 # previous.ens <- list.files(paste0(previous, "/out"))
 
 #connecting to DB
@@ -238,7 +238,7 @@ settings$state.data.assimilation$end.date <-as.character(sda.end)
 # --------------------------------------------------------------------------------------------------
 #info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"))
-next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M-%S"))
+next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M"))
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force = TRUE)
 #settings$host$rundir <- settings$rundir
@@ -254,7 +254,8 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
 
 #manually add in clim files 
-con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+con <-PEcAn.DB::db.open(settings$database$bety)
+on.exit(db.close(con))
 
 input_check <- PEcAn.DB::dbfile.input.check(
   siteid= site_info$site_id %>% as.character(),
@@ -316,6 +317,8 @@ if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
 # names(run_id) = sprintf("id%s",seq(1:length(previous.ens))) #rename list
 # settings$runs$id = run_id
 
+#save restart object
+save(restart, next.oldir, obs.mean, obs.cov, file = file.path(settings$outdir, "restart.Rdata"))
 #run sda function
 sda.enkf.multisite(settings = settings, 
                    obs.mean = obs.mean, 

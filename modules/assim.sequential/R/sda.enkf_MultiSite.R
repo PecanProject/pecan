@@ -385,9 +385,15 @@ sda.enkf.multisite <- function(settings,
       }else{
         
         if (control$debug) browser()
+        #if restart then use restart.list, include site for debugging purposes
+        if(restart_flag){
+          restart.arg = restart.list$`646`
+        }else{
+          restart.arg = NULL
+        }
         out.configs <- conf.settings %>%
           `class<-`(c("list")) %>%
-          furrr::future_map2(restart.list, function(settings, restart.arg = FALSE) {
+          furrr::future_map2(restart.list, function(settings, restart.arg = restart.arg) {
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
@@ -397,7 +403,7 @@ sda.enkf.multisite <- function(settings,
               settings = settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
-              restart = NULL
+              restart = restart.arg
             )
           }) %>%
           setNames(site.ids)
