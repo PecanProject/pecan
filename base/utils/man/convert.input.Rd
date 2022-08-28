@@ -28,7 +28,6 @@ convert.input(
   ensemble = FALSE,
   ensemble_name = NULL,
   dbparms = NULL,
-  Rbinary = "R",
   ...
 )
 }
@@ -54,7 +53,8 @@ convert.input(
 \item{con}{Database connection object}
 
 \item{host}{Named list identifying the machine where conversion should be performed.
-Currently only \code{host$name} is used by \code{convert.input}, but whole list is passed to other functions}
+Currently only \code{host$name} and \code{host$Rbinary} are used by \code{convert.input},
+but the whole list is passed to other functions}
 
 \item{browndog}{List of information related to browndog conversion.  NULL if browndog is not to be used for conversion}
 
@@ -79,8 +79,6 @@ Currently only \code{host$name} is used by \code{convert.input}, but whole list 
 \item{ensemble_name}{If convert.input is being called iteratively for each ensemble, ensemble_name contains the identifying name/number for that ensemble.}
 
 \item{dbparms}{list of parameters to use for opening a database connection}
-
-\item{Rbinary}{command (including path, if needed) to call the R executable on \code{host}}
 
 \item{...}{Additional arguments, passed unchanged to \code{fcn}}
 }

@@ -35,8 +35,7 @@
                             write = TRUE, 
                             format.vars = format.vars, 
                             overwrite = overwrite,
-                            exact.dates = FALSE,
-                            Rbinary = "R")
+                            exact.dates = FALSE)
     
     input_name <- paste0(met, "_CF_Permute")
     fcn <- "permute.nc"
@@ -51,8 +50,7 @@
                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
                            write = TRUE, 
                            overwrite = overwrite,
-                           exact.dates = FALSE,
-                           Rbinary = "R")
+                           exact.dates = FALSE)
     
   } else if (register$scale == "site") {
     input_name <- paste0(met, "_CF_site_", str_ns)
@@ -81,8 +79,7 @@
                           lat = lat, lon = lon, 
                           format.vars = format.vars, 
                           overwrite = overwrite,
-                          exact.dates = FALSE,
-                          Rbinary = "R")
+                          exact.dates = FALSE)
   }
   
   PEcAn.logger::logger.info("Finished change to CF Standards")
