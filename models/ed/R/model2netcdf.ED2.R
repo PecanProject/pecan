@@ -159,7 +159,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       #fcnx is either put_T_values() or put_E_values()
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
-      put_out <- fcn(yr = y, nc_var = nc_var, read_list = out_list[[rflag]],
+      put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
                      lat = lat, lon = lon, start_date = begin_date,
                      end_date = ends, pfts, settings = settings)
 
@@ -171,7 +171,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     PEcAn.logger::logger.info("*** Writing netCDF file ***")
 
     out <- unlist(out_list, recursive = FALSE)
-    #TODO: Is there a reason the nc_var list can't be used in nc_create?
+    #TODO: I think nc_create() should happen at the end since it can be passed a list of ncvar4 objects.  Se details in ?ncvar_put
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
     # define time_bounds for -T- outputs, if exists
@@ -691,9 +691,9 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 ##' 
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
-##' @param out deprecated; use `read_list` instead
+##' @param out deprecated; use `var_list` instead
 ##' @export
-put_T_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, out, begins, ends, ...){
+put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, out, begins, ends, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -703,10 +703,13 @@ put_T_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, 
     end_date <- ends
   }
   if(!missing(out)) {
-    warning("`out` is deprecated, using `read_list` instead")
-    read_list <- out
+    warning("`out` is deprecated, using `var_list` instead")
+    var_list <- out
   }
   s <- length(nc_var)
+  
+  # create out list to be modified
+  out <- var_list
   
   ## Conversion factor for umol C -> kg C
   Mc <- 12.017  #molar mass of C, g/mol
@@ -1091,7 +1094,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' 
 ##' @param yr the year being processed
 ##' @param nc_var a list for outputs to be added to
-##' @param read_list list returned by [read_E_files()]
+##' @param var_list list returned by [read_E_files()]
 ##' @param lat latitude of site
 ##' @param lon longitude of site
 ##' @param start_date start time of simulation
@@ -1100,13 +1103,13 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param settings Pecan settings object
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
-##' @param out deprecated; use `read_list` instead
+##' @param out deprecated; use `var_list` instead
 ##' @param ... currently unused
 ##' 
 ##' @return a list
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
+put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -1116,8 +1119,8 @@ put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, 
     end_date <- ends
   }
   if(!missing(out)) {
-    warning("`out` is deprecated, using `read_list` instead")
-    read_list <- out
+    warning("`out` is deprecated, using `var_list` instead")
+    var_list <- out
   }
   if (!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
@@ -1132,7 +1135,7 @@ put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, 
   end_date <- lubridate::ymd(end_date)
 
   # Extract the PFT names and numbers for all PFTs
-  pfts <- read_list$PFT
+  pfts <- var_list$PFT
   
   
   # ----- fill list
@@ -1238,8 +1241,8 @@ put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, 
       dim = list(p),
       longname = paste(pft_names, collapse = ",")
     )
-  out_length <- length(read_list)
-  read_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
+  out_length <- length(var_list)
+  var_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
   nc_var[[s + 5]] <-
     ncdf4::ncvar_def(
       name = "dtime_bounds",
@@ -1248,7 +1251,7 @@ put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, 
       dim = list(time_interval, dtime = t),
       prec = "double"
     )
-  return(list(nc_var = nc_var, out = read_list))
+  return(list(nc_var = nc_var, out = var_list))
   
 } # put_E_values
 
