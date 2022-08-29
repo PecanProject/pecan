@@ -1249,12 +1249,12 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
       longname = "Leaf transpiration"
     ),
     ncdf4::ncvar_def(
-    "BSEEDS_CO" 
+      "BSEEDS_CO",
       units = "kgC m-2",
       dim = list(lon, lat, t, p),
       missval = -999,
       longname = "Seed biomass"
-    )
+    ),
     
     # longname of this variable will be parsed by read.output
     # so that read.output has a way of accessing PFT names
@@ -1262,7 +1262,7 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
       "PFT",
       units = "",
       dim = list(p),
-      longname = paste(pft_names, collapse = ",")
+      longname = paste(names(pfts), collapse = ",")
     ),
     ncdf4::ncvar_def(
       name = "dtime_bounds",
