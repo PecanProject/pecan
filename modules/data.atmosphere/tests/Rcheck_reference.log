@@ -385,7 +385,7 @@ Argument items with no description in Rd object 'split_wind':
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
 * checking data for ASCII and uncompressed saves ... WARNING
-
+  
   Note: significantly better compression could be obtained
         by using R CMD build --resave-data
                              old_size new_size compress
