@@ -13,7 +13,7 @@ get.quantiles(quantiles.tag)
 vector of quantiles
 }
 \description{
-Returns a vector of quantiles specified by a given <quantiles> xml tag
+Returns a vector of quantiles specified by a given \verb{<quantiles>} xml tag
 }
 \author{
 David LeBauer

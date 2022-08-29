@@ -149,7 +149,7 @@ logger.message <- function(level, msg, ..., wrap = TRUE) {
     }
     
     stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
-    long.msg <- paste(c(msg, ...), collapse = " ")
+    long.msg <- stringi::stri_trans_general(paste(c(msg, ...), collapse = " "), "latin-ascii")
     if (nchar(long.msg) > 20 && wrap) {
       new.msg <- paste("\n", strwrap(long.msg, width = .utils.logger$width, 
                                      indent = 2, exdent = 2), collapse = " ")

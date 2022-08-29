@@ -311,7 +311,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                                 units=c("degrees", "degrees"))      
       
       ncdf4::ncvar_put(nc, varid = WDir.var, vals = ncdata_dir)     
-      wdir_rad <- udunits2::ud.convert(ncdata_dir,"degrees","radians")
+      wdir_rad <- PEcAn.utils::ud_convert(ncdata_dir,"degrees","radians")
       ncdata_e <- ncdata_spd * cos(wdir_rad)
       ncdata_n <- ncdata_spd * sin(wdir_rad)
       ncdf4::ncvar_put(nc, varid = Ewind.var, vals = ncdata_e)
@@ -386,7 +386,7 @@ neonmet.getVals <- function(dates,product,site,datetime,
           csvVar[which(csvQF!=QF)] <- NA 
         }
         if ((length(units)=2)&&(units[1]!=units[2])) {
-          csvVar <- udunits2::ud.convert(csvVar,units[1], units[2])
+          csvVar <- PEcAn.utils::ud_convert(csvVar,units[1], units[2])
           #need a correction for precip or rate conversion /1800
         }
         ncdata[arrLoc] <- csvVar

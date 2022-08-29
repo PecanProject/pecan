@@ -1,19 +1,21 @@
 Package: PEcAn.JULES
 Type: Package
 Title: PEcAn package for integration of the JULES model
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"))
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
-Depends:
-    PEcAn.utils
 Imports:
+    PEcAn.data.atmosphere,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
-    ncdf4 (>= 1.15),
+    ncdf4 (>= 1.15)
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: JULES
@@ -23,4 +25,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

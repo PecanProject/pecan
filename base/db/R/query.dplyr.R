@@ -56,12 +56,14 @@ dplyr.count <- function(df) {
 }  # dplyr.count
 
 
-#' Convert netcdf number of days to date
+#' Convert netcdf number of days to a datetime
+#' @param time number of time units elapsed since origin
+#' @param unit string containing CF-style time unit including origin (e.g. "days since 2010-01-01")
 #' @export
 ncdays2date <- function(time, unit) {
   date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
-  days    <- udunits2::ud.convert(time, unit, paste("days since ", date))
-  seconds <- udunits2::ud.convert(days, "days", "seconds")
+  days    <- PEcAn.utils::ud_convert(time, unit, paste("days since ", date))
+  seconds <- PEcAn.utils::ud_convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
 }  # ncdays2date
 
@@ -147,6 +149,8 @@ runs <- function(bety, workflow_id) {
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
 #' @param query Named vector or list of workflow IDs
+#' @param all.ids logical: return a list of all workflow_ids in the BETY database,
+#'  or just those that are part of the query?
 #' @export
 get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
@@ -260,11 +264,11 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   # lat/lon often cause trouble (like with JULES) but aren't needed for this basic plotting
   var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude"))
   outputfolder <- file.path(workflow$folder, 'out', run_id)
-  out <- read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
+  out <- PEcAn.utils::read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
 
-  globalDF <- tidyr::gather(out, key = var_name, value = vals, names(out)[names(out) != "posix"]) %>%
+  globalDF <- tidyr::gather(out, key = "var_name", value = "vals", names(out)[names(out) != "posix"]) %>%
     dplyr::rename(dates = .data$posix)
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id

@@ -1,4 +1,4 @@
-##' @export write_out_table
+##' write_out_table
 ##' @author Tempest McCabe
 ##' 
 ##' @param table a table that is output from one of the find_* fucntions
@@ -11,7 +11,7 @@
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
-
+##' @export
 write_out_table<-function(table,table_name,outdir, relevant_table_columns){
   
   if(!"id" %in% relevant_table_columns){

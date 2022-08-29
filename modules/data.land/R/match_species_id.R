@@ -12,7 +12,7 @@
 #'
 #' @param input_codes Character vector of species codes
 #' @param format_name Species code format name (see details)
-#' @param bety \code{dplyr} \code{src} object containing BETY connection
+#' @param bety BETY connection object
 #' @param translation_table Data frame with custom translation table (see details).
 #' @return \code{data.frame} containing the following columns:
 #' \describe{
@@ -24,15 +24,18 @@
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
 #' \dontrun{
-#' bety <- dplyr::src_postgres(dbname = 'bety',
-#'                        user = 'bety',
-#'                        password = 'bety',
-#'                        host = 'localhost')
+#' con <- PEcAn.DB::db.open(list(
+#'   driver = "Postgres",
+#'   dbname = 'bety',
+#'   user = 'bety',
+#'   password = 'bety',
+#'   host = 'localhost')
+#' )
 #' input_codes <- c('ACRU', 'PIMA', 'TSCA')
 #' format_name <- 'usda'
 #' match_species_id(input_codes = input_codes,
 #'                  format_name = format_name,
-#'                  bety = bety)
+#'                  bety = con)
 #' }
 #'
 #' @importFrom magrittr %>%
@@ -99,6 +102,9 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           "traits::betydb_query(",
           column, "='", translation$input_code[i],
           "', table = 'species', user = 'bety', pwd = 'bety')")))
+        if(length(foo) == 0){
+          PEcAn.logger::logger.error(msg = "Match.species.id translation query returns empty for ", column, "='", translation$input_code[i])
+        }
         translation$bety_species_id[i] <- foo$id
         translation$genus[i]           <- foo$genus
         translation$species[i]         <- foo$species
@@ -114,7 +120,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       "species",
       "input_code",
       dplyr::everything())
-  merge_table <- dplyr::left_join(input_table, translation)
+  merge_table <- dplyr::left_join(input_table, translation, by = "input_code")
   if (sum(is.na(merge_table$bety_species_id)) > 0) {
     bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
     PEcAn.logger::logger.error(

@@ -2,19 +2,27 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and
     Reanalysis
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(
-           person("Mike", "Dietze", role = "aut"),
-           person("Rob","Kooper", role = c("aut", "cre"), 
-             email = "kooper@illinois.edu"),
-             person("David","LeBauer", role = c("aut")),
-             person("Xiaohui", "Feng", role = c("aut")),
-             person("Dan"," Wang", role = c("aut")),
-             person("Carl", "Davidson", role = c("aut")),
-             person("Shawn", "Serbin", role = c("aut")),
-             person("Shashank", "Singh", role = c("aut")),
-             person("Chris", "Black", role = c("aut")),
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("Rob", "Kooper", role = c("aut", "cre"),
+                     email = "kooper@illinois.edu"), 
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Shashank", "Singh", role = c("aut"),
+                     email = "shashanksingh819@gmail.com"),
+             person("Chris", "Black", role = c("aut"),
+                     email = "chris@ckblack.org"),
+             person("Tanishq", "Jain", role = c("aut"),
+                     email = "tanishqjain010@gmail.com"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer
     (PEcAn) is a scientific workflow management tool that
@@ -35,17 +43,13 @@ Imports:
     RCurl,
     rlang,
     stringi,
-    udunits2 (>= 0.11),
+    units,
     XML
 Suggests:
     coda (>= 0.18),
     data.table,
     ggplot2,
     MASS,
-    PEcAn.data.atmosphere,
-    PEcAn.data.land,
-    PEcAn.emulator,
-    PEcAn.settings,
     PEcAn.DB,
     randtoolbox,
     raster,
@@ -57,5 +61,5 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)

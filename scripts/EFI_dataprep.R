@@ -18,7 +18,7 @@ siteid <- data_prep$siteid_BETY4
 base_dir <- data_prep$base_dir4
 
 #run info 
-start_date = format(Sys.Date()-2, "%Y-%m-%d")
+start_date = format(Sys.Date()-1, "%Y-%m-%d")
 
 for(i in 1:length(sitename)){
 
@@ -84,12 +84,14 @@ for(l in 1:length(in.prefix)){
 files = list.files(outfolder)
 
 ### Get BETY information ###
-bety <- dplyr::src_postgres(dbname   = 'bety', 
-                            host     = 'psql-pecan.bu.edu', 
-                            user     = 'bety', 
-                            password = 'bety')
-con <- bety$con
-
+con <- db.open(
+  params = list(
+    driver = "Postgres",
+    dbname   = 'bety',
+    host     = 'psql-pecan.bu.edu',
+    user     = 'bety',
+    password = 'bety')
+)
 
 
 for(h in 1:length(files)){

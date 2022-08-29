@@ -205,6 +205,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##'
 ##' @importFrom dplyr %>%
+##' @importFrom rlang .data
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
@@ -264,11 +265,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     if (!is.null(con)){
       #-- lets first find out what tags are required for this model
       required_tags <- dplyr::tbl(con, 'models') %>%
-        dplyr::filter(id == !!as.numeric(settings$model$id)) %>%
+        dplyr::filter(.data$id == !!as.numeric(settings$model$id)) %>%
         dplyr::inner_join(dplyr::tbl(con, "modeltypes_formats"), by = c('modeltype_id')) %>%
         dplyr::collect() %>%
-        dplyr::filter(required == TRUE) %>%
-        dplyr::pull(tag)
+        dplyr::filter(.data$required == TRUE) %>%
+        dplyr::pull(.data$tag)
       
     }else{
       required_tags<-c("met","parameters")
@@ -302,22 +303,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
     
-
-    # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
-    if(!is.null(con)){
-      Pft_Site_df <- dplyr::tbl(con, "sites_cultivars")%>%
-        dplyr::filter(site_id == !!settings$run$site$id) %>%
-        dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = "cultivar_id") %>%
-        dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c("pft_id" = "id")) %>%
-        dplyr::collect() 
-      
-      site_pfts_names <- Pft_Site_df$name %>% unlist() %>% as.character()
-      
-      PEcAn.logger::logger.info(paste("The most suitable pfts for your site are the followings:",site_pfts_names))
-      #-- if there is enough info to connect the site to pft
-      #if ( nrow(Pft_Site_df) > 0 & all(site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
-    }
-
     # Reading the site.pft specific tags from xml
     site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
     
@@ -446,7 +431,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
       # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
       if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
-        new.params <- new.params %>% map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
+        new.params <- new.params %>% purrr::map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
       # warn if there is a pft specified in the site but it's not defined in the pecan xml.
       if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
         PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",

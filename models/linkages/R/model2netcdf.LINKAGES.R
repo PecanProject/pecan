@@ -97,35 +97,35 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     
     dims <- list(lon = dim.lon, lat = dim.lat, time = dim.t)
     
-    var <- list()
-    var[[1]]  <- PEcAn.utils::to_ncvar("AGB", dims)
-    var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
-    var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
-    var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), longname = "Carbon Pool Names", prec = "char")
-    var[[6]]  <- ncdf4::ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[7]]  <- ncdf4::ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[8]]  <- ncdf4::ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[9]]  <- ncdf4::ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[10]] <- ncdf4::ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[11]] <- ncdf4::ncvar_def("AGB.pft", "kgC/m2", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
-    var[[12]] <- ncdf4::ncvar_def("Fcomp", "kgC/kgC", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
-    var[[13]] <- ncdf4::ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[14]] <- ncdf4::ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[15]] <- ncdf4::ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[16]] <- ncdf4::ncvar_def("PFT", units = "", dim = list(dim.pfts),  
+    nc_var <- list()
+    nc_var[[1]]  <- PEcAn.utils::to_ncvar("AGB", dims)
+    nc_var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
+    nc_var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
+    nc_var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), longname = "Carbon Pool Names", prec = "char")
+    nc_var[[6]]  <- ncdf4::ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[7]]  <- ncdf4::ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[8]]  <- ncdf4::ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[9]]  <- ncdf4::ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[10]] <- ncdf4::ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[11]] <- ncdf4::ncvar_def("AGB.pft", "kgC/m2", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
+    nc_var[[12]] <- ncdf4::ncvar_def("Fcomp", "kgC/kgC", list(dim.lat, dim.lon, dim.t, dim.pfts), -999)
+    nc_var[[13]] <- ncdf4::ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[14]] <- ncdf4::ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[15]] <- ncdf4::ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    nc_var[[16]] <- ncdf4::ncvar_def("PFT", units = "", dim = list(dim.pfts),  
                      longname = paste(pft_names, collapse=","))
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", "var", sep = ".")), "w")
    
-     for (i in seq_along(var)) {
+     for (i in seq_along(nc_var)) {
       print(i)
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

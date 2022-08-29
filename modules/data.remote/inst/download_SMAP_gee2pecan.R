@@ -35,10 +35,9 @@ download_SMAP_gee2pecan <- function(start, end,
   
   #################### Connect to BETY #################### 
   
-  bety <- list(user='bety', password='bety', host='localhost',
-               dbname='bety', driver='PostgreSQL',write=TRUE)
-  con <- PEcAn.DB::db.open(bety)
-  bety$con <- con
+  con <- PEcAn.DB::db.open(
+    list(user='bety', password='bety', host='localhost',
+    dbname='bety', driver='PostgreSQL',write=TRUE))
   site_ID <- as.character(site_id)
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",

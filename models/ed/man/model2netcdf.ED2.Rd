@@ -10,7 +10,8 @@ model2netcdf.ED2(
   sitelon,
   start_date,
   end_date,
-  pft_names = NULL
+  pfts,
+  settings = NULL
 )
 }
 \arguments{
@@ -24,10 +25,17 @@ model2netcdf.ED2(
 
 \item{end_date}{End time of the simulation}
 
-\item{pft_names}{Names of PFTs used in the run, vector}
+\item{pfts}{the \code{pfts} element from a pecan settings object}
+
+\item{settings}{pecan settings object}
 }
 \description{
-Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+Modified from code to convert ED2's HDF5 output into the NACP
+Intercomparison format (ALMA using netCDF)
+}
+\details{
+if \code{settings} is provided, then values for missing arguments
+will be taken from it
 }
 \author{
 Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer

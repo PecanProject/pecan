@@ -171,7 +171,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 
     ## SPIN the CO2 file
     if(!is.null(settings$spin)){
-      dt.co2 = udunits2::ud.convert(as.numeric(as.Date(settings$run$end.date)-
+      dt.co2 = PEcAn.utils::ud_convert(as.numeric(as.Date(settings$run$end.date)-
                                              as.Date(settings$run$start.date)),"days","years")
       co2.dat <- read.table(settings$run$inputs$co2$path,header=FALSE)
       co2.per.year <- round(nrow(co2.dat)/dt.co2)
@@ -276,7 +276,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     in.soil[['b']]      <- ncdf4::ncvar_get(nc.soil,"soil_hydraulic_b")
     # sathh
     in.soil[['satcon']] <- ncdf4::ncvar_get(nc.soil,"soil_hydraulic_conductivity_at_saturation")
-    in.soil[['satcon']] <- udunits2::ud.convert(in.soil[['satcon']],"m s-1","mm s-1")
+    in.soil[['satcon']] <- PEcAn.utils::ud_convert(in.soil[['satcon']],"m s-1","mm s-1")
     in.soil[['sm_sat']] <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_water_in_soil_at_saturation")
     #sm_crit
     in.soil[['sm_wilt']] <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_condensed_water_in_soil_at_wilting_point")

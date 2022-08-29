@@ -9,7 +9,8 @@
 
 ##' Convert template ma.model.template.R to a JAGS model.
 ##'
-##'  Writes a meta-analysis model based on available data and prior specification. Adapted from \code{\link[R2WinBUGS]{write.model}}
+##' Writes a meta-analysis model based on available data and prior specification.
+##' Inspired by the \code{R2WinBUGS::write.model} by Jouni Kerman and Uwe Ligges.
 ##' @name write.ma.model
 ##' @title write.ma.model
 ##' @param modelfile model template file (ma.model.template.R)
@@ -25,7 +26,7 @@
 ##' @param tauA parameter a for gamma prior on precision 
 ##' @param tauB parameter b for gamma prior on precision
 ##' @return Nothing, but as a side effect, the model is written
-##' @author David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.
+##' @author David LeBauer and Mike Dietze.
 write.ma.model <- function(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n, 
                            trt.n, site.n, ghs.n, tauA, tauB) {
   

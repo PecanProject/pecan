@@ -26,7 +26,7 @@
 model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
   # setup constants
-  day_secs <- udunits2::ud.convert(1, "day", "seconds")
+  day_secs <- PEcAn.utils::ud_convert(1, "day", "seconds")
   
   # setup helper function
   var_update <- function(data, out, oldname, newname, oldunits, newunits = NULL, missval = -999, longname, ncdims) {

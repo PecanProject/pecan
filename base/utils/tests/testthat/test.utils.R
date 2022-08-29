@@ -111,3 +111,53 @@ test_that("tryl returns FALSE if error, else true ", {
   expect_true(tryl(1+1))
   expect_true(!tryl(log("a")))
 })
+
+test_that("mstmipvar works with defaults", {
+  expect_s3_class(mstmipvar("NPP"), "ncvar4")
+})
+
+test_that("mstmipvar works with args specified", {
+  lat <- 
+    ncdf4::ncdim_def(
+      name = "lat",
+      longname = "station_latitude",
+      units = "degrees_north",
+      vals = 40,
+      unlim = FALSE
+    )
+  lon <-
+    ncdf4::ncdim_def(
+      name = "lon",
+      longname = "station_longitude",
+      units = "degrees_east",
+      vals = -80,
+      unlim = FALSE
+    )
+  time <-
+    ncdf4::ncdim_def(
+      name = "time",
+      units = "days since 1900-01-01 00:00:00",
+      vals = 30798:44765,
+      calendar = "standard",
+      unlim = TRUE
+    )
+  nsoil <- 
+    ncdf4::ncdim_def(
+      name = "SoilLayerMidpoint",
+      longname = "SoilLayerMidpoint",
+      units = "meters",
+      vals = c(-1.75,-1.25,-0.9,-0.7,-0.5,-0.3,-0.15,-0.075, 0),
+      unlim = FALSE
+    )
+  
+  expect_s3_class(mstmipvar("NPP", lat = lat, lon = lon, time = time, nsoil = nsoil),
+                  "ncvar4")
+})
+
+# doesn't work because PEcAn.logger doesn't use message()
+# test_that("mstmipvar prints message with unknown var", {
+#   expect_message(
+#     mstmipvar("banana"),
+#     "Don't know about variable banana in standard_vars in PEcAn.utils"
+#   )
+# })

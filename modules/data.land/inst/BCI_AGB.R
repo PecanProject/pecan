@@ -32,7 +32,7 @@ for(f in seq_along(files)){
   bdead = 0.06896*(h^0.572)*(dbh^1.94)*wood_density^0.931  ## FATES allom, units = KgC??
   
   ## conversion to plot-level mean
-  stats$AGB[i] <- udunits2::ud.convert(sum(bdead,na.rm=TRUE)/area,"kg ha-1","kg m-2")  #AbvGrndWood	kgC m-2
+  stats$AGB[i] <- PEcAn.utils::ud_convert(sum(bdead,na.rm=TRUE)/area,"kg ha-1","kg m-2")  #AbvGrndWood	kgC m-2
   
   ## extract dates
   date <- as.Date(dat$Date)
@@ -45,7 +45,7 @@ for(f in seq_along(files)){
 }
 
 ## sanity check
-agb <- udunits2::ud.convert(stats$AGB,"kg m-2","Mg ha-1")/0.48
+agb <- PEcAn.utils::ud_convert(stats$AGB,"kg m-2","Mg ha-1")/0.48
 plot(as.Date(stats$date,origin = "1970-01-01"),agb)
 stats$AGB[3] <- NA ## odd outlier, original value = 22.95379
 

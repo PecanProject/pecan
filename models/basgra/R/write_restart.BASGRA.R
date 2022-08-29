@@ -22,7 +22,7 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
-    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0.00001
     names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
@@ -38,6 +38,84 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("slow_soil_pool_carbon_content")
   }
   
+  if ("CropYield" %in% variables) {
+     analysis.save[[length(analysis.save) + 1]] <- new.state$CropYield
+     if (new.state$CropYield < 0) analysis.save[[length(analysis.save)]] <- 0
+     names(analysis.save[[length(analysis.save)]]) <- c("CropYield")
+  }
+  
+  if ("litter_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$litter_carbon_content
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("litter_carbon_content")
+  }
+  
+  if ("stubble_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$stubble_carbon_content
+    if (new.state$stubble_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("stubble_carbon_content")
+  }
+  
+  if ("stem_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$stem_carbon_content
+    if (new.state$stem_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("stem_carbon_content")
+  }
+  
+  if ("root_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$root_carbon_content
+    if (new.state$root_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("root_carbon_content")
+  }
+  
+  if ("reserve_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$reserve_carbon_content
+    if (new.state$reserve_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("reserve_carbon_content")
+  }
+  
+  if ("leaf_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$leaf_carbon_content
+    if (new.state$leaf_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("leaf_carbon_content")
+  }
+
+  if ("dead_leaf_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$dead_leaf_carbon_content
+    if (new.state$dead_leaf_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("dead_leaf_carbon_content")
+  }
+  
+  if ("nonelongating_generative_tiller" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$nonelongating_generative_tiller
+    if (new.state$nonelongating_generative_tiller < 0) analysis.save[[length(analysis.save)]] <- 10
+    names(analysis.save[[length(analysis.save)]]) <- c("nonelongating_generative_tiller")
+  }
+  
+  if ("elongating_generative_tiller" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$elongating_generative_tiller
+    if (new.state$elongating_generative_tiller < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("elongating_generative_tiller")
+  }
+  
+  if ("nonelongating_vegetative_tiller" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$nonelongating_vegetative_tiller
+    if (new.state$nonelongating_vegetative_tiller < 0) analysis.save[[length(analysis.save)]] <- 100
+    names(analysis.save[[length(analysis.save)]]) <- c("nonelongating_vegetative_tiller")
+  }
+  
+  if ("tiller_density" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$tiller_density
+    if (new.state$tiller_density < 0) analysis.save[[length(analysis.save)]] <- 100
+    names(analysis.save[[length(analysis.save)]]) <- c("tiller_density")
+  }
+  
+  if ("phenological_stage" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$phenological_stage
+    if (new.state$phenological_stage < 0) analysis.save[[length(analysis.save)]] <- 0.01
+    names(analysis.save[[length(analysis.save)]]) <- c("phenological_stage")
+  }
+  
   if (!is.null(analysis.save) && length(analysis.save) > 0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
@@ -48,6 +126,7 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   PEcAn.logger::logger.info(runid)
   PEcAn.logger::logger.info(analysis.save.mat)
   
+  settings$run$inputs$met <- inputs$met
   do.call(write.config.BASGRA, args = list(defaults     = NULL,
                                            trait.values = new.params,
                                            settings = settings,

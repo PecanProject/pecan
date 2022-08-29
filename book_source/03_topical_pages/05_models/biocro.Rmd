@@ -2,11 +2,11 @@
 
 | Model Information |                                                                   |
 | --                | --                                                                |
-| Home Page         | https://github.com/ebimodeling/biocro/blob/master/README.md                              |
-| Source Code       | https://github.com/ebimodeling/biocro                             |
+| Home Page         | https://github.com/ebimodeling/biocro/blob/0.951/README.md                              |
+| Source Code       | https://github.com/ebimodeling/biocro/tree/0.951                             |
 | License           | [University of Illinois/NCSA Open Source License](https://github.com/ebimodeling/biocro/blob/master/LICENSE)                                                                  |
 | Authors           | Fernando E. Miguez, Deepak Jaiswal, Justin McGrath, David LeBauer, Scott Rohde, Dan Wang |
-| PEcAn Integration | David LeBauer, Dan Wang                                           |
+| PEcAn Integration | David LeBauer, Chris Black, Kristina Riemer |
 
 ### Introduction
 
@@ -40,4 +40,13 @@ BioCro uses a config.xml file similar to ED2. At this time, no other template fi
 
 ### Installation notes
 
-BioCro can be run standalone using the model's R package. Instructions for installing and using the package are in the GitHub repo's [README file](https://github.com/ebimodeling/biocro/blob/master/README.md). 
+BioCro can be run standalone using the model's R package. Instructions for installing and using the package are in the GitHub repo's [README file](https://github.com/ebimodeling/biocro/blob/0.951/README.md). 
+
+PEcAn works with v. 0.9x and 1.x. Support for v 2.x is not implemented. Support for v 0.9x is most robust and tested. 
+
+To install, use 
+
+```r
+remotes::install_github('ebimodeling/biocro@0.951')
+```
+

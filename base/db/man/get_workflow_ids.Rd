@@ -10,6 +10,9 @@ get_workflow_ids(bety, query, all.ids = FALSE)
 \item{bety}{BETYdb connection, as opened by `betyConnect()`}
 
 \item{query}{Named vector or list of workflow IDs}
+
+\item{all.ids}{logical: return a list of all workflow_ids in the BETY database,
+or just those that are part of the query?}
 }
 \description{
 Get vector of workflow IDs

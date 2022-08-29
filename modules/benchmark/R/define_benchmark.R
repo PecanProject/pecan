@@ -30,7 +30,7 @@ define_benchmark <- function(settings, bety){
         ens_wf <- tbl(bety, 'ensembles') %>% filter(id == bm.settings$ensemble_id) %>% 
           rename(ensemble_id = id) %>% 
           left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = id), by="workflow_id") %>% collect()
-        BRR <- create_BRR(ens_wf, con = bety$con, user_id = settings$info$userid)
+        BRR <- create_BRR(ens_wf, con = bety, user_id = settings$info$userid)
       }else if(dim(bm_ens)[1] == 1){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
@@ -81,7 +81,7 @@ define_benchmark <- function(settings, bety){
                             "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
                      benchmark$input_id, benchmark$variable_id,
                      site_id, settings$info$userid)
-      bm <- db.query(cmd, bety$con)
+      bm <- db.query(cmd, bety)
       logger.debug(sprintf("Benchmark %.0f for input %.0f variable %.0f created", 
                            bm$id, bm$input_id, bm$variable_id))
     }else if(dim(bm)[1] >1){
@@ -101,7 +101,7 @@ define_benchmark <- function(settings, bety){
       cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
                             " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
                      bm$id, bm.settings$reference_run_id)
-      db.query(cmd, bety$con)
+      db.query(cmd, bety)
     }else if(dim(bmBRR)[1] > 1){
       PEcAn.logger::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
     }
@@ -115,7 +115,7 @@ define_benchmark <- function(settings, bety){
       if(dim(bmmetric)[1] == 0){
         cmd <- sprintf(paste0("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)"),
                        bm$id, metric_ids[[k]])
-        db.query(cmd, bety$con)
+        db.query(cmd, bety)
       }else if(dim(bmmetric)[1] > 1){
         PEcAn.logger::logger.error("Duplicate record entries in benchmarks_metrics")
       }
