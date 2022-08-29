@@ -37,7 +37,7 @@ lon <- ncdf4::ncdim_def("lon", "degrees_east",
 
 
 test_that("put_E_values() runs", {
-  expect_is(
+  expect_type(
     put_E_values(
       yr = year,
       nc_var = list(),
@@ -53,7 +53,7 @@ test_that("put_E_values() runs", {
 })
 
 test_that("put_T_values() runs", {
-  expect_is(
+  expect_type(
     put_T_values(
       yr = year,
       nc_var = list(),
