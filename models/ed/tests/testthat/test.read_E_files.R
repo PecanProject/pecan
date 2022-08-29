@@ -24,7 +24,7 @@ test_that("read E files without settings arg or ED2 pft number", {
   result <- read_E_files(year, year_files, h5_file, outdir, start_date, 
                          end_date, pfts_without_number)
   expect_type(result, "list")
-  expect_equal(length(result), 5) #TODO: expectation of number of variables will have to change
+  expect_equal(length(result), 7) #TODO: expectation of number of variables will have to change
   #TODO: better test would be to check for specific variables in output
 })
 
@@ -37,7 +37,7 @@ test_that("read E files without settings arg and with ED2 pft number", {
   result <- read_E_files(year, year_files, h5_file, outdir, start_date, 
                          end_date, pft_with_number)
   expect_type(result, "list")
-  expect_equal(length(result), 5)
+  expect_equal(length(result), 7)
 })
 
 test_that("read E files without only settings arg", {
@@ -45,7 +45,7 @@ test_that("read E files without only settings arg", {
   year_files <- 2004
   result <- read_E_files(year, year_files, h5_file, settings = test_settings)
   expect_type(result, "list")
-  expect_equal(length(result), 5)
+  expect_equal(length(result), 7)
 })
 
 test_that("fail to read E files without ED2 pft number", {
