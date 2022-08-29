@@ -189,7 +189,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     on.exit(close(varfile))
     # fill nc file with data
     for (i in seq_along(nc_var)) {
-      ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
+      #TODO: how does this know to get the dimensions right?
+      ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
     }
@@ -393,8 +394,8 @@ read_T_files <-
   dz <- dz[dz != 0]
   
   if (!is.null(ED2vc)) {
-    #TODO: Why are some of these rows commented out?  What does this section do?  Can this be done more programmatically?
-    #TODO: are these elements of out not named?  Should they be?  I'm worried about editing this and losing track of what is what.
+    #TODO: Why are some of these rows commented out?  Can this be done more programmatically?
+    #TODO: are these elements of `out` not named?  Should they be?  I'm worried about editing this and losing track of what is what.
     ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yr) ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_BDEAD_PY"), 1, row, yr)  ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 2, row, yr)  ## AutoResp
@@ -709,10 +710,20 @@ read_T_files <-
 
 ##' Function for put -T- values to nc_var list
 ##' 
+##' @param yr 
+##' @param nc_var 
+##' @param var_list 
+##' @param lat 
+##' @param lon 
+##' @param start_date 
+##' @param end_date 
+##' @param pfts 
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
+##'
 ##' @export
+##' 
 put_T_values <-
   function(yr,
            nc_var,
@@ -722,7 +733,6 @@ put_T_values <-
            start_date,
            end_date,
            pfts = NULL,
-           settings,
            begins,
            ends,
            out) {
@@ -1021,6 +1031,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
     # extract all the data into list
+    #TODO warn if a variable isn't available and return -999 (?)
     if (length(ed.dat) == 0){
       for (j in 1:length(allvars)) {
         ed.dat[[j]] <- list()
@@ -1113,8 +1124,10 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
           ~purrr::map2(.x = .x, .y = ed.dat$PFT, #for each month in each variable
                 ~ tapply(.x, .y, sum) #sum variable by PFT number
           ))
-    
   }
+    
+  #Bind rows for months together to produce a matrix with ncol = length(pft_nums) and nrow = number of months
+  out <- purrr::map(out, ~do.call(rbind, .x))
   
   out$PFT <- pft_nums #named vector for matching PFT numbers to names
   
@@ -1137,7 +1150,6 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
 ##' @param pfts for consistency with [put_T_values()].  If supplied, it will be overwritten.
-##' @param settings Pecan settings object for consistency with [put_T_values()]---unused
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
@@ -1145,7 +1157,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
 ##' @return a list of `ncdim4` objects
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings = NULL, begins, ends, out){
+put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, begins, ends, out){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
