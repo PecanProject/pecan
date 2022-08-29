@@ -132,16 +132,18 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     }
 
     # generate start/end dates for processing
-    if (y == strftime(start_date, "%Y")) {
-      begin_date <- base::as.Date(strftime(start_date))
+    if (y == start_year) {
+      start_date_real <- lubridate::ymd(start_date)
     } else {
-      begin_date <- base::as.Date(paste0(y, "-01-01"))
+      #When would this be run?
+      start_date_real <- lubridate::make_date(y, 1, 1)
     }
 
-    if (y == strftime(end_date, "%Y")) {
-      ends <- as.numeric(strftime(end_date, "%j"))
+    if (y == end_year) {
+      end_date_real <- lubridate::ymd(end_date)
     } else {
-      ends <- as.numeric(strftime(paste0(y, "-12-31"), "%j"))
+      #When would this be run?
+      end_date_real <- lubridate::make_date(y, 12, 31)
     }
 
     # create lat/long nc variables
@@ -160,8 +162,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
-                     lat = lat, lon = lon, start_date = begin_date,
-                     end_date = ends, pfts, settings = settings)
+                     lat = lat, lon = lon, start_date = start_date_real,
+                     end_date = end_date_real, pfts, settings = settings)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -206,18 +208,18 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##' @details
 ##'  e.g.    yr = 1999
 ##'      yfiles = 1999 2000
-##'      tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+##'      h5_files = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
 ##'
 ##' @param yr the year being processed
-##' @param yfiles the years on the filenames, will be used to matched tfiles for that year
-##' @param tfiles names of T files to be read
+##' @param yfiles the years on the filenames, will be used to matched h5_files for that year
+##' @param h5_files names of T files to be read
 ##' @param outdir directory where output will be written to
 ##' @param start_date start date in YYYY-MM-DD format
 ##' @param end_date end date in YYYY-MM-DD format
 ##' @param ... additional arguments
 ##' 
 ##' @export
-read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
+read_T_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, ...){
 
   PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
 
@@ -345,7 +347,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   row <- 1
   
   # note that there is always one Tower file per year
-  ncT <- ncdf4::nc_open(file.path(outdir, tfiles[ysel]))
+  ncT <- ncdf4::nc_open(file.path(outdir, h5_files[ysel]))
   
   ## determine timestep from HDF5 file
   block <- ifelse(lubridate::leap_year(yr) == TRUE,
@@ -355,8 +357,8 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   PEcAn.logger::logger.info(paste0("Output interval: ", 86400 / block, " sec"))
   
   
-  if (file.exists(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))) {
-    ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))
+  if (file.exists(file.path(outdir, sub("-T-", "-Y-", h5_files[ysel])))) {
+    ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", h5_files[ysel])))
     slzdata <- getHdf5Data(ncY, "SLZ") #TODO: what is SLZ?
     ncdf4::nc_close(ncY)
   } else {
@@ -693,7 +695,20 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
 ##' @export
-put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out){
+put_T_values <-
+  function(yr,
+           nc_var,
+           var_list,
+           lat,
+           lon,
+           start_date,
+           end_date,
+           pfts = NULL,
+           settings,
+           begins,
+           ends,
+           out) {
+    
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -733,7 +748,12 @@ put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
   #### setup output time and time bounds
   ## Create a date vector that contains each day of the model run for each output year (e.g. "2001-07-15", "2001-07-16"....)
   ## and which is the correct length for each full or partial year
-  output_date_vector <- seq(start_date, by = "day", length.out = length(lubridate::yday(start_date):end_date))
+  output_date_vector <- output_date_vector <-
+    seq(
+      lubridate::ymd(start_date),
+      lubridate::ymd(end_date),
+      by = "day",
+    )
   ## Calculate model output frequency per day (e.g. 0.02083333)
   model_timestep_s <- length(output_date_vector) / length(out[[1]])
   iter_per_day <- round(1 / model_timestep_s) ## e.g. 48
@@ -903,8 +923,8 @@ put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
 ##'
 ##' @param yr length 1 numeric vector; the year being processed
 ##' @param yfiles numeric vector of the years on the filenames, will be used to
-##'   matched efiles for that year
-##' @param efiles character vector of names of E h5 files (e.g.
+##'   matched `h5_files` for that year
+##' @param h5_files character vector of names of E h5 files (e.g.
 ##'   "analysis-E-1999-06-00-000000-g01.h5")
 ##' @param outdir directory where output will be written to
 ##' @param start_date Start time of the simulation
@@ -919,7 +939,7 @@ put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
 ##' @return a list
 ##' @export
 ##' 
-read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
+read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
                          pfts, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
@@ -944,7 +964,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   times <- gsub(
     "(.*)\\-(.*)\\-(.*)\\-(.*)\\-(.*)", "\\1\\2",
     sapply(
-      strsplit(efiles, "-E-"), 
+      strsplit(h5_files, "-E-"), 
       function(x) x[2] # Select only the part of each name after res.flag
     )
   )
@@ -978,7 +998,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
   # loop over the files for that year
   for(i in ysel) {
     
-    nc <- ncdf4::nc_open(file.path(outdir, efiles[i]))
+    nc <- ncdf4::nc_open(file.path(outdir, h5_files[i]))
     on.exit(ncdf4::nc_close(nc))
     allvars <- names(nc$var)
     if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
@@ -1100,7 +1120,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
 ##' @param pfts for consistency with [put_T_values()].  If supplied, it will be overwritten.
-##' @param settings Pecan settings object
+##' @param settings Pecan settings object for consistency with [put_T_values()]---unused
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
@@ -1108,7 +1128,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @return a list of `ncdim4` objects
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out){
+put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings = NULL, begins, ends, out){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -1121,15 +1141,6 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
     warning("`out` is deprecated, using `var_list` instead")
     var_list <- out
   }
-  if (!is.null(settings)) {
-    if(!inherits(settings, "Settings")) {
-      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
-    }
-    if(missing(start_date)) start_date <- settings$run$start.date
-    if(missing(end_date)) end_date <- settings$run$end.date 
-  }
-  start_date <- lubridate::ymd(start_date)
-  end_date <- lubridate::ymd(end_date)
 
   # Extract the PFT names and numbers for all PFTs
   pfts <- var_list$PFT
@@ -1272,6 +1283,7 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
     )
  )
  nc_var <- append(nc_var, evars)
+ #TODO: figure out why this was here:
  var_list <- append(var_list, c(rbind(bounds[, 1], bounds[, 2])))
   
  
