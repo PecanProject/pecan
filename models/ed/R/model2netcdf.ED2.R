@@ -94,14 +94,13 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   # process whatever there is
   # for now I'm going with this, do failed runs also provide information
   # on parameters? 
-  #TODO: failed runs may not be failing at random.  Should be *warning*, not info.
   year_check <- unique(unlist(ylist))
   if (max(year_check) < end_year) {
-    PEcAn.logger::logger.info("Run failed with some outputs.")
+    PEcAn.logger::logger.warn("Run failed with some outputs.")
     run_id <- basename(outdir)
     workflow_dir <- dirname(dirname(outdir))
-    rundir <- file.path(workflow_dir, "run", run_id)
-    readme <- file.path(rundir, "README.txt")
+    rundir <- file.path(workflow_dir, "run", run_id) #TODO: get this from settings?
+    readme <- file.path(rundir, "README.txt") #TODO: add check that readme exists
     runtype <- readLines(readme, n = 1)
     if (grepl("ensemble", runtype)) {
       PEcAn.logger::logger.info("This is an ensemble run. ",
@@ -1111,10 +1110,11 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date #TODO: this isn't actually used in this function
   }
-  
+  start_date <- lubridate::ymd(start_date)
+  end_date <- lubridate::ymd(end_date)
 
   # Extract the PFT names and numbers for all PFTs
-  pfts <- out$PFT
+  pfts <- e_list$PFT
   
   
   # ----- fill list
@@ -1126,8 +1126,8 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
   output_date_vector <-
     seq(
       lubridate::floor_date(start_date, "month"),
+      lubridate::floor_date(end_date, "month"),
       by = "month",
-      length.out = dim(e_list[[1]])[1]
     )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
   ## 31 30 31)
@@ -1171,7 +1171,7 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
     ncdf4::ncdim_def(
       name = "pft",
       units = "unitless",
-      vals = pft_nums,
+      vals = pfts,
       longname = "Plant Functional Type",
       unlim = TRUE
     )
