@@ -22,11 +22,11 @@ library("lubridate")
 #------------------------------------------Prepared SDA Settings -----
 # ----------------------------------------------------------------------------------------------
 #forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
-SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/ESA"
+SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 #manually set to previous run settings$info$date it creates the filepath to previous run
-next.oldir <- "2022-07-20-12-51-27"
+next.oldir <- "2022-08-26-23-05"
 #to manually change start date 
-runDays <- seq(as.Date("2021-08-05"), as.Date("2021-12-31"), by="days")
+runDays <- seq(as.Date("2021-07-26"), as.Date("2021-12-31"), by="days")
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
@@ -52,9 +52,8 @@ site_info <- list(
 
 #grab old.dir filepath from previous SDA run
 sda.runs <- list.files(SDApath, full.names = TRUE, pattern = paste0("PEcAn_", next.oldir))
-# previous <- sda.runs[2]
+#add filpath to restart list
 restart$filepath <- sda.runs
-# previous.ens <- list.files(paste0(previous, "/out"))
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)

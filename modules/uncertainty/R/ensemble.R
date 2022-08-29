@@ -455,8 +455,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     }
     
     #if ensemble folders do not exist create them
-    if(!file.exists(file.path(settings$rundir, run.id))){
-      dir.create(file.path(settings$rundir, run.id))
+    for(j in 1:length(run.id)){
+      if(!file.exists(file.path(settings$rundir, run.id[[j]]))){
+        dir.create(file.path(settings$rundir, run.id[[j]]))
+      }
+      
     }
     
     # stop and start time are required by bc we are wrtting them down into job.sh
@@ -468,7 +471,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            stop.time =restart$stop.time, 
                            settings = settings,
                            new.state = new.state[i, ], 
-                           new.params = params.list[[i]], #params.list$`646`[[i]] for debugging
+                           new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
                            RENAME = FALSE)#for restart from previous model runs, not sharing the same outdir
       )
