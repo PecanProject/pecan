@@ -1093,10 +1093,10 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' list to be written to a .nc file.
 ##' 
 ##' @param yr the year being processed
-##' @param nc_var a list for outputs to be added to
+##' @param nc_var a list for outputs to be added to #TODO: this shouldn't be an input, should it?  Function should just return this.
 ##' @param var_list list returned by [read_E_files()]
-##' @param lat latitude of site
-##' @param lon longitude of site
+##' @param lat `ncdim4` object for latitude of site
+##' @param lon `ncdim4` object longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
 ##' @param pfts the `pfts` element from a pecan settings object
@@ -1126,10 +1126,8 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(lat)) lat <- settings$lat
-    if(missing(lon)) lon <- settings$lon
     if(missing(start_date)) start_date <- settings$run$start.date
-    if(missing(end_date)) end_date <- settings$run$end.date #TODO: this isn't actually used in this function
+    if(missing(end_date)) end_date <- settings$run$end.date 
   }
   start_date <- lubridate::ymd(start_date)
   end_date <- lubridate::ymd(end_date)
@@ -1182,12 +1180,13 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
       calendar = "standard",
       unlim = TRUE
     )
-  time_interval <- ncdf4::ncdim_def(
-    name = "hist_interval",
-    longname = "history time interval endpoint dimensions",
-    vals = 1:2,
-    units = ""
-  )
+  time_interval <- 
+    ncdf4::ncdim_def(
+      name = "hist_interval",
+      longname = "history time interval endpoint dimensions",
+      vals = 1:2,
+      units = ""
+    )
   p <-
     ncdf4::ncdim_def(
       name = "pft",
@@ -1206,53 +1205,50 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
   # From read.output's perspective, dimension of pft will be the same for NEE
   # there and DBH here
 
-  s <- length(nc_var)
-  #TODO: this will need to be done programmatically instead of manually by variable, right?
-  nc_var[[s + 1]] <-
+ evars <- list(
     ncdf4::ncvar_def(
       "DBH",
       units = "cm",
       dim = list(lon, lat, t, p),
       missval = -999,
       longname = "Diameter at breast height"
-    )
-  nc_var[[s + 2]] <-
+    ),
     ncdf4::ncvar_def(
       "DDBH_DT",
       units = "cm yr-1",
       dim = list(lon, lat, t, p),
       missval = -999,
       longname = "Rate of change in dbh"
-    )
-  nc_var[[s + 3]] <-
+    ),
     ncdf4::ncvar_def(
       "NPLANT",
       units = "plant m-2",
       dim = list(lon, lat, t, p),
       missval = -999,
       longname = "Plant density"
-    )
+    ),
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
-  nc_var[[s + 4]] <-
     ncdf4::ncvar_def(
       "PFT",
       units = "",
       dim = list(p),
       longname = paste(pft_names, collapse = ",")
-    )
-  out_length <- length(var_list)
-  var_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
-  nc_var[[s + 5]] <-
-    ncdf4::ncvar_def(
-      name = "dtime_bounds",
-      units = "",
-      longname = "monthly history time interval endpoints",
-      dim = list(time_interval, dtime = t),
-      prec = "double"
-    )
-  return(list(nc_var = nc_var, out = var_list))
+    ),
+  ncdf4::ncvar_def(
+    name = "dtime_bounds",
+    units = "",
+    longname = "monthly history time interval endpoints",
+    dim = list(time_interval, dtime = t),
+    prec = "double"
+  )
+ )
+ nc_var <- append(nc_var, evars)
+ var_list <- append(var_list, c(rbind(bounds[, 1], bounds[, 2])))
   
+ 
+ return(list(nc_var = nc_var, out = var_list))
+ 
 } # put_E_values
 
 
