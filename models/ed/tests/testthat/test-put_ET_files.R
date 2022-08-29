@@ -45,8 +45,7 @@ test_that("put_E_values() runs", {
       lat = lat,
       lon = lon,
       start_date = lubridate::ymd(settings$run$start.date),
-      end_date = lubridate::ymd(settings$run$end.date),
-      settings = test_settings
+      end_date = lubridate::ymd(settings$run$end.date)
     ),
     "list"
   )
@@ -61,8 +60,7 @@ test_that("put_T_values() runs", {
       lat = lat,
       lon = lon,
       start_date = lubridate::ymd(settings$run$start.date),
-      end_date = lubridate::ymd(settings$run$end.date),
-      settings = test_settings
+      end_date = lubridate::ymd(settings$run$end.date)
     ),
     "list"
   )
@@ -70,4 +68,4 @@ test_that("put_T_values() runs", {
 
 #TODO: test if all vars are in output
 #TODO: test if dimensions are correct and consistent
-#TODO: test behvaior when nc_var is not empty
+#TODO: test behavior when nc_var is not empty

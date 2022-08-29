@@ -163,7 +163,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
                      lat = lat, lon = lon, start_date = start_date_real,
-                     end_date = end_date_real, pfts, settings = settings)
+                     end_date = end_date_real, pfts)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -722,8 +722,6 @@ read_T_files <-
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
 ##'
-##' @export
-##' 
 put_T_values <-
   function(yr,
            nc_var,
@@ -1149,15 +1147,27 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
 ##' @param lon `ncdim4` object longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
-##' @param pfts for consistency with [put_T_values()].  If supplied, it will be overwritten.
+##' @param pfts for consistency with [put_T_values()].  If supplied, it will be
+##'   overwritten.
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
 ##' 
 ##' @return a list of `ncdim4` objects
 ##' 
-##' @export
-put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, begins, ends, out){
+put_E_values <-
+  function(yr,
+           nc_var,
+           var_list,
+           lat,
+           lon,
+           start_date,
+           end_date,
+           pfts = NULL,
+           begins,
+           ends,
+           out) {
+    
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
