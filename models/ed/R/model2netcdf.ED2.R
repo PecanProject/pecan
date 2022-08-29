@@ -159,9 +159,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       #fcnx is either put_T_values() or put_E_values()
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
-      put_out <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]],
-                     lat = lat, lon = lon, begins = begin_date,
-                     ends = ends, pfts, settings)
+      put_out <- fcn(yr = y, nc_var = nc_var, e_list = out_list[[rflag]],
+                     lat = lat, lon = lon, start_date = begin_date,
+                     end_date = ends, pfts, settings = settings)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -689,8 +689,19 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 
 ##' Function for put -T- values to nc_var list
 ##' @export
-put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
-  
+put_T_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, out, begins, ends, ...){
+  if(!missing(begins)) {
+    warning("`begins` is deprecated, using `start_date` instead")
+    start_date <- begins
+  }
+  if(!missing(ends)) {
+    warning("`ends` is deprecated, using `end_date` instead")
+    end_date <- ends
+  }
+  if(!missing(out)) {
+    warning("`out` is deprecated, using `e_list` instead")
+    e_list <- out
+  }
   s <- length(nc_var)
   
   ## Conversion factor for umol C -> kg C
@@ -1075,7 +1086,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' list to be written to a .nc file.
 ##' 
 ##' @param yr the year being processed
-##' @param nc_var list of .nc files
+##' @param nc_var a list for outputs to be added to
 ##' @param e_list list returned by [read_E_files()]
 ##' @param lat latitude of site
 ##' @param lon longitude of site
@@ -1087,6 +1098,8 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `e_list` instead
 ##' @param ... currently unused
+##' 
+##' @return a list
 ##' 
 ##' @export
 put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
