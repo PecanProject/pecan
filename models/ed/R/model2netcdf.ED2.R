@@ -1093,23 +1093,23 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' list to be written to a .nc file.
 ##' 
 ##' @param yr the year being processed
-##' @param nc_var a list for outputs to be added to #TODO: this shouldn't be an input, should it?  Function should just return this.
+##' @param nc_var a list (potentially empty) for `ncvar4` objects to be added to
 ##' @param var_list list returned by [read_E_files()]
 ##' @param lat `ncdim4` object for latitude of site
 ##' @param lon `ncdim4` object longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
-##' @param pfts the `pfts` element from a pecan settings object
+##' @param pfts for consistency with [put_T_values()].  If supplied, it will be overwritten.
 ##' @param settings Pecan settings object
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
 ##' @param ... currently unused
 ##' 
-##' @return a list
+##' @return a list of `ncdim4` objects
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
+put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
