@@ -173,9 +173,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     PEcAn.logger::logger.info("*** Writing netCDF file ***")
 
     out <- unlist(out_list, recursive = FALSE)
-    #TODO: I think nc_create() should happen at the end since it can be passed a list of ncvar4 objects.  Se details in ?ncvar_put
+    #create nc file with slots for all variables
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
+    on.exit(ncdf4::nc_close(nc))
     # define time_bounds for -T- outputs, if exists
     if (file.check[["-T-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
@@ -185,14 +186,13 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    #TODO: seems like there should be a more efficient way to do this.  Doesn't nc_create() take a list?  Wasn't that the point of making the list?
+    on.exit(close(varfile))
+    # fill nc file with data
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
     }
-    close(varfile)
-    ncdf4::nc_close(nc)
 
   } # end year-loop
 
@@ -216,10 +216,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##' @param outdir directory where output will be written to
 ##' @param start_date start date in YYYY-MM-DD format
 ##' @param end_date end date in YYYY-MM-DD format
-##' @param ... additional arguments
+##' @param pfts for consistency with [read_E_files()]---unused
+##' @param settings for consistency with [read_E_files()]---unused
 ##' 
 ##' @export
-read_T_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, ...){
+read_T_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
+                         pfts = NULL, settings = NULL){
 
   PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
 
@@ -931,7 +933,6 @@ put_T_values <-
 ##' @param end_date End time of the simulation
 ##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings pecan settings object
-##' @param ... currently unused
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
 ##'   for `outdir`, `start_date`, `end_date`, and `pfts` will be taken from it
@@ -940,7 +941,7 @@ put_T_values <-
 ##' @export
 ##' 
 read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
-                         pfts, settings = NULL, ...){
+                         pfts, settings = NULL) {
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
