@@ -1227,21 +1227,50 @@ put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, p
       missval = -999,
       longname = "Plant density"
     ),
-  # longname of this variable will be parsed by read.output
-  # so that read.output has a way of accessing PFT names
+    ncdf4::ncvar_def(
+      "AGB_CO", 
+      units = "kgC m-2",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Above ground biomass"
+    ),
+    ncdf4::ncvar_def(
+      "MMEAN_NPPDAILY_CO",
+      units = "KgC m-2 s-1",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Net primary productivity"
+    ),
+    ncdf4::ncvar_def(
+      "MMEAN_TRANSP_CO",
+      units = "kg m-2 s-1",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Leaf transpiration"
+    ),
+    ncdf4::ncvar_def(
+    "BSEEDS_CO" 
+      units = "kgC m-2",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Seed biomass"
+    )
+    
+    # longname of this variable will be parsed by read.output
+    # so that read.output has a way of accessing PFT names
     ncdf4::ncvar_def(
       "PFT",
       units = "",
       dim = list(p),
       longname = paste(pft_names, collapse = ",")
     ),
-  ncdf4::ncvar_def(
-    name = "dtime_bounds",
-    units = "",
-    longname = "monthly history time interval endpoints",
-    dim = list(time_interval, dtime = t),
-    prec = "double"
-  )
+    ncdf4::ncvar_def(
+      name = "dtime_bounds",
+      units = "",
+      longname = "monthly history time interval endpoints",
+      dim = list(time_interval, dtime = t),
+      prec = "double"
+    )
  )
  nc_var <- append(nc_var, evars)
  var_list <- append(var_list, c(rbind(bounds[, 1], bounds[, 2])))
