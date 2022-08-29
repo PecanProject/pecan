@@ -693,7 +693,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
 ##' @export
-put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, out, begins, ends, ...){
+put_T_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -1104,12 +1104,11 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
-##' @param ... currently unused
 ##' 
 ##' @return a list of `ncdim4` objects
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out, ...){
+put_E_values <- function(yr, nc_var, var_list, lat, lon, start_date, end_date, pfts = NULL, settings, begins, ends, out){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
