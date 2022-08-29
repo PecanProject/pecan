@@ -89,6 +89,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   # for now I'm going with this, do failed runs also provide information
   # on parameters? 
   year_check <- unique(unlist(ylist))
+  #TODO: this is only TRUE if ALL ensembles ended earlier than they should have, right? Not the correct check according to notes above
   if (max(year_check) < end_year) {
     PEcAn.logger::logger.warn("Run failed with some outputs.")
     #TODO: I don't think this next bit is correct.  rundir in this context should be something like file.path(settings$rundir, "ENS-00001-678"), but not sure where to get that from programmatically.
