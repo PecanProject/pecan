@@ -159,7 +159,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
       #fcnx is either put_T_values() or put_E_values()
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn     <- match.fun(fcnx)
-      put_out <- fcn(yr = y, nc_var = nc_var, e_list = out_list[[rflag]],
+      put_out <- fcn(yr = y, nc_var = nc_var, read_list = out_list[[rflag]],
                      lat = lat, lon = lon, start_date = begin_date,
                      end_date = ends, pfts, settings = settings)
 
@@ -688,8 +688,12 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
 ##-------------------------------------------------------------------------------------------------#
 
 ##' Function for put -T- values to nc_var list
+##' 
+##' @param begins deprecated; use `start_date` instead
+##' @param ends deprecated; use `end_date` instead
+##' @param out deprecated; use `read_list` instead
 ##' @export
-put_T_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, out, begins, ends, ...){
+put_T_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, out, begins, ends, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -699,8 +703,8 @@ put_T_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, out
     end_date <- ends
   }
   if(!missing(out)) {
-    warning("`out` is deprecated, using `e_list` instead")
-    e_list <- out
+    warning("`out` is deprecated, using `read_list` instead")
+    read_list <- out
   }
   s <- length(nc_var)
   
@@ -726,7 +730,7 @@ put_T_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, out
   #### setup output time and time bounds
   ## Create a date vector that contains each day of the model run for each output year (e.g. "2001-07-15", "2001-07-16"....)
   ## and which is the correct length for each full or partial year
-  output_date_vector <- seq(begins, by = "day", length.out = length(lubridate::yday(begins):ends))
+  output_date_vector <- seq(start_date, by = "day", length.out = length(lubridate::yday(start_date):end_date))
   ## Calculate model output frequency per day (e.g. 0.02083333)
   model_timestep_s <- length(output_date_vector) / length(out[[1]])
   iter_per_day <- round(1 / model_timestep_s) ## e.g. 48
@@ -1087,7 +1091,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' 
 ##' @param yr the year being processed
 ##' @param nc_var a list for outputs to be added to
-##' @param e_list list returned by [read_E_files()]
+##' @param read_list list returned by [read_E_files()]
 ##' @param lat latitude of site
 ##' @param lon longitude of site
 ##' @param start_date start time of simulation
@@ -1096,13 +1100,13 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param settings Pecan settings object
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
-##' @param out deprecated; use `e_list` instead
+##' @param out deprecated; use `read_list` instead
 ##' @param ... currently unused
 ##' 
 ##' @return a list
 ##' 
 ##' @export
-put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
+put_E_values <- function(yr, nc_var, read_list, lat, lon, start_date, end_date, pfts, settings, begins, ends, out, ...){
   if(!missing(begins)) {
     warning("`begins` is deprecated, using `start_date` instead")
     start_date <- begins
@@ -1112,8 +1116,8 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
     end_date <- ends
   }
   if(!missing(out)) {
-    warning("`out` is deprecated, using `e_list` instead")
-    e_list <- out
+    warning("`out` is deprecated, using `read_list` instead")
+    read_list <- out
   }
   if (!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
@@ -1128,7 +1132,7 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
   end_date <- lubridate::ymd(end_date)
 
   # Extract the PFT names and numbers for all PFTs
-  pfts <- e_list$PFT
+  pfts <- read_list$PFT
   
   
   # ----- fill list
@@ -1234,8 +1238,8 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
       dim = list(p),
       longname = paste(pft_names, collapse = ",")
     )
-  out_length <- length(e_list)
-  e_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
+  out_length <- length(read_list)
+  read_list[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
   nc_var[[s + 5]] <-
     ncdf4::ncvar_def(
       name = "dtime_bounds",
@@ -1244,7 +1248,7 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
       dim = list(time_interval, dtime = t),
       prec = "double"
     )
-  return(list(nc_var = nc_var, out = e_list))
+  return(list(nc_var = nc_var, out = read_list))
   
 } # put_E_values
 
