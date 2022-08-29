@@ -97,10 +97,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   year_check <- unique(unlist(ylist))
   if (max(year_check) < end_year) {
     PEcAn.logger::logger.warn("Run failed with some outputs.")
+    #TODO: I don't think this next bit is correct.  rundir in this context should be something like file.path(settings$rundir, "ENS-00001-678"), but not sure where to get that from programmatically.
     run_id <- basename(outdir)
     workflow_dir <- dirname(dirname(outdir))
-    rundir <- file.path(workflow_dir, "run", run_id) #TODO: get this from settings?
-    readme <- file.path(rundir, "README.txt") #TODO: add check that readme exists
+    rundir <- file.path(workflow_dir, "run", run_id) 
+    readme <- file.path(rundir, "README.txt") #TODO: this is not where README.txt should be
     runtype <- readLines(readme, n = 1)
     if (grepl("ensemble", runtype)) {
       PEcAn.logger::logger.info("This is an ensemble run. ",
