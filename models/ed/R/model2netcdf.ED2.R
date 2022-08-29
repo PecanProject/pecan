@@ -1224,7 +1224,7 @@ put_E_values <-
       calendar = "standard",
       unlim = TRUE
     )
-  time_interval <- 
+  time_interval <-
     ncdf4::ncdim_def(
       name = "hist_interval",
       longname = "history time interval endpoint dimensions",
@@ -1317,9 +1317,7 @@ put_E_values <-
     )
  )
  nc_var <- append(nc_var, evars)
- #TODO: figure out why this was here:
- var_list <- append(var_list, c(rbind(bounds[, 1], bounds[, 2])))
-  
+ var_list[[length(var_list) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
  
  return(list(nc_var = nc_var, out = var_list))
  
