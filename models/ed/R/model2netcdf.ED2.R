@@ -66,16 +66,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     ed_res_flag <- names(flist)[file.check]
 
     # extract year info from the file names
-    #TODO: refactor to simplify.  Dates are predictable in output filenames.  Doesn't need a for loop.
-    ylist <- lapply(ed_res_flag, function(f) {
-      yr <- rep(NA, length(flist[[f]]))
-      for (i in seq_along(flist[[f]])) {
-        index <- gregexpr(f, flist[[f]][i])[[1]]
-        index <- index[1]
-        yr[i] <- as.numeric(substr(flist[[f]][i], index + 3, index + 6))
-      }
-      return(yr)
-    })
+    ylist <- lapply(
+      ed_res_flag,
+      function(x) stringr::str_extract(flist[[x]], "\\d{4}")
+    )
 
     names(ylist) <- ed_res_flag
   }
