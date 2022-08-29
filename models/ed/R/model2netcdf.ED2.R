@@ -989,6 +989,18 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     )
   )
   
+  #Check that all the expected files exist using start_date and end_date
+  expected_ym <- seq(
+    lubridate::ymd(start_date),
+    lubridate::ymd(end_date),
+    by = "month"
+  ) %>% format("%Y%m")
+  
+  if(!all(expected_ym %in% times)) {
+    #TODO: possibly not an error, but then need to use actual months of output files for time dimension in put_E_values(),  not start_date:end_date.
+    stop("Not all expected E files found!")
+  }
+  
   # lets make it work for a subset of vars fist
   # TODO :  read all (or more) variables, functionality exists, see below
   varnames <-
@@ -1189,7 +1201,7 @@ put_E_values <-
   output_date_vector <-
     seq(
       lubridate::floor_date(start_date, "month"),
-      lubridate::floor_date(end_date, "month"),
+      lubridate::floor_date(end_date, "month"), 
       by = "month",
     )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
