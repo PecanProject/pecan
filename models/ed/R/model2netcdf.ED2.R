@@ -217,14 +217,30 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
 ##' @param start_date start date in YYYY-MM-DD format
 ##' @param end_date end date in YYYY-MM-DD format
 ##' @param pfts for consistency with [read_E_files()]---unused
-##' @param settings for consistency with [read_E_files()]---unused
+##' @param settings A PEcAn settings object. Values for `start_date`,
+##'   `end_date`, and `outdir` will be taken from `settings` if it is supplied.
 ##' 
 ##' @export
-read_T_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
-                         pfts = NULL, settings = NULL){
+read_T_files <-
+  function(yr,
+           yfiles,
+           h5_files,
+           outdir,
+           start_date,
+           end_date,
+           pfts = NULL,
+           settings = NULL) {
+    
 
   PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
-
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date
+  }
   #TODO: rename add() to something more descriptive
   # add
   add <- function(dat, col, row, year) {
