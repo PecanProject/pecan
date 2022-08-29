@@ -1026,7 +1026,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     #' 3) Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
     #' 4) group by PFT and sum cohorts
     
-    #TODO: some of these steps only apply to cohort-level variables.  Should this be generalized?
+    #TODO: This is written in a way that only apply to cohort-level variables.  Should this be generalized?
     out <- 
       #TODO, this outer imap could be made into a for-loop if it makes it easier for people to read and edit in the future.  not necessarily faster with imap
       purrr::imap(ed.dat[names(ed.dat) %in% varnames], ~{ 
@@ -1045,7 +1045,6 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
         
         #3) convert units to PEcAn standard if necessary
         #input units are according to the ED2 source code: https://raw.githubusercontent.com/EDmodel/ED2/master/ED/src/memory/ed_state_vars.F90, output units are according to PEcAn.utils::standard_vars
-        
         if(.y == "MMEAN_NPPDAILY_CO") {
           var <- purrr::map(var, ~ PEcAn.utils::ud_convert(.x, u1 = "kg/m2/yr", u2 = "kg/m2/s"))
         }
@@ -1111,26 +1110,12 @@ put_E_values <- function(yr, nc_var, e_list, lat, lon, start_date, end_date, pft
     if(missing(lon)) lon <- settings$lon
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date #TODO: this isn't actually used in this function
-    if(missing(pfts)) pfts <- settings$pfts #TODO: get from `e_list$PFT` instead?
   }
   
 
   # Extract the PFT names and numbers for all PFTs
-  #TODO: does this need to happen again?  I think this info is in `e_list$PFT` at this point?
-  pft_names <- lapply(pfts, "[[", "name")
-  pft_nums <- sapply(pfts, get_pft_num)
-  names(pft_nums) <- pft_names
+  pfts <- out$PFT
   
-  #TODO: isn't this check already done in read_E_files()?  It shouldn't need to be done again.
-  # even if this is a SA run for soil, currently we are not reading any variable
-  # that has a soil dimension. "soil" will be passed to read.output as pft.name
-  # from upstream, when it's not part of the attribute it will read the sum
-  soil.check <- grepl("soil", pft_names)
-  if(any(soil.check)){
-    # for now keep soil out
-    #TODO: print a message??
-    pft_names <- pft_names[!(soil.check)]
-  }
   
   # ----- fill list
   
