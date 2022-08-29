@@ -9,7 +9,7 @@
 ##'
 library(nimble)
 library(mvtnorm)
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 
 
 sampler_toggle <- nimbleFunction(

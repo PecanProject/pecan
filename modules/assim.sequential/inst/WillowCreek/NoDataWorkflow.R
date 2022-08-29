@@ -30,7 +30,7 @@ c(
 ) %>% walk( ~ source(
   system.file("WillowCreek",
               .x,
-              package = "PEcAn.assim.sequential")
+              package = "PEcAnAssimSequential")
 ))
 
 

@@ -58,7 +58,7 @@ c(
 ) %>% walk( ~ source(
   system.file("WillowCreek",
               .x,
-              package = "PEcAn.assim.sequential")
+              package = "PEcAnAssimSequential")
 ))
 #reading xml
 settings <- read.settings("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/gefs.sipnet.template.xml")

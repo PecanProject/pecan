@@ -77,5 +77,5 @@ prep.data.assim <- function(settings, numvals) {
   PEcAn.logger::logger.info("Calcualted obs.cov")
   print(obs.cov)
   
-  PEcAn.assim.sequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
+  PEcAnAssimSequential::sda.enkf(settings, obs.cov = obs.cov, obs.mean = obs.mean)
 } # prep.data.assim

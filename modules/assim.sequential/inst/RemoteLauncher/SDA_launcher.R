@@ -1,7 +1,7 @@
 #----------------------------------------------------------------
 # Loading required Libraries
 #---------------------------------------------------------------
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(PEcAn.settings)
 library(PEcAn.uncertainty)
 library(lubridate)

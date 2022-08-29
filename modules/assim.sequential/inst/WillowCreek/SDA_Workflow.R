@@ -4,7 +4,7 @@
 library("PEcAn.all")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
-library("PEcAn.assim.sequential")
+library("PEcAnAssimSequential")
 library("RCurl")
 library("REddyProc")
 library("tidyverse")
@@ -38,7 +38,7 @@ c(
 ) %>% walk( ~ source(
   system.file("WillowCreek",
               .x,
-              package = "PEcAn.assim.sequential")
+              package = "PEcAnAssimSequential")
 ))
 
 #------------------------------------------------------------------------------------------------
