@@ -992,7 +992,9 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   #Check that all the expected files exist using start_date and end_date
   expected_ym <- seq(
     lubridate::ymd(start_date),
-    lubridate::ymd(end_date),
+    # an E file is only written if a month is completed.
+    # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
+    lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
     by = "month"
   ) %>% format("%Y%m")
   
