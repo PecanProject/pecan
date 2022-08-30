@@ -7,7 +7,7 @@
 arate(x)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{vector of MCMC samples}
 }
 \description{
 Acceptance rate

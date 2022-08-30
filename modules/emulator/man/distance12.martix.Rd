@@ -8,7 +8,7 @@
 distance12.matrix(x, n1, power = 1)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{matrix of locations in parameter space}
 
 \item{n1}{number of rows in the original dataset}
 

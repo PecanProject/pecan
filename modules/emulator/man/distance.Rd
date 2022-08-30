@@ -7,7 +7,7 @@
 distance(x, power = 1)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{matrix of locations in physical or parameter space}
 
 \item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 }

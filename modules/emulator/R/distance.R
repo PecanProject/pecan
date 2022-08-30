@@ -2,7 +2,7 @@
 ##' @title distance
 ##' @export
 ##'
-##' @param x Name of variable to plot on X axis
+##' @param x matrix of locations in physical or parameter space
 ##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##'
 ##' @return dst

@@ -7,9 +7,9 @@
 ddist(x, prior)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{vector of values (e.g. observations) to be evaluated by the specified probability density function}
 
-\item{prior}{'unif', 'IG'}
+\item{prior}{data.frame specifying a prior probability distribution in terms of the distribution name (distn) and first and second parameters (parama, paramb)}
 }
 \description{
 ddist

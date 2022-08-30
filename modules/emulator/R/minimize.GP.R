@@ -98,8 +98,8 @@ gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
 ##' @title ddist
 ##' @export
 ##' 
-##' @param x Name of variable to plot on X axis
-##' @param prior 'unif', 'IG'
+##' @param x vector of values (e.g. observations) to be evaluated by the specified probability density function
+##' @param prior data.frame specifying a prior probability distribution in terms of the distribution name (distn) and first and second parameters (parama, paramb)
 ddist <- function(x, prior) {
   eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
 } # ddist

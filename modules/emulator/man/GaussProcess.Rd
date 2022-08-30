@@ -23,9 +23,9 @@ GaussProcess(
 )
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{set of independent variables}
 
-\item{y}{Name of variable to plot on Y axis}
+\item{y}{dependent variable}
 
 \item{isotropic}{Boolean indicating whether the GP is fit isotropically. If FALSE, distances are calculated deparately for each direction}
 

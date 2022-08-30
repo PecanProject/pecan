@@ -7,7 +7,7 @@
 p(x, ...)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{jump distribution}
 
 \item{...}{Additional arguments}
 }

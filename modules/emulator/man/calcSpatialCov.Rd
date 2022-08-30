@@ -7,9 +7,9 @@
 calcSpatialCov(x, ...)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{either a spatial distance matrix or a list of component spatial distance matrices}
 
-\item{...}{Adiitional arguments}
+\item{...}{Additional arguments}
 }
 \description{
 calcSpatialCov

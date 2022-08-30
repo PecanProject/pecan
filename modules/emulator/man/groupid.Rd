@@ -7,7 +7,7 @@
 groupid(x)
 }
 \arguments{
-\item{x}{Name of variable to plot on X axis}
+\item{x}{matrix of parameter values}
 }
 \description{
 groupid

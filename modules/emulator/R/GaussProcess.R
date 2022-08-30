@@ -2,8 +2,8 @@
 ##' @title GaussProcess
 ##' @export
 ##'
-##' @param x Name of variable to plot on X axis
-##' @param y Name of variable to plot on Y axis
+##' @param x set of independent variables
+##' @param y dependent variable
 ##' @param isotropic Boolean indicating whether the GP is fit isotropically. If FALSE, distances are calculated deparately for each direction
 ##' @param nugget allows additional error in Y rather than fix interpolation to go through points
 ##' @param method method for calculating correlations

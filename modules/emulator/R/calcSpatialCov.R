@@ -2,8 +2,8 @@
 ##' @title calcSpatialCov 
 ##' @export
 ##'
-##' @param x Name of variable to plot on X axis
-##' @param ... Adiitional arguments
+##' @param x either a spatial distance matrix or a list of component spatial distance matrices
+##' @param ... Additional arguments
 ##' 
 ##' @author Michael Dietze
 calcSpatialCov <- function(x, ...) UseMethod("calcSpatialCov", x)

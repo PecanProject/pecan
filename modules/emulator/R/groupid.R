@@ -2,7 +2,7 @@
 ##' @title groupid
 ##' @export
 ##' 
-##' @param x Name of variable to plot on X axis
+##' @param x matrix of parameter values
 ##' @author Michael Dietze
 groupid <- function(x) {
   
