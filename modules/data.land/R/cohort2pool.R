@@ -8,6 +8,14 @@
 ##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
 ##' @param dat veg_info file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
+##'
+##' @author Saloni Shah
+##' @examples
+##' \dontrun{
+##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
+##' cohort2pool(veg_File = veg_file, allom_param = NULL)
+##' }
+##' 
 
 cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   
