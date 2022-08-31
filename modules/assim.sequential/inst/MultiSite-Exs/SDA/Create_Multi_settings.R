@@ -38,7 +38,8 @@ template <- Settings(list(
       #you could add more state variables here
       variable = structure(list(variable.name = "AbvGrndWood", unit = "MgC/ha", min_value = 0, max_value = 9999)),
       variable = structure(list(variable.name = "LAI", unit = "", min_value = 0, max_value = 9999)),
-      variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999))
+      variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999)),
+      variable = structure(list(variable.name = "soilWFracInit", unit = "", min_value = 0, max_value = 1))#soilWFracInit
     )),
     forecast.time.step = "year",
     start.date = start_date,
