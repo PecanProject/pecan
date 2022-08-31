@@ -91,7 +91,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     # copy over out directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
-      src = file.path(settings$outdir, "out"),
+      src = settings$modeloutdir,
       dst = dirname(settings$host$outdir) 
     )
     # copy over run directories
@@ -279,16 +279,11 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
       if (job_finished) {
         
-        # Copy data back to local
-        if (!is_local) {
-          PEcAn.remote::remote.copy.from(
-            host = settings$host,
-            src = file.path(settings$host$outdir, run_id_string),
-            dst = settings$modeloutdir)
-        }
+        
         
         # TODO check output log
         if (is_rabbitmq) {
+          #TODO: unclear to me if this path is local or remote.  If local, then needs to be moved outside of for loop after files are copied back to local.
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))
           if (data[-1] == "ERROR") {
             msg <- paste("Run", run, "has an ERROR executing")
@@ -327,6 +322,14 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }  # end loop over runs
   }  # end while loop checking runs
   
+  # Copy data back to local
+  if (!is_local) {
+    PEcAn.remote::remote.copy.from(
+      host = settings$host,
+      src = settings$host$outdir,
+      dst = dirname(settings$modeloutdir)
+    )
+  }
 } # start_model_runs
 
 
