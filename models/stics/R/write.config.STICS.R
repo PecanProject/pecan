@@ -187,10 +187,16 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # but others can be anything? if not, either consider a LUT or passing via settings
     if(names(trait.values)[pft] %in% c("FRG", "ALF")){
       codeplante <- 'fou'
+      codeperenne <- 2
+      codebfroid <- 2 # vernalization requirement
     }else{
       codeplante <- substr(names(trait.values)[pft],1,3)
+      codeperenne <- 1
+      codebfroid <- 1 
     }
     SticsRFiles::set_param_xml(plant_file, "codeplante", codeplante, overwrite = TRUE)
+    SticsRFiles::set_param_xml(plant_file, "codeperenne", codeperenne, overwrite = TRUE)
+    SticsRFiles::set_param_xml(plant_file, "codebfroid", codebfroid, overwrite = TRUE)
     
     # minimum temperature below which development stops (degree C)
     if ("tdmin" %in% pft.names) {
@@ -201,6 +207,17 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if ("tdmax" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "tdmax", pft.traits[which(pft.names == "tdmax")], overwrite = TRUE)
     }
+    
+    # basal photoperiod
+    if ("phobase" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "phobase", pft.traits[which(pft.names == "phobase")], overwrite = TRUE)
+    }
+    
+    # saturating photoperiod
+    if ("phosat" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "phosat", pft.traits[which(pft.names == "phosat")], overwrite = TRUE)
+    }
+    
     
     # maximum phasic delay allowed due to stresses
     if ("phasic_delay_max" %in% pft.names) {
@@ -408,12 +425,19 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # shoot biomass growth
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "shoot biomass growth")
     
+    # minimum temperature for development
+    if ("temin" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "temin", pft.traits[which(pft.names == "temin")], overwrite = TRUE)
+    }
+    
+    # maximal temperature above which plant growth stops
+    if ("temax" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "temax", pft.traits[which(pft.names == "temax")], overwrite = TRUE)
+    }
+    
     # optimal temperature (1/2) for plant growth
     if ("teopt" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "teopt", pft.traits[which(pft.names == "teopt")], overwrite = TRUE)
-      # instead of putting own priors, trying this
-      SticsRFiles::set_param_xml(plant_file, "temin", pft.traits[which(pft.names == "teopt")]-11, overwrite = TRUE)
-      SticsRFiles::set_param_xml(plant_file, "temax", pft.traits[which(pft.names == "teopt")]+11, overwrite = TRUE)
     }
     
     # optimal temperature (2/2) for plant growth
@@ -638,7 +662,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
   gen_file <- file.path(rundir, "param_gen.xml")
   XML::saveXML(gen_xml, file = gen_file)
+  codeinitprec <- ifelse(length(usmdirs>1), 1, 2) 
+  SticsRFiles::set_param_xml(gen_file, "codeinitprec", codeinitprec, overwrite = TRUE)
   SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
+  
   # may delete the xml after this
   file.copy(file.path(rundir, "tempopar.sti"), file.path(usmdirs, "tempopar.sti"))
   
@@ -797,7 +824,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
           tec_df$profsem <- as.numeric(profsem) # depth of sowing
         }
         
-        densitesem <- events_sub$planting_depth[events_sub$mgmt_operations_event == "planting"]
+        densitesem <- events_sub$planting_sowing_density[events_sub$mgmt_operations_event == "planting"]
         if(!is.null(profsem)){
           tec_df$densitesem <- as.numeric(densitesem) # plant sowing density
         }
@@ -895,6 +922,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         # same usm -> continue columns
         usm_tec_df <- cbind(tec_df, harvest_tec, fert_tec)
+        
+        usm_tec_df$ratiol <- 0
         
         SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
         
@@ -1017,7 +1046,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   for(usmi in seq_along(usmdirs)){
     
-    usm_years <- c(sapply(strsplit(sub(".*_", "", basename(usmdirs)), "-"), function(x) (as.numeric(x))))
+    usm_years <- c(sapply(strsplit(sub(".*_", "", basename(usmdirs)[usmi]), "-"), function(x) (as.numeric(x))))
     dseq_sub <- dseq[lubridate::year(dseq) %in% usm_years]
     
     clim_list <- list() # temporary solution

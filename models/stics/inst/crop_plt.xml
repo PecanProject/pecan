@@ -112,7 +112,7 @@
   <formalisme nom="leaves">
     <param format="real" max="150.0" min="10.0" nom="phyllotherme">200.00000</param>
     <param format="real" max="200.0" min="1.0" nom="bdens">140.00000</param>
-    <param format="real" max="1.0" min="0.4" nom="laicomp">0.00000</param>
+    <param format="real" max="1.0" min="0.4" nom="laicomp">0.50000</param>
     <param format="real" max="2.0" min="0.1" nom="hautbase">0.02000</param>
     <param format="real" max="5.0" min="0.1" nom="hautmax">0.70000</param>
     <param format="real" max="15.0" min="-10.0" nom="tcmin">0.00000</param>
