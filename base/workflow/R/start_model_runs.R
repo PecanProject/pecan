@@ -258,7 +258,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   if (length(jobids) > 0) {
     PEcAn.logger::logger.debug(
       "Waiting for the following jobs:",
-      unlist(jobids, use.names = FALSE))
+      unlist(unique(jobids)))
   }
   
   while (length(jobids) > 0) {
