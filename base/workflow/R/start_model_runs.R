@@ -261,6 +261,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       unlist(unique(jobids)))
   }
   
+  #TODO figure out a way to do this while for unique(jobids) instead of jobids
   while (length(jobids) > 0) {
     Sys.sleep(10)
     for (run in names(jobids)) {
@@ -294,6 +295,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         }
         
         # Write finish time to database
+        #TODO this repeats for every run in `jobids` writing every run's time stamp every time. This actually takes quite a long time with a lot of ensembles and should either 1) not be a for loop (no `for(x in run_list)`) or 2) if `is_modellauncher`, be done outside of the jobids for loop after all jobs are finished.
         if (is_modellauncher) {
           for (x in run_list) {
             PEcAn.DB::stamp_finished(con = dbcon, run = x)
