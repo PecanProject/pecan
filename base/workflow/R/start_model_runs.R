@@ -202,7 +202,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }
     
     if (!is_local) {
-      for (run in run_list){
+      for (run in run_list){ #only re-copy run dirs that have launcher and job list
         if (run %in% job_modellauncher) {
           # copy launcher and joblist
           PEcAn.remote::remote.copy.to(
@@ -278,9 +278,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-        
-        
-        
+      
         # TODO check output log
         if (is_rabbitmq) {
           #TODO: unclear to me if this path is local or remote.  If local, then needs to be moved outside of for loop after files are copied back to local.
