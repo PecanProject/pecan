@@ -50,7 +50,6 @@ Suggests:
     data.table,
     ggplot2,
     MASS,
-    PEcAn.DB,
     randtoolbox,
     raster,
     rjags,
