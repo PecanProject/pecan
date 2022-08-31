@@ -79,27 +79,27 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   jobfile <- NULL
   firstrun <- NULL
   
+  #Copy all run directories over if not local
+  if (!is_local) {
+    # #TODO: is this mkdir step necessary or can remote.copy.to make the dirs?
+    # PEcAn.remote::remote.execute.cmd(
+    #   host = settings$host,
+    #   cmd = "mkdir",
+    #   args = c(
+    #     "-p",
+    #     file.path(settings$host$outdir, run_id_string)))
+    PEcAn.remote::remote.copy.to(
+      host = settings$host,
+      src = settings$rundir, 
+      dst = settings$host$rundir,
+      delete = TRUE)
+  }
+  
   # launch each of the jobs
   for (run in run_list) {
     run_id_string <- format(run, scientific = FALSE)
     # write start time to database
     PEcAn.DB::stamp_started(con = dbcon, run = run)
-    
-    # if running on a remote cluster, create folders and copy any data
-    # to remote host
-    if (!is_local) {
-      PEcAn.remote::remote.execute.cmd(
-        host = settings$host,
-        cmd = "mkdir",
-        args = c(
-          "-p",
-          file.path(settings$host$outdir, run_id_string)))
-      PEcAn.remote::remote.copy.to(
-        host = settings$host,
-        src = file.path(settings$rundir, run_id_string),
-        dst = settings$host$rundir,
-        delete = TRUE)
-    }
     
     # check to see if we use the model launcer
     if (is_rabbitmq) {
