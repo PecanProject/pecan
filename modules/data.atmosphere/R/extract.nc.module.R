@@ -23,7 +23,7 @@
 if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
   
 
-  ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
+  ready.id <- PEcAn.DB::convert_input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype = mimetype, 
