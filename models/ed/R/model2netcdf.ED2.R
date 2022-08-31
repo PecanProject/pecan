@@ -32,6 +32,8 @@
 ##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
                              end_date, pfts, settings = NULL) {
+#TODO: revert change so `pfts` can optionally be just vector of PFT names for compatibility with code that ends up in job.sh
+#TODO: figure out what to do about `outdir`.  It's either `settings$outdir` or its the directory of a particular ensemble's outputs---it can't be both!  For compatibility with code in job.sh it should be the directory of a particular ensemble not `settings$outdir`
   if(!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
@@ -47,6 +49,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
 
+  #TODO: Wrap everything below in a function `.model2netcdf.ED2` and lapply it to all ensemble members.  Current function only written to work on one run at a time and therefore the `settings$outdir` stuff is incorrect.  Outputs will actually be in outdir/out/ENS-00001-678, outdir/out/ENS-00002-678, etc.
+  #TODO: Are outputs in a different place in ensemble runs vs no ensemble?
+  
   flist <- list()
   flist[["-T-"]] <- dir(outdir, "-T-") # tower files
   flist[["-E-"]] <- dir(outdir, "-E-") # monthly files
