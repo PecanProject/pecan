@@ -81,13 +81,20 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   #Copy all run directories over if not local
   if (!is_local) {
-    # #TODO: is this mkdir step necessary or can remote.copy.to make the dirs?
-    # PEcAn.remote::remote.execute.cmd(
-    #   host = settings$host,
-    #   cmd = "mkdir",
-    #   args = c(
-    #     "-p",
-    #     file.path(settings$host$outdir, run_id_string)))
+    # Set up outdir
+    PEcAn.remote::remote.execute.cmd(
+      host = settings$host,
+      cmd = "mkdir",
+      args = c(
+        "-p",
+        settings$host$outdir))
+    # copy over out directories
+    PEcAn.remote::remote.copy.to(
+      host = settings$host,
+      src = file.path(settings$outdir, "out"),
+      dst = settings$host$outdir
+    )
+    # copy over run directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
       src = settings$rundir, 
