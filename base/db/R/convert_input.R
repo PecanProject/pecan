@@ -65,7 +65,7 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-convert.input <-
+convert_input <-
   function(input.id,
            outfolder,
            formatname,
