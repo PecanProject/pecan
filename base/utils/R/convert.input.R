@@ -43,7 +43,8 @@
 ##' @param fcn The function to be executed if records of the output file aren't found in the database. (as a string)
 ##' @param con Database connection object
 ##' @param host Named list identifying the machine where conversion should be performed.
-##'   Currently only \code{host$name} is used by \code{convert.input}, but whole list is passed to other functions
+##'   Currently only \code{host$name} and \code{host$Rbinary} are used by \code{convert.input},
+##'    but the whole list is passed to other functions
 ##' @param browndog List of information related to browndog conversion.  NULL if browndog is not to be used for conversion
 ##' @param write Logical: Write new file records to the database?
 ##' @param format.vars Passed on as arguments to \code{fcn}
@@ -96,8 +97,7 @@ convert.input <-
   PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
-  # TODO see issue #18
-  Rbinary <- ifelse(!exists("settings") || is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
+  Rbinary <- ifelse(is.null(host$Rbinary),"R",host$Rbinary)
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {

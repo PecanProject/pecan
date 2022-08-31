@@ -441,21 +441,21 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
 
   ## Find history file TODO this should come from the database
-  ed2_package_data <- data(package="PEcAn.ED2")
+  ed2_package_data <- data(package="PEcAn.ED2", envir = environment())
   histfile <- paste0("history.r", settings$model$revision) # set history file name to look for in ed2_package_data
   if (histfile %in% ed2_package_data$results[, "Item"]) {
     PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
-    data(list=histfile, package = 'PEcAn.ED2')
+    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
     edhistory <- get(histfile)
   } else {
     PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
     histfile <- "history"
-    data(list=histfile, package = 'PEcAn.ED2')
+    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
     edhistory <- get(histfile)
   }
 
   edtraits <- names(edhistory)
-  data(pftmapping, package = 'PEcAn.ED2')
+  data(pftmapping, package = 'PEcAn.ED2', envir = environment())
   
   ## Get ED2 specific model settings and put into output config xml file
   xml <- PEcAn.settings::listToXml(settings$model$config.header, "config")
@@ -500,7 +500,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       }
 
       if (grepl("soil", pft)) {
-        data(soil, package = "PEcAn.ED2")
+        data(soil, package = "PEcAn.ED2", envir = environment())
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
 
