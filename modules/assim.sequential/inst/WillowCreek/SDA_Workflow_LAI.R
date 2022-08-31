@@ -24,9 +24,9 @@ library("lubridate")
 #forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
 SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
 #manually set to previous run settings$info$date it creates the filepath to previous run
-next.oldir <- "2022-08-29-13-18"
+next.oldir <- "2022-08-29-15-18"
 #to manually change start date 
-runDays <- seq(as.Date("2021-08-01"), as.Date("2021-12-31"), by="days")
+runDays <- seq(as.Date("2021-08-07"), as.Date("2021-12-31"), by="days")
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
