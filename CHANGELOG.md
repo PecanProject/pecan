@@ -27,6 +27,7 @@ see if you need to change any of these:
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Initial LDNDC model coupling
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
