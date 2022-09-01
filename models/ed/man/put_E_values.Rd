@@ -7,45 +7,43 @@
 put_E_values(
   yr,
   nc_var,
-  e_list,
+  var_list,
   lat,
   lon,
   start_date,
   end_date,
-  pfts,
-  settings,
+  pfts = NULL,
   begins,
   ends,
-  out,
-  ...
+  out
 )
 }
 \arguments{
 \item{yr}{the year being processed}
 
-\item{nc_var}{list of .nc files}
+\item{nc_var}{a list (potentially empty) for \code{ncvar4} objects to be added to}
 
-\item{e_list}{list returned by \code{\link[=read_E_files]{read_E_files()}}}
+\item{var_list}{list returned by \code{\link[=read_E_files]{read_E_files()}}}
 
-\item{lat}{latitude of site}
+\item{lat}{\code{ncdim4} object for latitude of site}
 
-\item{lon}{longitude of site}
+\item{lon}{\code{ncdim4} object longitude of site}
 
 \item{start_date}{start time of simulation}
 
 \item{end_date}{end time of simulation}
 
-\item{pfts}{the \code{pfts} element from a pecan settings object}
-
-\item{settings}{Pecan settings object}
+\item{pfts}{for consistency with \code{\link[=put_T_values]{put_T_values()}}.  If supplied, it will be
+overwritten.  PFT data is in \code{var_list}.}
 
 \item{begins}{deprecated; use \code{start_date} instead}
 
 \item{ends}{deprecated; use \code{end_date} instead}
 
-\item{out}{deprecated; use \code{e_list} instead}
-
-\item{...}{currently unused}
+\item{out}{deprecated; use \code{var_list} instead}
+}
+\value{
+a list of \code{ncdim4} objects
 }
 \description{
 Puts a select number of variables from the monthly -E- files into a \code{nc_var}

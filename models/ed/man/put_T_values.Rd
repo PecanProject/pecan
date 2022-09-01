@@ -4,7 +4,42 @@
 \alias{put_T_values}
 \title{Function for put -T- values to nc_var list}
 \usage{
-put_T_values(yr, nc_var, out, lat, lon, begins, ends, ...)
+put_T_values(
+  yr,
+  nc_var,
+  var_list,
+  lat,
+  lon,
+  start_date,
+  end_date,
+  pfts = NULL,
+  begins,
+  ends,
+  out
+)
+}
+\arguments{
+\item{yr}{}
+
+\item{nc_var}{}
+
+\item{var_list}{}
+
+\item{lat}{}
+
+\item{lon}{}
+
+\item{start_date}{}
+
+\item{end_date}{}
+
+\item{pfts}{}
+
+\item{begins}{deprecated; use \code{start_date} instead}
+
+\item{ends}{deprecated; use \code{end_date} instead}
+
+\item{out}{deprecated; use \code{var_list} instead}
 }
 \description{
 Function for put -T- values to nc_var list
