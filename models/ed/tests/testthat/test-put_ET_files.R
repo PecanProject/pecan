@@ -68,6 +68,21 @@ test_that("put_T_values() runs", {
   )
 })
 
+#temporary test.  Eventually the names will be pecan standard and not match exactly.  Maybe keep the test but check a few specific variables
+test_that("put_E_values() outputs match", {
+  e_list <- 
+    put_E_values(
+      yr = year,
+      nc_var = list(),
+      var_list = var_list_E,
+      lat = lat,
+      lon = lon,
+      start_date = lubridate::ymd(settings$run$start.date),
+      end_date = lubridate::ymd(settings$run$end.date)
+    )
+  expect_equal(lapply(e_list$nc_var, `[[`, "name"), stringr::str_remove(names(e_list$out), "-E-."))
+})
+
 #TODO: test if all vars are in output
 #TODO: test if dimensions are correct and consistent
 #TODO: test behavior when nc_var is not empty
