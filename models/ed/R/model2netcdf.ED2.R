@@ -49,7 +49,7 @@ model2netcdf.ED2 <- function(outdir,
     if(missing(sitelon)) sitelon <- settings$run$site$lon
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
-    if(missing(pfts)) pfts <- settings$pfts #TODO: extract named vector of PFT numbers
+    if(missing(pfts)) pfts <- extract_pfts(settings$pfts)
   }
   
   start_year <- lubridate::year(start_date)
@@ -169,7 +169,7 @@ model2netcdf.ED2 <- function(outdir,
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
                      lat = lat, lon = lon, start_date = start_date_real,
-                     end_date = end_date_real, pfts)
+                     end_date = end_date_real, pfts = pfts)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -965,8 +965,7 @@ put_T_values <-
 ##' @param settings pecan settings object
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
-##'   for `start_date`, and `end_date` will be taken from it
-##'   #TODO: and pfts?
+##'   for `start_date`, `end_date`, and `pfts` will be taken from it
 ##'   
 ##' @return a list
 ##' @export
@@ -982,7 +981,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     }
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
-    if(missing(pfts)) pfts <- settings$pfts #TODO: remove this or extract named vector of pft numbers
+    if(missing(pfts)) pfts <- extract_pfts(settings$pfts)
   }
   
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
@@ -1081,17 +1080,12 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     }
     
   } # end ysel-loop
-  
-  #TODO: remove this as.  `pfts` should be a named numeric vector now
-  # Extract the PFT names and numbers for all PFTs
-  pft_nums <- sapply(pfts, get_pft_num)
-  names(pft_nums) <- pfts
-  npft <- length(pfts)
+
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
   # from upstream, when it's not part of the attribute it will read the sum
-  soil.check <- grepl("soil", pfts)
+  soil.check <- grepl("soil", names(pfts))
   if(any(soil.check)){
     # for now keep soil out
     #TODO: print a message??
@@ -1147,7 +1141,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   out <- purrr::map(out, ~do.call(rbind, .x))
   
   #TODO: change to just pfts as it should be a named vector
-  out$PFT <- pft_nums #named vector for matching PFT numbers to names
+  out$PFT <- pfts #named vector for matching PFT numbers to names
   
   return(out)
   
