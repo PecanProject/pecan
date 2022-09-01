@@ -1,14 +1,16 @@
 outdir <- tempfile()
+dir.create(outdir)
 withr::defer(unlink(outdir, recursive = TRUE))
 unzip("data/ed2_run_output.zip", exdir = outdir)
 file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 e_file <- "analysis-E-2004-07-00-000000-g01.h5"
 t_file <- "analysis-T-2004-00-00-000000-g01.h5"
 
-test_settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
-test_settings$outdir <- outdir
+test_settings <- 
+  PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 
-test_that("read E files without settings arg or ED2 pft number", {
+
+test_that("read E files without ED2 pft number", {
   pfts_without_number <- list(
     pft = list(
       name = 'SetariaWT',
@@ -24,9 +26,8 @@ test_that("read E files without settings arg or ED2 pft number", {
       yfiles = 2004,
       h5_files =  e_file,
       outdir = outdir,
-      start_date = "2004/04/01",
-      end_date = "2004/06/01",
-      pfts = pfts_without_number
+      pfts = pfts_without_number,
+      settings = test_settings
     )
   expect_type(result, "list")
   expect_equal(length(result), 7) #TODO: expectation of number of variables will have to change
@@ -41,8 +42,8 @@ test_that("read E files without settings arg and with ED2 pft number", {
       yfiles = 2004,
       h5_files =  e_file,
       outdir = outdir,
-      start_date = "2004/04/01",
-      end_date = "2004/06/01",
+      start_date = "2004/07/01",
+      end_date = "2004/08/01",
       pfts =  pft_with_number
     )
   expect_type(result, "list")
@@ -52,10 +53,11 @@ test_that("read E files without settings arg and with ED2 pft number", {
 test_that("read E files without only settings arg", {
   year <- 2004
   year_files <- 2004
-  result <- 
+  result <-
     read_E_files(
       yr = 2004,
       yfiles = 2004,
+      outdir = outdir,
       h5_files =  e_file,
       settings = test_settings
     )
@@ -63,6 +65,7 @@ test_that("read E files without only settings arg", {
   expect_equal(length(result), 7)
 })
 
+#TODO: wait, what was I expecting here?  Is this ever an issue in real life?
 test_that("fail to read E files without ED2 pft number", {
   pft <- list(pft = list(name = "SetariaWT"))
   expect_error(
@@ -71,8 +74,8 @@ test_that("fail to read E files without ED2 pft number", {
       yfiles = 2004,
       h5_files =  e_file,
       outdir = outdir,
-      start_date = "2004/04/01",
-      end_date = "2004/06/01",
+      start_date = "2004/07/01",
+      end_date = "2004/08/01",
       pfts = pft
     )
   )
@@ -84,8 +87,8 @@ test_that("read_T_files() runs", {
       yr = 2004,
       yfiles = 2004,
       h5_files = t_file,
-      start_date = "2004/04/01",
-      end_date = "2004/06/01",
+      start_date = "2004/07/01",
+      end_date = "2004/08/01",
       outdir = outdir
     ),
     "list"
