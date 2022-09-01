@@ -80,7 +80,7 @@ test_that("put_E_values() outputs match", {
       start_date = lubridate::ymd(settings$run$start.date),
       end_date = lubridate::ymd(settings$run$end.date)
     )
-  expect_equal(lapply(e_list$nc_var, `[[`, "name"), stringr::str_remove(names(e_list$out), "-E-."))
+  expect_equal(sapply(e_list$nc_var, `[[`, "name"), names(e_list$out))
 })
 
 #TODO: test if all vars are in output
