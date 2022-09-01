@@ -30,7 +30,7 @@ test_that("read E files without ED2 pft number", {
       settings = test_settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7) #TODO: expectation of number of variables will have to change
+  expect_equal(length(result), 8) #TODO: expectation of number of variables will have to change
   #TODO: better test would be to check for specific variables in output
 })
 
@@ -47,7 +47,7 @@ test_that("read E files without settings arg and with ED2 pft number", {
       pfts =  pft_with_number
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7)
+  expect_equal(length(result), 8)
 })
 
 test_that("read E files without only settings arg", {
@@ -62,7 +62,7 @@ test_that("read E files without only settings arg", {
       settings = test_settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7)
+  expect_equal(length(result), 8)
 })
 
 #TODO: wait, what was I expecting here?  Is this ever an issue in real life?
