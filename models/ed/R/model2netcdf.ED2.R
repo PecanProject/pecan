@@ -1541,12 +1541,12 @@ extract_pfts <- function(pfts) {
       pft_number <- pftmapping$ED[pftmapping$PEcAn == pft_name]
     }
     
-    pft_number
+    as.integer(pft_number)
   }
   
   # apply to all pfts in list
   pfts_out <- sapply(pfts, get_pft_num)
-  names(pfts_out) <- settings$pfts %>% sapply(`[[`, "name")
+  names(pfts_out) <- pfts %>% sapply(`[[`, "name")
   
   #return named numeric vector:
   pfts_out
