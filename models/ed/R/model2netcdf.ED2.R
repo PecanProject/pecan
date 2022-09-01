@@ -13,37 +13,43 @@
 ##' Modified from code to convert ED2's HDF5 output into the NACP
 ##' Intercomparison format (ALMA using netCDF)
 ##'
-##' @param outdir Location of ED model output
+##' @param outdir Location of ED model output (e.g. a path to a single ensemble output)
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts the \code{pfts} element from a pecan settings object
+##' @param pfts a named vector of PFT numbers where the names are PFT names
 ##' @param settings pecan settings object
-##' @export
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
-##'   will be taken from it
+##'   `sitelat`, `sitelon`, `start_date`, `end_date`, and `pfts` will be taken
+##'   from it
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 ## refactored by Istem Fer on 03/2018
 ## further modified by S. Serbin 09/2018
+##' @export
 ##'
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
-                             end_date, pfts, settings = NULL) {
+model2netcdf.ED2 <- function(outdir,
+                             sitelat,
+                             sitelon,
+                             start_date,
+                             end_date,
+                             pfts,
+                             settings = NULL) {
+  
 #TODO: revert change so `pfts` can optionally be just vector of PFT names for compatibility with code that ends up in job.sh
 #TODO: figure out what to do about `outdir`.  It's either `settings$outdir` or its the directory of a particular ensemble's outputs---it can't be both!  For compatibility with code in job.sh it should be the directory of a particular ensemble not `settings$outdir`
   if(!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(outdir)) outdir <- settings$outdir
     if(missing(sitelat)) sitelat <- settings$run$site$lat
     if(missing(sitelon)) sitelon <- settings$run$site$lon
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
-    if(missing(pfts)) pfts <- settings$pfts
+    if(missing(pfts)) pfts <- settings$pfts #TODO: extract named vector of PFT numbers
   }
   
   start_year <- lubridate::year(start_date)
@@ -952,14 +958,15 @@ put_T_values <-
 ##'   matched `h5_files` for that year
 ##' @param h5_files character vector of names of E h5 files (e.g.
 ##'   "analysis-E-1999-06-00-000000-g01.h5")
-##' @param outdir directory where output will be written to
+##' @param outdir directory where ED2 output files are found
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts the \code{pfts} element from a pecan settings object
+##' @param pfts a named vector of PFT numbers where the names are PFT names
 ##' @param settings pecan settings object
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
-##'   for `outdir`, `start_date`, `end_date`, and `pfts` will be taken from it
+##'   for `start_date`, and `end_date` will be taken from it
+##'   #TODO: and pfts?
 ##'   
 ##' @return a list
 ##' @export
@@ -973,10 +980,9 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(outdir)) outdir <- settings$outdir
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
-    if(missing(pfts)) pfts <- settings$pfts
+    if(missing(pfts)) pfts <- settings$pfts #TODO: remove this or extract named vector of pft numbers
   }
   
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
@@ -1076,21 +1082,20 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     
   } # end ysel-loop
   
+  #TODO: remove this as.  `pfts` should be a named numeric vector now
   # Extract the PFT names and numbers for all PFTs
-  #TODO some of this might not be used anymore
-  pft_names <- lapply(pfts, "[[", "name")
   pft_nums <- sapply(pfts, get_pft_num)
-  names(pft_nums) <- pft_names
-  npft <- length(pft_names)
+  names(pft_nums) <- pfts
+  npft <- length(pfts)
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
   # from upstream, when it's not part of the attribute it will read the sum
-  soil.check <- grepl("soil", pft_names)
+  soil.check <- grepl("soil", pfts)
   if(any(soil.check)){
     # for now keep soil out
     #TODO: print a message??
-    pft_names <- pft_names[!(soil.check)]
+    pfts <- pfts[!(soil.check)]
   }
   
   # Aggregate over PFT and DBH bins  
@@ -1141,6 +1146,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   #Bind rows for months together to produce a matrix with ncol = length(pft_nums) and nrow = number of months
   out <- purrr::map(out, ~do.call(rbind, .x))
   
+  #TODO: change to just pfts as it should be a named vector
   out$PFT <- pft_nums #named vector for matching PFT numbers to names
   
   return(out)
@@ -1162,7 +1168,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
 ##' @param pfts for consistency with [put_T_values()].  If supplied, it will be
-##'   overwritten.
+##'   overwritten.  PFT data is in `var_list`.
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
@@ -1506,24 +1512,44 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   
 } # read_S_files
 
-#helper fun to extract pft numbers or match based on pft name
-get_pft_num <- function(x) {
-  pftmapping <- pftmapping #get rid of no visible binding warning
-  pft_number <- x[["ed2_pft_number"]]
-  pft_name <- x[["name"]]
-  if(!is.null(pft_number)) {
-    pft_number <- as.numeric(pft_number)
-    if (!is.finite(pft_number)) {
-      PEcAn.logger::logger.severe(
-        "ED2 PFT number present but not parseable as number. Value was ",
-        pft_number
-      )
+
+#' Extract pft numbers from settings$pfts
+#' 
+#' A helper function to extract a named vector of pft numbers from
+#' `settings$pfts`.  Will use pft numbers in `settings` if they exist, otherwise
+#' it'll match using the `pftmapping` dataset
+#'
+#' @param pfts settings$pfts
+#'
+#' @return named numeric vector
+#'
+extract_pfts <- function(pfts) {
+  
+  get_pft_num <- function(x) {
+    pftmapping <- pftmapping #get rid of no visible binding warning
+    pft_number <- x[["ed2_pft_number"]]
+    pft_name <- x[["name"]]
+    if(!is.null(pft_number)) {
+      pft_number <- as.numeric(pft_number)
+      if (!is.finite(pft_number)) {
+        PEcAn.logger::logger.severe(
+          "ED2 PFT number present but not parseable as number. Value was ",
+          pft_number
+        )
+      }
+    } else {
+      pft_number <- pftmapping$ED[pftmapping$PEcAn == pft_name]
     }
-  } else {
-    pft_number <- pftmapping$ED[pftmapping$PEcAn == pft_name]
+    
+    pft_number
   }
   
-  pft_number
+  # apply to all pfts in list
+  pfts_out <- sapply(pfts, get_pft_num)
+  names(pfts_out) <- settings$pfts %>% sapply(`[[`, "name")
+  
+  #return named numeric vector:
+  pfts_out
 }
 
 ##-------------------------------------------------------------------------------------------------#

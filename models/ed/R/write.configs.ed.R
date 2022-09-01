@@ -552,7 +552,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 
 # ==================================================================================================#
 #' @name write.config.jobsh.ED2
-#' @title Write ED2 config.xml file
+#' @title Write ED2 job.sh file
 #' @description Function for writing job.sh file for ED2 runs
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 #' @export
@@ -643,7 +643,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@BINARY_ARGS@", settings$model$binary_args, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
-  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name")) #TODO: change to a named vector of pft numbers
   pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
