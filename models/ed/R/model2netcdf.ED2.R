@@ -38,9 +38,6 @@ model2netcdf.ED2 <- function(outdir,
                              end_date,
                              pfts,
                              settings = NULL) {
-  
-#TODO: revert change so `pfts` can optionally be just vector of PFT names for compatibility with code that ends up in job.sh
-#TODO: figure out what to do about `outdir`.  It's either `settings$outdir` or its the directory of a particular ensemble's outputs---it can't be both!  For compatibility with code in job.sh it should be the directory of a particular ensemble not `settings$outdir`
   if(!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
@@ -195,6 +192,7 @@ model2netcdf.ED2 <- function(outdir,
     on.exit(close(varfile))
     # fill nc file with data
     for (i in seq_along(nc_var)) {
+      #TODO: nc_var and out are of different lengths!  out of sync!
       #TODO: how does this know to get the dimensions right?
       ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
@@ -1018,22 +1016,23 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   varnames <-
     c(
       "DBH", #diameter at breast height (cm)
-      "DDBH_DT", #change in DBH (cm/plant/yr)
+      #TODO why is DDBH_DT a matrix?
+      "DDBH_DT", #change in DBH (cm/plant/yr) 
       "AGB_CO", #cohort level above ground biomass (kgC/plant)
       "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/m2/yr)
       "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/m2/s)
-      "BSEEDS_CO" #seed biomass in units of (kgC/plant)
+      "BSEEDS_CO", #seed biomass in units of (kgC/plant)
+      "NPLANT" #plant density (plants/m2), required for /plant -> /m2 conversion
     )
   
   # List of vars to extract includes the requested one, plus others needed below 
   vars <- c(
     varnames,
-    #TODO: not sure these are all "required" anymore.  Maybe a better way to split up these variables.
-    "PFT", #pft numbers
-    "NPLANT", #plant density (plants/m2)
-    "AREA", #patch area relative to site area (unitless)
-    "AREA_SI", #site area relative to polygon area (unitless)
-    "PACO_N" #number of cohorts in each patch
+    "PFT"#, #pft numbers
+
+    # "AREA", #patch area relative to site area (unitless)
+    # "AREA_SI", #site area relative to polygon area (unitless)
+    # "PACO_N" #number of cohorts in each patch
     )
   
   # list to collect outputs
@@ -1140,7 +1139,6 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   #Bind rows for months together to produce a matrix with ncol = length(pft_nums) and nrow = number of months
   out <- purrr::map(out, ~do.call(rbind, .x))
   
-  #TODO: change to just pfts as it should be a named vector
   out$PFT <- pfts #named vector for matching PFT numbers to names
   
   return(out)
@@ -1268,7 +1266,25 @@ put_E_values <-
   # From read.output's perspective, dimension of pft will be the same for NEE
   # there and DBH here
 
+  # NOTE: the order of variables in `evars` MUST match the order in `var_list`
+  # output by read_E_files.  Some day the whole model2netcdf.ED2 function should
+  # probably be re-written to combine the read_*_files and put_*_values
+  # functions to make this harder to accidentally screw up.
  evars <- list(
+   ncdf4::ncvar_def(
+     "AGB_CO", 
+     units = "kgC m-2",
+     dim = list(lon, lat, t, p),
+     missval = -999,
+     longname = "Above ground biomass"
+   ),
+   ncdf4::ncvar_def(
+     "BSEEDS_CO",
+     units = "kgC m-2",
+     dim = list(lon, lat, t, p),
+     missval = -999,
+     longname = "Seed biomass"
+   ),
     ncdf4::ncvar_def(
       "DBH",
       units = "cm",
@@ -1283,27 +1299,13 @@ put_E_values <-
       missval = -999,
       longname = "Rate of change in dbh"
     ),
-    ncdf4::ncvar_def(
-      "NPLANT",
-      units = "plant m-2",
-      dim = list(lon, lat, t, p),
-      missval = -999,
-      longname = "Plant density"
-    ),
-    ncdf4::ncvar_def(
-      "AGB_CO", 
-      units = "kgC m-2",
-      dim = list(lon, lat, t, p),
-      missval = -999,
-      longname = "Above ground biomass"
-    ),
-    ncdf4::ncvar_def(
-      "MMEAN_NPPDAILY_CO",
-      units = "KgC m-2 s-1",
-      dim = list(lon, lat, t, p),
-      missval = -999,
-      longname = "Net primary productivity"
-    ),
+   ncdf4::ncvar_def(
+     "MMEAN_NPPDAILY_CO",
+     units = "KgC m-2 s-1",
+     dim = list(lon, lat, t, p),
+     missval = -999,
+     longname = "Net primary productivity"
+   ),
     ncdf4::ncvar_def(
       "MMEAN_TRANSP_CO",
       units = "kg m-2 s-1",
@@ -1311,14 +1313,14 @@ put_E_values <-
       missval = -999,
       longname = "Leaf transpiration"
     ),
-    ncdf4::ncvar_def(
-      "BSEEDS_CO",
-      units = "kgC m-2",
-      dim = list(lon, lat, t, p),
-      missval = -999,
-      longname = "Seed biomass"
-    ),
-    
+   ncdf4::ncvar_def(
+     "NPLANT",
+     units = "plant m-2",
+     dim = list(lon, lat, t, p),
+     missval = -999,
+     longname = "Plant density"
+   ),
+
     # longname of this variable will be parsed by read.output
     # so that read.output has a way of accessing PFT names
     ncdf4::ncvar_def(
@@ -1335,8 +1337,9 @@ put_E_values <-
       prec = "double"
     )
  )
+ #TODO: assure that nc_var and var_list are of same length and same order?
  nc_var <- append(nc_var, evars)
- var_list[[length(var_list) + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
+ var_list <- append(var_list, list(dtime_bounds = c(bounds)))
  
  return(list(nc_var = nc_var, out = var_list))
  
