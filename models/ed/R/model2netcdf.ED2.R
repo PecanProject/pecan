@@ -961,12 +961,12 @@ put_T_values <-
 ##' @param end_date End time of the simulation
 ##' @param pfts a named vector of PFT numbers where the names are PFT names
 ##' @param settings pecan settings object
+##' @export
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
 ##'   for `start_date`, `end_date`, and `pfts` will be taken from it
 ##'   
 ##' @return a list
-##' @export
 ##' 
 read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
                          pfts, settings = NULL) {
