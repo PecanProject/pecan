@@ -1,6 +1,7 @@
 library(stringr)
 #set up tempdir
 outdir <- tempfile()
+dir.create(outdir)
 withr::defer(unlink(outdir, recursive = TRUE))
 unzip("data/ed2_run_output.zip", exdir = outdir)
 file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
@@ -8,21 +9,26 @@ file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
 settings$outdir <- outdir
 
+
 test_that("model2netcdf.ED2 runs without error", {
+  
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
   #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
-    model2netcdf.ED2(settings = settings),
+    model2netcdf.ED2(outdir = outdir, settings = settings),
     type = "message"
   )
+
   expect_false(any(str_detect(x, "ERROR")))
 })
 
+#remove .nc file
+file.remove(list.files(outdir, "*.nc", full.names = TRUE))
 #run function to create outputs
-model2netcdf.ED2(settings = settings)
-
+model2netcdf.ED2(outdir = outdir, settings = settings)
 
 test_that("a valid .nc file is produced for each corresponding ED2 output", {
+
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
   nc_files <- dir(outdir, pattern = ".nc$")
   nc_var_files <- dir(outdir, pattern = ".nc.var$")

@@ -5,29 +5,31 @@ file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
 e_file <- "analysis-E-2004-07-00-000000-g01.h5"
 t_file <- "analysis-T-2004-00-00-000000-g01.h5"
 
-test_settings <-
+settings <-
   PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
-test_settings$outdir <- outdir
+settings$outdir <- outdir
 year <- 2004
 year_files <- 2004
 var_list_E <-
   read_E_files(
+    outdir = outdir,
     yr = year,
     yfiles = year_files,
     h5_files = e_file,
-    settings = test_settings
+    settings = settings
   )
 
 var_list_T <-
   read_T_files(
+    outdir = outdir,
     yr = year,
     yfiles = year_files,
     h5_files = t_file,
-    settings = test_settings
+    settings = settings
   )
 # create lat/long nc variables
-sitelat <- test_settings$run$site$lat
-sitelon <- test_settings$run$site$lon
+sitelat <- settings$run$site$lat
+sitelon <- settings$run$site$lon
 lat <- ncdf4::ncdim_def("lat", "degrees_north",
                         vals = as.numeric(sitelat),
                         longname = "station_latitude")
