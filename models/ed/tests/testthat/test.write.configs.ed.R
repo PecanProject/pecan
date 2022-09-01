@@ -17,6 +17,20 @@ test_that("convert.samples.ED works as expected",{
   )
 })
 
+outdir <- tempfile()
+dir.create(outdir)
+withr::defer(unlink(outdir, recursive = TRUE))
+file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
+
+test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
+  settings <- 
+    PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+  settings$outdir <- outdir
+  job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
+  expect <- deparse(dput(extract_pfts(settings$pfts)))
+  expect_true(any(stringr::str_detect(job.sh, stringr::fixed(expect))))
+})
+
 ## test_that("remove.configs.ED2 works with remote host",{
 ##   settings <- list(outdir = "/tmp/",
 ##                    run = list(host = list(name = "ebi-cluster.igb.illinois.edu",
