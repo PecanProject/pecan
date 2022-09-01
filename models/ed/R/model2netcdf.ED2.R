@@ -1205,9 +1205,11 @@ put_E_values <-
   ## for each full or partial year
   output_date_vector <-
     seq(
-      lubridate::floor_date(start_date, "month"),
-      lubridate::floor_date(end_date, "month"), 
-      by = "month",
+      lubridate::ymd(start_date),
+      # an E file is only written if a month is completed.
+      # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
+      lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
+      by = "month"
     )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
   ## 31 30 31)
