@@ -65,21 +65,6 @@ test_that("read E files without only settings arg", {
   expect_equal(length(result), 8)
 })
 
-#TODO: wait, what was I expecting here?  Is this ever an issue in real life?
-test_that("fail to read E files without ED2 pft number", {
-  pft <- list(pft = list(name = "SetariaWT"))
-  expect_error(
-    read_E_files(
-      yr = 2004,
-      yfiles = 2004,
-      h5_files =  e_file,
-      outdir = outdir,
-      start_date = "2004/07/01",
-      end_date = "2004/08/01",
-      pfts = pft
-    )
-  )
-})
 
 test_that("read_T_files() runs", {
   expect_is(
