@@ -1257,53 +1257,53 @@ put_E_values <-
   # functions to make this harder to accidentally screw up.
  evars <- list(
    ncdf4::ncvar_def(
-     "AGB_CO", 
+     "AGB_PFT", #original ED2 name: AGB_CO
      units = "kgC m-2",
      dim = list(lon, lat, t, p),
      missval = -999,
-     longname = "Above ground biomass"
+     longname = "Above ground biomass by PFT"
    ),
    ncdf4::ncvar_def(
-     "BSEEDS_CO",
+     "BSEEDS", #original ED2 name: BSEEDS_CO
      units = "kgC m-2",
      dim = list(lon, lat, t, p),
      missval = -999,
-     longname = "Seed biomass"
+     longname = "Seed biomass by PFT"
    ),
     ncdf4::ncvar_def(
-      "DBH",
+      "DBH", #original ED2 name: DBH
       units = "cm",
       dim = list(lon, lat, t, p),
       missval = -999,
-      longname = "Diameter at breast height"
+      longname = "Diameter at breast height by PFT"
     ),
     ncdf4::ncvar_def(
-      "DDBH_DT",
+      "DDBH", #original ED2 name: DDBH_DT
       units = "cm yr-1",
       dim = list(lon, lat, t, p),
       missval = -999,
-      longname = "Rate of change in dbh"
+      longname = "Rate of change in dbh by PFT"
     ),
    ncdf4::ncvar_def(
-     "MMEAN_NPPDAILY_CO",
+     "NPP_PFT", #original ED2 name: MMEAN_NPPDAILY_CO
      units = "KgC m-2 s-1",
      dim = list(lon, lat, t, p),
      missval = -999,
-     longname = "Net primary productivity"
+     longname = "Net primary productivity by PFT"
    ),
     ncdf4::ncvar_def(
-      "MMEAN_TRANSP_CO",
+      "TRANSP_PFT", #original ED2 name: MMEAN_TRANSP_CO
       units = "kg m-2 s-1",
       dim = list(lon, lat, t, p),
       missval = -999,
-      longname = "Leaf transpiration"
+      longname = "Leaf transpiration by PFT"
     ),
    ncdf4::ncvar_def(
-     "NPLANT",
+     "DENS", #original ED2 name: NPLANT
      units = "plant m-2",
      dim = list(lon, lat, t, p),
      missval = -999,
-     longname = "Plant density"
+     longname = "Plant density by PFT"
    ),
 
     # longname of this variable will be parsed by read.output
