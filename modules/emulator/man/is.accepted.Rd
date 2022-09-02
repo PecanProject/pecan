@@ -6,6 +6,13 @@
 \usage{
 is.accepted(ycurr, ynew, format = "lin")
 }
+\arguments{
+\item{ycurr}{current value on y axis}
+
+\item{ynew}{new y coordinate}
+
+\item{format}{lin = lnlike fcn, log = log(lnlike)}
+}
 \description{
 is.accepted
 }
