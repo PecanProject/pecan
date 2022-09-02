@@ -1,13 +1,16 @@
-outdir <- tempfile()
-dir.create(outdir)
-withr::defer(unlink(outdir, recursive = TRUE))
-unzip("data/ed2_run_output.zip", exdir = outdir)
-file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+#for interactive use:
+# unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
+
 e_file <- "analysis-E-2004-07-00-000000-g01.h5"
 t_file <- "analysis-T-2004-00-00-000000-g01.h5"
 
-test_settings <- 
-  PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+settings <-
+  PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
+settings$outdir <- file.path(testdir, "outdir")
 
 
 test_that("read E files without ED2 pft number", {
@@ -25,9 +28,9 @@ test_that("read E files without ED2 pft number", {
       yr = 2004,
       yfiles = 2004,
       h5_files =  e_file,
-      outdir = outdir,
+      outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
       pfts = pfts_without_number,
-      settings = test_settings
+      settings = settings
     )
   expect_type(result, "list")
   expect_equal(length(result), 8) #TODO: expectation of number of variables will have to change
@@ -41,7 +44,7 @@ test_that("read E files without settings arg and with ED2 pft number", {
       yr = 2004,
       yfiles = 2004,
       h5_files =  e_file,
-      outdir = outdir,
+      outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
       start_date = "2004/07/01",
       end_date = "2004/08/01",
       pfts =  pft_with_number
@@ -57,9 +60,9 @@ test_that("read E files without only settings arg", {
     read_E_files(
       yr = 2004,
       yfiles = 2004,
-      outdir = outdir,
+      outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
       h5_files =  e_file,
-      settings = test_settings
+      settings = settings
     )
   expect_type(result, "list")
   expect_equal(length(result), 8)
@@ -74,7 +77,7 @@ test_that("read_T_files() runs", {
       h5_files = t_file,
       start_date = "2004/07/01",
       end_date = "2004/08/01",
-      outdir = outdir
+      outdir = file.path(settings$outdir, "out", "ENS-00001-76")
     ),
     "list"
   )

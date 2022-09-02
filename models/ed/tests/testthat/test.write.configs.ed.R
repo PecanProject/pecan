@@ -17,10 +17,11 @@ test_that("convert.samples.ED works as expected",{
   )
 })
 
-outdir <- tempfile()
-dir.create(outdir)
-withr::defer(unlink(outdir, recursive = TRUE))
-file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+outdir <- file.path(testdir, "outdir")
 
 test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
   settings <- 

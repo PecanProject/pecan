@@ -1,18 +1,22 @@
-outdir <- tempfile()
-withr::defer(unlink(outdir, recursive = TRUE))
-unzip("data/ed2_run_output.zip", exdir = outdir)
-file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+#for interactive use:
+# unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
+
 e_file <- "analysis-E-2004-07-00-000000-g01.h5"
 t_file <- "analysis-T-2004-00-00-000000-g01.h5"
 
 settings <-
-  PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
-settings$outdir <- outdir
+  PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
+settings$outdir <- file.path(testdir, "outdir")
+
 year <- 2004
 year_files <- 2004
 var_list_E <-
   read_E_files(
-    outdir = outdir,
+    outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
     yr = year,
     yfiles = year_files,
     h5_files = e_file,
@@ -21,7 +25,7 @@ var_list_E <-
 
 var_list_T <-
   read_T_files(
-    outdir = outdir,
+    outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
     yr = year,
     yfiles = year_files,
     h5_files = t_file,

@@ -1,21 +1,22 @@
 library(stringr)
 #set up tempdir
-outdir <- tempfile()
-dir.create(outdir)
-withr::defer(unlink(outdir, recursive = TRUE))
-unzip("data/ed2_run_output.zip", exdir = outdir)
-file.copy("data/pecan_checked.xml", file.path(outdir, "pecan_checked.xml"))
-
-settings <- PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
-settings$outdir <- outdir
-
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+settings <-
+  PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
+settings$outdir <- file.path(testdir, "outdir")
+#not to be confused with outdir
+outdir <- file.path(settings$outdir, "out", "ENS-00001-76")
 
 test_that("model2netcdf.ED2 runs without error", {
   
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
   #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
-    model2netcdf.ED2(outdir = outdir, settings = settings),
+    model2netcdf.ED2(outdir = outdir,
+                     settings = settings),
     type = "message"
   )
 
