@@ -704,8 +704,8 @@ read_T_files <-
 ##' Function for put -T- values to nc_var list
 ##' 
 ##' @param yr the year being processed
-##' @param nc_var 
-##' @param var_list 
+##' @param nc_var a list (potentially empty) for `ncvar4` objects to be added to
+##' @param var_list list returned by [read_E_files()]
 ##' @param lat `ncdim4` object for latitude of site
 ##' @param lon `ncdim4` object longitude of site
 ##' @param start_date start time of simulation

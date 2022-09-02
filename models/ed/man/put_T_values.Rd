@@ -20,9 +20,9 @@ put_T_values(
 \arguments{
 \item{yr}{the year being processed}
 
-\item{nc_var}{}
+\item{nc_var}{a list (potentially empty) for \code{ncvar4} objects to be added to}
 
-\item{var_list}{}
+\item{var_list}{list returned by \code{\link[=read_E_files]{read_E_files()}}}
 
 \item{lat}{\code{ncdim4} object for latitude of site}
 
