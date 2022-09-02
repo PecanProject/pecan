@@ -34,6 +34,7 @@ wanted <- c(
 'datapack',
 'DBI',
 'dbplyr',
+'devtools',
 'doParallel',
 'dplR',
 'dplyr',
