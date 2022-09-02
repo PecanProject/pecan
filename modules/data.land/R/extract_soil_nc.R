@@ -326,7 +326,7 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   soil.data$clay   <- soil.data$clay/100
   soil.data$oc     <- soil.data$oc/100
   soil.data$gravel <- soil.data$gravel/100
-  soil.data$ref_bulk <- udunits2::ud.convert(soil.data$ref_bulk,"g cm-3","kg m-3")
+  soil.data$ref_bulk <- PEcAn.utils::ud_convert(soil.data$ref_bulk,"g cm-3","kg m-3")
   names(soil.data)[which(names(soil.data) == "clay")] <- "fraction_of_clay_in_soil"
   names(soil.data)[which(names(soil.data) == "sand")] <- "fraction_of_sand_in_soil"
   names(soil.data)[which(names(soil.data) == "silt")] <- "fraction_of_silt_in_soil"

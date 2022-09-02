@@ -33,7 +33,17 @@ See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that p
 Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of three methods:
 1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
 2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-docker). This is recommended, especially for development and production deployment.
-3. Install all of the components individually on your own Linux or MacOS computer or server. This is called a ['native install'](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-native), but is more challenging and has relatively few advantages over using Docker.
+3. Install all of the PEcAn R packages on your own Linux or MacOS computer or server. This can be done by [installing from r-universe](https://pecanproject.github.io/pecan-documentation/develop/r-universe.html): 
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.all in R
+install.packages('PEcAn.all')
+
+``` 
+This, however, may have limited functionality without also installing other components of PEcAn, in particular [BETYdb](https://pecanproject.github.io/pecan-documentation/develop/osinstall.html#install-bety).
 
 ### Website
 

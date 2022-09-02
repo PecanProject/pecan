@@ -68,7 +68,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
     dplyr::mutate_if(is.character, ~dplyr::na_if(., ""))
 
   # get the priors
-  prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), con = dbcon)
+  prior.distns <- PEcAn.DB::query.priors(
+    pft = pftid,
+    trstr = PEcAn.utils::vecpaste(trait.names),
+    con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
   traits <- rownames(prior.distns)
 

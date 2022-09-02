@@ -2,8 +2,9 @@
 
 These instructions are provided to document how to install and setup PEcAn. It includes:
 
-- [Virtual machine](#install-vm)
-- [PEcAn Docker](#install-docker)
+- [Virtual machine](#install-vm) (Recommended for students and new users)
+- [PEcAn Docker](#install-docker) (Recommended for development and production deployment)
+- [Local installation from r-universe](#r-universe) (Recommended for development only)
 - [PEcAn OS specific installation](#install-native)
 
 The PEcAn code and necessary infrastructure can be obtained and compiled in different ways.
@@ -14,7 +15,7 @@ This set of instructions will help facilitate your path and the steps necessary 
 The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM).
 Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
-1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [http://www.virtualbox.org](http://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
+1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [https://www.virtualbox.org](https://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
   
 2. **Download the PEcAn VM** You can find the download link at [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN), under the "**Files**" header. Click the ".ova" file to begin the download. Note that the file is ~7 GB, so this download can take several minutes to hours depending on your connection speed. Also, the VM requires >4 GB of RAM to operate correctly. Please check current usage of RAM and shutdown processes as needed.
 
@@ -63,7 +64,7 @@ This will not go into much detail about about how to use Docker -- for more deta
     ```
 
     If successful, this should return a message starting with `"Hello from Docker!"`.
-    If this doesn't work, there is something wrong with your configuration.
+    If this doesn't work, there is something wrong with your configuration. You may need to open the Docker desktop app to complete the installation.
     Refer to the Docker documentation for debugging.
 
     NOTE: Depending on how Docker is installed and configured, you may have to run this command as `sudo`.
@@ -82,7 +83,7 @@ This will not go into much detail about about how to use Docker -- for more deta
    
 3. **Download the PEcAn docker-compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
 
-4. **Initialize the PEcAn database and data images**. The following `docker-compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
+4. **Initialize the PEcAn database and data images**. Navigate to the directory you saved `docker-compose.yml` to and use the following `docker-compose` commands to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
 
     a. Create and start the PEcAn database container (without any data)
 
@@ -93,7 +94,7 @@ This will not go into much detail about about how to use Docker -- for more deta
         If this is successful, the end of the output should look like the following:
         
         ```
-        Creating pecan_postgres_1 ... done
+        Creating pecan-postgres-1 ... done
         ```
     
     b. "Initialize" the data for the PEcAn database.
@@ -132,9 +133,12 @@ This will not go into much detail about about how to use Docker -- for more deta
         ###################################################################### 
         ```
     e. Download the [`pecan/docker/env.example`](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker/env.example) & save it as `.env` file.
-       Now, open the `.env` file & uncomment the lines mentioned below:
-       ```{r, echo=FALSE, fig.align='center'}
-       knitr::include_graphics(rep("figures/env-file.PNG"))
+       Now, open the `.env` file & uncomment the following lines:
+       
+       ```
+       COMPOSE_PROJECT_NAME=pecan
+       PECAN_VERSION=develop
+
        ```
        
        Setting `PECAN_VERSION=develop` indicates that you want to run the bleeding-edge `develop` branch, meaning it may have bugs. To go ahead with the stable version you may set `PECAN_VERSION=latest` or `PECAN_VERSION=<release-number>` (For example `1.7.0`). You can look at the list of all the [releases](https://github.com/pecanproject/pecan/releases) of PEcAn to see what options are availble.
@@ -149,15 +153,31 @@ This will not go into much detail about about how to use Docker -- for more deta
     
     If all of the containers started successfully, you should be able to access the various components from a browser via the following URLs (if you run these commands on a remote machine replace localhost with the actual hostname).
 
-    - PEcAn web interface (running models) -- http://localhost:8000/pecan/ (NOTE: The trailing backslash is necessary.)
-    - PEcAn documentation and home page -- http://localhost:8000/
-    - BETY web interface -- http://localhost:8000/bety/
-    - File browser (minio) -- http://localhost:8000/minio/
-    - RabbitMQ management console (for managing queued processes) -- http://localhost:8000/rabbitmq/
-    - Traefik, webserver showing maps from URLs onto their respective containers -- http://localhost:8000/traefik/
-    - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://localhost:8000/monitor/
-    
+    - PEcAn documentation and home page -- http://pecan.localhost
+    - PEcAn web interface (running models) -- http://pecan.localhost/pecan/ (NOTE: The trailing slash is necessary.)
+    - BETY web interface -- http://pecan.localhost/bety/ (Default username: carya, default password: illinois)
+    - RStudio interface -- http://pecan.localhost/rstudio/ (Default username: carya, default password: illinois)
+    - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://pecan.localhost/monitor/
+
+To shut down the docker images run `docker-compose stop`.
 For troubleshooting and advanced configuration, see our [Docker topical pages](#docker-index).
+
+## Installation From r-universe {#r-universe}
+
+`PEcAn.all` and all it's dependencies can be installed from [r-universe](https://pecanproject.r-universe.dev/) with the following code:
+
+```r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.all in R
+install.packages('PEcAn.all')
+```
+
+If you are planning on working on PEcAn development with a local install, consider adding the above `options()` to a project-level .Rprofile as well.  For example, by using `usethis::edit_r_profile("project")`.  This will allow `devtools` to install dependencies from r-universe, for example `devtools::install_deps("models/ed")` should work when "https://pecanproject.r-universe.dev" is set as a repo.
+
+**NOTE:** functionality of a local install will be limited without a connection to a BETYdb instance.  [Instructions to install BETY](#install-bety).
 
 ## (Advanced) Native install {#install-native}
 

@@ -42,7 +42,7 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE, drop = TRU
   )
   values_sub <- values[, use_cols]
   # Load one row to get column types
-  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% dplyr::collect()
+  sql_row <- dplyr::tbl(con, table) %>% utils::head(1) %>% dplyr::collect()
   sql_types <- purrr::map(sql_row, class) %>%
     purrr::map_chr(1) %>%
     .[use_cols]
