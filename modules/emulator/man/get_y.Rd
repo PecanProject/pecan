@@ -6,6 +6,17 @@
 \usage{
 get_y(SSnew, xnew, llik.fn, priors, llik.par)
 }
+\arguments{
+\item{SSnew}{new summary statistic}
+
+\item{xnew}{new x coordinate}
+
+\item{llik.fn}{list that contains likelihood functions}
+
+\item{priors}{prior list}
+
+\item{llik.par}{parameters to be passed llik functions}
+}
 \description{
 get_y
 }
