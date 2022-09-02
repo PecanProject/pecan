@@ -6,6 +6,11 @@
 \usage{
 ddist(x, prior)
 }
+\arguments{
+\item{x}{vector of values (e.g. observations) to be evaluated by the specified probability density function}
+
+\item{prior}{data.frame specifying a prior probability distribution in terms of the distribution name (distn) and first and second parameters (parama, paramb)}
+}
 \description{
 ddist
 }

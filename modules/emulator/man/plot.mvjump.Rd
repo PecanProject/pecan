@@ -7,7 +7,7 @@
 \method{plot}{mvjump}(jmp)
 }
 \arguments{
-\item{jmp}{}
+\item{jmp}{jump parameter}
 }
 \description{
 plot.mvjump
