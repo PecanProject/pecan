@@ -6,6 +6,11 @@
 \usage{
 \method{update}{mvjump}(jmp, chain)
 }
+\arguments{
+\item{jmp}{jump parameter}
+
+\item{chain}{mcmc chain}
+}
 \description{
 update.mvjump
 }
