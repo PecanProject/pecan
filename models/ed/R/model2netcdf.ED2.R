@@ -51,9 +51,6 @@ model2netcdf.ED2 <- function(outdir,
   
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-
-  #TODO: Wrap everything below in a function `.model2netcdf.ED2` and lapply it to all ensemble members.  Current function only written to work on one run at a time and therefore the `settings$outdir` stuff is incorrect.  Outputs will actually be in outdir/out/ENS-00001-678, outdir/out/ENS-00002-678, etc.
-  #TODO: Are outputs in a different place in ensemble runs vs no ensemble?
   
   flist <- list()
   flist[["-T-"]] <- dir(outdir, "-T-") # tower files
@@ -97,14 +94,12 @@ model2netcdf.ED2 <- function(outdir,
   # for now I'm going with this, do failed runs also provide information
   # on parameters? 
   year_check <- unique(unlist(ylist))
-  #TODO: this is only TRUE if ALL ensembles ended earlier than they should have, right? Not the correct check according to notes above
   if (max(year_check) < end_year) {
     PEcAn.logger::logger.warn("Run failed with some outputs.")
-    #TODO: I don't think this next bit is correct.  rundir in this context should be something like file.path(settings$rundir, "ENS-00001-678"), but not sure where to get that from programmatically.
     run_id <- basename(outdir)
     workflow_dir <- dirname(dirname(outdir))
     rundir <- file.path(workflow_dir, "run", run_id) 
-    readme <- file.path(rundir, "README.txt") #TODO: this is not where README.txt should be
+    readme <- file.path(rundir, "README.txt")
     runtype <- readLines(readme, n = 1)
     if (grepl("ensemble", runtype)) {
       PEcAn.logger::logger.info("This is an ensemble run. ",
@@ -127,7 +122,6 @@ model2netcdf.ED2 <- function(outdir,
       rflag <- ed_res_flag[i]
       # fcnx is either read_T_files() or read_E_files()
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
-      #TODO would doing this with do.call() be better for speed/memory usage?
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]],
                                outdir, start_date, end_date,
@@ -192,8 +186,6 @@ model2netcdf.ED2 <- function(outdir,
     on.exit(close(varfile))
     # fill nc file with data
     for (i in seq_along(nc_var)) {
-      #TODO: nc_var and out are of different lengths!  out of sync!
-      #TODO: how does this know to get the dimensions right?
       ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
@@ -348,7 +340,6 @@ read_T_files <-
     if(!is.null(vars_detected)){
       PEcAn.logger::logger.warn(paste("Found variable(s): ", paste(vars_detected, collapse = " "), ", now processing FMEAN* named variables. Note that varible naming conventions may change with ED2 version."))
     }
-    #TODO: return not needed here
     return(name_convention)
   }
 
@@ -357,7 +348,7 @@ read_T_files <-
   
   if (yr < strftime(start_date, "%Y")) {
     PEcAn.logger::logger.info(yr, "<", strftime(start_date, "%Y"))
-    next #TODO: This is almost certainly an incorrect use of `next`
+    next
   }
   
   if (yr > strftime(end_date, "%Y")) {
@@ -382,7 +373,7 @@ read_T_files <-
   
   if (file.exists(file.path(outdir, sub("-T-", "-Y-", h5_files[ysel])))) {
     ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", h5_files[ysel])))
-    slzdata <- getHdf5Data(ncY, "SLZ") #TODO: what is SLZ?
+    slzdata <- getHdf5Data(ncY, "SLZ")
     ncdf4::nc_close(ncY)
   } else {
     PEcAn.logger::logger.warn("Could not find SLZ in Y file, 
@@ -398,8 +389,8 @@ read_T_files <-
   dz <- dz[dz != 0]
   
   if (!is.null(ED2vc)) {
-    #TODO: Why are some of these rows commented out?  Can this be done more programmatically?
-    #TODO: are these elements of `out` not named?  Should they be?  I'm worried about editing this and losing track of what is what.
+    #NOTE: Take great care editing this.  The order of values in `out` must
+    #match the order of nc_vars in put_T_values()!
     ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yr) ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_BDEAD_PY"), 1, row, yr)  ## AbvGrndWood
     out <- add(getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 2, row, yr)  ## AutoResp
@@ -419,7 +410,6 @@ read_T_files <-
     out <- add(getHdf5Data(ncT, "FAST_SOIL_C_PY") + getHdf5Data(ncT, "STRUCT_SOIL_C_PY") + 
                  getHdf5Data(ncT, "SLOW_SOIL_C_PY"), 12, row, yr)  ## TotSoilCarb
     
-    #TODO: should this be split out into a separate function?  What does it do?
     ## depth from surface to frozen layer
     tdepth <- 0
     fdepth <- 0
@@ -429,7 +419,6 @@ read_T_files <-
       tdepth <- array(0, dim = dim(soiltemp)[1:2])
       for (t in 1:dim(soiltemp)[1]) { # time
         for (p in 1:dim(soiltemp)[2]) { # polygon
-          #TODO: This is a big loop and just doing logical comparisons over elements of an array.  Likely candidate for optimization
           for (i in dim(soiltemp)[3]:2) { # depth
             if (fdepth[t, p] == 0 & soiltemp[t, p, i] < 273.15 & 
                 soiltemp[t, p, i - 1] > 273.13) {
@@ -1014,7 +1003,6 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   varnames <-
     c(
       "DBH", #diameter at breast height (cm)
-      #TODO why is DDBH_DT a matrix?
       "DDBH_DT", #change in DBH (cm/plant/yr) 
       "AGB_CO", #cohort level above ground biomass (kgC/plant)
       "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/m2/yr)
@@ -1134,7 +1122,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
           ))
   }
     
-  #Bind rows for months together to produce a matrix with ncol = length(pft_nums) and nrow = number of months
+  #Bind rows for months together to produce a matrix with ncol = length(pfts) and nrow = number of months
   out <- purrr::map(out, ~do.call(rbind, .x))
   
   out$PFT <- pfts #named vector for matching PFT numbers to names
@@ -1345,17 +1333,21 @@ put_E_values <-
 
 
 
-#' S-file contents are not written to standard netcdfs but are used by read_restart
-#' from SDA's perspective it doesn't make sense to write and read to ncdfs because ED restarts from history files
-#' 
-#' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
-#' @param outdir path to run outdir, where the -S- file is
-#' @param pfts the \code{pfts} element from a pecan settings object
-#' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
-#' @param settings pecan settings object
-#' @param ... currently unused
-#' 
-#' @export
+##' Read "S" files output by ED2
+##' 
+##' S-file contents are not written to standard netcdfs but are used by
+##' read_restart from SDA's perspective it doesn't make sense to write and read
+##' to ncdfs because ED restarts from history files
+##'
+##' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
+##' @param outdir path to run outdir, where the -S- file is
+##' @param pfts a named vector of PFT numbers where the names are PFT names
+##' @param pecan_names string vector, pecan names of requested variables, e.g.
+##'   c("AGB", "AbvGrndWood")
+##' @param settings pecan settings object
+##' @param ... currently unused
+##'
+##' @export
 read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
@@ -1364,8 +1356,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(outdir)) outdir <- settings$outdir
-    if(missing(pfts)) pfts <- settings$pfts
+    if(missing(pfts)) pfts <- extract_pfts(settings$pfts)
   }
   # commonly used vars
   if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
@@ -1401,26 +1392,20 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   
   ncdf4::nc_close(nc)
   
-  # Extract the PFT names and numbers for all PFTs
-  
-  pft_names <- lapply(pfts, "[[", "name")
-  pft_nums <- sapply(pfts, get_pft_num)
-  names(pft_nums) <- pft_names
-  npft <- length(pft_names)
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
   # from upstream, when it's not part of the attribute it will read the sum
-  soil.check <- grepl("soil", pft_names)
+  soil.check <- grepl("soil", names(pfts))
   if(any(soil.check)){
     # for now keep soil out
     #TODO: print a message??
-    pft_names <- pft_names[!(soil.check)]
+    pfts <- pfts[!(soil.check)]
   }
   
   out <- list()
   for (varname in pecan_names) {
-    out[[varname]] <- array(NA, npft)
+    out[[varname]] <- array(NA, length(pfts))
   }
   
   
@@ -1441,7 +1426,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   # remove non-pft sublists
   pars[names(pars) != "pft"] <- NULL
   # pass pft numbers as sublist names
-  names(pars) <- pft_nums
+  names(pars) <- pfts
   
   # Aggregate
   for (l in seq_along(pecan_names)) {
@@ -1457,8 +1442,8 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
       out[[pecan_names[l]]] <- sum(tmp.var * patch_area, na.rm = TRUE)
       
     } else {# per-pft vars
-      for(k in seq_len(npft)) {
-        ind <- (pft == pft_nums[k])
+      for(k in seq_len(length(pfts))) {
+        ind <- (pft == pfts[k])
         
         if (any(ind)) {
           # check for different variables/units?
