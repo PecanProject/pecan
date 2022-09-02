@@ -6,6 +6,11 @@
 \usage{
 p(x, ...)
 }
+\arguments{
+\item{x}{jump distribution}
+
+\item{...}{Additional arguments}
+}
 \description{
 p
 }

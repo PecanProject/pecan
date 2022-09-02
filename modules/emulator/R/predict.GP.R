@@ -2,10 +2,11 @@
 ##' @title predict.GP
 ##' @export
 ##' 
-##' @param gp
-##' @param xpred
+##' @param gp Gaussian Process
+##' @param xpred value of x where prediction should be made
 ##' @param cI credible interval
 ##' @param pI prediction interval
+##' @param splinefcns spline functions
 ##' 
 ##' @author Michael Dietze
 predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
