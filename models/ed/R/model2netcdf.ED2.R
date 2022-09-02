@@ -166,7 +166,7 @@ model2netcdf.ED2 <- function(outdir,
       fcn     <- match.fun(fcnx)
       put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
                      lat = lat, lon = lon, start_date = start_date_real,
-                     end_date = end_date_real, pfts = pfts)
+                     end_date = end_date_real)
 
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
@@ -714,14 +714,13 @@ read_T_files <-
 
 ##' Function for put -T- values to nc_var list
 ##' 
-##' @param yr 
+##' @param yr the year being processed
 ##' @param nc_var 
 ##' @param var_list 
-##' @param lat 
-##' @param lon 
-##' @param start_date 
-##' @param end_date 
-##' @param pfts 
+##' @param lat `ncdim4` object for latitude of site
+##' @param lon `ncdim4` object longitude of site
+##' @param start_date start time of simulation
+##' @param end_date end time of simulation
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
@@ -734,7 +733,6 @@ put_T_values <-
            lon,
            start_date,
            end_date,
-           pfts = NULL,
            begins,
            ends,
            out) {
@@ -1159,8 +1157,6 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
 ##' @param lon `ncdim4` object longitude of site
 ##' @param start_date start time of simulation
 ##' @param end_date end time of simulation
-##' @param pfts for consistency with [put_T_values()].  If supplied, it will be
-##'   overwritten.  PFT data is in `var_list`.
 ##' @param begins deprecated; use `start_date` instead
 ##' @param ends deprecated; use `end_date` instead
 ##' @param out deprecated; use `var_list` instead
@@ -1175,7 +1171,6 @@ put_E_values <-
            lon,
            start_date,
            end_date,
-           pfts = NULL,
            begins,
            ends,
            out) {
