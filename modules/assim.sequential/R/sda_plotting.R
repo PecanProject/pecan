@@ -35,7 +35,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::interactive.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::interactive.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -132,7 +132,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::postana.timeser.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::postana.timeser.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -235,7 +235,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::postana.bias.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::postana.bias.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -533,7 +533,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   if (!requireNamespace("ggrepel", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Package `ggrepel` not found, but needed by",
-      "PEcAn.assim.sequential::post.analysis.multisite.ggplot.",
+      "PEcAnAssimSequential::post.analysis.multisite.ggplot.",
       "Please install it and try again.")
   }
   
