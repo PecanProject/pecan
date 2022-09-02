@@ -12,7 +12,6 @@ put_E_values(
   lon,
   start_date,
   end_date,
-  pfts = NULL,
   begins,
   ends,
   out
@@ -32,9 +31,6 @@ put_E_values(
 \item{start_date}{start time of simulation}
 
 \item{end_date}{end time of simulation}
-
-\item{pfts}{for consistency with \code{\link[=put_T_values]{put_T_values()}}.  If supplied, it will be
-overwritten.  PFT data is in \code{var_list}.}
 
 \item{begins}{deprecated; use \code{start_date} instead}
 

@@ -12,28 +12,25 @@ put_T_values(
   lon,
   start_date,
   end_date,
-  pfts = NULL,
   begins,
   ends,
   out
 )
 }
 \arguments{
-\item{yr}{}
+\item{yr}{the year being processed}
 
 \item{nc_var}{}
 
 \item{var_list}{}
 
-\item{lat}{}
+\item{lat}{\code{ncdim4} object for latitude of site}
 
-\item{lon}{}
+\item{lon}{\code{ncdim4} object longitude of site}
 
-\item{start_date}{}
+\item{start_date}{start time of simulation}
 
-\item{end_date}{}
-
-\item{pfts}{}
+\item{end_date}{end time of simulation}
 
 \item{begins}{deprecated; use \code{start_date} instead}
 
