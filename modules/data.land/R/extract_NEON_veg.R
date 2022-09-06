@@ -110,6 +110,5 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   veg_info[[3]] <- soilcarbon.per.m2
   veg_info[[4]] <- joined.soil
   
-  
   return(veg_info)
 }
