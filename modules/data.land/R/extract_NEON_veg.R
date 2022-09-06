@@ -7,6 +7,7 @@
 #' @param start_date "YYYY-MM-DD", used to download NEON datasets for desired time period
 #' @param end_date "YYYY_MM_DD", used to download NEON datasets for desired time period
 #' @param store_dir location where you want to store downloaded NEON files
+#' @param neonsites prepared datasets table from NEON using neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 #' @param ... Additional parameters
 #' 
 #'
