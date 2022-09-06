@@ -1,6 +1,6 @@
 ##'@title prep.data.assim
 ##'@section purpose:
-##'This function sets up a call to PEcAn.assim.sequential::sda.enkf()
+##'This function sets up a call to PEcAnAssimSequential::sda.enkf()
 ##'
 ##'@param settings the PEcAn settings object (a collection of nested lists)
 ##'@param numvals number of simulated data points for each time point

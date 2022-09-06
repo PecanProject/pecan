@@ -302,11 +302,11 @@ settings$model$binary = "/usr2/postdoc/istfer/SIPNET/1023/sipnet"
 
 unlink(c('run','out'), recursive = T)
 
-#debugonce(PEcAn.assim.sequential::sda.enkf)
+#debugonce(PEcAnAssimSequential::sda.enkf)
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf(
+    PEcAnAssimSequential::sda.enkf(
       settings, 
       restart=restart,
       Q=0,

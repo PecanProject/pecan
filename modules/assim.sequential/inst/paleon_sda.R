@@ -8,7 +8,7 @@ library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 
@@ -76,7 +76,7 @@ if(FALSE){
 }
 
 
-PEcAn.assim.sequential::sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
+PEcAnAssimSequential::sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
 
 obmn <- obvn <- list()
 times.keep <- seq(1,1100,100)

@@ -6,7 +6,7 @@ library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 library(purrr)
@@ -93,3 +93,4 @@ sda.enkf.multisite(new.settings, obs.mean =obs.mean ,obs.cov = obs.cov,
         )
 
 
+ 

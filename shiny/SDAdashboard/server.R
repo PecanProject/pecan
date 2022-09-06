@@ -172,9 +172,9 @@ shinyServer(function(input, output, session) {
                          )
                        )
                        incProgress(1/15, message="Finished installing packages")
-                       library(PEcAn.assim.sequential, lib.loc =tmpd)
+                       library(PEcAnAssimSequential, lib.loc =tmpd)
                         # Use a promise here to send the job and then close the dialog
-                       toastr_success("PEcAn.assim.sequential package was installed successfully.")
+                       toastr_success("PEcAnAssimSequential package was installed successfully.")
                      },
                      error = function(e) {
                        toastr_error(title = "There is an error in installing assimilation package.", conditionMessage(e))

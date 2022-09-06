@@ -1,7 +1,7 @@
 #' @title generate_colors_sda
 #' @name  generate_colors_sda
 #' @author Ann Raiho 
-#' @description This function generates a series of colors in its parents enviroment. This is mainly used in assim.sequential package.
+#' @description This function generates a series of colors in its parents enviroment. This is mainly used in AssimSequential package.
 #' @export
 generate_colors_sda <-function(){
   pink       <<- col2rgb("deeppink")

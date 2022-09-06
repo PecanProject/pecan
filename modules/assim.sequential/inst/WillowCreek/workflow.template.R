@@ -358,7 +358,7 @@ if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf(
+    PEcAnAssimSequential::sda.enkf(
       settings, 
       restart=restart,
       Q=0,

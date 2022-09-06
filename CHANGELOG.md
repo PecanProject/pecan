@@ -20,6 +20,7 @@ see if you need to change any of these:
   to star PEcAn with https.
 - TRAEFIK_HTTPS_OPTIONS is no longer used, this is the default when you use https.
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
+- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
 
 ### Added
 

@@ -15,7 +15,7 @@ library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 library(purrr)
