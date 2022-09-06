@@ -991,7 +991,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   
   if(!all(expected_ym %in% times)) {
     #TODO: possibly not an error, but then need to use actual months of output files for time dimension in put_E_values(),  not start_date:end_date.
-    stop("Not all expected E files found!")
+    PEcAn.logger::logger.error("Not all expected E files found!")
   }
   
   # lets make it work for a subset of vars fist
