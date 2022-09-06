@@ -25,6 +25,8 @@ extract_NEON_veg(
 
 \item{store_dir}{location where you want to store downloaded NEON files}
 
+\item{neonsites}{prepared datasets table from NEON using neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))}
+
 \item{...}{Additional parameters}
 }
 \value{
