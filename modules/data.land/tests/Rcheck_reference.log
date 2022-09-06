@@ -8,15 +8,14 @@
 * this is package ‘PEcAn.data.land’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 
-Imports includes 33 non-default packages.
+Imports includes 32 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
 * checking package dependencies ... NOTE
-Imports includes 33 non-default packages.
+Imports includes 32 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -1335,9 +1334,7 @@ Please remove it.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 8 WARNINGs, 5 NOTEs
+Status: 7 WARNINGs, 5 NOTEs
 See
   ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00check.log’
 for details.
-
-

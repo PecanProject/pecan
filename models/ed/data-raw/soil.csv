@@ -1,0 +1,2 @@
+"cwd_frac";"resp_opt_water";"resp_water_below_opt";"resp_water_above_opt";"resp_temperature_increase";"N_immobil_supply_scale";"r_ssc";"r_stsc";"r_fsc";"decay_rate_stsc";"decay_rate_fsc";"decay_rate_ssc";"rh_decay_low";"rh_decay_high";"rh_low_temp";"rh_high_temp";"rh_dry_smoist";"rh_wet_smoist";"rh_decay_wet";"rh_decay_dry"
+0.2;0.8938;5.0786;4.5139;0.0757;0.10951628027954;1;0.3;1;0.0123205815314483;0.0301169770768736;0.274338282100248;0.24;0.6;291.15;318.15;0.48;0.98;36;12

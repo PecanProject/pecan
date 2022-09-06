@@ -79,7 +79,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # none is provided in `new.state`.
       
       new_tmp <- new.state[grep(var_name, names(new.state))]
-      new_tmp <- udunits2::ud.convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
+      new_tmp <- PEcAn.utils::ud_convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
       
       agb_co <- restart$AGB_CO
       # reaggregate old state

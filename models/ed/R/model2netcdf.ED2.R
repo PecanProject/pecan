@@ -8,19 +8,22 @@
 #-------------------------------------------------------------------------------
 
 
-##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
-##'
-##' @name model2netcdf.ED2
-##' @title Code to convert ED2's -T- HDF5 output into netCDF format
+##' Code to convert ED2's -T- HDF5 output into netCDF format
+##' 
+##' Modified from code to convert ED2's HDF5 output into the NACP
+##' Intercomparison format (ALMA using netCDF)
 ##'
 ##' @param outdir Location of ED model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts Names of PFTs used in the run, vector
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings pecan settings object
 ##' @export
+##'
+##' @details if \code{settings} is provided, then values for missing arguments
+##'   will be taken from it
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
@@ -29,7 +32,18 @@
 ##'
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
                              end_date, pfts, settings = NULL) {
-
+  if(!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(sitelat)) sitelat <- settings$run$site$lat
+    if(missing(sitelon)) sitelon <- settings$run$site$lon
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
+  
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
 
@@ -69,11 +83,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
   out_list <- vector("list", length(ed_res_flag))
   names(out_list) <- ed_res_flag
 
-  # if run failed there might be less years, no output case is handled above
-  # we can process whatever is there
-  # but of course this upsets ensemble.ts because the outputs are not of
-  # same length now
-  # two options:
+  # If run failed there might be less years, no output case is handled above we
+  # can process whatever is there, but of course this upsets ensemble.ts because
+  # the outputs are not of same length now.
+  # Two options:
   # (i)  don't process anything
   #      return(NULL)
   # (ii) check whether this is an ensemble run, then return null, otherwise
@@ -155,11 +168,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date,
     out <- unlist(out_list, recursive = FALSE)
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
-    # define time_bouds for -T- outputs, if exists
+    # define time_bounds for -T- outputs, if exists
     if (file.check[["-T-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
     }
-    # define time_bouds for -E- outputs, if exists
+    # define time_bounds for -E- outputs, if exists
     if (file.check[["-E-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
@@ -670,8 +683,8 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   ## Conversion factor for umol C -> kg C
   Mc <- 12.017  #molar mass of C, g/mol
-  umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
-  yr2s      <- udunits2::ud.convert(1, "s", "yr")
+  umol2kg_C <- Mc * PEcAn.utils::ud_convert(1, "umol", "mol") * PEcAn.utils::ud_convert(1, "g", "kg")
+  yr2s      <- PEcAn.utils::ud_convert(1, "s", "yr")
   
   # TODO - remove this function and replace with ifelse statements inline below (SPS)
   conversion <- function(col, mult) {
@@ -731,7 +744,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
   # ----- fill list
   
-  out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
+  out <- conversion(1, PEcAn.utils::ud_convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
   nc_var[[s + 1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
   out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
@@ -851,39 +864,40 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 
 ##' Function for reading -E- files
 ##'
-##' @details
-##'  e.g.     yr = 1999
-##'      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
-##'      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
-##'               "analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
-##'               "analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
-##'               "analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
-##'               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
-##'               "analysis-E-2000-04-00-000000-g01.h5"
+##' Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
+##' file per year.
 ##'
-##' pft_names  : character vector with names of PFTs
-##' pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
-##'
-##' @param yr the year being processed
-##' @param yfiles the years on the filenames, will be used to matched efiles for that year
-##' @param efiles names of E h5 files
+##' @param yr length 1 numeric vector; the year being processed
+##' @param yfiles numeric vector of the years on the filenames, will be used to
+##'   matched efiles for that year
+##' @param efiles character vector of names of E h5 files (e.g.
+##'   "analysis-E-1999-06-00-000000-g01.h5")
 ##' @param outdir directory where output will be written to
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @param pfts Names of PFTs used in the run, vector
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings pecan settings object
-##' @param ... additional arguments
+##' @param ... currently unused
 ##'
+##' @details if \code{settings} is provided, then values for missing arguments
+##'   will be taken from it
 ##' @export
+##' 
 read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, 
                          pfts, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
-  if(missing(outdir)) outdir <- settings$outdir
-  if(missing(start_date)) start_date <- settings$run$start.date
-  if(missing(end_date)) end_date <- settings$run$end.date
-  if(missing(pfts)) pfts <- settings$pfts
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(start_date)) start_date <- settings$run$start.date
+    if(missing(end_date)) end_date <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
+  
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
             !is.null(pfts))
   
@@ -950,36 +964,21 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     ncdf4::nc_close(nc)
   } # end ysel-loop
   
-  # for now this function does not read any ED variable that has soil as a dimension
-  pft_names <- pfts$pft$name
-  soil.check <- grepl("soil", pft_names)
-  if (any(soil.check)) {
-    # for now keep soil out
-    pft_names <- pft_names[!(soil.check)]
-  }
-  
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts_nums <- numeric(npft)
-  names(pfts_nums) <- pft_names
-  
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
+  
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pft_nums) <- pft_names
+  npft <- length(pft_names)
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    #TODO: print a message??
+    pft_names <- pft_names[!(soil.check)]
   }
   
   out <- list()
@@ -1008,7 +1007,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     # For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
 
       for (k in 1:npft) {
-        ind <- (pft == pfts_nums[k])
+        ind <- (pft == pft_nums[k])
         
         if (any(ind)) {
           for (varname in varnames) {
@@ -1030,7 +1029,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
     
   }
   
-  out$PFT <- pfts_nums # will write this to the .nc file
+  out$PFT <- pft_nums # will write this to the .nc file
   
   return(out)
   
@@ -1047,60 +1046,65 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date,
 ##' @param lon longitude of site
 ##' @param begins start time of simulation
 ##' @param ends end time of simulation
-##' @param pfts manually input list of Pecan PFT numbers
+##' @param pfts the \code{pfts} element from a pecan settings object
 ##' @param settings Pecan settings object
-##' @param ... additional arguments
+##' @param ... currently unused
 ##' 
 ##' @export
 put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...){
+  #TODO: deprecate `begins` and `ends` and change to `start_date` and `end_date` for consistency.
+  #TODO: deprecate `out` and change to `outdir` for consistency
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(out)) out <- settings$outdir
+    if(missing(lat)) lat <- settings$lat
+    if(missing(lon)) lon <- settings$lon
+    if(missing(begins)) begins <- settings$run$start.date
+    if(missing(ends)) ends <- settings$run$end.date
+    if(missing(pfts)) pfts <- settings$pfts
+  }
   
-  s <- length(nc_var)
+
+  # Extract the PFT names and numbers for all PFTs
   
-  # even if this is a SA run for soil, currently we are not reading any variable that has a soil dimension
-  # "soil" will be passed to read.output as pft.name from upstream, when it's not part of the attribute it will read the sum
-  pft_names <- pfts$pft$name
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pft_nums) <- pft_names
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
   soil.check <- grepl("soil", pft_names)
   if(any(soil.check)){
     # for now keep soil out
+    #TODO: print a message??
     pft_names <- pft_names[!(soil.check)]
   }
   
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts_nums <- numeric(npft)
-  names(pfts_nums) <- pft_names
-  
-  # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
-  }
   # ----- fill list
   
   ##### setup output time and time bounds
-  ## Create a date vector that contains each month of the model run (e.g. "2001-07-01" "2001-08-01" "2001-09-01"....)
-  ## and which is the correct length for each full or partial year
-  output_date_vector <- seq(lubridate::floor_date(begins,"month"), by = "month", length.out = dim(out[[1]])[1] )
-  ## Create a vector of the number of days in each month by year
-  ## (e.g. 31 31 30 31 30 31)
+  ## Create a date vector that contains each month of the model run (e.g.
+  ## "2001-07-01" "2001-08-01" "2001-09-01"....) and which is the correct length
+  ## for each full or partial year
+  output_date_vector <-
+    seq(
+      lubridate::floor_date(begins, "month"),
+      by = "month",
+      length.out = dim(out[[1]])[1]
+    )
+  ## Create a vector of the number of days in each month by year (e.g. 31 31 30
+  ## 31 30 31)
   num_days_per_month <- lubridate::days_in_month(output_date_vector)
-  ## Update num_days_per_month and output_date_vector if model run did not start on the first day of a month
-  ## e.g. "2001-07-15" "2001-08-01", 17 31
+  ## Update num_days_per_month and output_date_vector if model run did not start
+  ## on the first day of a month e.g. "2001-07-15" "2001-08-01", 17 31
   if (lubridate::yday(begins) != lubridate::yday(output_date_vector[1])) {
-    temp <- num_days_per_month[1] - ((lubridate::yday(begins) - lubridate::yday(output_date_vector[1])))
+    temp <-
+      num_days_per_month[1] - ((
+        lubridate::yday(begins) - lubridate::yday(output_date_vector[1])
+      ))
     num_days_per_month[1] <- temp
     output_date_vector[1] <- begins
   }
@@ -1112,41 +1116,87 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
   bounds <- array(data = NA, dim = c(length(dtvals), 2))
   bounds[, 1] <- dtvals 
   bounds[, 2] <- bounds[, 1] + num_days_per_month 
-  bounds <- round(bounds, 4) # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  # create time bounds for each timestep in t, t+1; t+1, t+2... format
+  bounds <- round(bounds, 4) 
   #####
   
-  t <- ncdf4::ncdim_def(name = "dtime", units = paste0("days since ", yr, "-01-01 00:00:00"), 
-                        vals = dtvals, calendar = "standard", unlim = TRUE)
-  time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
-                                    longname = "history time interval endpoint dimensions", 
-                                    vals = 1:2, units = "")
-  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts_nums, 
-                        longname = "Plant Functional Type", unlim = TRUE)
+  t <-
+    ncdf4::ncdim_def(
+      name = "dtime",
+      units = paste0("days since ", yr, "-01-01 00:00:00"),
+      vals = dtvals,
+      calendar = "standard",
+      unlim = TRUE
+    )
+  time_interval <- ncdf4::ncdim_def(
+    name = "hist_interval",
+    longname = "history time interval endpoint dimensions",
+    vals = 1:2,
+    units = ""
+  )
+  p <-
+    ncdf4::ncdim_def(
+      name = "pft",
+      units = "unitless",
+      vals = pft_nums,
+      longname = "Plant Functional Type",
+      unlim = TRUE
+    )
   
-  # NOTE : the order of dimensions is going to be important for read.output
-  # this was the fist case of reading pft-specific outputs at the time
-  # but checking base/utils/data/standard_vars.csv "pft" should come after "time" as a dimension
-  # e.g. when NEE is pft-specific for some model output it will be the 4th dimension
+  # NOTE : the order of dimensions is going to be important for read.output.
+  # This was the fist case of reading pft-specific outputs at the time, but
+  # checking base/utils/data/standard_vars.csv "pft" should come after "time" as
+  # a dimension e.g. when NEE is pft-specific for some model output it will be
+  # the 4th dimension
   # lon / lat / time / pft 
-  # from read.output's perspective, dimension of pft will be the same for NEE there and DBH here
+  # From read.output's perspective, dimension of pft will be the same for NEE
+  # there and DBH here
 
+  s <- length(nc_var)
   
-  nc_var[[s + 1]] <- ncdf4::ncvar_def("DBH", units = "cm", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Diameter at breast height")
-  nc_var[[s + 2]] <- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Rate of change in dbh")
-  nc_var[[s + 3]] <- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(lon, lat, t, p), missval = -999, 
-                                   longname = "Plant density")
+  nc_var[[s + 1]] <-
+    ncdf4::ncvar_def(
+      "DBH",
+      units = "cm",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Diameter at breast height"
+    )
+  nc_var[[s + 2]] <-
+    ncdf4::ncvar_def(
+      "DDBH_DT",
+      units = "cm yr-1",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Rate of change in dbh"
+    )
+  nc_var[[s + 3]] <-
+    ncdf4::ncvar_def(
+      "NPLANT",
+      units = "plant m-2",
+      dim = list(lon, lat, t, p),
+      missval = -999,
+      longname = "Plant density"
+    )
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
-  nc_var[[s + 4]] <- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
-                                   longname = paste(pft_names, collapse=",")) 
+  nc_var[[s + 4]] <-
+    ncdf4::ncvar_def(
+      "PFT",
+      units = "",
+      dim = list(p),
+      longname = paste(pft_names, collapse = ",")
+    )
   out_length <- length(out)
   out[[out_length + 1]] <- c(rbind(bounds[, 1], bounds[, 2]))
-  nc_var[[s + 5]] <- ncdf4::ncvar_def(name = "dtime_bounds", units = "", 
-                                      longname = "monthly history time interval endpoints", 
-                                      dim = list(time_interval,dtime = t), 
-                                      prec = "double")
+  nc_var[[s + 5]] <-
+    ncdf4::ncvar_def(
+      name = "dtime_bounds",
+      units = "",
+      longname = "monthly history time interval endpoints",
+      dim = list(time_interval, dtime = t),
+      prec = "double"
+    )
   return(list(nc_var = nc_var, out = out))
   
 } # put_E_values
@@ -1159,16 +1209,23 @@ put_E_values <- function(yr, nc_var, out, lat, lon, begins, ends, pfts, settings
 #' 
 #' @param sfile history file name e.g. "history-S-1961-01-01-000000-g01.h5"
 #' @param outdir path to run outdir, where the -S- file is
-#' @param pfts Names of PFTs used in the run, vector
+#' @param pfts the \code{pfts} element from a pecan settings object
 #' @param pecan_names string vector, pecan names of requested variables, e.g. c("AGB", "AbvGrndWood")
 #' @param settings pecan settings object
-#' @param ... additional arguments
+#' @param ... currently unused
 #' 
 #' @export
 read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NULL, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -S- file ***"))
-  
+
+  if (!is.null(settings)) {
+    if(!inherits(settings, "Settings")) {
+      PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
+    }
+    if(missing(outdir)) outdir <- settings$outdir
+    if(missing(pfts)) pfts <- settings$pfts
+  }
   # commonly used vars
   if(is.null(pecan_names)) pecan_names <- c("AGB", "AbvGrndWood", "GWBI", "DBH")
   
@@ -1203,37 +1260,21 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   
   ncdf4::nc_close(nc)
   
-  
-  # for now this function does not read any ED variable that has soil as a dimension
-  pft_names <- pfts$pft$name
-  soil.check <- grepl("soil", pft_names)
-  if (any(soil.check)) {
-    # for now keep soil out
-    pft_names <- pft_names[!(soil.check)]
-  }
-  
-  npft <- length(pft_names)
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts <- numeric(npft)
-  names(pfts) <- pft_names
-  
   # Extract the PFT names and numbers for all PFTs
-  xml_pft_names <- lapply(settings$pfts, "[[", "name")
-  for (pft in pft_names) {
-    which_pft <- which(xml_pft_names == pft)
-    xml_pft <- settings$pfts[[which_pft]]
-    if ("ed2_pft_number" %in% names(xml_pft)) {
-      pft_number <- as.numeric(xml_pft$ed2_pft_number)
-      if (!is.finite(pft_number)) {
-        PEcAn.logger::logger.severe(
-          "ED2 PFT number present but not parseable as number. Value was ",
-          xml_pft$ed2_pft_number
-        )
-      }
-    } else {
-      pft_number <- pftmapping$ED[pftmapping$PEcAn == xml_pft$name]
-    }
-    pfts_nums[pft] <- pft_number
+  
+  pft_names <- lapply(pfts, "[[", "name")
+  pft_nums <- sapply(pfts, get_pft_num)
+  names(pft_nums) <- pft_names
+  npft <- length(pft_names)
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", pft_names)
+  if(any(soil.check)){
+    # for now keep soil out
+    #TODO: print a message??
+    pft_names <- pft_names[!(soil.check)]
   }
   
   out <- list()
@@ -1259,7 +1300,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   # remove non-pft sublists
   pars[names(pars) != "pft"] <- NULL
   # pass pft numbers as sublist names
-  names(pars) <- pfts_nums
+  names(pars) <- pft_nums
   
   # Aggregate
   for (l in seq_along(pecan_names)) {
@@ -1276,7 +1317,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
       
     } else {# per-pft vars
       for(k in seq_len(npft)) {
-        ind <- (pft == pfts_nums[k])
+        ind <- (pft == pft_nums[k])
         
         if (any(ind)) {
           # check for different variables/units?
@@ -1323,5 +1364,26 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
   return(out)
   
 } # read_S_files
+
+#helper fun to extract pft numbers or match based on pft name
+get_pft_num <- function(x) {
+  pftmapping <- pftmapping #get rid of no visible binding warning
+  pft_number <- x[["ed2_pft_number"]]
+  pft_name <- x[["name"]]
+  if(!is.null(pft_number)) {
+    pft_number <- as.numeric(pft_number)
+    if (!is.finite(pft_number)) {
+      PEcAn.logger::logger.severe(
+        "ED2 PFT number present but not parseable as number. Value was ",
+        pft_number
+      )
+    }
+  } else {
+    pft_number <- pftmapping$ED[pftmapping$PEcAn == pft_name]
+  }
+  
+  pft_number
+}
+
 ##-------------------------------------------------------------------------------------------------#
 ### EOF

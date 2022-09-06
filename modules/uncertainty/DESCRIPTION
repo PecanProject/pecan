@@ -1,7 +1,6 @@
 Package: PEcAn.uncertainty
 Type: Package
-Title: PEcAn functions used for propagating and partitioning uncertainties in ecological forecasts and
-    reanalysis
+Title: PEcAn Functions Used for Propagating and Partitioning Uncertainties in Ecological Forecasts and Reanalysis
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
@@ -44,8 +43,7 @@ Imports:
     plyr (>= 1.8.4),
     purrr,
     randtoolbox,
-    rlang,
-    udunits2
+    rlang
 Suggests:
     testthat (>= 1.0.2),
 License: BSD_3_clause + file LICENSE

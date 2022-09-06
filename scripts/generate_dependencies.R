@@ -46,6 +46,8 @@ d <- purrr::walk(
     # load DESCRIPTION file
     d <- desc::desc(file = x)
     deps <- d$get_deps()[["package"]]
+    # ignore R version requirements (e.g. "Depends: R (>= 3.2.0)")
+    deps <- deps[deps != "R"]
 
     # PEcAn dependencies
     y <- deps[grepl("^PEcAn.", deps)]

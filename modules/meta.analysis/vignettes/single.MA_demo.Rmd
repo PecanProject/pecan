@@ -1,3 +1,11 @@
+---
+title: "Example of Single.MA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Example of Single.MA}
+  %\usepackage[utf8]{inputenc}
+---
 Meta-analysis: Example of Single.MA
 ========================================================
 Individual Meta-analysis

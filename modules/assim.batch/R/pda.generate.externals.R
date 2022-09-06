@@ -170,7 +170,7 @@ pda.generate.externals <-  function(external.data    = FALSE, obs = NULL, varn =
     model.raw <- as.data.frame(PEcAn.utils::read.output(basename(model.out), 
                                                         outdir = model.out,
                                                         start_year, end_year, variables = vars))
-    model.secs <- udunits2::ud.convert(model.raw$time, "days" ,"seconds")
+    model.secs <- PEcAn.utils::ud_convert(model.raw$time, "days" ,"seconds")
     model.raw$posix <- seq.POSIXt(from = as.POSIXlt(start_date, tz="GMT"), by = round(diff(model.secs)[1]), length.out = length(model.raw$time))
     
     for(i in seq_along(varn)){
