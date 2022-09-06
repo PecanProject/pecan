@@ -86,7 +86,6 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   # filter.herb <- filter.herb[!is.na(filter.herb$scientificName),]
   # filter.date <- filter.date[!is.na(filter.date$scientificName),]
   
-  
   # #soil carbon
   neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
   perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
