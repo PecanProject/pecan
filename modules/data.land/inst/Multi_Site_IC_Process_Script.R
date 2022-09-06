@@ -94,6 +94,8 @@ for (i in 1:length(settings)) {
     out <- PEcAn.SIPNET::veg2model.SIPNET(temp_outdir, poolinfo, as.numeric(temp_settings$run$site$id), ens = j)
   }
 }
+
+#write log file.
 fileConn<-file(paste0(outdir, "/log.txt"))
 writeLines(log_file, fileConn)
 close(fileConn)
