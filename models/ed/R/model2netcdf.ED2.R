@@ -123,8 +123,8 @@ model2netcdf.ED2 <- function(outdir,
       # fcnx is either read_T_files() or read_E_files()
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
       fcn   <- match.fun(fcnx)
-      out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]],
-                               outdir, start_date, end_date,
+      out_list[[rflag]] <- fcn(yr = y, yfiles = ylist[[rflag]], h5_files = flist[[rflag]],
+                               outdir = outdir, start_date = start_date, end_date = end_date,
                                pfts, settings)
     }
 
@@ -210,12 +210,12 @@ model2netcdf.ED2 <- function(outdir,
 ##' @param yr the year being processed
 ##' @param yfiles the years on the filenames, will be used to matched h5_files for that year
 ##' @param h5_files names of T files to be read
-##' @param outdir directory where output will be written to
+##' @param outdir directory where ED2 output files are found
 ##' @param start_date start date in YYYY-MM-DD format
 ##' @param end_date end date in YYYY-MM-DD format
 ##' @param pfts for consistency with [read_E_files()]---unused
-##' @param settings A PEcAn settings object. Values for `start_date`,
-##'   `end_date`, and `outdir` will be taken from `settings` if it is supplied.
+##' @param settings A PEcAn settings object. Values for `start_date` and
+##'   `end_date` will be taken from `settings` if it is supplied.
 ##' 
 ##' @export
 read_T_files <-
@@ -234,7 +234,6 @@ read_T_files <-
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
-    if(missing(outdir)) outdir <- settings$outdir
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
   }
