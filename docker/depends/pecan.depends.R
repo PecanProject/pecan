@@ -8,6 +8,8 @@ rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
 Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
+# temporary debug
+print(gh::gh_token())
 remotes::install_github(c(
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
@@ -18,9 +20,6 @@ remotes::install_github(c(
 'ropensci/geonames',
 'ropensci/nneo'
 ), lib = rlib)
-
-#temporary debug
-print(gh::gh_token())
 
 # install all packages (depends, imports, suggests)
 wanted <- c(
