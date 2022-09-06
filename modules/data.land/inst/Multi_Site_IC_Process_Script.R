@@ -23,9 +23,6 @@ for (i in 1:length(settings)) {
     dir.create(temp_outdir)
   }
   
-  #before doing extract NEON function, we also need to identify when do we have data?
-  
-  
   #extract veg function
   veg_info <- try(extract_NEON_veg(lat = as.numeric(temp_settings$run$site$lat), 
                       lon = as.numeric(temp_settings$run$site$lon),
