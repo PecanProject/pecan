@@ -122,10 +122,9 @@ model2netcdf.ED2 <- function(outdir,
       rflag <- ed_res_flag[i]
       # fcnx is either read_T_files() or read_E_files()
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
-      fcn   <- match.fun(fcnx)
-      out_list[[rflag]] <- fcn(yr = y, yfiles = ylist[[rflag]], h5_files = flist[[rflag]],
-                               outdir = outdir, start_date = start_date, end_date = end_date,
-                               pfts, settings)
+      out_list[[rflag]] <- do.call(fcnx, list(yr = y, ylist[[rflag]], flist[[rflag]],
+                                              outdir, start_date, end_date,
+                                              pfts, settings))
     }
 
     # generate start/end dates for processing
@@ -157,11 +156,9 @@ model2netcdf.ED2 <- function(outdir,
       rflag   <- ed_res_flag[i]
       #fcnx is either put_T_values() or put_E_values()
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
-      fcn     <- match.fun(fcnx)
-      put_out <- fcn(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
-                     lat = lat, lon = lon, start_date = start_date_real,
-                     end_date = end_date_real)
-
+      put_out <- do.call(fcnx, list(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
+                                    lat = lat, lon = lon, start_date = start_date_real,
+                                    end_date = end_date_real))
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
     }
