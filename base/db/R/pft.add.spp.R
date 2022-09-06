@@ -32,10 +32,10 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
   
   #detect if we input Symbol or IDs
   if(!is.null(acronym)){
-    Specie_elements <- acronym
+    Species_elements <- acronym
     print("Input is Symbol!")
   }else if(!is.null(ID)){
-    Specie_elements <- ID
+    Species_elements <- ID
     print("Input is ID!")
   }else{
     print("No IDs or Symbols imported!, Please check the data input!")
@@ -67,8 +67,8 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
   bad_species <- c()
   bad_pft_speceis <- c()
   
-  ## loop over acronyms
-  for (acro in acronym) {
+  ## loop over acronyms or IDs
+  for (acro in Species_elements) {
     ## look up species based on acronyms. (can be either Symbols or IDs)
     if(!is.null(ID)){
       species_qry <- glue::glue_sql(paste0("select * from species where \"id\" = '", acro, "'"), .con = con)
