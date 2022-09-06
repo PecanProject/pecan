@@ -1,6 +1,6 @@
 Package: PEcAn.data.atmosphere
 Type: Package
-Title: PEcAn functions used for managing climate driver data
+Title: PEcAn Functions Used for Managing Climate Driver Data
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),

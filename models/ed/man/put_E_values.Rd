@@ -21,11 +21,11 @@ put_E_values(yr, nc_var, out, lat, lon, begins, ends, pfts, settings, ...)
 
 \item{ends}{end time of simulation}
 
-\item{pfts}{manually input list of Pecan PFT numbers}
+\item{pfts}{the \code{pfts} element from a pecan settings object}
 
 \item{settings}{Pecan settings object}
 
-\item{...}{additional arguments}
+\item{...}{currently unused}
 }
 \description{
 Function for put -E- values to nc_var list
