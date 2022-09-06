@@ -1,6 +1,6 @@
 Package: PEcAn.benchmark
 Type: Package
-Title: PEcAn functions used for benchmarking
+Title: PEcAn Functions Used for Benchmarking
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
