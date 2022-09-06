@@ -1,6 +1,6 @@
 Package: PEcAn.MAESPA
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis using MAESPA
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis using MAESPA
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Tony", "Gardella", role = c("aut", "cre"),
