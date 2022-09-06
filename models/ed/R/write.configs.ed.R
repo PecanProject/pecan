@@ -92,20 +92,23 @@ convert.samples.ED <- function(trait.samples) {
 ##-------------------------------------------------------------------------------------------------#
 ##' Write ED configuration files
 ##'
-##' Writes an xml and ED2IN config files for use with the Ecological Demography 
-##' model. Requires a pft xml object, a list of trait values for a single model 
+##' Writes an xml and ED2IN config files for use with the Ecological Demography
+##' model. Requires a pft xml object, a list of trait values for a single model
 ##' run, and the name of the file to create
-#'
-##' @param trait.values Named list of trait values, with names corresponding to PFT
+##'
+##' @param trait.values Named list of trait values, with names corresponding to
+##'   PFT
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @param defaults list of defaults to process. Default=settings$constants
-##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
-##' throw an error if anything is wrong (default = `FALSE`)
-##' 
+##' @param check Logical. If `TRUE`, check ED2IN validity before running and
+##'   throw an error if anything is wrong (default = `FALSE`)
+##' @param ... unused
+##'
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
-##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
+##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov,
+##'   Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, ...) {
   
