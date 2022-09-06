@@ -61,7 +61,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   }else{
     perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
-    filter.herb <- dplyr::select(joined.herb, siteID.y, plotID.x, subplotID, plotType.x, clipArea, dryMass, collectDate.y)
+    filter.herb <- dplyr::select(joined.herb, .data$siteID.y, .data$plotID.x, .data$subplotID, .data$plotType.x, .data$clipArea, .data$dryMass, .data$collectDate.y)
     #Create year column
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions
