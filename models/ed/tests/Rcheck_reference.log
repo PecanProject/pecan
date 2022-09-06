@@ -1,15 +1,56 @@
-* using log directory ‘/tmp/Rtmp3dAPgp/PEcAn.ED2.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/models/PEcAn.ED2.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.ED2/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.ED2’ version ‘1.7.0’
+* this is package ‘PEcAn.ED2’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘Mike Dietze <dietze@bu.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.logger, PEcAn.remote,
+    PEcAn.settings, PEcAn.utils
+
+The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -19,17 +60,19 @@ Requires orphaned package: ‘udunits2’
 * checking serialization versions ... OK
 * checking whether package ‘PEcAn.ED2’ can be installed ... WARNING
 Found the following significant warnings:
-  Note: next used in wrong context: no loop is visible 
-See ‘/tmp/Rtmp3dAPgp/PEcAn.ED2.Rcheck/00install.out’ for details.
+  Note: next used in wrong context: no loop is visible
+See ‘/home/tanishq010/pecan/models/PEcAn.ED2.Rcheck/00install.out’ for details.
 Information on the location(s) of code generating the ‘Note’s can be
 obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
 to ‘yes’.
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+Author field differs from that derived from Authors@R
+  Author:    ‘David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov’
+  Authors@R: ‘Mike Dietze [aut, cre], David LeBauer [aut], Xiaohui Feng [aut], Dan Wang [aut], Carl Davidson [aut], Rob Kooper [aut], Shawn Serbin [aut], Alexey Shiklomanov [aut], University of Illinois, NCSA [cph]’
+
 * checking top-level files ... NOTE
 Non-standard files/directories found at top level:
   ‘Dockerfile’ ‘model_info.json’ ‘scripts’
@@ -44,10 +87,10 @@ Non-standard files/directories found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
 * checking dependencies in R code ... NOTE
-Package in Depends field not imported from: ‘coda’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+Namespace in Imports field not imported from: ‘tibble’
+  All declared Imports should be used.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -59,48 +102,39 @@ modify_df: no visible global function definition for ‘modifyList’
 modify_ed2in: no visible global function definition for ‘modifyList’
 put_E_values: no visible global function definition for ‘data’
 put_E_values: no visible binding for global variable ‘pftmapping’
-put_E_values : <anonymous>: no visible binding for global variable
-  ‘pftmapping’
 put_T_values: no visible global function definition for ‘head’
-read_css: no visible global function definition for ‘read.table’
 read_E_files: no visible global function definition for ‘data’
 read_E_files: no visible binding for global variable ‘pftmapping’
-read_E_files : <anonymous>: no visible binding for global variable
-  ‘pftmapping’
+read_S_files: no visible global function definition for ‘data’
+read_S_files: no visible binding for global variable ‘pftmapping’
+read_css: no visible global function definition for ‘read.table’
 read_ed_metheader: no visible global function definition for
   ‘read.table’
 read_ed_metheader: no visible binding for global variable ‘value_type’
 read_pss: no visible global function definition for ‘read.table’
 read_pss: ... may be used in an incorrect context: ‘check_pss(pss,
   ...)’
-read_S_files: no visible global function definition for ‘data’
-read_S_files: no visible binding for global variable ‘pftmapping’
-read_S_files : <anonymous>: no visible binding for global variable
-  ‘pftmapping’
 read_site: no visible global function definition for ‘read.table’
 veg2model.ED2: no visible global function definition for ‘data’
 veg2model.ED2: no visible binding for global variable ‘pftmapping’
 veg2model.ED2: no visible global function definition for ‘median’
 veg2model.ED2: no visible global function definition for ‘write.table’
-write_css: no visible global function definition for ‘write.table’
-write_pss: no visible global function definition for ‘write.table’
-write_restart.ED2: no visible binding for global variable ‘var.names’
-write_site: no visible global function definition for ‘write.table’
 write.config.ED2: no visible global function definition for ‘saveXML’
 write.config.ED2: no visible global function definition for ‘db.query’
 write.config.ED2: no visible global function definition for
   ‘modifyList’
-write.config.ED2 : <anonymous>: no visible binding for global variable
-  ‘x’
 write.config.xml.ED2: no visible global function definition for ‘data’
 write.config.xml.ED2: no visible binding for global variable
   ‘pftmapping’
 write.config.xml.ED2: no visible binding for global variable ‘soil’
 write.config.xml.ED2: no visible global function definition for
   ‘modifyList’
+write_css: no visible global function definition for ‘write.table’
+write_pss: no visible global function definition for ‘write.table’
+write_site: no visible global function definition for ‘write.table’
 Undefined global functions or variables:
   data db.query head median modifyList pftmapping read.table saveXML
-  soil unzip value_type var.names write.table
+  soil unzip value_type write.table
 Consider adding
   importFrom("stats", "median")
   importFrom("utils", "data", "head", "modifyList", "read.table",
@@ -124,6 +158,9 @@ File ‘PEcAn.ED2/R/write.configs.ed.R’:
   data(pftmapping, package = "PEcAn.ED2")
   data(soil, package = "PEcAn.ED2")
 See section ‘Good practice’ in ‘?data’.
+
+Warning: <anonymous>: ... may be used in an incorrect context: ‘check_pss(pss, ...)’
+
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -131,11 +168,7 @@ See section ‘Good practice’ in ‘?data’.
 Missing link or links in documentation object 'read_ed_metheader.Rd':
   ‘https://github.com/EDmodel/ED2/wiki/Drivers’
 
-Missing link or links in documentation object 'read.output.ED2.Rd':
-  ‘DMYT’
-
 See section 'Cross-references' in the 'Writing R Extensions' manual.
-
 * checking for missing documentation entries ... WARNING
 Undocumented data sets:
   ‘history’ ‘history.r46’ ‘history.r81’ ‘history.r82’ ‘history.r85’
@@ -148,32 +181,14 @@ Extensions’ manual.
 Undocumented arguments in documentation object 'ed.var'
   ‘varname’
 
-Undocumented arguments in documentation object 'get.model.output.ED2'
-  ‘settings’
-
-Undocumented arguments in documentation object 'list.files.nodir'
-  ‘...’
-
 Undocumented arguments in documentation object 'met2model.ED2'
   ‘lat’ ‘lon’ ‘...’
 
 Undocumented arguments in documentation object 'modify_ed2in'
   ‘ed2in’
 
-Undocumented arguments in documentation object 'put_E_values'
-  ‘yr’ ‘nc_var’ ‘out’ ‘lat’ ‘lon’ ‘begins’ ‘ends’ ‘pft_names’ ‘...’
-
 Undocumented arguments in documentation object 'put_T_values'
   ‘yr’ ‘nc_var’ ‘out’ ‘lat’ ‘lon’ ‘begins’ ‘ends’ ‘...’
-
-Undocumented arguments in documentation object 'read.output.ED2'
-  ‘end.year’ ‘variables’
-
-Undocumented arguments in documentation object 'read_E_files'
-  ‘efiles’ ‘outdir’ ‘start_date’ ‘end_date’ ‘pft_names’ ‘...’
-
-Undocumented arguments in documentation object 'read_T_files'
-  ‘tfiles’ ‘outdir’ ‘start_date’ ‘end_date’ ‘...’
 
 Undocumented arguments in documentation object 'remove.config.ED2'
   ‘main.outdir’ ‘settings’
@@ -186,9 +201,6 @@ Documented arguments not in \usage in documentation object 'run_ed_singularity':
 Undocumented arguments in documentation object 'translate_vars_ed'
   ‘varnames’
 
-Undocumented arguments in documentation object 'veg2model.ED2'
-  ‘veg_info’ ‘start_date’ ‘new_site’ ‘source’
-
 Undocumented arguments in documentation object 'write.config.ED2'
   ‘...’
 
@@ -197,10 +209,7 @@ entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'read.output.ED2':
-  ‘start.year’
-
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
@@ -213,5 +222,8 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for unstated dependencies in ‘tests’ ... WARNING
 '::' or ':::' import not declared from: ‘devtools’
 * checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
+
 Status: 7 WARNINGs, 4 NOTEs
