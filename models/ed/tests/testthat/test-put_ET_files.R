@@ -72,7 +72,7 @@ test_that("put_T_values() runs", {
   )
 })
 
-#temporary test.  Eventually the names will be pecan standard and not match exactly.  Maybe keep the test but check a few specific variables
+
 test_that("put_E_values() outputs match", {
   e_list <- 
     put_E_values(
@@ -84,7 +84,7 @@ test_that("put_E_values() outputs match", {
       start_date = lubridate::ymd(settings$run$start.date),
       end_date = lubridate::ymd(settings$run$end.date)
     )
-  expect_equal(sapply(e_list$nc_var, `[[`, "name"), names(e_list$out))
+  expect_equal(names(e_list$out), c("AGB_PFT", "BSEEDS", "DBH", "DDBH", "NPP_PFT", "TRANSP_PFT", "DENS", "PFT", "dtime_bounds"))
 })
 
 #TODO: test if all vars are in output

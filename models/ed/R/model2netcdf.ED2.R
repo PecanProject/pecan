@@ -1123,6 +1123,18 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   
   out$PFT <- pfts #named vector for matching PFT numbers to names
   
+  #New varnames to match PEcAn standard
+  names(out) <- dplyr::case_when(
+                  #ED2 name             #PEcAN name
+    names(out) == "AGB_CO"            ~ "AGB_PFT",
+    names(out) == "BSEEDS_CO"         ~ "BSEEDS",
+    names(out) == "DDBH_DT"           ~ "DDBH",
+    names(out) == "MMEAN_NPPDAILY_CO" ~ "NPP_PFT",
+    names(out) == "MMEAN_TRANSP_CO"   ~ "TRANSP_PFT",
+    names(out) == "NPLANT"            ~ "DENS",
+    TRUE ~ names(out)
+  )
+  
   return(out)
   
 } # end read_E_files
