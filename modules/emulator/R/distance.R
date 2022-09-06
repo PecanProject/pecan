@@ -2,8 +2,8 @@
 ##' @title distance
 ##' @export
 ##'
-##' @param x
-##' @param power
+##' @param x matrix of locations in physical or parameter space
+##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##'
 ##' @return dst
 ##'  
