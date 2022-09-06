@@ -50,14 +50,14 @@ d <- purrr::walk(
     deps <- deps[deps != "R"]
 
     # PEcAn dependencies
-    y <- deps[grepl("^PEcAn.", deps)]
+    y <- deps[grepl("^PEcAn", deps)]
     p <- d$get_field("Package")
     pecan[[p]] <<- f
     depends[[f]] <<- y
 
     # Dockerfile dependencies
     z <- y["package"]
-    z <- deps[!grepl("^PEcAn.", deps)]
+    z <- deps[!grepl("^PEcAn", deps)]
     docker <<- unique(c(docker, z))
 
     # Dockerfile remote dependencies
