@@ -3,7 +3,7 @@
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
-* checking for file ‘PEcAnAssimSequential/DESCRIPTION’ ... OK
+* checking for file ‘PEcAn.assim.sequential/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘PEcAnAssimSequential’ version ‘1.7.2’
 * package encoding: UTF-8
