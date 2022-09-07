@@ -68,7 +68,7 @@ remote.copy.from <- function(host, src, dst, options = NULL, delete = FALSE, std
       '22' = "Error allocating core memory buffers",
       '23' = "Partial transfer due to error",
       '24' = "Partial transfer due to vanished source files",
-      '25' = "The -⁠-⁠max-delete limit stopped deletions",
+      '25' = "The --max-delete limit stopped deletions",
       '30' = "Timeout in data send/receive",
       '35' = "Timeout waiting for daemon connection"
     )
