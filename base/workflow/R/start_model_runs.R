@@ -88,12 +88,14 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       args = c(
         "-p",
         dirname(settings$host$outdir))) 
+    Sys.sleep(5) #wait for this to finish before copying more
     # copy over out directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
       src = settings$modeloutdir,
       dst = dirname(settings$host$outdir) 
     )
+    Sys.sleep(5) #wait for this to finish before copying more
     # copy over run directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
