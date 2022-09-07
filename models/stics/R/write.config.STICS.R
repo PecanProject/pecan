@@ -658,17 +658,405 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ############################## Param gen / newform ####################################
   
-  ## DO NOTHING FOR NOW
-  gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
-  gen_file <- file.path(rundir, "param_gen.xml")
-  XML::saveXML(gen_xml, file = gen_file)
-  codeinitprec <- ifelse(length(usmdirs>1), 1, 2) 
-  SticsRFiles::set_param_xml(gen_file, "codeinitprec", codeinitprec, overwrite = TRUE)
-  SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
+  ## these also have plant parameters as well as soil 
+  ## not sure atm whether these should be IC, plant PFT params or soil PFT params, for now all are treated as plant PFT params
+  for (pft in seq_along(trait.values)) {
+    
+    if(names(trait.values)[pft] == "env"){
+      next
+    }
+    
+    gen_xml  <- XML::xmlParse(system.file("param_gen.xml", package = "PEcAn.STICS"))
+    gen_file <- file.path(rundir, "param_gen.xml")
+    XML::saveXML(gen_xml, file = gen_file)
+    codeinitprec <- ifelse(length(usmdirs>1), 1, 2) 
+    SticsRFiles::set_param_xml(gen_file, "codeinitprec", codeinitprec, overwrite = TRUE)
+    
+    pft.traits <- unlist(trait.values[[pft]])
+    pft.names  <- names(pft.traits)
+    
+    ### Shoot growth
+    # parameter defining radiation effect on conversion efficiency
+    if ("rad_on_conversion_eff" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "coefb", pft.traits[which(pft.names == "rad_on_conversion_eff")], overwrite = TRUE)
+    }
+    
+    # ratio of root mass to aerial mass at harvest
+    if ("root2aerial_harvest" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "proprac", pft.traits[which(pft.names == "root2aerial_harvest")], overwrite = TRUE)
+    }
+
+    # minimal amount of root mass at harvest (when aerial biomass is nil) t.ha-1
+    if ("rootmin_harvest" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "y0msrac", pft.traits[which(pft.names == "rootmin_harvest")], overwrite = TRUE)
+    }
+      
+    # extinction coefficient connecting LAI to crop height
+    if ("LAI2height" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "khaut", pft.traits[which(pft.names == "LAI2height")], overwrite = TRUE)
+    }
+    
+    ### Root growth
+    
+    # bulk density of soil below which root growth is reduced due to a lack of soil cohesion (g.cm-3)
+    if ("bd_rootgrowth_reduced" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "dacohes", pft.traits[which(pft.names == "bd_rootgrowth_reduced")], overwrite = TRUE)
+    }
+    
+    # bulk density of soil above which root growth is maximal (g.cm-3)
+    if ("bd_rootgrowth_maximal" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "daseuilbas", pft.traits[which(pft.names == "bd_rootgrowth_maximal")], overwrite = TRUE)
+    }
+    
+    # bulk density of soil above which root growth becomes impossible (g.cm-3)
+    if ("bd_rootgrowth_impossible" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "daseuilhaut", pft.traits[which(pft.names == "bd_rootgrowth_impossible")], overwrite = TRUE)
+    }
+    
+    ### Water absorption and nitrogen content of the plant
+    
+    # parameter of increase of maximal transpiration when a water stress occurs
+    if ("maxTPincrease_waterstress" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "beta", pft.traits[which(pft.names == "maxTPincrease_waterstress")], overwrite = TRUE)
+    }
+    
+    # root length density (RLD) above which water and N uptake are maximum and independent of RLD
+    if ("lvopt" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "lvopt", pft.traits[which(pft.names == "lvopt")], overwrite = TRUE)
+    }
   
-  # may delete the xml after this
-  file.copy(file.path(rundir, "tempopar.sti"), file.path(usmdirs, "tempopar.sti"))
+    # average root radius
+    if ("rayon" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "rayon", pft.traits[which(pft.names == "rayon")], overwrite = TRUE)
+    }
+
+    # diffusion coefficient of nitrate N in soil at field capacity
+    if ("difN_FC" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "difN", pft.traits[which(pft.names == "difN_FC")], overwrite = TRUE)
+    }
+    
+    # skipping
+    # concrr: inorganic N concentration (NH4+NO3-N) in the rain
+    
+    # minimal amount of rain required to start an automatic fertilisation (N mm.d-1)
+    if ("plNmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "plNmin", pft.traits[which(pft.names == "plNmin")], overwrite = TRUE)
+    }
+
+    # skipping, irrlev:
+    # amount of irrigation applied automatically on the sowing day to allow germination when the model calculates automaticaly 
+    # the amount of irrigations or when the irrigation dates are calculated by sum of temperature
+    
+    # minimal amount of N in the plant required to compute INN (kg.ha-1)
+    if ("QNpltminINN" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "QNpltminINN", pft.traits[which(pft.names == "QNpltminINN")], overwrite = TRUE)
+    }
+    
+    ### Soil C and N processes and fertiliser losses
+    
+    # minimal temperature for decomposition of humified organic matter (degreeC)
+    if ("tmin_mineralisation" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "tmin_mineralisation", pft.traits[which(pft.names == "tmin_mineralisation")], overwrite = TRUE)
+    }
+    
+    # parameter (1/2) of the temperature function on humus decomposition rate
+    if ("T_p1_Hdecomp_rate" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FTEMh", pft.traits[which(pft.names == "T_p1_Hdecomp_rate")], overwrite = TRUE)
+    }
+    
+    # parameter (2/2) of the temperature function on humus decomposition rate
+    if ("T_p2_Hdecomp_rate" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FTEMha", pft.traits[which(pft.names == "T_p2_Hdecomp_rate")], overwrite = TRUE)
+    }
+    
+    # reference temperature for decomposition of humified organic matter
+    if ("T_r_HOMdecomp" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "TREFh", pft.traits[which(pft.names == "T_r_HOMdecomp")], overwrite = TRUE)
+    }
+    
+    # parameter (1/2) of the temperature function on decomposition rate of organic residues
+    if ("FTEMr" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FTEMr", pft.traits[which(pft.names == "FTEMr")], overwrite = TRUE)
+    }
+    
+    # parameter (2/2) of the temperature function on decomposition rate of organic residues
+    if ("FTEMra" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FTEMra", pft.traits[which(pft.names == "FTEMra")], overwrite = TRUE)
+    }
+    
+    # reference temperature for decomposition of organic residues
+    if ("T_r_ORdecomp" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "TREFr", pft.traits[which(pft.names == "T_r_ORdecomp")], overwrite = TRUE)
+    }
+    
+    # initial fraction of soil organic N inactive for mineralisation (= stable SON/ total SON)
+    if ("FINERT" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FINERT", pft.traits[which(pft.names == "FINERT")], overwrite = TRUE)
+    }
+    
+    # relative potential mineralization rate: K2 = fmin1 * exp(- fmin2*argi) / (1+fmin3*calc)
+    if ("FMIN1" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FMIN1", pft.traits[which(pft.names == "FMIN1")], overwrite = TRUE)
+    }
+
+    # parameter defining the effect of clay on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
+    if ("FMIN2" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FMIN2", pft.traits[which(pft.names == "FMIN2")], overwrite = TRUE)
+    }
+    
+    # parameter defining the effect of CaCO3 on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
+    if ("FMIN3" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "FMIN3", pft.traits[which(pft.names == "FMIN3")], overwrite = TRUE)
+    }
+    
+    # N/C ratio of soil humus
+    if ("Wh" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "Wh", pft.traits[which(pft.names == "Wh")], overwrite = TRUE)
+    }
+    
+    # soil pH below which NH3 volatilisation derived from fertiliser is nil
+    if ("pHminvol" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "pHminvol", pft.traits[which(pft.names == "pHminvol")], overwrite = TRUE)
+    }
+    
+    # soil pH above which NH3 volatilisation derived from fertiliser is maximum
+    if ("pHmaxvol" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "pHmaxvol", pft.traits[which(pft.names == "pHmaxvol")], overwrite = TRUE)
+    }
+
+    # N uptake rate at which fertilizer loss is divided by 2
+    if ("Nupt_fertloss_halve" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "Vabs2", pft.traits[which(pft.names == "Nupt_fertloss_halve")], overwrite = TRUE)
+    }
+
+    # maximal amount of N immobilised in soil derived from the mineral fertilizer
+    if ("maxNimm_mineralfert" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "Xorgmax", pft.traits[which(pft.names == "maxNimm_mineralfert")], overwrite = TRUE)
+    }
+    
+    # relative water content (fraction of field capacity) below which mineralisation rate is nil
+    if ("hminm" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "hminm", pft.traits[which(pft.names == "hminm")], overwrite = TRUE)
+    }
+
+    # relative water content (fraction of field capacity) below which mineralisation rate is maximum
+    if ("hoptm" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "hoptm", pft.traits[which(pft.names == "hoptm")], overwrite = TRUE)
+    }
+
+    # skipping, alphaph:
+    # maximal soil pH variation per unit of inorganic N added with slurry
+      
+    # skipping, dphvolmax:
+    # maximal pH increase following the application of slurry
+    
+    # skipping, phvols:
+    # parameter used to calculate the variation of soil pH after the addition of slurry
+    
+    # relative soil mineralisation rate at water saturation
+    if ("fhminsat" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "fhminsat", pft.traits[which(pft.names == "fhminsat")], overwrite = TRUE)
+    }
+      
+    # reduction factor of decomposition rate of organic residues when mineral N is limiting
+    if ("Nlim_reductionOMdecomp" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "fredkN", pft.traits[which(pft.names == "Nlim_reductionOMdecomp")], overwrite = TRUE)
+    }
+    
+    # reduction factor of decomposition rate of microbial biomass when mineral N is limiting
+    if ("Nlim_reductionMBdecomp" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "fredlN", pft.traits[which(pft.names == "Nlim_reductionMBdecomp")], overwrite = TRUE)
+    }
+
+    # minimal value for the ratio N/C of the microbial biomass when N limits decomposition
+    if ("fNCbiomin" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "fNCbiomin", pft.traits[which(pft.names == "fNCbiomin")], overwrite = TRUE)
+    }
+    
+    # additional reduction factor of residues decomposition rate when mineral N is very limited in soil
+    if ("fredNsup" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "fredNsup", pft.traits[which(pft.names == "fredNsup")], overwrite = TRUE)
+    }
+    
+    # maximum priming ratio (relative to SOM decomposition SD rate)
+    if ("Primingmax" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "Primingmax", pft.traits[which(pft.names == "Primingmax")], overwrite = TRUE)
+    }
+    
+    ### Nitrification, denitrification and associated N2O emissions
+    ### TODO: modify these params
+    
+    ### Soil hydrology and compaction
+    
+    # minimal amount of rain required to produce runoff (mm.d-1)
+    if ("precmin4runoff" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "pminruis", pft.traits[which(pft.names == "precmin4runoff")], overwrite = TRUE)
+    }
+    
+    # soil thermal diffusivity (cm2.s-1)
+    if ("soil_thermal_diffusivity" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "diftherm", pft.traits[which(pft.names == "soil_thermal_diffusivity")], overwrite = TRUE)
+    }
+    
+    # skipping, bformnappe:
+    # coefficient for the water table shape (artificially drained soil)
+
+    # drain radius (cm)
+    if ("rdrain" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "rdrain", pft.traits[which(pft.names == "rdrain")], overwrite = TRUE)
+    }
+    
+    # soil water potential corresponding to wilting point (Mpa)
+    if ("SWP_WP" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "psihumin", pft.traits[which(pft.names == "SWP_WP")], overwrite = TRUE)
+    }
+    
+    # soil water potential corresponding to field capacity (Mpa)
+    if ("SWP_FC" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "psihucc", pft.traits[which(pft.names == "SWP_FC")], overwrite = TRUE)
+    }
+    
+    # soil moisture content (fraction of field capacity) above which compaction may occur and delay sowing
+    if ("SMC_compaction_delay_sow" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "prophumtasssem", pft.traits[which(pft.names == "SMC_compaction_delay_sow")], overwrite = TRUE)
+    }
+    
+    # soil moisture content (fraction of field capacity) above which compaction may occur and delay harvest
+    if ("SMC_compaction_delay_harvest" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "prophumtassrec", pft.traits[which(pft.names == "SMC_compaction_delay_harvest")], overwrite = TRUE)
+    }
+
+    ### skipping
+    ### Soil tillage if soil compaction activated
+    
+    ### Typology of pebbles fertilisers and residues
+    ### should some of these parameters come from event files?
+    
+    ### codetypeng: Types of mineral fertilisers - 1 atm
+    # 1: Ammonium.nitrate
+    # 2: Urea.Ammonium.Nitrate.solution
+    # 3: Urea
+    # 4: Anhydrous.ammonia
+    # 5: Ammonium.sulphate
+    # 6: Ammonium.phosphate
+    # 7: Calcium.nitrate
+    # 8: Fixed.efficiency
+    
+    # each option has 4 params
+    # engamm: fraction of ammonium in the N fertilizer
+    # orgeng: maximal amount of fertilizer N that can be immobilized in the soil (fraction for type 8)
+    # deneng: maximal fraction of the mineral fertilizer that can be denitrified (used if codedenit is not activated)
+    # voleng: maximal fraction of mineral fertilizer that can be volatilized
+      
+    ### codetypres: Type of residues for decomposition parameters - 21 atm
+    # 1:  Main crop on surface
+    # 2:  Intermediate crop on surface
+    # 3:  Manure on surface
+    # 4:  Green compost on surface
+    # 5:  Sewage sludge on surface
+    # 6:  Vinasse on surface
+    # 7:  Horn on surface
+    # 8:  Grapevine shoots on surface
+    # 9:  Others.1 on surface
+    # 10: Others.2 on surface
+    # 11: Main crop ploughed in
+    # 12: Intermediate crop ploughed in
+    # 13: Manure ploughed in
+    # 14: Green compost ploughed in
+    # 15: Sewage sludge ploughed in
+    # 16: Vinasse ploughed in
+    # 17: Cattle horn ploughed in
+    # 18: Grapevine shoots ploughed in
+    # 19: Others.1 ploughed in
+    # 20: Others.2 ploughed in
+    # 21: Dead roots in soil
+    
+    # each option has 17 params
+    
+    # fraction of organic residue which is decomposable
+    if ("fOR_decomp" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "CroCo", pft.traits[which(pft.names == "fOR_decomp")], overwrite = TRUE)
+    }
+
+    # parameter of organic residues decomposition: kres=akres+bkres/CsurNres
+    if ("ORdecomp_par" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "akres", pft.traits[which(pft.names == "ORdecomp_par")], overwrite = TRUE)
+    }
+      
+    # potential rate of decomposition of organic residues: kres=akres+bkres/CsurNres
+    if ("ORdecomp_rate" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "bkres", pft.traits[which(pft.names == "ORdecomp_rate")], overwrite = TRUE)
+    }
+    
+    # parameter determining C/N ratio of biomass during organic residues decomposition: CsurNbio=awb+bwb/CsurNres
+    if ("awb" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "awb", pft.traits[which(pft.names == "awb")], overwrite = TRUE)
+    }
+    
+    # parameter determining C/N ratio of biomass during organic residues decomposition: CsurNbio=awb+bwb/CsurNres
+    if ("bwb" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "bwb", pft.traits[which(pft.names == "bwb")], overwrite = TRUE)
+    }
+
+    # minimum ratio C/N of microbial biomass decomposing organic residues
+    if ("minC2N_microbialbiomass" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "cwb", pft.traits[which(pft.names == "minC2N_microbialbiomass")], overwrite = TRUE)
+    }
+    
+    # parameter of organic residues humification: hres = 1 - ahres*CsurNres/(bhres+CsurNres)
+    if ("ahres" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "ahres", pft.traits[which(pft.names == "ahres")], overwrite = TRUE)
+    }
+    
+    # parameter of organic residues humification: hres = 1 - ahres*CsurNres/(bhres+CsurNres)
+    if ("bhres" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "bhres", pft.traits[which(pft.names == "bhres")], overwrite = TRUE)
+    }
+    
+    # TODO: we need a soil PFT
+    
+    # potential decay rate of microbial biomass decomposing organic residues
+    if ("microbialbiomass_decay" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "kbio", pft.traits[which(pft.names == "microbialbiomass_decay")], overwrite = TRUE)
+    }
+    
+    # Carbon assimilation yield by the microbial biomass during crop residues decomposition
+    if ("microbialbiomass_C_yield" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "yres", pft.traits[which(pft.names == "microbialbiomass_C_yield")], overwrite = TRUE)
+    }
+    
+    # minimum value of C/N ratio of organic residue (g.g-1)
+    if ("CNresmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "CNresmin", pft.traits[which(pft.names == "CNresmin")], overwrite = TRUE)
+    }
+    
+    # maximum value of C/N ratio of organic residue (g.g-1)
+    if ("CNresmax" %in% pft.names) {
+      SticsRFiles::set_param_xml(gen_file, "CNresmax", pft.traits[which(pft.names == "CNresmax")], overwrite = TRUE)
+    }
+
+    # skipping, qmulchruis0:
+    # amount of mulch above which runoff is suppressed
+    
+    # skipping, mouillabilmulch:
+    # maximum wettability of crop mulch
+ 
+    # skipping, kcouvmlch:
+    # extinction coefficient connecting the soil cover to the amount of plant mulch
+    
+    # skipping, albedomulchresidus:
+    # albedo of crop mulch
+    
+    # skipping, Qmulchdec:
+    # maximal amount of decomposable mulch
+      
+    SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
+    
+    this_usm <- grep(names(trait.values)[pft], usmdirs)
+    file.rename(file.path(rundir, "tempopar.sti"), file.path(usmdirs[this_usm], "tempopar.sti"))
+  }
   
+  # DO NOTHING FOR NOW
   newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
   newf_file <- file.path(rundir, "param_newform.xml")
   XML::saveXML(newf_xml, file = newf_file)  
@@ -698,12 +1086,12 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       # these may or may not be modified depending on how crop cycles work in STICS
       # 'snu' is bare soil
       SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0",     param_value = "snu", select = "plante", value = "1", overwrite = TRUE)  
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0",       param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "masec0",     param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0",      param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "magrain0",   param_value = 0, select = "plante", value = "1", overwrite = TRUE)       
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "QNplante0",  param_value = 0, select = "plante", value = "1", overwrite = TRUE)      
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "resperenne0", param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0",       param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "masec0",     param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0",      param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "magrain0",   param_value = 0, select = "plante", value = "1", overwrite = TRUE)       
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "QNplante0",  param_value = 0, select = "plante", value = "1", overwrite = TRUE)      
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "resperenne0", param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
     }
     
     SticsRFiles::convert_xml2txt(xml_file = ini_file, java_dir = javastics_path)
