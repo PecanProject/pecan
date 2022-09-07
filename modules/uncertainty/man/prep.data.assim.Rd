@@ -19,7 +19,7 @@ prep.data.assim
 }
 \section{purpose}{
 
-This function sets up a call to PEcAn.assim.sequential::sda.enkf()
+This function sets up a call to PEcAnAssimSequential::sda.enkf()
 }
 
 \author{
