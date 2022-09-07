@@ -65,7 +65,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
   
   #initialize bad to store any problematic items.
   bad_species <- c()
-  bad_pft_speceis <- c()
+  bad_pft_species <- c()
   
   ## loop over acronyms or IDs
   for (acro in Species_elements) {
@@ -93,7 +93,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
     if (nrow(pft_species) > 0) {
       print(c("Species already exists for PFT", acro))
       print(pft_species)
-      bad_pft_speceis <- c(bad_pft_speceis, paste0("Specie_ID: ", my.species$id, " . pft_ID: ", my.pft$id, "."))
+      bad_pft_species <- c(bad_pft_species, paste0("Specie_ID: ", my.species$id, " . pft_ID: ", my.pft$id, "."))
       next
     }
     
@@ -118,6 +118,6 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
     inputid <- c(PEcAn.DB::db.query(query = cmd, con = con), inputid)
     
   }  ## end loop over acronyms
-  return(list(input_ID = inputid, bad_species = bad_species, bad_pft_speceis = bad_pft_speceis))
+  return(list(input_ID = inputid, bad_species = bad_species, bad_pft_species = bad_pft_species))
   
 } # pft.add.spp
