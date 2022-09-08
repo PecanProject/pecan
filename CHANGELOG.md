@@ -20,7 +20,6 @@ see if you need to change any of these:
   to star PEcAn with https.
 - TRAEFIK_HTTPS_OPTIONS is no longer used, this is the default when you use https.
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
-- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
 
 ### Added
 
@@ -60,6 +59,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
+- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
 
 ### Removed
 
