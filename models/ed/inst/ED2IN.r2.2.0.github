@@ -510,7 +510,7 @@ $ED_NL
    !             1 -- Read in soil colour class from the files set in SLCOL_DATABASE.      !
    !             2 -- Assign either the value set by ISOILCOL (see below).                 !
    !---------------------------------------------------------------------------------------!
-   NL%ISLCOLFLG = 1
+   NL%ISLCOLFLG = 2
    !---------------------------------------------------------------------------------------!
 
 
@@ -1217,7 +1217,7 @@ $ED_NL
    ! surface area uses WAI. So if IBRANCH_THERMO is set to 0. All branch surface areas will!
    ! be ignored.                                                                           !
    !---------------------------------------------------------------------------------------!
-   NL%ISTEM_RESPIRATION_SCHEME = mystemresp
+   NL%ISTEM_RESPIRATION_SCHEME = 0
    !---------------------------------------------------------------------------------------!
 
 
@@ -1318,7 +1318,7 @@ $ED_NL
    !                            2. (ED-2.2 Alternative) Trait-dependent exponential model  !
    !                               by Camac et al. (2018) and use actual growth rates.     !
    !---------------------------------------------------------------------------------------!
-   NL%CARBON_MORTALITY_SCHEME = mycarbonmort
+   NL%CARBON_MORTALITY_SCHEME = 0
    !---------------------------------------------------------------------------------------!
 
 
@@ -1675,7 +1675,7 @@ $ED_NL
    !       2014. High-resolution hydraulic parameter maps for surface soils in tropical    !
    !       South America. Geosci. Model Dev. 7 (3), 711-723, doi:10.5194/gmd-7-711-2014.   !
    !---------------------------------------------------------------------------------------!
-   NL%SOIL_HYDRO_SCHEME = myslhydro
+   NL%SOIL_HYDRO_SCHEME = 0
    !---------------------------------------------------------------------------------------!
 
 
