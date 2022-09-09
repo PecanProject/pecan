@@ -22,6 +22,30 @@
 
 extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsites = NULL, ...){
   
+  #Function to grab the first measurements for each plot between start and end date.
+  Grab_First_Measurements_of_Each_Plot <- function(temp_data){
+    Plot_Year <- paste0(temp_data$plot, temp_data$year)
+    unique_Year <- sort(unique(temp_data$year))
+    unique_Plot <- sort(unique(temp_data$plot))
+    Ind <- rep(NA, length(Plot_Year))
+    
+    for (j in 1:length(unique_Plot)) {
+      for (k in 1:length(unique_Year)) {
+        if(length(which(Plot_Year == paste0(unique_Plot[j], unique_Year[k])))>0){
+          Ind[which(Plot_Year == paste0(unique_Plot[j], unique_Year[k]))] <- 1
+          break
+        }
+      }
+    }
+    temp_data <- cbind(temp_data, Ind)
+    if(sum(is.na(temp_data$Ind))==0){
+      temp_data <- temp_data
+    }else{
+      temp_data <- temp_data[-which(is.na(temp_data$Ind)),]
+    }
+    temp_data
+  }
+  
   #Find sitename from lon and lat params using distance
   if(is.null(neonsites)){
     neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
@@ -51,6 +75,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     filter.date$year <- format(as.Date(filter.date$date.y, format="%d/%m/%Y"),"%Y")
     #Rename NEON column names to match pecan functions
     colnames(filter.date) <- c("site_name", "plot", "Subplot", "species_USDA_symbol", "species", "taxonRank", "date", "DBH", "height", "year")
+    filter.date <- Grab_First_Measurements_of_Each_Plot(filter.date)
   }
    
   #herb AGB
@@ -66,6 +91,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions
     colnames(filter.herb) <- c("site_name", "plot", "Subplot", "plotType", "clipArea", "dryMass", "date", "year")
+    filter.herb <- Grab_First_Measurements_of_Each_Plot(filter.herb)
   }
   
   # #species info
