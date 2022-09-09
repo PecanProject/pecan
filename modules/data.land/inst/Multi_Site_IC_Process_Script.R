@@ -1,15 +1,16 @@
 #reading settings and setting up environments for later processes
 settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml")
 input_veg <- list(storedir='/projectnb/dietzelab/dongchen/test_IC/download')
-outdir <- "/projectnb/dietzelab/dongchen/test_IC/HF/"
+outdir <- "/projectnb/dietzelab/dongchen/test_IC/test/"
 start_date <- as.Date(settings$state.data.assimilation$start.date)
 end_date <- Sys.Date()
 source='NEON_veg'
 machine_host <- "test-pecan.bu.edu"
-n_ens <- 100
+n_ens <- 10
 log_file <- c()
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 site.IDs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+Drop <- TRUE
 
 #loop over different sites
 for (i in 1:length(settings)) {
@@ -46,35 +47,21 @@ for (i in 1:length(settings)) {
     next
   }
   
-  #grab first measurements of each Plot.
-  Grab_First_Measurements_of_Each_Plot <- function(temp_data){
-    Plot_Year <- paste0(temp_data$plot, temp_data$year)
-    unique_Year <- sort(unique(temp_data$year))
-    unique_Plot <- sort(unique(temp_data$plot))
-    Ind <- rep(NA, length(Plot_Year))
-    
-    for (j in 1:length(unique_Plot)) {
-      for (k in 1:length(unique_Year)) {
-        if(length(which(Plot_Year == paste0(unique_Plot[j], unique_Year[k])))>0){
-          Ind[which(Plot_Year == paste0(unique_Plot[j], unique_Year[k]))] <- 1
-          break
+  #check if we have the situation that only subplot ID 41 observed in one plot. if so, we might need to drop this record when Drop == TRUE.
+  if(2 %in% veg_ind){
+    for (PLOT in unique(veg_info[[2]]$plot)) {
+      temp <- veg_info[[2]][which(veg_info[[2]]$plot==PLOT),]$Subplot
+      if(length(unique(temp)) == 1){
+        if(unique(temp) == 41){
+          print(paste0("Only subplot 41 observed in plot: ", PLOT))
+          log_file <- c(log_file, paste0("Only subplot 41 observed in plot: ", PLOT))
+          if(Drop){
+            veg_info[[2]] <- veg_info[[2]][-which(veg_info[[2]]$plot==PLOT),]
+          }
         }
       }
     }
-    temp_data <- cbind(temp_data, Ind)
-    if(sum(is.na(temp_data$Ind))==0){
-      temp_data <- temp_data
-    }else{
-      temp_data <- temp_data[-which(is.na(temp_data$Ind)),]
-    }
-    temp_data
   }
-  for (j in veg_ind) {
-    temp_data <- veg_info[[j]]
-    temp_data <- Grab_First_Measurements_of_Each_Plot(temp_data)
-    veg_info[[j]] <- temp_data
-  }
-  
   
   sppfilename <- write_veg(temp_outdir, start_date, veg_info = veg_info, source)
   
