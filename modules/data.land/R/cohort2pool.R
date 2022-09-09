@@ -33,18 +33,22 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
     dbh <- dat[[2]][,dbh_name]
     
     #calculate total area
-    unique_subplot <- unique(paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot))
+    subplot_fullName <- paste(dat[[2]]$site_name,dat[[2]]$plot,dat[[2]]$Subplot)
+    unique_subplot_records <- dat[[2]][!duplicated(subplot_fullName),]
+    Unique_Plot <- unique(unique_subplot_records$plot)
     area <- c()
-    for (i in 1:length(unique_subplot)) {
-      subplot_ID <- strsplit(unique_subplot[i], " ")[[1]][3]
-      if(subplot_ID %in% c(31, 32, 40, 41)){
-        area <- c(area, 100)
-      }else if(subplot_ID %in% c(21, 23, 39)){
-        area <- c(area, 400)
+    for (i in 1:length(Unique_Plot)) {
+      subplot_IDs <- unique_subplot_records[which(unique_subplot_records$plot == Unique_Plot[i]),]$Subplot
+      if(sum(subplot_IDs %in% c(31, 32, 40, 41)) == length(subplot_IDs)){
+        # unique_subplot_records[which(unique_subplot_records$plot == Unique_Plot[i]),]$PlotSize <- 400
+        area <- c(area, rep(400, length(subplot_IDs)))
+      }else if(sum(subplot_IDs %in% c(21, 23, 39, 41)) == length(subplot_IDs)){
+        # unique_subplot_records[which(unique_subplot_records$plot == Unique_Plot[i]),]$PlotSize <- 1600
+        area <- c(area, rep(1600, length(subplot_IDs)))
       }
     }
-    total_area <- sum(area)
-    
+    total_area <- sum(area)/4
+
     ## Grab allometry
     if(is.null(allom_param)){
       a <- -2.0127                        
