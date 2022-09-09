@@ -36,14 +36,15 @@ extract_veg <- function(new_site, start_date, end_date,
    }
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
-  
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
- #Need a better way to check if the function exists
- if (!exists(fcnx)) {
+ 
+ fcn_exist <- try(fcn <- do.call("::", list(paste0("PEcAn.data.land"), paste0(fcnx))))
+ 
+ #detect if function exist
+ if(is.character(fcn_exist)){
    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
- }else{
-   fcn <- fget(fcnx)
  }
+ 
  # extract_* functions need to have standard args
  if(source == "NEON_veg"){
     #extract_NEON_veg needs a location to store downloaded NEON files, this is not a standard argument, so this if/else statement is a hack but it is meant to ensure the extract_veg function works
@@ -70,7 +71,8 @@ extract_veg <- function(new_site, start_date, end_date,
    }else{
       code_col    <- "species_USDA_symbol"
       format_name <- "usda"
-      obs[obs$species_USDA_symbol != "2PLANT", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
+      obs <- obs[obs$species_USDA_symbol != "2PLANT" &  
+                   obs$species_USDA_symbol != "2PLANT-H", ] #removes the rows with 2PLANT, this is a NEON specific code that means they could not identify the species 
    }
  }
 
