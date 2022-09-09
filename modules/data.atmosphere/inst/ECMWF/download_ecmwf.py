@@ -1,3 +1,6 @@
+#This script helps in viewing the latest date for which 15 day forecast data is available on https://data.ecmwf.int/ and helps in downloading the same
+#Author: Swarnalee Mazumder
+
 def ecmwflatest(time, step15, stream, type, params):
   
     from ecmwf.opendata import Client
@@ -46,7 +49,7 @@ def ecmwflatest(time, step15, stream, type, params):
     return latest
 
     
-def ecmwfdownloadopendata(date, time, stream, type, params, filename):
+def ecmwfdownload(date, time, stream, type, params, filename):
   
     """
     Downloads latest ECMWF Open Data forecast based on specified forecast time, step, stream, parameters

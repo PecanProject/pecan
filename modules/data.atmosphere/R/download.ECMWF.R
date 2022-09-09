@@ -5,7 +5,7 @@
 #' Under the hood, this function uses the Python `ecmwf-opendata` module.
 #' The module and dependencies can be accessed via the `reticulate` package.
 #' 
-#' `reticulate::conda_install(c("scipy", "xarray", "eccodes", "cfgrib", "ecmwf-opendata"), envname = "r-reticulate", pip = TRUE)`
+#' `reticulate::conda_install(c("scipy", "xarray", "eccodes", "cfgrib", "ecmwf-opendata", "dask", "netCDF4"), envname = "r-reticulate", pip = TRUE)`
 #' `reticulate::use_condaenv("r-reticulate")`
 #'  
 #' 
@@ -105,7 +105,7 @@ download.ECMWF <- function(outfolder,
   
   if (stream == "enfo"){
     time <- time
-    step <- 360
+    step_15day <- 360
     type <- type # type of forecast here c("cf", "pf")
   } else{
     PEcAn.logger::logger.severe(sprintf(
@@ -121,12 +121,10 @@ download.ECMWF <- function(outfolder,
   # "tp" - total precipitation
   # "10u" - 10 metre U wind component
   # "10v" - 10 metre V wind component
-  # "q" - Specific humidity
-  # "r" - Relative humidity
   # "sp" - Surface Pressure
   
   
-  all_parameters <- c("2t", "tp", "10u", "10v", "q", "r", "sp")
+  all_parameters <- c("2t", "tp", "10u", "10v", "sp")
   
   if (tolower(parameters) == "all") {
     parameter_types <- all_parameters
@@ -143,7 +141,7 @@ download.ECMWF <- function(outfolder,
   
   
   # Python script "download_ecmwf.py" to get latest forecast date and download forecast datasets
-  script.path = file.path(system.file("ECMWF/download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
+  script.path = file.path(system.file("ECMWF/download_ecmwf.py", package = "PEcAn.data.atmosphere"))
   reticulate::source_python(script.path)
   
   date_latestdata <- ecmwflatest(time, step, stream, type, all_parameters)
@@ -172,68 +170,73 @@ download.ECMWF <- function(outfolder,
       latest_filedate
     ))
   } else {
-  
-  fname <- paste(latest_filedate, time, step, stream, type, sep = "_")
-  
-  in_filename <- file.path(outfolder, paste0(fname, ".grib2"))  
-  data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, in_filename)
-  
-  # Python script "ecmwf_grib2nc.py" to convert grib2 to netCDF
-  # Converting Grib2 file to ensemble wise NetCDF file
-  script.path = file.path(system.file("ECMWF/ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
-  reticulate::source_python(script.path)
-  
-  out_filename <- file.path(outfolder, fname)
-  nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename, lat_in, lon_in)
-  
-  
-  rows    <- 1
-  results <- data.frame(
-    file = character(rows),
-    host = character(rows),
-    mimetype = character(rows),
-    formatname = character(rows),
-    startdate = character(rows),
-    enddate = character(rows),
-    dbfile.name = "ECMWF",
-    stringsAsFactors = FALSE
-  )
-  
-  firstdate_st <- latest_filedate
-  lastdate_st <- ymd(firstdate_st) + days(15)
-  
-  results$file[rows]       <-
-    file.path(outfolder, out_file_names)
-  results$host[rows]       <- PEcAn.remote::fqdn()
-  results$startdate[rows]  <- firstdate_st
-  results$enddate[rows]    <- lastdate_st
-  results$mimetype[rows]   <- "application/x-netcd"
-  results$formatname[rows] <- "CF Meteorology"
-  
-  return(results)
-  
+    
+    in_fname <- paste(latest_filedate, time, stream, sep = "_")
+    
+    data_download <- ecmwfdownload(date, time, stream, type, all_parameters, in_fname)
+    
+    rows    <- 85 # 48 files at 3h timestep and 36 files at 6h timestep
+    results <- data.frame(
+      file = character(rows),
+      host = character(rows),
+      mimetype = character(rows),
+      formatname = character(rows),
+      startdate = character(rows),
+      enddate = character(rows),
+      dbfile.name = "ECMWF",
+      stringsAsFactors = FALSE
+    )
+    
+    out_3h <- list()
+    for (h3 in seq(0, 141, 3)){
+      out_3h <- append(out_3h, paste0(in_fname,"_",h3,".grib2"))
+    }
+    
+    out_6h <- list()
+    for (h6 in seq(144, 360, 6)){
+      out_6h <- append(out_6h, paste0(in_fname,"_",h6,".grib2"))
+    }
+    
+    for (row in 1:48){
+      results$file[row]       <-
+        file.path(outfolder, out_3h[[row]])
+      results$host[row]       <- PEcAn.remote::fqdn()
+      results$startdate[row]  <- "start_date"
+      results$enddate[row]    <- "end_date"
+      results$mimetype[row]   <- "application/x-netcd"
+      results$formatname[row] <- "CF Meteorology"
+    }
+    
+    for (row in 1:37){
+      results$file[row+48]       <-
+        file.path(outfolder, out_6h[[row]])
+      results$host[row+48]       <- PEcAn.remote::fqdn()
+      results$startdate[row+48]  <- "start_date"
+      results$enddate[row+48]    <- "end_date"
+      results$mimetype[row+48]   <- "application/x-netcd"
+      results$formatname[row+48] <- "CF Meteorology"
+    }
+    return(results)
   }
   
 }
 
-
 ######### code to reproduce 
 # library(reticulate)
+# reticulate::conda_install(c("scipy", "xarray", "eccodes", "cfgrib", "ecmwf-opendata", "dask", "netCDF4"), envname = "r-reticulate", pip = TRUE)
+# reticulate::use_condaenv("r-reticulate")
+# 
 # date <- -1
 # time <- 0
-# step <- 360
 # stream <- "enfo"
-# type <- c("cf","pf")
+# type <- c("cf", "pf")
+# step_15day <- 360
 # 
-# all_parameters <-  c("2t", "tp", "10u", "10v", "q", "r", "sp")
-# in_filename <- "trial_ecmwfod.grib2"
+# all_parameters <-  c("10u", "10v", "2t", "sp", "tp")
+# fname <- "15day_ecmwfxxx"
 # 
-# script.path = file.path(system.file("download_ecmwf_opendata.py", package = "PEcAn.data.atmosphere"))
-# reticulate::source_python(script.path)
-# data_download <- ecmwfdownload(date, time, step, stream, type, all_parameters, in_filename)
+# reticulate::source_python("downloadecmwf.py")
 # 
-# out_filename <- "trial_ecmwfod"
-#
-# script.path = file.path(system.file("ecmwf_grib2nc.py", package = "PEcAn.data.atmosphere"))
-# reticulate::source_python(script.path)
-# nc_ecmwf <- grib2nc_ecmwf(in_filename, outfolder, out_filename, lat_in, lon_in)
+# latest <- ecmwflatest(time, step_15day, stream, type, all_parameters)
+# 
+# data_download <- ecmwfdownload(date= date, time= time, stream= stream, type= type, params= all_parameters, filename= fname)
