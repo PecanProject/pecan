@@ -1330,7 +1330,7 @@ $ED_NL
    !                            1. (Beta) hydraulic failure mortality based on monthly     !
    !                               mean xylem percentage loss of conductance (PLC)         !
    !---------------------------------------------------------------------------------------!
-   NL%HYDRAULIC_MORTALITY_SCHEME = myhydromort
+   NL%HYDRAULIC_MORTALITY_SCHEME = 0
    !---------------------------------------------------------------------------------------!
 
 
