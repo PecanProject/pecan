@@ -28,13 +28,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
-    PEcAn.utils,
-    PEcAn.priors,
-    ggplot2,
-    ggmap,
-    gridExtra
 Imports:
-    coda (>= 0.18),
     dplyr,
     ggmap,
     ggplot2,
