@@ -34,7 +34,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
 
   # NOTE : match_pft may return NAs for unmatched dead trees
-  pft.info <- match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
+  pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
 
   # merge with other stuff
   obs$pft <- pft.info$pft
@@ -55,7 +55,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 # Cohort2Pool -------------------------------------------------------------
   # read in registration xml for pool specific information
   register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
-  if(exists(register.xml)){
+  if(file.exists(register.xml)){
     register     <- PEcAn.data.atmosphere::read.register(register.xml, con = NULL)
     
   }else{
