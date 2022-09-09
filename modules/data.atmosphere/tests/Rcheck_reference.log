@@ -1,20 +1,86 @@
-* using log directory ‘/tmp/Rtmp02RC5y/PEcAn.data.atmosphere.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.data.atmosphere.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.data.atmosphere/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.data.atmosphere’ version ‘1.7.0’
+* this is package ‘PEcAn.data.atmosphere’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘David LeBauer <dlebauer@email.arizona.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Unknown, possibly misspelled, fields in DESCRIPTION:
+  ‘Remotes’
+
+Strong dependencies not in mainstream repositories:
+  nneo, PEcAn.DB, PEcAn.logger, PEcAn.remote, PEcAn.utils
+
+Found the following (possibly) invalid URLs:
+  URL: http://fluxnet.fluxdata.org//sites/site-list-and-pages/ (moved to https://fluxnet.org/sites/site-list-and-pages/)
+    From: man/download.Fluxnet2015.Rd
+    Status: 200
+    Message: OK
+  URL: http://www.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html (moved to https://archive.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html)
+    From: man/qair2rh.Rd
+    Status: 200
+    Message: OK
+  URL: http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx
+    From: man/download.FluxnetLaThuile.Rd
+    Status: Error
+    Message: libcurl error code 28:
+        Connection timed out after 60000 milliseconds
+  URL: http://www.neonscience.org/science-design/field-sites/list (moved to https://www.neonscience.org/science-design/field-sites/list)
+    From: man/download.NEONmet.Rd
+    Status: 404
+    Message: Not Found
+  URL: https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html
+    From: README.md
+    Status: 404
+    Message: Not Found
+
+The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
-
 Imports includes 38 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
+
 * checking package dependencies ... NOTE
 Imports includes 38 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
@@ -30,6 +96,7 @@ use conditionally.
 * checking whether package ‘PEcAn.data.atmosphere’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
@@ -48,6 +115,7 @@ Use \uxxxx escapes for other characters.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
 'library' or 'require' calls not declared from:
   ‘MASS’ ‘mgcv’
@@ -88,7 +156,6 @@ cfmet.downscale.subdaily: no visible binding for global variable
   ‘month’
 cfmet.downscale.subdaily: no visible binding for global variable ‘day’
 cfmet.downscale.subdaily: no visible binding for global variable ‘hour’
-check_unit: no visible binding for global variable ‘cf_standard_name’
 debias.met.regression: no visible global function definition for ‘sd’
 debias.met.regression: no visible global function definition for
   ‘aggregate’
@@ -119,65 +186,32 @@ debias.met.regression: no visible binding for global variable ‘upr’
 debias.met.regression: no visible binding for global variable ‘obs’
 debias.met.regression: no visible binding for global variable ‘values’
 debias.met.regression: no visible binding for global variable ‘Year’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘timestamp’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘NOAA.member’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘surface_downwelling_longwave_flux_in_air’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘surface_downwelling_shortwave_flux_in_air’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘specific_humidity’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘air_temperature’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘precipitation_flux’
-download.NOAA_GEFS_downscale: no visible binding for global variable
-  ‘wind_speed’
-download.US_Syv: no visible global function definition for ‘read.csv’
 download.US_Wlef: no visible global function definition for
   ‘read.table’
-downscale_repeat_6hr_to_hrly: no visible binding for global variable
-  ‘timestamp’
-downscale_ShortWave_to_hrly : downscale_solar_geom: no visible global
-  function definition for ‘median’
-downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘timestamp’
-downscale_ShortWave_to_hrly: no visible binding for global variable
-  ‘NOAA.member’
-downscale_spline_to_hourly : interpolate: no visible global function
-  definition for ‘splinefun’
-downscale_spline_to_hourly: no visible binding for global variable ‘.’
-downscale_spline_to_hourly: no visible binding for global variable
-  ‘NOAA.member’
-downscale_spline_to_hourly: no visible binding for global variable
-  ‘dscale.member’
-downscale_spline_to_hourly: no visible global function definition for
-  ‘:=’
 extract.local.CMIP5: no visible binding for global variable ‘GCM’
 extract.nc.ERA5 : <anonymous>: no visible global function definition
   for ‘setNames’
 extract.nc.ERA5: no visible global function definition for ‘setNames’
 extract.nc.ERA5 : <anonymous>: no visible binding for global variable
   ‘.’
-get_NARR_thredds: no visible binding for global variable ‘latitude’
-get_NARR_thredds: no visible binding for global variable ‘longitude’
-get_narr_url: no visible binding for global variable ‘NARR_name’
 get.cruncep: no visible binding for global variable ‘Lat’
 get.cruncep: no visible binding for global variable ‘lati’
 get.cruncep: no visible global function definition for
   ‘cruncep_dt2weather’
-get.rh: no visible binding for global variable ‘L’
-get.rh: no visible binding for global variable ‘Rw’
 get.weather: no visible global function definition for
   ‘cruncep_dt2weather’
+get_NARR_thredds: no visible binding for global variable ‘latitude’
+get_NARR_thredds: no visible binding for global variable ‘longitude’
 is.land: no visible binding for global variable ‘met.nc’
 lm_ensemble_sims: no visible global function definition for ‘quantile’
 lm_ensemble_sims: no visible binding for global variable ‘mod.save’
 lm_ensemble_sims: no visible global function definition for ‘sd’
 load.cfmet: no visible binding for global variable ‘index’
-load.cfmet: no visible binding for global variable ‘mstmip_vars’
+met.process: no visible global function definition for ‘get.id’
+met.process: no visible binding for global variable ‘site_id’
+met.process: no visible binding for global variable ‘format_id’
+met.process: no visible binding for global variable ‘machine_id’
+met2CF.FACE: no visible binding for global variable ‘x’
 met_temporal_downscale.Gaussian_ensemble: no visible global function
   definition for ‘sd’
 met_temporal_downscale.Gaussian_ensemble: no visible global function
@@ -186,16 +220,6 @@ met_temporal_downscale.Gaussian_ensemble: no visible binding for global
   variable ‘temp_max’
 met_temporal_downscale.Gaussian_ensemble: no visible binding for global
   variable ‘temp_min’
-met.process: no visible global function definition for ‘get.id’
-met.process: no visible binding for global variable ‘site_id’
-met.process: no visible binding for global variable ‘format_id’
-met.process: no visible binding for global variable ‘name’
-met.process: no visible binding for global variable ‘machine_id’
-met2CF.FACE: no visible binding for global variable ‘x’
-metgapfill: possible error in
-  round(as.POSIXlt(udunits2::ud.convert(time, tunit$value,
-  paste("seconds since", origin)), origin = origin, tz = "UTC"), units
-  = "mins"): unused argument (units = "mins")
 metgapfill.NOAA_GEFS: no visible global function definition for
   ‘na.omit’
 metgapfill.NOAA_GEFS: no visible global function definition for ‘lm’
@@ -207,49 +231,32 @@ model.train: no visible global function definition for ‘vcov’
 model.train: no visible global function definition for ‘resid’
 subdaily_pred: no visible global function definition for ‘model.matrix’
 Undefined global functions or variables:
-  := . .attrs aggregate air_pressure air_temperature avg.rpot
-  canonical_units CF_name cf_standard_name coef cruncep_dt2weather data
-  Date day days description dhours doy dscale.member flx format_id GCM
-  get.id hour I.diff I.dir index is_required Itot L Lat lati latitude
-  lm longitude lwr machine_id median met.nc mod.save model.frame
-  model.matrix month mstmip_vars na.omit name NARR_name NOAA.member obs
-  precipitation_flux predict pressure qmax qmin quantile read.csv
-  read.table relative_humidity resid rhmax rhmin rnorm rpot Rw sd
-  setNames site_id specific_humidity splinefun startdate
-  surface_downwelling_longwave_flux_in_air
-  surface_downwelling_shortwave_flux_in_air temp_max temp_min terms
-  test_passed test_raw timestamp tmax tmin upr values vcov wind_speed x
-  year Year
+  . Date GCM I.diff I.dir Itot Lat Year aggregate air_pressure
+  air_temperature coef cruncep_dt2weather day doy format_id get.id hour
+  index lati latitude lm longitude lwr machine_id met.nc mod.save
+  model.frame model.matrix month na.omit obs predict pressure qmax qmin
+  quantile read.table relative_humidity resid rhmax rhmin rnorm sd
+  setNames site_id surface_downwelling_shortwave_flux_in_air temp_max
+  temp_min terms tmax tmin upr values vcov x year
 Consider adding
   importFrom("datasets", "pressure")
-  importFrom("stats", "aggregate", "coef", "lm", "median", "model.frame",
+  importFrom("stats", "aggregate", "coef", "lm", "model.frame",
              "model.matrix", "na.omit", "predict", "quantile", "resid",
-             "rnorm", "sd", "setNames", "splinefun", "terms", "vcov")
-  importFrom("utils", "data", "read.csv", "read.table", "timestamp")
+             "rnorm", "sd", "setNames", "terms", "vcov")
+  importFrom("utils", "read.table")
 to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-
-Rd file 'download.NOAA_GEFS.Rd':
-  \examples lines wider than 100 characters:
-      download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
-
-Rd file 'download.NOAA_GEFS_downscale.Rd':
-  \examples lines wider than 100 characters:
-      download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
-
-These lines will be truncated in the PDF manual.
+* checking Rd line widths ... OK
 * checking Rd cross-references ... WARNING
 Missing link or links in documentation object 'extract.nc.ERA5.Rd':
   ‘https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid’
 
 See section 'Cross-references' in the 'Writing R Extensions' manual.
-
 * checking for missing documentation entries ... WARNING
 Undocumented data sets:
-  ‘cruncep_landmask’ ‘FLUXNET.sitemap’ ‘cruncep’ ‘ebifarm’ ‘narr’
-  ‘narr3h’ ‘landmask’ ‘Lat’ ‘Lon’
+  ‘FLUXNET.sitemap’ ‘cruncep_landmask’ ‘cruncep’ ‘ebifarm’ ‘narr’
+  ‘narr3h’ ‘Lat’ ‘Lon’ ‘landmask’
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
@@ -264,17 +271,11 @@ Undocumented arguments in documentation object 'closest_xy'
 Undocumented arguments in documentation object 'daygroup'
   ‘date’ ‘flx’
 
-Undocumented arguments in documentation object 'debias_met'
-  ‘outfolder’ ‘site_id’ ‘...’
-
 Undocumented arguments in documentation object 'download.Ameriflux'
   ‘...’
 
 Undocumented arguments in documentation object 'download.AmerifluxLBL'
   ‘...’
-
-Undocumented arguments in documentation object 'download.FACE'
-  ‘sitename’ ‘outfolder’ ‘start_date’ ‘end_date’ ‘overwrite’ ‘...’
 
 Undocumented arguments in documentation object 'download.Fluxnet2015'
   ‘username’ ‘...’
@@ -285,40 +286,11 @@ Undocumented arguments in documentation object 'download.FluxnetLaThuile'
 Undocumented arguments in documentation object 'download.GFDL'
   ‘...’
 
-Undocumented arguments in documentation object 'download.GLDAS'
-  ‘outfolder’ ‘start_date’ ‘end_date’ ‘site_id’ ‘lat.in’ ‘overwrite’
-  ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'download.MACA'
-  ‘outfolder’ ‘site_id’ ‘lat.in’ ‘lon.in’ ‘overwrite’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'download.MsTMIP_NARR'
-  ‘outfolder’ ‘site_id’ ‘lat.in’ ‘lon.in’ ‘overwrite’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'download.NARR'
-  ‘outfolder’ ‘start_date’ ‘end_date’ ‘...’
-
 Undocumented arguments in documentation object 'download.NARR_site'
   ‘progress’ ‘...’
 
 Undocumented arguments in documentation object 'download.NEONmet'
   ‘...’
-
-Undocumented arguments in documentation object 'download.NLDAS'
-  ‘outfolder’ ‘start_date’ ‘end_date’ ‘site_id’ ‘lat.in’ ‘lon.in’
-  ‘overwrite’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'download.NOAA_GEFS'
-  ‘lat.in’ ‘lon.in’ ‘end_date’
-
-Undocumented arguments in documentation object 'download.NOAA_GEFS_downscale'
-  ‘lat.in’ ‘lon.in’ ‘end_date’
-
-Undocumented arguments in documentation object 'download.PalEON'
-  ‘sitename’ ‘outfolder’ ‘start_date’ ‘overwrite’ ‘...’
-
-Undocumented arguments in documentation object 'download.PalEON_ENS'
-  ‘sitename’ ‘outfolder’ ‘start_date’ ‘overwrite’ ‘...’
 
 Undocumented arguments in documentation object 'extract.nc.ERA5'
   ‘...’
@@ -359,15 +331,10 @@ Undocumented arguments in documentation object 'met2CF.PalEON'
 
 Undocumented arguments in documentation object 'met2CF.PalEONregional'
   ‘verbose’ ‘...’
-Duplicated \argument entries in documentation object 'met2CF.PalEONregional':
-  ‘in.path’ ‘in.prefix’ ‘outfolder’ ‘start_date’ ‘end_date’ ‘overwrite’
 
 Undocumented arguments in documentation object 'met2CF.csv'
   ‘in.path’ ‘in.prefix’ ‘outfolder’ ‘start_date’ ‘end_date’ ‘lat’ ‘lon’
   ‘overwrite’ ‘...’
-
-Undocumented arguments in documentation object 'met_temporal_downscale.Gaussian_ensemble'
-  ‘outfolder’ ‘site_id’ ‘...’
 
 Undocumented arguments in documentation object 'metgapfill.NOAA_GEFS'
   ‘...’
@@ -402,23 +369,11 @@ The \usage entries must correspond to syntactically valid R code.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking Rd contents ... WARNING
-Argument items with no description in Rd object 'download.GLDAS':
-  ‘lon.in’
-
-Argument items with no description in Rd object 'download.PalEON':
-  ‘end_date’
-
-Argument items with no description in Rd object 'download.PalEON_ENS':
-  ‘end_date’
-
 Argument items with no description in Rd object 'gen.subdaily.models':
   ‘in.prefix’
 
 Argument items with no description in Rd object 'merge_met_variable':
   ‘start_date’ ‘end_date’ ‘...’
-
-Argument items with no description in Rd object 'met.process.stage':
-  ‘raw.id’
 
 Argument items with no description in Rd object 'met_temporal_downscale.Gaussian_ensemble':
   ‘in.path’ ‘in.prefix’
@@ -444,5 +399,8 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 8 WARNINGs, 2 NOTEs
+
+Status: 10 WARNINGs, 2 NOTEs

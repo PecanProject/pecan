@@ -2,9 +2,9 @@
 ##' @title summarize.GP
 ##' @export
 ##' 
-##' @param gp
-##' @param pdf_file
-##' @param txt_file
+##' @param gp Gaussian Process
+##' @param pdf_file filename you want figures written out to
+##' @param txt_file filename you want figures written out to
 ##' 
 ##' @author Michael Dietze
 summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
