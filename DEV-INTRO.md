@@ -245,7 +245,7 @@ You can submit your workflow either in the executor container or in rstudio cont
 docker-compose exec executor bash
 # inside the container
 cd /pecan/tests
-R CMD ../web/workflow.R docker.sipnet.xml
+R CMD ../web/workflow.R --settings docker.sipnet.xml
 ```
 
 A better way of doing this is developed as part of GSOC, in which case you can leverage of the restful interface defined, or using the new R PEcAn API package.
