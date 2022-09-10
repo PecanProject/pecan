@@ -5,7 +5,7 @@
 * using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.assim.sequential/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.assim.sequential’ version ‘1.7.2’
+* this is package ‘PEcAnAssimSequential’ version ‘1.7.2’
 * package encoding: UTF-8
 * checking CRAN incoming feasibility ... WARNING
 Maintainer: ‘Mike Dietze <dietze@bu.edu>’
@@ -59,7 +59,7 @@ The Date field is over a month old.
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.assim.sequential’ can be installed ... OK
+* checking whether package ‘PEcAnAssimSequential’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
@@ -715,9 +715,9 @@ to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
 
 Found the following assignments to the global environment:
-File ‘PEcAn.assim.sequential/R/Analysis_sda.R’:
+File ‘PEcAnAssimSequential/R/Analysis_sda_multiSite.R’:
   assign(name, dots[[name]], pos = 1)
-File ‘PEcAn.assim.sequential/R/Analysis_sda_multiSite.R’:
+File ‘PEcAnAssimSequential/R/Analysis_sda.R’:
   assign(name, dots[[name]], pos = 1)
 * checking Rd files ... OK
 * checking Rd metadata ... OK
