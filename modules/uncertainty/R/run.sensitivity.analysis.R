@@ -133,7 +133,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
             pdf(fname, height = 12, width = 9)
             ## arrange plots  http://stackoverflow.com/q/10706753/199217
             ncol <- floor(sqrt(length(sensitivity.plots)))
-            print(do.call("gridExtra::grid.arrange", c(sensitivity.plots, ncol=ncol)))
+            print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol=ncol)))
             print(sensitivity.plots) # old method.  depreciated.
             dev.off()
             
