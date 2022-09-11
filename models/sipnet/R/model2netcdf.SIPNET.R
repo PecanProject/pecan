@@ -135,8 +135,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
-      file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
-      # next
+      # file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
+      next
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
@@ -277,7 +277,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
-    nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
+    # nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
+    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
@@ -288,13 +289,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ncdf4::nc_close(nc)
     
     #merge NC files
-    if(file.exists(file.path(outdir, "previous.nc"))){
-      files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
-    }else{
-      files <- file.path(outdir, "current.nc")
-    }
-    mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
-    unlink(files, recursive = T)
+    # if(file.exists(file.path(outdir, "previous.nc"))){
+    #   files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
+    # }else{
+    #   files <- file.path(outdir, "current.nc")
+    # }
+    # mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+    # unlink(files, recursive = T)
   }  ### End of year loop
 
   ## Delete raw output, if requested
