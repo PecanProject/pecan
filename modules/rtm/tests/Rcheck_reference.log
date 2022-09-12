@@ -1,15 +1,62 @@
-* using log directory ‘/tmp/RtmpPkD9Bk/PEcAnRTM.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAnRTM.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAnRTM/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAnRTM’ version ‘1.7.0’
+* this is package ‘PEcAnRTM’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘Alexey Shiklomanov <ashiklom@bu.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.logger, PEcAn.assim.batch
+Suggests or Enhances not in mainstream repositories:
+  PEcAn.utils, PEcAn.ED2
+
+Package has a VignetteBuilder field but no prebuilt vignette index.
+
+The Description field should not start with the package name,
+  'This package' or similar.
+
+The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires (indirectly) orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -20,10 +67,16 @@ Requires (indirectly) orphaned package: ‘udunits2’
 * checking whether package ‘PEcAnRTM’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+Author field differs from that derived from Authors@R
+  Author:    ‘Alexey Shiklomanov, Shawn Serbin, Mike Dietze’
+  Authors@R: ‘Mike Dietze [aut], Shawn Serbin [aut], Alexey Shiklomanov [aut, cre], University of Illinois, NCSA [cph]’
+
+Maintainer field differs from that derived from Authors@R
+  Maintainer: ‘Alexey Shiklomanov <ashiklom@bu.edu>’
+  Authors@R:  ‘Alexey Shiklomanov <alexey.shiklomanov@pnnl.gov>’
+
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -36,7 +89,10 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
+Namespace in Imports field not imported from: ‘lubridate’
+  All declared Imports should be used.
 Unexported object imported by a ':::' call: ‘stats:::C_acf’
   See the note in ?`:::` about the use of this operator.
   Including base/recommended package(s):
@@ -47,15 +103,15 @@ neff:
 neff.default:
   function(x, lag.max, min_rho)
 
-print:
-  function(x, ...)
-print.spectra:
-  function(spectra, n, ...)
-
 plot:
   function(x, ...)
 plot.spectra:
   function(spectra, type, ...)
+
+print:
+  function(x, ...)
+print.spectra:
+  function(spectra, n, ...)
 
 str:
   function(object, ...)
@@ -75,11 +131,11 @@ Packages should not make .C/.Call/.External/.Fortran calls to a base
 package. They are not part of the API, for use only by R itself and
 subject to change without notice.
 * checking R code for possible problems ... NOTE
+EDR: no visible global function definition for ‘data’
+EDR: no visible binding for global variable ‘pftmapping’
 defparam: no visible global function definition for ‘data’
 dtnorm: no visible global function definition for ‘dnorm’
 dtnorm: no visible global function definition for ‘pnorm’
-EDR: no visible global function definition for ‘data’
-EDR: no visible binding for global variable ‘pftmapping’
 generate.noise: no visible global function definition for ‘dnorm’
 generate.noise: no visible global function definition for ‘median’
 generate.noise: no visible global function definition for ‘rnorm’
@@ -96,8 +152,6 @@ generate.rsr.all: no visible binding for global variable
   ‘bandwidth.chrisproba’
 get.EDR.output: no visible global function definition for ‘read.table’
 interpolate.rsr: no visible global function definition for ‘splinefun’
-invert_bt: no visible global function definition for ‘modifyList’
-invert_bt: no visible binding for global variable ‘sampler’
 invert.custom: no visible global function definition for
   ‘txtProgressBar’
 invert.custom: no visible global function definition for
@@ -106,15 +160,16 @@ invert.custom: no visible binding for global variable ‘sd’
 invert.custom: no visible global function definition for ‘cor’
 invert.custom: no visible global function definition for ‘runif’
 invert.custom: no visible global function definition for ‘rgamma’
-plot.spectra: no visible global function definition for ‘plot’
+invert_bt: no visible global function definition for ‘modifyList’
+invert_bt: no visible binding for global variable ‘sampler’
 print.spectra: no visible global function definition for ‘head’
 print.spectra: no visible global function definition for ‘tail’
 priorfunc.prospect : prior: no visible global function definition for
   ‘dlnorm’
-process_output: no visible global function definition for ‘window’
 process.licor.rsr: no visible global function definition for ‘read.csv’
 process.licor.rsr: no visible global function definition for
   ‘complete.cases’
+process_output: no visible global function definition for ‘window’
 prospect_bt_prior: no visible global function definition for
   ‘modifyList’
 read.rsr.folder: no visible global function definition for ‘read.csv’
@@ -133,11 +188,10 @@ summary_simple: no visible binding for global variable ‘median’
 Undefined global functions or variables:
   approxfun bandwidth.chrisproba complete.cases cor data dlnorm dnorm
   fwhm.aviris.classic fwhm.aviris.ng fwhm.hyperion head median
-  modifyList pftmapping plot pnorm qnorm quantile raw.sensor.data
-  read.csv read.table rgamma rnorm runif sampler sd sensor.rsr
-  setTxtProgressBar splinefun tail txtProgressBar window
+  modifyList pftmapping pnorm qnorm quantile raw.sensor.data read.csv
+  read.table rgamma rnorm runif sampler sd sensor.rsr setTxtProgressBar
+  splinefun tail txtProgressBar window
 Consider adding
-  importFrom("graphics", "plot")
   importFrom("stats", "approxfun", "complete.cases", "cor", "dlnorm",
              "dnorm", "median", "pnorm", "qnorm", "quantile", "rgamma",
              "rnorm", "runif", "sd", "splinefun", "window")
@@ -231,7 +285,7 @@ Extensions’ manual.
         by using R CMD build --resave-data
                            old_size new_size compress
   dataSpec_prospectd.RData     36Kb     22Kb       xz
-  raw.sensor.data.RData       109Kb     82Kb       xz
+  raw.sensor.data.RData       109Kb     80Kb       xz
   sensor.rsr.RData            2.3Mb    1.9Mb       xz
   testspec.RData              1.2Mb    956Kb       xz
 * checking line endings in C/C++/Fortran sources/headers ... OK
@@ -239,6 +293,8 @@ Extensions’ manual.
 * checking compilation flags in Makevars ... OK
 * checking for GNU extensions in Makefiles ... OK
 * checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking use of SHLIB_OPENMP_*FLAGS in Makefiles ... OK
 * checking pragmas in C/C++ headers and code ... OK
 * checking compilation flags used ... OK
 * checking compiled code ... NOTE
@@ -257,5 +313,8 @@ Files named as vignettes but with no recognized vignette engine:
    ‘vignettes/pecanrtm.vignette.Rmd’
 (Is a VignetteBuilder field missing?)
 * checking examples ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 9 WARNINGs, 3 NOTEs
+
+Status: 10 WARNINGs, 3 NOTEs

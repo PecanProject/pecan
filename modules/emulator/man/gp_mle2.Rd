@@ -6,6 +6,17 @@
 \usage{
 gp_mle2(theta, d, nugget, myY, maxval = Inf)
 }
+\arguments{
+\item{theta}{proposed parameter vector: [mu, tauw, tauv, phi1...phiK]}
+
+\item{d}{spatial distance matrix}
+
+\item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
+
+\item{myY}{vector of observed data}
+
+\item{maxval}{maximum value}
+}
 \description{
 zero mean version
 }

@@ -24,7 +24,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::sda.enkf.original()`.",
+      "needed by `PEcAnAssimSequential::sda.enkf.original()`.",
       "Please install it and try again.")
   }
   

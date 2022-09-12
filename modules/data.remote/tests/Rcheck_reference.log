@@ -1,15 +1,57 @@
-* using log directory ‘/tmp/RtmpYVm4R4/PEcAn.data.remote.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.data.remote.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.data.remote/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.data.remote’ version ‘1.7.0’
+* this is package ‘PEcAn.data.remote’ version ‘1.7.2.9000’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘Bailey Morrison <bmorrison@bnl.gov>’
+
+New submission
+
+Version contains large components (1.7.2.9000)
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.DB, PEcAn.utils, PEcAn.logger, PEcAn.remote
+
+The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires (indirectly) orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -20,10 +62,12 @@ Requires (indirectly) orphaned package: ‘udunits2’
 * checking whether package ‘PEcAn.data.remote’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+Author field differs from that derived from Authors@R
+  Author:    ‘Mike Dietze, Bailey Morrison’
+  Authors@R: ‘Mike Dietze [aut], Bailey Morrison [aut, cre], University of Illinois, NCSA [cph]’
+
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -36,23 +80,21 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘DBI’ ‘doParallel’ ‘foreach’ ‘glue’ ‘lubridate’ ‘ncdf4’ ‘PEcAn.DB’
-  ‘PEcAn.utils’ ‘purrr’ ‘raster’ ‘RCurl’ ‘sp’
 'library' or 'require' calls not declared from:
-  ‘doParallel’ ‘PEcAn.DB’ ‘raster’
+  ‘PEcAn.DB’ ‘doParallel’ ‘raster’
 'library' or 'require' calls in package code:
-  ‘doParallel’ ‘PEcAn.DB’ ‘raster’ ‘rgdal’
+  ‘PEcAn.DB’ ‘doParallel’ ‘raster’ ‘rgdal’
   Please use :: or requireNamespace() instead.
   See section 'Suggested packages' in the 'Writing R Extensions' manual.
+Namespace in Imports field not imported from: ‘stringr’
+  All declared Imports should be used.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
 call_MODIS: no visible global function definition for ‘write.csv’
-call_MODIS: no visible global function definition for
-  ‘extract_modis_data’
 download.LandTrendr.AGB: no visible binding for global variable ‘k’
 download.NLCD: no visible global function definition for ‘dbfile.check’
 download.NLCD: no visible global function definition for ‘db.query’
@@ -62,8 +104,6 @@ download.NLCD: no visible global function definition for
   ‘dbfile.insert’
 download.thredds.AGB : get_data: no visible global function definition
   for ‘write.csv’
-download.thredds.AGB: no visible global function definition for
-  ‘%dopar%’
 download.thredds.AGB: no visible global function definition for
   ‘foreach’
 download.thredds.AGB: no visible global function definition for
@@ -77,21 +117,15 @@ extract_NLCD: no visible global function definition for ‘spTransform’
 extract_NLCD: no visible global function definition for ‘crs’
 extract_NLCD: no visible global function definition for ‘extract’
 Undefined global functions or variables:
-  %dopar% crs CRS db.query dbfile.check dbfile.insert download.file
-  extract extract_modis_data foreach k raster SpatialPoints spTransform
-  stopCluster write.csv
+  CRS SpatialPoints crs db.query dbfile.check dbfile.insert
+  download.file extract foreach k raster spTransform stopCluster
+  write.csv
 Consider adding
   importFrom("utils", "download.file", "write.csv")
 to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'call_MODIS.Rd':
-  \examples lines wider than 100 characters:
-     test_modistools <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -1 ... [TRUNCATED]
-     test_reticulate <- call_MODIS(product = "MOD15A2H", band = "Lai_500m", start_date = "2004300", end_date = "2004365", lat = 38, lon = -1 ... [TRUNCATED]
-
-These lines will be truncated in the PDF manual.
+* checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
@@ -110,5 +144,8 @@ Extensions’ manual.
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 WARNINGs, 3 NOTEs
+
+Status: 3 WARNINGs, 2 NOTEs
