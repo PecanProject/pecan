@@ -79,7 +79,9 @@ ocs_extract <- function (lon_input, lat_input) {
         ocd_Q0.50_real,
         ocd_Q0.95_real)
     
-    siteid [i, ] <- rep(1:length(lon_input), 4)
+    siteid [i, ] <- rep(1:length(lon_input), 4))
+    i <- i + 1
+  }
     rownames(ocdquant) <-
       c("0-5", "5-15", "15-30", "30-60", "60-100", "100-200")
     colnames(ocdquant) <-
@@ -88,7 +90,7 @@ ocs_extract <- function (lon_input, lat_input) {
         rep("0.05", length(lon_input)),
         rep("0.5", length(lon_input)),
         rep("0.95", length(lon_input))
-      )
+       )
     rownames(siteid) <-
       c("0-5", "5-15", "15-30", "30-60", "60-100", "100-200")
     colnames(siteid) <-
@@ -96,11 +98,8 @@ ocs_extract <- function (lon_input, lat_input) {
         rep("Mean", length(lon_input)),
         rep("0.05", length(lon_input)),
         rep("0.5", length(lon_input)),
-        rep("0.95", length(lon_input))
-      )
-    i <- i + 1
-  }
-  
+        rep("0.95", length(lon_input)
+        )
   ocd_fit <- melt(ocdquant, id.vars = c("Mean"))
   id_fit <- melt(siteid, id.vars = c("Mean"))
   colnames(ocd_fit) <- c("Depth", "Quantile", "Value")
