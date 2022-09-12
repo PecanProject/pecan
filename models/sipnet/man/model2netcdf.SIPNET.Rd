@@ -12,6 +12,7 @@ model2netcdf.SIPNET(
   end_date,
   delete.raw,
   revision,
+  prefix = "sipnet.out",
   overwrite = FALSE
 )
 }
@@ -27,6 +28,8 @@ model2netcdf.SIPNET(
 \item{end_date}{End time of the simulation}
 
 \item{revision}{model revision}
+
+\item{prefix}{prefix to read the output files}
 
 \item{overwrite}{Flag for overwriting nc files or not}
 }

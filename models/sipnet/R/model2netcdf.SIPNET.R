@@ -7,6 +7,45 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+#' Merge multiple NetCDF files into one
+#' 
+#' @param files \code{character}. List of filepaths, which should lead to NetCDF files.
+#' @param outfile \code{character}. Output filename of the merged data.
+#' @return A NetCDF file containing all of the merged data.
+#' @examples
+#' \dontrun{
+#' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
+#'                     pattern="tas.*\\.nc", full.names=TRUE)
+#' temp <- tempfile(fileext=".nc")
+#' mergeNC(files=files, outfile=temp)
+#' terra::rast(temp) 
+#' }
+#' @export mergeNC
+#' @name mergeNC
+#' @source https://github.com/RS-eco/processNC/blob/main/R/mergeNC.R
+mergeNC <- function(
+    ##title<< Aggregate data in netCDF files
+  files ##<< character vector: names of the files to merge
+  , outfile ##<< character: path to save the results files to. 
+)
+  ##description<<
+  ## This function aggregates time periods in netCDF files. Basically it is just a
+  ## wrapper around the respective cdo function.
+{
+  ##test input
+  #if (system("cdo -V")==0)
+  #  stop('cdo not found. Please install it.')
+  
+  ## supply cdo command
+  cdoCmd <- paste('cdo -cat', paste(files, collapse=" "), outfile, sep=' ')
+  
+  ##run command
+  system(cdoCmd)
+  cat(paste('Created file ', outfile, '.\n', sep = ''))
+  
+  ## character string: name of the file created. 
+  invisible(outfile)
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##'
@@ -42,8 +81,6 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
   
   PEcAn.utils::cf2datetime(cfval, paste("days since", base_date_str))
 }
-#--------------------------------------------------------------------------------------------------#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert SIPNET output to netCDF
@@ -58,14 +95,15 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param end_date End time of the simulation
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
+##' @param prefix prefix to read the output files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, 
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, prefix = "sipnet.out",
                                 overwrite = FALSE) {
 
   ### Read in model output in SIPNET format
-  sipnet_out_file <- file.path(outdir, "sipnet.out")
+  sipnet_out_file <- file.path(outdir, prefix)
   sipnet_output <- read.table(sipnet_out_file, header = T, skip = 1, sep = "")
   #sipnet_output_dims <- dim(sipnet_output)
 
@@ -97,6 +135,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
+      # file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
       next
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
@@ -238,6 +277,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
+    # nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
     nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
@@ -247,6 +287,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     close(varfile)
     ncdf4::nc_close(nc)
+    
+    #merge NC files
+    # if(file.exists(file.path(outdir, "previous.nc"))){
+    #   files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
+    # }else{
+    #   files <- file.path(outdir, "current.nc")
+    # }
+    # mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+    # unlink(files, recursive = T)
   }  ### End of year loop
 
   ## Delete raw output, if requested
