@@ -103,7 +103,7 @@ NOTE: All commands assume you are working from the PEcAn source code root direct
    
 3. To update to the latest local code, run `./scripts/docker_rebuild.sh`.
    Under the hood, this uses `curl` to post a RabbitMQ message to a running Docker instance.
-   By default, the scripts assumes that username and password are both `guest` and that the RabbitMQ URL is `http://localhost:8000/rabbitmq`.
+   By default, the scripts assumes that username and password are both `guest` and that the RabbitMQ URL is `http://rabbitmq.pecan.localhost/`.
    All of these can be customized by setting the environment variables `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, and `RABBITMQ_URL`, respectively (or running the script prefixed with those variables, e.g. `RABBITMQ_USER=carya RABBITMQ_PASSWORD=illinois ./scripts/docker_rebuild.sh`).
    This step can be repeated whenever you want to trigger a rebuild of the local code.
    

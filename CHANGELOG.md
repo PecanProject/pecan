@@ -27,6 +27,7 @@ see if you need to change any of these:
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Initial LDNDC model coupling
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
@@ -37,6 +38,15 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- bugs in `model2ncdf.ED2()` that were causing it to both error and also only
+convert data for a single PFT fixed (#1329, #2974, #2981)
+- Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
+- Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
+- Updated unit conversions throughout PEcAn to use the `units` R package
+  instead of the unmaintained `udunits2`.
+  Note that both `units` and `udunits2` interface with the same underlying
+  compiled code, so the `udunits2` *system library* is still required.
+  (#2989; @nanu1605)
 
 ### Changed
 
@@ -48,6 +58,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Converted .zenodo.json to CITATION.cff
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
+- Installation instructions updated in documentation
+- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
 
 ### Removed
 

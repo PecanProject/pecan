@@ -18,7 +18,7 @@
 #' cf2datetime(365, "days since 2000-01-01 12:00:00 -05:00")
 cf2datetime <- function(value, unit, tz = "UTC") {
   origin <- "1970-01-01 00:00:00 UTC"
-  ctint <- udunits2::ud.convert(value, unit, paste("seconds since", origin))
+  ctint <- ud_convert(value, unit, paste("seconds since", origin))
   result <- as.POSIXct(ctint, origin = origin)
   attr(result, "tzone") <- tz
   result
@@ -43,7 +43,7 @@ datetime2cf <- function(datetime, unit, ...) {
   }
   origin <- "1970-01-01 00:00:00 UTC"
   raw_ct <- as.numeric(datetime, origin = origin)
-  udunits2::ud.convert(raw_ct, paste("seconds since", origin), unit)
+  ud_convert(raw_ct, paste("seconds since", origin), unit)
 }
 
 #' Extract Julian day from CF or POSIXct date-times

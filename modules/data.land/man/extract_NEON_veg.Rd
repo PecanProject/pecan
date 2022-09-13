@@ -4,20 +4,30 @@
 \alias{extract_NEON_veg}
 \title{extract_NEON_veg}
 \usage{
-extract_NEON_veg(lon, lat, startdate, enddate, ...)
+extract_NEON_veg(
+  lon,
+  lat,
+  start_date,
+  end_date,
+  store_dir,
+  neonsites = NULL,
+  ...
+)
 }
 \arguments{
 \item{lon}{site longitude, passed from ic_process}
 
 \item{lat}{site latitude, passed from ic_process}
 
-\item{...}{Additional parameters}
-
 \item{start_date}{"YYYY-MM-DD", used to download NEON datasets for desired time period}
 
 \item{end_date}{"YYYY_MM_DD", used to download NEON datasets for desired time period}
 
 \item{store_dir}{location where you want to store downloaded NEON files}
+
+\item{neonsites}{prepared datasets table from NEON using neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))}
+
+\item{...}{Additional parameters}
 }
 \value{
 veg_info object to be passed to extract_veg within ic_process

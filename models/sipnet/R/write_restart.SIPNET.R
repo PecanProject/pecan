@@ -55,7 +55,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   analysis.save <- list()
   
   if ("NPP" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
 
@@ -65,7 +65,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
  if ("AbvGrndWood" %in% variables) {
-     AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
+     AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
      analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
      names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
     
@@ -86,13 +86,13 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("Litter" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$Litter, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$Litter, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
     if (new.state$Litter < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("litter")
   }
   
   if ("TotSoilCarb" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
     if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("soil")
   }

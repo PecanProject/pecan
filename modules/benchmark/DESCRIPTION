@@ -1,6 +1,6 @@
 Package: PEcAn.benchmark
 Type: Package
-Title: PEcAn functions used for benchmarking
+Title: PEcAn Functions Used for Benchmarking
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
@@ -36,9 +36,9 @@ Imports:
     SimilarityMeasures,
     stringr,
     tidyselect,
+    units,
     utils,
     grDevices,
-    udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
     zoo 
 Suggests:

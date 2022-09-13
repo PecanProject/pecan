@@ -25,6 +25,14 @@
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  tryCatch({
+    con <- PEcAn.DB::db.open(settings$database$bety)
+    on.exit(PEcAn.DB::db.close(con), add = TRUE)
+  }, error = function(e) {
+    PEcAn.logger::logger.severe(
+      "Connection requested, but failed to open with the following error: ",
+      conditionMessage(e))
+  })
   
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
@@ -32,16 +40,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
-        
-        tryCatch({
-          con <- PEcAn.DB::db.open(settings$database$bety)
-          on.exit(PEcAn.DB::db.close(con), add = TRUE)
-        }, error = function(e) {
-          PEcAn.logger::logger.severe(
-            "Connection requested, but failed to open with the following error: ",
-            conditionMessage(e))
-        })
-  
+  #TODO: sometimes `files` is a 0x0 tibble and other operations with it fail.
         files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
                               con, settings$host$name, return.all = TRUE)
@@ -83,6 +82,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   }
   
   ## Prepare for model output.  Clean up any old config files (if exists)
+  #TODO: shouldn't this check if the files exist before removing them?
   my.remove.config <- paste0("remove.config.", model)
   if (exists(my.remove.config)) {
     do.call(my.remove.config, args = list(settings$rundir, settings))

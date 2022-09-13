@@ -2,7 +2,11 @@
 title: "BETYdb Access"
 author: "David LeBauer"
 date: "7/30/2015"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Ways to Access BETYdb from R}
+  %\usepackage[utf8]{inputenc}
 ---
 
 Ways to Access BETYdb from R
@@ -28,7 +32,7 @@ salix_vcmax <- query.trait.data(trait = "Vcmax", spstr = vecpaste(salix_spp$id),
 
 ### R dplyr interface
 
-Documentation for the `dplyr` interface to databases is provided in the [dplyr vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html)
+Documentation for the `dplyr` interface to databases is provided in the [dplyr vignette](https://CRAN.R-project.org/package=dplyr)
 
 ```{r, eval=FALSE}
 library(dplyr)

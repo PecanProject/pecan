@@ -4,7 +4,7 @@
 library("PEcAn.all")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
-library("PEcAn.assim.sequential")
+library("PEcAnAssimSequential")
 library("RCurl")
 library("REddyProc")
 library("tidyverse")
@@ -31,6 +31,7 @@ options(warn=-1)
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ sourcing the required tools -------------------------
 #------------------------------------------------------------------------------------------------
+<<<<<<< HEAD
 # c(
 #   'Utils.R',
 #   'download_WCr.R',
@@ -41,6 +42,18 @@ options(warn=-1)
 #               .x,
 #               package = "PEcAn.assim.sequential")
 # ))
+=======
+c(
+  'Utils.R',
+  'download_WCr.R',
+  "gapfill_WCr.R",
+  'prep.data.assim.R'
+) %>% walk( ~ source(
+  system.file("WillowCreek",
+              .x,
+              package = "PEcAnAssimSequential")
+))
+>>>>>>> 71f50ec9132003e7d059b2d2b9fef83f4ff99217
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
@@ -512,14 +525,13 @@ settings$state.data.assimilation$end.date <-as.character(sda.end)
 
 #source('/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/R/Nimble_codes.R')
 
-
-# if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
-# debugonce(PEcAn.assim.sequential::sda.enkf.multisite)
+if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
+debugonce(PEcAnAssimSequential::sda.enkf)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf.multisite(
+    PEcAnAssimSequential::sda.enkf(
       settings, 
       restart=restart,
       Q=0,

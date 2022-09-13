@@ -4,9 +4,8 @@
 ##' @title ldinvgamma
 ##' @export
 ##'
-##' @param x
-##' @param shape
-##' @param scale
+##' @param x vector of quantiles
+##' @param shape,scale shape and scale parameters for the inverse Gamma distribution
 ##' 
 ##' @return log.density
 ##' 

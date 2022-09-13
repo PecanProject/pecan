@@ -477,7 +477,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "g m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "g m-2", "g m-2")
       }
       ## laiInit m2/m2
       #lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
@@ -492,11 +492,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## litterInit gC/m2
       if ("litter" %in% names(IC.pools)) {
-        param[which(param[, 1] == "litterInit"), 2] <- udunits2::ud.convert(IC.pools$litter, 'g m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "litterInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$litter, 'g m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- udunits2::ud.convert(sum(IC.pools$soil), 'g m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'g m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
@@ -509,7 +509,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       ## snowInit cm water equivalent (cm = g / cm2 because 1 g water = 1 cm3 water)
       snow = try(ncdf4::ncvar_get(IC.nc,"SWE"),silent = TRUE)
       if (!is.na(snow) && is.numeric(snow)) {
-        param[which(param[, 1] == "snowInit"), 2] <- udunits2::ud.convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
+        param[which(param[, 1] == "snowInit"), 2] <- PEcAn.utils::ud_convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
       }
       ## leafOnDay
       leafOnDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_budburst"),silent = TRUE)
@@ -523,7 +523,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       microbe <- try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
       if (!is.na(microbe) && is.numeric(microbe)) {
-        param[which(param[, 1] == "microbeInit"), 2] <- udunits2::ud.convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
+        param[which(param[, 1] == "microbeInit"), 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
       }
       
       ncdf4::nc_close(IC.nc)
