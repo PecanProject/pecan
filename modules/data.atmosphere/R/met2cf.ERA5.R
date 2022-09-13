@@ -50,7 +50,7 @@ met2CF.ERA5<- function(lat,
         ens[, "tp"] <-
           ens[, "tp"] * 1000 / 3 # divided by 3 because we have 3 hours data
         ens[, "tp"] <-
-          PEcAn.utils::ud_convert(ens[, "tp"], "kg m-2 hr-1", "kg m-2 6 s-1")  #There are 21600 seconds in 6 hours
+          PEcAn.utils::ud_convert(as.numeric(ens[, "tp"]), "kg m-2 hr-1", "kg m-2 s-1")  #There are 21600 seconds in 6 hours
         #RH
         #Adopted from weathermetrics/R/moisture_conversions.R
         t <-

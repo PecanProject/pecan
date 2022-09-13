@@ -60,6 +60,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
+- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
 
 ### Removed
 
