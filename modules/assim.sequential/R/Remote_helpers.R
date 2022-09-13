@@ -351,7 +351,7 @@ SDA_remote_launcher <-function(settingPath,
   # copying over the luncher
   remote.copy.to(
     my_host,
-    system.file("RemoteLauncher", "SDA_launcher.R", package = "PEcAn.assim.sequential"),
+    system.file("RemoteLauncher", "SDA_launcher.R", package = "PEcAnAssimSequential"),
     file.path(settings$host$folder,folder_name),
     delete = FALSE,
     stderr = FALSE
@@ -369,7 +369,7 @@ SDA_remote_launcher <-function(settingPath,
    PEcAn.logger::logger.info(cmd)
   
    #create the bash file
-   bashfile<-readLines(system.file("RemoteLauncher", "Run.bash", package = "PEcAn.assim.sequential"))
+   bashfile<-readLines(system.file("RemoteLauncher", "Run.bash", package = "PEcAnAssimSequential"))
    tmpdir <- tempdir()
    unlink(paste0(tmpdir,"/Run.bash")) # delete if there is already one exists
    writeLines(c(bashfile, run.bash.args, cmd), paste0(tmpdir, "/Run.bash"))
@@ -422,7 +422,7 @@ Remote_Sync_launcher <- function(settingPath, remote.path, PID) {
   settings <- PEcAn.settings::read.settings(settingPath)
   
   system(paste0("nohup Rscript ",
-                system.file("RemoteLauncher", "Remote_sync.R", package = "PEcAn.assim.sequential")," ",
+                system.file("RemoteLauncher", "Remote_sync.R", package = "PEcAnAssimSequential")," ",
                 settingPath, " ", 
                 remote.path, " ",
                 PID,

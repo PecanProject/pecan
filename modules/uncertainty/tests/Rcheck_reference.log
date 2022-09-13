@@ -103,15 +103,6 @@ Maintainer field differs from that derived from Authors@R
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘PEcAn.assim.sequential’ ‘PEcAn.data.atmosphere’
-Namespace in Imports field not imported from: ‘coda’
-  All declared Imports should be used.
-Packages in Depends field not imported from:
-  ‘PEcAn.priors’ ‘PEcAn.utils’ ‘ggmap’ ‘ggplot2’ ‘gridExtra’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
