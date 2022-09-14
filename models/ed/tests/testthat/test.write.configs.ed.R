@@ -74,12 +74,24 @@ test_that("New ED2IN tags get added at bottom of file", {
         posteriorid = 9000001416
       )
     )
-  write.config.ED2(trait.values = trait.values, settings = settings, run.id = run.id, defaults = defaults, check = FALSE)
+  x <- capture.output(
+    write.config.ED2(
+      trait.values = trait.values,
+      settings = settings,
+      run.id = run.id,
+      defaults = defaults,
+      check = FALSE
+    ),
+    type = "message"
+  )
   
   #5. check if new tag exists
   ed2in_out <- read_ed2in(file.path(rundir, run.id, "ED2IN"))
   expect_equal(ed2in_out$NEW_TAG, 0)
   
+  #check that info is printed
+  expect_true(any(stringr::str_detect(x, "NEW_TAG")))
+
   #6. compare to template
   # ed2in_template <- read_ed2in(system.file(settings$model$edin, package = "PEcAn.ED2"))
   # Not sure what to expect regarding tag names or number of tags relative to template
