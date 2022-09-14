@@ -40,7 +40,7 @@ for (s in 1:length(runDays)) {
   #sda.start <- as.Date("2021-07-15")
   
   #reading xml
-  settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/testingMulti_HF.xml")
+  settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/Site_XMLS/testingMulti_HF.xml")
   
   #grab site info
   site_info <- list(
