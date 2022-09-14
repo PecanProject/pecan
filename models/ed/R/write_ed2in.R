@@ -31,8 +31,9 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
   
   #check for new tags
   if(length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
-    PEcAn.logger::logger.info("ED2IN tags not in ED2IN template will be added")
-    file_body <- c(file_body, tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)])
+    new_tags <- tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)]
+    file_body <- c(file_body, new_tags)
+    PEcAn.logger::logger.info(glue::glue_collapse(trimws(new_tags), sep = ", ", last = " and "), "were not in the ED2IN template but were still used")
   } 
   header <- c(
     "!=======================================",
