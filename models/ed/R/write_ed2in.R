@@ -27,7 +27,13 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
   ncomments <- length(attr(ed2in, "comment_values"))
   file_body <- character(nvalues + ncomments)
   file_body[attr(ed2in, "comment_linenos")] <- attr(ed2in, "comment_values")
-  file_body[attr(ed2in, "value_linenos")] <- tags_values_vec
+  file_body[attr(ed2in, "value_linenos")] <- tags_values_vec[1:length(attr(ed2in, "value_linenos"))]
+  
+  #check for new tags
+  if(length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
+    PEcAn.logger::logger.info("ED2IN tags not in ED2IN template will be added")
+    file_body <- c(file_body, tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)])
+  } 
   header <- c(
     "!=======================================",
     "!=======================================",
