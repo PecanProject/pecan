@@ -27,7 +27,13 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
   ncomments <- length(attr(ed2in, "comment_values"))
   file_body <- character(nvalues + ncomments)
   file_body[attr(ed2in, "comment_linenos")] <- attr(ed2in, "comment_values")
-  file_body[attr(ed2in, "value_linenos")] <- tags_values_vec
+  file_body[attr(ed2in, "value_linenos")] <- tags_values_vec[1:length(attr(ed2in, "value_linenos"))]
+  
+  #check for new tags
+  if(length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
+    new_tags <- tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)]
+    file_body <- c(file_body, new_tags)
+  } 
   header <- c(
     "!=======================================",
     "!=======================================",
