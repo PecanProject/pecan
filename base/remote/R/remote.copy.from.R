@@ -47,30 +47,32 @@ remote.copy.from <- function(host, src, dst, options = NULL, delete = FALSE, std
   PEcAn.logger::logger.debug("rsync", shQuote(args))
   out <-
     system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
-  # Informative errors from rsync man page
-  msg <-
-    switch(
-      as.character(attr(out, "status")),
-      '0' = "Success",
-      '1' = "Syntax or usage error",
-      '2' = "Protocol incompatibility",
-      '3' = "Errors selecting input/output files, dirs",
-      '4' = "Requested action not supported",
-      '5' = "Error starting client-server protocol",
-      '6' = "Daemon unable to append to log-file",
-      '10' = "Error in socket I/O",
-      '11' = "Error in file I/O",
-      '12' = "Error in rsync protocol data stream",
-      '13' = "Errors with program diagnostics",
-      '14' = "Error in IPC code",
-      '20' = "Received SIGUSR1 or SIGINT",
-      '21' = "Some error returned by waitpid()",
-      '22' = "Error allocating core memory buffers",
-      '23' = "Partial transfer due to error",
-      '24' = "Partial transfer due to vanished source files",
-      '25' = "The --max-delete limit stopped deletions",
-      '30' = "Timeout in data send/receive",
-      '35' = "Timeout waiting for daemon connection"
-    )
-  PEcAn.logger::logger.debug(paste0("rsync status: ", msg))
+ 
+  #TODO: this isn't quite working
+  #  # Informative errors from rsync man page
+  # msg <-
+  #   switch(
+  #     as.character(attr(out, "status")),
+  #     '0' = "Success",
+  #     '1' = "Syntax or usage error",
+  #     '2' = "Protocol incompatibility",
+  #     '3' = "Errors selecting input/output files, dirs",
+  #     '4' = "Requested action not supported",
+  #     '5' = "Error starting client-server protocol",
+  #     '6' = "Daemon unable to append to log-file",
+  #     '10' = "Error in socket I/O",
+  #     '11' = "Error in file I/O",
+  #     '12' = "Error in rsync protocol data stream",
+  #     '13' = "Errors with program diagnostics",
+  #     '14' = "Error in IPC code",
+  #     '20' = "Received SIGUSR1 or SIGINT",
+  #     '21' = "Some error returned by waitpid()",
+  #     '22' = "Error allocating core memory buffers",
+  #     '23' = "Partial transfer due to error",
+  #     '24' = "Partial transfer due to vanished source files",
+  #     '25' = "The --max-delete limit stopped deletions",
+  #     '30' = "Timeout in data send/receive",
+  #     '35' = "Timeout waiting for daemon connection"
+  #   )
+  # PEcAn.logger::logger.debug(paste0("rsync status: ", msg))
 } # remote.copy.from
