@@ -95,12 +95,13 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param end_date End time of the simulation
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
+##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
 ##' @param prefix prefix to read the output files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, prefix = "sipnet.out",
-                                overwrite = FALSE) {
+                                overwrite = FALSE, conflict = FALSE) {
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
@@ -132,23 +133,16 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   timestep.s <- 86400 / out_day
   
-  #create folder named current_conflicted, meaning any nc files that has conflicts in naming will be moved to this folder.
-  if(!file.edit(file.path(outdir, "current_conflicted"))){
-    dir.create(file.path(outdir, "current_conflicted"))
-  }
-  main_dir <- outdir#used to recover outdir once we write nc file into conflicted folder and enter the next round of loop.
-  conflicted <- F#initialize a flag to detect if we do have conflicted nc file at this round.
-  
+  conflicted <- FALSE
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
     #if we have conflicts on this file, we move it into the "outdir/current_conflicted" folder.
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
-      # file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
-      # outdir <- file.path(outdir, "current_conflicted")
-      conflicted <- T
-      # next
-    }else{
-      conflicted <- F
+    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
+      conflicted <- FALSE
+      next
+    }else if(file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & conflict == TRUE){
+      conflicted <- TRUE
+      file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
@@ -289,28 +283,38 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
-    # nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
-    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
-    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(nc_var)) {
-      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+    if(conflicted & conflict){
+      nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      for (i in seq_along(nc_var)) {
+        ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+        cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      }
+      close(varfile)
+      ncdf4::nc_close(nc)
+    }else{
+      nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      for (i in seq_along(nc_var)) {
+        ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+        cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      }
+      close(varfile)
+      ncdf4::nc_close(nc)
     }
-    close(varfile)
-    ncdf4::nc_close(nc)
-    
-    #change outdir back to the origin dir
-    outdir <- main_dir
     
     #merge NC files
-    # if(file.exists(file.path(outdir, "previous.nc"))){
-    #   files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
-    # }else{
-    #   files <- file.path(outdir, "current.nc")
-    # }
-    # mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
-    # unlink(files, recursive = T)
+    if(conflicted & conflict){
+      if(file.exists(file.path(outdir, "previous.nc"))){
+        files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
+      }else{
+        files <- file.path(outdir, "current.nc")
+      }
+      mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      unlink(files, recursive = T)
+    }
   }  ### End of year loop
 
   ## Delete raw output, if requested
