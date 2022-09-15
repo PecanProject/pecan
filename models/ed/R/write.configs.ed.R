@@ -118,7 +118,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## Write ED2 config.xml file
   xml <- write.config.xml.ED2(defaults = defaults, settings = settings, trait.values = trait.values)
   
-  saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent = TRUE, prefix = PREFIX_XML)
+  XML::saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent = TRUE, prefix = PREFIX_XML)
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
