@@ -1,14 +1,21 @@
-###Extraction of total soil organic carbon based on user-defined site location from SoilGrids250m version 2.0 : https://soilgrids.org
-###Input parameter: user-defined site longitude/latitude 
-###Extract variable ocd (organic carbon density)
-###Example:ocs<-ocs_extract(c(-77.904, -119.1944, -121.557), c(40.6658, 37.0678, 44.4524))
-
-rm(list = ls())
-library(terra)
-library(reshape2)
-library(dplyr)
-
-ocs_extract <- function (lon_input, lat_input, outdir=NULL,verbose=TRUE) {
+##' ocs_extract function
+##' A function to extract total soil organic carbon for a single or group of 
+##' lat/long locationsbased on user-defined site location from SoilGrids250m 
+##' version 2.0 : https://soilgrids.org
+##' @title ocs_extract
+##' @name ocs_extract
+##' 
+##' @param site_info A dataframe of site info containing the BETYdb site ID, 
+##' site name, latitude, and longitude, e.g. 
+##' (site_id, site_name, lat, lon)
+##' @param outdir Optional. Provide the results as an Rdata file 
+##' (soilgrids_soc_data.RData)
+##' @param verbose Provide progress feedback to the terminal? TRUE/FALSE
+##' 
+##' @export
+##' @author Qianyu Li, Shawn P. Serbin
+##' 
+ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
   #create a variable to store mean and quantile of organic carbon density (ocd) for each soil depth
   ocdquant <- matrix(NA, nrow = 6, ncol = length(lon_input) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites 
   #create a variable for site ID
@@ -26,7 +33,7 @@ ocs_extract <- function (lon_input, lat_input, outdir=NULL,verbose=TRUE) {
   # setup progress bar
   if (verbose) {
     j <- 1
-    pb <- txtProgressBar(min = 0, max = length(depths), char="*", width=70, style = 3)
+    pb <- utils::txtProgressBar(min = 0, max = length(depths), char="*", width=70, style = 3)
   }
   
   for (dep in seq_along(depths)) {
@@ -53,7 +60,7 @@ ocs_extract <- function (lon_input, lat_input, outdir=NULL,verbose=TRUE) {
 
     ### Display progress to console
     if (verbose) {
-      setTxtProgressBar(pb, j)
+      utils::setTxtProgressBar(pb, j)
       j <- j+1
       flush.console()}
   
@@ -78,8 +85,8 @@ ocs_extract <- function (lon_input, lat_input, outdir=NULL,verbose=TRUE) {
   }
   
   # parse extracted data and prepare for output
-  ocd_fit <- melt(ocdquant, id.vars = c("Mean"))
-  id_fit <- melt(siteid, id.vars = c("Mean"))
+  ocd_fit <- reshape2::melt(ocdquant, id.vars = c("Mean"))
+  id_fit <- reshape2::melt(siteid, id.vars = c("Mean"))
   colnames(ocd_fit) <- c("Depth", "Quantile", "Value")
   ocd_fit$Variable <- rep("ocd", length(nrow(ocd_fit)))
   ocd_fit$siteid <- id_fit$value

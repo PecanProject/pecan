@@ -22,6 +22,7 @@ see if you need to change any of these:
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
 
 ### Added
+- Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
 
 - `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
   package the version that was provided with this release and the version that
