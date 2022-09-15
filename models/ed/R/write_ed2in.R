@@ -66,7 +66,15 @@ write_ed2in.default <- function(ed2in, filename, custom_header = character(), ba
     paste0("!   ", custom_header),
     "!---------------------------------------"
   )
-  output_lines <- c(header, "$ED_NL", tags_values_vec, "$END")
+  output_lines <-
+    c(
+      header,
+      "$ED_NL",
+      tags_values_vec,
+      "!==========================================================================================!",
+      "!==========================================================================================!",
+      "$END"
+    )
   writeLines(output_lines, filename)
 }
 
