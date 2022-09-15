@@ -10,7 +10,7 @@ build_X(
   new.params,
   nens,
   read_restart_times,
-  outdir = paste0(old.dir, "out/"),
+  outdir,
   t = 1,
   var.names,
   my.read_restart

@@ -124,16 +124,16 @@ sda.enkf.multisite <- function(settings,
   ###-------------------------------------------------------------------###----  
   #filtering obs data based on years specifited in setting > state.data.assimilation
   if (restart_flag) {
-    start.cut <- lubridate::ymd_hms(start.cut) #sda.start taken from restart list as date to begin runs
-    Start.sda <-lubridate::year(sda.start)
+    start.cut <- lubridate::ymd_hms(start.cut) #start.cut taken from restart list as date to begin runs
+    Start.year <-lubridate::year(start.cut)
     
   }else{
     start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-    Start.sda <- (lubridate::year(settings$state.data.assimilation$start.date))
+    Start.year <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
   
-  End.sda <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
-  assim.sda <- Start.sda:End.sda
+  End.year <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
+  assim.sda <- Start.year:End.year
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.mean dates against assimyear dates
   obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.cov dates against assimyear dates
   #checking that there are dates in obs.mean and adding midnight as the time
@@ -581,7 +581,7 @@ sda.enkf.multisite <- function(settings,
           #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
           #Pa <- Pf + solve(q.bar)
           #hack have Pa = Pf for now
-          Pf = cov(X) # Cov Forecast - This is used as an initial condition
+          Pf = stats::cov(X) # Cov Forecast - This is used as an initial condition
           Pa <- Pf
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)

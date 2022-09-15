@@ -19,7 +19,7 @@
 #' @export
 #'
 #' @examples
-build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names, my.read_restart){
+build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart){
 
   if(t == 1){
     reads <-
