@@ -132,11 +132,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   timestep.s <- 86400 / out_day
   
+  #create folder named current_conflicted, meaning any nc files that has conflicts in naming will be moved to this folder.
+  dir.create(file.path(outdir, "current_conflicted"))
+  main_dir <- outdir#used to recover outdir once we write nc file into conflicted folder and enter the next round of loop.
+  conflicted <- F#initialize a flag to detect if we do have conflicted nc file at this round.
+  
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
+    #if we have conflicts on this file, we move it into the "outdir/current_conflicted" folder.
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
       # file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
-      next
+      outdir <- file.path(outdir, "current_conflicted")
+      conflicted <- T
+      # next
+    }else{
+      conflicted <- F
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
@@ -287,6 +297,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     close(varfile)
     ncdf4::nc_close(nc)
+    
+    #change outdir back to the origin dir
+    outdir <- main_dir
     
     #merge NC files
     # if(file.exists(file.path(outdir, "previous.nc"))){
