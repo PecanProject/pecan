@@ -1,6 +1,6 @@
 Package: PEcAn.STICS
 Type: Package
-Title: PEcAn package for integration of the STICS model
+Title: PEcAn Package for Integration of the STICS Model
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(
@@ -18,7 +18,6 @@ Imports:
     ncdf4,
     purrr,
     XML,
-    udunits2,
     dplyr
 Suggests:
     testthat (>= 1.0.2)

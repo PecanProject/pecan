@@ -91,7 +91,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # specific root length (cm g-1)
     # plt_list[[10]][[6]][[2]][[4]] position
     if ("SRL" %in% pft.names) {
-      srl_val  <- udunits2::ud.convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
+      srl_val  <- PEcAn.utils::ud_convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
       plt_list <- plt_list %>% purrr::modify_depth(-1, ~if(all(.x == "@longsperac@")) srl_val else .x)
       
     }

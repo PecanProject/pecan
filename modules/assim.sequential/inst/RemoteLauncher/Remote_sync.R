@@ -4,7 +4,7 @@
 suppressPackageStartupMessages({
   library(PEcAn.settings)
   library(PEcAn.remote)
-  library(PEcAn.assim.sequential)
+  library(PEcAnAssimSequential)
 })
 is.active <- FALSE
 args <- commandArgs(trailingOnly = TRUE)

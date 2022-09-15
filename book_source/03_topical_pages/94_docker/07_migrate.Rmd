@@ -29,8 +29,8 @@ At this point we can enable the bety service (this only needs to be done once). 
 Next we need to modify apache configuration files. The file /etc/apache2/conf-enabled/bety.conf will be replaced with the following content:
 
 ```
-ProxyPass                /bety/ http://localhost:8000/bety/
-ProxyPassReverse         /bety/ http://localhost:8000/bety/
+ProxyPass                /bety/ http://pecan.localhost/bety/
+ProxyPassReverse         /bety/ http://pecan.localhost/bety/
 RedirectMatch permanent ^/bety$ /bety/
 ```
 

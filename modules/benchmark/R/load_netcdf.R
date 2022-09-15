@@ -70,7 +70,7 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
                     t.units)
     # need to change system TZ otherwise, lines below keeps writing in the current time zone
     Sys.setenv(TZ = 'UTC')
-    foo <- as.POSIXct(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
+    foo <- as.POSIXct(date.origin, tz = "UTC") + PEcAn.utils::ud_convert(time.col[[i]], t.units, "seconds")
     time.col[[i]] <- foo
   }
   # needed to use 'round' to 'mins' here, otherwise I end up with values like '2006-12-31 23:29:59'

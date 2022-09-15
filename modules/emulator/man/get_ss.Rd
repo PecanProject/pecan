@@ -6,6 +6,13 @@
 \usage{
 get_ss(gp, xnew, pos.check)
 }
+\arguments{
+\item{gp}{Gaussian Process}
+
+\item{xnew}{new x coordinate}
+
+\item{pos.check}{check if value needs to be positive (if TRUE, returns -Inf when GP is negative)}
+}
 \description{
 get_ss
 }
