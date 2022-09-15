@@ -23,6 +23,10 @@ met2CF.ECMWF <- function(lat.in,
                          overwrite = FALSE,
                          verbose = TRUE) {
   
+  if (!file.exists(outfolder)) {
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  }
+  
   results <-
     PEcAn.data.atmosphere::mergenc_ECMWF(lat.in,
                                          lon.in,

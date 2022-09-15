@@ -16,7 +16,7 @@ def all_filenames_6h(filename):
             
     return files_6
         
-def combine_files_cf(files, lat_in, lon_in, out_filename):
+def combine_files_cf(files, lat_in, lon_in):
     
     """
     Converts ECMWF Open Data 15 day controlled forecast data from Grib2 into PEcAn standard NetCDF
@@ -25,30 +25,22 @@ def combine_files_cf(files, lat_in, lon_in, out_filename):
     ----------
     in_filename (str) -- Grib2 file consisting of forecast data
     
-    outfolder (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
-    
-    out_filename (str) -- filename of output NetCDF file
-    
     lat_in (numeric) -- Site coordinates, decimal degrees
     
     lon_in (numeric) -- Site coordinates, decimal degrees
     
     Returns
     -------
-    output netCDF files are saved in the specified directory.
+    Arrays of variables
     """
     
     import os
     import xarray
     import cfgrib
     
-    out_filename = str(out_filename)
-    
     lat_in = float(lat_in)
     lon_in = float(lon_in)
     
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder, exist_ok=True)
     
     cf_u10 = xarray.open_mfdataset(files, engine = 'cfgrib', concat_dim="valid_time",combine="nested",
                               backend_kwargs={'filter_by_keys': {'dataType': 'cf', 'shortName':'10u'}})
@@ -81,19 +73,10 @@ def combine_files_cf(files, lat_in, lon_in, out_filename):
     
     cf_lat_lon = cf.sel(latitude = lat_in, longitude = lon_in, method = "nearest")
     
-    
-    cf_save_path = os.path.join(
-        outfolder,
-        out_filename
-        + "_cf"
-        + ".nc"
-      )
-  
-    cf_lat_lon.to_netcdf(cf_save_path)
-    
-    return cf_save_path
+    return cf_lat_lon["valid_time"], cf_lat_lon["longitude"].values, cf_lat_lon["latitude"].values,  cf_lat_lon['u10'].values, cf_lat_lon["v10"].values, cf_lat_lon["t2m"].values, cf_lat_lon["sp"].values, cf_lat_lon["tp"].values
 
-def combine_files_pf(files, lat_in, lon_in, out_filename):
+
+def combine_files_pf(files, lat_in, lon_in):
     
     """
     Converts ECMWF Open Data 15 day perturbed forecast from Grib2 into PEcAn standard NetCDF
@@ -102,29 +85,20 @@ def combine_files_pf(files, lat_in, lon_in, out_filename):
     ----------
     in_filename (str) -- Grib2 file consisting of forecast data
     
-    outfolder (str) -- path to the directory where the output file is stored. If specified directory does not exists, it is created.
-    
-    out_filename (str) -- filename of output NetCDF file
-    
     lat_in (numeric) -- Site coordinates, decimal degrees
     
     lon_in (numeric) -- Site coordinates, decimal degrees
     
     Returns
     -------
-    output netCDF files are saved in the specified directory.
+    Arrays of variables
     """
     import os
     import xarray
     import cfgrib
     
-    out_filename = str(out_filename)
-    
     lat_in = float(lat_in)
     lon_in = float(lon_in)
-        
-    if not os.path.exists(outfolder):
-        os.makedirs(outfolder, exist_ok=True)
         
     ######### Perturbed Forecast
     # 10 metre U wind component
@@ -162,14 +136,5 @@ def combine_files_pf(files, lat_in, lon_in, out_filename):
     
     pf_lat_lon = pf.sel(latitude = lat_in, longitude = lon_in, method = "nearest")
     
-    
-    pf_save_path = os.path.join(
-        outfolder,
-        out_filename
-        + "_cf"
-        + ".nc"
-      )
+    return pf_lat_lon["valid_time"], pf_lat_lon["longitude"].values, pf_lat_lon["latitude"].values,  pf_lat_lon['u10'].values, pf_lat_lon["v10"].values, pf_lat_lon["t2m"].values, pf_lat_lon["sp"].values, pf_lat_lon["tp"].values
 
-    pf_lat_lon.to_netcdf(out_filename)
-    
-    return pf_save_path

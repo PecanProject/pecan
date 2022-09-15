@@ -34,6 +34,11 @@ mergenc_ECMWF <- function(lat.in,
                           overwrite = FALSE,
                           verbose = TRUE) {
   
+  if (!file.exists(outfolder)) {
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  }
+  
+  
   # Python script "download_ecmwf.py" to get latest forecast date and download forecast datasets
   script.path = file.path(system.file("ECMWF/download_ecmwf.py", package = "PEcAn.data.atmosphere"))
   reticulate::source_python(script.path)
@@ -62,52 +67,56 @@ mergenc_ECMWF <- function(lat.in,
   ######### CF ######### 
   
   ##### 3h CF -> 0 - 141h at 3h timestep
-  cf_3h_out_fname <- paste0(latest_filedate, time, stream, "cf_3h", sep = "_")
-  cf_3h_nc <- combine_files_cf(fnames_3h, lat_in, lon_in, out_filename= cf_3h_out_fname)
+  cf_3h <- combine_files_cf(fnames_3h, lat_in, lon_in)
+  names(cf_3h) <- c("valid_time", "lon", "lat", "u10", "v10", "t2m", "sp", "tp")
+  
+  days_since <- paste("days since", cf_3h$valid_time$time$data, "00:00:00")
+  cf_3h$valid_time <- cf_3h$valid_time$values
   
   ##### 3h CF -> 144h - 360h at 6h timestep
-  cf_6h_out_fname <- paste0(latest_filedate, time, stream, "cf_6h", sep = "_")
-  cf_6h_nc <- combine_files_cf(fnames_6h, lat_in, lon_in, out_filename= cf_6h_out_fname)
+  cf_6h_nc <- combine_files_cf(fnames_6h, lat_in, lon_in)
+  names(cf_6h) <- c("valid_time", "lon", "lat", "u10", "v10", "t2m", "sp", "tp")
   
-  cf_nc3 <- ncdf4::nc_open(cf_3h_nc)
-  cf_nc6 <- ncdf4::nc_open(cf_6h_nc)
+  cf_6h$valid_time <- cf_6h$valid_time$values
   
-  cf_nc_fname <- paste0(latest_filedate, time, stream, "cf.nc", sep = "_")
+  ### Final CF netCDF filename
+  cf_nc_fname <- paste(latest_filedate, time, stream, "cf.nc", sep = "_")
   
-  lat <- ncdf4::ncvar_get(cf_nc6, "latitude")
-  lon <- ncdf4::ncvar_get(cf_nc6, "longitude")
+  # values from cf_3h
+  lat <- cf_3h$lat
+  lon <- cf_3h$lon
   validtime <- seq(0, 360, 3)
-  validtimeunits <- ncdf4::ncatt_get(cf_nc3,"valid_time","units")$value
+  validtimeunits <- cf_3h$valid_time
   
   # create and write the netCDF file -- ncdf4 version
   # define dimensions
   londim <- ncdf4::ncdim_def("longitude","degrees_east",as.double(lon)) 
   latdim <- ncdf4::ncdim_def("latitude","degrees_north",as.double(lat)) 
   timedim <- ncdf4::ncdim_def("valid_time",validtimeunits,as.double(validtime))
-  time <- ncdf4::ncdim_def("time", "days since 2022-08-08 00:00:00", as.double(validtime))
-  
+  time <- ncdf4::ncdim_def("time", days_since, as.double(validtime))
+
   # define variables
   fillvalue <- NA
   
-  cf_u10_3 <- ncdf4::ncvar_get(cf_nc3, "u10")
-  cf_u10_6_nan <- nanfill(ncdf4::ncvar_get(cf_nc6, "u10"))
+  cf_u10_3 <- cf_3h$u10
+  cf_u10_6_nan <- nanfill(cf_6h$u10)
   cf_u10 <- c(cf_u10_3, cf_u10_6_nan)
   
-  cf_v10_3 <- ncdf4::ncvar_get(cf_nc3, "v10")
-  cf_v10_6_nan <- nanfill(ncdf4::ncvar_get(cf_nc6, "v10"))
+  cf_v10_3 <- cf_3h$v10
+  cf_v10_6_nan <- nanfill(cf_6h$v10)
   cf_v10 <- c(cf_v10_3, cf_v10_6_nan)
   
-  cf_t2m_3 <- ncdf4::ncvar_get(cf_nc3, "t2m")
-  cf_t2m_6_nan <- nanfill(ncdf4::ncvar_get(cf_nc6, "t2m"))
-  cf_t2m <- c(t2m_3, t2m_6_nan)
+  cf_t2m_3 <- cf_3h$t2m
+  cf_t2m_6_nan <- nanfill(cf_6h$t2m)
+  cf_t2m <- c(cf_t2m_3, cf_t2m_6_nan)
   
-  sp_3 <- ncdf4::ncvar_get(cf_nc3, "sp")
-  sp_6_nan <- nanfill(ncdf4::ncvar_get(cf_nc6, "sp"))
-  cf_sp <- c(sp_3, sp_6_nan)
+  cf_sp_3 <- cf_3h$sp
+  cf_sp_6_nan <- nanfill(cf_6h$tp)
+  cf_sp <- c(cf_sp_3, cf_sp_6_nan)
   
-  tp_3 <- ncdf4::ncvar_get(cf_nc3, "tp")
-  tp_6_nan <- nanfill(ncdf4::ncvar_get(cf_nc6, "tp"))
-  cf_tp <- c(tp_3, tp_6_nan)
+  cf_tp_3 <- cf_3h$tp
+  cf_tp_6_nan <- nanfill(cf_6h$tp)
+  cf_tp <- c(cf_tp_3, cf_tp_6_nan)
   
   dlname <- "Eastward Component of Wind"
   u10.def <- ncdf4::ncvar_def("eastward_wind","m s**-1",list(timedim),fillvalue,dlname,prec="double")
@@ -124,7 +133,7 @@ mergenc_ECMWF <- function(lat.in,
   dlname <- "Rainfall rate"
   tp.def <- ncdf4::ncvar_def("precipitation_flux","kg m**-2 s**-1",list(timedim),fillvalue,dlname,prec="double")
   
-  if (!file.exists(ncfname_pf) || overwrite) {
+  if (!file.exists(cf_nc_fname) || overwrite) {
     
     tryCatch({
       
@@ -138,19 +147,12 @@ mergenc_ECMWF <- function(lat.in,
       ncdf4::ncvar_put(ncout_cf,sp.def, cf_sp, verbose = TRUE)
       ncdf4::ncvar_put(ncout_cf,tp.def, cf_tp, verbose = TRUE)
       
-      gribed <- ncatt_get(cf_nc6,0,"GRIB_edition")
-      institution <- ncatt_get(cf_nc6,0,"GRIB_centreDescription")
-      datasource <- ncatt_get(cf_nc6,0,"GRIB_centre")
-      history <- ncatt_get(cf_nc6,0,"history")
-      Conventions <- ncatt_get(cf_nc6,0,"Conventions")
-      
       # add global attributes
-      ncdf4::ncatt_put(ncout_cf,0,"GRIB_edition",gribed$value)
-      ncdf4::ncatt_put(ncout_cf,0,"Institution",institution$value)
-      ncdf4::ncatt_put(ncout_cf,0,"Source",datasource$value)
+      ncdf4::ncatt_put(ncout_cf,0,"GRIB_edition",2)
+      ncdf4::ncatt_put(ncout_cf,0,"Institution","ecmwf")
+      ncdf4::ncatt_put(ncout_cf,0,"Source","European Centre for Medium-Range Weather Forecasts")
       history <- paste("PEcAn Project", date(Sys.Date()), sep=", ")
-      ncdf4::ncatt_put(ncout_cf,0,"history",history)
-      ncdf4::ncatt_put(ncout_cf,0,"Conventions",Conventions$value)
+      ncdf4::ncatt_put(ncout_cf,0,"Conventions","CF-1.7")
       
       ncdf4::nc_close(ncout_cf) # writes ensemble wise pf files to disk
       
@@ -196,34 +198,40 @@ mergenc_ECMWF <- function(lat.in,
   
   ##### 3h PF -> 0 - 141h at 3h timestep
   pf_3h_out_fname <- paste(latest_filedate, time, stream, "pf_3h", sep = "_")
-  pf_3h_nc <- combine_files_cf(fnames_3h, lat_in, lon_in, out_filename= pf_3h_out_fname)
+  pf_3h <- combine_files_pf(fnames_3h, lat_in, lon_in)
+  names(pf_3h) <- c("valid_time", "lon", "lat", "u10", "v10", "t2m", "sp", "tp")
+  
+  days_since <- paste("days since", pf_3h$valid_time$time$data, "00:00:00")
+  pf_3h$valid_time <- pf_3h$valid_time$values
   
   ##### 6h PF -> 144h - 360h at 6h timestep
   pf_6h_out_fname <- paste(latest_filedate, time, stream, "pf_6h", sep = "_")
-  pf_6h_nc <- combine_files_cf(fnames_6h, lat_in, lon_in, out_filename= pf_6h_out_fname)
+  pf_6h <- combine_files_pf(fnames_6h, lat_in, lon_in)
+  names(pf_6h) <- c("valid_time", "lon", "lat", "u10", "v10", "t2m", "sp", "tp")
   
-  pf_nc3 <- ncdf4::nc_open(pf_3h_nc)
-  pf_nc6 <- ncdf4::nc_open(pf_6h_nc)
+  pf_6h$valid_time <- pf_6h$valid_time$values
   
-  # Creating ensemble wise netCDF files
-  pf_u10_3 <- t(ncdf4::ncvar_get(pf_nc3, "u10"))
-  pf_u10_6 <- t(ncdf4::ncvar_get(pf_nc6, "u10"))
+ 
+  ##### Creating ensemble wise netCDF files
   
-  pf_v10_3 <- t(ncdf4::ncvar_get(pf_nc3, "v10"))
-  pf_v10_6 <- t(ncdf4::ncvar_get(pf_nc6, "v10"))
+  pf_u10_3 <- t(pf_3h$u10)
+  pf_u10_6 <- t(pf_6h$u10)
   
-  pf_t2m_3 <- t(ncdf4::ncvar_get(pf_nc3, "t2m"))
-  pf_t2m_6 <- t(ncdf4::ncvar_get(pf_nc6, "t2m"))
+  pf_v10_3 <- t(pf_3h$v10)
+  pf_v10_6 <- t(pf_6h$v10)
   
-  pf_sp_3 <- t(ncdf4::ncvar_get(pf_nc3, "sp"))
-  pf_sp_6 <- t(ncdf4::ncvar_get(pf_nc6, "sp"))
+  pf_t2m_3 <- t(pf_3h$t2m)
+  pf_t2m_6 <- t(pf_6h$t2m)
   
-  pf_tp_3 <- t(ncdf4::ncvar_get(pf_nc3, "tp"))
-  pf_tp_6 <- t(ncdf4::ncvar_get(pf_nc6, "tp"))
+  pf_sp_3 <- t(pf_3h$sp)
+  pf_sp_6 <- t(pf_6h$sp)
+  
+  pf_tp_3 <- t(pf_3h$tp)
+  pf_tp_6 <- t(pf_6h$tp)
   
   for (ens in 1:50){
     
-    ncfname_pf <- paste0(latest_filedate, time, stream, "pf_ens", ens, sep = "_")
+    ncfname_pf <- paste(latest_filedate, time, stream, "pf_ens", ens, sep = "_")
     
     if (!file.exists(ncfname_pf) || overwrite) {
       
@@ -246,12 +254,11 @@ mergenc_ECMWF <- function(lat.in,
         ncdf4::ncvar_put(ncout_pf,tp.def, pf_tp, verbose = TRUE)
         
         # add global attributes
-        ncdf4::ncatt_put(ncout_pf,0,"GRIB_edition",gribed$value)
-        ncdf4::ncatt_put(ncout_pf,0,"Institution",institution$value)
-        ncdf4::ncatt_put(ncout_pf,0,"Source",datasource$value)
+        ncdf4::ncatt_put(ncout_pf,0,"GRIB_edition",2)
+        ncdf4::ncatt_put(ncout_pf,0,"Institution","ecmwf")
+        ncdf4::ncatt_put(ncout_pf,0,"Source","European Centre for Medium-Range Weather Forecasts")
         history <- paste("PEcAn Project", date(Sys.Date()), sep=", ")
-        ncdf4::ncatt_put(ncout_pf,0,"history",history)
-        ncdf4::ncatt_put(ncout_pf,0,"Conventions",Conventions$value)
+        ncdf4::ncatt_put(ncout_pf,0,"Conventions","CF-1.7")
         
         ncdf4::nc_close(ncout_pf) # writes ensemble wise pf files to disk
         
