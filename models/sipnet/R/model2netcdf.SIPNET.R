@@ -133,7 +133,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   timestep.s <- 86400 / out_day
   
   #create folder named current_conflicted, meaning any nc files that has conflicts in naming will be moved to this folder.
-  dir.create(file.path(outdir, "current_conflicted"))
+  if(!file.edit(file.path(outdir, "current_conflicted"))){
+    dir.create(file.path(outdir, "current_conflicted"))
+  }
   main_dir <- outdir#used to recover outdir once we write nc file into conflicted folder and enter the next round of loop.
   conflicted <- F#initialize a flag to detect if we do have conflicted nc file at this round.
   
