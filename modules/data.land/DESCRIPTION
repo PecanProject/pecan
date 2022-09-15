@@ -45,6 +45,7 @@ Imports:
     PEcAn.utils,
     PEcAn.visualization,
     purrr,
+    reshape2,
     rjags,
     rlang,
     RCurl,
@@ -53,6 +54,7 @@ Imports:
     sirt,
     sp,
     stringr,
+    terra,
     traits,
     XML (>= 3.98-1.4)      
 Suggests:
