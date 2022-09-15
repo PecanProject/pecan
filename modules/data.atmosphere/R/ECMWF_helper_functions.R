@@ -28,7 +28,7 @@ nanfill <- function(variable) { # nanfill function fills NaN at every 3h period 
   return(len3nan)
 }
 
-mergenc_ECMWF <- function(lat.in,
+combine2nc_ECMWF <- function(lat.in,
                           lon.in,
                           outfolder,
                           overwrite = FALSE,

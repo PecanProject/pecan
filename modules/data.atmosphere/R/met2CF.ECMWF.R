@@ -28,7 +28,7 @@ met2CF.ECMWF <- function(lat.in,
   }
   
   results <-
-    PEcAn.data.atmosphere::mergenc_ECMWF(lat.in,
+    PEcAn.data.atmosphere::combine2nc_ECMWF(lat.in,
                                          lon.in,
                                          outfolder,
                                          overwrite = overwrite)
