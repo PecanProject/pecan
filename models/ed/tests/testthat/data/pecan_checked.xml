@@ -51,7 +51,7 @@
   <type>ED2</type>
   <binary>/groups/dlebauer/ed2_results/global_inputs/ed2_2.2.0_singularity.sh</binary>
   <id>14</id>
-  <edin>/pecan/models/ed/inst/ED2IN.r2.2.0</edin>
+  <edin>ED2IN.r2.2.0</edin>
   <config.header>
    <radiation>
     <lai_min>0.01</lai_min>
