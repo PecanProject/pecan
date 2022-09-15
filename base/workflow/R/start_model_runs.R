@@ -89,6 +89,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         "-p",
         dirname(settings$host$outdir))) 
     # copy over out directories
+    #TODO: if these aren't empty, e.g. from a previous run, then this might take unnecessarily long.  Another option would to just mkdir on the remote server on a list of all the dirs
     PEcAn.remote::remote.copy.to(
       host = settings$host,
       src = settings$modeloutdir,
@@ -108,7 +109,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     # write start time to database
     PEcAn.DB::stamp_started(con = dbcon, run = run)
     
-    # check to see if we use the model launcer
+    # check to see if we use the model launcher
     if (is_rabbitmq) {
       run_id_string <- format(run, scientific = FALSE)
       folder <- file.path(settings$rundir, run_id_string)
@@ -270,6 +271,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       # check to see if job is done
       job_finished <- FALSE
       if (is_rabbitmq) {
+        #TODO: could this be done with rabbitmq_get_message() instead?  If not, can this check be done on remote without copying file over?
         job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- PEcAn.remote::qsub_run_finished(
@@ -282,7 +284,8 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
         # TODO check output log
         if (is_rabbitmq) {
-          #TODO: unclear to me if this path is local or remote.  If local, then needs to be moved outside of for loop after files are copied back to local.
+          #TODO: Do this check on remote instead of copying files over? 
+          #I assume the file exists at settings$host$outdir/jobids[run]/rabbitmq.out on remote, yeah?
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))
           if (data[-1] == "ERROR") {
             msg <- paste("Run", run, "has an ERROR executing")
