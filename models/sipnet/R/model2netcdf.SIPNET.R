@@ -133,14 +133,16 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   timestep.s <- 86400 / out_day
   
-  conflicted <- FALSE
+  
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
-    #if we have conflicts on this file, we move it into the "outdir/current_conflicted" folder.
+    #initialize the conflicted as FALSE
+    conflicted <- FALSE
+    
+    #if we have conflicts on this file.
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
-      conflicted <- FALSE
       next
-    }else if(file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & conflict == TRUE){
+    }else if(file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & conflict){
       conflicted <- TRUE
       file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
     }
