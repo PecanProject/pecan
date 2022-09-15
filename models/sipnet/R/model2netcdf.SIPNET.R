@@ -144,7 +144,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     #if we have conflicts on this file, we move it into the "outdir/current_conflicted" folder.
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
       # file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
-      outdir <- file.path(outdir, "current_conflicted")
+      # outdir <- file.path(outdir, "current_conflicted")
       conflicted <- T
       # next
     }else{
