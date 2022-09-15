@@ -293,6 +293,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       }
       close(varfile)
       ncdf4::nc_close(nc)
+      
+      #merge nc files
+      if(file.exists(file.path(outdir, "previous.nc"))){
+        files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
+      }else{
+        files <- file.path(outdir, "current.nc")
+      }
+      mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
@@ -303,17 +312,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       }
       close(varfile)
       ncdf4::nc_close(nc)
-    }
-    
-    #merge NC files
-    if(conflicted & conflict){
-      if(file.exists(file.path(outdir, "previous.nc"))){
-        files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
-      }else{
-        files <- file.path(outdir, "current.nc")
-      }
-      mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
-      unlink(files, recursive = T)
     }
   }  ### End of year loop
 
