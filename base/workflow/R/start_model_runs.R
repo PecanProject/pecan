@@ -265,14 +265,25 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   #TODO figure out a way to do this while for unique(jobids) instead of jobids
   while (length(jobids) > 0) {
     Sys.sleep(10)
+    
+    if (!is_local) {
+      #Copy over log files to check progress
+      PEcAn.remote::remote.copy.from(
+        host = settings$host,
+        src = settings$host$outdir,
+        dst = dirname(settings$modeloutdir),
+        options = list("--exclude '*.h5'")
+      )
+    }
+    
     for (run in names(jobids)) {
       run_id_string <- format(run, scientific = FALSE)
       
       # check to see if job is done
       job_finished <- FALSE
       if (is_rabbitmq) {
-        #TODO: could this be done with rabbitmq_get_message() instead?  If not, can this check be done on remote without copying file over?
-        job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
+        job_finished <- 
+          file.exists(file.path(settings$modeloutdir, jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- PEcAn.remote::qsub_run_finished(
           run = jobids[run],
@@ -284,9 +295,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
         # TODO check output log
         if (is_rabbitmq) {
-          #TODO: Do this check on remote instead of copying files over? 
-          #I assume the file exists at settings$host$outdir/jobids[run]/rabbitmq.out on remote, yeah?
-          data <- readLines(file.path(jobids[run], "rabbitmq.out"))
+          data <- readLines(file.path(settings$modeloutdir, jobids[run], "rabbitmq.out"))
           if (data[-1] == "ERROR") {
             msg <- paste("Run", run, "has an ERROR executing")
             if (stop.on.error) {
