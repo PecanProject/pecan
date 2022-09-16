@@ -118,6 +118,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     }
   }
   
+  # TODO: have a better way to determine USMs
+  
   ########################## finish usmdirs
 
   
@@ -421,6 +423,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "innsen", pft.traits[which(pft.names == "innsen")], overwrite = TRUE)
     } 
     
+    # threshold soil water content active to simulate water senescence stress as a proportion of the turgor stress
+    if ("rapsenturg" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "rapsenturg", pft.traits[which(pft.names == "rapsenturg")], overwrite = TRUE)
+    } 
+    
     
     # radiation interception
     # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")
@@ -683,6 +690,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     XML::saveXML(gen_xml, file = gen_file)
     codeinitprec <- ifelse(length(usmdirs>1), 1, 2) 
     SticsRFiles::set_param_xml(gen_file, "codeinitprec", codeinitprec, overwrite = TRUE)
+    
+    newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
+    newf_file <- file.path(rundir, "param_newform.xml")
+    XML::saveXML(newf_xml, file = newf_file)  
+
     
     pft.traits <- unlist(trait.values[[pft]])
     pft.names  <- names(pft.traits)
@@ -1066,14 +1078,19 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     this_usm <- grep(names(trait.values)[pft], usmdirs)
     file.rename(file.path(rundir, "tempopar.sti"), file.path(usmdirs[this_usm], "tempopar.sti"))
+    
+    ### new formulations 
+    
+    # minimal value for drought stress index
+    if ("swfacmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(newf_file, "swfacmin", pft.traits[which(pft.names == "swfacmin")], overwrite = TRUE)
+    }
+    
+    # DO NOTHING ELSE FOR NOW
+    
+    SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
+    file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs[this_usm], "tempoparv6.sti"))
   }
-  
-  # DO NOTHING FOR NOW
-  newf_xml  <- XML::xmlParse(system.file("param_newform.xml", package = "PEcAn.STICS"))
-  newf_file <- file.path(rundir, "param_newform.xml")
-  XML::saveXML(newf_xml, file = newf_file)  
-  SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
-  file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs, "tempoparv6.sti"))
   
   
   
@@ -1259,6 +1276,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
             # the following code should give that
             harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
+            tec_df$irecbutoir <- harvest_df$julfauche
             harvest_df$hautcoupe <- as.numeric(harvest_sub$harvest_cut_height[harvest_sub$date==harvest_sub$date[hrow]]) # # cut height for forage crops
             harvest_df$hautcoupe <- ifelse(harvest_df$hautcoupe == -99, 0.05, harvest_df$hautcoupe)
             harvest_df$lairesiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.2, 0.8) # hardcode for now
@@ -1272,7 +1290,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         harvest_tec <- do.call("cbind", harvest_list) 
         
         # cut crop - 1:yes, 2:no
-        harvest_tec$codefauche <- 1 
+        harvest_tec$codefauche <- 2 
         harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
         harvest_tec$codemodfauche <- 2 # use calendar days
         harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
