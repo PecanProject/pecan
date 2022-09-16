@@ -170,7 +170,6 @@ model2netcdf.ED2 <- function(outdir,
     #create nc file with slots for all variables
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")),
                            nc_var)
-    on.exit(ncdf4::nc_close(nc))
     # define time_bounds for -T- outputs, if exists
     if (file.check[["-T-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
@@ -180,14 +179,14 @@ model2netcdf.ED2 <- function(outdir,
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    on.exit(close(varfile))
     # fill nc file with data
     for (i in seq_along(nc_var)) {
       ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
     }
-
+    ncdf4::nc_close(nc)
+    close(varfile)
   } # end year-loop
 
 } # model2netcdf.ED2
