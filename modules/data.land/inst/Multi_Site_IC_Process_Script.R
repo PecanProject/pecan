@@ -76,11 +76,25 @@ for (i in 1:length(settings)) {
                                                   bin_var = bin_var,
                                                   source = source)
   # Calculate poolinfo and Write into NC file
+  paths <- c()
   for (j in 1:n_ens) {
     poolinfo <- PEcAn.data.land::cohort2pool(dat = readRDS(sample_ic_results$file[j]))
     out <- PEcAn.SIPNET::veg2model.SIPNET(temp_outdir, poolinfo, as.numeric(temp_settings$run$site$id), ens = j)
+    paths <- c(out$file, paths)
   }
+  
+  #populated IC file paths into settings
+  Create_mult_list <- function(list.names, paths){
+    out <- as.list(paths)
+    names(out) <- list.names
+    out
+  }
+  settings[[i]]$run$inputs$poolinitcond$source <- "NEON_veg"
+  settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
+  settings[[i]]$run$inputs$poolinitcond$ensemble <- n_ens
+  settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", n_ens), paths)
 }
+write.settings(settings, outputdir = file.path(outdir), outputfile = "pecan.xml")
 
 #write log file.
 fileConn<-file(paste0(outdir, "/log.txt"))
