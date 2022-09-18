@@ -310,7 +310,7 @@ If you want to reset the pecan lib folder that is mounted across all machines, f
 
 ```
 docker-compose down
-docker rm pecan_lib
+docker volume rm pecan_lib
 ```
 
 ## Linux and User permissions
