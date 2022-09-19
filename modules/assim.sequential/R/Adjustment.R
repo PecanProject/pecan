@@ -9,7 +9,6 @@
 ##' @param Pa The state estimate cov matrix of analysis.
 ##’ @details
 ##’  
-##' 
 ##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
 ##' 
 ##' @return Returns a vector of adjusted analysis mean estimates of state variables.

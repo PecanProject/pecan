@@ -54,7 +54,7 @@ shinyServer(function(input, output, session) {
                    ),
             HTML(
               '<div style="width: 100%; height: 20px; border-bottom: 2px solid black; text-align: center">
-              <span style="font-size: 25px; background-color: #FFFFFF; padding: 0 10px;">Pecan assim.sequential package <!--Padding is optional-->
+              <span style="font-size: 25px; background-color: #FFFFFF; padding: 0 10px;">PecanAssimSequential package <!--Padding is optional-->
               </span>
               </div>'
             ),br(),
@@ -172,9 +172,9 @@ shinyServer(function(input, output, session) {
                          )
                        )
                        incProgress(1/15, message="Finished installing packages")
-                       library(PEcAn.assim.sequential, lib.loc =tmpd)
+                       library(PEcAnAssimSequential, lib.loc =tmpd)
                         # Use a promise here to send the job and then close the dialog
-                       toastr_success("PEcAn.assim.sequential package was installed successfully.")
+                       toastr_success("PEcAnAssimSequential package was installed successfully.")
                      },
                      error = function(e) {
                        toastr_error(title = "There is an error in installing assimilation package.", conditionMessage(e))

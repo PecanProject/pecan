@@ -50,14 +50,14 @@ d <- purrr::walk(
     deps <- deps[deps != "R"]
 
     # PEcAn dependencies
-    y <- deps[grepl("^PEcAn.", deps)]
+    y <- deps[grepl("^PEcAn", deps)]
     p <- d$get_field("Package")
     pecan[[p]] <<- f
     depends[[f]] <<- y
 
     # Dockerfile dependencies
     z <- y["package"]
-    z <- deps[!grepl("^PEcAn.", deps)]
+    z <- deps[!grepl("^PEcAn", deps)]
     docker <<- unique(c(docker, z))
 
     # Dockerfile remote dependencies
@@ -97,9 +97,9 @@ cat("#!/usr/bin/env Rscript",
     "Sys.setenv(RLIB = rlib)",
     "",
     "# install remotes first in case packages are references in dependencies",
-    "lapply(c(",
+    "remotes::install_github(c(",
     paste(shQuote(sort(remotes)), collapse = ",\n"),
-    "), remotes::install_github, lib = rlib)",
+    "), lib = rlib)",
     "",
     "# install all packages (depends, imports, suggests)",
     "wanted <- c(", paste(shQuote(sort(docker)), sep = "", collapse = ",\n"), ")",
