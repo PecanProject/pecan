@@ -272,7 +272,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         host = settings$host,
         src = settings$host$outdir,
         dst = dirname(settings$modeloutdir),
-        options = list("--exclude='*.h5'")
+        options = c('--exclude=*.h5')
       )
     }
     
