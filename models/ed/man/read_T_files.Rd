@@ -4,22 +4,34 @@
 \alias{read_T_files}
 \title{Function for reading -T- files}
 \usage{
-read_T_files(yr, yfiles, tfiles, outdir, start_date, end_date, ...)
+read_T_files(
+  yr,
+  yfiles,
+  h5_files,
+  outdir,
+  start_date,
+  end_date,
+  pfts = NULL,
+  settings = NULL
+)
 }
 \arguments{
 \item{yr}{the year being processed}
 
-\item{yfiles}{the years on the filenames, will be used to matched tfiles for that year}
+\item{yfiles}{the years on the filenames, will be used to matched h5_files for that year}
 
-\item{tfiles}{names of T files to be read}
+\item{h5_files}{names of T files to be read}
 
-\item{outdir}{directory where output will be written to}
+\item{outdir}{directory where ED2 output files are found}
 
 \item{start_date}{start date in YYYY-MM-DD format}
 
 \item{end_date}{end date in YYYY-MM-DD format}
 
-\item{...}{additional arguments}
+\item{pfts}{for consistency with \code{\link[=read_E_files]{read_E_files()}}---unused}
+
+\item{settings}{A PEcAn settings object. Values for \code{start_date} and
+\code{end_date} will be taken from \code{settings} if it is supplied.}
 }
 \description{
 Function for reading -T- files
@@ -27,5 +39,5 @@ Function for reading -T- files
 \details{
 e.g.    yr = 1999
 yfiles = 1999 2000
-tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+h5_files = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
 }
