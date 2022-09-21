@@ -30,6 +30,9 @@ template <- Settings(list(
     process.variance = TRUE,
     adjustment = FALSE,
     censored.data = FALSE,
+    FullYearNC = TRUE,
+    NC.Overwrite = FALSE,
+    NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
     Localization.FUN = "Local.support",
     scalef = 1,
@@ -38,8 +41,8 @@ template <- Settings(list(
       #you could add more state variables here
       variable = structure(list(variable.name = "AbvGrndWood", unit = "MgC/ha", min_value = 0, max_value = 9999)),
       variable = structure(list(variable.name = "LAI", unit = "", min_value = 0, max_value = 9999)),
-      variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999)),
-      variable = structure(list(variable.name = "soilWFracInit", unit = "", min_value = 0, max_value = 1))#soilWFracInit
+      variable = structure(list(variable.name = "SoilMoistFrac", unit = "", min_value = 0, max_value = 1)),#soilWFracInit
+      variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999))
     )),
     forecast.time.step = "year",
     start.date = start_date,
@@ -164,7 +167,7 @@ template <- Settings(list(
     name = "geo.bu.edu",
     usr = "zhangdc",
     folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    prerun = "module load R/4.0.5",
+    prerun = "module load R/4.1.2",
     qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
     qsub.jobid = "Your job ([0-9]+) .*",
     qstat = "qstat -j @JOBID@ || echo DONE",
