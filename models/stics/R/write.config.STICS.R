@@ -198,12 +198,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(names(trait.values)[pft] %in% c("FRG", "ALF")){
       codeplante <- 'fou'
       codeperenne <- 2
-      codebfroid <- 2 # vernalization requirement
     }else{
       codeplante <- substr(names(trait.values)[pft],1,3)
       codeperenne <- 1
-      codebfroid <- 1 
     }
+    codebfroid <- 2 # vernalization requirement, hardcoding for now, 2==yes
     SticsRFiles::set_param_xml(plant_file, "codeplante", codeplante, overwrite = TRUE)
     SticsRFiles::set_param_xml(plant_file, "codeperenne", codeperenne, overwrite = TRUE)
     SticsRFiles::set_param_xml(plant_file, "codebfroid", codebfroid, overwrite = TRUE)
@@ -240,6 +239,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     }
     
     # day of initiation of vernalisation in perennial crops (julian d) [1,731]
+    # this only takes effect for perennial crops
     if ("vernalization_init" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "julvernal", round(pft.traits[which(pft.names == "vernalization_init")]), overwrite = TRUE)
     }
@@ -249,11 +249,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "tfroid", pft.traits[which(pft.names == "vernalization_TOpt")], overwrite = TRUE)
     }
     
-    # skipping amfroid for now, seems to be relevant for winter barley only, come back for barley 
     # semi thermal amplitude for vernalising effect (degreeC)
-    #if ("vernalization_TAmp" %in% pft.names) { # haven't entered this variable to DB, this is only a suggestion
-    #  SticsRFiles::set_param_xml(plant_file, "ampfroid", pft.traits[which(pft.names == "vernalization_TAmp")], overwrite = TRUE)
-    #}
+    if ("vernalization_TAmp" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "ampfroid", pft.traits[which(pft.names == "vernalization_TAmp")], overwrite = TRUE)
+    }
     
     
     # emergence and starting
@@ -268,12 +267,17 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # nbfeuilplant, leaf number per plant when planting, default 0, skipping for now
     
     
-    # this is a switch, for now hardcoding to be direct start (2)
-    # should probably be passed via json
+    # this is a switch, for now hardcoding to have delay at the beginning of the crop (1)
+    # if starting the simulation from a later stage (e.g. lev) this has no effect
     # codegermin, option of simulation of a germination phase or a delay at the beginning of the crop (1) or direct starting (2)
-    SticsRFiles::set_param_xml(plant_file, "codegermin", 2, overwrite = TRUE)
-    # hence, skipping the other parameters related to this switch
-    # stpltger: cumulative thermal time allowing germination
+    SticsRFiles::set_param_xml(plant_file, "codegermin", 1, overwrite = TRUE)
+    
+    # cumulative thermal time allowing germination (degree-d)
+    if ("cum_thermal_germin" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "stpltger", pft.traits[which(pft.names == "cum_thermal_germin")], overwrite = TRUE)
+    }
+    
+    # skipping the other parameters related to this switch, they don't seem influential, at least on NPP and LAI
     # potgermi: soil water potential under which seed imbibition is impeded
     # nbjgerlim: maximum number of days after grain imbibition allowing full germination
     # propjgermin: minimal proportion of the duration nbjgerlim when the temperature is higher than the temperature threshold Tdmax
@@ -552,6 +556,24 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "longsperac", srl_val, overwrite = TRUE)
     }
     
+    # option to activate the N influence on root partitioning within the soil profile (1 = yes, 2 = no)
+    SticsRFiles::set_param_xml(plant_file, "codazorac", 1, overwrite = TRUE)
+    
+    # reduction factor on root growth when soil mineral N is limiting (< minazorac)
+    if ("minefnra" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "minefnra", pft.traits[which(pft.names == "minefnra")], overwrite = TRUE)
+    }  
+    
+    # mineral N concentration in soil below which root growth is reduced (kg.ha-1.cm-1)
+    if ("minazorac" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "minazorac", pft.traits[which(pft.names == "minazorac")], overwrite = TRUE)
+    }  
+    
+    # mineral N concentration in soil above which root growth is maximum (kg.ha-1.cm-1)
+    if ("maxazorac" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "maxazorac", pft.traits[which(pft.names == "maxazorac")], overwrite = TRUE)
+    }  
+    
     # frost
     
     # formalism - water
@@ -621,7 +643,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # Nmeta
     if ("Nmeta" %in% pft.names) {
-      SticsRFiles::set_param_xml(plant_file, "Nmeta", pft.traits[which(pft.names == "Nmeta")], overwrite = TRUE)
+      SticsRFiles::set_param_xml(plant_file, "Nmeta", pft.traits[which(pft.names == "Nmeta")]*100, overwrite = TRUE)
     } 
     
     # correspondance code BBCH
@@ -649,6 +671,19 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # cumulative thermal time between the stages AMF (maximum acceleration of leaf growth, end of juvenile phase)  and LAX (maximum leaf area index, end of leaf growth)
     if ("cum_thermal_growth" %in% pft.names) {
       SticsRFiles::set_param_xml(plant_file, "stamflax", pft.traits[which(pft.names == "cum_thermal_growth")], overwrite = TRUE)
+    }
+    
+    # cumulative thermal time between the stages LEV (emergence) and DRP (starting date of filling of harvested organs)
+    if ("cum_thermal_filling" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "stlevdrp", pft.traits[which(pft.names == "cum_thermal_filling")], overwrite = TRUE)
+    }
+    
+    if ("adens" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "adens", pft.traits[which(pft.names == "adens")], overwrite = TRUE)
+    }
+    
+    if ("croirac" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "croirac", pft.traits[which(pft.names == "croirac")], overwrite = TRUE)
     }
     
     # temporary hack?
@@ -1036,6 +1071,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if ("bhres" %in% pft.names) {
       SticsRFiles::set_param_xml(gen_file, "bhres", pft.traits[which(pft.names == "bhres")], overwrite = TRUE)
     }
+  
     
     # TODO: we need a soil PFT
     

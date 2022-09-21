@@ -310,8 +310,8 @@
                 <param format="real" max="500.0" min="0.0" nom="awb">30.10000</param>
                 <param format="real" max="0.0" min="-2500.0" nom="bwb">-275.00000</param>
                 <param format="real" max="60.0" min="5.0" nom="cwb">6.00000</param>
-                <param format="real" max="500.0" min="0.0" nom="ahres">0.91000</param>
-                <param format="real" max="10000.0" min="0.0" nom="bhres">16.20000</param>
+                <param format="real" max="500.0" min="0.0" nom="ahres">300.000</param>
+                <param format="real" max="10000.0" min="0.0" nom="bhres">10000.0000</param>
                 <param format="real" max="250.0" min="0.0" nom="kbio">0.01200</param>
                 <param format="real" max="0.7" min="0.3" nom="yres">0.62000</param>
                 <param format="real" max="200.0" min="3.0" nom="CNresmin">8.00000</param>

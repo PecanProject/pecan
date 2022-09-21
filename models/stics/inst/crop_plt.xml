@@ -248,7 +248,7 @@
     <param format="character" nom="stoprac">rec</param>
     <param format="real" max="1.0" min="0.0" nom="sensrsec">0.00000</param>
     <param format="real" max="1.0" min="0.0" nom="contrdamax">0.30000</param>
-    <option choix="1" nom="driving temperature" nomParam="codetemprac">
+    <option choix="2" nom="driving temperature" nomParam="codetemprac">
       <choix code="1" nom="temperature within the canopy"/>
       <choix code="2" nom="soil (threshold TGMIN)"/>
     </option>
