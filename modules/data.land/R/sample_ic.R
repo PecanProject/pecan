@@ -128,17 +128,8 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
       sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
       
   }
-  
-    veg_ens[[2]] <- do.call("rbind", sub.list)
-  
-  
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Write vegetation data as rds, return results to convert_input
-  
-  # write with ensemble number
-  sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
-  }
+
+
   # Build results dataframe for convert_input
   results <- data.frame(file = sppfilename, 
                         host = machine_host, 
