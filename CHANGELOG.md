@@ -27,6 +27,8 @@ see if you need to change any of these:
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
+  (#3002; @nanu1605)
 - Initial LDNDC model coupling
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
@@ -62,6 +64,9 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
 - PEcAn.assim.sequential is renamed to PEcAnAssimSequential
+- `convert.input` is moved from PEcAn.utils to PEcAn.DB and renamed as `convert_input`.
+  This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
+  (#3026; @nanu1605)
 
 ### Removed
 
