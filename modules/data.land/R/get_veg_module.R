@@ -39,7 +39,7 @@ get_veg_module <- function(input_veg,
     
     fcn <- "extract_veg"
 
-    getveg.id <- PEcAn.DB::convert.input(
+    getveg.id <- PEcAn.DB::convert_input(
       input.id = NA,
       outfolder = outfolder,
       formatname = "spp.info",
@@ -67,7 +67,7 @@ get_veg_module <- function(input_veg,
     }else{
       PEcAn.logger::logger.error("Must specify input id")
     }
-    getveg.id <- PEcAn.DB::convert.input(
+    getveg.id <- PEcAn.DB::convert_input(
       input.id = NA,
       outfolder = outfolder, 
       formatname = "spp.info",
