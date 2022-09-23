@@ -15,7 +15,7 @@ model2netcdf.ED2(
 )
 }
 \arguments{
-\item{outdir}{Location of ED model output}
+\item{outdir}{Location of ED model output (e.g. a path to a single ensemble output)}
 
 \item{sitelat}{Latitude of the site}
 
@@ -25,7 +25,7 @@ model2netcdf.ED2(
 
 \item{end_date}{End time of the simulation}
 
-\item{pfts}{the \code{pfts} element from a pecan settings object}
+\item{pfts}{a named vector of PFT numbers where the names are PFT names}
 
 \item{settings}{pecan settings object}
 }
@@ -35,7 +35,8 @@ Intercomparison format (ALMA using netCDF)
 }
 \details{
 if \code{settings} is provided, then values for missing arguments
-will be taken from it
+\code{sitelat}, \code{sitelon}, \code{start_date}, \code{end_date}, and \code{pfts} will be taken
+from it
 }
 \author{
 Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer

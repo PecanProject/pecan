@@ -22,7 +22,7 @@
 ##'           coef.vars = c(a=1,b=0.5, c=0.1),
 ##'           elasticities = c(a=1,b=2,c=0.5),
 ##'           variances    = c(a = 20, b=30, c = 10))
-##' do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
+##' do.call(gridExtra::grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
 plot_variance_decomposition <- function(plot.inputs, 
                                         fontsize = list(title = 18, axis = 14)) {
   ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(axis.text.x = ggplot2::element_text(size = fontsize$axis, vjust = -1),

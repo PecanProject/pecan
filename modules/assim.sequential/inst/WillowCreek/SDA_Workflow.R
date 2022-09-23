@@ -4,7 +4,7 @@
 library("PEcAn.all")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
-library("PEcAn.assim.sequential")
+library("PEcAnAssimSequential")
 library("RCurl")
 library("REddyProc")
 library("tidyverse")
@@ -38,7 +38,7 @@ c(
 ) %>% walk( ~ source(
   system.file("WillowCreek",
               .x,
-              package = "PEcAn.assim.sequential")
+              package = "PEcAnAssimSequential")
 ))
 
 #------------------------------------------------------------------------------------------------
@@ -563,12 +563,12 @@ source('/fs/data3/kzarada/pecan/modules/assim.sequential/R/Nimble_codes.R')
 
 
 if(restart == FALSE) unlink(c('run','out','SDA'), recursive = T)
-debugonce(PEcAn.assim.sequential::sda.enkf)
+debugonce(PEcAnAssimSequential::sda.enkf)
 
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf(
+    PEcAnAssimSequential::sda.enkf(
       settings, 
       restart=restart,
       Q=0,

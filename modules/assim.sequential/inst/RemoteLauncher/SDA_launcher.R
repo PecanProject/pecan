@@ -1,7 +1,7 @@
 #----------------------------------------------------------------
 # Loading required Libraries
 #---------------------------------------------------------------
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(PEcAn.settings)
 library(PEcAn.uncertainty)
 library(lubridate)
@@ -79,7 +79,7 @@ if (!("samples.Rdata" %in% list.files())) {
 tryCatch(
   {
     if (is.MultiSettings(settings)){
-      obss <- PEcAn.assim.sequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
+      obss <- PEcAnAssimSequential:::Obs.data.prepare.MultiSite(obs.path, site.ids)
     } else {
       obss <- load(obs.path)
     }
