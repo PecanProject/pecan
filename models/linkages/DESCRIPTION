@@ -1,6 +1,6 @@
 Package: PEcAn.LINKAGES
 Type: Package
-Title: PEcAn package for integration of the LINKAGES model
+Title: PEcAn Package for Integration of the LINKAGES Model
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
@@ -19,7 +19,6 @@ Imports:
     PEcAn.remote,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
 Suggests:
     testthat (>= 1.0.2),
     linkages

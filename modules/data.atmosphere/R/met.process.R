@@ -275,7 +275,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             format.vars = format.vars,
                             bety = con)
   } else {
-   if (! met %in% c("ERA5")) cf.id = input_met$id
+   if (! met %in% c("ERA5", "FieldObservatory")) cf.id = input_met$id
   }
 
   #--------------------------------------------------------------------------------------------------#

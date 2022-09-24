@@ -129,7 +129,7 @@ Here, we define three volumes:
 
 [Traefik](https://traefik.io/) manages communication among the different PEcAn services and between PEcAn and the web.
 Among other things, `traefik` facilitates the setup of web access to each PEcAn service via common and easy-to-remember URLs.
-For instance, the following lines in the `web` service configure access to the PEcAn web interface via the URL http://localhost:8000/pecan/ :
+For instance, the following lines in the `web` service configure access to the PEcAn web interface via the URL http://pecan.localhost/pecan/ :
 
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml$services$web["labels"], stdout())
@@ -154,7 +154,7 @@ The portainer service configuration looks like this:
 yaml::write_yaml(dc_yaml$services["portainer"], stdout())
 ```
 
-Portainer is accessible by browsing to `localhost:8000/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
+Portainer is accessible by browsing to `pecan.localhost/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
 
 ### `minio` {#pecan-dc-minio}
 
@@ -167,7 +167,7 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["minio"], stdout())
 ```
 
-The Minio interface is accessible by browsing to `localhost:8000/minio/`.
+The Minio interface is accessible by browsing to `minio.pecan.localhost`.
 From there, you can browse directories and download files.
 You can also upload files by clicking the red "+" in the bottom-right corner.
 
@@ -183,11 +183,11 @@ docker run -it --rm --volumes pecan_pecan:/data --volumes /path/to/local/directo
 ### `thredds` {#pecan-dc-thredds}
 
 This service allows PEcAn model outputs to be accessible via the [THREDDS data server (TDS)](https://www.unidata.ucar.edu/software/thredds/current/tds/).
-When the PEcAn stack is running, the catalog can be explored in a web browser at http://localhost:8000/thredds/catalog.html.
+When the PEcAn stack is running, the catalog can be explored in a web browser at http://pecan.localhost/thredds/catalog.html.
 Specific output files can also be accessed from the command line via commands like the following:
 
 ```{r, eval = FALSE}
-nc <- ncdf4::nc_open("http://localhost:8000/thredds/dodsC/outputs/PEcAn_<workflow_id>/out/<run_id>/<year>.nc")
+nc <- ncdf4::nc_open("http://pecan.localhost/thredds/dodsC/outputs/PEcAn_<workflow_id>/out/<run_id>/<year>.nc")
 ```
 
 Note that everything after `outputs/` exactly matches the directory structure of the `workflows` directory.
@@ -234,7 +234,7 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["rabbitmq"], stdout())
 ```
 
-Note that the `traefik.frontend.rule` indicates that browsing to http://localhost:8000/rabbitmq/ leads to the RabbitMQ management console.
+Note that the `traefik.http.routers.rabbitmq.rule` indicates that browsing to http://rabbitmq.pecan.localhost/ leads to the RabbitMQ management console.
 
 By default, the RabbitMQ management console has username/password `guest/guest`, which is highly insecure.
 For production instances of PEcAn, we highly recommend changing these credentials to something more secure, and removing access to the RabbitMQ management console via Traefik.
@@ -255,7 +255,7 @@ The BETY container Dockerfile is located in the root directory of the [BETY GitH
 
 ### `docs` {#pecan-dc-docs}
 
-This service will show the documentation for the version of PEcAn running as well as a homepage with links to all relevant endpoints. You can access this at http://localhost:8000/. You can find the documentation for PEcAn at http://localhost:8000/docs/pecan/.
+This service will show the documentation for the version of PEcAn running as well as a homepage with links to all relevant endpoints. You can access this at http://pecan.localhost/. You can find the documentation for PEcAn at http://pecan.localhost/docs/pecan/.
 
 Our current configuration is as follows:
 
@@ -298,7 +298,7 @@ Note that, unlike changes to the `web` image's PHP code, changes to the R source
 
 ### `monitor` {#pecan-dc-monitor}
 
-This service will show all models that are currently running http://localhost:8000/monitor/. This list returned is JSON and shows all models (grouped by type and version) that are currently running, or where seen in the past. This list will also contain a list of all current active containers, as well as how many jobs are waiting to be processed.
+This service will show all models that are currently running http://pecan.localhost/monitor/. This list returned is JSON and shows all models (grouped by type and version) that are currently running, or where seen in the past. This list will also contain a list of all current active containers, as well as how many jobs are waiting to be processed.
 
 This service is also responsible for registering any new models with PEcAn so users can select it and execute the model from the web interface.
 

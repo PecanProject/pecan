@@ -34,6 +34,8 @@ update.jump <- function(jmp, chain) {
 ##' @title update.mvjump 
 ##' @export
 ##' 
+##' @param jmp jump parameter
+##' @param chain mcmc chain
 
 update.mvjump <- function(jmp, chain) {
   ## check for valid typing

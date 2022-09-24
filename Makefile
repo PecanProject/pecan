@@ -3,7 +3,7 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				lpjguess maat maespa preles sibcasa sipnet stics template
+				ldndc lpjguess maat maespa preles sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -63,14 +63,10 @@ drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
-# circular dependencies in utils pkg.
-# When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" \
-	./scripts/confirm_deps.R ${1} \
-	$(if $(or \
-			$(findstring base/utils,$(1)), \
-			$(findstring modules/benchmark,$(1))) \
-		,NA,TRUE)
+# a circular dependency between benchmark and data.land.
+# When this is fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
+	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
 	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
