@@ -1,28 +1,78 @@
-##' ocs_extract function
+##' soilgrids_soilC_extract function
 ##' A function to extract total soil organic carbon for a single or group of 
 ##' lat/long locationsbased on user-defined site location from SoilGrids250m 
 ##' version 2.0 : https://soilgrids.org
-##' @title ocs_extract
-##' @name ocs_extract
+##' @title soilgrids_soilC_extract
+##' @name soilgrids_soilC_extract
 ##' 
 ##' @param site_info A dataframe of site info containing the BETYdb site ID, 
 ##' site name, latitude, and longitude, e.g. 
 ##' (site_id, site_name, lat, lon)
-##' @param outdir Optional. Provide the results as an Rdata file 
-##' (soilgrids_soc_data.RData)
+##' @param outdir Optional. Provide the results as a CSV file 
+##' (soilgrids_soilC_data.csv)
 ##' @param verbose Provide progress feedback to the terminal? TRUE/FALSE
+##' 
+##' ##' @examples
+##' \dontrun{
+##' 
+##' # Example 1 - using the modex.bnl.gov BETYdb and site IDs to extract data
+##' db <- 'betydb'
+##' host_db <- 'modex.bnl.gov'
+##' db_port <- '5432'
+##' db_user <- 'bety'
+##' db_password <- 'bety'
+##' 
+##' bety <- list(user='bety', password='bety', host='modex.bnl.gov',
+##' dbname='betydb', driver=RPostgres::Postgres(),write=FALSE)
+##' 
+##' con <- DBI::dbConnect(drv=bety$driver, dbname=bety$dbname, host=bety$host, 
+##' password=bety$password, user=bety$user)
+##' 
+##' suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+##' ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
+##' ids = c("676","622","678","766","764"), .con = con))
+##' 
+##' suppressWarnings(qry_results.1 <- DBI::dbSendQuery(con,site_qry))
+##' suppressWarnings(qry_results.2 <- DBI::dbFetch(qry_results.1))
+##' DBI::dbClearResult(qry_results.1)
+##' dbDisconnect(con)
+##' 
+##' site_info <- qry_results.2
+##' verbose <- TRUE
+##' system.time(result_soc <- soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
+##' result_soc
+##' 
+##' }
+##' @importFrom reshape2 melt
+##' @importFrom terra vect project rast extract
+##' @importFrom stats qgamma optim
+##' @importFrom utils flush.console setTxtProgressBar txtProgressBar
+##' 
+##' @return a dataframe containing the total soil carbon values  
+##' and the corresponding standard deviation values (uncertainties) for each location 
+##' Output column names are c("Site_ID","Site_Name","Latitude","Longitude",
+##' "Total_soilC","Std_soilC")
 ##' 
 ##' @export
 ##' @author Qianyu Li, Shawn P. Serbin
 ##' 
-ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
+soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
+
+    if (is.null(site_info)) {
+    stop("Please provide a BETY DB site list containing at least the site id and PostGIS geometry\
+    as lon and lat")
+  }
+  
+  # prepare site info for extraction
+  internal_site_info <- data.frame(site_info$id, site_info$sitename, site_info$lat,site_info$lon)
   #create a variable to store mean and quantile of organic carbon density (ocd) for each soil depth
-  ocdquant <- matrix(NA, nrow = 6, ncol = length(lon_input) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites 
+  ocdquant <- matrix(NA, nrow = 6, ncol = length(internal_site_info$site_info.lon) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites 
   #create a variable for site ID
-  siteid <- matrix(NA, nrow = 6, ncol = length(lon_input) * 4)
-  lonlat <- cbind(lon_input, lat_input)
+  siteid <- matrix(rep(as.numeric(site_info$id),times=4*6), nrow=6,byrow=TRUE)
+  lonlat <- cbind(internal_site_info$site_info.lon, internal_site_info$site_info.lat)
   base_data_url <- "/vsicurl?max_retry=30&retry_delay=60&list_dir=no&url=https://files.isric.org/soilgrids/latest/data/ocd/ocd_"
   depths <- c("0-5cm", "5-15cm", "15-30cm", "30-60cm", "60-100cm", "100-200cm")
+  layer_thick <- c(0.05,0.10,0.15,0.30,0.40,1.00) # in unit m
  
   # reproject locations to soilgrids projection
   #Soilgrids data is using Homolosine projection https://www.isric.org/explore/soilgrids/faq-soilgrids 
@@ -50,14 +100,12 @@ ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
     ocd_Q0.95_map <- terra::extract(terra::rast(ocd_Q0.95.url), p_reproj)
     
     #change the unit to more common kg/m3
-    ocd_mean_real <- ocd_mean[, 2] / 10
-    ocd_Q0.05_real <- ocd_Q0.05_map[, 2] / 10
-    ocd_Q0.50_real <- ocd_Q0.50_map[, 2] / 10
-    ocd_Q0.95_real <- ocd_Q0.95_map[, 2] / 10
+    ocd_mean_real <- ocd_mean[, -1] / 10
+    ocd_Q0.05_real <- ocd_Q0.05_map[, -1] / 10
+    ocd_Q0.50_real <- ocd_Q0.50_map[, -1] / 10
+    ocd_Q0.95_real <- ocd_Q0.95_map[, -1] / 10
     
     ocdquant[dep, ] <-c(ocd_mean_real,ocd_Q0.05_real,ocd_Q0.50_real,ocd_Q0.95_real)
-    siteid [dep, ] <- rep(1:length(lon_input), 4)
-
     ### Display progress to console
     if (verbose) {
       utils::setTxtProgressBar(pb, j)
@@ -70,16 +118,16 @@ ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
        ocd_mean_real, ocd_Q0.05_real, ocd_Q0.50_real, ocd_Q0.95_real)
   }
   
-  rownames(ocdquant) <- c("0-5", "5-15", "15-30", "30-60", "60-100", "100-200")
-  colnames(ocdquant) <- c(rep("Mean", length(lon_input)),
-                          rep("0.05", length(lon_input)),
-                          rep("0.5", length(lon_input)),
-                          rep("0.95", length(lon_input)))
-  rownames(siteid) <- c("0-5", "5-15", "15-30", "30-60", "60-100", "100-200")
-  colnames(siteid) <- c(rep("Mean", length(lon_input)),
-                        rep("0.05", length(lon_input)),
-                        rep("0.5", length(lon_input)),
-                        rep("0.95", length(lon_input)))
+  rownames(ocdquant) <- depths
+  colnames(ocdquant) <- c(rep("Mean", length(internal_site_info$site_info.lon)),
+                          rep("0.05", length(internal_site_info$site_info.lon)),
+                          rep("0.5", length(internal_site_info$site_info.lon)),
+                          rep("0.95", length(internal_site_info$site_info.lon)))
+  rownames(siteid) <- depths
+  colnames(siteid) <- c(rep("Mean", length(internal_site_info$site_info.lon)),
+                        rep("0.05", length(internal_site_info$site_info.lon)),
+                        rep("0.5", length(internal_site_info$site_info.lon)),
+                        rep("0.95", length(internal_site_info$site_info.lon)))
   if (verbose) {
     close(pb)
   }
@@ -90,7 +138,10 @@ ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
   colnames(ocd_fit) <- c("Depth", "Quantile", "Value")
   ocd_fit$Variable <- rep("ocd", length(nrow(ocd_fit)))
   ocd_fit$siteid <- id_fit$value
-  dat <- split(ocd_fit, list(ocd_fit$siteid, ocd_fit$Depth))
+  f1<-factor(ocd_fit$siteid,levels=unique(ocd_fit$siteid))
+  f2<-factor(ocd_fit$Depth,levels=unique(ocd_fit$Depth))
+  #split data by groups of sites and soil depth, while keeping the original order of each group
+  dat <- split(ocd_fit, list(f1, f2))  
   
   #assume the ocd profile follows gamma distribution best
   cgamma <- function(theta, val, stat) {
@@ -123,34 +174,36 @@ ocs_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
   bestPar <- sapply(score, function(f) { f$par })
   mean <- bestPar[1,] / bestPar[2,]
   std <- sqrt(bestPar[1,] / bestPar[2,] ^ 2)
-  mean_site <- matrix(mean, length(lon_input), 6)
-  rownames(mean_site) <- paste0("Site_", 1:length(lon_input))
-  colnames(mean_site) <- c("0-5cm",
-                           "5-15cm",
-                           "15-30cm",
-                           "30-60cm",
-                           "60-100cm",
-                           "100-200cm")
-  std_site <- matrix(std, length(lon_input), 6)
-  rownames(std_site) <- paste0("Site_", 1:length(lon_input))
-  colnames(std_site) <- c("0-5cm",
-                          "5-15cm",
-                          "15-30cm",
-                          "30-60cm",
-                          "60-100cm",
-                          "100-200cm")
+  mean_site <- matrix(mean, length(internal_site_info$site_info.lon), 6)
+  rownames(mean_site) <- as.numeric(internal_site_info$site_info.id)
+  colnames(mean_site) <- depths
+  mean_site.2 <- data.frame(site_id=internal_site_info$site_info.id, 
+                            lat=internal_site_info$site_info.lat, 
+                            lon=internal_site_info$site_info.lon, 
+                            mean_site)
+  colnames(mean_site.2)[4:9] <-  depths 
+
+  std_site <- matrix(std, length(internal_site_info$site_info.lon), 6)
+  rownames(std_site) <- as.numeric(internal_site_info$site_info.id)
+  colnames(std_site) <- depths
+  std_site.2 <- data.frame(site_id=internal_site_info$site_info.id,  
+                            lat=internal_site_info$site_info.lat,
+                            lon=internal_site_info$site_info.lon, 
+                            std_site)
+  colnames(std_site.2)[4:9] <-  depths 
   #calculate organic carbon stock (ocs) as the sum of organic carbon density multiplied by layer thickness, the unit of ocs is kg/m2, based on Eq. (6）in paper https://www.sciencedirect.com/science/article/pii/S2215016122000462
-  ocs_sum <- mean_site[,1]*(5-0)*0.01+mean_site[,2]*(15-5)*0.01+mean_site[,3]*(30-15)*0.01+mean_site[,4]*(60-30)*0.01+mean_site[,5]*(100-60)*0.01+mean_site[,6]*(200-100)*0.01 
+  ocs_sum <- mean_site[,1]*layer_thick[1]+mean_site[,2]*layer_thick[2]+mean_site[,3]*layer_thick[3]+mean_site[,4]*layer_thick[4]+mean_site[,5]*layer_thick[5]+mean_site[,6]*layer_thick[6] 
   #calculate standard deviation of ocs as the square root of sum of variance of layer-specific ocs, the unit of ocs is kg/m2, based on Eq. (8) in paper https://www.sciencedirect.com/science/article/pii/S2215016122000462, except the correlation term due to the lack of information 
-  ocs_std <- sqrt((std_site[,1]*(5-0)*0.01)^2+(std_site[,2]*(15-5)*0.01)^2+(std_site[,3]*(30-15)*0.01)^2+(std_site[,4]*(60-30)*0.01)^2+(std_site[,5]*(100-60)*0.01)^2+(std_site[,6]*(200-100)*0.01)^2)
-  
+  ocs_std <- sqrt((std_site[,1]*layer_thick[1])^2+(std_site[,2]*layer_thick[2])^2+(std_site[,3]*layer_thick[3])^2+(std_site[,4]*layer_thick[4])^2+(std_site[,5]*layer_thick[5])^2+(std_site[,6]*layer_thick[6])^2)
+  soilgrids_soilC_data <- data.frame(internal_site_info$site_info.id,internal_site_info$site_info.sitename,internal_site_info$site_info.lat,internal_site_info$site_info.lon,ocs_sum,ocs_std)
+  colnames(soilgrids_soilC_data)<- c("Site_ID","Site_Name","Latitude","Longitude","Total_soilC","Std_soilC")
+  rownames(soilgrids_soilC_data) <- NULL
+
   if (!is.null(outdir)) {
-    PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"soilgrids_soc_data.RData")))
-    if (! file.exists(outdir)) dir.create(outdir,recursive=TRUE)
-    soilgrids_soc_data <- list("Total_soc" = ocs_sum, "Sdev_soc" = ocs_std)
-    save(soilgrids_soc_data, file = file.path(outdir,"soilgrids_soc_data.RData"))
+    PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"soilgrids_soilC_data.csv")))
+    utils::write.csv(soilgrids_soilC_data,file=file.path(outdir,"soilgrids_soilC_data.csv"),row.names = FALSE)
   }
   # return the results to the terminal as well
-  return(list("Total OCS" = ocs_sum, "Standard deviation of OCS" = ocs_std))
+  return(soilgrids_soilC_data)
 }
-
+ 
