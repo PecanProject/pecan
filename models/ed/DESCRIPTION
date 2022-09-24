@@ -1,6 +1,6 @@
 Package: PEcAn.ED2
 Type: Package
-Title: PEcAn package for integration of ED2 model
+Title: PEcAn Package for Integration of ED2 Model
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
@@ -55,6 +55,7 @@ Imports:
     XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2),
+    devtools,
     withr
 Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE

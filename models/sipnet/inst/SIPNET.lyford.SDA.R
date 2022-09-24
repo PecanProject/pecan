@@ -15,7 +15,7 @@ status.end <- function(status="DONE") {
 
 #---------------- Load libraries. -----------------------------------------------------------------#
 library(PEcAn.all)
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(PEcAn.visualization)
 library(PEcAn.allometry)
 library(mvtnorm)

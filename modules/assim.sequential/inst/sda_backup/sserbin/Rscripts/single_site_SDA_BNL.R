@@ -19,11 +19,11 @@ library(PEcAn.all)
 library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
 library(PEcAn.visualization)
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 library(purrr)
@@ -165,8 +165,8 @@ obs.cov <-names(point_list$stdv_lai)[3:length(point_list$median_lai)] %>%
   }) %>% setNames(date.obs)
 
 # check input data - after creating list of lists
-PEcAn.assim.sequential::Construct.R(site.ids, "LAI", obs.mean[[1]], obs.cov[[1]])
-PEcAn.assim.sequential::Construct.R(site.ids, "LAI", obs.mean[[10]], obs.cov[[10]])
+PEcAnAssimSequential::Construct.R(site.ids, "LAI", obs.mean[[1]], obs.cov[[1]])
+PEcAnAssimSequential::Construct.R(site.ids, "LAI", obs.mean[[10]], obs.cov[[10]])
 #--------------------------------------------------------------------------------------------------#
 
 

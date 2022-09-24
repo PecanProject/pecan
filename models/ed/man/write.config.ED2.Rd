@@ -14,7 +14,8 @@ write.config.ED2(
 )
 }
 \arguments{
-\item{trait.values}{Named list of trait values, with names corresponding to PFT}
+\item{trait.values}{Named list of trait values, with names corresponding to
+PFT}
 
 \item{settings}{list of settings from pecan settings file}
 
@@ -24,6 +25,8 @@ write.config.ED2(
 
 \item{check}{Logical. If \code{TRUE}, check ED2IN validity before running and
 throw an error if anything is wrong (default = \code{FALSE})}
+
+\item{...}{unused}
 }
 \value{
 configuration file and ED2IN namelist for given run
@@ -34,5 +37,6 @@ model. Requires a pft xml object, a list of trait values for a single model
 run, and the name of the file to create
 }
 \author{
-David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
+David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov,
+Istem Fer
 }
