@@ -46,6 +46,7 @@ Imports:
     PEcAn.utils,
     PEcAn.visualization,
     purrr,
+    RCurl,
     rjags,
     rlang,
     RPostgreSQL,
