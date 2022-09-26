@@ -8,7 +8,7 @@ derive.traits(
   FUN,
   ...,
   input = list(...),
-  match.columns = c("citation_id", "site_id", "specie_id"),
+  match.columns = c("citation_id", "site_id", "species_id"),
   var.name = NA,
   sample.size = 10^6
 )

@@ -9,7 +9,7 @@ pft.add.spp(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL, ...)
 \arguments{
 \item{pft}{String name of the PFT in the database}
 
-\item{acronym}{Specie's Symbols. see \url{http://plants.usda.gov}}
+\item{acronym}{Species Symbols. see \url{http://plants.usda.gov}}
 
 \item{ID}{Species IDs in Bety. You can provide either IDs or Symbols as input, if you provide both ID and acronym, only acronym will be used.}
 
