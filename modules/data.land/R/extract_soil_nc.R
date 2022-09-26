@@ -46,7 +46,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     "&OUTPUTFORMAT=XMLMukeyList"
   )
   
-  xmll <- RCurl::getURL(
+  xmll <- curl::curl_download(
     mu.Path,
     ssl.verifyhost = FALSE,
     ssl.verifypeer = FALSE)
