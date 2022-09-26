@@ -7,41 +7,51 @@
 read_E_files(
   yr,
   yfiles,
-  efiles,
+  h5_files,
   outdir,
   start_date,
   end_date,
   pfts,
-  settings = NULL,
-  ...
+  settings = NULL
 )
 }
 \arguments{
 \item{yr}{length 1 numeric vector; the year being processed}
 
 \item{yfiles}{numeric vector of the years on the filenames, will be used to
-matched efiles for that year}
+matched \code{h5_files} for that year}
 
-\item{efiles}{character vector of names of E h5 files (e.g.
+\item{h5_files}{character vector of names of E h5 files (e.g.
 "analysis-E-1999-06-00-000000-g01.h5")}
 
-\item{outdir}{directory where output will be written to}
+\item{outdir}{directory where ED2 output files are found}
 
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
 
-\item{pfts}{the \code{pfts} element from a pecan settings object}
+\item{pfts}{a named vector of PFT numbers where the names are PFT names}
 
 \item{settings}{pecan settings object}
-
-\item{...}{currently unused}
+}
+\value{
+a list
+\enumerate{
+\item Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
+\item Is the variable in per-plant units? If so, it needs converting to per area units
+\item Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
+\item group by PFT and sum cohorts
+}
 }
 \description{
-Reads in monthly output (-E- .h5 files) from ED2 and converts to one .nc
-file per year.
+This function reads in monthly output (-E- .h5 files) from ED2, does unit
+conversions, and returns a list to be passed to \code{\link[=put_E_values]{put_E_values()}}.  Cohort
+level variables (i.e. those ending in "_CO") are often (always?) in
+per-plant units rather than per area. This function converts them to per
+area using the plant density and patch area before converting units to PEcAn
+standards.
 }
 \details{
 if \code{settings} is provided, then values for missing arguments
-will be taken from it
+for \code{start_date}, \code{end_date}, and \code{pfts} will be taken from it
 }
