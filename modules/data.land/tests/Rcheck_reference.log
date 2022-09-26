@@ -8,14 +8,14 @@
 * this is package ‘PEcAn.data.land’ version ‘1.7.1’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... WARNING
 
-Imports includes 33 non-default packages.
+Imports includes 30 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
 * checking package dependencies ... NOTE
-Imports includes 33 non-default packages.
+Imports includes 30 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -123,9 +123,6 @@ fia.to.psscss: no visible global function definition for ‘median’
 fia.to.psscss: no visible global function definition for ‘write.table’
 fia.to.psscss: no visible global function definition for
   ‘dbfile.input.insert’
-find.land: no visible global function definition for ‘data’
-find.land: no visible binding for global variable ‘wrld_simpl’
-find.land: no visible global function definition for ‘over’
 find.land: no visible binding for global variable ‘land’
 format_identifier: no visible binding for '<<-' assignment to ‘doi1’
 format_identifier: no visible binding for global variable ‘doi1’
@@ -252,7 +249,7 @@ write_ic: no visible binding for global variable ‘input_veg’
 Undefined global functions or variables:
   . aa abline air.cond air.hcap Area as as_Spatial as.mcmc.list
   bagitFile boxplot clay.cond clay.hcap coda.samples coef
-  combine.rwl complete.cases comppct_r convert.input cor data DATAVALUE
+  combine.rwl complete.cases comppct_r convert.input cor DATAVALUE
   db.close db.query dbfile.input.insert density dgamma doi1 fieldcp.K
   filter gelman.diag genus grav GROUP_ID h2o.cond hist
   hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt land
@@ -262,7 +259,7 @@ Undefined global functions or variables:
   resource_map runif sand.cond sand.hcap sd setNames settings
   setTxtProgressBar silt.cond silt.hcap SITE_ID soil.name soilcp.MPa
   soilwp.MPa species text texture title txtProgressBar var VARIABLE
-  VARIABLE_GROUP write.table wrld_simpl xclay.def xsand.def zip_contents
+  VARIABLE_GROUP write.table xclay.def xsand.def zip_contents
 Consider adding
   importFrom("graphics", "abline", "boxplot", "hist", "layout", "legend",
              "lines", "pairs", "par", "points", "text", "title")
@@ -271,10 +268,11 @@ Consider adding
   importFrom("stats", "coef", "complete.cases", "cor", "density",
              "dgamma", "filter", "lm", "median", "na.omit", "quantile",
              "runif", "sd", "setNames", "var")
-  importFrom("utils", "data", "read.csv", "read.fwf",
+  importFrom("utils", "read.csv", "read.fwf",
              "setTxtProgressBar", "txtProgressBar", "write.table")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
+to your NAMESPACE file.
 
 Found the following calls to data() loading into the global environment:
 File ‘PEcAn.data.land/R/fia2ED.R’:

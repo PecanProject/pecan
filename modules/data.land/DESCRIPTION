@@ -32,7 +32,6 @@ Imports:
     httr,
     lubridate,
     magrittr,
-    maptools,
     mvtnorm,
     ncdf4 (>= 1.15),
     neonUtilities,
@@ -43,13 +42,11 @@ Imports:
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
-    PEcAn.settings,
     PEcAn.utils,
     PEcAn.visualization,
     purrr,
     rjags,
     rlang,
-    RPostgreSQL,
     sf,
     sirt,
     sp,
@@ -58,9 +55,12 @@ Imports:
     XML (>= 3.98-1.4)      
 Suggests:
     dataone,
+    maptools,
+    PEcAn.settings,
     redland,
     raster,
     rgdal,
+    RPostgreSQL,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
