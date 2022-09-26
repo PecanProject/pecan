@@ -29,6 +29,7 @@ wanted <- c(
 'BrownDog',
 'coda',
 'corrplot',
+'curl',
 'data.table',
 'dataone',
 'datapack',

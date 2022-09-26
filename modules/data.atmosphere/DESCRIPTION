@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    curl,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -45,7 +46,6 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    RCurl,
     REddyProc,
     reshape2,
     rgdal,

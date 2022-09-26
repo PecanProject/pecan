@@ -205,6 +205,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @export summarize.result
 ##' @usage summarize.result(result)
 ##' @importFrom rlang .data
+##' @importFrom magrittr %>%
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
