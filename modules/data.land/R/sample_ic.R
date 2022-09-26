@@ -122,15 +122,15 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
         veg_ens[[1]] <- do.call("rbind", sub.list)
       }
       #--------------------------------------------------------------------------------------------------#
-      # Write vegettion data as rds, return results to convert.input
+      # Write vegetation data as rds, return results to convert_input
       
       # write with ensemble number
       sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
       
   }
-  
-   
-  # Build results dataframe for convert.input
+
+
+  # Build results dataframe for convert_input
   results <- data.frame(file = sppfilename, 
                         host = machine_host, 
                         mimetype = "application/rds", 
@@ -140,7 +140,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
                         dbfile.name = basename(sppfilename), 
                         stringsAsFactors = FALSE)
   
-  ### return for convert.inputs
+  ### return for convert_inputs
   return(invisible(results))  
   
   
