@@ -26,7 +26,7 @@ check.lists <- function(x, y, filename = "species.csv") {
   if(filename == "species.csv"){
     cols <- c('id', 'genus', 'species', 'scientificname')
   } else if (filename == "cultivars.csv") {
-    cols <- c('id', 'specie_id', 'species_name', 'cultivar_name')
+    cols <- c('id', 'species_id', 'species_name', 'cultivar_name')
   } else {
     return(FALSE)
   }

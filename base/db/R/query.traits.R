@@ -41,7 +41,7 @@ query.traits <- function(ids, priors, con,
     return(list())
   }
 
-  id_type = rlang::sym(if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"})
+  id_type = rlang::sym(if (ids_are_cultivars) {"cultivar_id"} else {"species_id"})
 
   traits <- (dplyr::tbl(con, "traits")
              %>% dplyr::inner_join(dplyr::tbl(con, "variables"), by = c("variable_id" = "id"))

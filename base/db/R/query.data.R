@@ -31,11 +31,11 @@ query.data <- function(
               store.unconverted = FALSE,
               ids_are_cultivars = FALSE,
               ...) {
-  id_type <- if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"}
+  id_type <- if (ids_are_cultivars) {"cultivar_id"} else {"species_id"}
 
   query <- paste("select
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
-              treatments.name, traits.date, traits.time, traits.cultivar_id, traits.specie_id,
+              treatments.name, traits.date, traits.time, traits.cultivar_id, traits.species_id,
               traits.mean, traits.statname, traits.stat, traits.n, variables.name as vname,
               extract(month from traits.date) as month,",
                  extra.columns,

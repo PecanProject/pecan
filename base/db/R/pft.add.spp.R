@@ -12,7 +12,7 @@
 ##' This function is used to add PFT-Species pairs to the database table 'pfts_species'.  In the initial implementation the PFT has to be defined already and the species are added based on their USDA Symbol (genus/species acronym).  Multiple species can be added at once but only one PFT at a time.
 ##' @title Associate species with a PFT.
 ##' @param pft String name of the PFT in the database
-##' @param acronym Specie's Symbols. see \url{http://plants.usda.gov}
+##' @param acronym Species Symbols. see \url{http://plants.usda.gov}
 ##' @param ID Species IDs in Bety. You can provide either IDs or Symbols as input, if you provide both ID and acronym, only acronym will be used.
 ##' @param test  Runs the function in test mode.  No species are actually added, but checks are run for existing species-PFT pairs, unmatched acronyms, missing species, or duplicate species
 ##' @param con Database connection object.
@@ -85,15 +85,15 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
       next
     }
     
-    ## look up pfts_species.specie_id to check for duplicates
-    species_pft_qry <- glue::glue_sql(paste0("select * from pfts_species where pft_id = '", my.pft$id,"' and specie_id = '",my.species$id ,"'"), .con = con)
+    ## look up pfts_species.species_id to check for duplicates
+    species_pft_qry <- glue::glue_sql(paste0("select * from pfts_species where pft_id = '", my.pft$id,"' and species_id = '",my.species$id ,"'"), .con = con)
     pft_species <- PEcAn.DB::db.query(con = con, query = species_pft_qry)
     
     #if record already exists
     if (nrow(pft_species) > 0) {
       print(c("Species already exists for PFT", acro))
       print(pft_species)
-      bad_pft_species <- c(bad_pft_species, paste0("Specie_ID: ", my.species$id, " . pft_ID: ", my.pft$id, "."))
+      bad_pft_species <- c(bad_pft_species, paste0("Species_ID: ", my.species$id, " . pft_ID: ", my.pft$id, "."))
       next
     }
     
@@ -103,7 +103,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
     if (test) {
       print('TEST ONLY')
       if(nrow(pft_species) == 0 && nrow(my.species) == 1 && nrow(my.pft) == 1){
-        print("pft exists and unique; specie exists and unique; pft_species does not exists; Therefore, it's ready to go!!!")
+        print("pft exists and unique; species exists and unique; pft_species does not exists; Therefore, it's ready to go!!!")
         print(acro)
       }
       next
@@ -112,7 +112,7 @@ pft.add.spp <- function(pft, acronym = NULL, ID = NULL, test = TRUE, con = NULL,
     ## if a species is not already in the pft, add
     cmd <- paste0(
       "INSERT INTO pfts_species ",
-      "(pft_id, specie_id) VALUES ('",my.pft$id, "', '", my.species$id, "') RETURNING id"
+      "(pft_id, species_id) VALUES ('",my.pft$id, "', '", my.species$id, "') RETURNING id"
     )
     # This is the id that we just registered
     inputid <- c(PEcAn.DB::db.query(query = cmd, con = con), inputid)

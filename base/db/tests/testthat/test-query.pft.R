@@ -41,7 +41,7 @@ test_that("query.pft_cultivars finds cultivars for a PFT", {
   expect_is(one_cv, "data.frame")
   expect_equal(nrow(one_cv), 1)
   expect_equal(one_cv$id, 3)
-  expect_equal(one_cv$specie_id, 938)
+  expect_equal(one_cv$species_id, 938)
   expect_equal(one_cv$scientificname, "Panicum virgatum")
 
   multi_cv <- query.pft_cultivars(pft = "Pavi_all", modeltype = NULL, con)

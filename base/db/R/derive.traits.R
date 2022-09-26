@@ -23,7 +23,7 @@
 ##'        this specifies the columns that identify a unique data point
 ##' @return a copy of the first input trait with modified mean, stat, and n
 derive.traits <- function(FUN, ..., input = list(...),
-                          match.columns = c('citation_id', 'site_id', 'specie_id'),
+                          match.columns = c('citation_id', 'site_id', 'species_id'),
                           var.name = NA, sample.size = 10^6){
   if(length(input) == 1){
     input <- input[[1]]

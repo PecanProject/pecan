@@ -211,7 +211,7 @@ summarize.result <- function(result) {
     dplyr::filter(.data$n == 1) %>%
     dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
                     .data$control, .data$greenhouse, .data$date, .data$time,
-                    .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
+                    .data$cultivar_id, .data$species_id, .data$name, .data$treatment_id) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(.data$n) == 1, "none", "SE"),
       stat = stats::sd(.data$mean) / sqrt(length(.data$n)),

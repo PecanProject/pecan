@@ -61,7 +61,7 @@
 ##'
 ##' ```
 ##' db.query(
-##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3)",
+##'   "INSERT INTO traits (species_id, variable_id, mean, n) VALUES ($1, $2, $3)",
 ##'   values = list(938, 396, c(1.7, 3.9, 4.5), 1),
 ##'   con = con
 ##' )
@@ -114,7 +114,7 @@
 ##'
 ##' # Efficiently insert multiple values into a table
 ##' db.query(
-##'   "INSERT INTO traits (specie_id, variable_id, mean, n) VALUES ($1, $2, $3, $4)",
+##'   "INSERT INTO traits (species_id, variable_id, mean, n) VALUES ($1, $2, $3, $4)",
 ##'   values = list(938, 396, rnorm(1000), 1),
 ##'   con = con
 ##' )

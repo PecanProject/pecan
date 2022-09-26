@@ -26,17 +26,17 @@ species <- species[sel,]
 ## Associate species with PFT
 for(i in seq_len(nrow(species))){
   
-  if( species$id[i] %in% PFT_species$specie_id){
+  if( species$id[i] %in% PFT_species$species_id){
     print(c(i,'ALREADY EXITS'))
   } else {
     print(i)
     ## insert record
-    query <- paste0("INSERT INTO pfts_species (pft_id, specie_id) SELECT ",
+    query <- paste0("INSERT INTO pfts_species (pft_id, species_id) SELECT ",
                     PFT$id,", ",
                     species$id[i],
                     " WHERE NOT EXISTS ( ",
-                    "SELECT pft_id, specie_id FROM pfts_species where pft_id = ",PFT$id,
-                    " and specie_id = ", species$id[i],
+                    "SELECT pft_id, species_id FROM pfts_species where pft_id = ",PFT$id,
+                    " and species_id = ", species$id[i],
                     " );")
     db.query(query, con)
     

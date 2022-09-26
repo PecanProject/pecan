@@ -22,7 +22,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
     for (pft in pfts) {
       if (is.null(query)) {
         query <- paste0("SELECT bp.id as bety_pft_id, bp.name as pft, bs.id as bety_species_id, bs.scientificname as latin FROM pfts as bp INNER JOIN ", 
-                        "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ", 
+                        "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.species_id WHERE ", 
                         "bp.name = '", pft$name, "'")
       } else {
         query <- paste0(query, " OR bp.name = '", pft$name, "'")
@@ -44,7 +44,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       bety_pft <- traits::betydb_query(name = pft$name, modeltype_id = model$id, table = 'pfts', user = 'bety', pwd = 'bety')
       # query species id
       bety_species <- traits::betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
-      bety_list[[pft$name]] <- bety_species$specie_id
+      bety_list[[pft$name]] <- bety_species$species_id
     }
     tmp <- lapply(seq_along(bety_list), function(x){
         data.frame(pft = rep(names(bety_list)[x], length(bety_list[[x]])),

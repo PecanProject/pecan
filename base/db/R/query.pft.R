@@ -27,14 +27,14 @@ query.pft_species <- function(pft, modeltype = NULL, con) {
   if (is.null(modeltype)) {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
                     " from species, pfts, pfts_species",
-                    " where species.id=pfts_species.specie_id",
+                    " where species.id=pfts_species.species_id",
                     " and pfts.id=pfts_species.pft_id",
                     " and pfts.pft_type='plant'",
                     " and pfts.name='", pft, "'")
   } else {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
                     " from species, pfts, pfts_species, modeltypes",
-                    " where species.id=pfts_species.specie_id",
+                    " where species.id=pfts_species.species_id",
                     " and pfts.id=pfts_species.pft_id",
                     " and pfts.pft_type='plant'",
                     " and pfts.name='", pft, "'",
@@ -87,11 +87,11 @@ query.pft_cultivars <- function(pft, modeltype = NULL, con) {
       suffix = c("", ".cv"))
     %>% dplyr::inner_join(
       dplyr::tbl(con, "species"),
-      by=c("specie_id" = "id"),
+      by=c("species_id" = "id"),
       suffix=c("", ".sp"))
     %>% dplyr::select(
       id = .data$cultivar_id,
-      .data$specie_id,
+      .data$species_id,
       .data$genus,
       .data$species,
       .data$scientificname,

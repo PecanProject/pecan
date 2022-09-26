@@ -54,7 +54,7 @@ for(i in 1:nrow(try.entities)){
   for(j in 1:nrow(try.sub)){
     vals <- list(
       site_id = try.sub[j, bety.site.id],
-      specie_id = try.sub[j, bety.species.id],
+      species_id = try.sub[j, bety.species.id],
       citation_id = try.sub[j, bety.citation.id],
       mean = try.sub[j, PEcAn.utils::ud_convert(StdValue, UnitName, units)],
       n = try.sub[j, Replicates],

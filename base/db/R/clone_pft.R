@@ -65,7 +65,7 @@ clone_pft <- function(parent.pft.name,
   # PFT members are stored in different tables depending on pft_type.
   # Both tables have two columns:
   #   - `pft_id`, which we update;
-  #   - `cultivar_id` or `specie_id`, which we copy unchanged
+  #   - `cultivar_id` or `species_id`, which we copy unchanged
   if (new.pft$pft_type == "cultivar") {
     member_tbl <- "cultivars_pfts"
   } else {

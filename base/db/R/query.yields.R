@@ -23,10 +23,10 @@
 query.yields <- function(trait = 'yield', spstr, extra.columns = '', con = NULL,
                          ids_are_cultivars = FALSE, ...){
   
-  member_column <- if (ids_are_cultivars) {"cultivar_id"} else {"specie_id"}
+  member_column <- if (ids_are_cultivars) {"cultivar_id"} else {"species_id"}
   query <- paste("select
             yields.id, yields.citation_id, yields.site_id, treatments.name,
-            yields.date, yields.time, yields.cultivar_id, yields.specie_id,
+            yields.date, yields.time, yields.cultivar_id, yields.species_id,
             yields.mean, yields.statname, yields.stat, yields.n,
             variables.name as vname,
             month(yields.date) as month,",

@@ -143,7 +143,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             # Columns are: id, genus, species, scientificname
             colClass = c("double", "character", "character", "character")
           } else if (pfttype == "cultivar") {
-            # Columns are: id, specie_id, genus, species, scientificname, cultivar
+            # Columns are: id, species_id, genus, species, scientificname, cultivar
             colClass = c("double", "double", "character", "character", "character", "character")
             }
           existing_membership <- utils::read.csv(

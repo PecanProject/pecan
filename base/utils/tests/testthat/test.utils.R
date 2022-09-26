@@ -66,7 +66,7 @@ test_that("summarize.result works appropriately", {
                            date = 1,
                            time = NA,
                            cultivar_id = 1,
-                           specie_id = 1,
+                           species_id = 1,
                            n = 1,
                            mean = sqrt(1:10),
                            stat = NA,
