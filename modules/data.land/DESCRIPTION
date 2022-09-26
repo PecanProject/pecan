@@ -28,6 +28,7 @@ Imports:
     dplyr,
     dplR,
     fs,
+    httr,
     lubridate,
     magrittr,
     maptools,

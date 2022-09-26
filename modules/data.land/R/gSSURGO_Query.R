@@ -32,11 +32,6 @@ gSSURGO.Query <- function(mukeys,
                                      "chorizon.claytotal_r")) {
 
   ######### Retrieve soil
-  headerFields <-
-    c(Accept = "text/xml",
-      Accept = "multipart/*",
-      'Content-Type' = "text/xml; charset=utf-8",
-      SOAPAction = "http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx/RunQuery")
 
   # Avoids duplicating fields that are always included in the query
   fixed_fields <- c("mapunit.mukey", "component.cokey", "component.comppct_r")
@@ -56,14 +51,23 @@ gSSURGO.Query <- function(mukeys,
                </RunQuery>
                </soap:Body>
                </soap:Envelope>')
-  reader <- RCurl::basicTextGatherer()
-  out <- RCurl::curlPerform(url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx",
-                          httpheader = headerFields,  postfields = body,
-                          writefunction = reader$update
-  )
+
+  out <- httr::POST(
+    url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx",
+    config = list(
+      httr::accept("text/xml"),
+      httr::accept("multipart/*"),
+      httr::add_headers(
+        SOAPAction = "http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx/RunQuery")),
+    httr::content_type("text/xml; charset=utf-8"), # I expected this to belong inside `config`, but doesn't seem to work there...
+    encode="multipart",
+    body = body)
+  httr::stop_for_status(out)
+  result <- httr::content(out, "text")
+
   suppressWarnings(
     suppressMessages({
-      xml_doc <- XML::xmlTreeParse(reader$value())
+      xml_doc <- XML::xmlTreeParse(result)
       xmltop  <- XML::xmlRoot(xml_doc)
       tablesxml <- (xmltop[[1]]["RunQueryResponse"][[1]]["RunQueryResult"][[1]]["diffgram"][[1]]["NewDataSet"][[1]])
     })
