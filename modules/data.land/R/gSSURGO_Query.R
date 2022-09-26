@@ -42,7 +42,10 @@ gSSURGO.Query <- function(mukeys,
                <soap:Body>
                <RunQuery xmlns="http://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx">
                <Query>
-               SELECT mapunit.mukey, component.cokey, component.comppct_r, ', paste(qry_fields, collapse = ", "), ' from mapunit
+               SELECT ',
+                 paste(fixed_fields, collapse = ", "),
+                 paste(qry_fields, collapse = ", "),
+                 ' from mapunit
                join muaggatt on mapunit.mukey=muaggatt.mukey
                join component on mapunit.mukey=component.mukey
                join chorizon on component.cokey=chorizon.cokey
