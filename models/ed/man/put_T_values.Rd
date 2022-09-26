@@ -4,7 +4,39 @@
 \alias{put_T_values}
 \title{Function for put -T- values to nc_var list}
 \usage{
-put_T_values(yr, nc_var, out, lat, lon, begins, ends, ...)
+put_T_values(
+  yr,
+  nc_var,
+  var_list,
+  lat,
+  lon,
+  start_date,
+  end_date,
+  begins,
+  ends,
+  out
+)
+}
+\arguments{
+\item{yr}{the year being processed}
+
+\item{nc_var}{a list (potentially empty) for \code{ncvar4} objects to be added to}
+
+\item{var_list}{list returned by \code{\link[=read_E_files]{read_E_files()}}}
+
+\item{lat}{\code{ncdim4} object for latitude of site}
+
+\item{lon}{\code{ncdim4} object longitude of site}
+
+\item{start_date}{start time of simulation}
+
+\item{end_date}{end time of simulation}
+
+\item{begins}{deprecated; use \code{start_date} instead}
+
+\item{ends}{deprecated; use \code{end_date} instead}
+
+\item{out}{deprecated; use \code{var_list} instead}
 }
 \description{
 Function for put -T- values to nc_var list

@@ -35,11 +35,15 @@ read_ed2in <- function(filename) {
 
   # Convert to a list to allow storing of multiple data types
   values_list <- as.list(values)
-
+  
+  # NOTE: code below relies on as.numeric() coercing values to NA
   numeric_values <- !is.na(suppressWarnings(as.numeric(values))) |
     grepl("^@.*?@$", values)    # Unquoted old substitutions are numeric
-  values_list[numeric_values] <- lapply(values_list[numeric_values], as.numeric)
-  # NOTE: This should throw a warning if any old substitution tags are present
+  #check for old substitution tags
+  if (any(grepl("^@.*?@$", values))) {
+    PEcAn.logger::logger.warn("Old substitution tags present in ED2IN file")
+  }
+  values_list[numeric_values] <- suppressWarnings(lapply(values_list[numeric_values], as.numeric))
 
   # Convert values that are a list of numbers to a numeric vector
   numlist_values <- grep(

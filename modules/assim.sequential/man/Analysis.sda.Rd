@@ -33,7 +33,7 @@ Analysis.sda(
 Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 }
 \description{
-This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAn.assim.sequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
+This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAnAssimSequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
 The other option is GEF function inside the same package allowing to perform Generalized Ensemble kalman Filter.
 
 If you're using an arbitrary function you can use the ... to send any other variables to your desired analysis function.

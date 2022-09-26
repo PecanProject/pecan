@@ -1,15 +1,75 @@
-* using log directory ‘/tmp/Rtmpy5mZ7I/PEcAn.uncertainty.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.uncertainty.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.uncertainty/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.uncertainty’ version ‘1.7.0’
+* this is package ‘PEcAn.uncertainty’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  ## This is the master copy of the PEcAn License
+
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  PEcAn project
+  www.pecanproject.org
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.utils, PEcAn.priors, PEcAn.DB, PEcAn.emulator, PEcAn.logger,
+    PEcAn.settings
+
+Found the following (possibly) invalid URLs:
+  URL: http://math.stackexchange.com/q/72975/3733 (moved to https://math.stackexchange.com/q/72975/3733)
+    From: man/sd.var.Rd
+    Status: 200
+    Message: OK
+  URL: http://stats.stackexchange.com/q/29905/1381 (moved to https://stats.stackexchange.com/q/29905/1381)
+    From: man/sd.var.Rd
+    Status: 200
+    Message: OK
+  URL: http://stats.stackexchange.com/q/7004/1381 (moved to https://stats.stackexchange.com/q/7004/1381)
+    From: man/sd.var.Rd
+    Status: 200
+    Message: OK
+
+The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -20,10 +80,16 @@ Requires orphaned package: ‘udunits2’
 * checking whether package ‘PEcAn.uncertainty’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+Author field differs from that derived from Authors@R
+  Author:    ‘David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl Davidson, Rob Kooper, Shawn Serbin’
+  Authors@R: ‘Mike Dietze [aut], David LeBauer [aut, cre], Xiaohui Feng [aut], Dan Wang [aut], Carl Davidson [aut], Rob Kooper [aut], Shawn Serbin [aut], University of Illinois, NCSA [cph]’
+
+Maintainer field differs from that derived from Authors@R
+  Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
+  Authors@R:  ‘David LeBauer <dlebauer@email.arizona.edu>’
+
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -36,139 +102,50 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘PEcAn.assim.sequential’ ‘PEcAn.data.atmosphere’
-Packages in Depends field not imported from:
-  ‘ggmap’ ‘ggplot2’ ‘gridExtra’ ‘PEcAn.priors’ ‘PEcAn.utils’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking use of S3 registration ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
 ensemble.ts: no visible binding for global variable ‘quantile’
-ensemble.ts: no visible global function definition for ‘plot’
-ensemble.ts: no visible global function definition for ‘lines’
-ensemble.ts: no visible global function definition for ‘points’
-ensemble.ts: no visible global function definition for ‘legend’
-ensemble.ts: no visible global function definition for ‘box’
-flux.uncertainty: no visible global function definition for ‘sd’
-flux.uncertainty: no visible global function definition for ‘lm’
-format.plot.input: no visible global function definition for
-  ‘trait.lookup’
-get.coef.var: no visible global function definition for ‘var’
-get.coef.var: no visible global function definition for ‘median’
-get.elasticity: no visible global function definition for ‘median’
-get.gi.phii: no visible global function definition for ‘laply’
-get.parameter.samples: no visible global function definition for
-  ‘dbfile.check’
 get.parameter.samples: no visible binding for global variable
   ‘post.distns’
 get.parameter.samples: no visible binding for global variable
   ‘trait.mcmc’
-get.parameter.samples: no visible global function definition for
-  ‘get.quantiles’
-get.parameter.samples: no visible global function definition for
-  ‘vecpaste’
-get.parameter.samples: no visible global function definition for
-  ‘get.sa.sample.list’
 get.results: no visible binding for global variable ‘trait.samples’
 get.results: no visible binding for global variable ‘runs.samples’
 get.results: no visible binding for global variable ‘sa.samples’
-get.sensitivity: no visible global function definition for ‘median’
-kurtosis: no visible global function definition for ‘sd’
-plot_flux_uncertainty: no visible global function definition for ‘plot’
-plot_flux_uncertainty: no visible global function definition for
-  ‘lines’
-plot_flux_uncertainty: no visible global function definition for
-  ‘legend’
-plot_sensitivity: no visible global function definition for
-  ‘trait.lookup’
-plot_sensitivity: no visible global function definition for ‘ggplot’
-plot_sensitivity: no visible global function definition for ‘geom_line’
-plot_sensitivity: no visible global function definition for ‘aes’
+plot.oechel.flux: no visible global function definition for ‘par’
 plot_sensitivity: no visible binding for global variable ‘x’
 plot_sensitivity: no visible binding for global variable ‘y’
-plot_sensitivity: no visible global function definition for
-  ‘geom_point’
-plot_sensitivity: no visible global function definition for
-  ‘scale_y_continuous’
-plot_sensitivity: no visible global function definition for ‘theme_bw’
-plot_sensitivity: no visible global function definition for ‘ggtitle’
-plot_sensitivity: no visible global function definition for ‘theme’
-plot_sensitivity: no visible global function definition for
-  ‘element_text’
-plot_sensitivity: no visible global function definition for
-  ‘element_blank’
-plot_sensitivity: no visible global function definition for
-  ‘scale_x_continuous’
-plot_variance_decomposition: no visible global function definition for
-  ‘theme_set’
-plot_variance_decomposition: no visible global function definition for
-  ‘theme_classic’
-plot_variance_decomposition: no visible global function definition for
-  ‘theme’
-plot_variance_decomposition: no visible global function definition for
-  ‘element_text’
-plot_variance_decomposition: no visible global function definition for
-  ‘element_blank’
-plot_variance_decomposition: no visible global function definition for
-  ‘trait.lookup’
-plot_variance_decomposition: no visible global function definition for
-  ‘ggplot’
-plot_variance_decomposition: no visible global function definition for
-  ‘coord_flip’
-plot_variance_decomposition: no visible global function definition for
-  ‘ggtitle’
-plot_variance_decomposition: no visible global function definition for
-  ‘geom_text’
-plot_variance_decomposition: no visible global function definition for
-  ‘aes’
 plot_variance_decomposition: no visible binding for global variable
   ‘points’
-plot_variance_decomposition: no visible global function definition for
-  ‘scale_y_continuous’
-plot_variance_decomposition: no visible global function definition for
-  ‘geom_pointrange’
 plot_variance_decomposition: no visible binding for global variable
   ‘coef.vars’
 plot_variance_decomposition: no visible binding for global variable
   ‘elasticities’
 plot_variance_decomposition: no visible binding for global variable
   ‘variances’
-plot.oechel.flux: no visible global function definition for ‘par’
 prep.data.assim: no visible global function definition for ‘rexp’
 prep.data.assim: no visible global function definition for
   ‘complete.cases’
 prep.data.assim: no visible global function definition for ‘cov’
-read.ameriflux.L2: no visible global function definition for
-  ‘read.table’
 read.ensemble.output: no visible binding for global variable
   ‘runs.samples’
 read.ensemble.ts: no visible binding for global variable ‘runs.samples’
 run.ensemble.analysis: no visible global function definition for
-  ‘convert.expr’
-run.ensemble.analysis: no visible global function definition for
   ‘mstmipvar’
-run.ensemble.analysis: no visible global function definition for
-  ‘ensemble.filename’
 run.ensemble.analysis: no visible binding for global variable
   ‘ensemble.output’
 run.ensemble.analysis: no visible global function definition for ‘pdf’
 run.ensemble.analysis: no visible global function definition for ‘par’
 run.ensemble.analysis: no visible global function definition for ‘hist’
-run.ensemble.analysis: no visible global function definition for ‘box’
 run.ensemble.analysis: no visible global function definition for
   ‘boxplot’
 run.ensemble.analysis: no visible global function definition for
   ‘dev.off’
-run.sensitivity.analysis: no visible global function definition for
-  ‘sensitivity.filename’
 run.sensitivity.analysis: no visible binding for global variable
   ‘runs.samples’
-run.sensitivity.analysis: no visible global function definition for
-  ‘convert.expr’
 run.sensitivity.analysis: no visible binding for global variable
   ‘sa.samples’
 run.sensitivity.analysis: no visible global function definition for
@@ -195,44 +172,17 @@ runModule.run.sensitivity.analysis: no visible global function
   definition for ‘papply’
 runModule.run.sensitivity.analysis: no visible global function
   definition for ‘is.Settings’
-sa.splinefun: no visible global function definition for ‘splinefun’
-sd.var: no visible global function definition for ‘var’
-sensitivity.analysis : <anonymous>: no visible global function
-  definition for ‘var’
-spline.truncate: no visible global function definition for ‘pnorm’
-spline.truncate: no visible global function definition for ‘quantile’
-spline.truncate: no visible global function definition for
-  ‘zero.truncate’
-tundra.flux.uncertainty : <anonymous>: no visible global function
-  definition for ‘read.table’
-variance.stats: no visible global function definition for ‘var’
 vd.variance: no visible binding for global variable ‘var’
-write.ensemble.configs: no visible binding for global variable ‘id’
-write.ensemble.configs: no visible binding for global variable
-  ‘required’
-write.ensemble.configs: no visible binding for global variable ‘tag’
-write.ensemble.configs: no visible binding for global variable
-  ‘site_id’
-write.ensemble.configs: no visible global function definition for ‘map’
 Undefined global functions or variables:
-  aes box boxplot coef.vars complete.cases convert.expr coord_flip cov
-  dbfile.check dev.off elasticities element_blank element_text
-  ensemble.filename ensemble.output geom_line geom_point
-  geom_pointrange geom_text get.quantiles get.sa.sample.list ggplot
-  ggtitle grid.arrange hist id is.MultiSettings is.Settings laply
-  legend lines lm map median mstmipvar papply par pdf plot pnorm points
-  post.distns quantile read.table required rexp runs.samples sa.samples
-  scale_x_continuous scale_y_continuous sd sensitivity.filename
-  sensitivity.output site_id splinefun tag theme theme_bw theme_classic
-  theme_set trait.lookup trait.samples trait.mcmc var variances vecpaste
-  x y zero.truncate
+  boxplot coef.vars complete.cases cov dev.off elasticities
+  ensemble.output grid.arrange hist is.MultiSettings is.Settings
+  mstmipvar papply par pdf points post.distns quantile rexp
+  runs.samples sa.samples sensitivity.output trait.lookup trait.mcmc
+  trait.samples var variances vecpaste x y
 Consider adding
-  importFrom("graphics", "box", "boxplot", "hist", "legend", "lines",
-             "par", "plot", "points")
   importFrom("grDevices", "dev.off", "pdf")
-  importFrom("stats", "complete.cases", "cov", "lm", "median", "pnorm",
-             "quantile", "rexp", "sd", "splinefun", "var")
-  importFrom("utils", "read.table")
+  importFrom("graphics", "boxplot", "hist", "par", "points")
+  importFrom("stats", "complete.cases", "cov", "quantile", "rexp", "var")
 to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
@@ -247,7 +197,6 @@ Missing link or links in documentation object 'get.gi.phii.Rd':
   ‘variance.decomposition’
 
 See section 'Cross-references' in the 'Writing R Extensions' manual.
-
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
   ‘runModule.run.ensemble.analysis’
@@ -315,5 +264,8 @@ Argument items with no description in Rd object 'sa.splinefun':
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 7 WARNINGs, 3 NOTEs
+
+Status: 6 WARNINGs, 3 NOTEs
