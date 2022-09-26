@@ -56,6 +56,8 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
+- `PEcAn.utils::download.url` argument `retry404` is now renamed to `retry` and
+  now functions as intended (it was being ignored completely before).
 - Update URL for MERRA downloads (#2888)
 - PEcAn.logger is now BSD-3 License
 - Skipped ICOS and MERRA download tests when running in github actions
