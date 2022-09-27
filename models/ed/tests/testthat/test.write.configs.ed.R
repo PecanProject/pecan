@@ -17,6 +17,21 @@ test_that("convert.samples.ED works as expected",{
   )
 })
 
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+outdir <- file.path(testdir, "outdir")
+
+test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
+  settings <- 
+    PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+  settings$outdir <- outdir
+  job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
+  expect <- deparse(dput(extract_pfts(settings$pfts)))
+  expect_true(any(stringr::str_detect(job.sh, stringr::fixed(expect))))
+})
+
 test_that("New ED2IN tags get added at bottom of file", {
   #1. read in pecan.xml in data/pecan_checked.xml
   settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
