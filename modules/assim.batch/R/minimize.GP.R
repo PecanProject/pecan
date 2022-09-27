@@ -385,26 +385,3 @@ bounded <- function(xnew, rng) {
   up <- xnew < rng[, 2]
   return(all(up & down))
 } # bounded
-
-
-##' @name plot.mvjump
-##' @title plot.mvjump
-##' @export
-##'
-##' @param jmp jump parameter
-##' 
-##' @author Michael Dietze
-plot.mvjump <- function(jmp) {
-  par(mfrow = c(1, 2))
-  plot(attr(jmp, "history")[, 1], ylab = "Jump Parameter", main = "Jump Parameter")
-  abline(h = mean(attr(jmp, "history")[, 1], na.rm = TRUE))
-  text(0.9 * length(attr(jmp, "history")[, 1]), 
-       min(attr(jmp, "history")[, 1]) + 0.8 * 
-         (max(attr(jmp, "history")[, 1]) - min(attr(jmp, "history")[, 1])), 
-       paste("mean=", mean(attr(jmp, "history")[, 1])))
-  plot(attr(jmp, "arate"), ylab = "Acceptance Rate", 
-       main = "Acceptance Rate", 
-       ylim = c(0, 1))
-  abline(h = attr(jmp, "target"))
-  abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
-} # plot.mvjump
