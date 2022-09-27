@@ -128,7 +128,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         dap_file <- paste0(dap_base, "/", year, "/", doy, "/", dap.log[h, 1], ".ascii?")
 
         # Query lat/lon
-        latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
+        latlon <- curl::curl_download(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
         lats <- as.vector(utils::read.table(
@@ -153,7 +153,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         }
         dap_query <- substr(dap_query, 2, nchar(dap_query))
 
-        dap.out <- RCurl::getURL(paste0(dap_file, dap_query))
+        dap.out <- curl::curl_download(paste0(dap_file, dap_query))
         for (v in seq_len(nrow(var))) {
           var.now <- var$DAP.name[v]
           ind.1 <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)

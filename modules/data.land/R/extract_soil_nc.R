@@ -77,7 +77,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
     #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
     xmll <-
-      RCurl::getURL(mu.Path,
+      curl::curl_download(mu.Path,
                     ssl.verifyhost = FALSE,
                     ssl.verifypeer = FALSE
       )
