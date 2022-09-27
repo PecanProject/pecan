@@ -74,6 +74,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 ### Removed
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
+- Unused (and apparently long-broken) function `PEcAn.data.land::find.land` has been removed.
 
 ## [1.7.2] - 2021-10-04
 
