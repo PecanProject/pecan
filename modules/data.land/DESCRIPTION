@@ -1,7 +1,7 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.7.2
+Version: 1.7.2.9000
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
@@ -29,9 +29,9 @@ Imports:
     dplyr,
     dplR,
     fs,
+    httr,
     lubridate,
     magrittr,
-    maptools,
     mvtnorm,
     ncdf4 (>= 1.15),
     neonUtilities,
@@ -42,14 +42,11 @@ Imports:
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
-    PEcAn.settings,
     PEcAn.utils,
     PEcAn.visualization,
     purrr,
-    RCurl,
     rjags,
     rlang,
-    RPostgreSQL,
     sf,
     sirt,
     sp,
@@ -58,9 +55,12 @@ Imports:
     XML (>= 3.98-1.4)      
 Suggests:
     dataone,
+    maptools,
+    PEcAn.settings,
     redland,
     raster,
     rgdal,
+    RPostgreSQL,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
