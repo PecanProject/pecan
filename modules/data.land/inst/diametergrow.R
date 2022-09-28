@@ -2,6 +2,8 @@
 ## Original code from Jim Clark
 ## Clark et al. 2007 Ecol Appl.
 ## modified by Mike Dietze
+##
+## See InventoryGrowthFusion for newer implementation
 
 diametergrow <- function(diameters, increment, survival = NULL) {
   

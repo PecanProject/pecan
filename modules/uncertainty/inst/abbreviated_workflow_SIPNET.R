@@ -3,7 +3,6 @@
 #Variables :
 library(PEcAn.all)
 library(PEcAn.utils)
-library(RCurl)
 variable_S <- c("GPP ", "NPP", "TotalResp","AutoResp", "HeteroResp", "SoilResp", "NEE", "QLE", "leaf_carbon_content", "GWBI", "TotSoilCarb", "course_root_carbon_content", "fine_root_carbon_content", "litter_carbon_content", "Transp", "TotLivBiom", "LAI", "AGB", "SoilMoist", "SoilMoistFracSWE", "AbvGrndWood")
 
 settings <- PEcAn.settings::read.settings("pecan.CHECKED.xml")

@@ -11,11 +11,11 @@ library(PEcAn.all)
 library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
 library(PEcAn.visualization)
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 library(purrr)
@@ -311,7 +311,7 @@ sda.enkf.multisite(new.settings, obs.mean =obs.mean ,obs.cov = obs.cov,
 # obs.mean = Viz.output[[2]]
 # obs.cov = Viz.output[[3]]
 # obs.times = names(obs.mean)
-# PEcAn.assim.sequential::post.analysis.multisite.ggplot(settings = new.settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=4, readsFF=NULL, observed_vars = c("AbvGrndWood", "LAI"))
+# PEcAnAssimSequential::post.analysis.multisite.ggplot(settings = new.settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=4, readsFF=NULL, observed_vars = c("AbvGrndWood", "LAI"))
 #   
 # 
 # observed_vars = c("AbvGrndWood", "LAI")

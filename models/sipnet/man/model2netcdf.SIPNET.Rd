@@ -12,7 +12,9 @@ model2netcdf.SIPNET(
   end_date,
   delete.raw,
   revision,
-  overwrite = FALSE
+  prefix = "sipnet.out",
+  overwrite = FALSE,
+  conflict = FALSE
 )
 }
 \arguments{
@@ -28,7 +30,11 @@ model2netcdf.SIPNET(
 
 \item{revision}{model revision}
 
+\item{prefix}{prefix to read the output files}
+
 \item{overwrite}{Flag for overwriting nc files or not}
+
+\item{conflict}{Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.}
 }
 \description{
 Convert SIPNET output to netCDF
