@@ -51,6 +51,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   (#2989; @nanu1605)
 - Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
+- `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
 
 ### Changed
 
@@ -73,6 +74,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 ### Removed
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
+- Unused (and apparently long-broken) function `PEcAn.data.land::find.land` has been removed.
 
 ## [1.7.2] - 2021-10-04
 
