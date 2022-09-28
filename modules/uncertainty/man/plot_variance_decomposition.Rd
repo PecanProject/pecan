@@ -23,7 +23,7 @@ x <- list(trait.labels = c('a', 'b', 'c'),
           coef.vars = c(a=1,b=0.5, c=0.1),
           elasticities = c(a=1,b=2,c=0.5),
           variances    = c(a = 20, b=30, c = 10))
-do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
+do.call(gridExtra::grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
 }
 \author{
 David LeBauer, Carl Davidson

@@ -7,47 +7,51 @@
 read_E_files(
   yr,
   yfiles,
-  efiles,
+  h5_files,
   outdir,
   start_date,
   end_date,
   pfts,
-  settings = NULL,
-  ...
+  settings = NULL
 )
 }
 \arguments{
-\item{yr}{the year being processed}
+\item{yr}{length 1 numeric vector; the year being processed}
 
-\item{yfiles}{the years on the filenames, will be used to matched efiles for that year}
+\item{yfiles}{numeric vector of the years on the filenames, will be used to
+matched \code{h5_files} for that year}
 
-\item{efiles}{names of E h5 files}
+\item{h5_files}{character vector of names of E h5 files (e.g.
+"analysis-E-1999-06-00-000000-g01.h5")}
 
-\item{outdir}{directory where output will be written to}
+\item{outdir}{directory where ED2 output files are found}
 
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
 
-\item{pfts}{Names of PFTs used in the run, vector}
+\item{pfts}{a named vector of PFT numbers where the names are PFT names}
 
 \item{settings}{pecan settings object}
-
-\item{...}{additional arguments}
+}
+\value{
+a list
+\enumerate{
+\item Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
+\item Is the variable in per-plant units? If so, it needs converting to per area units
+\item Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
+\item group by PFT and sum cohorts
+}
 }
 \description{
-Function for reading -E- files
+This function reads in monthly output (-E- .h5 files) from ED2, does unit
+conversions, and returns a list to be passed to \code{\link[=put_E_values]{put_E_values()}}.  Cohort
+level variables (i.e. those ending in "_CO") are often (always?) in
+per-plant units rather than per area. This function converts them to per
+area using the plant density and patch area before converting units to PEcAn
+standards.
 }
 \details{
-e.g.     yr = 1999
-yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
-efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
-"analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
-"analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
-"analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
-"analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
-"analysis-E-2000-04-00-000000-g01.h5"
-
-pft_names  : character vector with names of PFTs
-pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+if \code{settings} is provided, then values for missing arguments
+for \code{start_date}, \code{end_date}, and \code{pfts} will be taken from it
 }

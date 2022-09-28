@@ -39,7 +39,7 @@ if (cf == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=raw.host)
+  cf.id <- convert_input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con,raw.host=raw.host)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -56,7 +56,7 @@ if (cf == TRUE){
 #   mimetype <- 'application/x-netcdf'
 #   
 #   
-#   perm.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con)
+#   perm.id <- convert_input(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,pkg,fcn,write,username,con=con)
 # }
 
 #--------------------------------------------------------------------------------------------------#
@@ -75,7 +75,7 @@ if (extract == TRUE){
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   
-  extract.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con=con,newsite = newsite,raw.host=raw.host,write=TRUE)
+  extract.id <- convert_input(input.id,outfolder,formatname,mimetype,site.id,start_year,end_year,pkg,fcn,write,username,con=con,newsite = newsite,raw.host=raw.host,write=TRUE)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -97,7 +97,7 @@ if(nchar(model) >2){
   write     <- TRUE
   overwrite <- ""
   
-  model.id <- convert.input(input.id,outfolder,mod.formatname,mod.mimetype,newsite,start_year,end_year,pkg,fcn,write,username,con=con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
+  model.id <- convert_input(input.id,outfolder,mod.formatname,mod.mimetype,newsite,start_year,end_year,pkg,fcn,write,username,con=con,lst=lst,overwrite=overwrite,raw.host=raw.host,write=TRUE)
 
 
 }
