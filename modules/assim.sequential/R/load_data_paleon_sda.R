@@ -33,7 +33,7 @@ load_data_paleon_sda <- function(settings){
   if (!all(suggests_avail)) {
     PEcAn.logger::logger.error(
       "Can't find package(s)", suggests_missing,
-      ", needed by `PEcAn.assim.sequential::load_data_paleon_sda()`.",
+      ", needed by `PEcAnAssimSequential::load_data_paleon_sda()`.",
       "Please install these and try again.")
   }
   

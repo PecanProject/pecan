@@ -18,7 +18,7 @@ get.soil <- function(lat, lon, soil.nc = soil.nc) {
   
   ## topsoil
   usda_class <- ncvar_get(soil.nc, "t_usda_tex", start = c(loni, lati), count = c(1, 1))
-  ref_depth <- udunits2::ud.convert(ncvar_get(soil.nc, "ref_depth", start = c(loni, lati), count = c(1, 1)), 
+  ref_depth <- PEcAn.utils::ud_convert(ncvar_get(soil.nc, "ref_depth", start = c(loni, lati), count = c(1, 1)), 
                           "cm", "m")
   return(list(usda_class = usda_class, ref_depth = ref_depth))
 } # get.soil

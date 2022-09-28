@@ -190,7 +190,6 @@ In this example we will run ten MAAT model ensembles in serial based on paramete
 ```{r run_maat}
 library(PEcAn.all)
 library(PEcAn.utils)
-library(RCurl)
 
 setwd("~")
 getwd()

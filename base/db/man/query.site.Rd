@@ -7,9 +7,9 @@
 query.site(site.id, con)
 }
 \arguments{
-\item{con}{: database connection}
+\item{site.id}{The id of the site}
 
-\item{site_id}{numeric}
+\item{con}{: database connection}
 }
 \description{
 Given site_id, return site table

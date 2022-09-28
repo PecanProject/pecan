@@ -13,7 +13,6 @@ args <- commandArgs(trailingOnly = TRUE)
 # Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
-library(RCurl)
 
 #--------------------------------------------------------------------------------#
 # Functions used to write STATUS used by history

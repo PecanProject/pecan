@@ -1,6 +1,6 @@
 Package: PEcAn.data.atmosphere
 Type: Package
-Title: PEcAn functions used for managing climate driver data
+Title: PEcAn Functions Used for Managing Climate Driver Data
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    curl,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -45,7 +46,6 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    RCurl,
     REddyProc,
     reshape2,
     rgdal,
@@ -57,7 +57,7 @@ Imports:
     tidyr,
     tidyselect,
     truncnorm,
-    udunits2 (>= 0.11),
+    units,
     XML (>= 3.98-1.4),
     xts,
     zoo

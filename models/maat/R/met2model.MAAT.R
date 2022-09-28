@@ -74,7 +74,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # get start/end year since inputs are specified on year basis
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
-  day_secs <- udunits2::ud.convert(1, "day", "seconds")
+  day_secs <- PEcAn.utils::ud_convert(1, "day", "seconds")
   
   ## loop over files
   ## TODO need to filter out the data that is not inside start_date, end_date
@@ -90,7 +90,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       ## convert time to seconds
       sec <- nc$dim$time$vals
       frac.day <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
       dt <- PEcAn.utils::seconds_in_year(year, leap_year) / length(sec)
 
@@ -103,7 +103,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # Air temperature
       Tair <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Tair_C <- udunits2::ud.convert(Tair, "K", "degC") ## in degC
+      Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC") ## in degC
       
       # Precipitation
       Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")  ## 'kg/m^2/s'
@@ -114,13 +114,13 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # get humidity vars
       RH_perc <- try(ncdf4::ncvar_get(nc, "relative_humidity"), silent = TRUE)  ## RH Percentage
       Qair <- try(ncdf4::ncvar_get(nc, "specific_humidity"), silent = TRUE)  #humidity (kg/kg)
-      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"), silent = TRUE)  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C))
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
-      VPD_kPa <- udunits2::ud.convert(VPD, "Pa", "kPa")
+      VPD_kPa <- PEcAn.utils::ud_convert(VPD, "Pa", "kPa")
       e_a <- SVP - VPD  # AirVP
       if (!is.numeric(RH_perc)) {
          RH_perc <- PEcAn.data.atmosphere::qair2rh(Qair, Tair_C,Atm_press)
@@ -165,7 +165,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
     asec <- sec
     for (y in seq(year, year + nyr - 1)) {
       diy <- PEcAn.utils::days_in_year(y, leap_year)
-      ytmp <- rep(y, udunits2::ud.convert(diy / dt, "days", "seconds"))
+      ytmp <- rep(y, PEcAn.utils::ud_convert(diy / dt, "days", "seconds"))
       dtmp <- rep(seq_len(diy), each = day_secs / dt)
       if (is.null(yr)) {
         yr  <- ytmp

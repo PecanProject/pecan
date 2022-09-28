@@ -302,7 +302,7 @@ pecan2lpjguess <- function(trait.values){
     canconvert <- toconvert[toconvert %in% names(x)]      
     if(length(canconvert) != 0){
       for(c in seq_along(canconvert)){
-        x[,names(x) == canconvert[c]] <- udunits2::ud.convert(x[,names(x) == canconvert[c]], 
+        x[,names(x) == canconvert[c]] <- PEcAn.utils::ud_convert(x[,names(x) == canconvert[c]], 
                                                               vartable$pecanunits[vartable$lpjguessname == canconvert[c]], 
                                                               vartable$lpjguessunits[vartable$lpjguessname == canconvert[c]])
       }

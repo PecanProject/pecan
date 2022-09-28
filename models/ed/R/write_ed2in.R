@@ -26,8 +26,20 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
   nvalues <- length(tags_values_vec)
   ncomments <- length(attr(ed2in, "comment_values"))
   file_body <- character(nvalues + ncomments)
-  file_body[attr(ed2in, "comment_linenos")] <- attr(ed2in, "comment_values")
-  file_body[attr(ed2in, "value_linenos")] <- tags_values_vec
+  file_body[attr(ed2in, "comment_linenos")] <-
+    attr(ed2in, "comment_values")
+  file_body[attr(ed2in, "value_linenos")] <- 
+    tags_values_vec[1:length(attr(ed2in, "value_linenos"))]
+  
+  #check for new tags
+  if(length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
+    #find the $END
+    END_line <- grep("\\$END", file_body) - 1
+    new_tags <- 
+      tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)]
+    #put the new tags in with $END at the end
+    file_body <- c(file_body[1:END_line], new_tags, "$END")
+  } 
   header <- c(
     "!=======================================",
     "!=======================================",
@@ -54,7 +66,15 @@ write_ed2in.default <- function(ed2in, filename, custom_header = character(), ba
     paste0("!   ", custom_header),
     "!---------------------------------------"
   )
-  output_lines <- c(header, "$ED_NL", tags_values_vec, "$END")
+  output_lines <-
+    c(
+      header,
+      "$ED_NL",
+      tags_values_vec,
+      "$END",
+      "!==========================================================================================!",
+      "!==========================================================================================!"
+    )
   writeLines(output_lines, filename)
 }
 

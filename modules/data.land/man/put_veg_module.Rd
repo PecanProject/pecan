@@ -48,7 +48,7 @@ put_veg_module(
 
 \item{host}{list, host info as in settings$host, host$name forced to be "localhost" upstream}
 
-\item{overwrite}{logical flag for convert.input}
+\item{overwrite}{logical flag for convert_input}
 }
 \description{
 Match species to PFTs + veg2model module

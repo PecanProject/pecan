@@ -8,7 +8,7 @@ services:
 
   # web application. This expects the config.php to be copied from docker/web
   # cp docker/web/config.docker.php web/config.php
-  #web:
+  #pecan:
   #  volumes:
   #    - 'pecan_web:/var/www/html/pecan'
 

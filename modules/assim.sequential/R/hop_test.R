@@ -43,7 +43,7 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   ##### 
   ##### Run in SDA code with no data -- HOP Run
   ##### 
-  PEcAn.assim.sequential::sda.enkf(settings = settings, obs.mean = obs.mean, obs.cov = obs.cov)
+  PEcAnAssimSequential::sda.enkf(settings = settings, obs.mean = obs.mean, obs.cov = obs.cov)
   
   hop.runid <- read.table(file.path(settings$rundir,'runs.txt'))
   hop.ens <- read.output(runid = hop.runid, 
