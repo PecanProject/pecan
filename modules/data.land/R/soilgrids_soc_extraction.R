@@ -12,7 +12,7 @@
 ##' (soilgrids_soilC_data.csv)
 ##' @param verbose Provide progress feedback to the terminal? TRUE/FALSE
 ##' 
-##' ##' @examples
+##' @examples
 ##' \dontrun{
 ##' 
 ##' # Example 1 - using the modex.bnl.gov BETYdb and site IDs to extract data
@@ -56,7 +56,7 @@
 ##' @export
 ##' @author Qianyu Li, Shawn P. Serbin
 ##' 
-soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE, ...) {
+soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
 
     if (is.null(site_info)) {
     stop("Please provide a BETY DB site list containing at least the site id and PostGIS geometry\
