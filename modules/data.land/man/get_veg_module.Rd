@@ -33,7 +33,7 @@ get_veg_module(
 
 \item{machine_host}{local machine hostname, e.g. "pecan2.bu.edu"}
 
-\item{overwrite}{logical flag for convert.input}
+\item{overwrite}{logical flag for convert_input}
 }
 \description{
 Load/extract + match species module
