@@ -101,7 +101,6 @@ wanted <- c(
 'randtoolbox',
 'raster',
 'rcrossref',
-'RCurl',
 'REddyProc',
 'redland',
 'reshape',
