@@ -29,139 +29,107 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
   # Prepare for sampling
   # NOTE: This function might call different functions in the future, e.g. : sample_cohort, sample_pool, or both
   # Then, the rest of the script would change, this is cohort-based only
-  # 
-  # 1st sublist is either NULL or has metadata (e.g. age, area), in the future we might want to sample over that too
-  obsTree <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-  obsHerb <- as.data.frame(veg_info[[3]], stringsAsFactors = FALSE)
   
-  #clean up herb and tree data i.e. remove NA weight, DBH, or height measurements
-  obsTree <- obsTree[!is.na(obsTree$DBH),]
-  obsTree <- obsTree[!is.na(obsTree$height),]
-  obsHerb <- obsHerb[!is.na(obsHerb$dryMass),]
-  
-  #set year
-  year <- lubridate::year(start_date)
-  
-  # subset samples for the year 
-  samplesTree <- obsTree[obsTree$year == year, ]
-  samplesHerb <- obsHerb[obsHerb$year == year, ]
-  
-  # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
-  if(!is.null(samplesTree$Subplot)){
-    n.subplotTree <- length(unique(samplesTree$Subplot))
-    subplot.nTree <- unique(samplesTree$Subplot)
-  }else{
-    n.subplot <- 1
-    samples$Subplot <- 1
-    subplot.n <- 1
-  }
-  if(!is.null(samplesHerb$Subplot)){
-    n.subplotHerb <- length(unique(samplesHerb$Subplot))
-    subplot.nHerb <- unique(samplesHerb$Subplot)
-  }else{
-    n.subplot <- 1
-    samples$Subplot <- 1
-    subplot.n <- 1
-  }
+  #--------------------------------------------------------------------------------------------------#
+  # Sampling 
+  #loop over ensemble members
+  sppfilename <- rep(NA, n.ensemble)
+  for (ens in 1:n.ensemble) {
+    
+    veg_ens <- veg_info
+    
+    #sample DBH
+    if("DBH" %in% bin_var){
+      bin_Var <- "DBH"
+      obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
+      
+      year.start <- lubridate::year(start_date)
+      year.end <- lubridate::year(end_date)
+      
+      # subset samples for the year 
+      samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
+      
+      # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
+      #samples <- samples[complete.cases(samples), ]
+      samples <- samples[!is.na(samples[bin_Var]), ]
+      
+      # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
+      if(!is.null(samples$Subplot)){
+        n.subplot <- length(unique(samples$Subplot))
+        subplot.n <- unique(samples$Subplot)
+      }else{
+        n.subplot <- 1
+        samples$Subplot <- 1
+        subplot.n <- 1
+      }
+      sub.list <- list()
+      
+      for(np in seq_len(n.subplot)){
+        samples_sub <- samples[samples$Subplot == subplot.n[np],] 
+        
+        #  we can use Tree_number as the index for tapply and sample 1 from MCMC samples
+        if (!is.null(samples_sub$Tree_number)) {
+          samp_ind    <- tapply(seq_along(samples_sub$Tree_number), samples_sub$Tree_number, sample, 1)
+          
+        } else {
+          #don't have MCMC samples, instead re-sample trees stratified by size
+          #not every dataset will call DBH DBH, and 10 should be a variable. Add parameter for bin_size and bin_var with defaults set to DBH and 10 
+          size <- ceiling(samples_sub[,which(colnames(samples_sub)==bin_Var)]/bin_size)
+          samp_ind <- unlist(tapply(seq_along(size), size, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
+        }
+        sub_samp    <- samples_sub[samp_ind,]
+        
+        sub.list[[np]]  <- sub_samp
+      }
+      veg_ens[[2]] <- do.call("rbind", sub.list)
+    }
+    
+    #sample Herb
+    if("dryMass" %in% bin_var){
+      bin_Var <- "dryMass"
+      obs <- as.data.frame(veg_info[[1]], stringsAsFactors = FALSE)
+      
+      year.start <- lubridate::year(start_date)
+      year.end <- lubridate::year(end_date)
+      
+      # subset samples for the year 
+      samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
+      
+      # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
+      #samples <- samples[complete.cases(samples), ]
+      samples <- samples[!is.na(samples[bin_Var]), ]
+      
+      # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
+      if(!is.null(samples$plot)){
+        n.plot <- length(unique(samples$plot))
+        plot.n <- unique(samples$plot)
+      }else{
+        n.plot <- 1
+        samples$plot <- 1
+        plot.n <- 1
+      }
+      if(n.plot>bin_size){
+        herb_plot_bin_size <- bin_size
+      }else{
+        herb_plot_bin_size <- ceiling(n.plot/5)
+      }
+      sub.list <- list()
+      sample_plots <- sample(plot.n, herb_plot_bin_size)
+      for(np in 1:length(sample_plots)){
+        samples_sub <- samples[samples$plot == sample_plots[np],] 
+        sub.list[[np]]  <- samples_sub
+      }
+      veg_ens[[1]] <- do.call("rbind", sub.list)
+    }
     #--------------------------------------------------------------------------------------------------#
-    # Sampling 
-    #loop over ensemble members
-    sppfilename <- rep(NA, n.ensemble)
-    for (ens in 1:n.ensemble) {
-      
-      veg_ens <- veg_info
-      
-      #sample DBH
-      if("DBH" %in% bin_var){
-        bin_Var <- "DBH"
-        obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-        
-        year.start <- lubridate::year(start_date)
-        year.end <- lubridate::year(end_date)
-        
-        # subset samples for the year 
-        samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
-        
-        # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
-        #samples <- samples[complete.cases(samples), ]
-        samples <- samples[!is.na(samples[bin_Var]), ]
-  
-        # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
-        if(!is.null(samples$Subplot)){
-          n.subplot <- length(unique(samples$Subplot))
-          subplot.n <- unique(samples$Subplot)
-        }else{
-          n.subplot <- 1
-          samples$Subplot <- 1
-          subplot.n <- 1
-        }
-        sub.list <- list()
-        
-        for(np in seq_len(n.subplot)){
-          samples_sub <- samples[samples$Subplot == subplot.n[np],] 
-          
-          #  we can use Tree_number as the index for tapply and sample 1 from MCMC samples
-          if (!is.null(samples_sub$Tree_number)) {
-            samp_ind    <- tapply(seq_along(samples_sub$Tree_number), samples_sub$Tree_number, sample, 1)
-            
-          } else {
-            #don't have MCMC samples, instead re-sample trees stratified by size
-            #not every dataset will call DBH DBH, and 10 should be a variable. Add parameter for bin_size and bin_var with defaults set to DBH and 10 
-            size <- ceiling(samples_sub[,which(colnames(samples_sub)==bin_Var)]/bin_size)
-            samp_ind <- unlist(tapply(seq_along(size), size, function(x){sample(x, length(x), replace = TRUE)}, simplify = TRUE))
-          }
-          sub_samp    <- samples_sub[samp_ind,]
-          
-          sub.list[[np]]  <- sub_samp
-        }
-        veg_ens[[2]] <- do.call("rbind", sub.list)
-      }
-      
-      #sample Herb
-      if("dryMass" %in% bin_var){
-        bin_Var <- "dryMass"
-        obs <- as.data.frame(veg_info[[1]], stringsAsFactors = FALSE)
-        
-        year.start <- lubridate::year(start_date)
-        year.end <- lubridate::year(end_date)
-        
-        # subset samples for the year 
-        samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
-        
-        # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
-        #samples <- samples[complete.cases(samples), ]
-        samples <- samples[!is.na(samples[bin_Var]), ]
-        
-        # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
-        if(!is.null(samples$plot)){
-          n.plot <- length(unique(samples$plot))
-          plot.n <- unique(samples$plot)
-        }else{
-          n.plot <- 1
-          samples$plot <- 1
-          plot.n <- 1
-        }
-        if(n.plot>bin_size){
-          herb_plot_bin_size <- bin_size
-        }else{
-          herb_plot_bin_size <- ceiling(n.plot/5)
-        }
-        sub.list <- list()
-        sample_plots <- sample(plot.n, herb_plot_bin_size)
-        for(np in 1:length(sample_plots)){
-          samples_sub <- samples[samples$plot == sample_plots[np],] 
-          sub.list[[np]]  <- samples_sub
-        }
-        veg_ens[[1]] <- do.call("rbind", sub.list)
-      }
-      #--------------------------------------------------------------------------------------------------#
-      # Write vegettion data as rds, return results to convert.input
-      
-      # write with ensemble number
-      sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
-      
+    # Write vegettion data as rds, return results to convert.input
+    
+    # write with ensemble number
+    sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
+    
   }
-
+  
+  
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 
                         host = machine_host, 

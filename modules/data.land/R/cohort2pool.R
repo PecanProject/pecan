@@ -6,11 +6,10 @@
 ##' @export
 ##'
 ##' @param dbh_name Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.
+##' @param dat veg_info file
 ##' @param allom_param parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)
-##' @param veg_info veg_info object passed from write_ic
-##' @param dryMass_name Default is "dryMass". This is the column name in the veg_file that represents herbaceous dry mass. May differ depending on data source.
 ##'
-##' @author Saloni Shah and Alexis Helgeson
+##' @author Saloni Shah
 ##' @examples
 ##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
@@ -18,11 +17,8 @@
 ##' }
 ##' 
 
-
-cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_name = "dryMass") {
+cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   
-  ## load data
-  dat <- veg_info
   #Grab plot size
   herb_plot <- dat[[1]]$clipArea[1]
   #Grab number of plots
@@ -52,7 +48,7 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
       }
     }
     total_area <- sum(area)/4
-
+    
     ## Grab allometry
     if(is.null(allom_param)){
       a <- -2.0127                        
@@ -77,31 +73,31 @@ cohort2pool <- function(veg_info, allom_param = NULL, dbh_name="DBH", dryMass_na
   #calculate total herbaceous biomass, already in gC
   tot_herb <- sum(dat[[1]][,"dryMass"])/(herb_plot*herb_num)
   
-  # #Calculate AGB
+  #Calculate AGB
   biomass[is.na(biomass)] <- 0
   tot_biomass <- sum(biomass,na.rm = TRUE)
-  
-  #calculate total herbaceous biomass, already in gC
-  tot_herb <- sum(dat[[3]][,"dryMass"])/(herb_plot*herb_num)
   
   #calculate total wood and leaf biomass
   ratio[is.na(ratio)] <- 0
   leaf <- ratio*biomass
   tot_leaf <- sum(leaf,na.rm = TRUE)
   
-  #Divide by plot area, divide by 2 to convert from kg to kgC then multiply by 1000 to get gC
-  #THflag <- dat[[4]] #add different calculation for tree vs herb site
-
-  leaf_biomass = ((tot_leaf/(tree_num*plot_size))/2)*1000 + tot_herb
-  AGB = ((tot_biomass/(tree_num*plot_size))/2)*1000
+  #Divide by plot area, divide by 2 to convert from kg to kgC
+  leaf_biomass = (tot_leaf/(total_area))/2 + tot_herb/1000
+  
+  if(tot_biomass == 0){
+    AGB <- tot_herb/1000
+  }else{
+    AGB <- (tot_biomass/(total_area))/2 + tot_herb/1000
+  }
   wood_biomass = AGB - leaf_biomass
   
   #grab soil carbon info
-  soil_carbon = dat[[5]] #conversion done in extract_NEON_veg (gC/m^2)
+  soil_carbon = dat[[3]] #conversion done in extract_NEON_veg (gC/m^2)
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
-  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass, soil_organic_carbon_content = soil_carbon) 
+  variables <-list(AbvGrndWood = AGB, wood_carbon_content = wood_biomass, leaf_carbon_content = leaf_biomass, soil_organic_carbon_content = soil_carbon)
   input <- list(dims = dims,
                 vals = variables)
   

@@ -26,22 +26,22 @@ library("lubridate")
 #   logger.severe("Missing required arguments")
 # }
 #forecastPath points to the folder where unconstrained forecast runs can be found
-#forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/FluxPaper/"
+#forecastPath <- "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/Fixed_PAR/"
 #SDApath points to the folder where SDA forecast runs can be found
-SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
+SDApath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/Fixed_PAR"
 #SDApath <- tmp[1]
 #manually set to previous run settings$info$date it creates the filepath to previous run
 #when you run with write to BETY = FALSE the system uses the system date/time as the unique folder name for runs
-next.oldir <- "2022-08-29-15-18"
+next.oldir <- "2022-09-23-11-49"
 #next.oldir <- tmp[2]
 #outputPath points to location where you would like to save SDA output note this path could match SDApath but does not need to
-outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/"
+outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/HF_SDA_Output/Fixed_PAR"
 #outputPath <- tmp[3]
 #settingsPath points to location where multisite xml can be found
 settingsPath <- "/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/Site_XMLS/testingMulti_HF.xml"
 #settingsPath <- tmp[4]
 #to manually change start date 
-runDays <- seq(as.Date("2021-08-07"), as.Date("2021-08-08"), by="days")
+runDays <- seq(as.Date("2021-07-28"), as.Date("2021-07-29"), by="days")
 #runDays <- seq(as.Date(tmp[5]), as.Date(tmp[6]), by="days")
 
 #------------------------------------------------------------------------------------------------

@@ -4,21 +4,14 @@
 \alias{cohort2pool}
 \title{cohort2pool}
 \usage{
-cohort2pool(
-  veg_info,
-  allom_param = NULL,
-  dbh_name = "DBH",
-  dryMass_name = "dryMass"
-)
+cohort2pool(dat, allom_param = NULL, dbh_name = "DBH")
 }
 \arguments{
-\item{veg_info}{veg_info object passed from write_ic}
+\item{dat}{veg_info file}
 
 \item{allom_param}{parameters for allometric equation, a and b. Based on base-10 log-log linear model (power law)}
 
 \item{dbh_name}{Default is "DBH". This is the column name in the veg_file that represents DBH. May differ depending on data source.}
-
-\item{dryMass_name}{Default is "dryMass". This is the column name in the veg_file that represents herbaceous dry mass. May differ depending on data source.}
 }
 \description{
 Converts .rds files into pool netcdf files.
@@ -35,5 +28,5 @@ cohort2pool(veg_File = veg_file, allom_param = NULL)
 
 }
 \author{
-Saloni Shah and Alexis Helgeson
+Saloni Shah
 }
