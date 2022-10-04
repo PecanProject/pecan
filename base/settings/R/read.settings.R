@@ -11,11 +11,12 @@
 #'
 #' This will try and find the PEcAn settings file in the following order:
 #' \enumerate{
-#' \item {--settings <file>}{passed as command line argument using --settings}
-#' \item {inputfile}{passed as argument to function}
-#' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
-#' \item {./pecan.xml}{pecan.xml in the current folder}
+#'   \item `--settings <file>` passed as command line argument using `--settings`
+#'   \item `inputfile` passed as argument to function
+#'   \item `PECAN_SETTINGS` environment variable `PECAN_SETTINGS` pointing to a specific file
+#'   \item `./pecan.xml` `pecan.xml` in the current folder
 #' }
+#' 
 #' Once the function finds a valid file, it will not look further.
 #' Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be
 #'   ignored.
@@ -110,7 +111,8 @@ read.settings <- function(inputfile = "pecan.xml") {
 #'
 #' @param x a settings list
 #'
-#' @return
+#' @return list
+#' @noRd
 #'
 strip_comments <- function(x) {
   # function to find depth of a list element
