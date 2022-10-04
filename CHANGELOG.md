@@ -30,6 +30,8 @@ see if you need to change any of these:
 - Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
   (#3002; @nanu1605)
 - Initial LDNDC model coupling
+- `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
+- `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
@@ -53,6 +55,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
 - Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
+- `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
 
 ### Changed
 
