@@ -89,18 +89,21 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         "-p",
         dirname(settings$host$outdir))) 
     # copy over out directories
-    #TODO: if these aren't empty, e.g. from a previous run, then this might take unnecessarily long.  Another option would to just mkdir on the remote server on a list of all the dirs
     PEcAn.remote::remote.copy.to(
       host = settings$host,
       src = settings$modeloutdir,
-      dst = dirname(settings$host$outdir) 
+      dst = dirname(settings$host$outdir),
+      #include all directories, exclude all files
+      options = c("--include='*/'", "--exclude='*'"),
+      delete = TRUE
     )
     # copy over run directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
       src = settings$rundir, 
       dst = dirname(settings$host$rundir), 
-      delete = TRUE)
+      delete = TRUE
+    )
   }
   
   # launch each of the jobs
