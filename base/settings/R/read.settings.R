@@ -78,6 +78,7 @@ read.settings <- function(inputfile = "pecan.xml") {
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
+    PEcAn.logger::logger.warn(inputfile, " not found!")
     PEcAn.logger::logger.info("Loading ./pecan.xml")
     xml <- XML::xmlParse("pecan.xml")
   } else {
