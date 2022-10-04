@@ -15,6 +15,14 @@ testdir <- tempfile()
 dir.create(testdir, showWarnings = FALSE)
 teardown(unlink(testdir, recursive = TRUE))
 
+
+test_that("read.settings() strips comments", {
+  s_comments <- read.settings("testsettings-comment.xml")
+  s <- read.settings("testsettings.xml")
+  expect_equal(s_comments, s)
+  
+})
+
 # ANS: Many of these functions seem like they shouldn't require a
 # database connection, but `check.settings` throws an error when it
 # can't connect to the database.

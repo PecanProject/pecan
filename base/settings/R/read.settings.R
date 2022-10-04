@@ -87,6 +87,7 @@ read.settings <- function(inputfile = "pecan.xml") {
 
   ## convert the xml to a list
   settings <- XML::xmlToList(xml)
+  settings <- strip_comments(settings)
   settings <- as.Settings(settings)
   settings <- expandMultiSettings(settings)
 
@@ -96,4 +97,39 @@ read.settings <- function(inputfile = "pecan.xml") {
   }
 
   return(invisible(settings))
+}
+
+
+
+#' Strip comments from parsed pecan.xml
+#'
+#' Allows use of HTML style comments (`<!-- a comment -->`) in pecan.xml files
+#' by removing them after converted to a list. Inspired by
+#' https://stackoverflow.com/questions/37853679/removing-elements-in-a-nested-r-list-by-name
+#'
+#' @param x a settings list
+#'
+#' @return
+#'
+strip_comments <- function(x) {
+  # function to find depth of a list element
+  # see http://stackoverflow.com/questions/13432863/determine-level-of-nesting-in-r
+  depth <- function(this, thisdepth = 0) {
+    if (!is.list(this)) {
+      return(thisdepth)
+    } else{
+      return(max(unlist(
+        lapply(this, depth, thisdepth = thisdepth + 1)
+      )))
+    }
+  }
+  
+  thisdepth <- depth(x)
+  if (thisdepth == 0) {
+    return(x)
+  } else if (length(nameIndex <- which(names(x) == "comment"))) {
+    x <- x[-nameIndex]
+  }
+  return(lapply(x, strip_comments))
+  
 }
