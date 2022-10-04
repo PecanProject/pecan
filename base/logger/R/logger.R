@@ -186,7 +186,9 @@ logger.message <- function(level, msg, ..., wrap = TRUE) {
 ##' logger.setLevel('DEBUG')
 ##' }
 logger.setLevel <- function(level) {
+  original_level <- logger.getLevel()
   .utils.logger$level <- logger.getLevelNumber(level)
+  invisible(original_level)
 } # logger.setLevel
 
 
