@@ -90,6 +90,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       options = c("--include='*/'", "--exclude='*'"),
       delete = TRUE
     )
+    Sys.sleep(1)
     # copy over run directories
     PEcAn.remote::remote.copy.to(
       host = settings$host,
