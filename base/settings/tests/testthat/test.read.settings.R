@@ -28,15 +28,16 @@ test_that("read.settings() warns if named input file doesn't exist (but pecan.xm
   #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
     read.settings("blahblahblah.xml"),
-    type = "output"
+    type = "message"
   )
   expect_true(any(grepl("WARN", x)))
   expect_true(any(grepl("blahblahblah.xml not found", x)))
+  
   PEcAn.logger::logger.setLevel(old_setting)
 })
 
 test_that("read settings returns error if no settings file found (#1124)", {
-  withr::with_tempdir({
+  withr::with_tempdir({ #in a dir with no pecan.xml
     expect_error(read.settings("nofile.xml"), "Could not find a pecan.xml file")
   })
 })
