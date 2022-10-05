@@ -599,11 +599,13 @@ $ED_NL
    !     They are used only when ISOILFLG is 2, both values are between 0. and 1., and     !
    ! their sum doesn't exceed 1.  In case ISOILFLG is 2 but the fractions do not meet the  !
    ! criteria, ED-2 uses NSLCON instead.                                                   !
+   ! NOTE: these defaults are arbitrary, but I don't think that matters since              !
+   ! SOIL_HYDRO_SCHEME=0                                                                   !
    !---------------------------------------------------------------------------------------!
-   NL%SLSOC   = myslsoc
-   NL%SLPH    = myslph
-   NL%SLCEC   = myslcec
-   NL%SLDBD   = mysldbd
+   NL%SLSOC   = 0.06
+   NL%SLPH    = 6
+   NL%SLCEC   = 0.5
+   NL%SLDBD   = 1330
    !---------------------------------------------------------------------------------------!
 
 
