@@ -128,9 +128,10 @@ strip_comments <- function(x) {
   }
   
   thisdepth <- depth(x)
+  nameIndex <- which(names(x) == "comment")
   if (thisdepth == 0) {
     return(x)
-  } else if (length(nameIndex <- which(names(x) == "comment"))) {
+  } else if (length(nameIndex)) {
     x <- x[-nameIndex]
   }
   return(lapply(x, strip_comments))
