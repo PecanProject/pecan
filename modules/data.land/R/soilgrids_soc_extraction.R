@@ -43,11 +43,7 @@
 ##' result_soc
 ##' 
 ##' }
-##' @importFrom reshape2 melt
-##' @importFrom terra vect project rast extract
-##' @importFrom stats qgamma optim
-##' @importFrom utils flush.console setTxtProgressBar txtProgressBar
-##' 
+
 ##' @return a dataframe containing the total soil carbon values  
 ##' and the corresponding standard deviation values (uncertainties) for each location 
 ##' Output column names are c("Site_ID","Site_Name","Latitude","Longitude",
@@ -59,7 +55,7 @@
 soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
 
     if (is.null(site_info)) {
-    stop("Please provide a BETY DB site list containing at least the site id and PostGIS geometry\
+      PEcAn.logger::logger.error("No site information found. Please provide a BETY DB site list containing at least the site id and PostGIS geometry\
     as lon and lat")
   }
   
@@ -67,8 +63,6 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   internal_site_info <- data.frame(site_info$id, site_info$sitename, site_info$lat,site_info$lon)
   #create a variable to store mean and quantile of organic carbon density (ocd) for each soil depth
   ocdquant <- matrix(NA, nrow = 6, ncol = length(internal_site_info$site_info.lon) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites 
-  #create a variable for site ID
-  siteid <- matrix(rep(as.numeric(site_info$id),times=4*6), nrow=6,byrow=TRUE)
   lonlat <- cbind(internal_site_info$site_info.lon, internal_site_info$site_info.lat)
   base_data_url <- "/vsicurl?max_retry=30&retry_delay=60&list_dir=no&url=https://files.isric.org/soilgrids/latest/data/ocd/ocd_"
   depths <- c("0-5cm", "5-15cm", "15-30cm", "30-60cm", "60-100cm", "100-200cm")
@@ -110,7 +104,7 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
     if (verbose) {
       utils::setTxtProgressBar(pb, j)
       j <- j+1
-      flush.console()}
+      utils::flush.console()}
   
   # cleanup interim results
     rm(ocd_mean.url, ocd_Q0.05.url, ocd_Q0.50.url, ocd_Q0.95.url, 
@@ -118,30 +112,23 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
        ocd_mean_real, ocd_Q0.05_real, ocd_Q0.50_real, ocd_Q0.95_real)
   }
   
-  rownames(ocdquant) <- depths
-  colnames(ocdquant) <- c(rep("Mean", length(internal_site_info$site_info.lon)),
-                          rep("0.05", length(internal_site_info$site_info.lon)),
-                          rep("0.5", length(internal_site_info$site_info.lon)),
-                          rep("0.95", length(internal_site_info$site_info.lon)))
-  rownames(siteid) <- depths
-  colnames(siteid) <- c(rep("Mean", length(internal_site_info$site_info.lon)),
-                        rep("0.05", length(internal_site_info$site_info.lon)),
-                        rep("0.5", length(internal_site_info$site_info.lon)),
-                        rep("0.95", length(internal_site_info$site_info.lon)))
+
   if (verbose) {
     close(pb)
   }
   
-  # parse extracted data and prepare for output
-  ocd_fit <- reshape2::melt(ocdquant, id.vars = c("Mean"))
-  id_fit <- reshape2::melt(siteid, id.vars = c("Mean"))
-  colnames(ocd_fit) <- c("Depth", "Quantile", "Value")
-  ocd_fit$Variable <- rep("ocd", length(nrow(ocd_fit)))
-  ocd_fit$siteid <- id_fit$value
-  f1<-factor(ocd_fit$siteid,levels=unique(ocd_fit$siteid))
-  f2<-factor(ocd_fit$Depth,levels=unique(ocd_fit$Depth))
+ # parse extracted data and prepare for output
+  quantile_name <-c(paste("Mean_",site_info$id,sep=""),paste("0.05_",site_info$id,sep=""),paste("0.5_",site_info$id,sep=""),paste("0.95_",site_info$id,sep=""))
+  colnames(ocdquant) <- quantile_name
+  ocdquant_dep <- cbind(ocdquant,depths)
+  ocdquant_long <- tidyr::pivot_longer(as.data.frame(ocdquant_dep),cols=all_of(quantile_name))
+  ocd_df <- tidyr::separate(ocdquant_long,name, c('Quantile', 'siteid'),"_")
+  colnames(ocd_df) <- c("Depth","Quantile", "Siteid","Value")
+  ocd_df$Value<-as.numeric(ocd_df$Value)
+  f1<-factor(ocd_df$Siteid,levels=unique(ocd_df$Siteid))
+  f2<-factor(ocd_df$Depth,levels=unique(ocd_df$Depth))
   #split data by groups of sites and soil depth, while keeping the original order of each group
-  dat <- split(ocd_fit, list(f1, f2))  
+  dat <- split(ocd_df, list(f1, f2))  
   
   #assume the ocd profile follows gamma distribution best
   cgamma <- function(theta, val, stat) {
@@ -202,6 +189,9 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   if (!is.null(outdir)) {
     PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"soilgrids_soilC_data.csv")))
     utils::write.csv(soilgrids_soilC_data,file=file.path(outdir,"soilgrids_soilC_data.csv"),row.names = FALSE)
+  }
+  else {
+    PEcAn.logger::logger.error("No output directory found.")
   }
   # return the results to the terminal as well
   return(soilgrids_soilC_data)
