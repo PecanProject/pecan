@@ -30,23 +30,24 @@ Create a SafeList object
 }
 \details{
 SafeList is a wrapper class for the normal R list.
- It should behave identically, except for the $ operator being overridden
- to require exact matches.
+It should behave identically, except for the $ operator being overridden
+to require exact matches.
 
 The constructor works identical to list(...) unless:
-
-1) The only argument is a list, in which case the result is the same list,
-   with its class attribute updated to include 'SafeList', or
-2) The only argument is a SafeList, in which case that argument is returned
-   unchanged
+\enumerate{
+\item The only argument is a list, in which case the result is the same list,
+with its class attribute updated to include 'SafeList', or
+\item The only argument is a SafeList, in which case that argument is returned
+unchanged
+}
 }
 \section{Functions}{
 \itemize{
-\item \code{as.SafeList}: Coerce an object to SafeList.
+\item \code{as.SafeList()}: Coerce an object to SafeList.
 
-\item \code{is.SafeList}: Test if object is already a SafeList.
+\item \code{is.SafeList()}: Test if object is already a SafeList.
+
 }}
-
 \author{
 Ryan Kelly
 }

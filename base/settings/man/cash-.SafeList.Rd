@@ -18,8 +18,8 @@ The specified component
 Extract SafeList component by name
 }
 \details{
-Overrides `$`.list, and works just like it except forces exact match
-(i.e., makes x$name behave exactly like x[[name, exact=T]])
+Overrides \code{$}.list, and works just like it except forces exact match
+(i.e., makes x$name behave exactly like x[\link{name, exact=T}])
 }
 \author{
 Ryan Kelly
