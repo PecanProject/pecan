@@ -451,7 +451,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     Cmodel <<- compileNimble(model_pred)
     Cmcmc <<- compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
     
-      for(i in 1:length(y.ind)) {
+    for(i in 1:length(y.ind)) {
         valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
       }
 
