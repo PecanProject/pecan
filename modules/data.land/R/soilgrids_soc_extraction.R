@@ -121,8 +121,7 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   quantile_name <-c(paste("Mean_",site_info$id,sep=""),paste("0.05_",site_info$id,sep=""),paste("0.5_",site_info$id,sep=""),paste("0.95_",site_info$id,sep=""))
   colnames(ocdquant) <- quantile_name
   ocdquant_dep <- cbind(ocdquant,depths)
-  ocdquant_long <- tidyr::pivot_longer(as.data.frame(ocdquant_dep),cols=tidyselect::all_of(quantile_name))
-  ocd_df <- tidyr::separate(ocdquant_long,name, c('Quantile', 'siteid'),"_")
+  ocd_df <- tidyr::pivot_longer(as.data.frame(ocdquant_dep),cols=tidyselect::all_of(quantile_name),names_to=c("Quantile", "Siteid"),names_sep = "_")
   colnames(ocd_df) <- c("Depth","Quantile", "Siteid","Value")
   ocd_df$Value<-as.numeric(ocd_df$Value)
   f1<-factor(ocd_df$Siteid,levels=unique(ocd_df$Siteid))
