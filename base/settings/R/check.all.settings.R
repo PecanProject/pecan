@@ -77,7 +77,7 @@ check.inputs <- function(settings) {
             dbcon,
             hostname)
         }
-        if (FALSE %in% is.na(id)) {
+        if (any(!is.na(id))) {
           settings$run$inputs[[tag]][["id"]] <- id
         }
       }
