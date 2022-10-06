@@ -269,7 +269,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 
 #manually add in clim files 
 con <-PEcAn.DB::db.open(settings$database$bety)
-on.exit(db.close(con))
+on.exit(db.close(con), add = TRUE)
 
 input_check <- PEcAn.DB::dbfile.input.check(
   siteid= site_info$site_id %>% as.character(),
