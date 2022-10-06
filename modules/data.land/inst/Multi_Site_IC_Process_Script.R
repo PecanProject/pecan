@@ -6,7 +6,7 @@ start_date <- as.Date(settings$state.data.assimilation$start.date)
 end_date <- Sys.Date()
 source='NEON_veg'
 machine_host <- "test-pecan.bu.edu"
-n_ens <- 10
+n_ens <- settings$ensemble$size
 log_file <- c()
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 site.IDs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
