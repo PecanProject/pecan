@@ -69,8 +69,8 @@ check.inputs <- function(settings) {
         # can we find the file so we can set the tag.id
         #adding for to loop over ensemble member filepaths 
         id <- list()
-        for (j in 1:length(settings$run$inputs[[tag]][["path"]])){
-          path <- settings$run$inputs[[tag]][["path"]]
+        path <- settings$run$inputs[[tag]][["path"]]
+        for (j in 1:length(path)){
           id[j] <- PEcAn.DB::dbfile.id(
             "Input",
             path[[j]],
