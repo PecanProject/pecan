@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.ed.R
 \name{write.config.jobsh.ED2}
 \alias{write.config.jobsh.ED2}
-\title{Write ED2 config.xml file}
+\title{Write ED2 job.sh file}
 \usage{
 write.config.jobsh.ED2(settings, run.id)
 }
