@@ -4,16 +4,16 @@
 \alias{extract_FIA}
 \title{extract_FIA}
 \usage{
-extract_FIA(lon, lat, startdate, enddate, gridres = 0.075, dbparms, ...)
+extract_FIA(lon, lat, start_date, end_date, gridres = 0.075, dbparms, ...)
 }
 \arguments{
 \item{lon}{site longitude}
 
 \item{lat}{site latitude}
 
-\item{startdate}{"YYYY-MM-DD"}
+\item{start_date}{"YYYY-MM-DD"}
 
-\item{enddate}{"YYYY-MM-DD"}
+\item{end_date}{"YYYY-MM-DD"}
 
 \item{gridres}{taken from input_veg, DEFAULT = 0.075}
 

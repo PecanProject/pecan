@@ -3,8 +3,8 @@
 ##' @title extract_veg
 ##' 
 ##' @param new_site new_site object passed from ic_process includes lat, lon, id, and name
-##' @param startdate "YYYY-MM-DD"
-##' @param enddate "YYYY-MM-DD"
+##' @param start_date "YYYY-MM-DD"
+##' @param end_date "YYYY-MM-DD"
 ##' @param source taken from input$source, passed from ic_process
 ##' @param gridres only used for source = "FIA"
 ##' @param format_name DEFAULT=NULL
@@ -36,8 +36,8 @@ extract_veg <- function(new_site, start_date, end_date,
  #--------------------------------------------------------------------------------------------------#
  # Extract veg info
    #set start and end date as date objects
-   start_date = as.Date(startdate)
-   end_date = as.Date(enddate)
+   start_date = as.Date(start_date)
+   end_date = as.Date(end_date)
  # fcnx <- paste0("extract_", source) # e.g. extract_FIA
  # #Need a better way to check if the function exists
  # if (!exists(fcnx)) {
