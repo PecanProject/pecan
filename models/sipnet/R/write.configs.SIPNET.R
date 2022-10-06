@@ -55,6 +55,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
   
+  # create cdo specific settings
+  cdosetup <- ""
+  if (!is.null(settings$host$cdosetup)) {
+    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+    jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
+  }
+  
+  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
