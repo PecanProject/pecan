@@ -70,7 +70,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
     out <- fcn(outfolder, veg_info, start_date, new_site, source, ens = n.ensemble)
     
   }
-  # Build results dataframe for convert.input
+  # Build results dataframe for convert_input
   results <- data.frame(file = out$file, 
                         host = host.inputargs$name, 
                         mimetype = out$mimetype, 
@@ -81,7 +81,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   
-  ### return for convert.inputs
+  ### return for convert_inputs
   return(invisible(results))
   
   

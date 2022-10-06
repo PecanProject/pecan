@@ -27,6 +27,8 @@ see if you need to change any of these:
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
+  (#3002; @nanu1605)
 - Initial LDNDC model coupling
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
@@ -47,14 +49,18 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   Note that both `units` and `udunits2` interface with the same underlying
   compiled code, so the `udunits2` *system library* is still required.
   (#2989; @nanu1605)
-- Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034)
+- Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034, #3033)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
 - Fixed bug in model2netcdf.SIPNET that caused LE to be overestimaed 10^3 (#3036)
+- Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
+- `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
 
 ### Changed
 
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
+- `PEcAn.utils::download.url` argument `retry404` is now renamed to `retry` and
+  now functions as intended (it was being ignored completely before).
 - Update URL for MERRA downloads (#2888)
 - PEcAn.logger is now BSD-3 License
 - Skipped ICOS and MERRA download tests when running in github actions
@@ -63,10 +69,14 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
 - PEcAn.assim.sequential is renamed to PEcAnAssimSequential
+- `convert.input` is moved from PEcAn.utils to PEcAn.DB and renamed as `convert_input`.
+  This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
+  (#3026; @nanu1605)
 
 ### Removed
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
+- Unused (and apparently long-broken) function `PEcAn.data.land::find.land` has been removed.
 
 ## [1.7.2] - 2021-10-04
 

@@ -17,6 +17,21 @@ test_that("convert.samples.ED works as expected",{
   )
 })
 
+testdir <- tempfile()
+dir.create(testdir)
+withr::defer(unlink(testdir, recursive = TRUE))
+unzip("data/outdir.zip", exdir = testdir)
+outdir <- file.path(testdir, "outdir")
+
+test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
+  settings <- 
+    PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+  settings$outdir <- outdir
+  job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
+  expect <- deparse(dput(extract_pfts(settings$pfts)))
+  expect_true(any(stringr::str_detect(job.sh, stringr::fixed(expect))))
+})
+
 test_that("New ED2IN tags get added at bottom of file", {
   #1. read in pecan.xml in data/pecan_checked.xml
   settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
@@ -91,7 +106,14 @@ test_that("New ED2IN tags get added at bottom of file", {
   
   #check that info is printed
   expect_true(any(stringr::str_detect(x, "NEW_TAG")))
-
+  
+  #check that last non-comment line of ED2IN is "$END"
+  #TODO someone better at regex could do this more efficiently
+  lines <- trimws(readLines(file.path(rundir, run.id, "ED2IN")))
+  not_comments <- lines[stringr::str_detect(lines, "^!", negate = TRUE)]
+  not_spaces <- not_comments[stringr::str_detect(not_comments, ".+")]
+  expect_equal(not_spaces[length(not_spaces)], "$END")
+  
   #6. compare to template
   # ed2in_template <- read_ed2in(system.file(settings$model$edin, package = "PEcAn.ED2"))
   # Not sure what to expect regarding tag names or number of tags relative to template

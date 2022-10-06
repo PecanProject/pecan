@@ -13,7 +13,7 @@
 ##' @param end_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$end.date, otherwise end_date of the IC file in DB
 ##' @param new_site data frame, id/lat/lon/name info about the site
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
-##' @param overwrite logical flag for convert.input
+##' @param overwrite logical flag for convert_input
 ##' 
 ##' @export
 ##' 
@@ -54,7 +54,7 @@ put_veg_module <- function(getveg.id, dbparms,
   
   host.inputargs = host
   
-  putveg.id <- PEcAn.utils::convert.input(input.id = getveg.id$input.id,
+  putveg.id <- PEcAn.DB::convert_input(input.id = getveg.id$input.id,
                                          outfolder = spp.file$file_path, 
                                          formatname = formatname, 
                                          mimetype = mimetype,

@@ -306,7 +306,7 @@ This section describes which model PEcAn should run and some instructions for ho
 	<id>7</id>
 	<type>ED2</type>
 	<binary>/usr/local/bin/ed2.r82</binary>
-	<job.sh>module load hdf5</job.sh>
+	<prerun>module load hdf5</prerun>
 	<config.header>
 		<!--...xml code passed directly to config file...-->
 	</config.header>
@@ -318,7 +318,7 @@ Some important tags are as follows:
 - `id` -- The unique numeric ID of the model in the PEcAn database `models` table. If this is present, then `type` and `binary` are optional since they can be determined from the PEcAn database.
 - `type` -- The model "type", matching the PEcAn database `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
 - `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine. 
-- `job.sh` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
+- `prerun` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
 
 This information is currently used by the following PEcAn workflow function:
 
@@ -502,7 +502,7 @@ The following provides a quick overview of XML tags related to remote execution.
 		<qsub>qsub -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
 		<qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
 		<qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
-		<job.sh>module load udunits R/R-3.0.0_gnu-4.4.6</job.sh>
+		<prerun>module load udunits R/R-3.0.0_gnu-4.4.6</prerun>
 		<modellauncher>
       <binary>/usr/local/bin/modellauncher</binary>
       <qsub.extra>-pe omp 20</qsub.extra>
@@ -521,7 +521,7 @@ The `host` section has the following tags:
 * `qsub`: [optional] the command to submit a job to the queuing system. There are 3 parameters you can use when specifying the qsub command, you can add additional values for your specific setup (for example -l walltime to specify the walltime, etc). You can specify @NAME@ the pretty name, @STDOUT@ where to write stdout and @STDERR@, where to write stderr. You can specify an empty element (`<qsub/>`) in which case it will use the default value is `qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -s /bin/bash`.
 * `qsub.jobid`: [optional] the regular expression used to find the `jobid` returned from `qsub`. If not specified (and `qsub` is) it will use the default value is `Your job ([0-9]+) .*`
 * `qstat`: [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take `@JOBID@` which is the ID of the job as returned by `qsub.jobid`. If not specified (and qsub is) it will use the default value is `qstat -j @JOBID@ || echo DONE`
-* `job.sh`: [optional] additional options to add to the job.sh at the top.
+* `prerun`: [optional] additional options to add to the job.sh at the top.
 * `modellauncher`: [optional] this is an experimental section that will allow you to submit all the runs as a single job to a HPC system.
 
 The `modellauncher` section if specified will group all runs together and only submit a single job to the HPC cluster. This single job will leverage of a MPI program that will execute a single run. Some HPC systems will place a limit on the number of jobs that can be executed in parallel, this will only submit a single job (using multiple nodes). In case there is no limit on the number of jobs, a single PEcAn run could potentially submit a lot of jobs resulting in the full cluster running jobs for a single PEcAn run, preventing others from executing on the cluster.
