@@ -45,7 +45,6 @@ Imports:
     PEcAn.utils,
     PEcAn.visualization,
     purrr,
-    reshape2,
     rjags,
     rlang,
     sf,
