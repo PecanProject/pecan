@@ -125,7 +125,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
   
   #remove NA from soil data
-  soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
+  soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000, na.rm=T)#in gram
   
   #Create veg_info object as a list
   veg_info <- list()
