@@ -55,7 +55,8 @@ DBI::dbDisconnect(con)
 
 site_info <- qry_results.2
 verbose <- TRUE
-system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
+system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info, 
+verbose=verbose))
 result_soc
 
 }
