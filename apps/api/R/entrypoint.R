@@ -69,6 +69,9 @@ root$mount("/api/runs", runs_pr)
 runs_pr <- plumber::Plumber$new("available-models.R")
 root$mount("/api/availableModels", runs_pr)
 
+ma_pr <- plumber::Plumber$new("ma.R")
+root$mount("/api/ma", ma_pr)
+
 # set swagger documentation
 root$setApiSpec("../pecanapi-spec.yml")
 
