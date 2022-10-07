@@ -38,7 +38,7 @@ db_port <- '5432'
 db_user <- 'bety'
 db_password <- 'bety'
 
-bety <- list(user='bety', password='bety', host='modex.bnl.gov',
+bety <- list(user='bety', password='bety', host=host_db,
 dbname='betydb', driver=RPostgres::Postgres(),write=FALSE)
 
 con <- DBI::dbConnect(drv=bety$driver, dbname=bety$dbname, host=bety$host, 
@@ -51,11 +51,11 @@ ids = c("676","622","678","766","764"), .con = con))
 suppressWarnings(qry_results.1 <- DBI::dbSendQuery(con,site_qry))
 suppressWarnings(qry_results.2 <- DBI::dbFetch(qry_results.1))
 DBI::dbClearResult(qry_results.1)
-dbDisconnect(con)
+DBI::dbDisconnect(con)
 
 site_info <- qry_results.2
 verbose <- TRUE
-system.time(result_soc <- soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
+system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
 result_soc
 
 }

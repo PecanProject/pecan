@@ -22,7 +22,7 @@
 ##' db_user <- 'bety'
 ##' db_password <- 'bety'
 ##' 
-##' bety <- list(user='bety', password='bety', host='modex.bnl.gov',
+##' bety <- list(user='bety', password='bety', host=host_db,
 ##' dbname='betydb', driver=RPostgres::Postgres(),write=FALSE)
 ##' 
 ##' con <- DBI::dbConnect(drv=bety$driver, dbname=bety$dbname, host=bety$host, 
@@ -35,11 +35,11 @@
 ##' suppressWarnings(qry_results.1 <- DBI::dbSendQuery(con,site_qry))
 ##' suppressWarnings(qry_results.2 <- DBI::dbFetch(qry_results.1))
 ##' DBI::dbClearResult(qry_results.1)
-##' dbDisconnect(con)
+##' DBI::dbDisconnect(con)
 ##' 
 ##' site_info <- qry_results.2
 ##' verbose <- TRUE
-##' system.time(result_soc <- soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
+##' system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info, verbose=verbose))
 ##' result_soc
 ##' 
 ##' }
@@ -138,7 +138,7 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
       pred["Mean"] <- theta[1] / theta[2]
     }
     qstat <- as.numeric(stat)[!is.na(as.numeric(stat))]
-    pred[as.character(qstat)] <- qgamma(qstat, theta[1], theta[2])
+    pred[as.character(qstat)] <- stats::qgamma(qstat, theta[1], theta[2])
     return(sum((pred - val) ^ 2))
   }
   
@@ -147,7 +147,7 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
     stat = as.character(x$Quantile)
     theta = c(10, 10)
     fit <-
-      list(Gamma = optim(theta, cgamma, val = val, stat = stat))
+      list(Gamma = stats::optim(theta, cgamma, val = val, stat = stat))
     SS <- sapply(fit, function(f) {
       f$value
     })
