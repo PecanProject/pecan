@@ -224,7 +224,7 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   
   for (k in 1:nrow(data.hrly)) {
     if(is.na(data.hrly$surface_downwelling_shortwave_flux_in_air[k])){
-      SWflux <- as.matrix(subset(df, day == .data$day[k] & hour == .data$hour[k], data.hrly$surface_downwelling_shortwave_flux_in_air[k]))
+      SWflux <- as.matrix(subset(df, .data$day == data.hrly$day[k] & .data$hour == data.hrly$hour[k], data.hrly$surface_downwelling_shortwave_flux_in_air[k]))
       data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- ifelse(data.hrly$rpotHM[k] > 0, as.numeric(SWflux[1])*(data.hrly$rpotH[k]/data.hrly$rpotHM[k]),0)
     }
   }
