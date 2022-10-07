@@ -41,7 +41,7 @@ sda.enkf.multisite <- function(settings,
                                             OutlierDetection=FALSE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
-  if(class(restart) == "list"){
+  if(is.list(restart)){
     old.dir <- restart$filepath
     start.cut <- restart$start.cut
     restart_flag = TRUE
