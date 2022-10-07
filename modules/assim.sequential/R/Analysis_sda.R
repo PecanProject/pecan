@@ -12,7 +12,7 @@
 ##’ @details
 ##’  
 ##' 
-##' @description This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAn.assim.sequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
+##' @description This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAnAssimSequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
 ##' The other option is GEF function inside the same package allowing to perform Generalized Ensemble kalman Filter.
 ##' 
 ##' If you're using an arbitrary function you can use the ... to send any other variables to your desired analysis function.
@@ -121,7 +121,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
   
   #Loading nimbles functions
-  #PEcAn.assim.sequential::load_nimble()
+  #PEcAnAssimSequential::load_nimble()
   
   #Forecast inputs 
   Q <- Forecast$Q # process error

@@ -8,7 +8,7 @@ rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
 Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
-lapply(c(
+remotes::install_github(c(
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
@@ -17,7 +17,7 @@ lapply(c(
 'r-lib/vdiffr@v1.0.2',
 'ropensci/geonames',
 'ropensci/nneo'
-), remotes::install_github, lib = rlib)
+), lib = rlib)
 
 # install all packages (depends, imports, suggests)
 wanted <- c(
@@ -29,11 +29,13 @@ wanted <- c(
 'BrownDog',
 'coda',
 'corrplot',
+'curl',
 'data.table',
 'dataone',
 'datapack',
 'DBI',
 'dbplyr',
+'devtools',
 'doParallel',
 'dplR',
 'dplyr',
@@ -99,7 +101,6 @@ wanted <- c(
 'randtoolbox',
 'raster',
 'rcrossref',
-'RCurl',
 'REddyProc',
 'redland',
 'reshape',

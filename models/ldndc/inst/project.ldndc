@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<ldndcproject
+	PackageMinimumVersionRequired='@PackMinVerReq@' >
+    <!-- schedule simulation start, time resolution and end of simulation -->
+	<schedule time= '@ScheduleTime@' />
+
+    <!-- define simulation input, i.e., setup, site, airchemistry, climate, events -->
+    <input>
+	    <sources  sourceprefix='@SourcePrefix@' >
+            <setup  source="setup.xml" />
+            <site  source="site.xml" />
+            <airchemistry  source="airchemistry.txt" />
+            <climate  source="climate.txt" />
+            <event  source="events.xml" />
+            <speciesparameters  source="speciesparameters.xml" />
+            <siteparameters source="siteparameters.xml" /> 
+        </sources>    
+    </input>
+
+    <!-- define location of output -->
+    <output>
+	    <sinks sinkprefix='@OutputPrefix@' />
+    </output>
+</ldndcproject>
+

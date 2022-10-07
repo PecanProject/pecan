@@ -7,9 +7,13 @@
 minimize.GP(gp, rng, x0, splinefuns = NULL)
 }
 \arguments{
-\item{x0}{}
+\item{gp}{Gaussian Process}
 
-\item{splinefuns}{}
+\item{rng}{range}
+
+\item{x0}{initial values}
+
+\item{splinefuns}{spline functions}
 }
 \description{
 minimize.GP
