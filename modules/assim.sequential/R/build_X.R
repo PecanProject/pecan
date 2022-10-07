@@ -72,6 +72,7 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
       })
   }
   
+  #commented out text below describes future work - Alexis
   # #let's read the parameters of each site/ens
   # params.list <- reads %>% map(~.x %>% map("params"))
   # # Now let's read the state variables of site/ens

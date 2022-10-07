@@ -38,6 +38,7 @@ extract_veg <- function(new_site, start_date, end_date,
    #set start and end date as date objects
    start_date = as.Date(start_date)
    end_date = as.Date(end_date)
+   #keep this code chunk future PR will integrate back ask Alexis
  # fcnx <- paste0("extract_", source) # e.g. extract_FIA
  # #Need a better way to check if the function exists
  # if (!exists(fcnx)) {
