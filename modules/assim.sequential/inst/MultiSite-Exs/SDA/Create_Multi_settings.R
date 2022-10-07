@@ -168,6 +168,7 @@ template <- Settings(list(
     usr = "zhangdc",
     folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
     prerun = "module load R/4.1.2",
+    cdoprerun = "module load cdo/2.0.6"
     qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
     qsub.jobid = "Your job ([0-9]+) .*",
     qstat = "qstat -j @JOBID@ || echo DONE",
