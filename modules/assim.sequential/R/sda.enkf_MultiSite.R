@@ -483,8 +483,7 @@ sda.enkf.multisite <- function(settings,
         
         #-analysis function
 
-        #source("~/pecan/modules/assim.sequential/R/Analysis_sda_multiSite.R")
-
+        
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
