@@ -51,6 +51,9 @@ Imports:
     sirt,
     sp,
     stringr,
+    terra,
+    tidyr,
+    tidyselect,
     traits,
     XML (>= 3.98-1.4)      
 Suggests:
