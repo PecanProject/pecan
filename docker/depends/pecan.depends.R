@@ -123,6 +123,7 @@ wanted <- c(
 'stringi',
 'stringr',
 'swfscMisc',
+'terra',
 'testthat',
 'tibble',
 'tictoc',
