@@ -30,15 +30,15 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   
   psibar <- NULL
   if (isotropic) {
-    psibar <- median(psi)
+    psibar <- stats::median(psi)
   } else {
     if (is.matrix(psi)) {
-      psibar <- apply(psi, 2, median)
+      psibar <- apply(psi, 2, stats::median)
     } else {
       psibar <- psi
     }
   }
-  tauwbar <- median(tauw)
+  tauwbar <- stats::median(tauw)
   S <- PEcAn.emulator::calcSpatialCov(gp$d, psibar, tauwbar)
   # S12 <- Sprime[1:(npred*dim),(npred*dim+1):(n.unique+npred*dim)] S22 <-
   # Sprime[(npred*dim+1):(n.unique+npred*dim),(npred*dim+1):(n.unique+npred*dim)]
@@ -51,8 +51,8 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   ybar <- tapply(gp$y, gp$x.id, mean)
   k    <- S22inv %*% (ybar - ey)
   
-  nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
       x = gp$x.compact, rng = rng, splinefcns = splinefcns)
+  stats::nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
 } # minimize.GP
 
 
@@ -143,13 +143,13 @@ get_ss <- function(gp, xnew, pos.check) {
         return(-Inf)
       }
       repeat {
-        SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+        SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
         if (SS[igp] > 0) {
           break
         }
       }
     }else{
-      SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+      SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
     }
   }
   return(SS)
@@ -176,8 +176,6 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
   
 } # get_y
 
-# is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
-# z>runif(1) return(acceptance) }
 
 ##' @name is.accepted
 ##' @title is.accepted
@@ -189,7 +187,7 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 is.accepted <- function(ycurr, ynew, format = "lin") {
   a <- exp(ynew - ycurr)
-  a > runif(1)
+  a > stats::runif(1)
 } # is.accepted
 
 ##' Function to sample from a GP model
@@ -329,7 +327,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       for (i in seq_len(dim)) {
         ## propose new
         repeat {
-          xnew[i] <- rnorm(1, xcurr[[i]], p(jmp)[i])
+          xnew[i] <- stats::rnorm(1, xcurr[[i]], p(jmp)[i])
           if (bounded(xnew[i], rng[i, , drop = FALSE])) {
             break
           }
