@@ -51,8 +51,8 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   ybar <- tapply(gp$y, gp$x.id, mean)
   k    <- S22inv %*% (ybar - ey)
   
-      x = gp$x.compact, rng = rng, splinefcns = splinefcns)
   stats::nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
+      x = gp$x.compact, rng = rng, splinefuns = splinefuns)
 } # minimize.GP
 
 
@@ -69,10 +69,10 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
 ##' @param psi spatial corr
 ##' @param x Name of variable to plot on X axis
 ##' @param rng range
-##' @param splinefcns spline functions
+##' @param splinefuns spline functions
 ##' 
 ##' @author Michael Dietze 
-gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
+gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefuns) {
   
   ## second calc value
   S12 <- sapply(seq_along(k), function(i) {
@@ -80,14 +80,14 @@ gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
   })
   yprime <- mu + sum(S12 * k)
   
-  if (!is.null(splinefcns)) {
+  if (!is.null(splinefuns)) {
     ## add trend surface back on
     y0 <- splinefuns[[length(xnew) + 1]]
     f <- sapply(seq_along(xnew), function(j) {
       splinefuns[[j]](xnew[j])
     })
     y.trend <- y0 + sum(f - y0)
-    yprime <- yprime + ytrend
+    yprime <- yprime + y.trend
   }
   
   return(yprime)
@@ -204,7 +204,7 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param rng range of knots
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 ##' @param mix each = jump each dim. independently, joint = jump all at once 
-##' @param splinefcns spline functions, not used
+##' @param splinefuns spline functions, not used
 ##' @param jmp0 initial jump variances
 ##' @param ar.target acceptance rate target
 ##' @param settings PEcAn settings list
@@ -216,7 +216,7 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param resume.list list of needed info if we are running the chain longer
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
+mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefuns = NULL,
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, hyper.pars, resume.list = NULL) {
   
