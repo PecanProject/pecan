@@ -327,7 +327,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
       for (i in seq_len(dim)) {
         ## propose new
         repeat {
-          xnew[i] <- stats::rnorm(1, xcurr[[i]], p(jmp)[i])
+          xnew[i] <- stats::rnorm(1, xcurr[[i]], PEcAn.emulator::p(jmp)[i])
           if (bounded(xnew[i], rng[i, , drop = FALSE])) {
             break
           }
