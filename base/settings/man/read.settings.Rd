@@ -15,16 +15,18 @@ list of all settings as loaded from the XML file(s)
 \description{
 This will try and find the PEcAn settings file in the following order:
 \enumerate{
-\item {--settings <file>}{passed as command line argument using --settings}
-\item {inputfile}{passed as argument to function}
-\item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
-\item {./pecan.xml}{pecan.xml in the current folder}
+\item \verb{--settings <file>} passed as command line argument using \code{--settings}
+\item \code{inputfile} passed as argument to function
+\item \code{PECAN_SETTINGS} environment variable \code{PECAN_SETTINGS} pointing to a specific file
+\item \code{./pecan.xml} \code{pecan.xml} in the current folder
 }
+}
+\details{
 Once the function finds a valid file, it will not look further.
 Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be
-  ignored.
+ignored.
 Even if a \code{file} argument is passed, it will be ignored if a file
-  is passed through a higher priority method.
+is passed through a higher priority method.
 }
 \examples{
 \dontrun{

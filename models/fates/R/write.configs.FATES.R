@@ -379,7 +379,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        }
        if(var == "SLA"){                                  ## default 0.012
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_slatop', start = ipft, count = 1,  
-                   vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
+                   vals=PEcAn.utils::ud_convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
        }
        if(var == "leaf_turnover_rate"){                   ## fates_leaf_long:long_name = "Leaf longevity (ie turnover timescale)" ;
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_leaf_long', start = ipft, count = 1,
@@ -400,7 +400,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        
        # if(var == "sapwood_ratio"){         # leaf to sapwood area ratio. IS THIS NOW fates_sapwood_ratio(fates_pft)??
        #   ncvar_put(nc=fates.param.nc, varid='latosa', start = ipft, count = 1,
-       #             vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
+       #             vals=PEcAn.utils::ud_convert(pft[v],"m2 m-2","m2 cm-2"))
        # }
        
        # leaf to sapwood area ratio. This is the INTERCEPT parameter in FATES
@@ -415,12 +415,12 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        # fates_allom_latosa_slp = 0, 0 ;
        if(var == "sapwood_ratio"){         
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_allom_latosa_int', start = ipft, count = 1,
-                   vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
+                   vals=PEcAn.utils::ud_convert(pft[v],"m2 m-2","m2 cm-2"))
        }
        if(var == "leaf_width"){            # Characteristic leaf dimension use for aerodynamic resistance
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_dleaf', start = ipft, count = 1,
-                   vals=udunits2::ud.convert(pft[v],"mm","m"))
-         #PEcAn.logger::logger.debug(paste0("fates_dleaf: ",udunits2::ud.convert(pft[v],"mm","m"))) # temp debugging
+                   vals=PEcAn.utils::ud_convert(pft[v],"mm","m"))
+         #PEcAn.logger::logger.debug(paste0("fates_dleaf: ",PEcAn.utils::ud_convert(pft[v],"mm","m"))) # temp debugging
        }
        ## Currently not in param.nc file despite being on NGEE-T parameter list       
        #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
@@ -488,11 +488,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        if(var == "psi_stomata_closure"){         # Soil water potential at full stomatal closure	[mm]
                                                  # fates_smpsc:long_name = "Soil water potential at full stomatal closure" ;
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_smpsc', start = ipft, count = 1,
-                   vals=udunits2::ud.convert(pft[v],"m","mm"))
+                   vals=PEcAn.utils::ud_convert(pft[v],"m","mm"))
        }
        if(var == "psi_stomata_open"){            # Soil water potential at full stomatal opening	pft	[mm]
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_smpso', start = ipft, count = 1,
-                   vals=udunits2::ud.convert(pft[v],"m","mm"))
+                   vals=PEcAn.utils::ud_convert(pft[v],"m","mm"))
        }
        
        ## --- update these to match new FATES hydro code when that code-base is added to FATES master -- ##

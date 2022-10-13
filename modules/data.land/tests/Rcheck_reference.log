@@ -9,7 +9,6 @@
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
 
 Imports includes 33 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
@@ -64,18 +63,6 @@ Non-standard file/directory found at top level:
 dataone_download: no visible binding for '<<-' assignment to
   ‘newdir_D1’
 dataone_download: no visible binding for global variable ‘newdir_D1’
-diametergrow : di.update_new: no visible binding for global variable
-  ‘aa’
-diametergrow : di.update: no visible global function definition for
-  ‘runif’
-diametergrow: no visible binding for global variable ‘settings’
-diametergrow: no visible global function definition for ‘lines’
-diametergrow: no visible global function definition for ‘density’
-diametergrow: no visible global function definition for ‘dgamma’
-diametergrow: no visible global function definition for ‘title’
-diametergrow: no visible global function definition for ‘text’
-diametergrow: no visible global function definition for ‘abline’
-diametergrow: no visible global function definition for ‘points’
 download_package_rm: no visible binding for '<<-' assignment to ‘mnId’
 download_package_rm: no visible binding for '<<-' assignment to ‘mn’
 download_package_rm: no visible binding for global variable ‘mnId’
@@ -96,9 +83,6 @@ EPA_ecoregion_finder: no visible global function definition for
 extract_FIA: no visible global function definition for ‘db.close’
 extract_FIA: no visible global function definition for ‘db.query’
 extract_soil_gssurgo: no visible global function definition for ‘as’
-extract_soil_gssurgo: no visible binding for global variable ‘hzdept_r’
-extract_soil_gssurgo: no visible binding for global variable
-  ‘comppct_r’
 extract_soil_gssurgo: no visible global function definition for
   ‘complete.cases’
 extract_soil_gssurgo: no visible global function definition for
@@ -127,10 +111,6 @@ fia.to.psscss: no visible global function definition for ‘median’
 fia.to.psscss: no visible global function definition for ‘write.table’
 fia.to.psscss: no visible global function definition for
   ‘dbfile.input.insert’
-find.land: no visible global function definition for ‘data’
-find.land: no visible binding for global variable ‘wrld_simpl’
-find.land: no visible global function definition for ‘over’
-find.land: no visible binding for global variable ‘land’
 format_identifier: no visible binding for '<<-' assignment to ‘doi1’
 format_identifier: no visible binding for global variable ‘doi1’
 get_resource_map: no visible binding for '<<-' assignment to ‘mnId’
@@ -144,14 +124,6 @@ get_veg_module: no visible global function definition for
   ‘convert.input’
 get_veg_module: no visible binding for global variable ‘input’
 get_veg_module: no visible binding for global variable ‘new.site’
-gSSURGO.Query: no visible global function definition for ‘xmlTreeParse’
-gSSURGO.Query: no visible global function definition for ‘xmlRoot’
-gSSURGO.Query: no visible global function definition for ‘getNodeSet’
-gSSURGO.Query : <anonymous>: no visible global function definition for
-  ‘xmlToList’
-gSSURGO.Query: no visible binding for global variable ‘comppct_r’
-gSSURGO.Query: no visible binding for global variable ‘mukey’
-gSSURGO.Query: no visible binding for global variable ‘aws050wta’
 ic_process: no visible global function definition for ‘db.close’
 ic_process: no visible global function definition for ‘db.query’
 id_resolveable: no visible binding for global variable ‘doi1’
@@ -262,32 +234,32 @@ soil_params: no visible global function definition for ‘median’
 soil_process: no visible global function definition for ‘db.query’
 write_ic: no visible binding for global variable ‘input_veg’
 Undefined global functions or variables:
-  . aa abline air.cond air.hcap Area as as_Spatial as.mcmc.list
-  aws050wta bagitFile boxplot clay.cond clay.hcap coda.samples coef
-  combine.rwl complete.cases comppct_r convert.input cor data DATAVALUE
-  db.close db.query dbfile.input.insert density dgamma doi1 fieldcp.K
-  filter gelman.diag genus getNodeSet grav GROUP_ID h2o.cond hist
-  hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt land
+  . abline air.cond air.hcap Area as as_Spatial as.mcmc.list
+  bagitFile boxplot clay.cond clay.hcap coda.samples coef
+  combine.rwl complete.cases comppct_r convert.input cor DATAVALUE
+  db.close db.query dbfile.input.insert doi1 fieldcp.K
+  filter gelman.diag genus grav GROUP_ID h2o.cond hist
+  hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt
   layout legend lines lm load.module mcmc.list2init median met.nc mn
-  mnId mukey mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1 over
+  mnId mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1
   pairs par pdf pftmapping points quantile read.csv read.fwf
   resource_map runif sand.cond sand.hcap sd setNames settings
   setTxtProgressBar silt.cond silt.hcap SITE_ID soil.name soilcp.MPa
-  soilwp.MPa species text texture title txtProgressBar var VARIABLE
-  VARIABLE_GROUP write.table wrld_simpl xclay.def xmlRoot xmlToList
-  xmlTreeParse xsand.def zip_contents
+  soilwp.MPa species texture txtProgressBar var VARIABLE
+  VARIABLE_GROUP write.table xclay.def xsand.def zip_contents
 Consider adding
   importFrom("graphics", "abline", "boxplot", "hist", "layout", "legend",
-             "lines", "pairs", "par", "points", "text", "title")
+             "lines", "pairs", "par", "points")
   importFrom("grDevices", "pdf")
   importFrom("methods", "as")
-  importFrom("stats", "coef", "complete.cases", "cor", "density",
-             "dgamma", "filter", "lm", "median", "na.omit", "quantile",
+  importFrom("stats", "coef", "complete.cases", "cor",
+             "filter", "lm", "median", "na.omit", "quantile",
              "runif", "sd", "setNames", "var")
-  importFrom("utils", "data", "read.csv", "read.fwf",
+  importFrom("utils", "read.csv", "read.fwf",
              "setTxtProgressBar", "txtProgressBar", "write.table")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
+to your NAMESPACE file.
 
 Found the following calls to data() loading into the global environment:
 File ‘PEcAn.data.land/R/fia2ED.R’:
@@ -346,9 +318,6 @@ Undocumented arguments in documentation object 'fia.to.psscss'
   ‘overwrite’
 Documented arguments not in \usage in documentation object 'fia.to.psscss':
   ‘create’
-
-Undocumented arguments in documentation object 'find.land'
-  ‘plot’
 
 Undocumented arguments in documentation object 'from.Tag'
   ‘x’
@@ -1335,9 +1304,7 @@ Please remove it.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 8 WARNINGs, 5 NOTEs
+Status: 7 WARNINGs, 5 NOTEs
 See
   ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00check.log’
 for details.
-
-

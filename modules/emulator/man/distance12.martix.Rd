@@ -8,7 +8,11 @@
 distance12.matrix(x, n1, power = 1)
 }
 \arguments{
-\item{power}{}
+\item{x}{matrix of locations in parameter space}
+
+\item{n1}{number of rows in the original dataset}
+
+\item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 }
 \value{
 d

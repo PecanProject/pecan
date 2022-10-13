@@ -70,20 +70,20 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  LAI = PEcAn.utils::to_ncvar("LAI", dims))
     
     biomass2c <- 0.4
-    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
+    k <- PEcAn.utils::ud_convert(1, "Mg/ha", "kg/m2") * biomass2c
     
     result_yeari_std <- with(result_yeari, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
       root_carbon_content = k * Root,
       AbvGrndWood = k * Stem,
       AGB =  k * (Leaf + Stem + Grain),
-      Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
-      TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+      Evap = PEcAn.utils::ud_convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+      TVeg = PEcAn.utils::ud_convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       LAI = LAI))
     
     total_biomass <- with(result_yeari, # this is for calculating NPP and includes litter
                           k * (Leaf + Root + Stem + Rhizome + Grain + AboveLitter + BelowLitter))
-    delta_biomass <- udunits2::ud.convert(c(0, diff(total_biomass)), "kg/m2/h", "kg/m2/s")
+    delta_biomass <- PEcAn.utils::ud_convert(c(0, diff(total_biomass)), "kg/m2/h", "kg/m2/s")
     delta_biomass[delta_biomass < 0] <- 0
     result_yeari_std$NPP <- delta_biomass
     ncfile <- file.path(outdir, paste0(yeari, ".nc"))

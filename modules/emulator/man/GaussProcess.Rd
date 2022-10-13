@@ -23,13 +23,35 @@ GaussProcess(
 )
 }
 \arguments{
+\item{x}{set of independent variables}
+
+\item{y}{dependent variable}
+
+\item{isotropic}{Boolean indicating whether the GP is fit isotropically. If FALSE, distances are calculated deparately for each direction}
+
 \item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
+
+\item{method}{method for calculating correlations}
+
+\item{ngibbs}{number of MCMC iterations (per chain) to run}
+
+\item{burnin}{Number of samples to discard as burnin (auto must be FALSE)}
+
+\item{thin}{thinning of the matrix to make things faster. Default is to thin to 1}
+
+\item{jump.ic}{initial condition for jump standard deviation.}
 
 \item{prior}{'unif', 'IG'}
 
 \item{mix}{joint=mix over psi simultanously, each=mix over psi individually}
 
-\item{exclude}{}
+\item{psi}{spatial corr}
+
+\item{zeroMean}{True if mean is 0, else false}
+
+\item{exclude}{<- isn't used anywhere, should be dropped}
+
+\item{...}{Additional arguments}
 }
 \description{
 GaussProcess

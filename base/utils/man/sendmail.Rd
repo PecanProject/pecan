@@ -2,7 +2,7 @@
 % Please edit documentation in R/mail.R
 \name{sendmail}
 \alias{sendmail}
-\title{Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output}
+\title{Sends email. This assumes the program sendmail is installed.}
 \usage{
 sendmail(from, to, subject, body)
 }
