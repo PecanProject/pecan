@@ -61,7 +61,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       psibar <- stats::median(psi)
     } else {
       if (is.matrix(psi)) {
-        psibar <- apply(psi, 2, median)
+        psibar <- apply(psi, 2, stats::median)
       } else {
         psibar <- psi
       }
@@ -154,10 +154,10 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   }
   cIntQuant <- pIntQuant <- NULL
   if (!is.null(cI)) {
-    cIntQuant <- apply(cInt, 2, quantile, cI, na.rm = T)
+    cIntQuant <- apply(cInt, 2, stats::quantile, cI, na.rm = T)
   }
   if (!is.null(pI)) {
-    pIntQuant <- apply(pInt, 2, quantile, pI, na.rm = T)
+    pIntQuant <- apply(pInt, 2, stats::quantile, pI, na.rm = T)
   }
   return(list(ci = cIntQuant, pi = pIntQuant))
 } # predict.GP
