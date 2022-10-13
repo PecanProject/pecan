@@ -9,15 +9,9 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Imports:
-    PEcAn.assim.batch,
-    PEcAn.logger,
     methods,
     mvtnorm,
-    mlegp,
     coda (>= 0.18),
-    MASS,
-    TruncatedNormal (>= 2.2),
-    lqmm,
     MCMCpack
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
