@@ -84,9 +84,9 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       ## add trend surface back on
       for (i in seq_len(nrow(xpred))) {
         f <- rep(NA, ncol(xpred))
-        y0 <- splinefuns[[ncol(xpred) + 1]]
+        y0 <- splinefcns[[ncol(xpred) + 1]]
         for (j in seq_along(xpred)) {
-          f[j] <- splinefuns[[j]](xpred[i, j])
+          f[j] <- splinefcns[[j]](xpred[i, j])
         }
         y.trend[i] <- y0 + sum(f - y0)
       }
@@ -130,9 +130,9 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       ## add trend surface back on
       for (i in seq_len(nrow(xpred))) {
         f <- rep(NA, length(xpred))
-        y0 <- splinefuns[[length(xpred) + 1]]
+        y0 <- splinefcns[[length(xpred) + 1]]
         for (j in seq_along(xpred)) {
-          f[j] <- splinefuns[[j]](xpred[i, j])
+          f[j] <- splinefcns[[j]](xpred[i, j])
         }
         y.trend[i] <- y0 + sum(f - y0)
       }
