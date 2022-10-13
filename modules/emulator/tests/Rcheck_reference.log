@@ -7,7 +7,7 @@
 * checking extension type ... Package
 * this is package ‘PEcAn.emulator’ version ‘1.7.2’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... WARNING
+* checking CRAN incoming feasibility ... NOTE
 Maintainer: ‘Michael Dietze <dietze@bu.edu>’
 
 New submission
@@ -49,9 +49,6 @@ File 'LICENSE':
   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 
-Strong dependencies not in mainstream repositories:
-  PEcAn.logger
-
 The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -66,15 +63,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Michael Dietze’
-  Authors@R: ‘Mike Dietze [aut, cre], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘Michael Dietze <dietze@bu.edu>’
-  Authors@R:  ‘Mike Dietze <dietze@bu.edu>’
-
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -88,14 +77,7 @@ Maintainer field differs from that derived from Authors@R
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
-* checking dependencies in R code ... WARNING
-'library' or 'require' call not declared from: ‘time’
-'library' or 'require' call to ‘time’ in package code.
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Namespaces in Imports field not imported from:
-  ‘MASS’ ‘MCMCpack’ ‘methods’
-  All declared Imports should be used.
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... WARNING
 calcSpatialCov:
   function(x, ...)
@@ -156,181 +138,14 @@ See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
 manual.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-GaussProcess: no visible global function definition for ‘var’
-GaussProcess: no visible global function definition for ‘nlm’
-GaussProcess: no visible global function definition for ‘progressBar’
-GaussProcess: no visible global function definition for ‘rnorm’
-GaussProcess: no visible global function definition for ‘runif’
-GaussProcess: no visible global function definition for ‘update’
-GaussProcess: no visible global function definition for ‘rinvgamma’
-gp_mle: no visible global function definition for ‘dmvnorm’
-gp_mle2: no visible global function definition for ‘dmvnorm’
-is.accepted: no visible global function definition for ‘runif’
-jump: no visible global function definition for ‘new’
-lhc: no visible global function definition for ‘runif’
-mvjump: no visible global function definition for ‘new’
-plot.jump: no visible global function definition for ‘par’
-plot.jump: no visible global function definition for ‘abline’
-plot.mvjump: no visible global function definition for ‘par’
-plot.mvjump: no visible global function definition for ‘abline’
-plot.mvjump: no visible global function definition for ‘text’
-predict.GP: no visible global function definition for ‘median’
-predict.GP: no visible binding for global variable ‘median’
-predict.GP: no visible binding for global variable ‘splinefuns’
-predict.GP: no visible global function definition for ‘progressBar’
-predict.GP: no visible global function definition for ‘rmvnorm’
-predict.GP: no visible global function definition for ‘rnorm’
-predict.GP: no visible binding for global variable ‘quantile’
-summarize.GP: no visible global function definition for ‘par’
-summarize.GP: no visible global function definition for ‘pdf’
-summarize.GP: no visible global function definition for ‘title’
-summarize.GP: no visible global function definition for ‘lines’
-summarize.GP: no visible global function definition for ‘dev.off’
-Undefined global functions or variables:
-  abline dev.off dmvnorm jmp lines median new nlm par
-  pda.adjust.jumps.bs pda.calc.llik pda.calc.llik.par pdf progressBar
-  quantile rinvgamma rmvnorm rnorm runif splinefcns splinefuns text
-  title update var ytrend
-Consider adding
-  importFrom("grDevices", "dev.off", "pdf")
-  importFrom("graphics", "abline", "lines", "par", "text", "title")
-  importFrom("methods", "new")
-  importFrom("stats", "median", "nlm", "quantile", "rnorm", "runif",
-             "update", "var")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
-* checking Rd files ... NOTE
-prepare_Rd: emulator-package.Rd:27-29: Dropping empty section \references
-prepare_Rd: emulator-package.Rd:31-32: Dropping empty section \seealso
-prepare_Rd: emulator-package.Rd:33-34: Dropping empty section \examples
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'GaussProcess'
-  ‘x’ ‘y’ ‘isotropic’ ‘method’ ‘ngibbs’ ‘burnin’ ‘thin’ ‘jump.ic’ ‘psi’
-  ‘zeroMean’ ‘...’
-
-Undocumented arguments in documentation object 'arate'
-  ‘x’
-
-Undocumented arguments in documentation object 'bounded'
-  ‘xnew’ ‘rng’
-
-Undocumented arguments in documentation object 'calcSpatialCov'
-  ‘x’ ‘...’
-
-Undocumented arguments in documentation object 'calculate.prior'
-  ‘samples’ ‘priors’
-
-Undocumented arguments in documentation object 'ddist'
-  ‘x’ ‘prior’
-
-Undocumented arguments in documentation object 'distance'
-  ‘x’
-
-Undocumented arguments in documentation object 'distance.martix'
-  ‘x’ ‘power’
-
-Undocumented arguments in documentation object 'distance12.martix'
-  ‘x’ ‘n1’
-
-Undocumented arguments in documentation object 'get_ss'
-  ‘gp’ ‘xnew’ ‘pos.check’
-
-Undocumented arguments in documentation object 'get_y'
-  ‘SSnew’ ‘xnew’ ‘llik.fn’ ‘priors’ ‘llik.par’
-
-Undocumented arguments in documentation object 'gp_mle'
-  ‘theta’ ‘d’ ‘nugget’ ‘myY’
-
-Undocumented arguments in documentation object 'gp_mle2'
-  ‘theta’ ‘d’ ‘nugget’ ‘myY’ ‘maxval’
-
-Undocumented arguments in documentation object 'gpeval'
-  ‘xnew’ ‘k’ ‘mu’ ‘tau’ ‘psi’ ‘x’
-
-Undocumented arguments in documentation object 'groupid'
-  ‘x’
-
-Undocumented arguments in documentation object 'is.accepted'
-  ‘ycurr’ ‘ynew’ ‘format’
-
-Undocumented arguments in documentation object 'jump'
-  ‘ic’ ‘...’
-
-Undocumented arguments in documentation object 'ldinvgamma'
-  ‘x’ ‘shape’
-
-Undocumented arguments in documentation object 'minimize.GP'
-  ‘gp’ ‘rng’
-
-Undocumented arguments in documentation object 'mvjump'
-  ‘ic’ ‘rate’ ‘nc’ ‘...’
-
-Undocumented arguments in documentation object 'nderiv'
-  ‘x’ ‘y’
-
-Undocumented arguments in documentation object 'p'
-  ‘x’ ‘...’
-
-Undocumented arguments in documentation object 'predict.GP'
-  ‘gp’ ‘xpred’ ‘splinefcns’
-
-Undocumented arguments in documentation object 'predict.density'
-  ‘den’
-
-Undocumented arguments in documentation object 'summarize.GP'
-  ‘gp’ ‘pdf_file’
-
-Undocumented arguments in documentation object 'update.mvjump'
-  ‘jmp’ ‘chain’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'GaussProcess':
-  ‘exclude’
-
-Argument items with no description in Rd object 'distance':
-  ‘power’
-
-Argument items with no description in Rd object 'distance.martix':
-  ‘dim’
-
-Argument items with no description in Rd object 'distance12.martix':
-  ‘power’
-
-Argument items with no description in Rd object 'gp_mle':
-  ‘maxval’
-
-Argument items with no description in Rd object 'gpeval':
-  ‘splinefcns’
-
-Argument items with no description in Rd object 'jump':
-  ‘rate’
-
-Argument items with no description in Rd object 'ldinvgamma':
-  ‘scale’
-
-Argument items with no description in Rd object 'minimize.GP':
-  ‘x0’ ‘splinefuns’
-
-Argument items with no description in Rd object 'plot.mvjump':
-  ‘jmp’
-
-Argument items with no description in Rd object 'predict.density':
-  ‘xnew’
-
-Argument items with no description in Rd object 'summarize.GP':
-  ‘txt_file’
-
+* checking Rd \usage sections ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
 * checking for code which exercises the package ... WARNING
