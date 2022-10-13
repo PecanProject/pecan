@@ -14,18 +14,18 @@ the template for the resulting MultiSettings.}
 }
 \value{
 A \code{MultiSettings} object with the same settings as
-  \code{templateSettings} but replicated \code{run$site} blocks,
-  one for each specified site ID.
+\code{templateSettings} but replicated \code{run$site} blocks,
+one for each specified site ID.
 }
 \description{
 Create a MultiSettings object containing (identical) run blocks
-  for multiple different sites
+for multiple different sites
 }
 \details{
 Starts with a template settings object, and duplicates the \code{run$site}
-  block once for each specified site ID. The resulting MultiSettings is thus
-  identical to the input, except ready to run for each site in the vector
-  of site IDs.
+block once for each specified site ID. The resulting MultiSettings is thus
+identical to the input, except ready to run for each site in the vector
+of site IDs.
 }
 \examples{
 dontrun <- function() { # Added by Alexey Shiklomanov

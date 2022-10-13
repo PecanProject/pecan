@@ -18,8 +18,8 @@ is.Settings(x)
 \item{x}{object to test or coerce}
 }
 \value{
-a list containing all objects in `...`,
-  with class c("Settings", "SafeList", "list").
+a list containing all objects in \code{...},
+with class c("Settings", "SafeList", "list").
 }
 \description{
 Create a PEcAn Settings object
