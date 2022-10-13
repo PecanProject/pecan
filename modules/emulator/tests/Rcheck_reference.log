@@ -164,26 +164,11 @@ GaussProcess: no visible global function definition for ‘rnorm’
 GaussProcess: no visible global function definition for ‘runif’
 GaussProcess: no visible global function definition for ‘update’
 GaussProcess: no visible global function definition for ‘rinvgamma’
-get_ss: no visible global function definition for ‘rnorm’
-get_y: no visible global function definition for ‘pda.calc.llik’
 gp_mle: no visible global function definition for ‘dmvnorm’
 gp_mle2: no visible global function definition for ‘dmvnorm’
-gpeval: no visible binding for global variable ‘splinefuns’
-gpeval : <anonymous>: no visible binding for global variable
-  ‘splinefuns’
-gpeval: no visible binding for global variable ‘ytrend’
 is.accepted: no visible global function definition for ‘runif’
 jump: no visible global function definition for ‘new’
 lhc: no visible global function definition for ‘runif’
-mcmc.GP: no visible global function definition for ‘pda.calc.llik.par’
-mcmc.GP: no visible global function definition for
-  ‘pda.adjust.jumps.bs’
-mcmc.GP: no visible global function definition for ‘rnorm’
-mcmc.GP: no visible binding for global variable ‘jmp’
-minimize.GP: no visible global function definition for ‘median’
-minimize.GP: no visible binding for global variable ‘median’
-minimize.GP: no visible global function definition for ‘nlm’
-minimize.GP: no visible binding for global variable ‘splinefcns’
 mvjump: no visible global function definition for ‘new’
 plot.jump: no visible global function definition for ‘par’
 plot.jump: no visible global function definition for ‘abline’
