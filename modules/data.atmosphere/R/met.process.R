@@ -275,7 +275,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             format.vars = format.vars,
                             bety = con)
   } else {
-   if (! met %in% c("ERA5")) cf.id = input_met$id
+   if (! met %in% c("ERA5", "FieldObservatory")) cf.id = input_met$id
   }
 
   #--------------------------------------------------------------------------------------------------#
@@ -527,8 +527,14 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
-                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+  
+  result <- httr::POST(
+    url = paste0(browndog$url, formatname, "/"),
+    config = do.call(httr::config, curloptions),
+    httr::content_type("text/xml"),
+    body = xmldata)
+  httr::warn_for_status(result)
+  result_txt <- httr::content(result, "text")
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
   downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)

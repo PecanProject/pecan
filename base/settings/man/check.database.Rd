@@ -8,7 +8,7 @@ check.database(database)
 }
 \arguments{
 \item{database}{settings list to check.
-You'll probably use `settings$database`}
+You'll probably use \code{settings$database}}
 }
 \description{
 Check Database

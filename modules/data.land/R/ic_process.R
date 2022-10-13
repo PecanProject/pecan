@@ -126,7 +126,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # but we might still want an ensemble from a single source, so need a check accordinly
   # best pass a flag (<ensemble.source>TRUE<\ensemble.source>) if that's the case, omit the flag otherwise
   # currently downloading/reading in different ensemble members is not implemented,
-  # then we'll need to pass pattern, ensemble etc to convert.input
+  # then we'll need to pass pattern, ensemble etc to convert_input
 
   nsource <- ifelse(!is.null(input$ensemble), as.numeric(input$ensemble), 1)
   
@@ -236,8 +236,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
       
       model_file <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
       
-      # now that we don't have multipasses, convert.input only inserts 1st filename
-      # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
+      # now that we don't have multipasses, convert_input only inserts 1st filename
+      # do we want to change it in convert_inputs such that it loops over the dbfile.insert?
       path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
       settings_inputs[[input$output]][['path']][[paste0('path', i)]] <- path_to_settings
 
