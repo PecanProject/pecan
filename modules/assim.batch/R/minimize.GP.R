@@ -167,7 +167,7 @@ get_ss <- function(gp, xnew, pos.check) {
 ##' @param llik.par parameters to be passed llik functions
 get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
   
-  likelihood <- PEcAn.assim.batch::pda.calc.llik(SSnew, llik.fn, llik.par)
+  likelihood <- pda.calc.llik(SSnew, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
   posterior.prob <- likelihood + prior.prob
@@ -241,7 +241,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
   currSS <- get_ss(gp, x0, pos.check)
   
   
-  currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
   pcurr   <- unlist(sapply(currllp, `[[` , "par"))
   
   xcurr <- unlist(x0)
@@ -280,7 +280,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
         params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g - 1), ]
         colnames(params.recent) <- names(x0)
         # accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
-        jcov <- PEcAn.assim.batch::pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
+        jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
         
         # make sure precision is not going to be an issue
@@ -307,7 +307,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
       newSS  <- get_ss(gp, xnew, pos.check)
       if(all(newSS != -Inf)){
         
-        newllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
+        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         HRnew <- TruncatedNormal::dtmvnorm(c(xcurr), c(xnew), jcov,
                                            lb = rng[,1], ub = rng[,2], log = TRUE, B = 1e2)
@@ -319,7 +319,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
         }
         
         # now update currllp | xcurr
-        currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
         pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       }
       # } mix = each
@@ -342,14 +342,14 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
         newSS  <- get_ss(gp, xnew, pos.check)
         
         
-        newllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
+        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
           xcurr  <- xnew
           currSS <- newSS
         }
         
-        currllp <- PEcAn.assim.batch::pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
+        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
         pcurr   <- unlist(sapply(currllp, `[[` , "par"))
         
         # }
