@@ -115,6 +115,7 @@ wanted <- c(
 'RPostgreSQL',
 'Rpreles',
 'RSQLite',
+'sessioninfo',
 'sf',
 'SimilarityMeasures',
 'sirt',
