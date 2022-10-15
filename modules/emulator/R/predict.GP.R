@@ -100,7 +100,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   nsamp <- length(samp)
   # cInt <- pInt <- matrix(NA,nsamp,npred*dim)
   cInt <- pInt <- matrix(NA, nsamp, npred)
-  progress_bar <- utils::txtProgressBar()
+  progress_bar <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
   for (g in samp) {
     j <- i <- which(g == samp)
     if (dim == 1) {
@@ -149,9 +149,9 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
         pInt[j, ] <- mypred
       }
     }
-    pb <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
-    progress_bar <- utils::setTxtProgressBar(pb , i)
+    utils::setTxtProgressBar(progress_bar , i)
   }
+  close(progress_bar)
   cIntQuant <- pIntQuant <- NULL
   if (!is.null(cI)) {
     cIntQuant <- apply(cInt, 2, stats::quantile, cI, na.rm = T)
