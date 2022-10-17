@@ -53,6 +53,10 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
 - Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
+- The model2netcdf_SIPNET function can now export full year nc files by using 
+  the cdo_setup argument in the template job file. In detail, people will need
+  to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
+  are in the Create_Multi_settings.R script. (#3052)
 
 ### Changed
 
