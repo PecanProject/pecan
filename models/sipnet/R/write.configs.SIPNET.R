@@ -59,7 +59,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   cdosetup <- ""
   if (!is.null(settings$host$cdosetup)) {
     cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
-    jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   }
   
   
@@ -72,6 +71,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
