@@ -159,10 +159,9 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
-  do.call("library", list(paste0("PEcAn.", model)))
-  my.write_restart <- paste0("write_restart.", model)
-  my.read_restart <- paste0("read_restart.", model)
-  my.split_inputs  <- paste0("split_inputs.", model)
+  my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
+  my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
+  my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
   #- Double checking some of the inputs
   if (is.null(adjustment)) adjustment <- TRUE
   # models that don't need split_inputs, check register file for that
