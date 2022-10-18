@@ -43,7 +43,7 @@ clone_pft <- function(parent.pft.name,
   }
 
   new.pft <- (parent.pft
-    %>% dplyr::select(-.data$id, -.data$created_at, -.data$updated_at)
+    %>% dplyr::select(-"id", -"created_at", -"updated_at")
     %>% dplyr::mutate(
       name = !!new.pft.name,
       definition = !!new.pft.definition,

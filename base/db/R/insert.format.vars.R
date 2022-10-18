@@ -48,7 +48,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
   }
 
   # Test if format name already exists
-  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select(.data$id, .data$name) %>% dplyr::filter(.data$name %in% !!format_name) %>% dplyr::collect()
+  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select("id", "name") %>% dplyr::filter(.data$name %in% !!format_name) %>% dplyr::collect()
   name_test_df <- as.data.frame(name_test)
   if(!is.null(name_test_df[1,1])){
     PEcAn.logger::logger.error(
@@ -88,7 +88,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
 
       if(suppress == FALSE){
         ## Test if variable_id already exists ##
-        var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id) %>% dplyr::filter(.data$id %in% !!formats_variables[[i, "variable_id"]]) %>% dplyr::collect(.data$id)
+        var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select("id") %>% dplyr::filter(.data$id %in% !!formats_variables[[i, "variable_id"]]) %>% dplyr::collect(.data$id)
         if(!is.null(var_id_test[1,1])){
           PEcAn.logger::logger.error(
             "variable_id already exists"
@@ -124,7 +124,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     ###  udunit tests ###
     for(i in 1:nrow(formats_variables)){
       u1 <- formats_variables[1,"unit"]
-      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select(.data$id, units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
+      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select("id", units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
 
       if(!PEcAn.utils::unit_is_parseable(u1)){
         PEcAn.logger::logger.error(

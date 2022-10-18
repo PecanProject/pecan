@@ -134,14 +134,14 @@ workflow <- function(bety, workflow_id) {
 #' @export
 runs <- function(bety, workflow_id) {
   Workflows <- workflow(bety, workflow_id) %>%
-    dplyr::select(.data$workflow_id, .data$folder)
+    dplyr::select("workflow_id", "folder")
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
-    dplyr::select(ensemble_id = .data$id, .data$workflow_id) %>%
+    dplyr::select(ensemble_id = "id", "workflow_id") %>%
     dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
-    dplyr::select(run_id = .data$id, .data$ensemble_id) %>%
+    dplyr::select(run_id = "id", "ensemble_id") %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
-  dplyr::select(Runs, -.data$workflow_id, -.data$ensemble_id) %>%
+  dplyr::select(Runs, -"workflow_id", -"ensemble_id") %>%
     return()
 }  # runs
 
