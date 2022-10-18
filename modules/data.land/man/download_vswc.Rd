@@ -18,7 +18,8 @@ a ncdf file with the soil moisture value for the most recent available day
 Download Soil Moisture (VSWC)
 }
 \examples{
-outdir <- "/projectnb/dietzelab/cfranci1/soilmoist" site_ID <- "BART"
+outdir <- "/projectnb/dietzelab/cfranci1/soilmoist" 
+site_ID <- "BART"
 }
 \author{
 Christina Francis and Alexis Helgeson

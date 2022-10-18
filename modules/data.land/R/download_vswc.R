@@ -7,7 +7,9 @@
 #' @return a ncdf file with the soil moisture value for the most recent available day
 #' @author Christina Francis and Alexis Helgeson
 #'
-#' @examples outdir <- "/projectnb/dietzelab/cfranci1/soilmoist" site_ID <- "BART"
+#' @examples 
+#' outdir <- "/projectnb/dietzelab/cfranci1/soilmoist" 
+#' site_ID <- "BART"
 
 download_vswc <- function(outdir, site_ID) {
 
