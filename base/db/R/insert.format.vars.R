@@ -124,7 +124,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     ###  udunit tests ###
     for(i in 1:nrow(formats_variables)){
       u1 <- formats_variables[1,"unit"]
-      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select("id", units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull(.data$units)
+      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select("id", units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull("units")
 
       if(!PEcAn.utils::unit_is_parseable(u1)){
         PEcAn.logger::logger.error(
@@ -152,7 +152,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
 
     ## Insert format record
     inserted_formats <- db_merge_into(formats_df, "formats", con = con, by = c("name", "mimetype_id")) ## Make sure to include a 'by' argument
-    format_id <- dplyr::pull(inserted_formats, .data$id)
+    format_id <- dplyr::pull(inserted_formats, "id")
 
   if(!is.null(formats_variables)){
     ## Insert format_id into

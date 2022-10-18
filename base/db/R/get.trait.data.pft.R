@@ -93,7 +93,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           dplyr::filter(.data$pft_id == !!pftid) %>%
           dplyr::arrange(dplyr::desc(.data$created_at)) %>%
           utils::head(1) %>%
-          dplyr::pull(id)
+          dplyr::pull("id")
       } else {
         PEcAn.logger::logger.info("No previous posterior found. Forcing update")
       }

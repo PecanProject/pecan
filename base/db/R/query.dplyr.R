@@ -161,7 +161,7 @@ get_workflow_ids <- function(bety, query, all.ids = FALSE) {
     ids <- workflows(bety, ensemble = FALSE) %>%
       dplyr::distinct(.data$workflow_id) %>%
       dplyr::collect() %>%
-      dplyr::pull(.data$workflow_id) %>%
+      dplyr::pull("workflow_id") %>%
       sort(decreasing = TRUE)
   }
   return(ids)
@@ -188,7 +188,7 @@ get_run_ids <- function(bety, workflow_id) {
   if (workflow_id != "") {
     runs <- runs(bety, workflow_id)
     if (dplyr.count(runs) > 0) {
-    run_ids <- dplyr::pull(runs, .data$run_id) %>% sort()
+    run_ids <- dplyr::pull(runs, "run_id") %>% sort()
     }
   }
   return(run_ids)

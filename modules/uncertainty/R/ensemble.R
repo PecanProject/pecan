@@ -269,7 +269,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         dplyr::inner_join(dplyr::tbl(con, "modeltypes_formats"), by = c('modeltype_id')) %>%
         dplyr::collect() %>%
         dplyr::filter(.data$required == TRUE) %>%
-        dplyr::pull(.data$tag)
+        dplyr::pull("tag")
       
     }else{
       required_tags<-c("met","parameters")

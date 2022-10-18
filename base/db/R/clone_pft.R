@@ -59,7 +59,7 @@ clone_pft <- function(parent.pft.name,
 
   new.pft$id <- (dplyr::tbl(con, "pfts")
     %>% dplyr::filter(.data$name == !!new.pft.name)
-    %>% dplyr::pull(.data$id))
+    %>% dplyr::pull("id"))
 
 
   # PFT members are stored in different tables depending on pft_type.
