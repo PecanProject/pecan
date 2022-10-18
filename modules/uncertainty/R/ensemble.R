@@ -261,7 +261,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     } else {
       ensemble.id <- NA
     }
-    #-------------------------generating met/param/soil/veg/... for all ensumbles----
+    #-------------------------generating met/param/soil/veg/... for all ensembles----
     if (!is.null(con)){
       #-- lets first find out what tags are required for this model
       required_tags <- dplyr::tbl(con, 'models') %>%
