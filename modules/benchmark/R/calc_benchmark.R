@@ -59,7 +59,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
     # calculated with multiple inputs, which would mean that all of that data 
     # would need to be loaded and aligned again. 
     
-    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = .data$id) %>% 
+    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = "id") %>% 
       dplyr::left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
       filter(.data$reference_run_id == settings$benchmarking$reference_run_id) %>% 
       select(dplyr::one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%

@@ -156,7 +156,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                                         .data$AboveLitter, .data$BelowLitter, 
                                         .data$Rhizome, .data$Grain, .data$SoilEvaporation, 
                                         .data$CanopyTrans, .data$map, .data$mat)
-  annual.results <- dplyr::rename(annual.results.inter, year = .data$year...1)
+  annual.results <- dplyr::rename(annual.results.inter, year = "year...1")
   col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
                  "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
                  "map", "mat")
