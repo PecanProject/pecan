@@ -86,7 +86,7 @@ download_US_WCr_flux <- function(start_date, end_date) {
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
     # select(-V5, -V6) %>%
-    filter(date >= start_date & date <=end_date) 
+    dplyr::filter(date >= start_date & date <=end_date) 
   #Colnames changed
   colnames(raw.data) <- c("Year", "Month", "Day", "Hour", "DoY", "FjDay", "SC", "FC", "NEE", "LE", "H", "Ustar", "Flag", "date")
   
