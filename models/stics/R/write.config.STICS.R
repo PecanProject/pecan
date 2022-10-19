@@ -59,63 +59,76 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   if(!is.null(settings$run$inputs$fielddata)){
     events_file <- jsonlite::read_json(settings$run$inputs$fielddata$path, simplifyVector = TRUE)[[1]]
     
-    # events file can have info from other years, subset
-    sub_events <- events_file$events[(lubridate::year(events_file$events$date) %in% years_requested),]
-    
-   
-    crops <- c(sub_events$planted_crop, sub_events$harvest_crop)
-    if(!is.null(crops)){
-      crops <- crops[!is.na(crops)] # filter NAs caused by flattening the json
-      # for now taking a simplistic assumption that if there are more than 1 harvested + planted crops, there are multiple crop cycles
-      if(length(unique(crops)) > 1){
-        # we probably have multiple pfts passed via settings, usmdir_root will be an array
-        usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, sapply(settings$pfts, `[[`, "name")), "_") 
-        # !!! IMPORTANT: document also elsewhere
-        # I'm making STICS PFT names to match fieldactivity names, or more broadly whatever is in the events json file!!!
-        # e.g. barley is not barley but bar
-        # alternatively I can start a LUT to match bety-pft names to match events species codes
-        # we need to pass right parameters under right USM!
-        
-        if(length(years_requested) <= 2){
-          # multiple usms due to crop rotation only
-          # associate spp and year
-          usmdirs <- sapply(crops, function(x){
-            crop_yr <- lubridate::year(sub_events$date[(sub_events$planted_crop %in% x) | (sub_events$harvest_crop %in% x)])
-            crop_usm <- paste0(usmdir_root[grep(tolower(x), usmdir_root)], crop_yr)
-            return(crop_usm)
-            })
+    # testing new approach
+    if(!is.null(events_file$rotation)){
+      usmdirs <- rep(NA, nrow(events_file$rotation))
+      for(uic in seq_along(usmdirs)){
+        usmdirs[uic] <- paste0(file.path(settings$host$rundir, run.id, tolower(events_file$rotation$planted_crop[uic])), "_",
+                          lubridate::year(events_file$rotation$rotation_begin[uic]), "-",
+                          lubridate::year(events_file$rotation$rotation_end[uic])) 
+      }
+    }else{
+      
+      # events file can have info from other years, subset
+      sub_events <- events_file$events[(lubridate::year(events_file$events$date) %in% years_requested),]
+      
+      
+      crops <- c(sub_events$planted_crop, sub_events$harvest_crop)
+      if(!is.null(crops)){
+        crops <- crops[!is.na(crops)] # filter NAs caused by flattening the json
+        # for now taking a simplistic assumption that if there are more than 1 harvested + planted crops, there are multiple crop cycles
+        if(length(unique(crops)) > 1){
+          # we probably have multiple pfts passed via settings, usmdir_root will be an array
+          usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, sapply(settings$pfts, `[[`, "name")), "_") 
+          # !!! IMPORTANT: document also elsewhere
+          # I'm making STICS PFT names to match fieldactivity names, or more broadly whatever is in the events json file!!!
+          # e.g. barley is not barley but bar
+          # alternatively I can start a LUT to match bety-pft names to match events species codes
+          # we need to pass right parameters under right USM!
           
-          # make sure the usmdir order is the same as the rotation order 
-          # this may need to get more sophisticated in the future 
-          # but keeping the usmdirs in chronological order will come handy in the rest of this function
-          usmdirs <- usmdirs[order(sapply(strsplit(sub(".*_", "", basename(usmdirs)), "-"), function(x) min(as.numeric(x))))]
+          if(length(years_requested) <= 2){
+            # multiple usms due to crop rotation only
+            # associate spp and year
+            usmdirs <- sapply(crops, function(x){
+              crop_yr <- lubridate::year(sub_events$date[(sub_events$planted_crop %in% x) | (sub_events$harvest_crop %in% x)])
+              crop_usm <- paste0(usmdir_root[grep(tolower(x), usmdir_root)], crop_yr)
+              return(crop_usm)
+            })
+            
+            # make sure the usmdir order is the same as the rotation order 
+            # this may need to get more sophisticated in the future 
+            # but keeping the usmdirs in chronological order will come handy in the rest of this function
+            usmdirs <- usmdirs[order(sapply(strsplit(sub(".*_", "", basename(usmdirs)), "-"), function(x) min(as.numeric(x))))]
+            
+          }else{
+            # multiple usms due to crop rotation and multiple cropping seasons per rotation
+            # not implemented yet
+            PEcAn.logger::logger.severe("write.config.STICS is under development for this case.")
+          }
           
         }else{
-          # multiple usms due to crop rotation and multiple cropping seasons per rotation
-          # not implemented yet
-          PEcAn.logger::logger.severe("write.config.STICS is under development for this case.")
+          # single crop, single usmdir_root
+          usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
+          if(length(years_requested) > 2){
+            # multiple usms because more than 2 years of simulation
+            years_indices <- rep(seq(1, length(years_requested), by=2), each=2)
+            usmdirs <- tapply(years_requested, years_indices, function(x)  paste0(usmdir_root, paste(x, collapse = '-')))
+          }else{
+            # single usm because less than 2 years of simulation
+            usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
+          } 
         }
         
       }else{
-        # single crop, single usmdir_root
+        # somehow events have no crop identifiers, e.g. only fertilization and tilling events are passed 
+        # most likely a partial year & crop cycle
         usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
-        if(length(years_requested) > 2){
-          # multiple usms because more than 2 years of simulation
-          years_indices <- rep(seq(1, length(years_requested), by=2), each=2)
-          usmdirs <- tapply(years_requested, years_indices, function(x)  paste0(usmdir_root, paste(x, collapse = '-')))
-        }else{
-          # single usm because less than 2 years of simulation
-          usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
-        } 
+        # single usm
+        usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
       }
       
-    }else{
-      # somehow events have no crop identifiers, e.g. only fertilization and tilling events are passed 
-      # most likely a partial year & crop cycle
-      usmdir_root  <- paste0(file.path(settings$host$rundir, run.id, settings$pfts$pft$name), "_") 
-      # single usm
-      usmdirs <- paste0(usmdir_root, paste(years_requested, collapse = '-'))
     }
+
   }
   
   # TODO: have a better way to determine USMs
@@ -195,7 +208,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # name code of plant in 3 letters
     # a handful of plants have to have specific codes, e.g. forages need to be 'fou' and vine needs to be 'vig'
     # but others can be anything? if not, either consider a LUT or passing via settings
-    if(names(trait.values)[pft] %in% c("FRG", "ALF")){
+    if(names(trait.values)[pft] %in% c("frg", "alf")){
       codeplante <- 'fou'
       codeperenne <- 2
     }else{
@@ -1270,7 +1283,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         }
         
         densitesem <- events_sub$planting_sowing_density[events_sub$mgmt_operations_event == "planting"]
-        if(!is.null(profsem)){
+        if(!is.null(densitesem)){
           tec_df$densitesem <- as.numeric(densitesem) # plant sowing density
         }
         
