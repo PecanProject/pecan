@@ -57,60 +57,13 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     thisyear <- stics_output[ , "ian"] == y
     
     outlist <- list()
-    outlist[[1]] <- stics_output[thisyear, "lai.n."]  # LAI in (m2 m-2)
+    outlist[[length(outlist)+1]] <- stics_output[thisyear, "lai.n."]  # LAI in (m2 m-2)
     
     # daily amount of CO2-C emitted due to soil mineralisation (humus and organic residues) (kg ha-1 d-1)
     HeteroResp <- udunits2::ud.convert(stics_output[thisyear, "CO2sol"],  "ha-1 day-1", "m-2 s-1")
     
-    outlist[[2]] <- HeteroResp
+    outlist[[length(outlist)+1]] <- HeteroResp
     
-    # AutoResp = AbvResp + RootResp
-    
-    # following a similar approach in LPJ-GUESS
-    # AbvResp = ABG * respcoeff * g(T) following Sun et al., 2007 doi: 10.1007/s00376-007-0055-4
-    # masec_kg_ha: Aboveground dry matter (kg ha-1)
-    # CNplante: N concentration in the aboveground plant (% dry weight)
-    
-    # assumptions ---
-    # respcoeff: need some sort of maintenance respiration coefficient parameter, there isn't one in STICS (double check), also should it differ between plant stages?
-    # also this coefficient should differ between plant stages, assuming this will be driven by N
-    # instead of using ABG, I'll use C_abv / CN_abv to account for this (similar to LPJ-GUESS?), so new eqn:*
-    # AbvResp = (C_abv / CN_abv) * respcoeff * g(T)
-    # using leaf_maintenance_respiration_mass variable from BetyDB (umol [CO2] kg-1 s-1) for this respcoeff
-    # no MR rate parameter really have kg N-1 in units but as I'm including N effect here and assume units
-    
-    # resp par hacks
-    resppar_file <- file.path(outdir, "RespPars.Rdata")
-    if(file.exists(resppar_file)){
-      load(resppar_file)
-    }else{
-      leaf_maintenance_respiration_mass <- 9000 # hardcoding for development, need a prior on it, note that prior will need to be higher than normal (x ~100)
-      # or pass the normal prior vals but scale it here somehow (maybe with another prior)?
-      leaf_respiration_Q10 <- 2.8 # hardcoding for development, need a prior on it
-    }
-
-    #PEcAn.logger::logger.info("Values for leaf_maintenance_respiration_mass and leaf_respiration_Q10 are:", leaf_maintenance_respiration_mass, leaf_respiration_Q10)
-    
-    # g(T): respiration temperature response function, some Q10 equation, is there something similar in STICS?
-    # gtemp = Q10 ^ ([T-25]/10) for testing using Sun et al.
-    # Q10: using leaf_respiration_Q10 from BetyDB
-    # tcult: crop surface temperature (daily average) degreeC
-
-    gtemp <- leaf_respiration_Q10 ^ ((stics_output[thisyear, "tcult"] - 25) / 10)
-    leafC <- 0.48 # is this calculated by STICS? there is something like Crac: amount of C in roots at harvest
-    AbvResp <- (stics_output[thisyear, "masec_kg_ha"] * leafC * (stics_output[thisyear, "CNplante"])/100) * leaf_maintenance_respiration_mass * gtemp
-    # (kg ha-1) * (umol [CO2] kg-1 s-1) 
-    #  now in umol CO2 ha-1 s-1, pecan units are in kg C m-2 s-1  
-    AbvResp <- udunits2::ud.convert((AbvResp / (44/12)), "ha-1", "m-2")
-    # now umol C to kg C
-    AbvResp <- PEcAn.utils::misc.convert(AbvResp, "umol C m-2 s-1", "kg C m-2 s-1")
-    
-    RootResp <- AbvResp * 1.5 # factor from Moureaux for now
-    ## RootResp = (C_root/ CN_root) * r * g(Tsoil) can use something like this explicitly
-    
-    MaintResp <- AbvResp + RootResp # kg C m-2 s-1  
-    
-    # deriving GPP:  (GPP - MR)*0.72 = NPP
     
     # dltams(n): daily growth rate of the plant (t.ha-1.d-1) 
     dltams      <- udunits2::ud.convert(stics_output[thisyear, "dltams.n."], "ton", "kg") * 0.48 # ton to kgC
@@ -121,31 +74,21 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     NPP[NPP<0] <- 0
     
     # double checking that this is all NPP (above and below)
-    ## this
+    ## this:
     #stics_output[thisyear, "dltams.n."]  # t.ha-1.d-1
-    ##should be roughly equal to this
+    ## should be roughly equal to this:
     #diff(stics_output[thisyear, "masec.n."])+ diff(stics_output[thisyear, "msrac.n."]) # t.ha-1
     
     NPP <- udunits2::ud.convert(NPP, "ha-1 day-1", "m-2 s-1") # kg C m-2 s-1  
-    outlist[[3]] <- NPP
+    outlist[[length(outlist)+1]] <- NPP
     
-    GPP <- (NPP / 0.72) + MaintResp
-    outlist[[4]] <- GPP
-    
-    # deriving Growth respiration:  (GPP - MR)*0.28 = GR where 0.28 comes from ORCHIDEE-STICS 10.1016/j.agee.2016.04.017
-    GrowthResp <- (GPP - MaintResp)*0.28
-    
-    AutoResp <- MaintResp + GrowthResp
-    outlist[[5]] <- AutoResp
-    
-    TotalResp <- AutoResp + HeteroResp
-    outlist[[6]] <- TotalResp
-    
-    #NEE <- -1*(GPP-TotalResp)
     NEE <- -1*(NPP-HeteroResp)
-    outlist[[7]] <- NEE
+    outlist[[length(outlist)+1]] <- NEE
       
-
+    # other vars
+    # Cr: amount of C in organic residues mixed with soil (kg.ha-1)
+    # Crac: amount of C in roots at harvest (kg.ha-1)
+    # Chumt: amount of C in humified organic matter (active + inert fractions) (kg.ha-1)
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -161,13 +104,10 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     dims <- list(lon = lon, lat = lat, time = t)
     
     nc_var <- list()
-    nc_var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[2]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
-    nc_var[[3]] <- PEcAn.utils::to_ncvar("NPP", dims)
-    nc_var[[4]] <- PEcAn.utils::to_ncvar("GPP", dims)
-    nc_var[[5]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    nc_var[[6]] <- PEcAn.utils::to_ncvar("TotalResp", dims)
-    nc_var[[7]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[length(nc_var)+1]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[length(nc_var)+1]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    nc_var[[length(nc_var)+1]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[length(nc_var)+1]] <- PEcAn.utils::to_ncvar("NEE", dims)
     
     # ******************** Declare netCDF variables ********************#
     

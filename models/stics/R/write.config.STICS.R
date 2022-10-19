@@ -686,14 +686,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "croirac", pft.traits[which(pft.names == "croirac")], overwrite = TRUE)
     }
     
-    # temporary hack?
-    if ("leaf_maintenance_respiration_mass" %in% pft.names & "leaf_respiration_Q10" %in% pft.names) {
-      leaf_maintenance_respiration_mass <- pft.traits[which(pft.names == "leaf_maintenance_respiration_mass")]
-      leaf_respiration_Q10 <- pft.traits[which(pft.names == "leaf_respiration_Q10")]
-      save(leaf_maintenance_respiration_mass, leaf_respiration_Q10, file=file.path(outdir, "RespPars.Rdata"))
-    }
-    
-    
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
       SticsRFiles::convert_xml2txt(xml_file = plant_file, java_dir = javastics_path)
