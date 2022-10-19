@@ -13,12 +13,9 @@
 #' @inheritParams read_ed_metheader
 #' @export
 check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
-  testthat::test_that(
-    "ED met header object is a nested list",
-    {
-      testthat::expect_true(!is.null(names(ed_metheader[[1]])))
-    }
-  )
+  if(is.null(names(ed_metheader[[1]]))) {
+    stop("ED met header object is not a nested list")
+  }
   .z <- lapply(ed_metheader, check_ed_metheader_format, check_files = check_files)
   invisible(TRUE)
 }
@@ -26,35 +23,25 @@ check_ed_metheader <- function(ed_metheader, check_files = TRUE) {
 #' @rdname check_ed_metheader
 #' @export
 check_ed_metheader_format <- function(ed_metheader_format, check_files = TRUE) {
-  testthat::test_that(
-    "Format has the correct names",
-    {
-      correct_names <- c("path_prefix", "nlon", "nlat", "dx", "dy", "xmin", "ymin", "variables")
-      all(names(ed_metheader_format) %in% correct_names)
-    }
-  )
-  testthat::test_that(
-    "ED met header files exist and are not empty",
-    {
-      met_files <- PEcAn.utils::match_file(ed_metheader_format$path_prefix)
-      testthat::expect_gte(length(met_files), 1)
-      testthat::expect_true(all(file.exists(met_files)))
-      testthat::expect_true(all(file.size(met_files) > 0))
-    }
-  )
+  correct_names <- c("path_prefix", "nlon", "nlat", "dx", "dy", "xmin", "ymin", "variables")
+  if(!all(names(ed_metheader_format) %in% correct_names)) {
+    stop("Format does not have the correct names")
+  }
+  
+  met_files <- PEcAn.utils::match_file(ed_metheader_format$path_prefix)
+  stopifnot(length(met_files) >= 1)
+  stopifnot(all(file.exists(met_files)))
+  stopifnot(all(file.size(met_files) > 0))
+  stopifnot(is.numeric(ed_metheader_format$nlon))
+  stopifnot(is.numeric(ed_metheader_format$nlat))
+  stopifnot(is.numeric(ed_metheader_format$dx))
+  stopifnot(is.numeric(ed_metheader_format$dy))
+  stopifnot(is.numeric(ed_metheader_format$xmin))
+  stopifnot(is.numeric(ed_metheader_format$ymin))
+  if (!inherits(ed_metheader_format$variables, "data.frame")) {
+    stop()
+  }
 
-  testthat::test_that(
-    "Met header metadata fields are valid",
-    {
-      testthat::expect_true(is.numeric(ed_metheader_format$nlon))
-      testthat::expect_true(is.numeric(ed_metheader_format$nlat))
-      testthat::expect_true(is.numeric(ed_metheader_format$dx))
-      testthat::expect_true(is.numeric(ed_metheader_format$dy))
-      testthat::expect_true(is.numeric(ed_metheader_format$xmin))
-      testthat::expect_true(is.numeric(ed_metheader_format$ymin))
-      testthat::expect_is(ed_metheader_format$variables, "data.frame")
-    }
-  )
 
   if (check_files) {
     met_files <- PEcAn.utils::match_file(ed_metheader_format$path_prefix, suffix = "h5")
@@ -71,10 +58,7 @@ check_ed_metfile <- function(metfile, variables) {
   hfile <- hdf5r::H5File$new(metfile, mode = "r")
   # Remove variables that are not constants
   variables <- variables[variables$flag != 4, ]
-  testthat::test_that(
-    "All variables present in metfile",
-    {
-      testthat::expect_true(all(variables$variable %in% hfile$ls()$name))
-    }
-  )
+  if(!all(variables$variable %in% hfile$ls()$name)) {
+    stop("All variables not present in metfile")
+  }
 }

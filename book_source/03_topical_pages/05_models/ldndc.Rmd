@@ -1,0 +1,82 @@
+## LDNDC {#models-ldndc}
+
+| Model Information |                                                      |
+| --                | --                                                   |
+| Home Page         | https://ldndc.imk-ifu.kit.edu/about/model.php        |
+| Source Code       |                                                      |
+| License           |                                                      |
+| Authors           | Prof. Dr. Klaus Butterbach-Bahl, Dr. Edwin Haas, ... |
+| PEcAn Integration | Henri Kajasilta                                      |
+
+### Introduction
+
+LandscapeDNDC is designed to simulate biosphere/hydrosphere processes of forest, arable and grassland ecosystems. It is modularly designed and therefore allows for various model selections to be plugged in. Most up-to-date information from LDNDC can be found here, as well as the authors, users guide and documentation of the model: https://ldndc.imk-ifu.kit.edu/index.php
+
+**PEcAn configuration file additions**
+
+The following sections of the PEcAn XML are relevant or have influence at the moment:
+
+`ensemble`
+  `variable`: Options are only LAI and GPP
+
+`model`
+  `id`: Corresponding the id of LDNDC in BETY
+
+`run`
+  `inputs`
+      `start_date`: Start date of the simulation
+      `end_date`: End date of the simulation
+
+
+### Model specific input files
+
+LDNDC takes several files as an input, and can also generate multiple output files. These ńotes regarding input files are written from the PEcAn integration point of view, and detailed information about input files can be found from the user guide, which is available via the above links.
+
+Input files:
+
+`Project` — Contains essential information in order to set-up the simulation run. For example, the file contains information of other files which will be used in the simulations as well as the time period when the simulations are taking a place.
+
+`Setup` — Defines which modules are used.
+
+`Climate` — Met data that is used in simulations.
+
+`Speciesparameters` — Species used in the simulations should be defined here and the file holds the approppriate information of the used species. 
+
+`Siteparameters` — Works similarly as species parameters, but in the site features point of view.
+
+`Event` — Holds information about the events, which are essential in arable simulations.
+
+`Site` — Specific information about the site.
+
+`Airchemistry` — Information about the airchemistry.
+
+
+#### Model configuration files
+
+Due to the amount of different input files, there are several templates which are used in model configuration.
+Templates are located at `models/ldndc/inst/` and are copied to the simulation's run directory before the model run.
+
+* **project.ldndc** : Project file is populated in `write.configs.LDNDC` based on the inputs of the PEcAn run. In addition to having the correct input files that are used in the simulation, the project file is filled in with the simulation time period and the directory paths regarding other input files that are read during the simulation. The file also sets the path for output files. These other input files are found from the same directory as the project file when starting the model run, and the output file is created among the other outputs of the simulation. At the moment, simulations are executed half-hourly.
+
+* **template.job** : Will be filled in with the information that model execution requires in PEcAn. Calls for example models binary and executes the `project.ldndc` file.
+
+* **events_template.xml** : Has three events (plant, manure and cut), which are filled in in `write.configs.LDNDC`. Events should be generated based on some event file, but such implementation has not been applied yet. This template is only meant for testing for now.
+
+* **speciesparameter_template.xml** : Has one replacable section. This section is filled in within `write.configs.LDNDC`, and is currently just hard-coded values for perennial grass species. This will be one of the key files, because the used pfts and corresponding pft values are written here. At this stage, it is hard-coded to only have one pft, but it should be generated based on the trait values that are available from BETY database.
+
+* **siteparameters.xml** : Some default value for siteparameters.
+
+* **site.xml** : Some default values for site.
+
+* **airchemistry.txt** : Some default data for airchemistry.
+
+* **climate.txt** : This file is created from the netcdf file. A symbolic link will be created into the run directory for it.
+
+* **setup.xml** : Contains information which modules the model simulation is using. Default settings should fit for most of the purposes and these are currently hard-coded.
+
+
+### Installation notes
+
+Obtaining LDNDC program requires credentials, which the user is able to request from the developers of the model. With the credentials, the pre-compiled  LDNDC program can be downloaded here: https://ldndc.imk-ifu.kit.edu/download/download-model.php
+
+After obtaining the necessary files, the user should execute the install script that is found from the ldndc-'_version-number_' directory. With linux, executing would happen with command `sh install.sh`. Succesfull installation will create a `.ldndc` directory to the user's home directory. Running the simulations happens by calling the ldndc executable (found from the `/bin` directory) and giving the path file to the project file that contains the specs of the simulation. Instructions in detail and how to play with these setups are explained more broadly in the user guide.

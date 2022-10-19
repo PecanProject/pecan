@@ -111,7 +111,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       dt <- diff(sec)[1]
       tstep <- round(86400 / dt)

@@ -125,7 +125,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (!is.numeric(Tair)) {
       PEcAn.logger::logger.error("air_temperature not defined in met file for metgapfill")
     }
-    Tair_degC <- udunits2::ud.convert(Tair, "K", "degC")
+    Tair_degC <- PEcAn.utils::ud_convert(Tair, "K", "degC")
     precip <- try(ncdf4::ncvar_get(nc = nc, varid = "precipitation_flux"), silent = TRUE)
     if (!is.numeric(precip)) {
       PEcAn.logger::logger.error("precipitation_flux not defined in met file for metgapfill")
@@ -174,7 +174,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
-    sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
     doy <- rep(seq_len(diy), each = 86400 / dt) # diy computed above
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
@@ -353,10 +353,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair, Rg, rH, PAR, precip, sHum, Lw, Ts1,
                              VPD, ws, co2, press, east_wind, north_wind)
-    EddyData.F[["Tair"]] <- udunits2::ud.convert(EddyData.F[["Tair"]], "K", "degC")
+    EddyData.F[["Tair"]] <- PEcAn.utils::ud_convert(EddyData.F[["Tair"]], "K", "degC")
     EddyData.F[["Tair"]] <- EddyData.F[["Tair"]]
-    EddyData.F[["Ts1"]] <- udunits2::ud.convert(EddyData.F[["Ts1"]], "K", "degC")
-    EddyData.F[["VPD"]] <- udunits2::ud.convert(EddyData.F[["VPD"]], "Pa", "kPa")
+    EddyData.F[["Ts1"]] <- PEcAn.utils::ud_convert(EddyData.F[["Ts1"]], "K", "degC")
+    EddyData.F[["VPD"]] <- PEcAn.utils::ud_convert(EddyData.F[["VPD"]], "Pa", "kPa")
 
     ## Optional need:
     ## Compute VPD EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
@@ -383,9 +383,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     nelem <- length(time)
     tunit <- ncdf4::ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
     origin <- "1900-01-01 00:00:00"
-    time <- round(as.POSIXlt(udunits2::ud.convert(time, tunit$value, paste("seconds since", origin)),
-                             origin = origin, tz = "UTC"), units = "mins")
-    dtime <- diff(time)
+    time <- round(as.POSIXlt(PEcAn.utils::ud_convert(time, tunit$value, paste("seconds since", origin)),
+                             origin = origin, tz = "UTC"))
+    dtime <- as.numeric(diff(time), units = "mins")
     if (dtime[1] == 30) {
       DTS.n <- 48
       time <- 30 * 60 + time
@@ -496,7 +496,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## Write back to NC file, convert air T to Kelvin
     error <- c()
     if (("Tair_f" %in% colnames(Extracted))) {
-      Tair_f <- udunits2::ud.convert(Extracted[, "Tair_f"], "degC", "K")
+      Tair_f <- PEcAn.utils::ud_convert(Extracted[, "Tair_f"], "degC", "K")
     }
     if (length(which(is.na(Tair_f))) > 0) {
       error <- c(error, "air_temperature")
@@ -542,7 +542,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       sHum_f[sHum_f < 0] <- 0
     }
     sHum_f[is.na(sHum_f)] <- 0.622 *
-      (rH_f[is.na(sHum_f)] / 100) * (get.es(udunits2::ud.convert(Tair_f[is.na(sHum_f)], "K", "degC")) / 1000)
+      (rH_f[is.na(sHum_f)] / 100) * (get.es(PEcAn.utils::ud_convert(Tair_f[is.na(sHum_f)], "K", "degC")) / 1000)
     if (length(which(is.na(sHum_f))) > 0) {
       error <- c(error, "specific_humidity")
     }
@@ -558,7 +558,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ncdf4::ncvar_put(nc, varid = "surface_downwelling_longwave_flux_in_air", vals = Lw_f)
 
     if (("Ts1_f" %in% colnames(Extracted))) {
-      Ts1_f <- udunits2::ud.convert(Extracted[, "Ts1_f"], "degC", "K")
+      Ts1_f <- PEcAn.utils::ud_convert(Extracted[, "Ts1_f"], "degC", "K")
     }
     if (sum(is.na(Ts1_f)) > 0) {
       Tair_ff <- Tair_f
@@ -575,10 +575,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ncdf4::ncvar_put(nc, varid = "soil_temperature", vals = Ts1_f)
 
     if (("VPD_f" %in% colnames(Extracted))) {
-      VPD_f <- udunits2::ud.convert(Extracted[, "VPD_f"], "kPa", "Pa")
+      VPD_f <- PEcAn.utils::ud_convert(Extracted[, "VPD_f"], "kPa", "Pa")
       VPD_f[VPD_f < 0] <- 0
       if (("Tair_f" %in% colnames(Extracted))) {
-        Tair_f_degC <- udunits2::ud.convert(Tair_f, "K", "degC")
+        Tair_f_degC <- PEcAn.utils::ud_convert(Tair_f, "K", "degC")
         es <- get.es(Tair_f_degC) * 100
 
         badVPD_f <- which(VPD_f > es) 
@@ -599,7 +599,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       co2_f <- Extracted[, "co2_f"]
     }
     co2_f[is.na(co2_f)] <- mean(co2, na.rm = TRUE)
-    co2_f[is.na(co2_f)] <- udunits2::ud.convert(380, "ppm", "mol/mol")
+    co2_f[is.na(co2_f)] <- PEcAn.utils::ud_convert(380, "ppm", "mol/mol")
     if (length(which(is.na(co2_f))) > 0) {
       error <- c(error, "mole_fraction_of_carbon_dioxide_in_air")
     }

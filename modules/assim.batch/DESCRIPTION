@@ -1,7 +1,7 @@
 Package: PEcAn.assim.batch
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.2
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
+Version: 1.7.2.9000
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
@@ -46,7 +46,6 @@ Imports:
     prodlim,
     MCMCpack,
     TruncatedNormal (>= 2.2),
-    udunits2 (>= 0.11),
     utils,
     XML,
     lqmm,

@@ -2,6 +2,7 @@
 ##' @title groupid
 ##' @export
 ##' 
+##' @param x matrix of parameter values
 ##' @author Michael Dietze
 groupid <- function(x) {
   

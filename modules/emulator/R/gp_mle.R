@@ -2,11 +2,11 @@
 ##' @title gp_mle
 ##' @export
 ##'
-##' @param theta
-##' @param d
-##' @param nugget
-##' @param myY
-##' @param maxval
+##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]
+##' @param d spatial distance matrix
+##' @param nugget allows additional error in Y rather than fix interpolation to go through points
+##' @param myY  vector of observed data
+##' @param maxval maximum value
 ##' 
 ##' @return val
 ##' 
@@ -57,6 +57,11 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
 ##' @title gp_mle2 
 ##' @export
 ##' 
+##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]
+##' @param d spatial distance matrix
+##' @param nugget allows additional error in Y rather than fix interpolation to go through points
+##' @param myY  vector of observed data
+##' @param maxval maximum value
 gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
   
   ## get parms

@@ -7,7 +7,11 @@
 jump(ic = 0, rate = 0.4, ...)
 }
 \arguments{
-\item{rate}{}
+\item{ic}{optional data vector}
+
+\item{rate}{target acceptance rate}
+
+\item{...}{Addtional arguments}
 }
 \description{
 jump

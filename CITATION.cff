@@ -59,6 +59,7 @@ authors:
     orcid: 'https://orcid.org/0000-0002-5845-5628'
   - given-names: Ayush Pradad
   - given-names: Shashank Singh
+  - given-names: Tanishq Jain
   - affiliation: Boston University
     given-names: Alexis Helgeson
   - affiliation: Pacific Northwest National Laboratory / University of Maryland
@@ -116,6 +117,10 @@ authors:
   - given-names: Yan Zhao
   - affiliation: Uber
     given-names: Jing Xia
+  - given-names: Eric R. Scott
+    affiliation: University of Arizona
+    orcid: 'https://orcid.org/0000-0002-7430-7879'
+  
 preferred-citation:
   type: article
   title: Facilitating feedbacks between field measurements and ecosystem models

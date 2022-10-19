@@ -1,6 +1,6 @@
 Package: PEcAn.BIOCRO
 Type: Package
-Title: PEcAn package for integration of the BioCro model
+Title: PEcAn Package for Integration of the BioCro Model
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
@@ -20,7 +20,6 @@ Imports:
     PEcAn.settings,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
-    udunits2 (>= 0.11),
     ncdf4 (>= 1.15),
     lubridate (>= 1.7.0),
     data.table,

@@ -72,7 +72,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   year_seq <- seq(start_year, end_year)
-  day_secs <- udunits2::ud.convert(1, "day", "seconds")
+  day_secs <- PEcAn.utils::ud_convert(1, "day", "seconds")
 
   # Check that we have all the input files we need
   need_input_files <- file.path(in.path, paste(in.prefix, year_seq, "nc", sep = "."))
@@ -179,7 +179,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     useCO2 <- is.numeric(CO2)
 
     ## convert time to seconds
-    sec <- udunits2::ud.convert(tdays, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    sec <- PEcAn.utils::ud_convert(tdays, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
     ncdf4::nc_close(nc)
 

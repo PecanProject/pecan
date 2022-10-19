@@ -92,20 +92,23 @@ convert.samples.ED <- function(trait.samples) {
 ##-------------------------------------------------------------------------------------------------#
 ##' Write ED configuration files
 ##'
-##' Writes an xml and ED2IN config files for use with the Ecological Demography 
-##' model. Requires a pft xml object, a list of trait values for a single model 
+##' Writes an xml and ED2IN config files for use with the Ecological Demography
+##' model. Requires a pft xml object, a list of trait values for a single model
 ##' run, and the name of the file to create
-#'
-##' @param trait.values Named list of trait values, with names corresponding to PFT
+##'
+##' @param trait.values Named list of trait values, with names corresponding to
+##'   PFT
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @param defaults list of defaults to process. Default=settings$constants
-##' @param check Logical. If `TRUE`, check ED2IN validity before running and 
-##' throw an error if anything is wrong (default = `FALSE`)
-##' 
+##' @param check Logical. If `TRUE`, check ED2IN validity before running and
+##'   throw an error if anything is wrong (default = `FALSE`)
+##' @param ... unused
+##'
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
-##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov, Istem Fer
+##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov,
+##'   Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings$constants, check = FALSE, ...) {
   
@@ -118,7 +121,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## Write ED2 config.xml file
   xml <- write.config.xml.ED2(defaults = defaults, settings = settings, trait.values = trait.values)
   
-  saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent = TRUE, prefix = PREFIX_XML)
+  XML::saveXML(xml, file = file.path(settings$rundir, run.id, "config.xml"), indent = TRUE, prefix = PREFIX_XML)
   
   startdate <- as.Date(settings$run$start.date)
   enddate <- as.Date(settings$run$end.date)
@@ -441,21 +444,21 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
 
   ## Find history file TODO this should come from the database
-  ed2_package_data <- data(package="PEcAn.ED2")
+  ed2_package_data <- data(package="PEcAn.ED2", envir = environment())
   histfile <- paste0("history.r", settings$model$revision) # set history file name to look for in ed2_package_data
   if (histfile %in% ed2_package_data$results[, "Item"]) {
     PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
-    data(list=histfile, package = 'PEcAn.ED2')
+    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
     edhistory <- get(histfile)
   } else {
     PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
     histfile <- "history"
-    data(list=histfile, package = 'PEcAn.ED2')
+    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
     edhistory <- get(histfile)
   }
 
   edtraits <- names(edhistory)
-  data(pftmapping, package = 'PEcAn.ED2')
+  data(pftmapping, package = 'PEcAn.ED2', envir = environment())
   
   ## Get ED2 specific model settings and put into output config xml file
   xml <- PEcAn.settings::listToXml(settings$model$config.header, "config")
@@ -500,7 +503,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       }
 
       if (grepl("soil", pft)) {
-        data(soil, package = "PEcAn.ED2")
+        data(soil, package = "PEcAn.ED2", envir = environment())
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
 
@@ -552,7 +555,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 
 # ==================================================================================================#
 #' @name write.config.jobsh.ED2
-#' @title Write ED2 config.xml file
+#' @title Write ED2 job.sh file
 #' @description Function for writing job.sh file for ED2 runs
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 #' @export
@@ -643,8 +646,8 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@BINARY_ARGS@", settings$model$binary_args, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
-  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
-  pft_names <- paste0("c('", paste(pft_names, collapse = "','"), "')")
+  pft_names <- extract_pfts(settings$pfts)
+  pft_names <- deparse(dput(pft_names))
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
   return(jobsh)
