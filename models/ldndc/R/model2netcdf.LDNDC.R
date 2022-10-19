@@ -35,6 +35,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
                          select = c('datetime', 'lai', 'dC_co2_upt.kgCm.2.'))
+    
+    
+    soilchemistry <- subset(read.csv(paste(output_dir, "soilchemistry-subdaily.txt", sep = "/"), header = T, sep ="\t"),
+                            select = c(datetime, sC_co2_hetero.kgCm.2.))
+    
   } else{
     PEcAn.logger::logger.info("Files with daily timesteps used")
     
@@ -60,12 +65,16 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   # Temporary solution to get "no visible binding" note off from the variables: 'Date', 'Year' and 'Day'
   Date <- Year <- Day <- NULL
   
-  ldndc.out <- physiology %>%
+  ## Merge subdaily-files
+  ldndc.raw.out <- merge(physiology, soilchemistry, by = 'datetime')
+  
+  ldndc.out <- ldndc.raw.out %>%
     dplyr:: mutate(Date = format(as.POSIXlt(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
-    dplyr::select('Year', 'Day', 'Step', 'lai', 'dC_co2_upt.kgCm.2.')
+    dplyr::select(Year, Day, Step, lai, dC_maintenance_resp.kgCm.2., dC_transport_resp.kgCm.2.,
+                  dC_growth_resp.kgCm.2., dC_co2_upt.kgCm.2., sC_co2_hetero.kgCm.2.)
   
   
   
@@ -130,7 +139,22 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     output[[1]] <- sub.ldndnc.out$lai
     
     # Photosynthesis rate - GPP
-    output[[2]] <- sub.ldndnc.out$dC_co2_upt.kgCm.2.
+    GPP <- sub.ldndnc.out$dC_co2_upt.kgCm.2./timestep.s
+    output[[2]] <- GPP
+    
+    # Autotrophic respiration
+    Autotrophic <- (sub.ldndnc.out$dC_maintenance_resp.kgCm.2. + sub.ldndnc.out$dC_transport_resp.kgCm.2. + sub.ldndnc.out$dC_growth_resp.kgCm.2.)/timestep.s
+    output[[3]] <- Autotrophic
+    
+    # Heterotrophic respiration
+    Heterotrophic <- sub.ldndnc.out$sC_co2_hetero.kgCm.2./timestep.s
+    output[[4]] <- Heterotrophic
+    
+    # Total respiration
+    output[[5]] <- Autotrophic + Heterotrophic
+    
+    # NEE
+    output[[6]] <- Autotrophic + Heterotrophic - GPP
     
     #### Declare netCDF variables ####
     t <- ncdf4::ncdim_def(name = "time",
@@ -159,7 +183,10 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     #nc_var[[2]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     nc_var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
     nc_var[[2]] <- PEcAn.utils::to_ncvar("GPP", dims)
-    
+    nc_var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    nc_var[[5]] <- PEcAn.utils::to_ncvar("TotalResp", dims)
+    nc_var[[6]] <- PEcAn.utils::to_ncvar("NEE", dims)
     
     
     ## Output netCDF data
