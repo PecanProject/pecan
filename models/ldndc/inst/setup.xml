@@ -11,19 +11,16 @@
             <!-- model selection -->
             <modulelist>
 		<module id="microclimate:canopyecm" timemode="subdaily" />
-	        <module id="watercycle:echy" timemode="subdaily">
-		   <options potentialevapotranspiration="penman" />
-		</module> 
-		<module id="physiology:plamox" timemode="subdaily" />
+		<module id="watercycle:watercycledndc" timemode="subdaily" />
+		<module id="physiology:arabledndc" timemode="subdaily" />
 		<module id="soilchemistry:metrx" timemode="subdaily" />
 
 			<!-- outputs -->
-		<module id="output:ecosystem:daily" />
 		<module id="output:microclimate:daily" />
 		<module id="output:watercycle:daily" />
 		<module id="output:physiology:subdaily" />
 		<module id="output:vegstructure:daily" />
-		<module id="output:soilchemistry:daily" />
+		<module id="output:soilchemistry:subdaily" />
 		<module id="output:soilchemistry:yearly" />
 		<module id="output:report:arable" timemode="subdaily" />
             </modulelist>
