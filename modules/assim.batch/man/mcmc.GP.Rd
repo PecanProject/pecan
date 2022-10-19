@@ -11,7 +11,7 @@ mcmc.GP(
   rng,
   format = "lin",
   mix = "joint",
-  splinefcns = NULL,
+  splinefuns = NULL,
   jmp0 = 0.35 * (rng[, 2] - rng[, 1]),
   ar.target = 0.5,
   priors = NA,
@@ -36,7 +36,7 @@ mcmc.GP(
 
 \item{mix}{each = jump each dim. independently, joint = jump all at once}
 
-\item{splinefcns}{spline functions, not used}
+\item{splinefuns}{spline functions, not used}
 
 \item{jmp0}{initial jump variances}
 
