@@ -36,7 +36,8 @@ veg_info object to be passed to extract_veg within ic_process
 extract_NEON_veg
 }
 \examples{
-start_date = as.Date("2020-01-01") end_date = as.Date("2021-09-01")
+start_date = as.Date("2020-01-01") 
+end_date = as.Date("2021-09-01")
 }
 \author{
 Alexis Helgeson and Michael Dietze
