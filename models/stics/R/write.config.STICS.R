@@ -1330,8 +1330,13 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         }
         harvest_tec <- do.call("cbind", harvest_list) 
         
+        # need to get these from field data
         # cut crop - 1:yes, 2:no
-        harvest_tec$codefauche <- 2 
+        if("frg" %in% tolower(harvest_sub$harvest_crop)){
+          harvest_tec$codefauche <- 1
+        }else{
+          harvest_tec$codefauche <- 2 
+        }
         harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
         harvest_tec$codemodfauche <- 2 # use calendar days
         harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
