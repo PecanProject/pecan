@@ -19,5 +19,10 @@
 ##' @examples
 ##' fqdn()
 fqdn <- function() {
-  as.character(Sys.info()["nodename"])
+  if (Sys.getenv("FQDN") == "") {
+    fqdn <- as.character(Sys.info()["nodename"])
+  } else {
+    fqdn <- Sys.getenv("FQDN")
+  }
+  return(fqdn)
 } # fqdn
