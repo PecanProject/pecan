@@ -93,7 +93,11 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   wood_biomass = AGB - leaf_biomass
   
   #grab soil carbon info
-  soil_carbon = dat[[3]] #conversion done in extract_NEON_veg (gC/m^2)
+  if(sum(is.na(dat[[3]]))){
+    soil_carbon <- NA
+  }else{
+    soil_carbon <- mean(dat[[3]]$SoilCarbon) #conversion done in extract_NEON_veg (gC/m^2)
+  }
   
   #Prep Arguments for pool_ic function
   dims <- list(time =1) #Time dimension may be irrelevant
