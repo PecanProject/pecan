@@ -19,12 +19,5 @@
 ##' @examples
 ##' fqdn()
 fqdn <- function() {
-  fqdn <- Sys.getenv("FQDN")
-  if (fqdn == "") {
-    fqdn <- system2("hostname", "-f", stdout = TRUE)
-  } 
-  if (fqdn == "") {
-    fqdn <- as.character(Sys.info()["nodename"])
-  }
-  return(fqdn)
+  as.character(Sys.info()["nodename"])
 } # fqdn
