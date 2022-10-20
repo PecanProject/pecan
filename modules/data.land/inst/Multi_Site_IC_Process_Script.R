@@ -11,6 +11,7 @@ log_file <- c()
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 site.IDs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
 Drop <- TRUE
+Write_into_settings <- FALSE
 
 #loop over different sites
 for (i in 1:length(settings)) {
@@ -32,23 +33,22 @@ for (i in 1:length(settings)) {
                       neonsites = neonsites,
                       store_dir = input_veg$storedir))
   #checks
-  if(is.na(veg_info[[2]]) && !is.na(veg_info[[1]])){
-    print(paste0("No veg stucture data found in NEON for site: ", temp_settings$run$site$id, ".  Herbacious downloaded!"))
-    log_file <- c(log_file, paste0("Site: ", temp_settings$run$site$id, ". No veg stucture data found in NEON for this site! Herbacious downloaded!"))
-    bin_var <- "dryMass"
-    veg_ind <- 1
-  }else if(sum(!is.na(veg_info[[2]]) && !is.na(veg_info[[1]]))){
-    bin_var <- c("DBH", "dryMass")
-    veg_ind <- c(1, 2)
-  }else{
-    print(paste0("No veg stucture nor herbacious for site: ", temp_settings$run$site$id))
-    log_file <- c(log_file, paste0("No veg stucture nor herbacious for site: ", temp_settings$run$site$id))
+  Var <- c("dryMass", "DBH", "SoilCarbon")
+  Ind <- !is.na(veg_info)
+  bin_var <- Var[Ind]
+  
+  #write into log file
+  if(sum(Ind) != 3){
+    log_file <- c(log_file, paste0("Site: ", temp_settings$run$site$id, ". No ", paste(Var[which(!(Var %in% bin_var))]), 
+                                   " data found in NEON for this site! Herbacious downloaded!"))
+  }else if(sum(Ind) == 0){
+    log_file <- c(log_file, paste0("No data for site: ", temp_settings$run$site$id),". Jump to the next site.")
     unlink(temp_outdir, recursive = T)
     next
   }
   
   #check if we have the situation that only subplot ID 41 observed in one plot. if so, we might need to drop this record when Drop == TRUE.
-  if(2 %in% veg_ind){
+  if(Ind[2]){
     for (PLOT in unique(veg_info[[2]]$plot)) {
       temp <- veg_info[[2]][which(veg_info[[2]]$plot==PLOT),]$Subplot
       if(length(unique(temp)) == 1){
@@ -83,18 +83,22 @@ for (i in 1:length(settings)) {
     paths <- c(out$file, paths)
   }
   
-  #populated IC file paths into settings
-  Create_mult_list <- function(list.names, paths){
-    out <- as.list(paths)
-    names(out) <- list.names
-    out
+  if(Write_into_settings){
+    #populated IC file paths into settings
+    Create_mult_list <- function(list.names, paths){
+      out <- as.list(paths)
+      names(out) <- list.names
+      out
+    }
+    settings[[i]]$run$inputs$poolinitcond$source <- "NEON_veg"
+    settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
+    settings[[i]]$run$inputs$poolinitcond$ensemble <- n_ens
+    settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", n_ens), paths)
   }
-  settings[[i]]$run$inputs$poolinitcond$source <- "NEON_veg"
-  settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
-  settings[[i]]$run$inputs$poolinitcond$ensemble <- n_ens
-  settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", n_ens), paths)
 }
-write.settings(settings, outputdir = file.path(outdir), outputfile = "pecan.xml")
+if(Write_into_settings){
+  write.settings(settings, outputdir = file.path(outdir), outputfile = "pecan.xml")
+}
 
 #write log file.
 fileConn<-file(paste0(outdir, "/log.txt"))
