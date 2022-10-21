@@ -32,6 +32,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     soil_params <- trait.values[[grep("soil", names(trait.values))]]
     settings$pfts[[grep("soil", names(trait.values))]] <- NULL
     trait.values[[grep("soil", names(trait.values))]] <- NULL
+  }else{
+    soil_params <- NULL
   }
   
   ## simulation days, used later
