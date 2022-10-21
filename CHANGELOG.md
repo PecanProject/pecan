@@ -58,6 +58,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
 - `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
+- fqdn() can access hostname on Windows (#3044 fixed by #3058)
 
 ### Changed
 
