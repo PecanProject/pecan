@@ -11,11 +11,12 @@
 #'
 #' This will try and find the PEcAn settings file in the following order:
 #' \enumerate{
-#' \item {--settings <file>}{passed as command line argument using --settings}
-#' \item {inputfile}{passed as argument to function}
-#' \item {PECAN_SETTINGS}{environment variable PECAN_SETTINGS pointing to a specific file}
-#' \item {./pecan.xml}{pecan.xml in the current folder}
+#'   \item `--settings <file>` passed as command line argument using `--settings`
+#'   \item `inputfile` passed as argument to function
+#'   \item `PECAN_SETTINGS` environment variable `PECAN_SETTINGS` pointing to a specific file
+#'   \item `./pecan.xml` `pecan.xml` in the current folder
 #' }
+#' 
 #' Once the function finds a valid file, it will not look further.
 #' Thus, if \code{inputfile} is supplied, \code{PECAN_SETTINGS} will be
 #'   ignored.
@@ -78,6 +79,7 @@ read.settings <- function(inputfile = "pecan.xml") {
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
+    PEcAn.logger::logger.warn(inputfile, " not found!")
     PEcAn.logger::logger.info("Loading ./pecan.xml")
     xml <- XML::xmlParse("pecan.xml")
   } else {
@@ -87,6 +89,7 @@ read.settings <- function(inputfile = "pecan.xml") {
 
   ## convert the xml to a list
   settings <- XML::xmlToList(xml)
+  settings <- strip_comments(settings)
   settings <- as.Settings(settings)
   settings <- expandMultiSettings(settings)
 
@@ -96,4 +99,41 @@ read.settings <- function(inputfile = "pecan.xml") {
   }
 
   return(invisible(settings))
+}
+
+
+
+#' Strip comments from parsed pecan.xml
+#'
+#' Allows use of HTML style comments (`<!-- a comment -->`) in pecan.xml files
+#' by removing them after converted to a list. Inspired by
+#' https://stackoverflow.com/questions/37853679/removing-elements-in-a-nested-r-list-by-name
+#'
+#' @param x a settings list
+#'
+#' @return list
+#' @noRd
+#'
+strip_comments <- function(x) {
+  # function to find depth of a list element
+  # see http://stackoverflow.com/questions/13432863/determine-level-of-nesting-in-r
+  depth <- function(this, thisdepth = 0) {
+    if (!is.list(this)) {
+      return(thisdepth)
+    } else{
+      return(max(unlist(
+        lapply(this, depth, thisdepth = thisdepth + 1)
+      )))
+    }
+  }
+  
+  thisdepth <- depth(x)
+  nameIndex <- which(names(x) == "comment")
+  if (thisdepth == 0) {
+    return(x)
+  } else if (length(nameIndex)) {
+    x <- x[-nameIndex]
+  }
+  return(lapply(x, strip_comments))
+  
 }

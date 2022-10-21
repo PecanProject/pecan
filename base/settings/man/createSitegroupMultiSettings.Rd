@@ -26,20 +26,20 @@ Passed directly to \code{\link[PEcAn.DB]{db.query}}}
 }
 \value{
 A \code{MultiSettings} object with the same settings as
- \code{templateSettings} but site information for the selected sites
+\code{templateSettings} but site information for the selected sites
 }
 \description{
 Helps to create a MultiSettings object to run some or all
-  sites in a Sitegroup.
+sites in a Sitegroup.
 }
 \details{
 Starts with a template settings object, and fills in the \code{run} block
- with site info sampled from the sitegroup.
- The template could be fully set up except for the site info,
- or more or less empty if you plan to fill in the other settings later.
- A \code{\link{MultiSettings}} is created from \code{templateSettings},
- \code{nSite} sites (or all of them, if \code{nSite} is unset) are selected
- from Bety, and their info is dropped into the \code{MultiSettings}.
+with site info sampled from the sitegroup.
+The template could be fully set up except for the site info,
+or more or less empty if you plan to fill in the other settings later.
+A \code{\link{MultiSettings}} is created from \code{templateSettings},
+\code{nSite} sites (or all of them, if \code{nSite} is unset) are selected
+from Bety, and their info is dropped into the \code{MultiSettings}.
 }
 \examples{
 dontrun <- function() { # Added by Alexey Shiklomanov

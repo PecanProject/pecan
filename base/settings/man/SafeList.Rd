@@ -4,7 +4,7 @@
 \alias{SafeList}
 \alias{as.SafeList}
 \alias{is.SafeList}
-\title{Construct SafeList Object}
+\title{Create a SafeList object}
 \usage{
 SafeList(...)
 
@@ -13,8 +13,8 @@ as.SafeList(x)
 is.SafeList(x)
 }
 \arguments{
-\item{...}{A list to upgrade to SafeList,
-or elements to be added to a new SafeList}
+\item{...}{A list to upgrade to SafeList, or elements to be added to a new
+SafeList}
 
 \item{x}{list object to be tested or coerced}
 }
@@ -26,19 +26,18 @@ a SafeList version of x
 logical
 }
 \description{
-Create a SafeList object
+\code{SafeList} is a wrapper class for the normal R list. It should behave
+identically, except for the \code{$} operator being overridden to require exact
+matches.
 }
 \details{
-SafeList is a wrapper class for the normal R list.
- It should behave identically, except for the $ operator being overridden
- to require exact matches.
-
-The constructor works identical to list(...) unless:
-
-1) The only argument is a list, in which case the result is the same list,
-   with its class attribute updated to include 'SafeList', or
-2) The only argument is a SafeList, in which case that argument is returned
-   unchanged
+The constructor works identical to \code{list()} unless:
+\enumerate{
+\item The only argument is a list, in which case the result is the same list,
+with its class attribute updated to include 'SafeList', or
+\item The only argument is a SafeList, in which case that argument is returned
+unchanged
+}
 }
 \section{Functions}{
 \itemize{
