@@ -34,7 +34,8 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
-                         select = c('datetime', 'lai', 'dC_co2_upt.kgCm.2.'))
+                         select = c(datetime, lai, dC_co2_upt.kgCm.2., dC_maintenance_resp.kgCm.2.,
+                                    dC_transport_resp.kgCm.2., dC_growth_resp.kgCm.2.))
     
     
     soilchemistry <- subset(read.csv(paste(output_dir, "soilchemistry-subdaily.txt", sep = "/"), header = T, sep ="\t"),
