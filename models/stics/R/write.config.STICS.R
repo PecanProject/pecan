@@ -65,7 +65,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(!is.null(events_file$rotation)){
       usmdirs <- rep(NA, nrow(events_file$rotation))
       for(uic in seq_along(usmdirs)){
-        usmdirs[uic] <- paste0(file.path(settings$host$rundir, run.id, tolower(events_file$rotation$planted_crop[uic])), "_",
+        p1 <- tolower(events_file$rotation$planted_crop1[uic])
+        p2 <- ifelse(events_file$rotation$planted_crop2[uic] != "-99.0", tolower(events_file$rotation$planted_crop2[uic]), "")
+        uname <- paste0(p1,p2)
+        usmdirs[uic] <- paste0(file.path(settings$host$rundir, run.id, uname), "_",
                           lubridate::year(events_file$rotation$rotation_begin[uic]), "-",
                           lubridate::year(events_file$rotation$rotation_end[uic])) 
       }
@@ -708,7 +711,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     }
     
     this_usm <- grep(names(trait.values)[pft], usmdirs)
-    file.rename(file.path(rundir, "ficplt1.txt"), file.path(usmdirs[this_usm], "ficplt1.txt"))
+    sapply(this_usm, function(x){
+      file.copy(file.path(rundir, "ficplt1.txt"), file.path(usmdirs[x], "ficplt1.txt"), overwrite = TRUE)
+    })
+    
   } # pft-loop ends
   
   
@@ -1120,7 +1126,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
     
     this_usm <- grep(names(trait.values)[pft], usmdirs)
-    file.rename(file.path(rundir, "tempopar.sti"), file.path(usmdirs[this_usm], "tempopar.sti"))
+    sapply(this_usm, function(x){
+      file.copy(file.path(rundir, "tempopar.sti"), file.path(usmdirs[x], "tempopar.sti"), overwrite = TRUE)
+    })
     
     ### new formulations 
     
@@ -1132,7 +1140,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # DO NOTHING ELSE FOR NOW
     
     SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
-    file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs[this_usm], "tempoparv6.sti"))
+    sapply(this_usm, function(x){
+      file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs[x], "tempoparv6.sti"), overwrite = TRUE)
+    })
   }
   
   
@@ -1489,7 +1499,13 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # probably best to pass this via the json file
     
     # name of the plant file for main plant 
-    SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[usmi]]), add = FALSE) 
+    if(length(plt_files) < usmi){
+      # multiple usms, 1 plt file = same spp, consecutive rotations, but hacky
+      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[1]]), add = FALSE) 
+    }else{
+      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[usmi]]), add = FALSE) 
+    }
+    
     
     # name of the technical file for main plant
     # does this even matter?
