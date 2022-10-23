@@ -1,13 +1,11 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process Emulator
-Version: 1.7.2
+Version: 1.7.2.9000
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Michael Dietze
-Maintainer: Michael Dietze <dietze@bu.edu>
 Imports:
     methods,
     mvtnorm,
