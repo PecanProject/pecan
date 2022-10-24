@@ -15,6 +15,7 @@ sample_ic(
   source,
   bin_var = "DBH",
   bin_size = 10,
+  bin_herb_soil = TRUE,
   ...
 )
 }
@@ -38,6 +39,8 @@ sample_ic(
 \item{bin_var}{variable you would like to sample by, DEFAULT is DBH}
 
 \item{bin_size}{bin size for sampling, DEFAULT is 10}
+
+\item{bin_herb_soil}{if we want to use bin size for both herb and soil sampling}
 
 \item{...}{Other inputs}
 }
