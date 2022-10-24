@@ -1329,7 +1329,15 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
             # the following code should give that
             harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
-            tec_df$irecbutoir <- harvest_df$julfauche
+            if("frg" %in% tolower(harvest_sub$harvest_crop)){
+              tec_df$irecbutoir <- 999
+              if(!is.null(events_file$rotation)){
+                tind <-  which(dseq_sub == as.Date(events_file$rotation$rotation_end[usmi]))  + lubridate::yday(dseq_sub[1]) - 1
+                tec_df$irecbutoir <-  ifelse(length(tind) == 0, 999, tind)
+              }
+            }else{
+              tec_df$irecbutoir <- harvest_df$julfauche
+            }
             harvest_df$hautcoupe <- as.numeric(harvest_sub$harvest_cut_height[harvest_sub$date==harvest_sub$date[hrow]]) # # cut height for forage crops
             harvest_df$hautcoupe <- ifelse(harvest_df$hautcoupe == -99, 0.05, harvest_df$hautcoupe)
             harvest_df$lairesiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.2, 0.8) # hardcode for now
