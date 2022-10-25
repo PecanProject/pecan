@@ -48,7 +48,7 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
       }
     }
     total_area <- sum(area)/4
-
+    
     ## Grab allometry
     if(is.null(allom_param)){
       a <- -2.0127                        
