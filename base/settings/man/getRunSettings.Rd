@@ -10,9 +10,9 @@ getRunSettings(templateSettings, siteId)
 \item{templateSettings}{A \code{\link{Settings}} object that will be
 the template for the resulting MultiSettings.}
 
-\item{siteId}{site to process. See `createMultiSiteSettings`}
+\item{siteId}{site to process. See \code{createMultiSiteSettings}}
 }
 \description{
-Processes one site from the `siteIds` argument of `createMultiSiteSettings`.
+Processes one site from the \code{siteIds} argument of \code{createMultiSiteSettings}.
 You probably don't need to call it directly.
 }

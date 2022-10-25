@@ -55,6 +55,13 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
   
+  # create cdo specific settings
+  cdosetup <- ""
+  if (!is.null(settings$host$cdosetup)) {
+    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+  }
+  
+  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -64,6 +71,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
@@ -78,6 +86,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
+  
+  if(is.null(settings$state.data.assimilation$NC.Prefix)){
+    settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
+  }
+  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
+  
+  #overwrite argument
+  if(is.null(settings$state.data.assimilation$NC.Overwrite)){
+    settings$state.data.assimilation$NC.Overwrite <- FALSE
+  }
+  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
+  
+  #allow conflict? meaning allow full year nc export.
+  if(is.null(settings$state.data.assimilation$FullYearNC)){
+    settings$state.data.assimilation$FullYearNC <- FALSE
+  }
+  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
   
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
