@@ -1,6 +1,6 @@
 Package: PEcAn.SIBCASA
 Type: Package
-Title: PEcAn package for integration of the SiBCASA model
+Title: PEcAn Package for Integration of the SiBCASA Model
 Version: 0.0.1
 Date: 2021-10-07
 Authors@R: c(person("Rob", "Kooper", role = "cre",

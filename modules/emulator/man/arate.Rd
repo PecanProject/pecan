@@ -6,6 +6,9 @@
 \usage{
 arate(x)
 }
+\arguments{
+\item{x}{vector of MCMC samples}
+}
 \description{
 Acceptance rate
 }

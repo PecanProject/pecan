@@ -33,24 +33,20 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 Imports:
     abind (>= 1.4.5),
+    curl,
     dplyr,
     lubridate (>= 1.6.0),
     magrittr,
     ncdf4 (>= 1.15),
     PEcAn.logger,
-    PEcAn.remote,
-    purrr,
-    RCurl,
     rlang,
     stringi,
-    units,
-    XML
+    units
 Suggests:
     coda (>= 0.18),
     data.table,
     ggplot2,
     MASS,
-    PEcAn.DB,
     randtoolbox,
     raster,
     rjags,

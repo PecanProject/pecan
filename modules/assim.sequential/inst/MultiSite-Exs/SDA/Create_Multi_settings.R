@@ -30,6 +30,9 @@ template <- Settings(list(
     process.variance = TRUE,
     adjustment = FALSE,
     censored.data = FALSE,
+    FullYearNC = TRUE,
+    NC.Overwrite = FALSE,
+    NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
     Localization.FUN = "Local.support",
     scalef = 1,
@@ -38,6 +41,7 @@ template <- Settings(list(
       #you could add more state variables here
       variable = structure(list(variable.name = "AbvGrndWood", unit = "MgC/ha", min_value = 0, max_value = 9999)),
       variable = structure(list(variable.name = "LAI", unit = "", min_value = 0, max_value = 9999)),
+      variable = structure(list(variable.name = "SoilMoistFrac", unit = "", min_value = 0, max_value = 1)),#soilWFracInit
       variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999))
     )),
     forecast.time.step = "year",
@@ -163,7 +167,8 @@ template <- Settings(list(
     name = "geo.bu.edu",
     usr = "zhangdc",
     folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    prerun = "module load R/4.0.5",
+    prerun = "module load R/4.1.2",
+    cdosetup = "module load cdo/2.0.6",
     qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
     qsub.jobid = "Your job ([0-9]+) .*",
     qstat = "qstat -j @JOBID@ || echo DONE",
@@ -249,19 +254,13 @@ for (i in 1:nSite) {
   
   #need a better way to code it up
   #test works!!!!
-  ERA5_Path <- structure(list(
-    path = temp_full_paths[1],
-    path = temp_full_paths[2],
-    path = temp_full_paths[3],
-    path = temp_full_paths[4],
-    path = temp_full_paths[5],
-    path = temp_full_paths[6],
-    path = temp_full_paths[7],
-    path = temp_full_paths[8],
-    path = temp_full_paths[9],
-    path = temp_full_paths[10]
-  ))
-  settings[[i]]$run$inputs$met$path <- ERA5_Path
+  #populated IC file paths into settings
+  Create_mult_list <- function(list.names, paths){
+    out <- as.list(paths)
+    names(out) <- list.names
+    out
+  }
+  settings[[i]]$run$inputs$met$path <- Create_mult_list(rep("path", length(temp_full_paths)), temp_full_paths)
   
   #code on met_start and met_end
   settings[[i]]$run$site$met.start <- start_date

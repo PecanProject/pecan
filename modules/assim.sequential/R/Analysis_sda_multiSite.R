@@ -242,6 +242,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
               niter = 50000,
               progressBar = TRUE)
     #dat.tobit2space <- do.call(rbind, dat.tobit2space)
+    save(dat.tobit2space, file = file.path(settings$outdir, paste0('censored',t,'.Rdata')))
     ## update parameters
     mu.f <-
       colMeans(dat.tobit2space[, grep("muf", colnames(dat.tobit2space))])
