@@ -123,9 +123,15 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   }
   joined.soil <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
   joined.soil <- dplyr::left_join(joined.soil, perbulksample, by = "horizonID")
-  
+  joined.soil<-joined.soil[joined.soil$bulkDensSampleType=="Regular",]
+  joined.soil<-joined.soil[joined.soil$biogeoSampleType=="Regular",]
+  joined.soil<-joined.soil[!duplicated(joined.soil$biogeoTopDepth),]
+  joined.soil<-dplyr::select(joined.soil,.data$collectDate.x,.data$siteID.x,.data$biogeoTopDepth,.data$biogeoBottomDepth,.data$bulkDensExclCoarseFrag,.data$carbonTot,.data$bulkDensSampleType,.data$biogeoSampleType)
+  joined.soil.30 <- joined.soil[joined.soil$biogeoBottomDepth<=40,] #use maxi 40 here to allow more top layeres to be considered
+  soilcarbon.30 <- sum(joined.soil.30$bulkDensExclCoarseFrag * joined.soil.30$carbonTot * 0.001 *  (joined.soil.30$biogeoBottomDepth - joined.soil.30$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
   #remove NA from soil data
   soilcarbon.per.m2 <- sum(joined.soil$bulkDensExclCoarseFrag * joined.soil$carbonTot * 0.001 *  (joined.soil$biogeoBottomDepth - joined.soil$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
+  frac_30 <- soilcarbon.30/soilcarbon.per.m2
   
   #Create veg_info object as a list
   veg_info <- list()
@@ -133,7 +139,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   veg_info[[2]] <- filter.date
   #Set plot size as veg_info[[1]]
   veg_info[[1]] <- filter.herb
-  veg_info[[3]] <- soilcarbon.per.m2
+  veg_info[[3]] <- frac_30
   veg_info[[4]] <- joined.soil
   
   return(veg_info)
