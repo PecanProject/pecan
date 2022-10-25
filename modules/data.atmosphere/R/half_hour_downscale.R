@@ -315,19 +315,8 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     }
   }
   data.hrly$curr <- curr
-<<<<<<< HEAD
-  #Clean up data frame 
-  
-  data.hrly <- data.hrly %>% dplyr::select("time", "lead_var") %>%
-
-=======
   #Clean up data frame
-<<<<<<< HEAD
-  data.hrly <- data.hrly %>% dplyr::select("time", "lead_var") %>%
-=======
-  data.hrly <- data.hrly %>% dplyr::select("time", .data$curr) %>%
->>>>>>> c5f4e03292220065004cd44a77685b4dd23fed0c
->>>>>>> 2e44313a1 (merge main)
+  data.hrly <- data.hrly %>% dplyr::select("time", "curr") %>%
     dplyr::arrange(.data$time)
   
   names(data.hrly) <- c("time", varName)
