@@ -59,6 +59,11 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
 - `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
 - fqdn() can access hostname on Windows (#3044 fixed by #3058)
+- The model2netcdf_SIPNET function can now export full year nc files by using 
+  the cdo_setup argument in the template job file. In detail, people will need
+  to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
+  are in the Create_Multi_settings.R script. (#3052)
+
 
 ### Changed
 
