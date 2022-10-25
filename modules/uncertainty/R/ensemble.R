@@ -438,6 +438,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                          site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
     }
     
+    #if ensemble folders do not exist create them
+    for(j in 1:length(run.id)){
+      if(!file.exists(file.path(settings$rundir, run.id[[j]]))){
+        dir.create(file.path(settings$rundir, run.id[[j]]))
+      }
+      
+    }
     
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
@@ -448,9 +455,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            stop.time =restart$stop.time, 
                            settings = settings,
                            new.state = new.state[i, ], 
-                           new.params = new.params[[i]], 
+                           new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
-                           RENAME = TRUE)
+                           RENAME = FALSE)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params
