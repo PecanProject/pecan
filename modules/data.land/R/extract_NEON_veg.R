@@ -1,7 +1,7 @@
 #' extract_NEON_veg
 #' @title extract_NEON_veg
 #' @name extract_NEON_veg
-#' 
+#'
 #' @param lon site longitude, passed from ic_process
 #' @param lat site latitude, passed from ic_process
 #' @param start_date "YYYY-MM-DD", used to download NEON datasets for desired time period
@@ -10,16 +10,15 @@
 #' @param neonsites prepared datasets table from NEON using neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 #' @param ... Additional parameters
 #' 
-#'
+#' 
 #' @return veg_info object to be passed to extract_veg within ic_process
 #' @author Alexis Helgeson and Michael Dietze
+#'
 #' @export
-#' 
 #' @importFrom rlang .data
-#' 
-#' @examples start_date = as.Date("2020-01-01") 
+#' @examples 
+#' start_date = as.Date("2020-01-01") 
 #' end_date = as.Date("2021-09-01")
-
 extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsites = NULL, ...){
   
   #Function to grab the first measurements for each plot between start and end date.
