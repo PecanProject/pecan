@@ -49,7 +49,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   if(is.null(neonsites)){
     neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   }
-  neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns
+  neonsites <- dplyr::select(neonsites, "siteCode", "siteLatitude", "siteLongitude") #select for relevant columns
   betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
   mindist <- min(betyneondist)
   distloc <- match(mindist, betyneondist)
@@ -66,7 +66,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
     #Filter joined.veg for required information: DBH, tree height, and species
-    filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
+    filter.veg <- dplyr::select(joined.veg, "siteID.x", "plotID.x", "subplotID", "taxonID", "scientificName", "taxonRank", "date.y", "stemDiameter", "height")
     #Filter for most recent record
     filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
     filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
@@ -85,7 +85,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   }else{
     perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
-    filter.herb <- dplyr::select(joined.herb, .data$siteID.y, .data$plotID.x, .data$subplotID, .data$plotType.x, .data$clipArea, .data$dryMass, .data$collectDate.y)
+    filter.herb <- dplyr::select(joined.herb, "siteID.y", "plotID.x", "subplotID", "plotType.x", "clipArea", "dryMass", "collectDate.y")
     #Create year column
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions
@@ -126,8 +126,8 @@ if(is.null(perbulksample) | is.null(perbiogeosample) | is.null(perarchivesample)
   joined.soilmg<-joined.soilmg[joined.soilmg$bulkDensSampleType=="Regular",]
   joined.soilmg<-joined.soilmg[joined.soilmg$biogeoSampleType=="Regular",]
   joined.soilmg<-joined.soilmg[!duplicated(joined.soilmg$biogeoTopDepth),]
-  joined.soilmg<-dplyr::select(joined.soilmg,.data$collectDate.x,.data$siteID.x,.data$biogeoTopDepth,.data$biogeoBottomDepth,.data$bulkDensExclCoarseFrag,.data$carbonTot,.data$bulkDensSampleType,.data$biogeoSampleType)
-  joined.soilmg.top30 <- joined.soilmg[joined.soilmg$biogeoBottomDepth<=30,] 
+  joined.soilmg<-dplyr::select(joined.soilmg,"collectDate.x","siteID.x","biogeoTopDepth","biogeoBottomDepth","bulkDensExclCoarseFrag","carbonTot","bulkDensSampleType","biogeoSampleType")
+  joined.soilmg.top30 <- joined.soilmg[joined.soilmg$biogeoBottomDepth<=35,] #set maxi 35 here to allow more top layers to be considered, e.g. 0-31cm
   soilcarbon.top30 <- sum(joined.soilmg.top30$bulkDensExclCoarseFrag * joined.soilmg.top30$carbonTot * 0.001 *  (joined.soilmg.top30$biogeoBottomDepth - joined.soilmg.top30$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
   #remove NA from soil data
   soilcarbon.whole <- sum(joined.soilmg$bulkDensExclCoarseFrag * joined.soilmg$carbonTot * 0.001 *  (joined.soilmg$biogeoBottomDepth - joined.soilmg$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
@@ -150,7 +150,7 @@ if(is.null(perbulksample) | is.null(perbiogeosample) | is.null(perarchivesample)
     bulkDensExclCoarseFrag <- bulkDensExclCoarseFrag[Ind]
     
     #calculate bulk density (need to do: more precise depth matching)
-    bulkDensity <- mean(bulkDensExclCoarseFrag[which(bulkDensBottomDepth <= 30)])
+    bulkDensity <- mean(bulkDensExclCoarseFrag[which(bulkDensBottomDepth <= 35)]) #set maxi 35 here to allow more bulk density samples to be considered, e.g. 23-33 cm (there might be a typo for 0-110 cm for JORN sites, so only bulk density for 22-33 cm is available)
     
     #if there is no bulk density measurements above 30cm.
     if(is.na(bulkDensity)){
@@ -170,7 +170,7 @@ if(is.null(perbulksample) | is.null(perbiogeosample) | is.null(perarchivesample)
         joined.soil <- dplyr::left_join(sls_soilChemistry, sls_soilCoreCollection, by = "sampleID")
         
         #select columns
-        joined.soil <- dplyr::select(joined.soil, .data$siteID.x, .data$plotID.x, .data$plotType.x, .data$organicCPercent, .data$collectDate.x, .data$sampleTopDepth, .data$sampleBottomDepth)
+        joined.soil <- dplyr::select(joined.soil, "siteID.x", "plotID.x", "plotType.x", "organicCPercent", "collectDate.x", "sampleTopDepth", "sampleBottomDepth")
         joined.soil$year <- lubridate::year(joined.soil$collectDate.x)
         colnames(joined.soil) <- c("site_name", "plot", "plotType", "organicCPercent", "date", "top", "bottom", "year")
         
@@ -181,6 +181,7 @@ if(is.null(perbulksample) | is.null(perbiogeosample) | is.null(perarchivesample)
         
         #calculate soil carbon
         joined.soil$bulkDensity <- bulkDensity
+        joined.soil$frac_30 <- frac_30
         #convert from g/cm2 to kg/m2, note that we have to divide by 100 because of percentage
         joined.soil$SoilCarbon <- (joined.soil$organicCPercent * joined.soil$bulkDensity)*30*100/frac_30/1000
       }
