@@ -67,12 +67,17 @@ check.inputs <- function(settings) {
         }
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
-        id <- PEcAn.DB::dbfile.id(
-          "Input",
-          settings$run$inputs[[tag]][["path"]],
-          dbcon,
-          hostname)
-        if (!is.na(id)) {
+        #adding for to loop over ensemble member filepaths 
+        id <- list()
+        path <- settings$run$inputs[[tag]][["path"]]
+        for (j in 1:length(path)){
+          id[j] <- PEcAn.DB::dbfile.id(
+            "Input",
+            path[[j]],
+            dbcon,
+            hostname)
+        }
+        if (any(!is.na(id))) {
           settings$run$inputs[[tag]][["id"]] <- id
         }
       }

@@ -605,18 +605,27 @@ convert_input <-
     }
     
     # create curl options
+    curloptions <- list(followlocation = TRUE)
     if (!is.null(browndog$username) && !is.null(browndog$password)) {
-      userpwd <- paste(browndog$username, browndog$password, sep = ":")
-      curloptions <- list(userpwd = userpwd, httpauth = 1L)
+      curloptions$userpwd = paste(
+        browndog$username, browndog$password, sep = ":")
+      curloptions$httpauth = 1L
     }
-    curloptions <- c(curloptions, followlocation = TRUE)
     
     # check if we can do conversion
-    out.html <- RCurl::getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",
-                              browndog$inputtype), .opts = curloptions)
-    if (outputtype %in% unlist(strsplit(out.html, "\n"))) {
-      PEcAn.logger::logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
-                        "through Brown Dog"))
+    h <- curl::new_handle()
+    curl::handle_setopt(h, .list = curloptions)
+    out.html <- readLines(
+      curl::curl(
+        url = paste0(
+          "http://dap-dev.ncsa.illinois.edu:8184/inputs/",
+          browndog$inputtype),
+        handle = h))
+    if (outputtype %in% out.html) {
+      PEcAn.logger::logger.info(
+        "Conversion from", browndog$inputtype,
+        "to", outputtype,
+        "through Brown Dog")
       conversion <- "browndog"
     }
   }
@@ -637,13 +646,16 @@ convert_input <-
     }
     
     # post zipped file to Brown Dog
-    html <- RCurl::postForm(url, fileData = RCurl::fileUpload(zipfile), .opts = curloptions)
+    h <- curl::new_handle()
+    curl::handle_setopt(handle = h, .list = curloptions)
+    curl::handle_setform(handle = h, fileData = curl::form_file(zipfile))
+    html <- readLines(curl::curl(url = url, handle = h))
     link <- XML::getHTMLLinks(html)
     file.remove(zipfile)
     
     # download converted file
     outfile <- file.path(outfolder, unlist(strsplit(basename(link), "_"))[2])
-    PEcAn.utils::download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)
+    PEcAn.utils::download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry = TRUE)
     
     # unzip downloaded file if necessary
     if (file.exists(outfile)) {

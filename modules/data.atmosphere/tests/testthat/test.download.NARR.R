@@ -20,6 +20,7 @@ test_that("NARR download works as expected", {
   # Download is too slow for travis
   # Please run locally to test!
   skip_on_ci()
+  skip_if_offline()
   r <- download.NARR_site(outfolder, start_date, end_date, lat.in, lon.in,
                           progress = TRUE, parallel = TRUE, ncores = 2)
 

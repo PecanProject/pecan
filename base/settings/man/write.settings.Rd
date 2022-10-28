@@ -15,7 +15,7 @@ write.settings(settings, outputfile, outputdir = settings$outdir)
 }
 \description{
 Takes in a settings object, performs a series of checks,
- fixes & updates settings and produces pecan.CHECKED.xml
+fixes & updates settings and produces pecan.CHECKED.xml
 }
 \author{
 Ryan Kelly
