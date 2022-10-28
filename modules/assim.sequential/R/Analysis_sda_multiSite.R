@@ -242,6 +242,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
               niter = 50000,
               progressBar = TRUE)
     #dat.tobit2space <- do.call(rbind, dat.tobit2space)
+    save(dat.tobit2space, file = file.path(settings$outdir, paste0('censored',t,'.Rdata')))
     ## update parameters
     mu.f <-
       colMeans(dat.tobit2space[, grep("muf", colnames(dat.tobit2space))])
@@ -376,7 +377,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     dimensions.tobit = list(X = length(elements.W.Data),
                             X.mod = ncol(X),
                             Q = c(nrow(aqq), ncol(aqq))
-                            )
+    )
     
     # Contants defined in the model
     constants.tobit <-
@@ -401,13 +402,35 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         r = solve(R)
       )
 
-  # This is the first step in making the nimble model - Nimble does some preliminary checks on the code    
-    model_pred <- nimbleModel(GEF.MultiSite.Nimble,
-                              data = data.tobit,
-                              dimensions = dimensions.tobit,
-                              constants = constants.tobit,
-                              inits = inits.pred,
-                              name = 'base')
+  # This is the first step in making the nimble model - Nimble does some preliminary checks on the code 
+    #special case for YN == 1 to run nimble model without for loops around nH
+    if(constants.tobit$YN == 1){
+      #add error message if trying to run SDA with 1 obs and 1 state variable no model currently exists to handle this case, need to remove for loop from GEF_singleobs_nimble for this case and save new model
+      if(constants.tobit$N == 1){
+        PEcAn.logger::logger.error("No model exists for assimilating 1 observation and 1 state variable, add more state variables or edit GEF_singleobs_nimble to work with 1 state variable")
+      }
+      #slight adjustment to inputs for nimble function when running with 1 obs
+      inits.pred$qq <- 0.368
+      dimensions.tobit$y.censored <- 1
+      dimensions.tobit$y.ind <- 1
+      constants.tobit$q.type <- NULL
+      
+      model_pred <- nimbleModel(GEF_singleobs_nimble,
+                                data = data.tobit,
+                                dimensions = dimensions.tobit,
+                                constants = constants.tobit,
+                                inits = inits.pred,
+                                name = 'base')
+    }else{
+      model_pred <- nimbleModel(GEF.MultiSite.Nimble,
+                                data = data.tobit,
+                                dimensions = dimensions.tobit,
+                                constants = constants.tobit,
+                                inits = inits.pred,
+                                name = 'base')
+    }
+    
+    
     
     
     model_pred$initializeInfo()
@@ -417,20 +440,23 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     conf$addMonitors(c("X","Xall","q","Xs")) 
     samplerNumberOffset <<- length(conf$getSamplers())
     
-    for(i in 1:length(y.ind)) {
-      node <- paste0('y.censored[',i,']')
-      conf$addSampler(node, 'toggle', control=list(type='RW'))
-    }
-    
+      for(i in 1:length(y.ind)) {
+        node <- paste0('y.censored[',i,']')
+        conf$addSampler(node, 'toggle', control=list(type='RW'))
+      }
+
+
     conf$printSamplers()
 
     Rmcmc <<- buildMCMC(conf)
     Cmodel <<- compileNimble(model_pred)
-    Cmcmc <<- compileNimble(Rmcmc, project = model_pred)
+    Cmcmc <<- compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
     
     for(i in 1:length(y.ind)) {
-      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
-    }
+        valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+      }
+
+    
     
     save(
       inits.pred,

@@ -1,0 +1,14 @@
+<pecan>
+  <!-- edit this! -->
+  <outdir>/tmp/test/</outdir>
+  <database>
+    <bety>
+      <userid>bety</userid>
+      <user>bety</user>
+      <!-- put your bety password here -->
+      <passwd>bety</passwd>
+      <host>localhost</host>
+      <name>bety</name>
+   </bety>
+ </database>
+</pecan>

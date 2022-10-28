@@ -30,16 +30,16 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   
   psibar <- NULL
   if (isotropic) {
-    psibar <- median(psi)
+    psibar <- stats::median(psi)
   } else {
     if (is.matrix(psi)) {
-      psibar <- apply(psi, 2, median)
+      psibar <- apply(psi, 2, stats::median)
     } else {
       psibar <- psi
     }
   }
-  tauwbar <- median(tauw)
-  S <- calcSpatialCov(gp$d, psibar, tauwbar)
+  tauwbar <- stats::median(tauw)
+  S <- PEcAn.emulator::calcSpatialCov(gp$d, psibar, tauwbar)
   # S12 <- Sprime[1:(npred*dim),(npred*dim+1):(n.unique+npred*dim)] S22 <-
   # Sprime[(npred*dim+1):(n.unique+npred*dim),(npred*dim+1):(n.unique+npred*dim)]
   S22inv <- solve(S)
@@ -51,8 +51,8 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   ybar <- tapply(gp$y, gp$x.id, mean)
   k    <- S22inv %*% (ybar - ey)
   
-  nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
-      x = gp$x.compact, rng = rng, splinefcns = splinefcns)
+  stats::nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
+      x = gp$x.compact, rng = rng, splinefuns = splinefuns)
 } # minimize.GP
 
 
@@ -69,10 +69,10 @@ minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
 ##' @param psi spatial corr
 ##' @param x Name of variable to plot on X axis
 ##' @param rng range
-##' @param splinefcns spline functions
+##' @param splinefuns spline functions
 ##' 
 ##' @author Michael Dietze 
-gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
+gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefuns) {
   
   ## second calc value
   S12 <- sapply(seq_along(k), function(i) {
@@ -80,14 +80,14 @@ gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
   })
   yprime <- mu + sum(S12 * k)
   
-  if (!is.null(splinefcns)) {
+  if (!is.null(splinefuns)) {
     ## add trend surface back on
     y0 <- splinefuns[[length(xnew) + 1]]
     f <- sapply(seq_along(xnew), function(j) {
       splinefuns[[j]](xnew[j])
     })
     y.trend <- y0 + sum(f - y0)
-    yprime <- yprime + ytrend
+    yprime <- yprime + y.trend
   }
   
   return(yprime)
@@ -143,13 +143,13 @@ get_ss <- function(gp, xnew, pos.check) {
         return(-Inf)
       }
       repeat {
-        SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+        SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
         if (SS[igp] > 0) {
           break
         }
       }
     }else{
-      SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
+      SS[igp] <- stats::rnorm(1, Y$fit, Y$se.fit)
     }
   }
   return(SS)
@@ -176,8 +176,6 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
   
 } # get_y
 
-# is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
-# z>runif(1) return(acceptance) }
 
 ##' @name is.accepted
 ##' @title is.accepted
@@ -189,7 +187,7 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 is.accepted <- function(ycurr, ynew, format = "lin") {
   a <- exp(ynew - ycurr)
-  a > runif(1)
+  a > stats::runif(1)
 } # is.accepted
 
 ##' Function to sample from a GP model
@@ -206,7 +204,7 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param rng range of knots
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 ##' @param mix each = jump each dim. independently, joint = jump all at once 
-##' @param splinefcns spline functions, not used
+##' @param splinefuns spline functions, not used
 ##' @param jmp0 initial jump variances
 ##' @param ar.target acceptance rate target
 ##' @param settings PEcAn settings list
@@ -218,7 +216,7 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param resume.list list of needed info if we are running the chain longer
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
+mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefuns = NULL,
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, hyper.pars, resume.list = NULL) {
   
@@ -329,7 +327,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       for (i in seq_len(dim)) {
         ## propose new
         repeat {
-          xnew[i] <- rnorm(1, xcurr[[i]], p(jmp)[i])
+          # xnew[i] <- stats::rnorm(1, xcurr[[i]], PEcAn.emulator::p(jmp)[i])
+          xnew[i] <- stats::rnorm(1, xcurr[[i]], diag(jcov)[i])
           if (bounded(xnew[i], rng[i, , drop = FALSE])) {
             break
           }
@@ -385,26 +384,3 @@ bounded <- function(xnew, rng) {
   up <- xnew < rng[, 2]
   return(all(up & down))
 } # bounded
-
-
-##' @name plot.mvjump
-##' @title plot.mvjump
-##' @export
-##'
-##' @param jmp jump parameter
-##' 
-##' @author Michael Dietze
-plot.mvjump <- function(jmp) {
-  par(mfrow = c(1, 2))
-  plot(attr(jmp, "history")[, 1], ylab = "Jump Parameter", main = "Jump Parameter")
-  abline(h = mean(attr(jmp, "history")[, 1], na.rm = TRUE))
-  text(0.9 * length(attr(jmp, "history")[, 1]), 
-       min(attr(jmp, "history")[, 1]) + 0.8 * 
-         (max(attr(jmp, "history")[, 1]) - min(attr(jmp, "history")[, 1])), 
-       paste("mean=", mean(attr(jmp, "history")[, 1])))
-  plot(attr(jmp, "arate"), ylab = "Acceptance Rate", 
-       main = "Acceptance Rate", 
-       ylim = c(0, 1))
-  abline(h = attr(jmp, "target"))
-  abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
-} # plot.mvjump
