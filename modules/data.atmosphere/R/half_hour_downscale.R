@@ -230,7 +230,7 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   }
   
   #ShortWave.ds <- dplyr::select(data.hrly, time, surface_downwelling_shortwave_flux_in_air)
-  ShortWave.ds <- data.hrly %>% select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
+  ShortWave.ds <- data.hrly %>% select("time", "surface_downwelling_shortwave_flux_in_air")
   # data.hrly$group_6hr <- NA
   # 
   # group <- 0
@@ -255,7 +255,7 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   #   dplyr::ungroup() %>%
   #   dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
   #   dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
-  
+
   return(ShortWave.ds)
   
 }
@@ -316,7 +316,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   }
   data.hrly$curr <- curr
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", .data$curr) %>%
+  data.hrly <- data.hrly %>% dplyr::select("time", "curr") %>%
     dplyr::arrange(.data$time)
   
   names(data.hrly) <- c("time", varName)

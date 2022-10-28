@@ -6,6 +6,7 @@ teardown(unlink(outfolder, recursive = TRUE))
 
 test_that("ICOS Drought 2018 download works", {
   skip_on_ci()
+  skip_if_offline()
 
   start_date <- "2016-01-01"
   end_date <- "2017-01-01"
@@ -18,6 +19,7 @@ test_that("ICOS Drought 2018 download works", {
 
 test_that("ICOS ETC download works", {
   skip_on_ci()
+  skip_if_offline()
 
   start_date <- "2019-01-01"
   end_date <- "2020-01-01"
