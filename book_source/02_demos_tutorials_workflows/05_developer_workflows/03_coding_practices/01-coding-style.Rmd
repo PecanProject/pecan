@@ -34,3 +34,12 @@ _Do not_ use `@importFrom package function` or, worse yet, `@import package`.
 _Do not_ add packages to `Depends`.
 In general, try to avoid adding new dependencies (especially ones that depend on system libraries) unless they are necessary or already widely used in PEcAn (e.g. GDAL, NetCDF, XML, JAGS, `dplyr`).
 For a more thorough and nuanced discussion, see the [package dependencies appendix](#package-dependencies).
+
+
+# dplyr
+
+When running `devtools::check()` a common warning relating to `dplyr` code is "no visible binding for global variable 'x'"
+
+In [data-masking](https://dplyr.tidyverse.org/articles/programming.html#data-masking) situations (e.g. `mutate()`, `filter()`), you can eliminate this warning by using the `.data` pronoun.  For example, instead of `df %>% mutate(newvar = oldvar + 2)`, use `df %>% mutate(newvar = .data$oldvar + 2)`.
+
+In [tidy-select](https://dplyr.tidyverse.org/articles/programming.html#data-masking) situations (e.g. `select()`, `rename()`), you can eliminate this warning by using strings instead of naked column names. For example, instead of `df %>% select(y)` use `df %>% select("y")`.  Using `.data` inside of `select()` is [deprecated as of tidyselect v1.2.0](https://tidyselect.r-lib.org/news/index.html#lifecycle-changes-1-2-0)

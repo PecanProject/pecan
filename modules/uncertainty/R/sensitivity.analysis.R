@@ -120,7 +120,12 @@ get.elasticity <- function(sensitivity, samples, outputs) {
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
-##' sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+##'sensitivity.analysis(
+##'  trait.samples[[pft$name]],
+##'  sa.samples[[pft$name]], 
+##'  sa.agb[[pft$name]], 
+##'  pft$outdir
+##')
 ##' }
 sensitivity.analysis <- function(trait.samples, sa.samples, sa.output, outdir) {
   traits <- names(trait.samples)

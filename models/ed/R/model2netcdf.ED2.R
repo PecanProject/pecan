@@ -343,12 +343,10 @@ read_T_files <-
   
   if (yr < strftime(start_date, "%Y")) {
     PEcAn.logger::logger.info(yr, "<", strftime(start_date, "%Y"))
-    next
   }
   
   if (yr > strftime(end_date, "%Y")) {
     PEcAn.logger::logger.info(yr, ">", strftime(end_date, "%Y"))
-    next
   }
   
   n <- length(ysel)

@@ -82,6 +82,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - `convert.input` is moved from PEcAn.utils to PEcAn.DB and renamed as `convert_input`.
   This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
   (#3026; @nanu1605)
+- Internal changes to keep up to date with tidyselect v1.2.0
 
 ### Removed
 
