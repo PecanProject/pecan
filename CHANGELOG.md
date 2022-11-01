@@ -22,6 +22,7 @@ see if you need to change any of these:
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
 
 ### Added
+- Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
 
 - `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
   package the version that was provided with this release and the version that
@@ -30,6 +31,8 @@ see if you need to change any of these:
 - Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
   (#3002; @nanu1605)
 - Initial LDNDC model coupling
+- `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
+- `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
@@ -51,8 +54,16 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   (#2989; @nanu1605)
 - Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034, #3033)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
+- Fixed bug in model2netcdf.SIPNET that caused LE to be overestimaed 10^3 (#3036)
 - Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
+- `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
+- fqdn() can access hostname on Windows (#3044 fixed by #3058)
+- The model2netcdf_SIPNET function can now export full year nc files by using 
+  the cdo_setup argument in the template job file. In detail, people will need
+  to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
+  are in the Create_Multi_settings.R script. (#3052)
+
 
 ### Changed
 
@@ -71,6 +82,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - `convert.input` is moved from PEcAn.utils to PEcAn.DB and renamed as `convert_input`.
   This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
   (#3026; @nanu1605)
+- Internal changes to keep up to date with tidyselect v1.2.0
 
 ### Removed
 

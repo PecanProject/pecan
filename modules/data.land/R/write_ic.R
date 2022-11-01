@@ -30,9 +30,8 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
   #--------------------------------------------------------------------------------------------------#
   # Match PFTs
-  
+  #revisit later need to fix species matching first
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-  
   # NOTE : match_pft may return NAs for unmatched dead trees
   pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
 

@@ -55,6 +55,13 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
   
+  # create cdo specific settings
+  cdosetup <- ""
+  if (!is.null(settings$host$cdosetup)) {
+    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+  }
+  
+  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -64,6 +71,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
@@ -78,6 +86,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
+  
+  if(is.null(settings$state.data.assimilation$NC.Prefix)){
+    settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
+  }
+  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
+  
+  #overwrite argument
+  if(is.null(settings$state.data.assimilation$NC.Overwrite)){
+    settings$state.data.assimilation$NC.Overwrite <- FALSE
+  }
+  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
+  
+  #allow conflict? meaning allow full year nc export.
+  if(is.null(settings$state.data.assimilation$FullYearNC)){
+    settings$state.data.assimilation$FullYearNC <- FALSE
+  }
+  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
   
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
@@ -466,9 +491,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
+
   else if (length(settings$run$inputs$poolinitcond$path)>0) {
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
+
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
@@ -478,7 +505,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "g m-2", "g m-2")
       }
       ## laiInit m2/m2
-      lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
       }

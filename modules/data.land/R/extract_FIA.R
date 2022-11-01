@@ -13,7 +13,10 @@
 ##' @author Istem Fer
 extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms, ...){
   
-
+  #Set start_date and end_date as Date objects
+  start_date = as.Date(start_date)
+  end_date = as.Date(end_date)
+  
   veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
