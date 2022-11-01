@@ -49,7 +49,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   if(is.null(neonsites)){
     neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   }
-  neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns
+  neonsites <- dplyr::select(neonsites, "siteCode", "siteLatitude", "siteLongitude") #select for relevant columns
   betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
   mindist <- min(betyneondist)
   distloc <- match(mindist, betyneondist)
@@ -66,7 +66,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
     #Filter joined.veg for required information: DBH, tree height, and species
-    filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
+    filter.veg <- dplyr::select(joined.veg, "siteID.x", "plotID.x", "subplotID", "taxonID", "scientificName", "taxonRank", "date.y", "stemDiameter", "height")
     #Filter for most recent record
     filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
     filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
@@ -85,7 +85,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   }else{
     perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
-    filter.herb <- dplyr::select(joined.herb, .data$siteID.y, .data$plotID.x, .data$subplotID, .data$plotType.x, .data$clipArea, .data$dryMass, .data$collectDate.y)
+    filter.herb <- dplyr::select(joined.herb, "siteID.y", "plotID.x", "subplotID", "plotType.x", "clipArea", "dryMass", "collectDate.y")
     #Create year column
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions

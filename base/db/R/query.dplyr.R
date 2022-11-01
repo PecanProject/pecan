@@ -134,14 +134,14 @@ workflow <- function(bety, workflow_id) {
 #' @export
 runs <- function(bety, workflow_id) {
   Workflows <- workflow(bety, workflow_id) %>%
-    dplyr::select(.data$workflow_id, .data$folder)
+    dplyr::select("workflow_id", "folder")
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
-    dplyr::select(ensemble_id = .data$id, .data$workflow_id) %>%
+    dplyr::select(ensemble_id = "id", "workflow_id") %>%
     dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
-    dplyr::select(run_id = .data$id, .data$ensemble_id) %>%
+    dplyr::select(run_id = "id", "ensemble_id") %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
-  dplyr::select(Runs, -.data$workflow_id, -.data$ensemble_id) %>%
+  dplyr::select(Runs, -"workflow_id", -"ensemble_id") %>%
     return()
 }  # runs
 
@@ -161,7 +161,7 @@ get_workflow_ids <- function(bety, query, all.ids = FALSE) {
     ids <- workflows(bety, ensemble = FALSE) %>%
       dplyr::distinct(.data$workflow_id) %>%
       dplyr::collect() %>%
-      dplyr::pull(.data$workflow_id) %>%
+      dplyr::pull("workflow_id") %>%
       sort(decreasing = TRUE)
   }
   return(ids)
@@ -188,7 +188,7 @@ get_run_ids <- function(bety, workflow_id) {
   if (workflow_id != "") {
     runs <- runs(bety, workflow_id)
     if (dplyr.count(runs) > 0) {
-    run_ids <- dplyr::pull(runs, .data$run_id) %>% sort()
+    run_ids <- dplyr::pull(runs, "run_id") %>% sort()
     }
   }
   return(run_ids)
@@ -269,7 +269,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   nc <- ncdf4::nc_open(ncfile)
 
   globalDF <- tidyr::gather(out, key = "var_name", value = "vals", names(out)[names(out) != "posix"]) %>%
-    dplyr::rename(dates = .data$posix)
+    dplyr::rename(dates = "posix")
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id
   globalDF$xlab <- "Time"

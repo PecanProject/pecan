@@ -6,6 +6,7 @@ teardown(unlink(tmpdir, recursive = TRUE))
 
 test_that("GFDL server is reachable", {
   skip_on_ci()
+  skip_if_offline()
 
   test_url <- paste0("http://nomads.gfdl.noaa.gov:9192/opendap/",
                      "CMIP5/output1/NOAA-GFDL/GFDL-CM3/rcp45/3hr/",
@@ -24,6 +25,7 @@ test_that("GFDL server is reachable", {
   test_that("download works and returns a valid CF file", {
     # Download is too slow for Travis -- please run locally before committing!
     skip_on_ci()
+    skip_if_offline()
 
 
     PEcAn.logger::logger.setLevel("WARN")
