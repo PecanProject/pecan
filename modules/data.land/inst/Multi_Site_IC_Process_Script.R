@@ -18,7 +18,7 @@ for (i in 1:length(settings)) {
   temp_settings <- settings[[i]]
   print(temp_settings$run$site$id)
   print(i)
-  temp_outdir <- paste0(outdir,as.character(temp_settings$run$site$id))
+  temp_outdir <- file.path(outdir,as.character(temp_settings$run$site$id))
   if(dir.exists(temp_outdir)){
     next
   }else{
