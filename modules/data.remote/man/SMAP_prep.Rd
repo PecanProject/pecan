@@ -22,8 +22,7 @@ SMAP_prep(
 
 \item{End_Date}{End date of SDA workflow.}
 
-\item{Time_Step}{A list containing time step and number of time step,
-which allows time step to be any years or days.}
+\item{Time_Step}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
 \item{Outdir}{Where the final CSV file, and the CSV file from GEE are stored.}
 

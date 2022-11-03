@@ -3,16 +3,14 @@
 #' @param Site_Info Bety list of site info including site_id, lon, and lat.
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
-#' @param Time_Step A list containing time step and number of time step,
-#' which allows time step to be any years or days.
+#' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param Outdir Where the final CSV file, and the CSV file from GEE are stored.
 #' @param Search_Window search window for locate available SMP values.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #' @param Update_CSV Decide if we want to update current CSV file given an updated SMAP_gee.csv file
 #'
 #' @return A data frame containing SMAP smp and sd for each site and each time step.
-#' @export If Export_CSV is TRUE, then it will export an CSV file
-#' containing extracted AGB data associated with each site and each time step.
+#' @export
 #'
 #' @examples
 #' @author Dongchen Zhang

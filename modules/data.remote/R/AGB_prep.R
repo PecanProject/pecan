@@ -9,8 +9,7 @@
 #' @param Allow_download If data is missing, should we download the missing data?
 #'
 #' @return A data frame containing AGB median and sd for each site and each time step.
-#' @export if Export_CSV is TRUE, then it will export an CSV file
-#' containing extracted AGB data associated with each site and each time step.
+#' @export
 #'
 #' @examples
 #' @author Dongchen Zhang
