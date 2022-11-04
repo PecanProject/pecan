@@ -50,7 +50,7 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
         
         SMAP_CSV <- rbind(SMAP_CSV, tibble(date, site_id, lat, lon, smp, sd))#in date, id, lat, lon, smp, sd
       }
-      if(as.logical((Export_CSV)){
+      if(as.logical((Export_CSV))){
         write.csv(SMAP_CSV, file = file.path(Outdir, "SMAP.csv"), row.names = F)
       }
     }
