@@ -83,8 +83,8 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
   
   #Calculate SMAP for each time step and site.
   #loop over time and site
-  for (t in time_points) {
-    t <- as.Date(t)#otherwise the t will be number instead of date.
+  for (i in 1:length(time_points)) {
+    t <- time_points[i]#otherwise the t will be number instead of date.
     for (id in Site_Info$site_id) {
       site_SMP <- SMAP_CSV[which(SMAP_CSV$site_id == id),]
       diff_days <- abs(lubridate::days(lubridate::date(site_SMP$date)-lubridate::date(t))@day)
@@ -94,7 +94,7 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
       }
     }
   }
-  SMAP_Output
+  list(SMAP_Output = SMAP_Output, time_points = time_points, var = "SMP")
 }
 
 

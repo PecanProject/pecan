@@ -24,6 +24,7 @@ AGB_dir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
 Allow_download <- TRUE
 AGB_Out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 AGB_Export_CSV <- TRUE
+AGB_Time_Step <- list(unit="year", num=1)
 
 #LAI
 LAI_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
@@ -75,7 +76,7 @@ template <- Settings(list(
     end.date = end_date,
     
     Obs_Prep = structure(list(
-      AGB = structure(list(Var = "AbvGrndWood", AGB_dir = AGB_dir, Allow_download = Allow_download, Out_dir = AGB_Out_dir, Export_CSV = AGB_Export_CSV)),
+      AGB = structure(list(Var = "AbvGrndWood", AGB_dir = AGB_dir, Time_Step = AGB_Time_Step, Allow_download = Allow_download, Out_dir = AGB_Out_dir, Export_CSV = AGB_Export_CSV)),
       LAI = structure(list(Var = "LAI", Out_dir = LAI_dir, Search_Window = LAI_Search_Window, NCore = NCore, Time_Step = LAI_Time_Step, Export_CSV = LAI_Export_CSV)),
       SMAP = structure(list(Var = "SMP", Out_dir = SMAP_dir, Search_Window = SMAP_Search_Window, Time_Step = SMAP_Time_Step, Export_CSV = SMAP_Export_CSV, Update_CSV = Update_CSV)),
       Start_Date = Obs_Start_Date,

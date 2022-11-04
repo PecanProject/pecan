@@ -21,7 +21,7 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
     return(0)
   }
-  
+
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
     years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
@@ -41,8 +41,8 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (t in time_points) {
-      t <- as.Date(t)#otherwise the t will be number instead of date.
+    for (i in 1:length(time_points)) {
+      t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in Site_Info$site_id) {
         site_LAI <- Previous_CSV[which(Previous_CSV$site_id == id),]
         diff_days <- abs(lubridate::days(lubridate::date(site_LAI$date)-lubridate::date(t))@day)
@@ -97,8 +97,8 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (t in time_points) {
-      t <- as.Date(t)#otherwise the t will be number instead of date.
+    for (i in 1:length(time_points)) {
+      t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in new_Site_Info$site_id) {
         site_LAI <- Current_CSV[which(Current_CSV$site_id == id),]
         diff_days <- abs(lubridate::days(lubridate::date(site_LAI$date)-lubridate::date(t))@day)
@@ -109,5 +109,5 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       }
     }
   }
-  LAI_Output
+  list(LAI_Output = LAI_Output, time_points = time_points, var = "LAI")
 }

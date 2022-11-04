@@ -8,6 +8,7 @@ AGB_prep(
   Site_Info,
   Start_Date,
   End_Date,
+  Time_Step = list(unit = "year", num = 1),
   AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB",
   OutDir = NULL,
   Export_CSV = TRUE,

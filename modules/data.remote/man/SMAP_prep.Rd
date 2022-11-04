@@ -9,7 +9,7 @@ SMAP_prep(
   Start_Date,
   End_Date,
   Time_Step = list(unit = "year", num = 1),
-  Outdir,
+  OutDir,
   Search_Window = 30,
   Export_CSV = TRUE,
   Update_CSV = FALSE
@@ -24,7 +24,7 @@ SMAP_prep(
 
 \item{Time_Step}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
-\item{Outdir}{Where the final CSV file, and the CSV file from GEE are stored.}
+\item{OutDir}{Where the final CSV file, and the CSV file from GEE are stored.}
 
 \item{Search_Window}{search window for locate available SMP values.}
 

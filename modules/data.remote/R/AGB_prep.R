@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-AGB_prep <- function(Site_Info, Start_Date, End_Date, 
+AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE){
   #if we export CSV but didn't provide any path
@@ -22,13 +22,21 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
     return(0)
   }
   
-  time_points <- lubridate::year(Start_Date):lubridate::year(End_Date)
-  time_points <- time_points[which(time_points<2018)] #filter out any time points that are larger than 2017
+  #calculate time points given start, end date, and time step.
+  if(Time_Step$unit == "year"){
+    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
+    time_points <- as.Date(Start_Date) %m+% years(years)
+  }else if(Time_Step$unit == "day"){
+    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
+    time_points <- as.Date(Start_Date) %m+% days(days)
+  }
+  
+  time_points <- time_points[which(lubridate::year(time_points)<2018)] #filter out any time points that are larger than 2017
   
   #check if we have all AGB data downloaded, if not, download them
   if(as.logical(Allow_download)){
     AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_dir, pattern = "*median.tif")))
-    missing_years_median <- time_points[which(!time_points%in%AGB_median_years)] #for landtrendr AGB data, we only have data before 2018.
+    missing_years_median <- lubridate::year((time_points[which(!lubridate::year(time_points)%in%AGB_median_years)])) #for landtrendr AGB data, we only have data before 2018.
     
     #starting downloading
     if(length(missing_years_median)>0){
@@ -47,12 +55,13 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (t in time_points) {
+    for (i in 1:length(time_points)) {
+      t <- time_points[i]
       for (id in Site_Info$site_id) {
         site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
-        if(length(site_AGB$agb[which(site_AGB$date == t)])==1){
-          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AGB")] <- site_AGB$agb[which(site_AGB$date == t)]
-          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == t)]
+        if(length(site_AGB$agb[which(site_AGB$date == lubridate::year(t))])==1){
+          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AGB")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
+          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == lubridate::year(t))]
         }
       }
     }
@@ -82,14 +91,14 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
     Current_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
     for (id in AGB_Output$site_id) {
       site_AGB <- AGB_Output[which(AGB_Output$site_id==id),]
-      for (String in paste0(time_points, "_AGB")) {
-        Current_CSV <- rbind(Current_CSV, 
-                             c(strsplit(String, "_")[[1]][1], 
-                               id, 
-                               new_Site_Info$lat[which(new_Site_Info$site_id==id)], 
-                               new_Site_Info$lon[which(new_Site_Info$site_id==id)], 
-                               site_AGB[String],
-                               site_AGB[gsub("AGB", "SD", String)]))#in date, id, lat, lon, agb, sd
+      for (i in 1:length(time_points)) {
+        date <- lubridate::year(time_points[i])
+        site_id <- id
+        lon <- new_Site_Info$lon[which(new_Site_Info$site_id==id)]
+        lat <- new_Site_Info$lat[which(new_Site_Info$site_id==id)]
+        agb <- site_AGB[paste0(time_points[i], "_AGB")] %>% set_names("agb")
+        sd <- site_AGB[paste0(time_points[i], "_SD")] %>% set_names("sd")
+        Current_CSV <- rbind(Current_CSV, tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
         
       }
     }
@@ -105,5 +114,5 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
       }
     }
   }
-  AGB_Output
+  list(AGB_Output = AGB_Output, time_points = time_points, var = "AGB")
 }
