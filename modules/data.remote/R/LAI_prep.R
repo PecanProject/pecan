@@ -17,7 +17,7 @@
 LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      NCore = NULL, OutDir = NULL, Search_Window = 30, Export_CSV = FALSE){
   #if we export CSV but didn't provide any path
-  if(Export_CSV && is.null(OutDir)){
+  if(as.logical(Export_CSV) && is.null(OutDir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
     return(0)
   }
@@ -84,7 +84,7 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     LAI <- LAI[-which(LAI$qc=="001"),] %>% dplyr::select(-6)#remove qc band
     
     #Compare with existing CSV file. (We name the CSV file as LAI.csv)
-    if(Export_CSV){
+    if(as.logical(Export_CSV)){
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, LAI)
         Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.

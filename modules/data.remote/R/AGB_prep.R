@@ -17,7 +17,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
                      AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE){
   #if we export CSV but didn't provide any path
-  if(Export_CSV && is.null(OutDir)){
+  if(as.logical(Export_CSV) && is.null(OutDir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
     return(0)
   }
@@ -26,7 +26,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date,
   time_points <- time_points[which(time_points<2018)] #filter out any time points that are larger than 2017
   
   #check if we have all AGB data downloaded, if not, download them
-  if(Allow_download){
+  if(as.logical(Allow_download)){
     AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_dir, pattern = "*median.tif")))
     missing_years_median <- time_points[which(!time_points%in%AGB_median_years)] #for landtrendr AGB data, we only have data before 2018.
     
