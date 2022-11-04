@@ -24,10 +24,10 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
-    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), Time_Step$num)#how many years between start and end date
+    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
     time_points <- as.Date(Start_Date) %m+% years(years)
   }else if(Time_Step$unit == "day"){
-    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), Time_Step$num)#how many days between start and end date
+    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
     time_points <- as.Date(Start_Date) %m+% days(days)
   }
   

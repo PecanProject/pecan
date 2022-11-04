@@ -4,7 +4,7 @@
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
 #' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
-#' @param Outdir Where the final CSV file, and the CSV file from GEE are stored.
+#' @param OutDir Where the final CSV file, and the CSV file from GEE are stored.
 #' @param Search_Window search window for locate available SMP values.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #' @param Update_CSV Decide if we want to update current CSV file given an updated SMAP_gee.csv file
@@ -15,7 +15,7 @@
 #' @examples
 #' @author Dongchen Zhang
 SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
-                      Outdir, Search_Window = 30, Export_CSV = TRUE, Update_CSV = FALSE){
+                      OutDir, Search_Window = 30, Export_CSV = TRUE, Update_CSV = FALSE){
   
   #note that, the SMAP_gee.csv file comes from Google Earth Engine (GEE) directly.
   #Code for generating this file can be found through this link: 
@@ -25,12 +25,12 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
   #for the next time, it will save you lot of time if you can provide the SMAP.csv directly.
   
   #check if SMAP.csv exists.
-  if(!file.exists(file.path(Outdir, "SMAP.csv")) | as.logical(Update_CSV)){
-    if(!file.exists(file.path(Outdir, "SMAP_gee.csv"))){
+  if(!file.exists(file.path(OutDir, "SMAP.csv")) | as.logical(Update_CSV)){
+    if(!file.exists(file.path(OutDir, "SMAP_gee.csv"))){
       PEcAn.logger::logger.info("Please Provide SMAP dir that contains at least the SMAP_gee.csv file!")
       return(0)
     }else{
-      SMAP_gee <- read.csv(file.path(Outdir, "SMAP_gee.csv"))
+      SMAP_gee <- read.csv(file.path(OutDir, "SMAP_gee.csv"))
       
       #prepare CSV from Current SMAP_gee file
       SMAP_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "smp", "sd"))
@@ -51,12 +51,12 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
         SMAP_CSV <- rbind(SMAP_CSV, tibble(date, site_id, lat, lon, smp, sd))#in date, id, lat, lon, smp, sd
       }
       if(as.logical((Export_CSV))){
-        write.csv(SMAP_CSV, file = file.path(Outdir, "SMAP.csv"), row.names = F)
+        write.csv(SMAP_CSV, file = file.path(OutDir, "SMAP.csv"), row.names = F)
       }
     }
   }else{
     #TODO: When current SMAP.csv need to be updated
-    SMAP_CSV <- read.csv(file.path(Outdir, "SMAP.csv"))
+    SMAP_CSV <- read.csv(file.path(OutDir, "SMAP.csv"))
     Current_years <- sort(unique(lubridate::year(SMAP_CSV$date)))
     Required_years <- lubridate::year(Start_Date):lubridate::year(End_Date)
     Required_years <- Required_years[which(Required_years>=2015)] #SMAP data only available after 2015.
@@ -69,10 +69,10 @@ SMAP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="ye
   
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
-    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), Time_Step$num)#how many years between start and end date
+    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
     time_points <- as.Date(Start_Date) %m+% years(years)
   }else if(Time_Step$unit == "day"){
-    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), Time_Step$num)#how many days between start and end date
+    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
     time_points <- as.Date(Start_Date) %m+% days(days)
   }
   
