@@ -331,3 +331,37 @@ conj_wt_wishart_sampler <-  nimbleFunction(
     }
   )
 )
+
+GEF_singleobs_nimble <-  nimbleCode({
+  
+  # Sorting out qs
+  qq ~ dgamma(aq, bq) ## aq and bq are estimated over time
+  q[1, 1] <- qq * diag(YN)
+  
+  # # X model
+  X.mod[1:N] ~ dmnorm(mean = muf[1:N], cov = pf[1:N, 1:N])
+  # # got rid of for loop no need when nH = 1
+  Xs[1] <- X.mod[H]
+  
+  ## add process error to x model but just for the state variables that we have data and H knows who
+  #changed model from dmnorm to dnorm to accomodate when only assimilating 1 obs
+  X[1]  ~ dnorm(Xs[1], q[1, 1])
+  
+  ## Likelihood
+  #changed model from dmnorm to dnorm to accomodate when only assimilating 1 obs
+  y.censored[1] ~ dnorm(X[1], r[1, 1])
+  
+  #puting the ones that they don't have q in Xall - They come from X.model
+  # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
+  for (j in 1:nNotH) {
+    tmpXmod[j]  <- X.mod[NotH[j]]
+    Xall[NotH[j]] <- tmpXmod[j]
+  }
+  # # # #These are the one that they have data and their q can be estimated
+  #got rid of for loop no need when nH = 1
+  Xall[H]  <- X[1]
+  
+  y.ind[1] ~ dinterval(y.censored[1], 0)
+  
+  
+})

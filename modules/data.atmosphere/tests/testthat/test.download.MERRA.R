@@ -6,6 +6,7 @@ teardown(unlink(outdir, recursive = TRUE))
 
 test_that("MERRA download works", {
   skip_on_ci()
+  skip_if_offline()
   
   start_date <- "2009-06-01"
   end_date <- "2009-06-04"

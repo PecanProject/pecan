@@ -9,7 +9,7 @@ sda.enkf.multisite(
   obs.mean,
   obs.cov,
   Q = NULL,
-  restart = FALSE,
+  restart = NULL,
   forceRun = TRUE,
   keepNC = TRUE,
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
@@ -27,7 +27,7 @@ sda.enkf.multisite(
 
 \item{Q}{Process covariance matrix given if there is no data to estimate it.}
 
-\item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
+\item{restart}{Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA}
 
 \item{forceRun}{Used to force job.sh files that were not run for ensembles in SDA (quick fix)}
 
@@ -43,5 +43,5 @@ NONE
 State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
 }
 \author{
-Michael Dietze and Ann Raiho \email{dietze@bu.edu}
+Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@bu.edu}
 }

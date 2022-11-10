@@ -42,7 +42,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
                 file.path(outdir, runid, paste0("sipnet.", as.Date(start.time), ".out")))
     system(paste("rm", file.path(rundir, runid, "sipnet.clim")))
   } else {
-    print(paste("Files not renamed -- Need to rerun year", start.time, "before next time step"))
+    print(paste("Files not renamed -- Need to rerun timestep", start.time, "before next time step"))
   }
   
   settings$run$start.date <- start.time
