@@ -10,6 +10,7 @@ get.trait.data.pft(
   dbfiles,
   dbcon,
   trait.names,
+  write = FALSE,
   forceupdate = FALSE
 )
 }
@@ -23,6 +24,8 @@ get.trait.data.pft(
 \item{dbcon}{database connection}
 
 \item{trait.names}{list of trait names to retrieve}
+
+\item{write}{logical; write to BETYdb? Defaults to `FALSE`.}
 
 \item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
 }
