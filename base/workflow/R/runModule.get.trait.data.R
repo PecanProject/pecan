@@ -25,7 +25,8 @@ runModule.get.trait.data <- function(settings) {
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
     forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
+    write <- settings$database$bety$write
+    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate, write = write)
     return(settings)
   } else if (PEcAn.settings::is.Settings(settings)) {
     pfts <- settings$pfts
@@ -36,7 +37,8 @@ runModule.get.trait.data <- function(settings) {
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
     forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
+    write <- settings$database$bety$write
+    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate, write = write)
     return(settings)
   } else {
     stop("runModule.get.trait.data only works with Settings or MultiSettings")
