@@ -15,14 +15,22 @@
 ##' @param modeltype type of model that is used, this is used to distinguish between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
-##' @param write logical; write to BETYdb? Defaults to `FALSE`.
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param write (Logical) If `TRUE` updated posteriors will be written to
+##'   BETYdb.  Defaults to FALSE.
 ##' @param trait.names list of trait names to retrieve
 ##' @return updated pft with posteriorid
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
-get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names, write = FALSE,
-                               forceupdate = FALSE) {
+get.trait.data.pft <-
+  function(pft,
+           modeltype,
+           dbfiles,
+           dbcon,
+           trait.names,
+           forceupdate = FALSE,
+           write = FALSE) {
+    
 
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
