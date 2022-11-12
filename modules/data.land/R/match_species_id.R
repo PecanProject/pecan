@@ -68,7 +68,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       }
       bety_species <- dplyr::tbl(bety, 'species') %>%
         dplyr::filter(id %in% !!translation_table[['bety_species_id']]) %>%
-        dplyr::select(bety_species_id = id, genus, species) %>%
+        dplyr::select(bety_species_id = "id", "genus", "species") %>%
         dplyr::collect()
       translation <- dplyr::left_join(translation_table, bety_species,
                                       by = 'bety_species_id',
@@ -79,7 +79,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
     if (!is.null(bety)) {
       # query BETY for species, id, genus, and latin name
       translation <- dplyr::tbl(bety, "species") %>%
-        dplyr::select(bety_species_id = id, genus, species,
+        dplyr::select(bety_species_id = "id", "genus", "species",
                        input_code = !!column) %>%
         dplyr::collect()
       translation <- dplyr::semi_join(

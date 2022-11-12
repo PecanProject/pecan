@@ -230,10 +230,10 @@ source(paste0("/fs/data3/kzarada/NEFI/US_", site.abv, "/download_", site.abv,"_m
 met = do.call(paste0("download_US_", site.abv,"_met"), list(frame_start, Sys.Date()))
 
 if("Tsoil" %in% names(met)){
-met <- as_tibble(met) %>% mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair,Tsoil, rH)
-}else{met <- as_tibble(met) %>% mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair, rH)}
+met <- as_tibble(met) %>% dplyr::mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair,Tsoil, rH)
+}else{met <- as_tibble(met) %>% dplyr::mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair, rH)}
 
-nee.met <- nee.data %>% inner_join(met,nee.data,  by = c("Time"))
+nee.met <- nee.data %>% dplyr::inner_join(met,nee.data,  by = c("Time"))
 
 #Calculate Error 
 nee.met$error <- (nee.met$NEE - nee.met$Predicted)
