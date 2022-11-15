@@ -12,17 +12,28 @@ settings$outdir <- file.path(testdir, "outdir")
 #not to be confused with outdir
 outdir <- file.path(settings$outdir, "out", "ENS-00001-76")
 
+# set logger level so test output is more readable
+old_level <- PEcAn.logger::logger.setLevel("ERROR")
+withr::defer(PEcAn.logger::logger.setLevel(old_level))
+
 test_that("model2netcdf.ED2 runs without error", {
-  
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
   #not captured by testthat::expect_message() or expect_error()
-  x <- capture.output(
+  msg <- capture.output(
     model2netcdf.ED2(outdir = outdir,
                      settings = settings),
     type = "message"
   )
+  expect_false(any(str_detect(msg, "ERROR")))
+})
 
-  expect_false(any(str_detect(x, "ERROR")))
+test_that("no ncvar_put warnings", {
+  out <- capture.output(
+    model2netcdf.ED2(outdir = outdir,
+                     settings = settings),
+    type = "output"
+  )
+  expect_false(any(str_detect(out, "ncvar_put: warning:")))
 })
 
 #remove .nc file
@@ -83,14 +94,6 @@ test_that("both PFTs are found in nc files", {
   expect_length(ncdf4::ncvar_get(tmp.nc, "PFT"), 2)
 })
 
-test_that("warning when PFTs in settings aren't in .h5 files",{
-  #weird edge case: https://github.com/PecanProject/pecan/issues/3068
-  #fake this by manually editing settings
-  settings$pfts <- append(settings$pfts, list(pft = list(name = "temperate.Early_Hardwood
-", ed2_pft_number = "9")))
-  expect_warning(model2netcdf.ED2(outdir = outdir, settings = settings))
-})
-
 test_that("dimenstions have MsTMIP standard units", {
   testthat::local_edition(3)
   expect_equal(dims$lat$units, "degrees_north", ignore_attr = TRUE)
@@ -121,4 +124,13 @@ test_that("variables have MsTMIP standard units",{
   )
 })
 
-
+test_that("Errors when PFTs in settings aren't in .h5 files", {
+  #weird edge case: https://github.com/PecanProject/pecan/issues/3068
+  #fake this by manually editing settings
+  settings$pfts <-
+    append(settings$pfts, list(pft = list(
+      name = "temperate.Early_Hardwood", ed2_pft_number = "9"
+    )))
+  expect_error(model2netcdf.ED2(outdir = outdir, settings = settings))
+  #TODO: also expect no output .nc files.  Currently this error doesn't stop the function from writing the .nc files for some reason
+})
