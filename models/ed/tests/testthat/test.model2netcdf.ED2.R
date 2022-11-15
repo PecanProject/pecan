@@ -4,6 +4,8 @@ testdir <- tempfile()
 dir.create(testdir)
 withr::defer(unlink(testdir, recursive = TRUE))
 unzip("data/outdir.zip", exdir = testdir)
+#for interactive debugging:
+# unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
 settings <-
   PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
 settings$outdir <- file.path(testdir, "outdir")
@@ -79,6 +81,14 @@ test_that("nc files have correct attributes", {
 test_that("both PFTs are found in nc files", {
   expect_type(ncdf4::ncvar_get(tmp.nc, "PFT"), "double")
   expect_length(ncdf4::ncvar_get(tmp.nc, "PFT"), 2)
+})
+
+test_that("warning when PFTs in settings aren't in .h5 files",{
+  #weird edge case: https://github.com/PecanProject/pecan/issues/3068
+  #fake this by manually editing settings
+  settings$pfts <- append(settings$pfts, list(pft = list(name = "temperate.Early_Hardwood
+", ed2_pft_number = "9")))
+  expect_warning(model2netcdf.ED2(outdir = outdir, settings = settings))
 })
 
 test_that("dimenstions have MsTMIP standard units", {

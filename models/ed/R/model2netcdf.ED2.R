@@ -39,6 +39,7 @@ model2netcdf.ED2 <- function(outdir,
                              pfts,
                              settings = NULL) {
   if(!is.null(settings)) {
+    #extract arguments from `settings` if it is supplied
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
     }
@@ -121,6 +122,7 @@ model2netcdf.ED2 <- function(outdir,
     for (i in seq_along(out_list)) {
       rflag <- ed_res_flag[i]
       # fcnx is either read_T_files() or read_E_files()
+      # TODO use switch() here instead?
       fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
       out_list[[rflag]] <- do.call(fcnx, list(yr = y, ylist[[rflag]], flist[[rflag]],
                                               outdir, start_date, end_date,
@@ -155,6 +157,7 @@ model2netcdf.ED2 <- function(outdir,
     for (i in seq_along(out_list)) {
       rflag   <- ed_res_flag[i]
       #fcnx is either put_T_values() or put_E_values()
+      #TODO: use switch() here instead?
       fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
       put_out <- do.call(fcnx, list(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
                                     lat = lat, lon = lon, start_date = start_date_real,
@@ -181,7 +184,7 @@ model2netcdf.ED2 <- function(outdir,
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     # fill nc file with data
     for (i in seq_along(nc_var)) {
-      ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]])
+      ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]]) #TODO: if this errors because of incorrect dimensions, make the whole function error?
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
     }
@@ -731,6 +734,7 @@ put_T_values <-
     warning("`out` is deprecated, using `var_list` instead")
     var_list <- out
   }
+  #TODO: use append() instead of s + index
   s <- length(nc_var)
   
   # create out list to be modified
@@ -804,6 +808,7 @@ put_T_values <-
 
   # ----- fill list
   
+  #TODO: use append here instead of s + offset
   out <- conversion(1, PEcAn.utils::ud_convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
   nc_var[[s + 1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
@@ -916,6 +921,7 @@ put_T_values <-
                                     prec = "double")
   
   return(list(nc_var = nc_var, out = out))
+  #TODO: find less fragile way of getting the order of `nc_var` and `out` to match
 
 } # put_T_values
 
@@ -1260,6 +1266,7 @@ put_E_values <-
   # output by read_E_files.  Some day the whole model2netcdf.ED2 function should
   # probably be re-written to combine the read_*_files and put_*_values
   # functions to make this harder to accidentally screw up.
+  # TODO: find less fragile way to keep `var_list` and `evars` in the same order
  evars <- list(
    ncdf4::ncvar_def(
      "AGB_PFT", #original ED2 name: AGB_CO
