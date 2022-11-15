@@ -213,7 +213,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # name code of plant in 3 letters
     # a handful of plants have to have specific codes, e.g. forages need to be 'fou' and vine needs to be 'vig'
     # but others can be anything? if not, either consider a LUT or passing via settings
-    if(names(trait.values)[pft] %in% c("frg", "alf")){
+    if(names(trait.values)[pft] %in% c("frg", "wcl", "alf")){
       codeplante <- 'fou'
       codeperenne <- 2
     }else{
@@ -1329,7 +1329,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             # in following years it should be cumulative, meaning a cutting day on 2019-06-12 is 527, not 162
             # the following code should give that
             harvest_df$julfauche   <- which(dseq_sub == as.Date(harvest_sub$date[hrow])) + lubridate::yday(dseq_sub[1]) - 1
-            if("frg" %in% tolower(harvest_sub$harvest_crop)){
+            if("frg" %in% tolower(harvest_sub$harvest_crop) |
+               "wcl" %in% tolower(harvest_sub$harvest_crop)){
               tec_df$irecbutoir <- 999
               if(!is.null(events_file$rotation)){
                 tind <-  which(dseq_sub == as.Date(events_file$rotation$rotation_end[usmi]))  + lubridate::yday(dseq_sub[1]) - 1
@@ -1352,7 +1353,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         # need to get these from field data
         # cut crop - 1:yes, 2:no
-        if("frg" %in% tolower(harvest_sub$harvest_crop)){
+        if("frg" %in% tolower(harvest_sub$harvest_crop) | "wcl" %in% tolower(harvest_sub$harvest_crop)){
           harvest_tec$codefauche <- 1
         }else{
           harvest_tec$codefauche <- 2 
@@ -1469,7 +1470,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_usm_txt(usm_file, "datedebut", lubridate::yday(settings$run$start.date), add = FALSE)
       SticsRFiles::set_usm_txt(usm_file, "datefin", (lubridate::yday(settings$run$start.date) + length(dseq_sub) - 1), add = FALSE)
     }else{
-      SticsRFiles::set_usm_txt(usm_file, "datedebut", 1, add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datedebut", 1, add = FALSE) # for now!
       SticsRFiles::set_usm_txt(usm_file, "datefin", length(dseq_sub), add = FALSE)
     }
     
@@ -1498,11 +1499,11 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     
     # number of simulation years
-    SticsRFiles::set_usm_txt(usm_file, "nbans", length(usm_years), add = FALSE) # hardcode for now
+    SticsRFiles::set_usm_txt(usm_file, "nbans", length(unique(usm_years)), add = FALSE) # hardcode for now
     
     # number of calendar years involved in the crop cycle
     # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
-    culturean <- ifelse( length(usm_years) == 2, 0, 1)
+    culturean <- ifelse( length(unique(usm_years)) == 2, 0, 1)
     SticsRFiles::set_usm_txt(usm_file, "culturean", culturean, add = FALSE) #hardcoding this for now, if passed as a trait from priors it breaks sensitivity analysis
     # probably best to pass this via the json file
     
