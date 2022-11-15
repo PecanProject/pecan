@@ -56,12 +56,14 @@ dplyr.count <- function(df) {
 }  # dplyr.count
 
 
-#' Convert netcdf number of days to date
+#' Convert netcdf number of days to a datetime
+#' @param time number of time units elapsed since origin
+#' @param unit string containing CF-style time unit including origin (e.g. "days since 2010-01-01")
 #' @export
 ncdays2date <- function(time, unit) {
   date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
-  days    <- udunits2::ud.convert(time, unit, paste("days since ", date))
-  seconds <- udunits2::ud.convert(days, "days", "seconds")
+  days    <- PEcAn.utils::ud_convert(time, unit, paste("days since ", date))
+  seconds <- PEcAn.utils::ud_convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
 }  # ncdays2date
 
@@ -132,14 +134,14 @@ workflow <- function(bety, workflow_id) {
 #' @export
 runs <- function(bety, workflow_id) {
   Workflows <- workflow(bety, workflow_id) %>%
-    dplyr::select(.data$workflow_id, .data$folder)
+    dplyr::select("workflow_id", "folder")
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
-    dplyr::select(ensemble_id = .data$id, .data$workflow_id) %>%
+    dplyr::select(ensemble_id = "id", "workflow_id") %>%
     dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
-    dplyr::select(run_id = .data$id, .data$ensemble_id) %>%
+    dplyr::select(run_id = "id", "ensemble_id") %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
-  dplyr::select(Runs, -.data$workflow_id, -.data$ensemble_id) %>%
+  dplyr::select(Runs, -"workflow_id", -"ensemble_id") %>%
     return()
 }  # runs
 
@@ -147,6 +149,8 @@ runs <- function(bety, workflow_id) {
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
 #' @param query Named vector or list of workflow IDs
+#' @param all.ids logical: return a list of all workflow_ids in the BETY database,
+#'  or just those that are part of the query?
 #' @export
 get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
@@ -157,7 +161,7 @@ get_workflow_ids <- function(bety, query, all.ids = FALSE) {
     ids <- workflows(bety, ensemble = FALSE) %>%
       dplyr::distinct(.data$workflow_id) %>%
       dplyr::collect() %>%
-      dplyr::pull(.data$workflow_id) %>%
+      dplyr::pull("workflow_id") %>%
       sort(decreasing = TRUE)
   }
   return(ids)
@@ -184,7 +188,7 @@ get_run_ids <- function(bety, workflow_id) {
   if (workflow_id != "") {
     runs <- runs(bety, workflow_id)
     if (dplyr.count(runs) > 0) {
-    run_ids <- dplyr::pull(runs, .data$run_id) %>% sort()
+    run_ids <- dplyr::pull(runs, "run_id") %>% sort()
     }
   }
   return(run_ids)
@@ -260,12 +264,12 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
   # lat/lon often cause trouble (like with JULES) but aren't needed for this basic plotting
   var_names <- setdiff(var_names, c("lat", "latitude", "lon", "longitude"))
   outputfolder <- file.path(workflow$folder, 'out', run_id)
-  out <- read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
+  out <- PEcAn.utils::read.output(runid = run_id, outdir = outputfolder, variables = var_names, dataframe = TRUE)
   ncfile <- list.files(path = outputfolder, pattern = "\\.nc$", full.names = TRUE)[1]
   nc <- ncdf4::nc_open(ncfile)
 
-  globalDF <- tidyr::gather(out, key = var_name, value = vals, names(out)[names(out) != "posix"]) %>%
-    dplyr::rename(dates = .data$posix)
+  globalDF <- tidyr::gather(out, key = "var_name", value = "vals", names(out)[names(out) != "posix"]) %>%
+    dplyr::rename(dates = "posix")
   globalDF$workflow_id <- workflow_id
   globalDF$run_id <- run_id
   globalDF$xlab <- "Time"

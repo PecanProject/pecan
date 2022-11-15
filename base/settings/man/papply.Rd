@@ -19,11 +19,11 @@ or \code{\link[base]{list}} to operate on}
 }
 \value{
 A single \code{fn} return value, or a list of such values
-  (coerced to \code{MultiSettings} if appropriate; \emph{see Details})
+(coerced to \code{MultiSettings} if appropriate; \emph{see Details})
 }
 \description{
 Works like lapply(),
-  but for PEcAn Settings and MultiSettings objects
+but for PEcAn Settings and MultiSettings objects
 }
 \details{
 \code{papply} is mainly used to call a function on each
@@ -32,21 +32,21 @@ and returning the results in a list.
 It has some additional features, however:
 
 \itemize{
-  \item If the result of \code{fn} is a \code{Settings} object,
-        then \code{papply} will coerce the returned list into a new
-        \code{MultiSettings}.
-  \item If \code{settings} is a \code{Settings} object,
-        then \code{papply} knows to call \code{fn} on it directly.
-  \item If \code{settings} is a generic \code{list},
-        then \code{papply} coerces it to a \code{Settings} object
-        and then calls \code{fn} on it directly.
-        This is meant for backwards compatibility with old-fashioned PEcAn
-        settings lists, but could have unintended consequences
-  \item By default, \code{papply} will proceed even if \code{fn} throws an
-        error for one or more of the elements in \code{settings}.
-        Note that if this option is used, the returned results list will
-        have entries for \emph{only} those elements that did not
-        result in an error.
+\item If the result of \code{fn} is a \code{Settings} object,
+then \code{papply} will coerce the returned list into a new
+\code{MultiSettings}.
+\item If \code{settings} is a \code{Settings} object,
+then \code{papply} knows to call \code{fn} on it directly.
+\item If \code{settings} is a generic \code{list},
+then \code{papply} coerces it to a \code{Settings} object
+and then calls \code{fn} on it directly.
+This is meant for backwards compatibility with old-fashioned PEcAn
+settings lists, but could have unintended consequences
+\item By default, \code{papply} will proceed even if \code{fn} throws an
+error for one or more of the elements in \code{settings}.
+Note that if this option is used, the returned results list will
+have entries for \emph{only} those elements that did not
+result in an error.
 }
 }
 \examples{

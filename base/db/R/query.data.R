@@ -18,6 +18,7 @@
 ##' @param extra.columns other query terms to pass in. If unspecified, retrieves latitude and longitude
 ##' @param ids_are_cultivars if TRUE, ids is a vector of cultivar IDs, otherwise they are species IDs
 ##' @param ... extra arguments
+##' @param store.unconverted determines whether or not a copy of the mean and stat fields are returned with _unconverted appended to the column names
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author David LeBauer, Carl Davidson
 query.data <- function(

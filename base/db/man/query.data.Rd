@@ -24,6 +24,8 @@ query.data(
 
 \item{extra.columns}{other query terms to pass in. If unspecified, retrieves latitude and longitude}
 
+\item{store.unconverted}{determines whether or not a copy of the mean and stat fields are returned with _unconverted appended to the column names}
+
 \item{ids_are_cultivars}{if TRUE, ids is a vector of cultivar IDs, otherwise they are species IDs}
 
 \item{...}{extra arguments}

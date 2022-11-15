@@ -9,7 +9,7 @@ name: Docker
 #   latest and develop
 # - when a pull request is created and updated  to make sure the
 #   Dockerfile is still valid.
-# To be able to push to dockerhub, this execpts the following
+# To be able to push to dockerhub, this expects the following
 # secrets to be set in the project:
 # - DOCKERHUB_USERNAME : username that can push to the org
 # - DOCKERHUB_PASSWORD : password asscoaited with the username
@@ -36,7 +36,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: false
 
       # calculate some variables that are used later
       - name: get version tag

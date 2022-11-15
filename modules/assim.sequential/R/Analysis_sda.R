@@ -12,7 +12,7 @@
 ##’ @details
 ##’  
 ##' 
-##' @description This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAn.assim.sequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
+##' @description This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAnAssimSequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
 ##' The other option is GEF function inside the same package allowing to perform Generalized Ensemble kalman Filter.
 ##' 
 ##' If you're using an arbitrary function you can use the ... to send any other variables to your desired analysis function.
@@ -121,7 +121,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   operators <- sapply(settings$state.data.assimilation$inputs, '[[', "operator")
   
   #Loading nimbles functions
-  #PEcAn.assim.sequential::load_nimble()
+  #PEcAnAssimSequential::load_nimble()
   
   #Forecast inputs 
   Q <- Forecast$Q # process error
@@ -135,7 +135,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   R <- try(solve(Observed$R), silent = F) #putting solve() here so if not invertible error is before compiling tobit2space #sfsmisc::posdefify(
   Y <- Observed$Y
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
   # Taking care of censored data ------------------------------    
@@ -365,7 +365,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   }
   
   #which type of observation do we have at this time point?
-  input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
+  input.order <- lapply(input.vars, grep, x=names(obs.mean[[t]][[1]])) # not going to work if AbvGrnWood is given in two different ways like tree rings and refab
   names(input.order) <- operators
   data_available <- unlist(input.order)
   

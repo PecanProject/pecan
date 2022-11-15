@@ -17,9 +17,9 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
     purrr::map_dfc(unlist, recursive = TRUE)
   entries_df %>%
     dplyr::select(
-      cf_standard_name = .data$.attrs,
-      unit = .data$canonical_units,
-      .data$description,
+      cf_standard_name = ".attrs",
+      unit = "canonical_units",
+      "description",
       dplyr::everything()
     )
 }

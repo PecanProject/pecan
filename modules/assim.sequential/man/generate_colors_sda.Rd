@@ -7,7 +7,7 @@
 generate_colors_sda()
 }
 \description{
-This function generates a series of colors in its parents enviroment. This is mainly used in assim.sequential package.
+This function generates a series of colors in its parents enviroment. This is mainly used in AssimSequential package.
 }
 \author{
 Ann Raiho

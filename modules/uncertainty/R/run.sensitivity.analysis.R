@@ -95,7 +95,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
           C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
           if(any(C.units)){
             for(x in which(C.units)) {
-              trait.samples[[pft$name]][[x]] <- udunits2::ud.convert(trait.samples[[pft$name]][[x]], "degC", "K")
+              trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
             }
           }
           
@@ -133,7 +133,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
             pdf(fname, height = 12, width = 9)
             ## arrange plots  http://stackoverflow.com/q/10706753/199217
             ncol <- floor(sqrt(length(sensitivity.plots)))
-            print(do.call("grid.arrange", c(sensitivity.plots, ncol=ncol)))
+            print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol=ncol)))
             print(sensitivity.plots) # old method.  depreciated.
             dev.off()
             
@@ -145,7 +145,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
                                           start.year=start.year, end.year=end.year)
             
             pdf(fname, width = 11, height = 8)
-            do.call(grid.arrange, c(vd.plots, ncol = 4))
+            do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
             dev.off()
           }
           

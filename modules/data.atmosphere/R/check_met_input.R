@@ -16,7 +16,7 @@ check_met_input_file <- function(metfile,
                                  variable_table = pecan_standard_met_table,
                                  required_vars = variable_table %>%
                                    dplyr::filter(.data$is_required) %>%
-                                   dplyr::pull(.data$cf_standard_name),
+                                   dplyr::pull("cf_standard_name"),
                                  warn_unknown = TRUE
                                  ) {
 
@@ -94,7 +94,7 @@ check_met_input_file <- function(metfile,
     test_raw = purrr::map(nc_vars, check_unit, nc = nc, variable_table = variable_table),
     test_passed = !purrr::map_lgl(.data$test_raw, inherits, "try-error"),
     test_error_message = purrr::map_chr(.data$test_raw, purrr::possibly(as.character, NA_character_))
-  ) %>% dplyr::select(-.data$test_raw)
+  ) %>% dplyr::select(-"test_raw")
 
   results_df <- dplyr::bind_rows(test_dims_summary, test_required_vars, test_var_units)
 

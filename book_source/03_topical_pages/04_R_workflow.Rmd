@@ -22,7 +22,36 @@ Within the PEcAn repository, code pertaining to input conversion is in the MODUL
 
 ## Initial Conditions {#workflow-input-initial}
 
-(TODO: Under construction)
+To convert initial condition data into the PEcAn Standard and then into the model formats we follow three main steps:
+
+  1. Downloading vegetation info
+    -converting the vegetation info into .rd file format
+  2. Creating ensemble members based on veg file 
+    -resamples veg file to create ensmeble members
+  3. Converting ensemble members to model specific format
+
+Common Questions regarding IC Data:
+
+How do I know if my data product is supported by ic_process workflow?
+  -The current data products supported by ic_process are: NEON, FIA, and BADM. That said you if your vegetation files are registered with BETY and abide by the BETY formats and column names you will be able to use ic_process to create ensemble members and convert the ensemble members to model specific format. See section 6.3.3 for more info. 
+Can I use ic_process outside of the PEcAn workflow?
+  -Short answer is yes, ic_process can be called as a function all by itself outside of do_conversions.
+What about soil initial conditions?
+  -Please reference section 6.3.6 for more info.
+
+ic_process workflow:
+
+Required inputs for ic_process are: settings object with </pft> and </poolinitcond> sections (see pecan.xml section for more info), dir or location where you would to store the output files, input object that contains all info from settings$run$inputs$poolinitcond, and the overwrite setting the default is overwrite = FALSE.
+
+get_veg_module()
+This function will either download your vegetation info from: NEON_veg, FIA, BADM sources or query BETY for existing veg files previously downloaded. The input and dbfile ids of your veg file are then added to a list getveg.id.
+
+ens_veg_module()
+This function will create ensemble member ncdf files by resampling the veg file supplied in getveg.id. 
+
+put_veg_module()
+This function will convert the ensemble member ncdf files into model specific format. Currently the supported models are ED2 and SIPNET. 
+
 
 ## Meteorological Data {#workflow-met}
 
@@ -41,13 +70,13 @@ To convert meterological data into the PEcAn Standard and then into model format
 Common Questions regarding Met Data: 
 
 How do I add my Meterological data product to PEcAn?
-How do I use PEcAn to convert Met data outide the workflow?
+How do I use PEcAn to convert Met data outside the workflow?
 
 
 The main script that handles Met Processing, is [`met.process`](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/met.process.R). It acts as a wrapper function that calls individual modules to facilitate the processing of meteorological data from it's original form to a pecan standard, and then from that standard to model specific formats. It also handles recording these processes in the BETY database.
 
   1. Downloading raw data
-    - [Available Meteorological Drivers]
+    - [Available Meteorological Drivers](#met-drivers)
     - Example Code to download [Ameriflux data](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/download.AmerifluxLBL.R)
   2. Converting raw data into a CF standard (if needed)
     - Example Code to [convert from raw csv to CF standard](https://github.com/PecanProject/pecan/blob/develop/modules/data.atmosphere/R/met2CF.csv.R)

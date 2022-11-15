@@ -8,33 +8,34 @@ rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
 Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
-lapply(c(
+remotes::install_github(c(
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
-'ebimodeling/biocro',
+'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
 'r-lib/testthat@v3.0.4',
 'r-lib/vdiffr@v1.0.2',
 'ropensci/geonames',
 'ropensci/nneo'
-), remotes::install_github, lib = rlib)
+), lib = rlib)
 
 # install all packages (depends, imports, suggests)
 wanted <- c(
 'abind',
 'amerifluxr',
 'BayesianTools',
-'binaryLogic',
 'BioCro',
 'bit64',
 'BrownDog',
 'coda',
 'corrplot',
+'curl',
 'data.table',
 'dataone',
 'datapack',
 'DBI',
 'dbplyr',
+'devtools',
 'doParallel',
 'dplR',
 'dplyr',
@@ -46,6 +47,7 @@ wanted <- c(
 'geonames',
 'getPass',
 'ggmap',
+'ggmcmc',
 'ggplot2',
 'ggrepel',
 'glue',
@@ -68,6 +70,7 @@ wanted <- c(
 'magrittr',
 'maps',
 'maptools',
+'markdown',
 'MASS',
 'Matrix',
 'mclust',
@@ -81,6 +84,7 @@ wanted <- c(
 'mvbutils',
 'mvtnorm',
 'ncdf4',
+'neonstore',
 'neonUtilities',
 'nimble',
 'nneo',
@@ -97,7 +101,6 @@ wanted <- c(
 'randtoolbox',
 'raster',
 'rcrossref',
-'RCurl',
 'REddyProc',
 'redland',
 'reshape',
@@ -119,6 +122,8 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'swfscMisc',
+'terra',
 'testthat',
 'tibble',
 'tictoc',
@@ -129,7 +134,7 @@ wanted <- c(
 'traits',
 'TruncatedNormal',
 'truncnorm',
-'udunits2',
+'units',
 'urltools',
 'utils',
 'vdiffr',

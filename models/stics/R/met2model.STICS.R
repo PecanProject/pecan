@@ -110,7 +110,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(86400 / dt)
@@ -120,7 +120,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       # column 6: minimum temperature (°C)
       Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+      Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
       t_dmin <- round(tapply(Tair_C, ind, min, na.rm = TRUE), digits = 2) # maybe round these numbers 
       weather_df[ ,6] <- t_dmin
         

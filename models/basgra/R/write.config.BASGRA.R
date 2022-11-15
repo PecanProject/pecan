@@ -49,7 +49,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       
     # Maximum SLA of new leaves
     if ("SLAMAX" %in% pft.names) {
-      run_params[which(names(run_params) == "SLAMAX")] <- udunits2::ud.convert(pft.traits[which(pft.names == "SLAMAX")], "kg-1","g-1")
+      run_params[which(names(run_params) == "SLAMAX")] <- PEcAn.utils::ud_convert(pft.traits[which(pft.names == "SLAMAX")], "kg-1","g-1")
     }
     
     # Number of elongating leaves per non-elongating tiller
@@ -88,12 +88,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     if ("leaf_width" %in% pft.names) {
       # Leaf width on non-elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDV")] <- udunits2::ud.convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
+      run_params[which(names(run_params) == "LFWIDV")] <- PEcAn.utils::ud_convert(pft.traits[which(pft.names == "leaf_width")], "mm", "m")
     }
     
     if ("generative_leaf_width" %in% pft.names) {
       # Leaf width on elongating tillers (m)
-      run_params[which(names(run_params) == "LFWIDG")] <- udunits2::ud.convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
+      run_params[which(names(run_params) == "LFWIDG")] <- PEcAn.utils::ud_convert(pft.traits[which(pft.names == "generative_leaf_width")], "mm", "m")
     }
     
     # Maximum root depth growth rate (m day-1)
@@ -263,44 +263,44 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("fast_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSOMF0"] <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g")
     }
     
     if ("slow_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSOMS0"] <- PEcAn.utils::ud_convert(IC$slow_soil_pool_carbon_content, "kg", "g")
     }
     
     if ("CropYield"  %in% ic.names) {
-       run_params[names(run_params) == "YIELDI"] <-  udunits2::ud.convert(IC$CropYield, "kg", "g")
+       run_params[names(run_params) == "YIELDI"] <-  PEcAn.utils::ud_convert(IC$CropYield, "kg", "g")
     }
     
     if ("litter_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLITT0"] <-  udunits2::ud.convert(IC$litter_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CLITT0"] <-  PEcAn.utils::ud_convert(IC$litter_carbon_content, "kg", "g")
     }
     
     # not as important as others but you can throw this into the SDA too, then comment out last value overwriting below
     # if ("stubble_carbon_content"  %in% ic.names) {
-    #   run_params[names(run_params) == "CSTUBI"] <-  udunits2::ud.convert(IC$stubble_carbon_content, "kg", "g")
+    #   run_params[names(run_params) == "CSTUBI"] <-  PEcAn.utils::ud_convert(IC$stubble_carbon_content, "kg", "g")
     # }
    
     if ("stem_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSTI"] <-  udunits2::ud.convert(IC$stem_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSTI"] <-  PEcAn.utils::ud_convert(IC$stem_carbon_content, "kg", "g")
     }
     
     if ("root_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRTI"] <-  PEcAn.utils::ud_convert(IC$root_carbon_content, "kg", "g")
     }
 
     if ("reserve_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CRESI"] <-  udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRESI"] <-  PEcAn.utils::ud_convert(IC$reserve_carbon_content, "kg", "g")
     }
     
     if ("leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CLVI"] <-  udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CLVI"] <-  PEcAn.utils::ud_convert(IC$leaf_carbon_content, "kg", "g")
     }
     
     if ("dead_leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLVDI"] <-  udunits2::ud.convert(IC$dead_leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CLVDI"] <-  PEcAn.utils::ud_convert(IC$dead_leaf_carbon_content, "kg", "g")
     }
 
     if ("nonelongating_generative_tiller"  %in% ic.names) {
@@ -341,40 +341,40 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # Initial value of litter C (g C m-2)
     clitt0 <- try(ncdf4::ncvar_get(IC.nc, "litter_carbon_content"), silent = TRUE)
     if (!is.na(clitt0) && is.numeric(clitt0)) {
-      run_params[which(names(run_params) == "CLITT0")] <- udunits2::ud.convert(clitt0, "kg", "g")
+      run_params[which(names(run_params) == "CLITT0")] <- PEcAn.utils::ud_convert(clitt0, "kg", "g")
     }
     
  
     # Initial value of slow SOM (g C m-2)
     csoms0 <- try(ncdf4::ncvar_get(IC.nc, "slow_soil_pool_carbon_content"), silent = TRUE)
     if (!is.na(csoms0) && is.numeric(csoms0)) {
-      run_params[which(names(run_params) == "CSOMS0")] <- udunits2::ud.convert(csoms0, "kg", "g")
+      run_params[which(names(run_params) == "CSOMS0")] <- PEcAn.utils::ud_convert(csoms0, "kg", "g")
     }
     
     # Initial value of fast SOM (g C m-2)
     csomf0 <- try(ncdf4::ncvar_get(IC.nc, "fast_soil_pool_carbon_content"), silent = TRUE)
     if (!is.na(csomf0) && is.numeric(csomf0)) {
-      run_params[which(names(run_params) == "CSOMF0")] <- udunits2::ud.convert(csomf0, "kg", "g")
+      run_params[which(names(run_params) == "CSOMF0")] <- PEcAn.utils::ud_convert(csomf0, "kg", "g")
     }
     
     # Initial value of root C (g C m-2)
     crti <- try(ncdf4::ncvar_get(IC.nc, "root_carbon_content"), silent = TRUE)
     if (!is.na(crti) && is.numeric(crti)) {
       # not log10 anymore, don't mind the name
-      run_params[which(names(run_params) == "LOG10CRTI")] <- udunits2::ud.convert(crti, "kg", "g")
+      run_params[which(names(run_params) == "LOG10CRTI")] <- PEcAn.utils::ud_convert(crti, "kg", "g")
     }
     
     # Initial value of leaf C (g C m-2)
     clvi <- try(ncdf4::ncvar_get(IC.nc, "leaf_carbon_content"), silent = TRUE)
     if (!is.na(clvi) && is.numeric(clvi)) {
       # not log10 anymore, don't mind the name
-      run_params[which(names(run_params) == "LOG10CLVI")] <- udunits2::ud.convert(clvi, "kg", "g")
+      run_params[which(names(run_params) == "LOG10CLVI")] <- PEcAn.utils::ud_convert(clvi, "kg", "g")
     }
     
     # Initial mineral N
     nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_nitrogen_content"), silent = TRUE)
     if (!is.na(nmin0) && is.numeric(nmin0)) {
-      run_params[which(names(run_params) == "NMIN0")] <- udunits2::ud.convert(nmin0, "kg", "g")
+      run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
     }
     
     # Rooting depth (m)
@@ -405,7 +405,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     cresi <- try(ncdf4::ncvar_get(IC.nc, "reserve_carbon_content"), silent = TRUE)
     if (!is.na(cresi) && is.numeric(cresi)) {
       # not log10 anymore, don't mind the name
-      run_params[which(names(run_params) == "LOG10CRESI")] <- udunits2::ud.convert(cresi, "kg", "g")
+      run_params[which(names(run_params) == "LOG10CRESI")] <- PEcAn.utils::ud_convert(cresi, "kg", "g")
     }
     
     # N-C ratio of roots

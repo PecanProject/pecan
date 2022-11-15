@@ -24,6 +24,10 @@ $browndog_password="";
 # R binary
 $Rbinary="/usr/bin/R";
 
+# plotting endpoint, leave blank to use php code
+#$api_url="/api/";
+$api_url="";
+
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
@@ -78,7 +82,7 @@ $hostlist=array($fqdn => array(),
                           "qstat"       => "qstat -j @JOBID@ || echo DONE",
                           "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
                           "postrun"     => "sleep 60",
-                          "models"      => 
+                          "models"      =>
                               array("ED2" =>
                                         array("prerun"  => "module load hdf5"),
                                     "ED2 (r82)" =>
