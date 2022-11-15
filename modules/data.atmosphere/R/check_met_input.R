@@ -118,8 +118,8 @@ check_unit <- function(variable, nc, variable_table, warn_unknown = TRUE) {
     dplyr::filter(.data$cf_standard_name == variable) %>%
     dplyr::pull(units)
   ncvar_unit <- ncdf4::ncatt_get(nc, variable, "units")[["value"]]
-  try(testthat::expect_true(
-    PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit),
-    glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
-  ))
+  try(assertthat::assert_that(
+	  PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit) == TRUE,
+	  msg = glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
+	))
 }
