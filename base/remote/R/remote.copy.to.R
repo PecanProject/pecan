@@ -75,5 +75,9 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
       '30' = "Timeout in data send/receive",
       '35' = "Timeout waiting for daemon connection"
     )
-  PEcAn.logger::logger.debug(paste0("rsync status: ", msg))
+  if (out == 1) {
+    PEcAn.logger::logger.debug(paste0("rsync status: ", msg))
+  } else {
+    PEcAn.logger::logger.severe(paste0("rsync status: ", msg))
+  }
 } # remote.copy.to
