@@ -1025,7 +1025,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   
   # loop over the files for that year
   for(i in ysel) {
-    
+
     nc <- ncdf4::nc_open(file.path(outdir, h5_files[i]))
     on.exit(ncdf4::nc_close(nc), add = TRUE)
     allvars <- names(nc$var)
@@ -1065,6 +1065,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     
   } # end ysel-loop
 
+  #TODO: warn if a pft in `pfts` isn't in the h5 file and remove the unused PFT from `pfts`
   
   # even if this is a SA run for soil, currently we are not reading any variable
   # that has a soil dimension. "soil" will be passed to read.output as pft.name
