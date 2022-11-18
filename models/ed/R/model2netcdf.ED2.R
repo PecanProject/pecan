@@ -121,12 +121,22 @@ model2netcdf.ED2 <- function(outdir,
     # ----- read values from ED output files
     for (i in seq_along(out_list)) {
       rflag <- ed_res_flag[i]
-      # fcnx is either read_T_files() or read_E_files()
-      # TODO use switch() here instead?
-      fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
-      out_list[[rflag]] <- do.call(fcnx, list(yr = y, ylist[[rflag]], flist[[rflag]],
-                                              outdir, start_date, end_date,
-                                              pfts, settings))
+      fcnx <- switch(
+        rflag,
+        "-T-" = read_T_files,
+        "-E-" = read_E_files
+      )
+      out_list[[rflag]] <-
+        fcnx(
+          yr = y,
+          yfiles = ylist[[rflag]],
+          h5_files = flist[[rflag]],
+          outdir = outdir,
+          start_date = start_date,
+          end_date = end_date,
+          pfts = pfts,
+          settings = settings
+        )
     }
 
     # generate start/end dates for processing
@@ -156,12 +166,21 @@ model2netcdf.ED2 <- function(outdir,
     nc_var <- list()
     for (i in seq_along(out_list)) {
       rflag   <- ed_res_flag[i]
-      #fcnx is either put_T_values() or put_E_values()
-      #TODO: use switch() here instead?
-      fcnx    <- paste0("put_", gsub("-", "", rflag), "_values")
-      put_out <- do.call(fcnx, list(yr = y, nc_var = nc_var, var_list = out_list[[rflag]],
-                                    lat = lat, lon = lon, start_date = start_date_real,
-                                    end_date = end_date_real))
+      fcnx <- switch(
+        rflag,
+        "-T-" = put_T_values,
+        "-E-" = put_E_values
+      )
+      put_out <-
+        fcnx(
+          yr = y,
+          nc_var = nc_var,
+          var_list = out_list[[rflag]],
+          lat = lat,
+          lon = lon,
+          start_date = start_date_real,
+          end_date = end_date_real
+        )
       nc_var            <- put_out$nc_var
       out_list[[rflag]] <- put_out$out
     }
