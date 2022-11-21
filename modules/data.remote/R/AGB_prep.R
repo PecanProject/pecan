@@ -114,5 +114,5 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       }
     }
   }
-  list(AGB_Output = AGB_Output, time_points = time_points, var = "AGB")
+  list(AGB_Output = AGB_Output, time_points = time_points, var = "AbvGrndWood")
 }
