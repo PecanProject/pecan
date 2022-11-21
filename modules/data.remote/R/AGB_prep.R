@@ -7,6 +7,8 @@
 #' @param OutDir Where the final CSV file will be stored.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #' @param Allow_download If data is missing, should we download the missing data?
+#' @param buffer buffer area to calculate the min var of AGB data.
+#' @param skip_buffer flag to skip calculating min var based on buffer area.
 #'
 #' @return A data frame containing AGB median and sd for each site and each time step.
 #' @export
@@ -15,7 +17,7 @@
 #' @author Dongchen Zhang
 AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
-                     OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE){
+                     OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #if we export CSV but didn't provide any path
   if(as.logical(Export_CSV) && is.null(OutDir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
@@ -47,7 +49,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(OutDir, "AGB.csv"))){
+  if(file.exists(file.path(OutDir, "AGB.csv")) && is.null(buffer) | skip_buffer){
     Previous_CSV <- as.data.frame(read.csv(file.path(OutDir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
@@ -76,16 +78,36 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #if we have any site missing previously
   if(length(new_Site_Info$site_id) != 0){
-    #extracting AGB data
-    med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = NULL, fun = "mean", 
-                                                              AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]] %>% dplyr::select(-2) %>%
-                                                              `colnames<-`(c("site_id", paste0(time_points, "_AGB")))
-    sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = NULL, fun = "mean", 
-                                                               AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]]%>% dplyr::select(-c(1:2)) %>%
-                                                              `colnames<-`(c(paste0(time_points, "_SD")))
-    
-    #Handle data
-    AGB_Output <- cbind(med_agb_data, sdev_agb_data)
+    if(is.null(buffer)){
+      #extracting AGB data
+      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = buffer, fun = "mean", 
+                                                                AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]] %>% dplyr::select(-2) %>%
+        `colnames<-`(c("site_id", paste0(time_points, "_AGB")))
+      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
+                                                                 AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]]%>% dplyr::select(-c(1:2)) %>%
+        `colnames<-`(c(paste0(time_points, "_SD")))
+      #Handle data
+      AGB_Output <- cbind(med_agb_data, sdev_agb_data)
+    }else{#buffer is not empty
+      #extracting AGB data
+      med <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = buffer, fun = "mean", 
+                                                                AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
+      sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
+                                                                 AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
+      sdev_agb_data <- med_agb_data <- c()
+      for (i in 1:length(new_Site_Info$site_id)) {
+        temp_var <- rowSums(sdev[[i]])
+        min_var_Ind <- which.min(temp_var)
+        
+        sdev_agb_data <- rbind(sdev_agb_data, sdev[[i]][min_var_Ind,])
+        med_agb_data <- rbind(med_agb_data, med[[i]][min_var_Ind,])
+      }
+      colnames(med_agb_data) <- paste0(time_points, "_AGB")
+      colnames(sdev_agb_data) <- paste0(time_points, "_SD")
+      #Handle data
+      AGB_Output <- cbind(med_agb_data, sdev_agb_data) %>% as.data.frame
+      AGB_Output$site_id <- Site_Info$site_id
+    }
     
     #prepare CSV from AGB_Output
     Current_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
@@ -99,7 +121,6 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
         agb <- site_AGB[paste0(time_points[i], "_AGB")] %>% set_names("agb")
         sd <- site_AGB[paste0(time_points[i], "_SD")] %>% set_names("sd")
         Current_CSV <- rbind(Current_CSV, tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
-        
       }
     }
 
