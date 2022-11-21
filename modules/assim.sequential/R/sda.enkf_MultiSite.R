@@ -159,9 +159,10 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
-  my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
-  my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
-  my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
+  do.call("library", list(paste0("PEcAn.", model)))
+  my.write_restart <- paste0("write_restart.", model)
+  my.read_restart <- paste0("read_restart.", model)
+  my.split_inputs  <- paste0("split_inputs.", model)
   #- Double checking some of the inputs
   if (is.null(adjustment)) adjustment <- TRUE
   # models that don't need split_inputs, check register file for that
@@ -195,7 +196,7 @@ sda.enkf.multisite <- function(settings,
             my.split_inputs,
             args = list(
               settings = settings,
-              start.time = settings$run$site$met.start, # This depends if we are restart or not
+              start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
               outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
@@ -300,7 +301,23 @@ sda.enkf.multisite <- function(settings,
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens) 
+      #reformatting params
+      new.params <- list()
+      all.pft.names <- names(ensemble.samples)
+      for (i in 1:length(settings)) {
+        #match pft name
+        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+        which.pft <- which(all.pft.names==site.pft.name)
+        
+        site.param <- list()
+        site.samples <- ensemble.samples[which.pft]
+        for (j in seq_len(nens)) {
+          site.param[[j]] <- lapply(site.samples, function(x, n) {
+            x[j, ] }, n = j)
+        } 
+        new.params[[i]] <- site.param
+      }
+      names(new.params) <- site.ids
     }
     #sample met ensemble members
     inputs <- conf.settings %>% map(function(setting) {
@@ -332,7 +349,31 @@ sda.enkf.multisite <- function(settings,
         #furrr::future_map(~ unlink(.x))
         
         #for next time step split the met if model requires
-        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split, obs.times, t, nens, restart_flag, my.split_inputs)
+        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+        inputs.split <- conf.settings %>%
+          `class<-`(c("list")) %>%
+          purrr::map2(inputs, function(settings, inputs) {
+            # Loading the model package - this is required bc of the furrr
+            library(paste0("PEcAn.",model), character.only = TRUE)
+            
+            inputs.split <- list()
+            if (!no_split) {
+              for (i in seq_len(nens)) {
+                #---------------- model specific split inputs
+                inputs.split$samples[i] <- do.call(
+                  my.split_inputs,
+                  args = list(
+                    settings = settings,
+                    start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                    stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
+                    inputs = inputs$samples[[i]])
+                )
+              }
+            } else{
+              inputs.split <- inputs
+            }
+            inputs.split
+          })
         
         ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
@@ -370,7 +411,7 @@ sda.enkf.multisite <- function(settings,
         }
         out.configs <- conf.settings %>%
           `class<-`(c("list")) %>%
-          furrr::future_map2(restart.list, function(settings, restart.arg = restart.arg) {
+          furrr::future_map2(restart.list, function(settings, restart.arg) {
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
@@ -394,7 +435,29 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = t, var.names = var.names, my.read_restart = my.read_restart)
+        reads <-
+          furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+            # Loading the model package - this is required bc of the furrr
+            #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+            #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
+            
+            X_tmp <- vector("list", 2)
+            
+            for (i in seq_len(nens)) {
+              X_tmp[[i]] <- do.call( my.read_restart,
+                                     args = list(
+                                       outdir = outdir,
+                                       runid = configs$runs$id[i] %>% as.character(),
+                                       stop.time = read_restart_times[t+1],
+                                       settings = settings,
+                                       var.names = var.names,
+                                       params = siteparams[[i]]
+                                     )
+              )
+              
+            }
+            return(X_tmp)
+          })
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -428,7 +491,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.na(obs.check)) {
+      if (all(!is.na(obs.check))) {
         if (control$debug) browser()
         #Making R and Y
         Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
@@ -632,7 +695,8 @@ sda.enkf.multisite <- function(settings,
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
-      
+    #rename sipnet.out
+    
     # remove files as SDA runs
     if (!(keepNC))
     {
