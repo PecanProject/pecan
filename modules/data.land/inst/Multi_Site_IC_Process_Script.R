@@ -11,7 +11,7 @@ log_file <- c()
 neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 site.IDs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
 Drop <- TRUE
-Write_into_settings <- FALSE
+Write_into_settings <- TRUE
 
 #loop over different sites
 for (i in 1:length(settings)) {
