@@ -12,7 +12,9 @@ AGB_prep(
   AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB",
   OutDir = NULL,
   Export_CSV = TRUE,
-  Allow_download = FALSE
+  Allow_download = FALSE,
+  buffer = NULL,
+  skip_buffer = TRUE
 )
 }
 \arguments{
@@ -29,6 +31,10 @@ AGB_prep(
 \item{Export_CSV}{Decide if we want to export the CSV file.}
 
 \item{Allow_download}{If data is missing, should we download the missing data?}
+
+\item{buffer}{buffer area to calculate the min var of AGB data.}
+
+\item{skip_buffer}{flag to skip calculating min var based on buffer area.}
 }
 \value{
 A data frame containing AGB median and sd for each site and each time step.
