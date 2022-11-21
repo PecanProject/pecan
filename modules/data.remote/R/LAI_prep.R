@@ -45,10 +45,13 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in Site_Info$site_id) {
         site_LAI <- Previous_CSV[which(Previous_CSV$site_id == id),]
+        site_LAI$sd[which(site_LAI$sd<=0.66)] <- 0.66
         diff_days <- abs(lubridate::days(lubridate::date(site_LAI$date)-lubridate::date(t))@day)
-        if(sum(diff_days <= Search_Window)){#data found
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- site_LAI$lai[which.min(diff_days)]
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[which.min(diff_days)]
+        if(sum(diff_days <= as.numeric(Search_Window))){#data found
+          IND <- which((diff_days <= as.numeric(Search_Window)))
+          IND1 <- which(site_LAI$lai[IND] == max(site_LAI$lai[IND]))[1]
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- max(site_LAI$lai[IND[IND1]])
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[IND[IND1]]
         }
       }
     }
@@ -101,10 +104,13 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in new_Site_Info$site_id) {
         site_LAI <- Current_CSV[which(Current_CSV$site_id == id),]
+        site_LAI$sd[which(site_LAI$sd<=0.66)] <- 0.66
         diff_days <- abs(lubridate::days(lubridate::date(site_LAI$date)-lubridate::date(t))@day)
-        if(sum(diff_days <= Search_Window)){#data found
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- site_LAI$lai[which.min(diff_days)]
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[which.min(diff_days)]
+        if(sum(diff_days <= as.numeric(Search_Window))){#data found
+          IND <- which((diff_days <= as.numeric(Search_Window)))
+          IND1 <- which(site_LAI$lai[IND] == max(site_LAI$lai[IND]))[1]
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- max(site_LAI$lai[IND[IND1]])
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[IND[IND1]]
         }
       }
     }
