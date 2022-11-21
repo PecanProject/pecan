@@ -273,18 +273,22 @@ extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL,
   
   ## extract
   agb_pixel <- raster::extract(x = raster_data_stack, 
-                                      y = coords_AEA, buffer=NULL, fun=NULL, df=FALSE)
-  processed_years <- unlist(regmatches(names(data.frame(agb_pixel)), 
-                                       gregexpr("\\d{4}", names(data.frame(agb_pixel)))))
-  agb_pixel <- data.frame(agb_pixel)
-  names(agb_pixel) <- paste0("Year_",processed_years)
-  agb_pixel <- data.frame(Site_ID=site_info$site_id, Site_Name=site_info$site_name, agb_pixel)
-  
-  ## output list
-  point_list <- list()
-  output_name <- paste0(dataset,"_AGB")
-  point_list <- list(agb_pixel)
-  names(point_list) <- output_name
+                                      y = coords_AEA, buffer=buffer, fun=NULL, df=FALSE)
+  if(is.null(buffer)){
+    processed_years <- unlist(regmatches(names(data.frame(agb_pixel)), 
+                                         gregexpr("\\d{4}", names(data.frame(agb_pixel)))))
+    agb_pixel <- data.frame(agb_pixel)
+    names(agb_pixel) <- paste0("Year_",processed_years)
+    agb_pixel <- data.frame(Site_ID=site_info$site_id, Site_Name=site_info$site_name, agb_pixel)
+    
+    ## output list
+    point_list <- list()
+    output_name <- paste0(dataset,"_AGB")
+    point_list <- list(agb_pixel)
+    names(point_list) <- output_name
+  }else{
+    return(agb_pixel)
+  }
 
   ## save output to a file?
   if (!is.null(output_file)) {
