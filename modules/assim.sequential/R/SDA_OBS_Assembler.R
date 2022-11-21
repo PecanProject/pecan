@@ -37,6 +37,14 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
   
   #We need to keep the order from Var to the actual obs.mean and obs.cov
   OBS <- list()
+  new_var <- c()
+  # for(i in 1:length(Var)){
+  #   library(PEcAn.data.remote)
+  #   fcn <- paste0(Var[i], "Prep")
+  #   Temp_out <- do.call(fcn, args = list(
+  #     
+  #   ))
+  # }
   for (i in 1:length(Var)) {
     var <- Var[i]
     if("AGB" == var){
@@ -48,7 +56,9 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
                                                 OutDir = Obs_Prep$AGB$Out_dir,
                                                 Export_CSV = Obs_Prep$AGB$Export_CSV,
                                                 Allow_download = Obs_Prep$AGB$Allow_download)
+      time_points <- AGB_Output$time_points
       OBS[[i]] <- AGB_Output$AGB_Output
+      new_var <- c(new_var, AGB_Output$var)
     }else if("LAI" == var){
       LAI_Output <- PEcAn.data.remote::LAI_prep(Site_Info = Site_Info, 
                                                 Start_Date = Obs_Prep$Start_Date, 
@@ -58,9 +68,11 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
                                                 OutDir = Obs_Prep$LAI$Out_dir,
                                                 Search_Window = Obs_Prep$LAI$Search_Window,
                                                 Export_CSV = Obs_Prep$LAI$Export_CSV)
+      time_points <- LAI_Output$time_points
       OBS[[i]] <- LAI_Output$LAI_Output
+      new_var <- c(new_var, LAI_Output$var)
     }else if("SMP" == var){
-      SMAP_Output <- PEcAn.data.remote::SMAP_prep(Site_Info = Site_Info, 
+      SMP_Output <- PEcAn.data.remote::SMP_prep(Site_Info = Site_Info, 
                                                   Start_Date = Obs_Prep$Start_Date, 
                                                   End_Date = Obs_Prep$End_Date,
                                                   Time_Step = Obs_Prep$SMAP$Time_Step,
@@ -68,13 +80,14 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
                                                   Search_Window = Obs_Prep$SMAP$Search_Window,
                                                   Export_CSV = Obs_Prep$SMAP$Export_CSV,
                                                   Update_CSV = Obs_Prep$SMAP$Update_CSV)
-      OBS[[i]] <- SMAP_Output$SMAP_Output
+      time_points <- SMP_Output$time_points
+      OBS[[i]] <- SMP_Output$SMP_Output
+      new_var <- c(new_var, SMP_Output$var)
     }
   }
   
   #Create obs.mean and obs.cov
   obs.mean <- obs.cov <- list()
-  time_points <- LAI_Output$time_points
   new_diag <- function(vec){
     if(length(vec)==1){
       return(vec)
@@ -89,7 +102,7 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
   #over time
   for (i in 1:length(time_points)) {
     t <- time_points[i]
-    dat_all_var <- sd_all_var <- matrix(NA, length(Site_Info$site_id), length(Var)) %>% `colnames<-`(Var)
+    dat_all_var <- sd_all_var <- matrix(NA, length(Site_Info$site_id), length(new_var)) %>% `colnames<-`(new_var)
     #over variable
     for (j in 1:length(OBS)) {
       if(paste0(t, "_", Var[j]) %in% colnames(OBS[[j]])){
@@ -103,7 +116,7 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
     #over site
     site_dat_var <- site_sd_var <- list()
     for (j in 1:dim(dat_all_var)[1]) {
-      site_dat_var[[j]] <- dat_all_var[j,] %>% set_names(Var)
+      site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(new_var)) %>% data.frame %>% `colnames<-`(new_var)
       site_sd_var[[j]] <- new_diag(sd_all_var[j,])
     }
     obs.mean[[i]] <- site_dat_var %>% set_names(Site_Info$site_id)
