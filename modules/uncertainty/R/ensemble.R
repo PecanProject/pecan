@@ -457,7 +457,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
-                           RENAME = FALSE)#for restart from previous model runs, not sharing the same outdir
+                           RENAME = TRUE)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params
