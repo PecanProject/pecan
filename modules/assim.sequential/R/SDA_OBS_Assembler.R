@@ -4,6 +4,7 @@
 #' @param Var Variable name, currently support: SMP, AGB, and LAI.
 #' @param OutDir the path to store obs.mean and obs.cov
 #' @param Obs_Prep if your settings object doesn't contain Obs_Prep, you can import it separately (details see L17-18).
+#' @param skip_buffer flag to skip calculating min var based on buffer area for agb data.
 #'
 #' @return list of obs.mean and obs.cov
 #' @export
@@ -15,7 +16,7 @@
 #' Var <- c("SMP", "LAI", "AGB")
 #' OBS <- PEcAnAssimSequential::SDA_OBS_Assembler(settings_dir, Var, OutDir)
 
-SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
+SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
   #read settings
   settings <- PEcAn.settings::read.settings(settings_dir)
   
@@ -55,7 +56,9 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL){
                                                 AGB_dir = Obs_Prep$AGB$AGB_dir,
                                                 OutDir = Obs_Prep$AGB$Out_dir,
                                                 Export_CSV = Obs_Prep$AGB$Export_CSV,
-                                                Allow_download = Obs_Prep$AGB$Allow_download)
+                                                Allow_download = Obs_Prep$AGB$Allow_download,
+                                                buffer = as.numeric(Obs_Prep$AGB$buffer),
+                                                skip_buffer = skip_buffer)
       time_points <- AGB_Output$time_points
       OBS[[i]] <- AGB_Output$AGB_Output
       new_var <- c(new_var, AGB_Output$var)
