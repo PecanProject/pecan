@@ -59,7 +59,7 @@ jobs:
       # this will publish to the actor (person) github packages
       - name: Publish to GitHub
         if: env.TAG != ''
-        uses: elgohr/Publish-Docker-Github-Action@2.22
+        uses: elgohr/Publish-Docker-Github-Action@v4
         env:
           R_VERSION: ${{ matrix.R  }}
         with:
@@ -74,7 +74,7 @@ jobs:
       # this will publish to the clowder dockerhub repo
       - name: Publish to Docker Hub
         if: env.TAG != ''
-        uses: elgohr/Publish-Docker-Github-Action@2.18
+        uses: elgohr/Publish-Docker-Github-Action@v4
         env:
           R_VERSION: ${{ matrix.R  }}
         with:
