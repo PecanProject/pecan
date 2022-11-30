@@ -82,21 +82,25 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   #Copy all run directories over if not local
   if (!is_local) {
     # copy over run directories
-    PEcAn.remote::remote.copy.to(
-      host = settings$host,
-      src = settings$rundir, 
-      dst = dirname(settings$host$rundir), 
-      delete = TRUE
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.to(
+        host = settings$host,
+        src = settings$rundir, 
+        dst = dirname(settings$host$rundir), 
+        delete = TRUE
+      )
     )
-    Sys.sleep(2)
+    
     # copy over out directories
-    PEcAn.remote::remote.copy.to(
-      host = settings$host,
-      src = settings$modeloutdir,
-      dst = dirname(settings$host$outdir),
-      #include all directories, exclude all files
-      options = c("--include='*/'", "--exclude='*'"),
-      delete = TRUE
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.to(
+        host = settings$host,
+        src = settings$modeloutdir,
+        dst = dirname(settings$host$outdir),
+        #include all directories, exclude all files
+        options = c("--include='*/'", "--exclude='*'"),
+        delete = TRUE
+      )
     )
   }
   
