@@ -125,4 +125,4 @@ check_unit <- function(variable, nc, variable_table, warn_unknown = TRUE) {
       glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
     )
   }
-
+}
