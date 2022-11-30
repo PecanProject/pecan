@@ -88,7 +88,9 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         src = settings$rundir, 
         dst = dirname(settings$host$rundir), 
         delete = TRUE
-      )
+      ), 
+      maxErrors = 3,
+      sleep = 2
     )
     
     # copy over out directories
@@ -100,7 +102,9 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         #include all directories, exclude all files
         options = c("--include='*/'", "--exclude='*'"),
         delete = TRUE
-      )
+      ),
+      maxErrors = 3,
+      sleep = 2
     )
   }
   
