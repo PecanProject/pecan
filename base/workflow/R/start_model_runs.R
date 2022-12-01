@@ -89,7 +89,6 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         dst = dirname(settings$host$rundir), 
         delete = TRUE
       ), 
-      maxErrors = 3,
       sleep = 2
     )
     
@@ -103,7 +102,6 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         options = c("--include='*/'", "--exclude='*'"),
         delete = TRUE
       ),
-      maxErrors = 3,
       sleep = 2
     )
   }
@@ -172,10 +170,13 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
       if (!is_local) {
         # copy data back to local
-        PEcAn.remote::remote.copy.from(
-          host = settings$host,
-          src = file.path(settings$host$outdir, run_id_string),
-          dst = settings$modeloutdir)
+        PEcAn.utils::retry.func(
+          PEcAn.remote::remote.copy.from(
+            host = settings$host,
+            src = file.path(settings$host$outdir, run_id_string),
+            dst = settings$modeloutdir),
+          sleep = 2
+        )
       }
       
       # write finished time to database
@@ -211,11 +212,14 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       for (run in run_list){ #only re-copy run dirs that have launcher and job list
         if (run %in% job_modellauncher) {
           # copy launcher and joblist
-          PEcAn.remote::remote.copy.to(
-            host = settings$host,
-            src = file.path(settings$rundir, format(run, scientific = FALSE)),
-            dst = settings$host$rundir,
-            delete = TRUE)
+          PEcAn.utils::retry.func(
+            PEcAn.remote::remote.copy.to(
+              host = settings$host,
+              src = file.path(settings$rundir, format(run, scientific = FALSE)),
+              dst = settings$host$rundir,
+              delete = TRUE),
+            sleep = 2
+          )
           
         }
       }
@@ -273,12 +277,12 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     
     if (!is_local) {
       #Copy over log files to check progress
-      PEcAn.remote::remote.copy.from(
+      try(PEcAn.remote::remote.copy.from(
         host = settings$host,
         src = settings$host$outdir,
         dst = dirname(settings$modeloutdir),
         options = c('--exclude=*.h5')
-      )
+      ))
     }
     
     for (run in names(jobids)) {
@@ -341,10 +345,13 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   # Copy data back to local
   if (!is_local) {
-    PEcAn.remote::remote.copy.from(
-      host = settings$host,
-      src = settings$host$outdir,
-      dst = dirname(settings$modeloutdir)
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.from(
+        host = settings$host,
+        src = settings$host$outdir,
+        dst = dirname(settings$modeloutdir)
+      ),
+      sleep = 2
     )
   }
 } # start_model_runs
