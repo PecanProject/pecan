@@ -67,7 +67,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   Date <- Year <- Day <- NULL
   
   ## Merge subdaily-files
-  ldndc.raw.out <- merge(physiology, soilchemistry, by = 'datetime')
+  ldndc.raw.out <- merge(physiology, soilchemistry, by = 'datetime', all = TRUE)
   
   ldndc.out <- ldndc.raw.out %>%
     dplyr:: mutate(Date = format(as.POSIXlt(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
