@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<ldndcevent>
+
+  <global time="2021-01-01" />
+	
+  <event  id="0" >
+	       
+   <event type="till" time="2021-04-27" >
+	      <till depth="0.3" />
+    </event>
+
+	  <event type="plant" time="2021-05-30" >
+      <plant name="Hordeum Vulgare" type="barley" >
+         <crop initialbiomass="10" fractionalcover="0.9" />
+       </plant>
+    </event>
+
+    <event type="harvest" time="2021-08-09">
+	    <harvest name="Hordeum Vulgare" remains="0.3"/>
+		</event>
+
+	  <event type="till" time="2022-04-28" >
+		  <till depth="0.3" />
+	  </event>
+
+	  <event type="plant" time="2022-05-04" >
+		  <plant name="Avena Sativa 2" type="oats">
+			  <crop initialbiomass="1" fractionalcover="1.0" />
+		  </plant>
+	  </event>
+
+	  <!--<event type="fertilize" time="2022-04-25" >
+		  <fertilize type="nh4no3" amount="55" depth="0.08" />
+	  </event> -->
+
+	  <event type="harvest" time="2022-08-16">
+		  <harvest name="Avena Sativa 2" remains="0.3"/>
+	  </event>
+
+  </event>
+</ldndcevent>
+

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<ldndcevent>
+
+  <global time="2022-01-01" />
+	
+  <event  id="0" >
+
+	  <event type="plant" time="2022-01-01" >
+      <plant name="perg" type="perg">
+        <grass initialbiomass="100" fractionalcover="70.0"/>
+      </plant>
+    </event>
+
+    <!-- Potassium salt -->
+    <event type="fertilize" time="2022-05-09">
+      <fertilize type="so4" amount="70" />
+    </event>
+    
+    <!-- BeFert CAN -->
+    <event type="fertilize" time="2022-05-10">
+      <fertilize type="nh4no3" amount="108" />
+    </event>
+
+    <event type="cut" time="2022-07-01">
+      <cut remains_relative="0.2"/>
+    </event>
+    
+    <event type="till" time="2022-11-01" >
+      <till depth="0.15" />
+    </event>
+
+
+  </event>
+</ldndcevent>
+

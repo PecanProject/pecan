@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ldndcsetup>
+    <!-- setup id -->
+    <setup id="0" name="site" >
+        <!-- geographical location -->
+        <location elevation="10.0" latitude="60.22" longitude="25.02" />
+        <models>
+            <model id="_MoBiLE" />
+        </models>
+        <mobile>
+            <!-- model selection -->
+            <modulelist>
+		<module id="microclimate:canopyecm" timemode="subdaily" />
+		<module id="watercycle:watercycledndc" timemode="subdaily" >
+		  <options potentialevapotranspiration="penman" />
+	  </module>
+	  <module id="airchemistry:airchemistrydndc" timemode="subdaily" />
+		<module id="physiology:plamox" timemode="subdaily" />
+		<module id="soilchemistry:metrx" timemode="subdaily" >
+		  <options canopytransport="yes" />
+		  <options riverconnection="no" />
+		</module>
+
+			<!-- outputs -->
+		<module id="output:microclimate:daily" />
+		<module id="output:watercycle:daily" />
+		<module id="output:physiology:subdaily" />
+		<module id="output:vegstructure:daily" />
+		<module id="output:soilchemistry:subdaily" />
+		<module id="output:report:arable" timemode="subdaily" />
+            </modulelist>
+        </mobile>
+    </setup>
+</ldndcsetup>
