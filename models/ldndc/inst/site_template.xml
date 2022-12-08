@@ -1,13 +1,9 @@
 <?xml version="1.0"?>
 <site>
   <soil>
-  <general usehistory="arable" soil="CLLO" lheight="0.0" corg="0.04" />
+  <general usehistory=@Info_Use_History@ soil=@Soil_Type@ lheight="0.0" corg="0.04" />
     <layers>
-      <layer depth="2" split="1" @Info_Surface_Layer@ />
-      <layer depth="200" split="2" @Info_Second_Layer@ />
-      <layer depth="200" split="2" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.05"  scel="0.005" sks="0.002186" />
-      <layer depth="300" split="3" bd="1.09"  clay="0.02" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" /> 
-      <layer depth="300" split="3" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" /> 
+      @Info_Surface_Layer@
     </layers>
   </soil>
 </site>
