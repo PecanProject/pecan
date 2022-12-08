@@ -23,7 +23,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # inspect input files closer (or do simulatons on different
   # environment. Set based on current model version (1.33)
   # and probably no reason to change.
-  MinPackReq <- "1.3" # Current version 1.33
+  MinPackReq <- "1.5" # Current version 1.35
   
   
   # Create Schedule time
@@ -54,6 +54,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     OutputPrefix <- file.path(outdir, "Output/")
   }
   
+  # Groundwater is available for Viikki site
   if(settings$run$site$id == "15000000029"){
     GroundWater = '<groundwater source="groundwater.txt" format="txt" />'
   }
@@ -177,6 +178,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     a.2 <- paste0("\t\t\t</species>")
     
     
+    #----
+      
+    # Soil info
+    soil_use_history <- "arable"
+    soil_type <- "CLLO"
+    
+    
   }
   
   if(site_id == "15000000029"){
@@ -207,6 +215,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Indentation (grass)
     a.2 <- paste0("\t\t\t</species>")
     
+    
+    #----
+    
+    # Soil info
+    soil_use_history <- "grassland"
+    soil_type <- "CLAY"
+    
   }
   
   # Use only one of the specified sites: Haltiala or Viikki
@@ -234,26 +249,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## files should be populated with initial values.
     
   
-  ###### THIS NEEDS TO BE FUNCTION AT SOME POINT
-  ### PROBABLY SIMILAR FUNCTION FOR siteparameters as well
-  #
-  
-  
 
-  
-  ## Initial conditions, updated if given as parameters
-  bd_1 <- 0.05; bd_2 <- 1.68
-  clay_1 <- 0; clay_2 <- 0.42
-  corg_1 <- corg_2 <- 0.04
-  norg_1 <- norg_2 <- 0.0032
-  ph_1 <- ph_2 <- 6.9
-  vangenuchten_n <- 1.5
-  vangenuchten_alpha <- 1.9
-  sand_1 <- 0; sand_2 <- 0.3
-  scel_1 <- scel_2 <- 0.005
-  sks_1 <- 0.8; sks_2 <- 0.003886
-  wcmin_1 <- 70; wcmin_2 <- 100
-  wcmax_1 <- 330; wcmax_2 <- 380
   
   # Siteparameters
   h.2 <- ""
@@ -376,7 +372,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
       }
       else{
-        gdd_grainfilling <- gdd_flowering + runif(1, min = 30, max = 300)
+        gdd_grainfilling <- gdd_flowering + runif(1, min = 250, max = 600)
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", gdd_grainfilling, "' /> \n"), collapse="")
       }
     }
@@ -387,7 +383,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", pft.traits[which(pft.names == "gdd_maturity")], "' /> \n"), collapse="")
       }
       else{
-        gdd_maturity <- gdd_grainfilling + runif(1, min = 30, max = 300)
+        gdd_maturity <- gdd_grainfilling + runif(1, min = 600, max = 1000)
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", gdd_maturity, "' /> \n"), collapse="")
       }
     }
@@ -1190,43 +1186,37 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
     
     
-    # Soil conditions
-    if("bd_1" %in% pft.names) {bd_1 <- pft.traits[which(pft.names == "bd_1")]}
-    if("bd_2" %in% pft.names) {bd_2 <- pft.traits[which(pft.names == "bd_2")]}
-    
-    if("clay_1" %in% pft.names) {clay_1 <- pft.traits[which(pft.names == "clay_1")]}
-    if("clay_2" %in% pft.names) {clay_2 <- pft.traits[which(pft.names == "clay_2")]}
-    
-    if("corg_1" %in% pft.names) {corg_1 <- pft.traits[which(pft.names == "corg_1")]}
-    if("corg_2" %in% pft.names) {corg_2 <- pft.traits[which(pft.names == "corg_2")]}
-    
-    if("norg_1" %in% pft.names) {norg_1 <- pft.traits[which(pft.names == "norg_1")]}
-    if("norg_2" %in% pft.names) {norg_2 <- pft.traits[which(pft.names == "norg_2")]}
-    
-    if("ph_1" %in% pft.names) {ph_1 <- pft.traits[which(pft.names == "ph_1")]}
-    if("ph_2" %in% pft.names) {ph_2 <- pft.traits[which(pft.names == "ph_2")]}
-    
-    if("sand_1" %in% pft.names) {sand_1 <- pft.traits[which(pft.names == "sand_1")]}
-    if("sand_2" %in% pft.names) {sand_2 <- pft.traits[which(pft.names == "sand_2")]}
-    
-    if("vangenuchten_n" %in% pft.names) {vangenuchten_n <- pft.traits[which(pft.names == "vangenuchten_n")]}
-    if("vangenuchten_alpha" %in% pft.names) {vangenuchten_alpha <- pft.traits[which(pft.names == "vangenuchten_alpha")]}
-    
-    if("scel_1" %in% pft.names) {scel_1 <- pft.traits[which(pft.names == "scel_1")]}
-    if("scel_2" %in% pft.names) {scel_2 <- pft.traits[which(pft.names == "scel_2")]}
-    
-    if("sks_1" %in% pft.names) {sks_1 <- pft.traits[which(pft.names == "sks_1")]}
-    if("sks_2" %in% pft.names) {sks_2 <- pft.traits[which(pft.names == "sks_2")]}
-    
-    if("wcmin_1" %in% pft.names) {wcmin_1 <- pft.traits[which(pft.names == "wcmin_1")]}
-    if("wcmin_2" %in% pft.names) {wcmin_2 <- pft.traits[which(pft.names == "wcmin_2")]}
-    
-    if("wcmax_1" %in% pft.names) {wcmax_1 <- pft.traits[which(pft.names == "wcmax_1")]}
-    if("wcmax_2" %in% pft.names) {wcmax_2 <- pft.traits[which(pft.names == "wcmax_2")]}
+    # # Soil conditions
+    # if("bd_1" %in% pft.names) {bd_1 <- pft.traits[which(pft.names == "bd_1")]}
+    # if("bd_2" %in% pft.names) {bd_2 <- pft.traits[which(pft.names == "bd_2")]}
+    # 
+    # if("clay_1" %in% pft.names) {clay_1 <- pft.traits[which(pft.names == "clay_1")]}
+    # if("clay_2" %in% pft.names) {clay_2 <- pft.traits[which(pft.names == "clay_2")]}
+    # 
+    # if("corg_1" %in% pft.names) {corg_1 <- pft.traits[which(pft.names == "corg_1")]}
+    # if("corg_2" %in% pft.names) {corg_2 <- pft.traits[which(pft.names == "corg_2")]}
+    # 
+    # if("norg_1" %in% pft.names) {norg_1 <- pft.traits[which(pft.names == "norg_1")]}
+    # if("norg_2" %in% pft.names) {norg_2 <- pft.traits[which(pft.names == "norg_2")]}
+    # 
+    # if("ph_1" %in% pft.names) {ph_1 <- pft.traits[which(pft.names == "ph_1")]}
+    # if("ph_2" %in% pft.names) {ph_2 <- pft.traits[which(pft.names == "ph_2")]}
+    # 
+    # if("sand_1" %in% pft.names) {sand_1 <- pft.traits[which(pft.names == "sand_1")]}
+    # if("sand_2" %in% pft.names) {sand_2 <- pft.traits[which(pft.names == "sand_2")]}
+    # 
+    # if("vangenuchten_n" %in% pft.names) {vangenuchten_n <- pft.traits[which(pft.names == "vangenuchten_n")]}
+    # if("vangenuchten_alpha" %in% pft.names) {vangenuchten_alpha <- pft.traits[which(pft.names == "vangenuchten_alpha")]}
+    # 
+    # if("scel_1" %in% pft.names) {scel_1 <- pft.traits[which(pft.names == "scel_1")]}
+    # if("scel_2" %in% pft.names) {scel_2 <- pft.traits[which(pft.names == "scel_2")]}
+    # 
+    # if("sks_1" %in% pft.names) {sks_1 <- pft.traits[which(pft.names == "sks_1")]}
+    # if("sks_2" %in% pft.names) {sks_2 <- pft.traits[which(pft.names == "sks_2")]}
     
     
     
-    # Assing pft values
+    # Assining pft values
     species_par_values[names(trait.values)[pft]] <- b.2
     
     b.2 <- ""
@@ -1234,17 +1224,81 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
   }
   
-  #print(species_par_values[1])
   ## INITIAL SOIL CONDITIONS
-  # Surface Layer
-  soil_surface <- paste0("bd='", bd_1, "' clay='", clay_1, "' corg='", corg_1, "' norg='", norg_1, "' ph='", ph_1,
-                         "' vangenuchten_n='", vangenuchten_n, "' vangenuchten_alpha='", vangenuchten_alpha, "' sand='",
-                         sand_1, "' scel='", scel_1, "' sks='", sks_1, "' wcmax='", wcmax_1, "' wcmin='", wcmin_1, "'")
+  soil_layer <- list()
+  
+  # Set different layers, which will be used based on the soil data that is available
+  # For example, if we have soil data for top layer, then that will be used instead of soil_layer_1
+  soil_layer[1] <- '<layer depth="60" split="3" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.5" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+  soil_layer[2] <- '<layer depth="90" split="2" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.5" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+  soil_layer[3] <- '<layer depth="200" split="4" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.05"  scel="0.005" sks="0.002186" />'
+  soil_layer[4] <- '<layer depth="200" split="4" bd="1.09"  clay="0.12" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />' 
+  soil_layer[5] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.004000" />'
+  soil_layer[6] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />'
+  soil_layer[7] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" />' 
+  
+  
+  
+  ## Soil layers, if not external files are given
+  if(is.null(settings$run$inputs$poolinitcond$path)){
+    soil_layer_values <- paste(soil_layer, collapse = "\n \t")
+  }
+  
+  
+  ## One soil layer is given
+  else if(length(settings$run$inputs$poolinitcond$path) == 1){
+    # Set empty soil layer
+    soil_layer_values <- "<layer depth='60' split='3' "
+    
+    # Reading soil file
+    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$poolinitcond$path$path1)
+    
+    ## Check which values are found from the soil netcdf file
+    if("soil_nitrogen_content" %in% names(soil_IC_list$vals)){
+      # Total Nitrogen Content - kg N m-2 to kg N kg-1 ??
+      norg <- unlist(soil_IC_list$vals["soil_nitrogen_content"])[[1]]
+      soil_layer_values <- paste0(soil_layer_values, paste0("norg='", norg, "' "))
+    }
+    
+    if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
+      # Field capacity - Change m3 m-3 to dm3 m-3
+      wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[1]] * 1000
+      soil_layer_values <- paste0(soil_layer_values, paste0("wcmax='", wcmax, "' "))
+    }
+    
+    if("water_concentration_at_wilting_point" %in% names(soil_IC_list$vals)){
+      # Wilting point - Change m3 m-3 to dm3 m-3
+      wcmin <- unlist(soil_IC_list$vals["water_concentration_at_wilting_point"])[[1]] * 1000
+      soil_layer_values <- paste0(soil_layer_values, paste0("wcmin='", wcmin, "' "))
+    }
+    
+    #----
+      
+    # THESE BELOW ONES ARE PLACEHOLDERS FOR NOW
+    if("hydraulic_conductivity" %in% names(soil_IC_list$vals)){
+      # Hydraulic conductivity - cm / min ???
+      sks <- unlist(soil_IC_list$vals["hydraulic_conductivity"])[[1]]
+    }
+    
+    
+    soil_layer_values <- paste(soil_layer_values, "/> \n")
+    soil_layer_values <- paste(soil_layer_values, "\t\t", paste(soil_layer[-1], collapse = "\n \t\t"))
+    
+    
+  }
+  
+  else{
+    PEcAn.logger::logger.severe("More than one soil path given: only one soil path is supported")
+  }
+  
+  
+  
+  
   
   # Second Layer
-  soil_second_layer <- paste0("bd='", bd_2, "' clay='", clay_2, "' corg='", corg_2, "' norg='", norg_2, "' ph='", ph_2,
-                              "' vangenuchten_n='", vangenuchten_n, "' vangenuchten_alpha='", vangenuchten_alpha,"' sand='",
-                              sand_2, "' scel='", scel_2, "' sks='", sks_2, "' wcmax='", wcmax_2, "' wcmin='", wcmin_2, "'")
+  # soil_second_layer <- paste0("bd='", bd_2, "' clay='", clay_2, "' corg='", corg_2, "' norg='", norg_2, "' ph='", ph_2,
+  #                             "' vangenuchten_n='", vangenuchten_n, "' vangenuchten_alpha='", vangenuchten_alpha,"' sand='",
+  #                             sand_2, "' scel='", scel_2, "' sks='", sks_2, "' wcmax='", wcmax, "' wcmin='", wcmin, "'")
   
   
   
@@ -1284,8 +1338,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Populate sitefile with given parameter. NOTE! Initial conditions are expected here to
   # be given as a parameters, so those should be found from prior table
   # If not set, then use the values defined earlier on this file.
-  sitefile <- gsub("@Info_Surface_Layer@", soil_surface, sitefile)
-  sitefile <- gsub("@Info_Second_Layer@", soil_second_layer, sitefile)
+  #sitefile <- gsub("@Info_Surface_Layer@", soil_surface, sitefile)
+  sitefile <- gsub("@Info_Use_History@", paste0("'", soil_use_history, "'"), sitefile)
+  sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
+  sitefile <- gsub("@Info_Surface_Layer@", soil_layer_values, sitefile)
   
   
   # Write soil conditions
