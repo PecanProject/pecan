@@ -106,6 +106,7 @@ test_that("New ED2IN tags get added at bottom of file", {
         posteriorid = 9000001416
       )
     )
+  old_level <- PEcAn.logger::logger.setLevel("DEBUG")
   x <- capture.output(
     write.config.ED2(
       trait.values = trait.values,
@@ -116,12 +117,15 @@ test_that("New ED2IN tags get added at bottom of file", {
     ),
     type = "message"
   )
+  PEcAn.logger::logger.setLevel(old_level)
+  
   
   #5. check if new tag exists
   ed2in_out <- read_ed2in(file.path(rundir, run.id, "ED2IN"))
   expect_equal(ed2in_out$NEW_TAG, 0)
   
   #check that info is printed
+
   expect_true(any(stringr::str_detect(x, "NEW_TAG")))
   
   #check that last non-comment line of ED2IN is "$END"
