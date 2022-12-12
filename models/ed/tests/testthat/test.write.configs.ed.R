@@ -21,12 +21,29 @@ testdir <- tempfile()
 dir.create(testdir)
 withr::defer(unlink(testdir, recursive = TRUE))
 unzip("data/outdir.zip", exdir = testdir)
+# unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
 outdir <- file.path(testdir, "outdir")
 
 test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
   settings <- 
     PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
   settings$outdir <- outdir
+  job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
+  expect <- deparse(dput(extract_pfts(settings$pfts)))
+  expect_true(any(stringr::str_detect(job.sh, stringr::fixed(expect))))
+})
+
+test_that("write.config.jobsh.ED2() works with long list of PFTs", {
+  settings <- 
+    PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
+  more_pfts <- list(
+    pft = list(name = "tempconif", ed2_pft_number = 7),
+    pft = list(name = "temperate.Evergreen_Hardwood", ed2_pft_number = 8),
+    pft = list(name = "temperate.Early_Hardwood", ed2_pft_number = 9),
+    pft = list(name = "temperate.North_Mid_Hardwood", ed2_pft_number = 10),
+    pft = list(name = "temperate.Late_Hardwood", ed2_pft_number = 11)
+    )
+  settings$pfts <- append(settings$pfts, more_pfts)
   job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
   expect <- deparse(dput(extract_pfts(settings$pfts)))
   expect_true(any(stringr::str_detect(job.sh, stringr::fixed(expect))))
