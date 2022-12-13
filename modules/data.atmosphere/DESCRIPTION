@@ -52,7 +52,6 @@ Imports:
     rlang (>= 0.2.0),
     sp,
     stringr (>= 1.1.0),
-    testthat (>= 2.0.0),
     tibble,
     tidyr,
     tidyselect,
@@ -66,7 +65,8 @@ Suggests:
     foreach,
     parallel,
     progress,
-    reticulate
+    reticulate,
+    testthat (>= 2.0.0)
 Remotes:
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
