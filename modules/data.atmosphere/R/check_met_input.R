@@ -45,20 +45,20 @@ check_met_input_file <- function(metfile,
     "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
   )
   test_dims <- list(
-    try2(testthat::expect_type(dimensions, "list")),
-    try2(testthat::expect_equal(length(dimensions), 3)),
-    try2(testthat::expect_true("time" %in% names(dimensions))),
+    try2(assertthat::validate_that(is.list(dimensions))),
+    try2(assertthat::are_equal(length(dimensions), 3)),
+    try2(assertthat::validate_that("time" %in% names(dimensions))),
     try2(testthat::expect_match(
       ncdf4::ncatt_get(nc, "time", "units")[["value"]],
       time_regex
     )),
-    try2(testthat::expect_true("latitude" %in% names(dimensions))),
-    try2(testthat::expect_equal(
+    try2(assertthat::validate_that("latitude" %in% names(dimensions))),
+    try2(assertthat::are_equal(
       ncdf4::ncatt_get(nc, "latitude", "units")[["value"]],
       "degrees_north"
     )),
-    try2(testthat::expect_true("longitude" %in% names(dimensions))),
-    try2(testthat::expect_equal(
+    try2(assertthat::validate_that("longitude" %in% names(dimensions))),
+    try2(assertthat::are_equal(
       ncdf4::ncatt_get(nc, "longitude", "units")[["value"]],
       "degrees_east"
     ))
@@ -118,17 +118,11 @@ check_unit <- function(variable, nc, variable_table, warn_unknown = TRUE) {
     dplyr::filter(.data$cf_standard_name == variable) %>%
     dplyr::pull(units)
   ncvar_unit <- ncdf4::ncatt_get(nc, variable, "units")[["value"]]
-<<<<<<< HEAD
+
   eq_units <- PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit)
   if(!eq_units) {
     PEcAn.logger::logger.error(
       glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
     )
   }
-=======
-  try(assertthat::assert_that(
-	  PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit) == TRUE,
-	  msg = glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
-	))
->>>>>>> 738c74129ef41b926db92a7fa44a7549138c4fb8
 }
