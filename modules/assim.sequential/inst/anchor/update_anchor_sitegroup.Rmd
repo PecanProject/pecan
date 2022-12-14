@@ -73,10 +73,40 @@ sites = sites %>% drop_na("id")
 
 
 ## Grab list of sitegroups & associated sites
+```{r}
+sitegroups = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","sitegroups")
+
+## remove sites without ID
+sitegroups = sitegroups %>% drop_na("id")
+
+sgs = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id IN (",
+                      paste(sitegroups$id,collapse=", "),")"),con)
+
+```
+
 
 ## Merge sites, remove duplicates and "exclude" list
+```{r}
+exclude = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","exclude")
+siteIDs = unique(c(sites$id,sgs$site_id))
+if(nrow(exclude)>0) siteIDs = siteIDs[-(siteIDs %in% exclude$id)]
+```
+
 
 ## update SDA_anchor
+```{r}
+anchorID = 1000000032
+anchor = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id = ",anchorID),con)
+newsites = siteIDs[!(siteIDs %in% anchor$site_id)]
+
+for(s in seq_along(newsites)){
+  InsertString = paste0("INSERT INTO sitegroups_sites(sitegroup_id,site_id) VALUES(",
+                        anchorID,", ",newsites[s],");")
+  db.query(InsertString,con)
+}
+
+```
+
 
 ## update SDA_anchor_NorthAmerica
 
