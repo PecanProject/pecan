@@ -203,7 +203,7 @@ model2netcdf.ED2 <- function(outdir,
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     # fill nc file with data
     for (i in seq_along(nc_var)) {
-      ncdf4::ncvar_put(nc, varid = nc_var[[i]], vals = out[[i]]) #TODO: if this errors because of incorrect dimensions, make the whole function error?
+      varput(nc, varid = nc_var[[i]], vals = out[[i]]) #TODO: if this errors because of incorrect dimensions, make the whole function error?
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
           sep = "\n")
     }
@@ -1774,6 +1774,17 @@ extract_pfts <- function(pfts) {
   #return named numeric vector:
   pfts_out
 }
+
+# A version of ncvar_put that returns the varid in warning messages
+varput <- function(nc, varid, vals, start = NA, count = NA) {
+  output <- capture.output(
+    ncvar_put(nc = nc, varid = varid, vals = vals, start = start, count = count)
+  )
+  if(length(output)!=0) {
+    cat(paste0("Message for var '", varid$name, "':"), output)
+  }
+}
+
 
 ##-------------------------------------------------------------------------------------------------#
 ### EOF
