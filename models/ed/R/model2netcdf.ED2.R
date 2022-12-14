@@ -1516,7 +1516,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
 extract_pfts <- function(pfts) {
   
   get_pft_num <- function(x) {
-    pftmapping <- pftmapping #get rid of no visible binding warning
+    pftmapping <- PEcAn.ED2::pftmapping
     pft_number <- x[["ed2_pft_number"]]
     pft_name <- x[["name"]]
     if(!is.null(pft_number)) {
