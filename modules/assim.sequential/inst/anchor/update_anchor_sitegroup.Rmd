@@ -30,11 +30,13 @@ sites = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77t
 ## find sites with lat/lon but no ID
 newsite = sites %>% filter(is.na(id)) %>% drop_na(any_of(c("lat","lon")))
 
+bety_sites <- db.query(query = paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites"), con = con)
+
+
 if(nrow(newsite)>0){
   kill = NULL
   
   ## make sure site doesn't already exist
-  bety_sites <- db.query(query = paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites"), con = con)
   for(s in 1:nrow(newsite)){
     dist = sqrt( (bety_sites$lat - newsite$lat)^2 + (bety_sites$lon - newsite$lon)^2)
     if(min(dist,na.rm = TRUE) < dthresh) kill = c(kill,s)
@@ -104,11 +106,45 @@ for(s in seq_along(newsites)){
                         anchorID,", ",newsites[s],");")
   db.query(InsertString,con)
 }
-
+anchor = c(anchor$site_id,newsites)
 ```
 
 
 ## update SDA_anchor_NorthAmerica
+```{r}
+countryCode = c("US","USA","CA","MX","BS","BZ","CR","CU","DO","GL","GT","HT","HN","JM","NI","PA","PR","SV","VI") ## sites table needs a lot of cleaning
+asite = bety_sites %>% filter(id %in% anchor,country %in% countryCode | 
+                                grepl("United States",country) |
+                                grepl("Mexico",country) |
+                                grepl("Canada",country)
+                              ) 
+```
+
+
 
 ## map & stats
+```{r}
+## all anchor sites
+bety_sites %>% filter(id %in% anchor) %>%
+ggplot() + 
+  geom_polygon( data=map_data("world"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = lon, y = lat),color="blue") + #size=5,shape=21
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)")
+
+## North American anchor sites
+ggplot(asite) + 
+  geom_polygon( data=map_data("world"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = lon, y = lat),color="orange") + #size=5,shape=21
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") + 
+  coord_cartesian(xlim=c(-172, -50), ylim = c(7, 80))
+
+
+```
+
+
+
 
