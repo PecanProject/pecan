@@ -1,0 +1,27 @@
+---
+title: "Update "Anchor site" sitegroups"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Grab list of sites
+
+
+## Update any new sites
+
+
+## Grab list of sitegroups & associated sites
+
+## Merge sites, remove duplicates and "exclude" list
+
+## update SDA_anchor
+
+## update SDA_anchor_NorthAmerica
+
+## map & stats
+
