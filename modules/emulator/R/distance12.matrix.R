@@ -2,9 +2,9 @@
 ##' @title distance12.matrix
 ##' @export
 ##'
-##' @param x
-##' @param n1
-##' @param power
+##' @param x matrix of locations in parameter space
+##' @param n1 number of rows in the original dataset
+##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##' 
 ##' @return d
 ##' 

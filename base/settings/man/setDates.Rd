@@ -16,12 +16,12 @@ The original \code{Settings} object with updated dates
 }
 \description{
 Sets the run, ensemble, and sensitivity analysis dates
-  of PEcAn Settings
+of PEcAn Settings
 }
 \details{
 Sets the start/end dates in \code{settings$run} to the specified dates,
- and sets the corresponding years for \code{settings$ensemble} and
- \code{settings$sensitivity.analysis}.
+and sets the corresponding years for \code{settings$ensemble} and
+\code{settings$sensitivity.analysis}.
 Either date can be omitted to leave it unchanged.
 }
 \author{

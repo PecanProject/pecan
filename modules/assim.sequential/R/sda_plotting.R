@@ -1,7 +1,7 @@
 #' @title generate_colors_sda
 #' @name  generate_colors_sda
 #' @author Ann Raiho 
-#' @description This function generates a series of colors in its parents enviroment. This is mainly used in assim.sequential package.
+#' @description This function generates a series of colors in its parents enviroment. This is mainly used in AssimSequential package.
 #' @export
 generate_colors_sda <-function(){
   pink       <<- col2rgb("deeppink")
@@ -35,7 +35,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::interactive.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::interactive.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -132,7 +132,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::postana.timeser.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::postana.timeser.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -235,7 +235,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
   if (!requireNamespace("plyr", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Can't find package 'plyr',",
-      "needed by `PEcAn.assim.sequential::postana.bias.plotting.sda()`.",
+      "needed by `PEcAnAssimSequential::postana.bias.plotting.sda()`.",
       "Please install it and try again.")
   }
 
@@ -533,7 +533,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   if (!requireNamespace("ggrepel", quietly = TRUE)) {
     PEcAn.logger::logger.error(
       "Package `ggrepel` not found, but needed by",
-      "PEcAn.assim.sequential::post.analysis.multisite.ggplot.",
+      "PEcAnAssimSequential::post.analysis.multisite.ggplot.",
       "Please install it and try again.")
   }
   
@@ -640,7 +640,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Site=names(one.day.data$means)) %>% 
         tidyr::gather(Variable,Means,-c(Site)) %>%
         right_join(one.day.data$covs %>% 
-                     map_dfr(~ t(sqrt(as.numeric(diag(.x)))) %>% 
+                     map_dfr(~ t(sqrt(as.numeric(diag_fix(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
                      mutate(Site=names(one.day.data$covs)) %>% 
                      tidyr::gather(Variable,Sd,-c(Site)),
@@ -769,7 +769,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   
 
   suppressMessages({
-      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAn.assim.sequential"))
+    aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
   })
   
   #transform site locs into new projection - UTM 2163

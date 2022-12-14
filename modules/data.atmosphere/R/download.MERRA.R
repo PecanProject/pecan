@@ -1,7 +1,7 @@
 #' Download MERRA data
 #'
 #' @inheritParams download.CRUNCEP
-#' @param ... Not used -- silently soak up extra arguments from `convert.input`, etc.
+#' @param ... Not used -- silently soak up extra arguments from `convert_input`, etc.
 #' @return `data.frame` of meteorology data metadata
 #' @author Alexey Shiklomanov
 #' @export

@@ -12,13 +12,13 @@
 ##' @author Michael Dietze
 lhc <- function(x, n.samp) {
     n.dim <- nrow(x)
-    samp <- permute <- matrix(runif(n.dim * n.samp), n.dim, n.samp)
+    samp <- permute <- matrix(stats::runif(n.dim * n.samp), n.dim, n.samp)
     for (i in seq_len(n.dim)) {
       permute[i, ] <- order(permute[i, ])
     } 
     for (i in seq_len(n.dim)) {
         myseq <- seq(x[i, 1], x[i, 2], length = n.samp + 1)
-        samp[i, ] <- runif(n.samp, myseq[permute[i, ]], myseq[permute[i, ] + 1])
+        samp[i, ] <- stats::runif(n.samp, myseq[permute[i, ]], myseq[permute[i, ] + 1])
     }
     return(t(samp))
 } # lhc

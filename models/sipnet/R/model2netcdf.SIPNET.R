@@ -7,6 +7,45 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+#' Merge multiple NetCDF files into one
+#' 
+#' @param files \code{character}. List of filepaths, which should lead to NetCDF files.
+#' @param outfile \code{character}. Output filename of the merged data.
+#' @return A NetCDF file containing all of the merged data.
+#' @examples
+#' \dontrun{
+#' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
+#'                     pattern="tas.*\\.nc", full.names=TRUE)
+#' temp <- tempfile(fileext=".nc")
+#' mergeNC(files=files, outfile=temp)
+#' terra::rast(temp) 
+#' }
+#' @export mergeNC
+#' @name mergeNC
+#' @source https://github.com/RS-eco/processNC/blob/main/R/mergeNC.R
+mergeNC <- function(
+    ##title<< Aggregate data in netCDF files
+  files ##<< character vector: names of the files to merge
+  , outfile ##<< character: path to save the results files to. 
+)
+  ##description<<
+  ## This function aggregates time periods in netCDF files. Basically it is just a
+  ## wrapper around the respective cdo function.
+{
+  ##test input
+  #if (system("cdo -V")==0)
+  #  stop('cdo not found. Please install it.')
+  
+  ## supply cdo command
+  cdoCmd <- paste('cdo -cat', paste(files, collapse=" "), outfile, sep=' ')
+  
+  ##run command
+  system(cdoCmd)
+  cat(paste('Created file ', outfile, '.\n', sep = ''))
+  
+  ## character string: name of the file created. 
+  invisible(outfile)
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##'
@@ -42,8 +81,6 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
   
   PEcAn.utils::cf2datetime(cfval, paste("days since", base_date_str))
 }
-#--------------------------------------------------------------------------------------------------#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert SIPNET output to netCDF
@@ -58,14 +95,16 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param end_date End time of the simulation
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
+##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
+##' @param prefix prefix to read the output files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, 
-                                overwrite = FALSE) {
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, prefix = "sipnet.out",
+                                overwrite = FALSE, conflict = FALSE) {
 
   ### Read in model output in SIPNET format
-  sipnet_out_file <- file.path(outdir, "sipnet.out")
+  sipnet_out_file <- file.path(outdir, prefix)
   sipnet_output <- read.table(sipnet_out_file, header = T, skip = 1, sep = "")
   #sipnet_output_dims <- dim(sipnet_output)
 
@@ -94,10 +133,18 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   timestep.s <- 86400 / out_day
   
+  
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
+    #initialize the conflicted as FALSE
+    conflicted <- FALSE
+    
+    #if we have conflicts on this file.
+    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
       next
+    }else if(file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & conflict){
+      conflicted <- TRUE
+      file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
@@ -149,15 +196,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[10]] <- (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001) + 
       (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC) * 0.001 # Total living C kgC/m2
     output[[11]] <- (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
-    if (revision == "r136") {
-      output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
-    } else {
+    if (revision == "unk") {
       ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
       ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
       ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
       ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
       ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
       output[[12]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+    } else {
+     output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     }
     output[[13]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
     output[[14]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
@@ -238,15 +285,36 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
-    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-    ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
-    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(nc_var)) {
-      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+    if(conflicted & conflict){
+      nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      for (i in seq_along(nc_var)) {
+        ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+        cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      }
+      close(varfile)
+      ncdf4::nc_close(nc)
+      
+      #merge nc files
+      if(file.exists(file.path(outdir, "previous.nc"))){
+        files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
+      }else{
+        files <- file.path(outdir, "current.nc")
+      }
+      mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      unlink(files, recursive = T)
+    }else{
+      nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      for (i in seq_along(nc_var)) {
+        ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+        cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
+      }
+      close(varfile)
+      ncdf4::nc_close(nc)
     }
-    close(varfile)
-    ncdf4::nc_close(nc)
   }  ### End of year loop
 
   ## Delete raw output, if requested

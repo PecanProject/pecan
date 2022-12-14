@@ -59,12 +59,12 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
     # calculated with multiple inputs, which would mean that all of that data 
     # would need to be loaded and aligned again. 
     
-    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = .data$id) %>% 
+    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = "id") %>% 
       dplyr::left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
-      filter(.data$reference_run_id == settings$benchmarking$reference_run_id) %>% 
-      select(dplyr::one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
-      collect() %>%
-      filter(.data$benchmark_id %in% unlist(settings$benchmarking[which(names(settings$benchmarking) == "benchmark_id")]))
+      dplyr::filter(.data$reference_run_id == settings$benchmarking$reference_run_id) %>% 
+      dplyr::select(dplyr::one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
+      dplyr::collect() %>%
+      dplyr::filter(.data$benchmark_id %in% unlist(settings$benchmarking[which(names(settings$benchmarking) == "benchmark_id")]))
     
     var.ids <- bms$variable_id
     
@@ -132,12 +132,12 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
                                   "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
                                   "WHERE b.benchmark_id = ", bm.ids[i]), bety)
         #"run" metric needs to be removed from metrics so it isn't computed twice
-        var <- filter(format$vars, .data$variable_id == bm$variable_id)[, "pecan_name"]
+        var <- dplyr::filter(format$vars, .data$variable_id == bm$variable_id)[, "pecan_name"]
         var.list <- c(var.list, var)
         
-        obvs.calc <- obvs_full %>% select(., dplyr::one_of(c("posix", var)))
+        obvs.calc <- obvs_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
         obvs.calc[,var] <- as.numeric(obvs.calc[,var])
-        model.calc <- model_full %>% select(., dplyr::one_of(c("posix", var)))
+        model.calc <- model_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
         
         # Check that the variables actually got loaded, otherwise don't send to calc_metrics
         
@@ -159,15 +159,16 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
         for(metric.id in metrics$id){
           metric.name <- filter(metrics,id == metric.id)[["name"]]
           score <- out.calc_metrics[["benchmarks"]] %>% 
-            filter(.data$metric == metric.name) %>% select(score)
+            dplyr::filter(.data$metric == metric.name) %>% 
+            dplyr::select(score)
           
           # Update scores in the database
           
           score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>%
-            filter(.data$benchmark_id == bm.ids[i]) %>%
-            filter(.data$benchmarks_ensemble_id == bm.ensemble$id) %>%
-            filter(.data$metric_id == metric.id) %>% 
-            collect()
+            dplyr::filter(.data$benchmark_id == bm.ids[i]) %>%
+            dplyr::filter(.data$benchmarks_ensemble_id == bm.ensemble$id) %>%
+            dplyr::filter(.data$metric_id == metric.id) %>% 
+            dplyr::collect()
           
           # If the score is already in the database, should check if it is the same as the calculated 
           # score. But this requires a well written regular expression since it can be matching text. 

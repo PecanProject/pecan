@@ -67,6 +67,7 @@ afshin.pecan.xml
 pecan
 pecan_ED_online.xml
 pecan.xml
+!base/settings/tests/testthat/pecan.xml
 pecan.sublime-workspace
 FACE.sublime-workspace
 pecan.sublime-project

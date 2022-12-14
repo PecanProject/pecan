@@ -95,7 +95,7 @@ dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = 
 } # dependencygraph
 
 packages <- c("PEcAn.BIOCRO", "PEcAn.DB", "PEcAn.ED2", "PEcAn.MA", "PEcAn.SIPNET", 
-              "PEcAn.assim.batch", "PEcAn.assim.sequential", 
+              "PEcAn.assim.batch", "PEcAnAssimSequential", 
               "PEcAn.data.atmosphere", "PEcAn.data.land", "PEcAn.priors", "PEcAn.settings", 
               "PEcAn.uncertainty", "PEcAn.utils", "PEcAn.visualization")
 
