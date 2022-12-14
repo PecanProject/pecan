@@ -118,7 +118,18 @@ asite = bety_sites %>% filter(id %in% anchor,country %in% countryCode |
                                 grepl("Mexico",country) |
                                 grepl("Canada",country)
                               ) 
+
+anchorNAid = 1000000033
+anchorNA = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id = ",anchorNAid),con)
+newsites = asite$id[!(asite$id %in% anchorNA$site_id)]
+
+for(s in seq_along(newsites)){
+  InsertString = paste0("INSERT INTO sitegroups_sites(sitegroup_id,site_id) VALUES(",
+                        anchorNAid,", ",newsites[s],");")
+  db.query(InsertString,con)
+}
 ```
+### FUTURE TODO: remove sites that are no longer in the spreadsheet
 
 
 
