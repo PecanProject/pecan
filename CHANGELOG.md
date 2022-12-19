@@ -33,6 +33,7 @@ see if you need to change any of these:
 - Initial LDNDC model coupling
 - `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
 - `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
+- Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
