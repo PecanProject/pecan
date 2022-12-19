@@ -1,7 +1,7 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn Package for Integration of ED2 Model
-Version: 1.7.2
+Version: 1.7.2.9000
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
@@ -66,4 +66,3 @@ Encoding: UTF-8
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 2
-
