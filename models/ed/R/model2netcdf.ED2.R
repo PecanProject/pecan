@@ -20,6 +20,9 @@
 ##' @param end_date End time of the simulation
 ##' @param pfts a named vector of PFT numbers where the names are PFT names
 ##' @param settings pecan settings object
+##' @param process_partial should failed runs be processed? Defaults to `FALSE`.
+##'   `TRUE` will generate .nc files for runs that have generated some, but not
+##'   all, of the expected outputs
 ##'
 ##' @details if \code{settings} is provided, then values for missing arguments
 ##'   `sitelat`, `sitelon`, `start_date`, `end_date`, and `pfts` will be taken
@@ -37,7 +40,8 @@ model2netcdf.ED2 <- function(outdir,
                              start_date,
                              end_date,
                              pfts,
-                             settings = NULL) {
+                             settings = NULL,
+                             process_partial = FALSE) {
   if(!is.null(settings)) {
     if(!inherits(settings, "Settings")) {
       PEcAn.logger::logger.error("`settings` should be a PEcAn 'Settings' object")
@@ -94,24 +98,26 @@ model2netcdf.ED2 <- function(outdir,
   # for now I'm going with this, do failed runs also provide information
   # on parameters? 
   year_check <- unique(unlist(ylist))
-  if (max(year_check) < end_year) {
-    PEcAn.logger::logger.warn("Run failed with some outputs.")
+  if (max(year_check) < end_year) { #if run failed early
+    PEcAn.logger::logger.warn("Run ended earlier than expected.  Check logfile.txt")
+    
+    #figure out if this is an ensemble
     run_id <- basename(outdir)
     workflow_dir <- dirname(dirname(outdir))
     rundir <- file.path(workflow_dir, "run", run_id) 
     readme <- file.path(rundir, "README.txt")
     runtype <- readLines(readme, n = 1)
-    if (grepl("ensemble", runtype)) {
+    is_ensemble <- grepl("ensemble", runtype)
+    if (is_ensemble & !process_partial) {
       PEcAn.logger::logger.info("This is an ensemble run. ",
                                 "Not processing anything.")
       return(NULL)
-      } else {
-        PEcAn.logger::logger.info("This is not an ensemble run. ",
-                                  "Processing existing outputs.")
-        end_year <- max(year_check)
-      }
+    } else {
+      PEcAn.logger::logger.info("Processing existing outputs.")
+      end_year <- max(year_check)
     }
-
+  }
+  
   # ----- start loop over years
   for (y in start_year:end_year) {
 
@@ -1510,7 +1516,7 @@ read_S_files <- function(sfile, outdir, pfts, pecan_names = NULL, settings = NUL
 extract_pfts <- function(pfts) {
   
   get_pft_num <- function(x) {
-    pftmapping <- pftmapping #get rid of no visible binding warning
+    pftmapping <- PEcAn.ED2::pftmapping
     pft_number <- x[["ed2_pft_number"]]
     pft_name <- x[["name"]]
     if(!is.null(pft_number)) {

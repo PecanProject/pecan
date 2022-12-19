@@ -6,3 +6,4 @@
 # PEcAn.ED2 1.7.2.9000
 
 * Added a `NEWS.md` file to track changes to the package. Prior to this point changes are tracked in the main CHANGELOG for the PEcAn repository.
+* Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed 
