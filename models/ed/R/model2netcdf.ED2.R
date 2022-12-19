@@ -1021,7 +1021,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   for(i in ysel) {
     
     nc <- ncdf4::nc_open(file.path(outdir, h5_files[i]))
-    on.exit(ncdf4::nc_close(nc), add = TRUE)
+    on.exit(ncdf4::nc_close(nc), add = FALSE)
     allvars <- names(nc$var)
     if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
     
