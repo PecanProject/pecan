@@ -1545,7 +1545,7 @@ extract_pfts <- function(pfts) {
 
 # A version of ncvar_put that returns the varid in warning messages
 var_put <- function(nc, varid, vals, start = NA, count = NA) {
-  output <- capture.output(
+  output <- utils::capture.output(
     ncdf4::ncvar_put(nc = nc, varid = varid, vals = vals, start = start, count = count)
   )
   if(length(output)!=0) {
