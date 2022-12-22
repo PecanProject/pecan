@@ -1549,7 +1549,7 @@ var_put <- function(nc, varid, vals, start = NA, count = NA) {
     ncdf4::ncvar_put(nc = nc, varid = varid, vals = vals, start = start, count = count)
   )
   if(length(output)!=0) {
-    cat(paste0("Message for var '", varid$name, "':"), output, "\n")
+    cat(paste0("With '", varid$name, "':"), output, "\n")
   }
 }
 
