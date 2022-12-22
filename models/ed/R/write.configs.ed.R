@@ -443,18 +443,22 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
 
-  ## Find history file TODO this should come from the database
-  ed2_package_data <- data(package="PEcAn.ED2", envir = environment())
-  histfile <- paste0("history.r", settings$model$revision) # set history file name to look for in ed2_package_data
-  if (histfile %in% ed2_package_data$results[, "Item"]) {
+  # TODO this should come from the database
+  
+  if(settings$model$revision %in% c("46", "81", "82", "85", "git")) {
+    histfile <- paste0("history.r", settings$model$revision)
     PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
-    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
-    edhistory <- get(histfile)
+    edhistory <-
+      switch(settings$model$revision,
+             "46" = PEcAn.ED2:::history.r46,
+             "81" = PEcAn.ED2:::history.r81,
+             "82" = PEcAn.ED2:::history.r82,
+             "85" = PEcAn.ED2:::history.r85,
+             "git" = PEcAn.ED2:::history.rgit
+      )
   } else {
     PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
-    histfile <- "history"
-    data(list=histfile, package = 'PEcAn.ED2', envir = environment())
-    edhistory <- get(histfile)
+    edhistory <- PEcAn.ED2:::history
   }
 
   edtraits <- names(edhistory)
