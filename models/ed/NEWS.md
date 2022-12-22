@@ -1,6 +1,7 @@
 # PEcAn.ED2 (development version)
 
 * Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
+* write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
 
 # PEcAn.ED2 1.7.2
 
