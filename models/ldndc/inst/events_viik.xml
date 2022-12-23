@@ -7,7 +7,7 @@
 
 	  <event type="plant" time="2022-01-01" >
       <plant name="perg" type="perg">
-        <grass initialbiomass="100" fractionalcover="70.0"/>
+        <grass initialbiomass=@InitialBiomass@ fractionalcover=@FractionalCover@/>
       </plant>
     </event>
 

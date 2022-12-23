@@ -11,11 +11,11 @@
 
 	  <event type="plant" time="2021-05-30" >
       <plant name="Hordeum Vulgare" type="barley" >
-         <crop initialbiomass="10" fractionalcover="0.9" />
+         <crop initialbiomass="1" fractionalcover="0.9" />
        </plant>
     </event>
 
-    <event type="harvest" time="2021-08-09">
+    <event type="harvest" time="2021-09-08">
 	    <harvest name="Hordeum Vulgare" remains="0.3"/>
 		</event>
 
