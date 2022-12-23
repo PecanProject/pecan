@@ -163,7 +163,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
     
     # Barley
-    b.1.1 <- paste0("\t\t\t\t\t<species mnemonic='", mnemonic_2.1, "' > \n")
+    b.1.1 <- paste0("\t\t\t\t\t<species mnemonic='", mnemonic_2.1,  "' > \n")
     b.2 <- ""
     # Keep old version as a reference this need to reconstruct at some point properly anyway
     #b.2 <- apply(trait.values[[1]], 1, function(x){paste0("\t\t\t\t\t\t<par name='", names(x), "' value='", x, "' /> \n")})
@@ -191,10 +191,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Viikki setup
     setupfile <- readLines(con = system.file("setup_viik.xml", package = "PEcAn.LDNDC"), n = -1)
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
-    
-    # Viikki events
-    eventsfile <- readLines(con = system.file("events_viik.xml", package = "PEcAn.LDNDC"), n = -1)
-    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
     
     
     # Viikki  watertable
@@ -275,9 +271,29 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='ALB' value='", pft.traits[which(pft.names == "SW_albedo")], "' /> \n"), collapse="")
     }
     
+    #21 AMAXA (-) -
+    if ("amaxa" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AMAXA' value='", pft.traits[which(pft.names == "amaxa")], "' /> \n"), collapse="")
+    }
+    
     #22 AMAXB (-) - Amax (-)
     if ("Amax" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AMAXB' value='", pft.traits[which(pft.names == "Amax")], "' /> \n"), collapse="")
+    }
+    
+    #23 AMAXFRAC -
+    if ("amaxfrac" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AMAXFRAC' value='", pft.traits[which(pft.names == "amaxfrac")], "' /> \n"), collapse="")
+    }
+    
+    #24 BASEFOLRESPFRAC -
+    if ("basefolrespfrac" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='BASEFOLRESPFRAC' value='", pft.traits[which(pft.names == "basefolrespfrac")], "' /> \n"), collapse="")
+    }
+    
+    #24 CELLULOSE -
+    if ("cellulose" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CELLULOSE' value='", pft.traits[which(pft.names == "cellulose")], "' /> \n"), collapse="")
     }
     
     #34 CHILL_UNITS - 
@@ -295,6 +311,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DFOL' value='", pft.traits[which(pft.names == "leaf_density")], "' /> \n"), collapse="")
     }
     
+    #42 DFRTOPT - 
+    if ("dfrtopt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DFRTOPT' value='", pft.traits[which(pft.names == "dfrtopt")], "' /> \n"), collapse="")
+    }
+    
     #43 DIAMMAX (m) - stem_diameter (cm)
     if ("stem_diameter" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DIAMMAX' value='",
@@ -308,14 +329,34 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DOC_RESP_RATIO' value='", pft.traits[which(pft.names == "coarseRootExudation")], "' /> \n"), collapse="")
     }
     
+    #49 DVPD1 -
+    if ("dvpd1" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DVPD1' value='", pft.traits[which(pft.names == "dvpd1")], "' /> \n"), collapse="")
+    }
+    
+    #50 DVPD2 -
+    if ("dvpd2" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DVPD2' value='", pft.traits[which(pft.names == "dvpd2")], "' /> \n"), collapse="")
+    }
+    
     #57 EXP_ROOT_DISTRIBUTION - 
     if ("exp_root_distribution" %in% pft.names) {
-      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
+      if(site_id == "15000000027"){
+        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", rbinom(1,1,0.1)*pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
+      }
+      else{
+        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
+      }
     }
     
     #58 EXT - extinction_coefficient_diffuse
     if ("extinction_coefficient_diffuse" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='EXT' value='", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], "' /> \n"), collapse="")
+    }
+    
+    #78 FOLRELGROMAX -
+    if ("folrelgromax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FOLRELGROMAX' value='", pft.traits[which(pft.names == "folrelgromax")], "' /> \n"), collapse="")
     }
     
     #79 FRACTION_ROOT - root_biomass_fraction
@@ -372,7 +413,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
       }
       else{
-        gdd_grainfilling <- gdd_flowering + runif(1, min = 250, max = 600)
+        gdd_grainfilling <- gdd_flowering + runif(1, min = 125, max = 280)
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", gdd_grainfilling, "' /> \n"), collapse="")
       }
     }
@@ -383,9 +424,19 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", pft.traits[which(pft.names == "gdd_maturity")], "' /> \n"), collapse="")
       }
       else{
-        gdd_maturity <- gdd_grainfilling + runif(1, min = 600, max = 1000)
+        gdd_maturity <- gdd_grainfilling + runif(1, min = 600, max = 700)
         b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", gdd_maturity, "' /> \n"), collapse="")
       }
+    }
+    
+    #96 GDDFOLEND -
+    if ("gddfolend" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDDFOLEND' value='", pft.traits[which(pft.names == "gddfolend")], "' /> \n"), collapse="")
+    }
+    
+    #97 GDDFOLSTART -
+    if ("gddfolstart" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDDFOLSTART' value='", pft.traits[which(pft.names == "gddfolstart")], "' /> \n"), collapse="")
     }
     
     #103 GZRTZ -
@@ -396,6 +447,16 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #104 H2OREF_A - 
     if ("h2oref_a" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='H2OREF_A' value='", pft.traits[which(pft.names == "h2oref_a")], "' /> \n"), collapse="")
+    }
+    
+    #107 H2OREF_GS - 
+    if ("h2oref_gs" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='H2OREF_GS' value='", pft.traits[which(pft.names == "h2oref_gs")], "' /> \n"), collapse="")
+    }
+    
+    #109 HALFSAT - 
+    if ("halfsat" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HALFSAT' value='", pft.traits[which(pft.names == "halfsat")], "' /> \n"), collapse="")
     }
     
     #113 HDJ - 
@@ -458,9 +519,19 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='M_FRUIT_OPT' value='", pft.traits[which(pft.names == "m_fruit_opt")], "' /> \n"), collapse="")
     }
     
+    #141 MWFM -
+    if ("mwfm" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='MWFM' value='", pft.traits[which(pft.names == "mwfm")], "' /> \n"), collapse="")
+    }
+    
     #143 NC_FOLIAGE_MIN
     if ("nc_foliage_min" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FOLIAGE_MIN' value='", pft.traits[which(pft.names == "nc_foliage_min")], "' /> \n"), collapse="")
+    }
+    
+    #144 NC_FOLIAGE_MAX
+    if ("nc_foliage_max" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FOLIAGE_MAX' value='", pft.traits[which(pft.names == "nc_foliage_max")], "' /> \n"), collapse="")
     }
     
     #146 NC_FINEROOTS_MAX - 
@@ -479,8 +550,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
     
     #149 NC_FRUIT_MIN - 
-    if ("nc_fruit_max" %in% pft.names) { # INTENTIONALLY PUT IT TO BE SAME AS MAX VALUE
-      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FRUIT_MIN' value='", pft.traits[which(pft.names == "nc_fruit_max")], "' /> \n"), collapse="")
+    if ("nc_fruit_min" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FRUIT_MIN' value='", pft.traits[which(pft.names == "nc_fruit_min")], "' /> \n"), collapse="")
     }
     
     #150 NC_STRUCTURAL_TISSUE_MAX - 
@@ -692,6 +763,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CHEMODENIT_T_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_chemodenit_t_exp_1")], "' /> \n"), collapse="")
     }
     
+    #135 METRX_F_CHEMODENIT_T_EXP_2 - 
+    if ("metrx_f_chemodenit_t_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CHEMODENIT_T_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_chemodenit_t_exp_2")], "' /> \n"), collapse="")
+    }
+    
     #136 METRX_F_DECOMP_M_WEIBULL_1 - 
     if ("metrx_f_decomp_m_weibull_1" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DECOMP_M_WEIBULL_1' value='", pft.traits[which(pft.names == "metrx_f_decomp_m_weibull_1")], "' /> \n"), collapse="")
@@ -707,9 +783,24 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DECOMP_M_WEIBULL_3' value='", pft.traits[which(pft.names == "metrx_f_decomp_m_weibull_3")], "' /> \n"), collapse="")
     }
     
+    #139 METRX_F_CH4_OXIDATION_T_EXP_1 -
+    if ("metrx_f_ch4_oxidation_t_exp_1" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CH4_OXIDATION_T_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_ch4_oxidation_t_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #140 METRX_F_CH4_OXIDATION_T_EXP_2 -
+    if ("metrx_f_ch4_oxidation_t_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CH4_OXIDATION_T_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_ch4_oxidation_t_exp_2")], "' /> \n"), collapse="")
+    }
+    
     #141 METRX_F_CH4_PRODUCTION_T_EXP_1 - 
     if ("metrx_f_ch4_production_t_exp_1" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CH4_PRODUCTION_T_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_ch4_production_t_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #142 METRX_F_CH4_PRODUCTION_T_EXP_2 - 
+    if ("metrx_f_ch4_production_t_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_CH4_PRODUCTION_T_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_ch4_production_t_exp_2")], "' /> \n"), collapse="")
     }
     
     #143 METRX_F_DECOMP_T_EXP_1 - 
@@ -747,6 +838,16 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DENIT_NO' value='", pft.traits[which(pft.names == "metrx_f_denit_no")], "' /> \n"), collapse="")
     }
     
+    #150 METRX_F_DENIT_PH_EXP_1 - 
+    if ("metrx_f_denit_ph_exp_1" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DENIT_PH_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_denit_ph_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #151 METRX_F_DENIT_PH_EXP_2 - 
+    if ("metrx_f_denit_ph_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DENIT_PH_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_denit_ph_exp_2")], "' /> \n"), collapse="")
+    }
+    
     #152 METRX_F_DENIT_M_WEIBULL_1 - 
     if ("metrx_f_denit_m_weibull_1" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_DENIT_M_WEIBULL_1' value='", pft.traits[which(pft.names == "metrx_f_denit_m_weibull_1")], "' /> \n"), collapse="")
@@ -767,9 +868,34 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_N_CH4_OXIDATION' value='", pft.traits[which(pft.names == "metrx_f_n_ch4_oxidation")], "' /> \n"), collapse="")
     }
     
-    #158 METRX_F_NIT_NO_M_EXP_1 -
+    #156 METRX_F_NIT_NO_M_EXP_1 -
     if ("metrx_f_nit_no_m_exp_1" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_M_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_nit_no_m_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #157 METRX_F_NIT_NO_M_EXP_2 -
+    if ("metrx_f_nit_no_m_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_M_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_nit_no_m_exp_2")], "' /> \n"), collapse="")
+    }
+    
+    #158 METRX_F_NIT_NO_T_EXP_1 -
+    if ("metrx_f_nit_no_t_exp_1" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_T_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_nit_no_t_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #159 METRX_F_NIT_NO_T_EXP_2 -
+    if ("metrx_f_nit_no_t_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_T_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_nit_no_t_exp_2")], "' /> \n"), collapse="")
+    }
+    
+    #160 METRX_F_NIT_NO_PH_LIN_1 -
+    if ("metrx_f_nit_no_ph_lin_1" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_PH_LIN_1' value='", pft.traits[which(pft.names == "metrx_f_nit_no_ph_lin_1")], "' /> \n"), collapse="")
+    }
+    
+    #161 METRX_F_NIT_NO_PH_LIN_2 -
+    if ("metrx_f_nit_no_ph_lin_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_NO_PH_LIN_2' value='", pft.traits[which(pft.names == "metrx_f_nit_no_ph_lin_2")], "' /> \n"), collapse="")
     }
     
     #162 METRX_F_NIT_N2O_M_WEIBULL_1 - 
@@ -790,6 +916,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #165 METRX_F_NIT_N2O_T_EXP_1 -
     if ("metrx_f_nit_n2o_t_exp_1" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_N2O_T_EXP_1' value='", pft.traits[which(pft.names == "metrx_f_nit_n2o_t_exp_1")], "' /> \n"), collapse="")
+    }
+    
+    #166 METRX_F_NIT_N2O_T_EXP_2 -
+    if ("metrx_f_nit_n2o_t_exp_2" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_F_NIT_N2O_T_EXP_2' value='", pft.traits[which(pft.names == "metrx_f_nit_n2o_t_exp_2")], "' /> \n"), collapse="")
     }
     
     #167 METRX_F_NIT_PH_ONEILL_1 -
@@ -815,6 +946,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #171 METRX_FRAC_FE_CH4_PROD - 
     if ("metrx_frac_fe_ch4_prod" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='METRX_FRAC_FE_CH4_PROD' value='", pft.traits[which(pft.names == "metrx_frac_fe_ch4_prod")], "' /> \n"), collapse="")
+    }
+    
+    #172 METRX_MAX_DEPTH_DENIT - 
+    if ("metrx_max_depth_denit" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='METRX_MAX_DEPTH_DENIT' value='", pft.traits[which(pft.names == "metrx_max_depth_denit")], "' /> \n"), collapse="")
     }
     
     #173 METRX_MIC_EFF - 
@@ -1229,13 +1365,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   # Set different layers, which will be used based on the soil data that is available
   # For example, if we have soil data for top layer, then that will be used instead of soil_layer_1
-  soil_layer[1] <- '<layer depth="60" split="3" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.5" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
-  soil_layer[2] <- '<layer depth="90" split="2" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.5" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
-  soil_layer[3] <- '<layer depth="200" split="4" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.05"  scel="0.005" sks="0.002186" />'
-  soil_layer[4] <- '<layer depth="200" split="4" bd="1.09"  clay="0.12" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />' 
-  soil_layer[5] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.004000" />'
-  soil_layer[6] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />'
-  soil_layer[7] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" />' 
+  soil_layer[1] <- '<layer depth="60" split="3" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+  soil_layer[2] <- '<layer depth="90" split="2" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+  soil_layer[3] <- '<layer depth="200" split="4" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.25"  scel="0.005" sks="0.003186" wmin="100" wcmax="380" />'
+  soil_layer[4] <- '<layer depth="200" split="4" bd="1.09"  clay="0.12" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.25"  scel="0.005" sks="0.003094" wmin="100" wcmax="380" />' 
+  soil_layer[5] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.003000" />'
+  soil_layer[6] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />'
+  soil_layer[7] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" />' 
   
   
   
@@ -1244,46 +1380,154 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     soil_layer_values <- paste(soil_layer, collapse = "\n \t")
   }
   
-  
+
   ## One soil layer is given
-  else if(length(settings$run$inputs$poolinitcond$path) == 1){
-    # Set empty soil layer
-    soil_layer_values <- "<layer depth='60' split='3' "
+  else if(!is.null(settings$run$inputs$poolinitcond$path)){
+    # Set empty
+    soil_all_block <- NULL
     
     # Reading soil file
-    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$poolinitcond$path$path1)
+    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$poolinitcond$path)
     
-    ## Check which values are found from the soil netcdf file
-    if("soil_nitrogen_content" %in% names(soil_IC_list$vals)){
-      # Total Nitrogen Content - kg N m-2 to kg N kg-1 ??
-      norg <- unlist(soil_IC_list$vals["soil_nitrogen_content"])[[1]]
-      soil_layer_values <- paste0(soil_layer_values, paste0("norg='", norg, "' "))
+    
+    # Before moving to write site file, check siteparameter initial conditions and site initial condition
+    # Siteparameter
+    
+    #300 RCNM -
+    # C:N ratio of humus
+    if ("c2n_humus" %in% names(soil_IC_list$vals)) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='RCNM' value='", unlist(soil_IC_list$vals["c2n_humus"])[[1]], "' /> \n"), collapse="")
     }
     
-    if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
-      # Field capacity - Change m3 m-3 to dm3 m-3
-      wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[1]] * 1000
-      soil_layer_values <- paste0(soil_layer_values, paste0("wcmax='", wcmax, "' "))
-    }
-    
-    if("water_concentration_at_wilting_point" %in% names(soil_IC_list$vals)){
-      # Wilting point - Change m3 m-3 to dm3 m-3
-      wcmin <- unlist(soil_IC_list$vals["water_concentration_at_wilting_point"])[[1]] * 1000
-      soil_layer_values <- paste0(soil_layer_values, paste0("wcmin='", wcmin, "' "))
-    }
-    
-    #----
+    # Initial conditions in Viikki
+    if(site_id == "15000000029"){
+      # Initial biomass in the field
+      if ("AGB" %in% names(soil_IC_list$vals)) {
+        initialbiomass <- ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1")
+      }
+      else{
+        initialbiomass <- 100
+      }
       
-    # THESE BELOW ONES ARE PLACEHOLDERS FOR NOW
-    if("hydraulic_conductivity" %in% names(soil_IC_list$vals)){
-      # Hydraulic conductivity - cm / min ???
-      sks <- unlist(soil_IC_list$vals["hydraulic_conductivity"])[[1]]
+      # Fractional cover of the plants
+      if ("fractional_cover" %in% names(soil_IC_list$vals)) {
+        fractionalcover <- unlist(soil_IC_list$vals["fractional_cover"])[[1]]*100
+      }
+      else{
+        fractionalcover <- 70
+      }
+      
     }
     
     
-    soil_layer_values <- paste(soil_layer_values, "/> \n")
-    soil_layer_values <- paste(soil_layer_values, "\t\t", paste(soil_layer[-1], collapse = "\n \t\t"))
+    # Check how many depth layers is given and the depth of each
+    depth <- soil_IC_list$dims$depth
+    layer_count <- length(depth)
     
+    # Divider for layers (block), check the next comment
+    layer_div <- 5
+    
+    for(depth_level in 1:layer_count){
+      
+      soil_one_block <- NULL
+      # Diskretization -- Every soil layer is still divided to several layers, this layer that contains these
+      # sublayers are here called a block. In LDNDC it is not suggested to use too tight layers so still will be
+      # divided to smaller layers that are not so thick.
+      # For first level
+      if(depth_level == 1){ 
+        disk <- depth[depth_level] * 1000 / layer_div
+      }
+      # For rest of layers, depth is informed as cumulative, but LDNDC uses thickness
+      else{
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      for(disk_level in 1:layer_div){
+        
+        
+        # Start creating a soil layer
+        soil_layer_values <- paste0("<layer depth='", disk, "' ")
+        
+        
+        ## Check which values are found from the soil netcdf file
+        if("soil_bulk_density" %in% names(soil_IC_list$vals)){
+          # Bulk density in a soil
+          bd <- ud_convert(unlist(soil_IC_list$vals["soil_bulk_density"])[[depth_level]], "kg m-3", "kg dm-3")
+          soil_layer_values <- paste0(soil_layer_values, paste0("bd='", bd, "' "))
+        }
+        
+        if("soil_clay_content" %in% names(soil_IC_list$vals)){
+          # Clay content value
+          clay <- unlist(soil_IC_list$vals["soil_clay_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("clay='", clay, "' "))
+        }
+        
+        if("soil_sand_content" %in% names(soil_IC_list$vals)){
+          # Sand content value
+          sand <- unlist(soil_IC_list$vals["soil_sand_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("sand='", sand, "' "))
+        }
+        
+        if("soil_silt_content" %in% names(soil_IC_list$vals)){
+          # Silt content value
+          silt <- unlist(soil_IC_list$vals["soil_silt_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("silt='", silt, "' "))
+        }
+        
+        if("pH" %in% names(soil_IC_list$vals)){
+          # pH value
+          ph <- unlist(soil_IC_list$vals["pH"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("ph='", ph, "' "))
+        }
+        
+        if("soil_organic_carbon_content" %in% names(soil_IC_list$vals)){
+          # Total Carbon Content - kg N m-2 to kg N kg-1 ??
+          corg <- unlist(soil_IC_list$vals["soil_organic_carbon_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("corg='", corg, "' "))
+        }
+        
+        if("soil_nitrogen_content" %in% names(soil_IC_list$vals)){
+          # Total Nitrogen Content - kg N m-2 to kg N kg-1 ??
+          norg <- unlist(soil_IC_list$vals["soil_nitrogen_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("norg='", norg, "' "))
+        }
+        
+        if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
+          # Field capacity - Change m3 m-3 to dm3 m-3
+          wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[depth_level]] * 1000
+          soil_layer_values <- paste0(soil_layer_values, paste0("wcmax='", wcmax, "' "))
+        }
+        
+        if("water_concentration_at_wilting_point" %in% names(soil_IC_list$vals)){
+          # Wilting point - Change m3 m-3 to dm3 m-3
+          wcmin <- unlist(soil_IC_list$vals["water_concentration_at_wilting_point"])[[depth_level]] * 1000
+          soil_layer_values <- paste0(soil_layer_values, paste0("wcmin='", wcmin, "' "))
+        }
+        
+        if("soil_hydraulic_conductivity" %in% names(soil_IC_list$vals)){
+          # Hydraulic conductivity - cm / min ???
+          sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("sks='", sks, "' "))
+        }
+        
+        soil_layer_values <- paste(soil_layer_values, "/> \n")
+        
+        # Add one individual layer to the block
+        soil_one_block <- paste(soil_one_block, soil_layer_values)
+      }
+      
+      # Combine the previous block of layers this and inform that "layer" changes which indicates that new
+      # parameter values has been used
+      soil_all_block <- paste(soil_all_block, soil_one_block, "\n <!-- # ---- Layer changes ----  --> \n")
+    }
+    
+    # If there is less than seven layer blocks initialised, use the default ones for bottom
+    if(depth_level < 7){
+      soil_combine <- paste(soil_all_block, "\t\t", paste(soil_layer[-c(1:depth_level)], collapse = "\n \t\t"))
+    }
+    else{
+      soil_combine <- soil_all_block
+    }
     
   }
   
@@ -1291,14 +1535,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     PEcAn.logger::logger.severe("More than one soil path given: only one soil path is supported")
   }
   
-  
-  
-  
-  
-  # Second Layer
-  # soil_second_layer <- paste0("bd='", bd_2, "' clay='", clay_2, "' corg='", corg_2, "' norg='", norg_2, "' ph='", ph_2,
-  #                             "' vangenuchten_n='", vangenuchten_n, "' vangenuchten_alpha='", vangenuchten_alpha,"' sand='",
-  #                             sand_2, "' scel='", scel_2, "' sks='", sks_2, "' wcmax='", wcmax, "' wcmin='", wcmin, "'")
+
   
   
   
@@ -1341,13 +1578,27 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   #sitefile <- gsub("@Info_Surface_Layer@", soil_surface, sitefile)
   sitefile <- gsub("@Info_Use_History@", paste0("'", soil_use_history, "'"), sitefile)
   sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
-  sitefile <- gsub("@Info_Surface_Layer@", soil_layer_values, sitefile)
+  sitefile <- gsub("@Info_Surface_Layer@", soil_combine, sitefile)
   
   
   # Write soil conditions
   writeLines(sitefile, con = file.path(settings$rundir, run.id, "site.xml"))
   
   ##
+  
+  
+  # Viikki events
+  if(site_id == "15000000029"){
+    # Default events file
+    eventsfile <- readLines(con = system.file("events_viik.xml", package = "PEcAn.LDNDC"), n = -1)
+    
+    #
+    eventsfile <- gsub("@InitialBiomass@", paste0("'", initialbiomass, "'"), eventsfile)
+    eventsfile <- gsub("@FractionalCover@", paste0("'", fractionalcover, "'"), eventsfile)
+    
+    # Write initial conditions on planting
+    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+  }
   
   
   
