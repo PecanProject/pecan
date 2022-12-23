@@ -1167,13 +1167,44 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(i > 1){
       # these may or may not be modified depending on how crop cycles work in STICS
       # 'snu' is bare soil
+      # fine for annual crops but need to change for perennials
       SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0",     param_value = "snu", select = "plante", value = "1", overwrite = TRUE)  
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0",       param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "masec0",     param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0",      param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "magrain0",   param_value = 0, select = "plante", value = "1", overwrite = TRUE)       
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "QNplante0",  param_value = 0, select = "plante", value = "1", overwrite = TRUE)      
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "resperenne0", param_value = 0, select = "plante", value = "1", overwrite = TRUE)  
+       
+    }else if(!is.null(settings$run$inputs$poolinitcond)){
+      ic_path <- settings$run$inputs$poolinitcond$path
+      ic_nc   <- ncdf4::nc_open(ic_path)
+      
+      # initial leaf area index (m2 m-2)
+      lai0    <- ncdf4::ncvar_get(ic_nc, "LAI")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0", param_value = lai0, select = "plante", value = "1", overwrite = TRUE)  
+      
+      # initial aerial biomass (kg m-2 --> t ha-1)
+      masec0    <- ncdf4::ncvar_get(ic_nc, "AGB")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "masec0", param_value = udunits2::ud.convert(masec0, "kg m-2", "t ha-1"), select = "plante", value = "1", overwrite = TRUE)
+      
+      # initial depth of root apex of the crop (m --> cm)
+      zrac0    <- ncdf4::ncvar_get(ic_nc, "rooting_depth")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0", param_value = udunits2::ud.convert(zrac0, "m", "cm"), select = "plante", value = "1", overwrite = TRUE) 
+      
+      # initial grain dry weight - haven't started any simulations from this stage yet
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "magrain0",   param_value = 0, select = "plante", value = "1", overwrite = TRUE)    
+      
+      # initial N amount in the plant (kg m-2 --> kg ha-1)
+      QNplante0    <- ncdf4::ncvar_get(ic_nc, "plant_nitrogen_content")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "QNplante0",  param_value = udunits2::ud.convert(QNplante0, "kg m-2", "kg ha-1"), select = "plante", value = "1", overwrite = TRUE) 
+      
+      # initial reserve of biomass (kg m-2 --> t ha-1)
+      resperenne0    <- ncdf4::ncvar_get(ic_nc, "reserve_biomass")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "resperenne0", param_value = udunits2::ud.convert(resperenne0, "kg m-2", "t ha-1"), select = "plante", value = "1", overwrite = TRUE) 
+      
+      # initial root density in each of the five soil layers
+      densinitial    <- ncdf4::ncvar_get(ic_nc, "root_density")
+      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "densinitial", param_value = densinitial, select = "plante", value = "1", overwrite = TRUE) 
+      
+      # default 'lev'
+      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0", param_value = "plt", select = "plante", value = "1", overwrite = TRUE)  
+      
+      ncdf4::nc_close(ic_nc)
     }
     
     SticsRFiles::convert_xml2txt(xml_file = ini_file, java_dir = javastics_path)
