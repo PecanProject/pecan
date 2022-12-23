@@ -450,15 +450,15 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
     PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
     edhistory <-
       switch(settings$model$revision,
-             "46" = PEcAn.ED2:::history.r46,
-             "81" = PEcAn.ED2:::history.r81,
-             "82" = PEcAn.ED2:::history.r82,
-             "85" = PEcAn.ED2:::history.r85,
-             "git" = PEcAn.ED2:::history.rgit
+             "46"  = history.r46,
+             "81"  = history.r81,
+             "82"  = history.r82,
+             "85"  = history.r85,
+             "git" = history.rgit
       )
   } else {
     PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
-    edhistory <- PEcAn.ED2:::history
+    edhistory <- history
   }
 
   edtraits <- names(edhistory)
