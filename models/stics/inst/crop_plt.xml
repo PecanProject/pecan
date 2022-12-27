@@ -271,7 +271,7 @@
           </choix>
           <choix code="2" nom="no"/>
         </option>
-        <option choix="2" nom="trophic-linked production" nomParam="codtrophrac">
+        <option choix="3" nom="trophic-linked production" nomParam="codtrophrac">
           <choix code="1" nom="continuous link">
             <param format="real" max="0.9" min="0.1" nom="repracpermax">-999</param>
             <param format="real" max="0.9" min="0.1" nom="repracpermin">-999</param>

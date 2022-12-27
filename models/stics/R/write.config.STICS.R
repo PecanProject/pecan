@@ -25,7 +25,7 @@
 ##' @author Istem Fer
 ##-------------------------------------------------------------------------------------------------#
 write.config.STICS <- function(defaults, trait.values, settings, run.id) {
-  
+
   ## the rest of the code assumes only plant PFTs
   ## little modification here as not to have a bigger re-write for now
   if(any(grepl("soil", names(trait.values)))){
@@ -270,6 +270,34 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # semi thermal amplitude for vernalising effect (degreeC)
     if ("vernalization_TAmp" %in% pft.names) { 
       SticsRFiles::set_param_xml(plant_file, "ampfroid", pft.traits[which(pft.names == "vernalization_TAmp")], overwrite = TRUE)
+    }
+    
+    if ("coeflevamf" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coeflevamf", pft.traits[which(pft.names == "coeflevamf")], overwrite = TRUE)
+    }
+    
+    if ("coefamflax" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coefamflax", pft.traits[which(pft.names == "coefamflax")], overwrite = TRUE)
+    }
+    
+    if ("coeflaxsen" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coeflaxsen", pft.traits[which(pft.names == "coeflaxsen")], overwrite = TRUE)
+    }
+    
+    if ("coefsenlan" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coefsenlan", pft.traits[which(pft.names == "coefsenlan")], overwrite = TRUE)
+    }
+    
+    if ("coeflevdrp" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coeflevdrp", pft.traits[which(pft.names == "coeflevdrp")], overwrite = TRUE)
+    }
+    
+    if ("coefdrpmat" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coefdrpmat", pft.traits[which(pft.names == "coefdrpmat")], overwrite = TRUE)
+    }
+    
+    if ("coefflodrp" %in% pft.names) { 
+      SticsRFiles::set_param_xml(plant_file, "coefflodrp", pft.traits[which(pft.names == "coefflodrp")], overwrite = TRUE)
     }
     
     
@@ -1169,6 +1197,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       # 'snu' is bare soil
       # fine for annual crops but need to change for perennials
       SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0",     param_value = "snu", select = "plante", value = "1", overwrite = TRUE)  
+      # when snu others are set to 0 by STICS
        
     }else if(!is.null(settings$run$inputs$poolinitcond)){
       ic_path <- settings$run$inputs$poolinitcond$path
@@ -1184,6 +1213,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       
       # initial depth of root apex of the crop (m --> cm)
       zrac0    <- ncdf4::ncvar_get(ic_nc, "rooting_depth")
+      if(zrac0 < 0.2) zrac0 <- 0.2
       SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0", param_value = udunits2::ud.convert(zrac0, "m", "cm"), select = "plante", value = "1", overwrite = TRUE) 
       
       # initial grain dry weight - haven't started any simulations from this stage yet
@@ -1199,6 +1229,16 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       
       # initial root density in each of the five soil layers
       densinitial    <- ncdf4::ncvar_get(ic_nc, "root_density")
+      if(all(densinitial==0)) densinitial[1] <- 0.5 # for lev
+      if(zrac0 == 0.2){
+        densinitial[2:5] <-0
+      }else if(zrac0 < 0.4){
+        densinitial[3:5] <-0
+      }else if(zrac0 < 0.6){
+        densinitial[4:5] <-0
+      }else if(zrac0 < 0.8){
+        densinitial[5] <-0 #densinitial layers should not be filled if zrac0 is not there
+      }
       SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "densinitial", param_value = densinitial, select = "plante", value = "1", overwrite = TRUE) 
       
       # default 'lev'
@@ -1232,6 +1272,54 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # I guess not important what this is called as long as it's consistent in usms
   SticsRFiles::set_soil_txt(filepath = sols_file, param="typsol", value=paste0("sol", str_ns))
+  
+  if(!is.null(settings$run$inputs$poolinitcond)){
+    ic_path <- settings$run$inputs$poolinitcond$path
+    ic_nc   <- ncdf4::nc_open(ic_path)
+    
+    # pH
+    pH    <- ncdf4::ncvar_get(ic_nc, "pH")
+    pH    <- round(pH[1], digits = 1) # STICS uses 1 pH value
+    SticsRFiles::set_soil_txt(filepath = sols_file, param="pH", value=pH)
+ 
+    sapply(1:5, function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="epc", value=20, layer = x)) 
+    
+    # water_concentration_at_field_capacity
+    hccf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_field_capacity")
+    hccf    <- round(hccf*100, digits = 2)
+    sapply(seq_along(hccf), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="hccf", value=hccf[x], layer = x)) 
+    
+    # water_concentration_at_wilting_point
+    hminf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_wilting_point")
+    hminf    <- round(hminf*100, digits = 2)
+    sapply(seq_along(hminf), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="hminf", value=hminf[x], layer = x)) 
+    
+    # soil_organic_nitrogen_content
+    Norg    <- ncdf4::ncvar_get(ic_nc, "soil_nitrogen_content")
+    Norg    <- round(Norg[1]*100, digits = 2) # STICS uses 1 Norg value
+    SticsRFiles::set_soil_txt(filepath = sols_file, param="Norg", value=Norg) 
+
+    # soil_clay_content
+    argi    <- ncdf4::ncvar_get(ic_nc, "soil_clay_content")
+    argi    <- round(argi[1]*100, digits = 0) # STICS uses 1 argi value
+    SticsRFiles::set_soil_txt(filepath = sols_file, param="argi", value=argi) 
+    
+    # soil_bulk_density (kg m-3 --> g cm-3)
+    DAF    <- ncdf4::ncvar_get(ic_nc, "soil_bulk_density")
+    DAF    <- round(udunits2::ud.convert(DAF, "kg m-3", "g cm-3"), digits = 1)
+    sapply(seq_along(DAF), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="DAF", value=DAF[x], layer = x)) 
+    
+    # c2n_humus
+    #CsurNsol0    <- ncdf4::ncvar_get(ic_nc, "c2n_humus")
+    #SticsRFiles::set_soil_txt(filepath = sols_file, param="CsurNsol", value=CsurNsol0) 
+    
+    # epd 
+    epd <- rep(10, 5)
+    sapply(seq_along(epd), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="epd", value=epd[x], layer = x)) 
+    
+    ncdf4::nc_close(ic_nc)
+  }
+  
   file.copy(sols_file, file.path(usmdirs, "param.sol"))
   
   # DO NOTHING ELSE FOR NOW
