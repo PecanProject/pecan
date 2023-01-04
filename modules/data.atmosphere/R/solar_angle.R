@@ -1,6 +1,6 @@
 #' Cosine of solar zenith angle
 #'
-#' For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
+#' For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
 #' @author Alexey Shiklomanov
 #' @param doy Day of year

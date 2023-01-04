@@ -403,7 +403,7 @@ check.settings <- function(settings, force = FALSE) {
         "qsub not specified using default value :", settings$host$qsub)
     }
     if (is.null(settings$host$qsub.jobid)) {
-      settings$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      settings$host$qsub.jobid <- ".* ([0-9]+).*"
       PEcAn.logger::logger.info(
         "qsub.jobid not specified using default value :",
         settings$host$qsub.jobid)
