@@ -29,6 +29,7 @@ on:
 env:
   MASTER_REPO: PecanProject/pecan
   DOCKERHUB_ORG: pecan
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   docker:
