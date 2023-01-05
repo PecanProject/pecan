@@ -121,6 +121,7 @@ echo "# ----------------------------------------------------------------------"
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
         --pull \
+        --secret id=github_token,env=GITHUB_PAT \
         --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
@@ -230,6 +231,7 @@ done
 # build apps
 for x in api; do
     ${DEBUG} docker build \
+        --secret id=gh_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
