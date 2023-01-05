@@ -147,6 +147,7 @@ echo ""
 # require all of PEcAn to build
 for x in base web docs; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -231,7 +232,7 @@ done
 # build apps
 for x in api; do
     ${DEBUG} docker build \
-        --secret id=gh_token,env=GITHUB_PAT \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
