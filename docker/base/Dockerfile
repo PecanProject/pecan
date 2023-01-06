@@ -27,7 +27,7 @@ COPY models   /pecan/models/
 # `make clean` is to remove artifacts copied in from host system
 #   (e.g. basgra.so)
 RUN --mount=type=secret,id=github_token \
-    export GITHUB_PAT=`cat /run/secrets/github_pat` \
+    export GITHUB_PAT=`cat /run/secrets/github_token` \
     && cd /pecan \
     && make clean \
     && make \
