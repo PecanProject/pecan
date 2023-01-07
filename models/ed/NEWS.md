@@ -1,5 +1,6 @@
 # PEcAn.ED2 (development version)
 
+* Fixed a bug affecting the generation of job.sh for runs with many PFTs (#3075)
 * Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 
 # PEcAn.ED2 1.7.2
