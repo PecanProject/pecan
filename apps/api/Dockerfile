@@ -15,7 +15,9 @@ EXPOSE 8000
 # --------------------------------------------------------------------------
 
 # COMMAND TO RUN
-RUN   apt-get update \
+RUN  --mount=type=secret,id=github_token \
+  export GITHUB_PAT=`cat /run/secrets/github_token` \
+  &&  apt-get update \
   &&  apt-get install libsodium-dev -y \
   &&  rm -rf /var/lib/apt/lists/* \
   &&  Rscript -e "devtools::install_version('promises', '1.1.0')" \
