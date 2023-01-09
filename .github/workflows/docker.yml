@@ -35,7 +35,9 @@ jobs:
   docker:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        group: [base, core, shiny, models, apps]
     steps:
       - name: Work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -75,7 +77,7 @@ jobs:
 
       # use shell script to build, there is some complexity in this
       - name: create images
-        run: ./docker.sh -i github
+        run: ./docker.sh -i github -g ${{ matrix.group }}
         env:
           PECAN_GIT_CHECKSUM: ${{ github.sha }}
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
