@@ -102,7 +102,7 @@ EOF
 done
 
 # If no -g passed, build all image groups
-if [[ -z "$IMG_GROUP" ]; then
+if [[ -z "$IMG_GROUP" ]]; then
     IMG_GROUP=(base core shiny models apps)
 fi
 
