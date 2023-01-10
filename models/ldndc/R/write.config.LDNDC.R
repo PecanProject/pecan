@@ -183,6 +183,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     setupfile <- gsub("@canopytransport@", "yes", setupfile)
     setupfile <- gsub("@riverconnection@", "yes", setupfile)
     
+    # Report
+    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='@timemode@' />", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
@@ -251,6 +253,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     setupfile <- gsub("@canopytransport@", "yes", setupfile)
     setupfile <- gsub("@riverconnection@", "no", setupfile)
     
+    # Report
+    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='@timemode@' />", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
@@ -305,9 +309,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     # Soil modules and options
     setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
-    setupfile <- gsub("@canopytransport@", "yes", setupfile)
+    setupfile <- gsub("@canopytransport@", "no", setupfile)
     setupfile <- gsub("@riverconnection@", "no", setupfile)
     
+    # Report
+    setupfile <- gsub("@reportarable@", "", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))

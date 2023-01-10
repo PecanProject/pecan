@@ -27,7 +27,7 @@
 		        <module id="output:physiology:subdaily" />
 		        <module id="output:vegstructure:daily" />
 		        <module id="output:soilchemistry:subdaily" />
-		        <module id="output:report:arable" timemode='@timemode@' />
+		        '@reportarable@'
           </modulelist>
         </mobile>
     </setup>
