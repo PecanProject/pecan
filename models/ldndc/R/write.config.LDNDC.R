@@ -137,14 +137,54 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   
   
-  ## Choose the setup and files based on the simulated field id, options: Arable (Haltiala), Grassland (Viikki) and Forest* (*Not implemented)
+  ## ----- Preparing the setup file ----- ##
+  
+  ## Setup file -- This may differ based on the site properties and the ecosystem we are simulating
+  setupfile <- readLines(con = system.file("setup_template.xml", package = "PEcAn.LDNDC"), n = -1)
+  
+  ## Timemode
+  # Timemode currently supports only subdaily
+  timemode <- "subdaily"
+  setupfile <- gsub("@timemode@", timemode, setupfile)
+  
+  
+  ## Elevation, latitude and longitude
+  setupfile <- gsub("@elevation@", "10", setupfile)
+  setupfile <- gsub("@latitude@", settings$run$site$lat, setupfile)
+  setupfile <- gsub("@longitude@", settings$run$site$lon, setupfile)
+  
+  
+  ## Populate the setup filebased on the simulated field id, options: Arable (Haltiala), Grassland (Viikki) and Forest (Lettosuo)
   ## Check the site id
   # Haltiala: 15000000027
   # Viikki: 15000000029
+  # Lettosuo: 15000000023
   site_id <- settings$run$site$id
   if(site_id == "15000000027"){
-    # Haltiala setup
-    setupfile <- readLines(con = system.file("setup_halt.xml", package = "PEcAn.LDNDC"), n = -1)
+    
+    ### Haltiala setup
+    
+    ## Modules
+    # Microclimate module
+    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
+    
+    # Watercycle module and option
+    setupfile <- gsub("@watercycle@", "watercycledndc", setupfile)
+    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
+    
+    # Airchemistry module
+    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
+    
+    # Physiology module
+    setupfile <- gsub("@physiology@", "arabledndc", setupfile)
+    
+    # Soil modules and options
+    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
+    setupfile <- gsub("@canopytransport@", "yes", setupfile)
+    setupfile <- gsub("@riverconnection@", "yes", setupfile)
+    
+    
+    # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
     
     # Haltiala events
@@ -183,13 +223,36 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Soil info
     soil_use_history <- "arable"
     soil_type <- "CLLO"
+    litter_height <- "0.0"
     
     
   }
   
   if(site_id == "15000000029"){
-    # Viikki setup
-    setupfile <- readLines(con = system.file("setup_viik.xml", package = "PEcAn.LDNDC"), n = -1)
+    
+    ### Viikki setup
+
+    ## Modules
+    # Microclimate module
+    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
+    
+    # Watercycle module and option
+    setupfile <- gsub("@watercycle@", "watercycledndc", setupfile)
+    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
+    
+    # Airchemistry module
+    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
+    
+    # Physiology module
+    setupfile <- gsub("@physiology@", "plamox", setupfile)
+    
+    # Soil modules and options
+    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
+    setupfile <- gsub("@canopytransport@", "yes", setupfile)
+    setupfile <- gsub("@riverconnection@", "no", setupfile)
+    
+    
+    # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
     
     
@@ -217,11 +280,69 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Soil info
     soil_use_history <- "grassland"
     soil_type <- "CLAY"
+    litter_height <- "0.0"
+    
+  }
+  
+  
+  if(site_id == "15000000023"){
+
+    ### Lettosuo
+
+    ## Modules
+    # Microclimate module
+    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
+    
+    # Watercycle module and option
+    setupfile <- gsub("@watercycle@", "echy", setupfile)
+    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
+    
+    # Airchemistry module
+    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
+    
+    # Physiology module
+    setupfile <- gsub("@physiology@", "psim", setupfile)
+    
+    # Soil modules and options
+    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
+    setupfile <- gsub("@canopytransport@", "yes", setupfile)
+    setupfile <- gsub("@riverconnection@", "no", setupfile)
+    
+    
+    # Write the populated setup file as an xml-file
+    writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
+    
+    # Lettosuo events
+    eventsfile <- readLines(con = system.file("events_letto.xml", package = "PEcAn.LDNDC"), n = -1)
+    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+    
+    
+    # Viikki species
+    mnemonic_1 <- "trees"
+    group <- "wood"
+    
+    ## Forest
+    a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
+    
+    # PISY
+    b.2 <- ""
+    
+    
+    # Indentation (forest)
+    a.2 <- paste0("\t\t\t</species>")
+    
+    
+    #----
+    
+    # Soil info
+    soil_use_history <- "grassland"
+    soil_type <- "ORMA"
+    litter_height <- "2.0"
     
   }
   
   # Use only one of the specified sites: Haltiala or Viikki
-  if(!(site_id %in% c("15000000027", "15000000029"))){
+  if(!(site_id %in% c("15000000027", "15000000029", "15000000023"))){
     PEcAn.logger::logger.severe("Given site id is not currently supported")
   }
   
@@ -261,9 +382,50 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Number at the beginning refers to the number of species parameters in LDNDC guide book.
     # First there is name in LDNDC and the second is name in BETY database
     
+    
+    #8 NDFLUSH -
+    if ("ndflush" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NDFLUSH' value='", pft.traits[which(pft.names == "ndflush")], "' /> \n"), collapse="")
+    }
+    
+    #9 NDMORTA -
+    if ("ndmorta" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NDMORTA' value='", pft.traits[which(pft.names == "ndmorta")], "' /> \n"), collapse="")
+    }
+    
+    #10 DLEAFSHED -
+    if ("dleafshed" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DLEAFSHED' value='", pft.traits[which(pft.names == "dleafshed")], "' /> \n"), collapse="")
+    }
+    
+    #12 AEJM J/mol -
+    if ("aejm" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AEJM' value='", pft.traits[which(pft.names == "aejm")], "' /> \n"), collapse="")
+    }
+    
+    #13 AEKC J/mol -
+    if ("aekc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AEKC' value='", pft.traits[which(pft.names == "aekc")], "' /> \n"), collapse="")
+    }
+    
+    #14 AEKO J/mol -
+    if ("aeko" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AEKO' value='", pft.traits[which(pft.names == "aeko")], "' /> \n"), collapse="")
+    }
+    
+    #15 AERD J/mol -
+    if ("aerd" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AERD' value='", pft.traits[which(pft.names == "aerd")], "' /> \n"), collapse="")
+    }
+    
     #16 AEVC J/mol -
     if ("aevc" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AEVC' value='", pft.traits[which(pft.names == "aevc")], "' /> \n"), collapse="")
+    }
+    
+    #17 AEVO J/mol -
+    if ("aevo" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='AEVO' value='", pft.traits[which(pft.names == "aevo")], "' /> \n"), collapse="")
     }
     
     #18 ALB (-) - SW_albedo (-)
@@ -291,7 +453,27 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='BASEFOLRESPFRAC' value='", pft.traits[which(pft.names == "basefolrespfrac")], "' /> \n"), collapse="")
     }
     
-    #24 CELLULOSE -
+    #25 CB -
+    if ("cb" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CB' value='", pft.traits[which(pft.names == "cb")], "' /> \n"), collapse="")
+    }
+    
+    #26 CDAMP -
+    if ("cdamp" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CDAMP' value='", pft.traits[which(pft.names == "cdamp")], "' /> \n"), collapse="")
+    }
+    
+    #27 CL_P1 -
+    if ("cl_p1" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CL_P1' value='", pft.traits[which(pft.names == "cl_p1")], "' /> \n"), collapse="")
+    }
+    
+    #28 CL_P2 -
+    if ("cl_p2" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CL_P2' value='", pft.traits[which(pft.names == "cl_p2")], "' /> \n"), collapse="")
+    }
+    
+    #32 CELLULOSE -
     if ("cellulose" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CELLULOSE' value='", pft.traits[which(pft.names == "cellulose")], "' /> \n"), collapse="")
     }
@@ -304,6 +486,31 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #35 CHILL_TEMP_MAX - 
     if ("chill_temp_max" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CHILL_TEMP_MAX' value='", pft.traits[which(pft.names == "chill_temp_max")], "' /> \n"), collapse="")
+    }
+    
+    #36 CT_IS -
+    if ("ct_is" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CT_IS' value='", pft.traits[which(pft.names == "ct_is")], "' /> \n"), collapse="")
+    }
+    
+    #37 CT_MT -
+    if ("ct_mt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='CT_MT' value='", pft.traits[which(pft.names == "ct_mt")], "' /> \n"), collapse="")
+    }
+    
+    #38 DBRANCH kg/m3 -
+    if ("dbranch" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DBRANCH' value='", pft.traits[which(pft.names == "dbranch")], "' /> \n"), collapse="")
+    }
+    
+    #39 DF_EXP -
+    if ("df_exp" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DF_EXP' value='", pft.traits[which(pft.names == "df_exp")], "' /> \n"), collapse="")
+    }
+    
+    #40 DF_LIMIT m2/ha -
+    if ("df_limit" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='DF_LIMIT' value='", pft.traits[which(pft.names == "df_limit")], "' /> \n"), collapse="")
     }
     
     #41 DFOL - leaf_density
@@ -329,6 +536,26 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DOC_RESP_RATIO' value='", pft.traits[which(pft.names == "coarseRootExudation")], "' /> \n"), collapse="")
     }
     
+    #45 DRAGC -
+    if ("dragc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DRAGC' value='", pft.traits[which(pft.names == "dragc")], "' /> \n"), collapse="")
+    }
+    
+    #46 DSAP -
+    if ("dsap" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DSAP' value='", pft.traits[which(pft.names == "dsap")], "' /> \n"), collapse="")
+    }
+    
+    #47 DS_IS J/mol K -
+    if ("ds_is" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DS_IS' value='", pft.traits[which(pft.names == "ds_is")], "' /> \n"), collapse="")
+    }
+    
+    #48 DS_MT J/mol K -
+    if ("ds_mt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DS_MT' value='", pft.traits[which(pft.names == "ds_mt")], "' /> \n"), collapse="")
+    }
+    
     #49 DVPD1 -
     if ("dvpd1" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DVPD1' value='", pft.traits[which(pft.names == "dvpd1")], "' /> \n"), collapse="")
@@ -337,6 +564,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #50 DVPD2 -
     if ("dvpd2" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='DVPD2' value='", pft.traits[which(pft.names == "dvpd2")], "' /> \n"), collapse="")
+    }
+    
+    #54 EF_OVOC ug/gDW h -
+    if ("ef_ovoc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EF_OVOC' value='", pft.traits[which(pft.names == "ef_ovoc")], "' /> \n"), collapse="")
+    }
+    
+    #55 EXPL_NH4 -
+    if ("expl_nh4" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXPL_NH4' value='", pft.traits[which(pft.names == "expl_nh4")], "' /> \n"), collapse="")
+    }
+    
+    #56 EXPL_NO3 -
+    if ("expl_no3" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXPL_NO3' value='", pft.traits[which(pft.names == "expl_no3")], "' /> \n"), collapse="")
     }
     
     #57 EXP_ROOT_DISTRIBUTION - 
@@ -352,6 +594,16 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #58 EXT - extinction_coefficient_diffuse
     if ("extinction_coefficient_diffuse" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='EXT' value='", pft.traits[which(pft.names == "extinction_coefficient_diffuse")], "' /> \n"), collapse="")
+    }
+    
+    #59 FAGE -
+    if ("fage" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FAGE' value='", pft.traits[which(pft.names == "fage")], "' /> \n"), collapse="")
+    }
+    
+    #62 FFACMAX -
+    if ("ffacmax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FFACMAX' value='", pft.traits[which(pft.names == "ffacmax")], "' /> \n"), collapse="")
     }
     
     #78 FOLRELGROMAX -
@@ -372,6 +624,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #81 FRACTION_FOLIAGE - 
     if ("fraction_foliage" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FRACTION_FOLIAGE' value='", pft.traits[which(pft.names == "fraction_foliage")], "' /> \n"), collapse="")
+    }
+    
+    #82 FRET_N - 
+    if ("fret_n" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FRET_N' value='", pft.traits[which(pft.names == "fret_n")], "' /> \n"), collapse="")
+    }
+    
+    #86 FRTALLOC_REL -
+    if ("frtalloc_rel" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FRTALLOC_REL' value='", pft.traits[which(pft.names == "frtalloc_rel")], "' /> \n"), collapse="")
+    }
+    
+    #87 FRTLOSS_SCALE -
+    if ("frtloss_scale" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='FRTLOSS_SCALE' value='", pft.traits[which(pft.names == "frtloss_scale")], "' /> \n"), collapse="")
     }
     
     #88 FYIELD - 
@@ -439,6 +706,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDDFOLSTART' value='", pft.traits[which(pft.names == "gddfolstart")], "' /> \n"), collapse="")
     }
     
+    #100 GGDPS_B (umol L-1 s-1) -
+    if ("ggdps_b" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GGDPS_B' value='", pft.traits[which(pft.names == "ggdps_b")], "' /> \n"), collapse="")
+    }
+    
+    #101 GSMAX (mmolH2O m-2 s-1) -
+    if ("gsmax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GSMAX' value='", pft.traits[which(pft.names == "gsmax")], "' /> \n"), collapse="")
+    }
+    
+    #102 GSMIN (mmolH2O m-2 s-1) -
+    if ("gsmin" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GSMIN' value='", pft.traits[which(pft.names == "gsmin")], "' /> \n"), collapse="")
+    }
+    
     #103 GZRTZ -
     if ("gzrtz" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GZRTZ' value='", pft.traits[which(pft.names == "gzrtz")], "' /> \n"), collapse="")
@@ -459,9 +741,44 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HALFSAT' value='", pft.traits[which(pft.names == "halfsat")], "' /> \n"), collapse="")
     }
     
+    #110 HA_IS (J mol-1) - 
+    if ("ha_is" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HA_IS' value='", pft.traits[which(pft.names == "ha_is")], "' /> \n"), collapse="")
+    }
+    
+    #111 HA_MT (J mol-1) - 
+    if ("ha_mt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HA_MT' value='", pft.traits[which(pft.names == "ha_mt")], "' /> \n"), collapse="")
+    }
+    
+    #112 HD_IS (J mol-1) - 
+    if ("hd_is" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HD_IS' value='", pft.traits[which(pft.names == "hd_is")], "' /> \n"), collapse="")
+    }
+    
     #113 HDJ - 
     if ("hdj" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HDJ' value='", pft.traits[which(pft.names == "hdj")], "' /> \n"), collapse="")
+    }
+    
+    #114 HD_EXP - 
+    if ("hd_exp" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HD_EXP' value='", pft.traits[which(pft.names == "hd_exp")], "' /> \n"), collapse="")
+    }
+    
+    #115 HD_MAX (m m-1) - 
+    if ("hd_max" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HD_MAX' value='", pft.traits[which(pft.names == "hd_max")], "' /> \n"), collapse="")
+    }
+    
+    #116 HD_MIN (m m-1) - 
+    if ("hd_min" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HD_MIN' value='", pft.traits[which(pft.names == "hd_min")], "' /> \n"), collapse="")
+    }
+    
+    #117 HD_MT (J mol-1) - 
+    if ("hd_mt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='HD_MT' value='", pft.traits[which(pft.names == "hd_mt")], "' /> \n"), collapse="")
     }
     
     #118 HREF - 
@@ -474,9 +791,29 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='INI_N_FIX' value='", rbinom(1,1,0.1)*pft.traits[which(pft.names == "ini_n_fix")], "' /> \n"), collapse="")
     }
     
+    #120 KC25 (mmol mol-1 mbar-1)- 
+    if ("kc25" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='KC25' value='", pft.traits[which(pft.names == "kc25")], "' /> \n"), collapse="")
+    }
+    
+    #121 KM20 - 
+    if ("km20" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='KM20' value='", pft.traits[which(pft.names == "km20")], "' /> \n"), collapse="")
+    }
+    
     #126 K_MM_NITROGEN_UPTAKE - 
     if ("k_mm_nitrogen_uptake" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='K_MM_NITROGEN_UPTAKE' value='", pft.traits[which(pft.names == "k_mm_nitrogen_uptake")], "' /> \n"), collapse="")
+    }
+    
+    #127 KO25 - 
+    if ("ko25" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='KO25' value='", pft.traits[which(pft.names == "ko25")], "' /> \n"), collapse="")
+    }
+    
+    #128 KRC_WOOD - 
+    if ("krc_wood" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='KRC_WOOD' value='", pft.traits[which(pft.names == "krc_wood")], "' /> \n"), collapse="")
     }
     
     #129 LIGNIN - 
@@ -519,19 +856,34 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='M_FRUIT_OPT' value='", pft.traits[which(pft.names == "m_fruit_opt")], "' /> \n"), collapse="")
     }
     
+    #139 MUE_IS (s-1) -
+    if ("mue_is" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='MUE_IS' value='", pft.traits[which(pft.names == "mue_is")], "' /> \n"), collapse="")
+    }
+    
+    #140 MUE_MT (s-1) -
+    if ("mue_mt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='MUE_MT' value='", pft.traits[which(pft.names == "mue_mt")], "' /> \n"), collapse="")
+    }
+    
     #141 MWFM -
     if ("mwfm" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='MWFM' value='", pft.traits[which(pft.names == "mwfm")], "' /> \n"), collapse="")
     }
     
-    #143 NC_FOLIAGE_MIN
+    #143 NC_FOLIAGE_MIN -
     if ("nc_foliage_min" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FOLIAGE_MIN' value='", pft.traits[which(pft.names == "nc_foliage_min")], "' /> \n"), collapse="")
     }
     
-    #144 NC_FOLIAGE_MAX
+    #144 NC_FOLIAGE_MAX -
     if ("nc_foliage_max" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_FOLIAGE_MAX' value='", pft.traits[which(pft.names == "nc_foliage_max")], "' /> \n"), collapse="")
+    }
+    
+    #145 NCFOLOPT (kg kg-1) -
+    if ("ncfolopt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NCFOLOPT' value='", pft.traits[which(pft.names == "ncfolopt")], "' /> \n"), collapse="")
     }
     
     #146 NC_FINEROOTS_MAX - 
@@ -564,6 +916,56 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NC_STRUCTURAL_TISSUE_MIN' value='", pft.traits[which(pft.names == "nc_structural_tissue_min")], "' /> \n"), collapse="")
     }
     
+    #152 NCSAPOPT (kg kg-1) -
+    if ("ncsapopt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NCSAPOPT' value='", pft.traits[which(pft.names == "ncsapopt")], "' /> \n"), collapse="")
+    }
+    
+    #153 N_DEF_FACTOR -
+    if ("n_def_factor" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='N_DEF_FACTOR' value='", pft.traits[which(pft.names == "n_def_factor")], "' /> \n"), collapse="")
+    }
+    
+    #154 N_DEMAND_VEG -
+    if ("n_demand_veg" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='N_DEMAND_VEG' value='", pft.traits[which(pft.names == "n_demand_veg")], "' /> \n"), collapse="")
+    }
+    
+    #155 N_DEMAND_REPROD -
+    if ("n_demand_reprod" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='N_DEMAND_REPROD' value='", pft.traits[which(pft.names == "n_demand_reprod")], "' /> \n"), collapse="")
+    }
+    
+    #156 NFIX_CEFF -
+    if ("nfix_ceff" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_CEFF' value='", pft.traits[which(pft.names == "nfix_ceff")], "' /> \n"), collapse="")
+    }
+    
+    #157 NFIX_TMAX -
+    if ("nfix_tmax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_TMAX' value='", pft.traits[which(pft.names == "nfix_tmax")], "' /> \n"), collapse="")
+    }
+    
+    #158 NFIX_TOPT -
+    if ("nfix_topt" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_TOPT' value='", pft.traits[which(pft.names == "nfix_topt")], "' /> \n"), collapse="")
+    }
+    
+    #159 NFIX_TMIN -
+    if ("nfix_tmin" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_TMIN' value='", pft.traits[which(pft.names == "nfix_tmin")], "' /> \n"), collapse="")
+    }
+    
+    #160 NFIX_W -
+    if ("nfix_w" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_W' value='", pft.traits[which(pft.names == "nfix_w")], "' /> \n"), collapse="")
+    }
+    
+    #161 NFIX_RATE (kg N kg-1 DM-1 d-1) -
+    if ("nfix_rate" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='NFIX_RATE' value='", pft.traits[which(pft.names == "nfix_rate")], "' /> \n"), collapse="")
+    }
+    
     #163 PEXS - 
     if ("pexs" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PEXS' value='", pft.traits[which(pft.names == "pexs")], "' /> \n"), collapse="")
@@ -572,6 +974,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #164 PFL - 
     if ("pfl" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PFL' value='", pft.traits[which(pft.names == "pfl")], "' /> \n"), collapse="")
+    }
+    
+    #165 PSL - 
+    if ("psl" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PSL' value='", pft.traits[which(pft.names == "psl")], "' /> \n"), collapse="")
     }
     
     #167 PSNTMAX (C) -  pstemp_max (C)
@@ -589,10 +996,51 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='PSNTOPT' value='", pft.traits[which(pft.names == "psnTOpt")], "' /> \n"), collapse="")
     }
     
+    #170 QHRD -
+    if ("qhrd" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QHRD' value='", pft.traits[which(pft.names == "qhrd")], "' /> \n"), collapse="")
+    }
+    
     #171 QJVC -
     if ("qjvc" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QJVC' value='", pft.traits[which(pft.names == "qjvc")], "' /> \n"), collapse="")
     }
+    
+    #172 QRD25 (umol m-2 s-1) -
+    if ("qrd25" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QRD25' value='", pft.traits[which(pft.names == "qrd25")], "' /> \n"), collapse="")
+    }
+    
+    #173 QRF -
+    if ("qrf" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QRF' value='", pft.traits[which(pft.names == "qrf")], "' /> \n"), collapse="")
+    }
+    
+    #174 QSF_P1 (m2 cm-2) -
+    if ("qsf_p1" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QSF_P1' value='", pft.traits[which(pft.names == "qsf_p1")], "' /> \n"), collapse="")
+    }
+    
+    #175 QSF_P2 (m2 cm-2) -
+    if ("qsf_p2" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QSF_P2' value='", pft.traits[which(pft.names == "qsf_p2")], "' /> \n"), collapse="")
+    }
+    
+    #176 QVOVC -
+    if ("qvovc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QVOVC' value='", pft.traits[which(pft.names == "qvovc")], "' /> \n"), collapse="")
+    }
+    
+    #177 QWODFOLMIN -
+    if ("qwodfolmin" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='QWODFOLMIN' value='", pft.traits[which(pft.names == "qwodfolmin")], "' /> \n"), collapse="")
+    }
+    
+    #178 RBUDDEM -
+    if ("rbuddem" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='RBUDDEM' value='", pft.traits[which(pft.names == "rbuddem")], "' /> \n"), collapse="")
+    }
+    
     
     #179 RESP -  resp
     if ("resp" %in% pft.names) {
@@ -612,6 +1060,16 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #182 RS_CONDUCT -
     if ("rs_conduct" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='RS_CONDUCT' value='", pft.traits[which(pft.names == "rs_conduct")], "' /> \n"), collapse="")
+    }
+    
+    #183 SCALE_I -
+    if ("scale_i" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SCALE_I' value='", pft.traits[which(pft.names == "scale_i")], "' /> \n"), collapse="")
+    }
+    
+    #184 SCALE_M -
+    if ("scale_m" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SCALE_M' value='", pft.traits[which(pft.names == "scale_m")], "' /> \n"), collapse="")
     }
     
     #185 SDJ - 
@@ -654,6 +1112,51 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLADECLINE' value='", pft.traits[which(pft.names == "sladecline")], "' /> \n"), collapse="")
     }
     
+    #196 SLOPE_GSA -
+    if ("slope_gsa" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLOPE_GSA' value='", pft.traits[which(pft.names == "slope_gsa")], "' /> \n"), collapse="")
+    }
+    
+    #197 SLOPE_GSCO2 -
+    if ("slope_gsco2" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLOPE_GSCO2' value='", pft.traits[which(pft.names == "slope_gsco2")], "' /> \n"), collapse="")
+    }
+    
+    #198 SLOPE_GSH2O -
+    if ("slope_gsh2o" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLOPE_GSH2O' value='", pft.traits[which(pft.names == "slope_gsh2o")], "' /> \n"), collapse="")
+    }
+    
+    #199 SLOPE_NC -
+    if ("slope_nc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SLOPE_NC' value='", pft.traits[which(pft.names == "slope_nc")], "' /> \n"), collapse="")
+    }
+    
+    #200 TAP_P1 -
+    if ("tap_p1" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TAP_P1' value='", pft.traits[which(pft.names == "tap_p1")], "' /> \n"), collapse="")
+    }
+    
+    #201 TAP_P2 -
+    if ("tap_p2" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TAP_P2' value='", pft.traits[which(pft.names == "tap_p2")], "' /> \n"), collapse="")
+    }
+    
+    #202 TAP_P3 -
+    if ("tap_p3" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TAP_P3' value='", pft.traits[which(pft.names == "tap_p3")], "' /> \n"), collapse="")
+    }
+    
+    #203 TAU -
+    if ("tau" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TAU' value='", pft.traits[which(pft.names == "tau")], "' /> \n"), collapse="")
+    }
+    
+    #204 THETA -
+    if ("theta" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='THETA' value='", pft.traits[which(pft.names == "theta")], "' /> \n"), collapse="")
+    }
+    
     #205 TLIMIT - 
     if ("tlimit" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TLIMIT' value='", pft.traits[which(pft.names == "tlimit")], "' /> \n"), collapse="")
@@ -664,9 +1167,54 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TOFRTBAS' value='", pft.traits[which(pft.names == "tofrtbas")], "' /> \n"), collapse="")
     }
     
+    #207 TOSAPMAX - 
+    if ("tosapmax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='TOSAPMAX' value='", pft.traits[which(pft.names == "tosapmax")], "' /> \n"), collapse="")
+    }
+    
+    #208 UCMAX (kgN m-2 leaf area) - 
+    if ("ucmax" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='UCMAX' value='", pft.traits[which(pft.names == "ucmax")], "' /> \n"), collapse="")
+    }
+    
+    #210 US_NH4 (kgN kg-1 fine root dry weight day-1) - 
+    if ("us_nh4" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='US_NH4' value='", pft.traits[which(pft.names == "us_nh4")], "' /> \n"), collapse="")
+    }
+    
+    #211 US_NH4MYC (kgN kg-1 fine root dry weight day-1) - 
+    if ("us_nh4myc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='US_NH4MYC' value='", pft.traits[which(pft.names == "us_nh4myc")], "' /> \n"), collapse="")
+    }
+    
+    #213 US_NO3 (kgN kg-1 fine root dry weight day-1) - 
+    if ("us_no3" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='US_NO3' value='", pft.traits[which(pft.names == "us_no3")], "' /> \n"), collapse="")
+    }
+    
+    #214 US_NO3MYC (kgN kg-1 fine root dry weight day-1) - 
+    if ("us_no3myc" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='US_NO3MYC' value='", pft.traits[which(pft.names == "us_no3myc")], "' /> \n"), collapse="")
+    }
+    
+    #215 VCFACT - 
+    if ("vcfact" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='VCFACT' value='", pft.traits[which(pft.names == "vcfact")], "' /> \n"), collapse="")
+    }
+    
     #216 VCMAX25 - 
     if ("vcmax25" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='VCMAX25' value='", pft.traits[which(pft.names == "vcmax25")], "' /> \n"), collapse="")
+    }
+    
+    #217 VPDREF (kPa) - 
+    if ("vpdref" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='VPDREF' value='", pft.traits[which(pft.names == "vpdref")], "' /> \n"), collapse="")
+    }
+    
+    #219 WOODMRESPA - 
+    if ("woodmrespa" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='WOODMRESPA' value='", pft.traits[which(pft.names == "woodmrespa")], "' /> \n"), collapse="")
     }
     
     #220 WUECMAX - wuecmax
@@ -1322,35 +1870,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
     
     
-    # # Soil conditions
-    # if("bd_1" %in% pft.names) {bd_1 <- pft.traits[which(pft.names == "bd_1")]}
-    # if("bd_2" %in% pft.names) {bd_2 <- pft.traits[which(pft.names == "bd_2")]}
-    # 
-    # if("clay_1" %in% pft.names) {clay_1 <- pft.traits[which(pft.names == "clay_1")]}
-    # if("clay_2" %in% pft.names) {clay_2 <- pft.traits[which(pft.names == "clay_2")]}
-    # 
-    # if("corg_1" %in% pft.names) {corg_1 <- pft.traits[which(pft.names == "corg_1")]}
-    # if("corg_2" %in% pft.names) {corg_2 <- pft.traits[which(pft.names == "corg_2")]}
-    # 
-    # if("norg_1" %in% pft.names) {norg_1 <- pft.traits[which(pft.names == "norg_1")]}
-    # if("norg_2" %in% pft.names) {norg_2 <- pft.traits[which(pft.names == "norg_2")]}
-    # 
-    # if("ph_1" %in% pft.names) {ph_1 <- pft.traits[which(pft.names == "ph_1")]}
-    # if("ph_2" %in% pft.names) {ph_2 <- pft.traits[which(pft.names == "ph_2")]}
-    # 
-    # if("sand_1" %in% pft.names) {sand_1 <- pft.traits[which(pft.names == "sand_1")]}
-    # if("sand_2" %in% pft.names) {sand_2 <- pft.traits[which(pft.names == "sand_2")]}
-    # 
-    # if("vangenuchten_n" %in% pft.names) {vangenuchten_n <- pft.traits[which(pft.names == "vangenuchten_n")]}
-    # if("vangenuchten_alpha" %in% pft.names) {vangenuchten_alpha <- pft.traits[which(pft.names == "vangenuchten_alpha")]}
-    # 
-    # if("scel_1" %in% pft.names) {scel_1 <- pft.traits[which(pft.names == "scel_1")]}
-    # if("scel_2" %in% pft.names) {scel_2 <- pft.traits[which(pft.names == "scel_2")]}
-    # 
-    # if("sks_1" %in% pft.names) {sks_1 <- pft.traits[which(pft.names == "sks_1")]}
-    # if("sks_2" %in% pft.names) {sks_2 <- pft.traits[which(pft.names == "sks_2")]}
-    
-    
     
     # Assining pft values
     species_par_values[names(trait.values)[pft]] <- b.2
@@ -1433,10 +1952,60 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       # Diskretization -- Every soil layer is still divided to several layers, this layer that contains these
       # sublayers are here called a block. In LDNDC it is not suggested to use too tight layers so still will be
       # divided to smaller layers that are not so thick.
-      # For first level
+      
+      # For 1st level
       if(depth_level == 1){ 
         disk <- depth[depth_level] * 1000 / layer_div
       }
+      
+      # 2nd level
+      else if(depth_level == 2){
+        layer_div <- 5
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 3th level
+      else if(depth_level == 3){
+        layer_div <- 5
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 4th level
+      else if(depth_level == 4){
+        layer_div <- 2
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 5th level
+      else if(depth_level == 5){
+        layer_div <- 2
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 6th level
+      else if(depth_level == 6){
+        layer_div <- 3
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 7th level
+      else if(depth_level == 7){
+        layer_div <- 3
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 8th level
+      else if(depth_level == 8){
+        layer_div <- 4
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
+      # 9th level
+      else if(depth_level == 9){
+        layer_div <- 1
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+      }
+      
       # For rest of layers, depth is informed as cumulative, but LDNDC uses thickness
       else{
         disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
@@ -1492,6 +2061,24 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
           soil_layer_values <- paste0(soil_layer_values, paste0("norg='", norg, "' "))
         }
         
+        if("soil_iron_content" %in% names(soil_IC_list$vals)){
+          # Total Iron Content - kg Fe m-2 to kg Fe kg-1 ??
+          iron <- unlist(soil_IC_list$vals["soil_iron_content"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("iron='", iron, "' "))
+        }
+        
+        if("vangenuchten_n" %in% names(soil_IC_list$vals)){
+          # Vangenuchten_n - 
+          vn <- unlist(soil_IC_list$vals["vangenuchten_n"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("vangenuchten_n='", vn, "' "))
+        }
+        
+        if("vangenuchten_alpha" %in% names(soil_IC_list$vals)){
+          # Vangenuchten_alpha - 
+          va <- unlist(soil_IC_list$vals["vangenuchten_alpha"])[[depth_level]]
+          soil_layer_values <- paste0(soil_layer_values, paste0("vangenuchten_alpha='", va, "' "))
+        }
+        
         if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
           # Field capacity - Change m3 m-3 to dm3 m-3
           wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[depth_level]] * 1000
@@ -1518,7 +2105,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       
       # Combine the previous block of layers this and inform that "layer" changes which indicates that new
       # parameter values has been used
-      soil_all_block <- paste(soil_all_block, soil_one_block, "\n <!-- # ---- Layer changes ----  --> \n")
+      if(depth_level != layer_count){
+        soil_all_block <- paste(soil_all_block, soil_one_block, "\n <!-- # ---- Layer changes ----  --> \n")
+      } else {
+        soil_all_block <- paste(soil_all_block, soil_one_block, "\n")
+      }
     }
     
     # If there is less than seven layer blocks initialised, use the default ones for bottom
@@ -1554,6 +2145,12 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                            a.2), speciesparfile)
   }
   
+  if(site_id == "15000000023"){
+    speciesparfile <- gsub("@Info@", paste(a.1,
+                                           species_par_values["pipy"][[1]],
+                                           a.2), speciesparfile)
+  }
+  
   # Write to a new xml-file, which will be used on a run. Every simulation run will have
   # their own set of speciesparameters values
   writeLines(speciesparfile, con = file.path(settings$rundir, run.id, "speciesparameters.xml"))
@@ -1578,6 +2175,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   #sitefile <- gsub("@Info_Surface_Layer@", soil_surface, sitefile)
   sitefile <- gsub("@Info_Use_History@", paste0("'", soil_use_history, "'"), sitefile)
   sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
+  sitefile <- gsub("@Litter_Height@", paste0("'", litter_height, "'"), sitefile)
   sitefile <- gsub("@Info_Surface_Layer@", soil_combine, sitefile)
   
   
