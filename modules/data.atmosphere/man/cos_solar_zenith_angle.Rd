@@ -21,7 +21,7 @@ cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 `numeric(1)` of cosine of solar zenith angle
 }
 \description{
-For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
+For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 }
 \author{
 Alexey Shiklomanov
