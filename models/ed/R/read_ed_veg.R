@@ -105,7 +105,7 @@ read_css <- function(filepath, check = TRUE, ...) {
 read_pss <- function(filepath, check = TRUE) {
   pss <- read.table(filepath, header = TRUE)
   if (check) {
-    check_pss(pss, ...)
+    check_pss(pss)
   }
   pss
 }

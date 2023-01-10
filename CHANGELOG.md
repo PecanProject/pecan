@@ -33,6 +33,7 @@ see if you need to change any of these:
 - Initial LDNDC model coupling
 - `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
 - `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
+-  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
 - Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
@@ -65,8 +66,8 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   the cdo_setup argument in the template job file. In detail, people will need
   to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
   are in the Create_Multi_settings.R script. (#3052)
+- Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
-
 
 ### Changed
 
