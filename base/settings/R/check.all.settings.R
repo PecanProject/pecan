@@ -67,12 +67,17 @@ check.inputs <- function(settings) {
         }
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
-        id <- PEcAn.DB::dbfile.id(
-          "Input",
-          settings$run$inputs[[tag]][["path"]],
-          dbcon,
-          hostname)
-        if (!is.na(id)) {
+        #adding for to loop over ensemble member filepaths 
+        id <- list()
+        path <- settings$run$inputs[[tag]][["path"]]
+        for (j in 1:length(path)){
+          id[j] <- PEcAn.DB::dbfile.id(
+            "Input",
+            path[[j]],
+            dbcon,
+            hostname)
+        }
+        if (any(!is.na(id))) {
           settings$run$inputs[[tag]][["id"]] <- id
         }
       }
@@ -398,7 +403,7 @@ check.settings <- function(settings, force = FALSE) {
         "qsub not specified using default value :", settings$host$qsub)
     }
     if (is.null(settings$host$qsub.jobid)) {
-      settings$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      settings$host$qsub.jobid <- ".* ([0-9]+).*"
       PEcAn.logger::logger.info(
         "qsub.jobid not specified using default value :",
         settings$host$qsub.jobid)

@@ -91,9 +91,9 @@ add_workflow_info <- function(settings, bety){
   }
   if(!as.logical(settings$benchmarking$new_run)){
     settings$workflow$id <- tbl(bety,"ensembles") %>%
-      filter(.data$id == settings$benchmarking$ensemble_id) %>%
-      dplyr::select(.data$workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(.data$id == settings$workflow$id) %>% collect()
+      dplyr::filter(.data$id == settings$benchmarking$ensemble_id) %>%
+      dplyr::select("workflow_id") %>% dplyr::collect %>% .[[1]]
+    wf <- tbl(bety, 'workflows') %>% dplyr::filter(.data$id == settings$workflow$id) %>% collect()
     settings$rundir <- file.path(wf$folder, "run")
     settings$modeloutdir <- file.path(wf$folder, "out")
     settings$outdir <- wf$folder
