@@ -445,20 +445,26 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 
   # TODO this should come from the database
   
-  if(settings$model$revision %in% c("46", "81", "82", "85", "git")) {
-    histfile <- paste0("history.r", settings$model$revision)
-    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
-    edhistory <-
-      switch(settings$model$revision,
-             "46"  = history.r46,
-             "81"  = history.r81,
-             "82"  = history.r82,
-             "85"  = history.r85,
-             "git" = history.rgit
-      )
-  } else {
-    PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
+  # Internal data sets stored in sysdata.RDA are used to override defaults in
+  # config.xml.  This code looks for a history dataset that matches the
+  # "revision" number for ED2 set in settings (e.g. PEcAn.ED2:::history.r85) and
+  # if it doesn't find it, it uses a generic file (PEcAn.ED2:::history).  To add
+  # a new history file, add the .csv file to models/ed/data-raw and run the
+  # sysdata.R script in that folder
+  
+  if(is.null(settings$model$revision)) {
+    PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
     edhistory <- history
+  } else {
+    histfile <- paste0("history.r", settings$model$revision)
+    edhistory <- try(eval(str2lang(histfile)), silent = TRUE)
+  } 
+  
+  if(inherits(edhistory, "try-error")) {
+    PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
+    edhistory <- history
+  } else {
+    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
   }
 
   edtraits <- names(edhistory)
