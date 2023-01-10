@@ -7,6 +7,9 @@ exec &> "@OUTDIR@/logfile.txt"
 # host specific setup
 @HOST_SETUP@
 
+# cdo setup
+@CDO_SETUP@
+
 # create output folder
 mkdir -p "@OUTDIR@"
 

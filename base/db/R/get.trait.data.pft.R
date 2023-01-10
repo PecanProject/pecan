@@ -93,7 +93,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
           dplyr::filter(.data$pft_id == !!pftid) %>%
           dplyr::arrange(dplyr::desc(.data$created_at)) %>%
           utils::head(1) %>%
-          dplyr::pull(id)
+          dplyr::pull("id")
       } else {
         PEcAn.logger::logger.info("No previous posterior found. Forcing update")
       }
@@ -201,9 +201,9 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
             PEcAn.logger::logger.warn("New and existing trait data are both empty. Skipping this check.")
           } else {
             current_traits <- dplyr::bind_rows(trait.data.check, .id = "trait") %>%
-              dplyr::select(-mean, -.data$stat)
+              dplyr::select(-mean, -"stat")
             existing_traits <- dplyr::bind_rows(existing_trait_data, .id = "trait") %>%
-              dplyr::select(-mean, -.data$stat)
+              dplyr::select(-mean, -"stat")
             diff_traits <- symmetric_setdiff(current_traits, existing_traits)
             if (nrow(diff_traits) > 0) {
               diff_summary <- diff_traits %>%

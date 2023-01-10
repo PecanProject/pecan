@@ -34,7 +34,7 @@ Read.IC.info.BADM <-function(lat, long){
       NA_L2CODE == Code_Level,
       VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
     ) %>%
-    dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+    dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   
 
   # if no data was found on L2, then let's check for L1
@@ -46,7 +46,7 @@ Read.IC.info.BADM <-function(lat, long){
         NA_L1CODE == Code_Level,
         VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
       ) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
   
 
@@ -55,7 +55,7 @@ Read.IC.info.BADM <-function(lat, long){
     Code_Level <- "ALL"
     biomass.df <- U.S.SB %>%
       dplyr::filter(VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
 
   
