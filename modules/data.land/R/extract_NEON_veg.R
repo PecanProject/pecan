@@ -1,7 +1,7 @@
 #' extract_NEON_veg
 #' @title extract_NEON_veg
 #' @name extract_NEON_veg
-#' 
+#'
 #' @param lon site longitude, passed from ic_process
 #' @param lat site latitude, passed from ic_process
 #' @param start_date "YYYY-MM-DD", used to download NEON datasets for desired time period
@@ -10,16 +10,15 @@
 #' @param neonsites prepared datasets table from NEON using neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
 #' @param ... Additional parameters
 #' 
-#'
+#' 
 #' @return veg_info object to be passed to extract_veg within ic_process
 #' @author Alexis Helgeson and Michael Dietze
+#'
 #' @export
-#' 
 #' @importFrom rlang .data
-#' 
-#' @examples start_date = as.Date("2020-01-01") 
+#' @examples 
+#' start_date = as.Date("2020-01-01") 
 #' end_date = as.Date("2021-09-01")
-
 extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsites = NULL, ...){
   
   #Function to grab the first measurements for each plot between start and end date.
@@ -50,7 +49,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   if(is.null(neonsites)){
     neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   }
-  neonsites <- dplyr::select(neonsites, .data$siteCode, .data$siteLatitude, .data$siteLongitude) #select for relevant columns
+  neonsites <- dplyr::select(neonsites, "siteCode", "siteLatitude", "siteLongitude") #select for relevant columns
   betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
   mindist <- min(betyneondist)
   distloc <- match(mindist, betyneondist)
@@ -67,7 +66,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     mappingandtagging <- neonstore::neon_read(table = "mappingandtagging", product = "DP1.10098.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.veg <- dplyr::left_join(mappingandtagging, apparentindividual, by = "individualID")
     #Filter joined.veg for required information: DBH, tree height, and species
-    filter.veg <- dplyr::select(joined.veg, .data$siteID.x, .data$plotID.x, .data$subplotID, .data$taxonID, .data$scientificName, .data$taxonRank, .data$date.y, .data$stemDiameter, .data$height)
+    filter.veg <- dplyr::select(joined.veg, "siteID.x", "plotID.x", "subplotID", "taxonID", "scientificName", "taxonRank", "date.y", "stemDiameter", "height")
     #Filter for most recent record
     filter.date <- dplyr::filter(filter.veg, .data$date.y >= start_date)
     filter.date <- filter.date[which(!is.na(filter.date$subplotID), !is.na(filter.date$stemDiameter)),]
@@ -86,11 +85,12 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   }else{
     perbout <- neonstore::neon_read(table = "perbout", product = "DP1.10023.001", site = sitename, start_date = start_date, end_date = end_date, dir = store_dir)
     joined.herb <- dplyr::left_join(massdata, perbout, by = "sampleID")
-    filter.herb <- dplyr::select(joined.herb, .data$siteID.y, .data$plotID.x, .data$subplotID, .data$plotType.x, .data$clipArea, .data$dryMass, .data$collectDate.y)
+    filter.herb <- dplyr::select(joined.herb, "siteID.y", "plotID.x", "subplotID", "plotType.x", "clipArea", "dryMass", "collectDate.y")
     #Create year column
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions
     colnames(filter.herb) <- c("site_name", "plot", "Subplot", "plotType", "clipArea", "dryMass", "date", "year")
+    filter.herb$dryMass <- PEcAn.utils::ud_convert(filter.herb$dryMass, 'g m-2', 'kg m-2')#convert from g to kg.
     filter.herb <- Grab_First_Measurements_of_Each_Plot(filter.herb)
   }
   
@@ -163,8 +163,9 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
         #calculate soil carbon
         joined.soil$bulkDensity <- bulkDensity
         
-        #convert from g/cm2 to g/m2, note that we have to divide by 100 because of percentage
-        joined.soil$SoilCarbon <- (joined.soil$organicCPercent * joined.soil$bulkDensity)*30*100 
+        #here we multiply bulkdensity (in kg/m3) with soil depth (in m) to calculate the soil biomass (in kg/m2) at the top 30 cm depth of soil.
+        #note that we have to divide by 100 because of percentage for the organicCPercent variable.
+        joined.soil$SoilCarbon <- joined.soil$organicCPercent/100 * PEcAn.utils::ud_convert(joined.soil$bulkDensity, "g cm-3", "kg m-3") * PEcAn.utils::ud_convert(30, "cm", "m")
       }
     }
   }

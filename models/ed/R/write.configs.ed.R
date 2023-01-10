@@ -458,7 +458,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   }
 
   edtraits <- names(edhistory)
-  data(pftmapping, package = 'PEcAn.ED2', envir = environment())
+  pftmapping <- PEcAn.ED2::pftmapping
   
   ## Get ED2 specific model settings and put into output config xml file
   xml <- PEcAn.settings::listToXml(settings$model$config.header, "config")
@@ -647,7 +647,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
   pft_names <- extract_pfts(settings$pfts)
-  pft_names <- deparse(dput(pft_names))
+  pft_names <- deparse1(dput(pft_names))
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
   return(jobsh)

@@ -8,7 +8,7 @@ check_met_input_file(
   metfile,
   variable_table = pecan_standard_met_table,
   required_vars = variable_table \%>\% dplyr::filter(.data$is_required) \%>\%
-    dplyr::pull(.data$cf_standard_name),
+    dplyr::pull("cf_standard_name"),
   warn_unknown = TRUE
 )
 }

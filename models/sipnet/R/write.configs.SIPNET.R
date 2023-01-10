@@ -491,19 +491,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
+
   else if (length(settings$run$inputs$poolinitcond$path)>0) {
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
+
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "g m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
-      lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
       }
@@ -518,7 +520,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'g m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'kg m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)

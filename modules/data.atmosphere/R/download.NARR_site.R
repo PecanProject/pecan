@@ -76,7 +76,7 @@ download.NARR_site <- function(outfolder,
       data_nc = purrr::map2(.data$data, .data$file, prepare_narr_year, lat = lat, lon = lon)
     )
 
-  results <- dplyr::select(result_full, -.data$data)
+  results <- dplyr::select(result_full, -"data")
   return(invisible(results))
 } # download.NARR_site
 
@@ -298,9 +298,9 @@ post_process <- function(dat) {
     tidyr::unnest(.data$data) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(datetime = .data$startdate + lubridate::dhours(.data$dhours)) %>%
-    dplyr::select(-.data$startdate, -.data$dhours) %>%
-    dplyr::select(datetime, dplyr::everything()) %>%
-    dplyr::select(-url, url)
+    dplyr::select(-"startdate", -"dhours") %>%
+    dplyr::select("datetime", dplyr::everything()) %>%
+    dplyr::select(-"url", "url")
 }
 
 #' Generate NARR url from a vector of dates
@@ -341,7 +341,7 @@ generate_narr_url <- function(dates, flx) {
       )
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(.data$startdate, .data$url)
+    dplyr::select("startdate", "url")
 }
 
 #' Assign daygroup tag for a given date
@@ -383,7 +383,7 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   if (dhours[1] == 3) dhours <- dhours - 3
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
-    narr_vars %>% dplyr::select(variable = .data$NARR_name, unit = .data$units),
+    narr_vars %>% dplyr::select(variable = "NARR_name", unit = "units"),
     read_narr_var,
     nc = nc, xy = xy, flx = flx, pb = pb
   )

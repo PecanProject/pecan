@@ -1,6 +1,6 @@
 #' Cosine of solar zenith angle
 #'
-#' For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
+#' For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
 #' @author Alexey Shiklomanov
 #' @param doy Day of year
@@ -34,7 +34,8 @@ cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
 #' @return `numeric(1)` length of the solar day, in hours.
 #' @export
 equation_of_time <- function(doy) {
-  stopifnot(doy <= 366)
+  stopifnot(doy <= 367) #changed from 366 to 367 to account for leap years
+  
   f      <- pi / 180 * (279.5 + 0.9856 * doy)
   et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 *
                sin(4 * f) - 429.3 * cos(f) - 2 *

@@ -150,7 +150,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens
   
   
   # Convert PFT names to ED2 Numbers
-  data(pftmapping, package = "PEcAn.ED2")
+  pftmapping <- PEcAn.ED2::pftmapping
   css$pft.number <- NA
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
