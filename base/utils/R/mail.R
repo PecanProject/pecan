@@ -9,8 +9,6 @@
 
 ##' Sends email. This assumes the program sendmail is installed. 
 ##'
-##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
-##' @name sendmail
 ##' @param from the sender of the mail message
 ##' @param to the receipient of the mail message
 ##' @param subject the subject of the mail message

@@ -1,6 +1,3 @@
-library(testthat)
-
-context("All storage respiration values are zero")
 
 l <- data(package = "PEcAn.ED2")
 histfiles <- grep("history", l$results[, "Item"], value = TRUE)

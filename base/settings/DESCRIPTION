@@ -25,6 +25,8 @@ Imports:
     XML (>= 3.98-1.3),
     optparse
 Suggests:
-    testthat (>= 2.0.0)
+    testthat (>= 2.0.0),
+    withr
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+Roxygen: list(markdown = TRUE)

@@ -54,7 +54,9 @@ get.cruncep <- function(lat, lon, start.date, end.date) {
 lightME <- function(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05, alpha = 0.85) {
   
   ## The equations used here can be found in
-  ## http://www.life.illinois.edu/plantbio/wimovac/newpage9.htm The original source is Monteith, 1991
+  ## https://web.archive.org/web/20170803073722/http://www.life.illinois.edu/plantbio/wimovac/newpage9.htm 
+  ## The original source is Monteith and Unsworth
+  ## Monteith, John, and Mike Unsworth. Principles of environmental physics. Academic Press, 2013.
   Dtr <- (pi / 180)
   
   omega <- lat * Dtr

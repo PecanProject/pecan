@@ -2,10 +2,11 @@ BioCro fitting, parameterization, and testing
 ========================================================
 
 ```{r}
-require(data.table)
-require(lubridate)
-require(ggplot2)
-require(PEcAn.DB)
+library(data.table)
+library(lubridate)
+library(ggplot2)
+library(PEcAn.DB)
+library(curl)
 load(system.file("extdata", "salix.RData", package = "BioCro"))
 settings.xml <- system.file("extdata/pecan.biocro.xml", 
                             package = "PEcAn.BIOCRO")
@@ -34,10 +35,11 @@ salix <- salix.us[stand_age > 2,list(lat = mean(lat), lon = mean(lon), yield = m
 
 ```{r}
 
-require(RCurl)
-file.url <- getURL("https://www.betydb.org/miscanthusyield.csv", 
-                   ssl.verifypeer = FALSE)
-mxg <- read.csv(textConnection(file.url))
+
+mxg_file_con <- curl(
+  url = "https://www.betydb.org/miscanthusyield.csv",
+  handle = new_handle(ssl_verifypeer = FALSE))
+mxg <- read.csv(mxg_file_con)
 
 
 salix$model <- vector(mode="numeric", length = nrow(salix))

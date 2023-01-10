@@ -22,11 +22,19 @@ see if you need to change any of these:
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
 
 ### Added
+- Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
 
 - `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
   package the version that was provided with this release and the version that
   is currently installed. Use it in scripts to record your system state for
   reproducibility, or for debugging.
+- Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
+  (#3002; @nanu1605)
+- Initial LDNDC model coupling
+- `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
+- `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
+-  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
+- Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
@@ -37,6 +45,8 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- bugs in `model2ncdf.ED2()` that were causing it to both error and also only
+convert data for a single PFT fixed (#1329, #2974, #2981)
 - Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
 - Fixed vignettes and cleaned up internal warnings in PEcAn.DB (#2966, #2971; @nanu1605).
 - Updated unit conversions throughout PEcAn to use the `units` R package
@@ -44,11 +54,26 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
   Note that both `units` and `udunits2` interface with the same underlying
   compiled code, so the `udunits2` *system library* is still required.
   (#2989; @nanu1605)
+- Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034, #3033)
+- Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
+- Fixed bug in model2netcdf.SIPNET that caused LE to be overestimaed 10^3 (#3036)
+- Added an updated ED2IN template file, `models/ed/inst/ED2IN.r2.2.0.github`, to reflect new variables in the development version of ED2
+- `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
+- `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
+- fqdn() can access hostname on Windows (#3044 fixed by #3058)
+- The model2netcdf_SIPNET function can now export full year nc files by using 
+  the cdo_setup argument in the template job file. In detail, people will need
+  to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
+  are in the Create_Multi_settings.R script. (#3052)
+- Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
+- Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
 
 ### Changed
 
 - Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
+- `PEcAn.utils::download.url` argument `retry404` is now renamed to `retry` and
+  now functions as intended (it was being ignored completely before).
 - Update URL for MERRA downloads (#2888)
 - PEcAn.logger is now BSD-3 License
 - Skipped ICOS and MERRA download tests when running in github actions
@@ -56,10 +81,16 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - Using traefik 2.5 instead of 1.7
 - api is now open by default (was auth required in the past)
 - Installation instructions updated in documentation
+- PEcAn.assim.sequential is renamed to PEcAnAssimSequential
+- `convert.input` is moved from PEcAn.utils to PEcAn.DB and renamed as `convert_input`.
+  This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
+  (#3026; @nanu1605)
+- Internal changes to keep up to date with tidyselect v1.2.0
 
 ### Removed
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
+- Unused (and apparently long-broken) function `PEcAn.data.land::find.land` has been removed.
 
 ## [1.7.2] - 2021-10-04
 

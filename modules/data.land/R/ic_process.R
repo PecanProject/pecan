@@ -94,10 +94,10 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     return(settings)
   }else if (input$source == "NEON_veg"){
     #For debugging purposes I am hard coding in the start and end dates, will revisit and adjust once extract_NEON_veg is working within ic_process
-    # start_date = as.Date("2020-01-01")
-    # end_date = as.Date("2021-09-01")
     start_date = as.Date(input$startdate)
     end_date = as.Date(input$enddate)
+    # start_date = as.Date("2020-01-01")
+    # end_date = as.Date("2021-09-01")
     #Note the start and end dates for ICs are not the same as those for the forecast runs
     #please check out NEON products DP1.10098.001 for your desired site to check data availability before setting start and end dates
   }else{
@@ -126,7 +126,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # but we might still want an ensemble from a single source, so need a check accordinly
   # best pass a flag (<ensemble.source>TRUE<\ensemble.source>) if that's the case, omit the flag otherwise
   # currently downloading/reading in different ensemble members is not implemented,
-  # then we'll need to pass pattern, ensemble etc to convert.input
+  # then we'll need to pass pattern, ensemble etc to convert_input
 
   nsource <- ifelse(!is.null(input$ensemble), as.numeric(input$ensemble), 1)
   
@@ -236,8 +236,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
       
       model_file <- PEcAn.DB::db.query(paste("SELECT * from dbfiles where container_id =", putveg.id[[i]], "and machine_id =", machine$id), con)
       
-      # now that we don't have multipasses, convert.input only inserts 1st filename
-      # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
+      # now that we don't have multipasses, convert_input only inserts 1st filename
+      # do we want to change it in convert_inputs such that it loops over the dbfile.insert?
       path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
       settings_inputs[[input$output]][['path']][[paste0('path', i)]] <- path_to_settings
 

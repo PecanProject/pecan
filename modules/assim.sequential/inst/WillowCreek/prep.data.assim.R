@@ -1,7 +1,7 @@
 ##'@title prep.data.assim
 ##'@section purpose:
 ##'This function finds flux uncertainty and finds mean and cov
-##'for a call to PEcAn.assim.sequential::sda.enkf() 
+##'for a call to PEcAnAssimSequential::sda.enkf() 
 ##'
 ##'@param settings the PEcAn settings object (a collection of nested lists)
 ##'@param numvals number of simulated data points for each time point

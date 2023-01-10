@@ -32,7 +32,7 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
     PEcAn.logger::logger.error(
       "Can't find package(s)",
       sQuote(suggests_needed[!suggests_found]),
-      ", needed by PEcAn.assim.sequential::Create_Site_PFT_CSV().",
+      ", needed by PEcAnAssimSequential::Create_Site_PFT_CSV().",
       "Please install these and try again.")
   }
 

@@ -27,44 +27,48 @@
 ##' @param silent logical: suppress log messages about missing variables?
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
+mstmipvar <- function(name, lat = NULL, lon = NULL, time = NULL, nsoil = NULL, silent = FALSE) {
   nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
-  dims <- list()
   
   if (nrow(nc_var) == 0) {
     if (!silent) {
       PEcAn.logger::logger.info("Don't know about variable", name, " in standard_vars in PEcAn.utils")
     }
-    if (is.na(time)) {
-      time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
-                        vals = 1:365, calendar = "standard", unlim = TRUE)
+    if (is.null(time)) {
+      time <-
+        ncdf4::ncdim_def(
+          name = "time",
+          units = "days since 1900-01-01 00:00:00",
+          vals = 1:365,
+          calendar = "standard",
+          unlim = TRUE
+        )
     }
     return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
-  for (i in 1:4) {
-    vd <- nc_var[[paste0("dim", i)]]
-    if (vd == "lon" && !is.na(lon)) {
-      dims[[length(dims) + 1]] <- lon
-    } else if (vd == "lat" && !is.na(lat)) {
-      dims[[length(dims) + 1]] <- lat
-    } else if (vd == "time" && !is.na(time)) {
-      dims[[length(dims) + 1]] <- time
-    } else if (vd == "nsoil" && !is.na(nsoil)) {
-      dims[[length(dims) + 1]] <- nsoil
-    } else if (is.na(vd)) {
-      # skip
-    } else {
-      if (!silent) {
-        PEcAn.logger::logger.info("Don't know dimension for", vd, "for variable", name)
-      }
+  
+  var_dims <- nc_var[paste0("dim", 1:4)]
+  pos_dims <- c("lon", "lat", "time", "nsoil")
+  
+  #check for missing dimensions
+  no_dims <- pos_dims[!var_dims %in% pos_dims]
+  if (!silent) {
+    if (length(no_dims) > 0) {
+      PEcAn.logger::logger.info("Don't know dimension(s)", no_dims, "for variable", name)
     }
   }
+  
+  #replace dim names with values
+  var_dims <- var_dims[var_dims %in% pos_dims]
+  var_dims <- lapply(var_dims, function(x) eval(str2lang(x))) #converts character values in `var_dims` to corresponding R objects
+  dims <- var_dims[!sapply(var_dims, is.null)] #get rid of NULL elements
+  
   ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
   if (nc_var$Long.name != "na") {
     ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
-} # mstimipvar
+} 
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -201,6 +205,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @export summarize.result
 ##' @usage summarize.result(result)
 ##' @importFrom rlang .data
+##' @importFrom magrittr %>%
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
