@@ -90,6 +90,7 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     filter.herb$year <- format(as.Date(filter.herb$collectDate.y, format="%Y-%m-%d"),"%Y")
     #Rename NEON column names to match pecan functions
     colnames(filter.herb) <- c("site_name", "plot", "Subplot", "plotType", "clipArea", "dryMass", "date", "year")
+    filter.herb$dryMass <- PEcAn.utils::ud_convert(filter.herb$dryMass, 'g m-2', 'kg m-2')#convert from g to kg.
     filter.herb <- Grab_First_Measurements_of_Each_Plot(filter.herb)
   }
   
@@ -162,8 +163,9 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
         #calculate soil carbon
         joined.soil$bulkDensity <- bulkDensity
         
-        #convert from g/cm2 to g/m2, note that we have to divide by 100 because of percentage
-        joined.soil$SoilCarbon <- (joined.soil$organicCPercent * joined.soil$bulkDensity)*30*100 
+        #here we multiply bulkdensity (in kg/m3) with soil depth (in m) to calculate the soil biomass (in kg/m2) at the top 30 cm depth of soil.
+        #note that we have to divide by 100 because of percentage for the organicCPercent variable.
+        joined.soil$SoilCarbon <- joined.soil$organicCPercent/100 * PEcAn.utils::ud_convert(joined.soil$bulkDensity, "g cm-3", "kg m-3") * PEcAn.utils::ud_convert(30, "cm", "m")
       }
     }
   }
