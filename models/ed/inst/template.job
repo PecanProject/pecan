@@ -1,5 +1,7 @@
 #!/bin/bash -l
 
+# Parsed by PEcAn.ED2::write.config.jobsh.ED2() to generate job.sh files
+
 # create output folder
 mkdir -p "@OUTDIR@"
 @SCRATCH_MKDIR@
