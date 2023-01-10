@@ -91,10 +91,10 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
   
-  
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
+    params$restart <- c(params$restart, forecast[[length(forecast)]])
   }
   
   # This is snow

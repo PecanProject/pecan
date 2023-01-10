@@ -76,23 +76,23 @@ download.NOAA_GEFS <- function(site_id,
   
   
   noaa_grid_download(lat_list = lat.in,
-                     lon_list = lon.in,
-                     end_hr = end_hr,
-                     forecast_time = forecast_time,
-                     forecast_date = forecast_date,
-                     model_name_raw = model_name_raw,
-                     output_directory = outfolder)
+                    lon_list = lon.in,
+                    end_hr = end_hr,
+                    forecast_time = forecast_time,
+                    forecast_date = forecast_date,
+                    model_name_raw = model_name_raw,
+                    output_directory = outfolder)
   
   results <- process_gridded_noaa_download(lat_list = lat.in,
-                                           lon_list = lon.in,
-                                           site_id = site_id,
-                                           downscale = downscale,
-                                           overwrite = overwrite,
-                                           forecast_date = forecast_date,
-                                           forecast_time = forecast_time,
-                                           model_name = model_name,
-                                           model_name_ds = model_name_ds,
-                                           model_name_raw = model_name_raw,
-                                           output_directory = outfolder)
+                                          lon_list = lon.in,
+                                          site_id = site_id,
+                                          downscale = downscale,
+                                          overwrite = overwrite,
+                                          forecast_date = forecast_date,
+                                          forecast_time = forecast_time,
+                                          model_name = model_name,
+                                          model_name_ds = model_name_ds,
+                                          model_name_raw = model_name_raw,
+                                          output_directory = outfolder)
   return(results)
 }

@@ -21,7 +21,7 @@ query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
     by = c("modeltype_id" = "id")))
   }
   result <- (pftres
-    %>% dplyr::select(.data$id, .data$pft_type, .data$name)
+    %>% dplyr::select("id", "pft_type", "name")
     %>% dplyr::collect()
     # Arrange in order of inputs
     %>% dplyr::slice(match(.data$name, pft_names)))

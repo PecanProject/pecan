@@ -182,8 +182,10 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   ocs_sum <- mean_site[,1]*layer_thick[1]+mean_site[,2]*layer_thick[2]+mean_site[,3]*layer_thick[3]+mean_site[,4]*layer_thick[4]+mean_site[,5]*layer_thick[5]+mean_site[,6]*layer_thick[6] 
   #calculate standard deviation of ocs as the square root of sum of variance of layer-specific ocs, the unit of ocs is kg/m2, based on Eq. (8) in paper https://www.sciencedirect.com/science/article/pii/S2215016122000462, except the correlation term due to the lack of information 
   ocs_std <- sqrt((std_site[,1]*layer_thick[1])^2+(std_site[,2]*layer_thick[2])^2+(std_site[,3]*layer_thick[3])^2+(std_site[,4]*layer_thick[4])^2+(std_site[,5]*layer_thick[5])^2+(std_site[,6]*layer_thick[6])^2)
-  soilgrids_soilC_data <- data.frame(internal_site_info$site_info.id,internal_site_info$site_info.sitename,internal_site_info$site_info.lat,internal_site_info$site_info.lon,ocs_sum,ocs_std)
-  colnames(soilgrids_soilC_data)<- c("Site_ID","Site_Name","Latitude","Longitude","Total_soilC","Std_soilC")
+  ocs_sum_30cm <- mean_site[,1]*layer_thick[1]+mean_site[,2]*layer_thick[2]+mean_site[,3]*layer_thick[3]
+  ocs_std_30cm <- sqrt((std_site[,1]*layer_thick[1])^2+(std_site[,2]*layer_thick[2])^2+(std_site[,3]*layer_thick[3])^2)
+  soilgrids_soilC_data <- data.frame(internal_site_info$site_info.id,internal_site_info$site_info.sitename,internal_site_info$site_info.lat,internal_site_info$site_info.lon,ocs_sum,ocs_std,ocs_sum_30cm,ocs_std_30cm)
+  colnames(soilgrids_soilC_data)<- c("Site_ID","Site_Name","Latitude","Longitude","Total_soilC_0-200cm","Std_soilC_0-200cm","Total_soilC_0-30cm","Std_soilC_0-30cm")
   rownames(soilgrids_soilC_data) <- NULL
 
   if (!is.null(outdir)) {

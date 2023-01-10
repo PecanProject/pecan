@@ -22,7 +22,7 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     # install rmarkdown
     - name: Install rmarkdown
       run: |
@@ -44,14 +44,14 @@ jobs:
         cd book_source
         Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
     # save artifact
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: pecan-documentation
         path: book_source/_book/
     # download documentation repo
     - name: Checkout documentation repo
       if: github.event_name != 'pull_request'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
