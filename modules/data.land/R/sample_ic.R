@@ -11,12 +11,13 @@
 ##' @param source string to appear in file names, e.g. "PalEON"
 ##' @param bin_var variable you would like to sample by, DEFAULT is DBH
 ##' @param bin_size bin size for sampling, DEFAULT is 10
+##' @param bin_herb_soil if we want to use bin size for both herb and soil sampling
 ##' @param ... Other inputs
 ##' 
 ##' @export
 ##' @author Istem Fer
 sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
-                      n.ensemble, machine_host, source, bin_var = "DBH", bin_size = 10, ...){
+                      n.ensemble, machine_host, source, bin_var = "DBH", bin_size = 10, bin_herb_soil = TRUE, ...){
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -108,29 +109,81 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
           samples$plot <- 1
           plot.n <- 1
         }
-        if(n.plot>bin_size){
-          herb_plot_bin_size <- bin_size
+        
+        #if we are using bin_size to sample
+        if(bin_herb_soil){
+          if(n.plot>bin_size){
+            plot_bin_size <- bin_size
+          }else{
+            plot_bin_size <- ceiling(n.plot/5)
+          }
         }else{
-          herb_plot_bin_size <- ceiling(n.plot/5)
+          plot_bin_size <- 1
         }
+        
         sub.list <- list()
-        sample_plots <- sample(plot.n, herb_plot_bin_size)
+        sample_plots <- sample(plot.n, plot_bin_size)
         for(np in 1:length(sample_plots)){
           samples_sub <- samples[samples$plot == sample_plots[np],] 
           sub.list[[np]]  <- samples_sub
         }
         veg_ens[[1]] <- do.call("rbind", sub.list)
       }
+      
+      #sample Soil Carbon
+      if("SoilCarbon" %in% bin_var){
+        bin_Var <- "SoilCarbon"
+        obs <- as.data.frame(veg_info[[3]], stringsAsFactors = FALSE)
+        
+        year.start <- lubridate::year(start_date)
+        year.end <- lubridate::year(end_date)
+        
+        # subset samples for the year 
+        samples <- obs[obs$year >= year.start & obs$year <= year.end, ]
+        
+        # remove rows with NAs (we don't want DBH to be NA but do we want to allow missing taxa?)
+        #samples <- samples[complete.cases(samples), ]
+        samples <- samples[!is.na(samples[bin_Var]), ]
+        
+        # if there are subplots, sample within each subplot instead of pooling all together, maybe pass down a flag if we want to pool anyway
+        if(!is.null(samples$plot)){
+          n.plot <- length(unique(samples$plot))
+          plot.n <- unique(samples$plot)
+        }else{
+          n.plot <- 1
+          samples$plot <- 1
+          plot.n <- 1
+        }
+        
+        #if we are using bin_size to sample
+        if(bin_herb_soil){
+          if(n.plot>bin_size){
+            plot_bin_size <- bin_size
+          }else{
+            plot_bin_size <- ceiling(n.plot/5)
+          }
+        }else{
+          plot_bin_size <- 1
+        }
+        
+        sub.list <- list()
+        sample_plots <- sample(plot.n, plot_bin_size)
+        for(np in 1:length(sample_plots)){
+          samples_sub <- samples[samples$plot == sample_plots[np],] 
+          sub.list[[np]]  <- samples_sub
+        }
+        veg_ens[[3]] <- do.call("rbind", sub.list)
+      }
       #--------------------------------------------------------------------------------------------------#
-      # Write vegettion data as rds, return results to convert.input
+      # Write vegetation data as rds, return results to convert_input
       
       # write with ensemble number
       sppfilename[ens] <- write_veg(outfolder, start_date, veg_info = veg_ens, paste0(source, "_ens", ens))
       
   }
-  
-   
-  # Build results dataframe for convert.input
+
+
+  # Build results dataframe for convert_input
   results <- data.frame(file = sppfilename, 
                         host = machine_host, 
                         mimetype = "application/rds", 
@@ -140,7 +193,7 @@ sample_ic <- function(in.path, in.name, start_date, end_date, outfolder,
                         dbfile.name = basename(sppfilename), 
                         stringsAsFactors = FALSE)
   
-  ### return for convert.inputs
+  ### return for convert_inputs
   return(invisible(results))  
   
   

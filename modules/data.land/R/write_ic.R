@@ -30,9 +30,8 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   
   #--------------------------------------------------------------------------------------------------#
   # Match PFTs
-  
+  #revisit later need to fix species matching first
   obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-  
   # NOTE : match_pft may return NAs for unmatched dead trees
   pft.info <- PEcAn.data.land::match_pft(bety_species_id = obs$bety_species_id, pfts = pfts, model = model, con = NULL)
 
@@ -71,7 +70,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
     out <- fcn(outfolder, veg_info, start_date, new_site, source, ens = n.ensemble)
     
   }
-  # Build results dataframe for convert.input
+  # Build results dataframe for convert_input
   results <- data.frame(file = out$file, 
                         host = host.inputargs$name, 
                         mimetype = out$mimetype, 
@@ -82,7 +81,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   
-  ### return for convert.inputs
+  ### return for convert_inputs
   return(invisible(results))
   
   

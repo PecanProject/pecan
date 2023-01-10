@@ -4,7 +4,7 @@
 \alias{gpeval}
 \title{gpeval}
 \usage{
-gpeval(xnew, k, mu, tau, psi, x, rng, splinefcns)
+gpeval(xnew, k, mu, tau, psi, x, rng, splinefuns)
 }
 \arguments{
 \item{xnew}{new x coordinate}
@@ -21,7 +21,7 @@ gpeval(xnew, k, mu, tau, psi, x, rng, splinefcns)
 
 \item{rng}{range}
 
-\item{splinefcns}{spline functions}
+\item{splinefuns}{spline functions}
 }
 \description{
 Calculates the probability of a set of parameter values, given by xnew

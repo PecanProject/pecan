@@ -150,7 +150,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens
   
   
   # Convert PFT names to ED2 Numbers
-  data(pftmapping, package = "PEcAn.ED2")
+  pftmapping <- PEcAn.ED2::pftmapping
   css$pft.number <- NA
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
@@ -194,7 +194,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-  # convert.input inserts only 1 file anyway
+  # convert_input inserts only 1 file anyway
   return(list(file = filenames_full[1], dbfile.name = filenames[1], 
               mimetype = "text/plain", formatname = "ED2.cohort"))
 

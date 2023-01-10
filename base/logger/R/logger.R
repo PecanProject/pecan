@@ -180,13 +180,17 @@ logger.message <- function(level, msg, ..., wrap = TRUE) {
 ##'
 ##' @param level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
+##' @return When logger level is set, the previous level is returned invisibly.
+##'   This can be passed to `logger.setLevel()` to restore the previous level.
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.setLevel('DEBUG')
 ##' }
 logger.setLevel <- function(level) {
+  original_level <- logger.getLevel()
   .utils.logger$level <- logger.getLevelNumber(level)
+  invisible(original_level)
 } # logger.setLevel
 
 
