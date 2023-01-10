@@ -657,7 +657,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   
   pft_names <- extract_pfts(settings$pfts)
-  pft_names <- deparse(dput(pft_names))
+  pft_names <- deparse1(dput(pft_names))
   jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   
   return(jobsh)

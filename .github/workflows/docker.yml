@@ -29,6 +29,7 @@ on:
 env:
   MASTER_REPO: PecanProject/pecan
   DOCKERHUB_ORG: pecan
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   docker:
@@ -41,6 +42,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           set-safe-directory: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker
+          buildkitd-flags: --debug
+          install: true
 
       # calculate some variables that are used later
       - name: get version tag
@@ -72,7 +79,7 @@ jobs:
         env:
           PECAN_GIT_CHECKSUM: ${{ github.sha }}
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
-          VERSION: ${PECAN_VERSION}
+          VERSION: ${{ env.PECAN_VERSION }}
 
       # push all images to github
       - name: Publish to GitHub

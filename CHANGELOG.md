@@ -65,7 +65,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
   are in the Create_Multi_settings.R script. (#3052)
 - write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
-
+- Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
 
 ### Changed
 
