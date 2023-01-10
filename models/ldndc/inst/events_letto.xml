@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<event>
+    
+    <event type="plant" time="2015-01-01">
+	    <plant type="mead" >
+             <grass initialbiomass="0.5" fractionalcover="0.2"/>      
+            </plant>
+    </event>
+    
+    <!--<event type="plant" time="-01-01">
+	    <plant type="perg" >
+             <grass initialbiomass="0.1" fractionalcover="0.1"/>      
+            </plant>
+    </event>-->
+    
+    <event  type="plant" time="2015-01-01-24/24" >
+        <plant  type="PISY" name="PISY" >        
+            <wood  dbh="0.03" hmax="1.5" ntree="1300" /> 
+        </plant>
+    </event>
+    
+    <event  type="plant" time="2015-01-01-24/24" >
+        <plant  type="PIAB" name="PIAB" >        
+            <wood  dbh="0.03" hmax="1.5" ntree="1300" /> 
+        </plant>
+    </event>
+    
+    <event  type="plant" time="2015-01-01-24/24" >
+        <plant  type="BEPE" name="BEPE" >        
+            <wood  dbh="0.03" hmax="1.5" ntree="1300" /> 
+        </plant>
+    </event>
+    
+    <!--<event type="harvest" time="2019-04-01">
+	    <harvest name="PISY" reductionvolume="1" reductionnumber="1"
+	     exportfoliage="no" exportsapwood="no" 
+	     exportcorewood="yes" />                    
+    </event>-->
+    
+</event>
+
