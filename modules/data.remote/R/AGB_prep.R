@@ -49,7 +49,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(OutDir, "AGB.csv")) && is.null(buffer) | skip_buffer){
+  if(file.exists(file.path(OutDir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
     Previous_CSV <- as.data.frame(read.csv(file.path(OutDir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
