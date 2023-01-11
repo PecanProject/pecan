@@ -80,8 +80,8 @@ sda.enkf.multisite <- function(settings,
   
   is.local <- PEcAn.remote::is.localhost(settings$host)
   #------------------Reading up the MCMC settings
-  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
-  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
+  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 5e4, settings$state.data.assimilation$nitrGEF %>%as.numeric)
+  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 10, settings$state.data.assimilation$nthin %>%as.numeric)
   nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
   censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
   #--------Initialization
@@ -468,7 +468,10 @@ sda.enkf.multisite <- function(settings,
         
         
         #replacing crazy outliers before it's too late
-        if (control$OutlierDetection) X <- outlier.detector.boxplot(X)
+        if (control$OutlierDetection){
+          X <- outlier.detector.boxplot(X)
+          PEcAn.logger::logger.info("Outlier Detection.")
+        } 
         
         # Now we have a matrix that columns are state variables and rows are ensembles.
         # this matrix looks like this
@@ -545,7 +548,11 @@ sda.enkf.multisite <- function(settings,
         
         #-analysis function
 
-        
+        if(t>1){
+          pre_elements <- enkf.params[[t-1]]$elements.W.Data
+        }else{
+          pre_elements <- NULL
+        }
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
@@ -562,7 +569,8 @@ sda.enkf.multisite <- function(settings,
             censored.data = censored.data,
             recompileGEF = recompileGEF,
             recompileTobit = recompileTobit,
-            wts = wts
+            wts = wts,
+            pre_elements = pre_elements
           ),
           choose = choose,
           nt = nt,
@@ -691,7 +699,7 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      try(post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
+      try(PEcAnAssimSequential::post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
       if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
