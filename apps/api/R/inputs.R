@@ -94,22 +94,37 @@ searchInputs <- function(req, model_id=NA, site_id=NA, format_id=NA, host_id=NA,
     result <- list(inputs = qry_res)
     result$count <- nrow(qry_res)
     if(has_next){
-      result$next_page <- paste0(
-        req$rook.url_scheme, "://",
-        req$HTTP_HOST,
-        "/api/workflows",
-        req$PATH_INFO,
-        substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
-        (as.numeric(limit) + as.numeric(offset)),
-        "&limit=", 
-        limit
-      )
+      if(grepl("offset=", req$QUERY_STRING, fixed = TRUE)){
+        result$next_page <- paste0(
+          req$rook.url_scheme, "://",
+          req$HTTP_HOST,
+          "/api/inputs",
+          req$PATH_INFO,
+          substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+          (as.numeric(limit) + as.numeric(offset)),
+          "&limit=", 
+          limit
+        )
+      }
+      else {
+        result$next_page <- paste0(
+          req$rook.url_scheme, "://",
+          req$HTTP_HOST,
+          "/api/inputs",
+          req$PATH_INFO,
+          substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "limit=")[[2]] - 6),
+          "offset=",
+          (as.numeric(limit) + as.numeric(offset)),
+          "&limit=", 
+          limit
+        )
+      }
     }
     if(has_prev) {
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
-        "/api/workflows",
+        "/api/inputs",
         req$PATH_INFO, 
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         max(0, (as.numeric(offset) - as.numeric(limit))),
