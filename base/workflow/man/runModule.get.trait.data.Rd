@@ -7,7 +7,8 @@
 runModule.get.trait.data(settings)
 }
 \arguments{
-\item{settings}{PEcAn configuration list. Must have class `Settings` or `MultiSettings`}
+\item{settings}{PEcAn configuration list. Must have class `Settings` or
+`MultiSettings`}
 }
 \description{
 Get trait data for all PFTs in a settings list
