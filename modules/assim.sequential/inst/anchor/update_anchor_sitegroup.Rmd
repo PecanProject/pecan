@@ -1,0 +1,161 @@
+---
+title: "Update "Anchor site" sitegroups"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(googlesheets4)
+library(PEcAn.DB)
+
+## connect to BETY
+con = db.open(list(user="bety",password="bety",host="128.197.168.114"))
+user.id = 1000000001  ## should create a new user specifically for SDA site management
+
+## site addition distance threshold (degrees)
+dthresh = 0.01 # 0.01 lat is approx 1.11 km
+```
+
+## Grab list of sites
+```{r}
+sites = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","sites")
+```
+
+
+## Update any new sites
+```{r}
+## find sites with lat/lon but no ID
+newsite = sites %>% filter(is.na(id)) %>% drop_na(any_of(c("lat","lon")))
+
+bety_sites <- db.query(query = paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites"), con = con)
+
+
+if(nrow(newsite)>0){
+  kill = NULL
+  
+  ## make sure site doesn't already exist
+  for(s in 1:nrow(newsite)){
+    dist = sqrt( (bety_sites$lat - newsite$lat)^2 + (bety_sites$lon - newsite$lon)^2)
+    if(min(dist,na.rm = TRUE) < dthresh) kill = c(kill,s)
+    
+    if(s %in% kill){
+      print(paste("site within minimum threshold, if you belive this is an error consider increasing dthresh"))
+      print(newsite[s,])
+    } else {
+      ## before inserting, make sure we know which row needs to be updated
+      mch = which(sites$lat == newsite$lat[s] && sites$lon == newsite$lon[s])
+      stopifnot(length(mch) == 1)
+      
+      ## create new site
+      InsertString = paste0("INSERT INTO sites(sitename,country,geometry,user_id) VALUES(",
+                            "'",newsite$sitename[s],"', ",
+                            "'",newsite$country[s],"', ",
+                            "ST_GeomFromText('POINT(",newsite$lon[s]," ",newsite$lat[s]," ",
+                            newsite$elev[s],")', 4326), ",
+                            user.id,
+                            ") RETURNING id;")
+      newID = db.query(InsertString,con)     
+      sites$id[mch] = newID$id
+
+    } ## end insert new site
+
+  } ## end loop over new sites
+  
+  ## write back to sheet
+  write_sheet(sites,"https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","sites")
+}
+
+## remove sites without ID
+sites = sites %>% drop_na("id")
+
+```
+
+
+## Grab list of sitegroups & associated sites
+```{r}
+sitegroups = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","sitegroups")
+
+## remove sites without ID
+sitegroups = sitegroups %>% drop_na("id")
+
+sgs = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id IN (",
+                      paste(sitegroups$id,collapse=", "),")"),con)
+
+```
+
+
+## Merge sites, remove duplicates and "exclude" list
+```{r}
+exclude = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","exclude")
+siteIDs = unique(c(sites$id,sgs$site_id))
+if(nrow(exclude)>0) siteIDs = siteIDs[-(siteIDs %in% exclude$id)]
+```
+
+
+## update SDA_anchor
+```{r}
+anchorID = 1000000032
+anchor = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id = ",anchorID),con)
+newsites = siteIDs[!(siteIDs %in% anchor$site_id)]
+
+for(s in seq_along(newsites)){
+  InsertString = paste0("INSERT INTO sitegroups_sites(sitegroup_id,site_id) VALUES(",
+                        anchorID,", ",newsites[s],");")
+  db.query(InsertString,con)
+}
+anchor = c(anchor$site_id,newsites)
+```
+
+
+## update SDA_anchor_NorthAmerica
+```{r}
+countryCode = c("US","USA","CA","MX","BS","BZ","CR","CU","DO","GL","GT","HT","HN","JM","NI","PA","PR","SV","VI") ## sites table needs a lot of cleaning
+asite = bety_sites %>% filter(id %in% anchor,country %in% countryCode | 
+                                grepl("United States",country) |
+                                grepl("Mexico",country) |
+                                grepl("Canada",country)
+                              ) 
+
+anchorNAid = 1000000033
+anchorNA = db.query(paste0("SELECT site_id from sitegroups_sites where sitegroup_id = ",anchorNAid),con)
+newsites = asite$id[!(asite$id %in% anchorNA$site_id)]
+
+for(s in seq_along(newsites)){
+  InsertString = paste0("INSERT INTO sitegroups_sites(sitegroup_id,site_id) VALUES(",
+                        anchorNAid,", ",newsites[s],");")
+  db.query(InsertString,con)
+}
+```
+### FUTURE TODO: remove sites that are no longer in the spreadsheet
+
+
+
+## map & stats
+```{r}
+## all anchor sites
+bety_sites %>% filter(id %in% anchor) %>%
+ggplot() + 
+  geom_polygon( data=map_data("world"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = lon, y = lat),color="blue") + #size=5,shape=21
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)")
+
+## North American anchor sites
+ggplot(asite) + 
+  geom_polygon( data=map_data("world"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = lon, y = lat),color="orange") + #size=5,shape=21
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") + 
+  coord_cartesian(xlim=c(-172, -50), ylim = c(7, 80))
+
+
+```
+
+
+
+
