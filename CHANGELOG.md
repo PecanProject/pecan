@@ -45,6 +45,7 @@ We are slowly change the license from NCSA opensource to BSD-3 to help with publ
 - rstudio was not working behind traefik.
 - plots now work in docker containers
 - when specifying diferent rstudio user, dev setup would mount pecan folder in wrong path.
+- fixed the pagination error in the next_page field of the workflows, inputs and runs Rest API.
 - bugs in `model2ncdf.ED2()` that were causing it to both error and also only
 convert data for a single PFT fixed (#1329, #2974, #2981)
 - Code cleanup in PEcAn.MA to protect against global namespace pollution (#2965, #2973; @nanu1605) 
