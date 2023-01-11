@@ -16,12 +16,21 @@
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param write (Logical) If `TRUE` updated posteriors will be written to
+##'   BETYdb.  Defaults to FALSE.
 ##' @param trait.names list of trait names to retrieve
 ##' @return updated pft with posteriorid
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
-get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
-                               forceupdate = FALSE) {
+get.trait.data.pft <-
+  function(pft,
+           modeltype,
+           dbfiles,
+           dbcon,
+           trait.names,
+           forceupdate = FALSE,
+           write = FALSE) {
+    
 
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
@@ -331,23 +340,25 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
   )
 
   ### save and store in database all results except those that were there already
-  store_files_all <- list.files(path = pft[["outdir"]])
-  store_files <- setdiff(store_files_all, old.files)
-  PEcAn.logger::logger.debug(
-    "The following posterior files found in PFT outdir ",
-    "(", shQuote(pft[["outdir"]]), ") will be registered in BETY ",
-    "under posterior ID ", format(pft[["posteriorid"]], scientific = FALSE), ": ",
-    paste(shQuote(store_files), collapse = ", "), ". ",
-    "The following files (if any) will not be registered because they already existed: ",
-    paste(shQuote(intersect(store_files, old.files)), collapse = ", "),
-    wrap = FALSE
-  )
-  for (file in store_files) {
-    filename <- file.path(pathname, file)
-    file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(in.path = pathname, in.prefix = file,
-                  type = "Posterior", id = pft[["posteriorid"]],
-                  con = dbcon)
+  if(isTRUE(write)) {
+    store_files_all <- list.files(path = pft[["outdir"]])
+    store_files <- setdiff(store_files_all, old.files)
+    PEcAn.logger::logger.debug(
+      "The following posterior files found in PFT outdir ",
+      "(", shQuote(pft[["outdir"]]), ") will be registered in BETY ",
+      "under posterior ID ", format(pft[["posteriorid"]], scientific = FALSE), ": ",
+      paste(shQuote(store_files), collapse = ", "), ". ",
+      "The following files (if any) will not be registered because they already existed: ",
+      paste(shQuote(intersect(store_files, old.files)), collapse = ", "),
+      wrap = FALSE
+    )
+    for (file in store_files) {
+      filename <- file.path(pathname, file)
+      file.copy(file.path(pft$outdir, file), filename)
+      dbfile.insert(in.path = pathname, in.prefix = file,
+                    type = "Posterior", id = pft[["posteriorid"]],
+                    con = dbcon)
+    }
   }
 
   return(pft)
