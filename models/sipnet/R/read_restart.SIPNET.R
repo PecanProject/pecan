@@ -92,7 +92,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]*100  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
     params$restart <- c(params$restart, forecast[[length(forecast)]])
   }
