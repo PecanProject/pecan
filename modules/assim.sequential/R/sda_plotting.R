@@ -628,7 +628,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     })
       
 
-  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% names()
   #Observed data
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
