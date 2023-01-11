@@ -40,8 +40,8 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
         date <- as.Date(strsplit(String[1], "_")[[1]][5], "%Y%m%d")
         lon <- as.numeric(String[2])
         lat <- as.numeric(String[3])
-        smp <- as.numeric(String[5])
-        sd <- 0.04 #From Daniel
+        smp <- as.numeric(String[5]) * 100
+        sd <- 0.04 * 100 #From Daniel
         
         #Match current lon/lat with site_info
         Distance <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = Site_Info$lat, lon2 = Site_Info$lon)
@@ -59,7 +59,7 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     SMAP_CSV <- read.csv(file.path(OutDir, "SMAP.csv"))
     Current_years <- sort(unique(lubridate::year(SMAP_CSV$date)))
     Required_years <- lubridate::year(Start_Date):lubridate::year(End_Date)
-    Required_years <- Required_years[which(Required_years>=2015)] #SMAP data only available after 2015.
+    Required_years <- Required_years[which(Required_years>=2015)] #SMAP data only available after year 2015.
     if(sum(!Required_years%in%Current_years)){
       PEcAn.logger::logger.info("The existing SMAP.csv file doesn't contain data between start and end date!")
       PEcAn.logger::logger.info("Please update the SMAP_gee.csv file to include the data that are missing! And then flag Update_CSV as TRUE to proceed!")
@@ -75,6 +75,7 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
     time_points <- as.Date(Start_Date) %m+% days(days)
   }
+  time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   
   #initialize SMAP_Output
   SMAP_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
