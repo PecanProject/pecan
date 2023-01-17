@@ -242,7 +242,22 @@ sda.enkf.multisite <- function(settings,
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- list()
+      all.pft.names <- names(ensemble.samples)
+      for (i in 1:length(settings)) {
+        #match pft name
+        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+        which.pft <- which(all.pft.names==site.pft.name)
+        
+        site.param <- list()
+        site.samples <- ensemble.samples[which.pft]
+        for (j in seq_len(nens)) {
+          site.param[[j]] <- lapply(site.samples, function(x, n) {
+            x[j, ] }, n = j)
+        } 
+        new.params[[i]] <- site.param
+      }
+      names(new.params) <- site.ids
       
       #create inputs object for met using previous forecast ensemble members
       ####add function here, pause on this feature until we add feature to model runs that saves driver ensemble members
@@ -507,7 +522,7 @@ sda.enkf.multisite <- function(settings,
           diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         }
         # making the mapping operator
-        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]]) #works for only 1 site 
+        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
         
         aqq         <- NULL
         bqq         <- numeric(nt + 1)
