@@ -35,7 +35,7 @@ see if you need to change any of these:
 - `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
 -  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
 - Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
-
+- Added Observation preparation functions into the SDA workflow, which supports AGB, LAI, Soil Carbon, and Soil moisture.
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
 ### Fixed
