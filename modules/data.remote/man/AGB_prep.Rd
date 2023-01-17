@@ -24,6 +24,8 @@ AGB_prep(
 
 \item{End_Date}{End date of SDA workflow.}
 
+\item{Time_Step}{A list containing time step and number of time step, which allows time step to be any years or days.}
+
 \item{AGB_dir}{Where the Landtrendr AGB data can be accessed.}
 
 \item{OutDir}{Where the final CSV file will be stored.}
