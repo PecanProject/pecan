@@ -3,6 +3,7 @@
 #' @param Site_Info Bety list of site info including site_id, lon, and lat.
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
+#' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param AGB_dir Where the Landtrendr AGB data can be accessed.
 #' @param OutDir Where the final CSV file will be stored.
 #' @param Export_CSV Decide if we want to export the CSV file.
