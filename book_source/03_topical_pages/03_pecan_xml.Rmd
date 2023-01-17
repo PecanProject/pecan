@@ -752,9 +752,77 @@ The following tags can be used for state data assimilation. More detailed inform
 	<process.variance>FALSE</process.variance>
   <sample.parameters>FALSE</sample.parameters>
   <state.variables>
-   <variable>AGB.pft</variable>
-   <variable>TotSoilCarb</variable>
+   <variable>
+    <variable.name>AbvGrndWood</variable.name>
+    <unit>MgC/ha</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>LAI</variable.name>
+    <unit></unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+  <variable.name>SoilMoistFrac</variable.name>
+  <unit></unit>
+  <min_value>0</min_value>
+  <max_value>100</max_value>
+  </variable>
+   <variable>
+    <variable.name>TotSoilCarb</variable.name>
+    <unit>kg/m^2</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
   </state.variables>
+  <Obs_Prep>
+   <AGB>
+    <Var>AbvGrndWood</Var>
+    <AGB_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_dir>
+    <Time_Step>
+     <unit>year</unit>
+     <num>1</num>
+    </Time_Step>
+    <Allow_download>TRUE</Allow_download>
+    <Out_dir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</Out_dir>
+    <Export_CSV>TRUE</Export_CSV>
+    <buffer></buffer>
+   </AGB>
+   <LAI>
+    <Var>LAI</Var>
+    <Out_dir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</Out_dir>
+    <Search_Window>30</Search_Window>
+    <NCore></NCore>
+    <Time_Step>
+     <unit>year</unit>
+     <num>1</num>
+    </Time_Step>
+    <Export_CSV>TRUE</Export_CSV>
+   </LAI>
+   <SMP>
+    <Var>SMP</Var>
+    <Out_dir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</Out_dir>
+    <Search_Window>30</Search_Window>
+    <Time_Step>
+     <unit>year</unit>
+     <num>1</num>
+    </Time_Step>
+    <Export_CSV>TRUE</Export_CSV>
+    <Update_CSV>FALSE</Update_CSV>
+   </SMP>
+   <SoilC>
+    <Var>SoilC</Var>
+    <Out_dir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</Out_dir>
+    <Time_Step>
+     <unit>year</unit>
+     <num>1</num>
+    </Time_Step>
+   </SoilC>
+   <Start_Date>2012-07-15</Start_Date>
+   <End_Date>2021-07-15</End_Date>
+  </Obs_Prep>
   <spin.up>
   	<start.date>2004/01/01</start.date>
 	  <end.date>2006/12/31</end.date>
@@ -768,7 +836,8 @@ The following tags can be used for state data assimilation. More detailed inform
 * **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the intial conditions of the forecast.
 * **_NOTE:_** If TRUE, you must also assign a vector of trait names to pick.trait.params within the sda.enkf function.
-* **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format). Default is "AGB" - Above Ground Biomass.
+* **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format, with pre-specified variable name, unit, and range). Four variables can be assimilated so far: including Aboveground biomass (AbvGrndWood), LAI, SoilMoistFrac, and Soil carbon (TotSoilCarb).
+* **Obs_Prep** : [required] You will need to specify required arguments for different var prep functions (LAI_prep, AGB_prep, SMP_prep, and the SoilC_prep functions). For example, you will need to specify the Var_name (LAI), OutDir, Search_Window, NCore, Time_Step, and Export_CSV under the Obs_Prep/LAI section to make the LAI_prep function work. You will also need to specify the start and end date directly under the Obs_Prep section. More details can be found in prep functions themselves.
 * **spin.up** : [required] start.date and end.date for model spin up.
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because spin up can be done over a subset of the run.
 * **forecast.time.step** : [optional] start.date and end.date for model spin up.
