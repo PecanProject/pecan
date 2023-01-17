@@ -1,6 +1,7 @@
 ##' Get trait data for all PFTs in a settings list
 ##'
-##' @param settings PEcAn configuration list. Must have class `Settings` or `MultiSettings`
+##' @param settings PEcAn configuration list. Must have class `Settings` or
+##'   `MultiSettings`
 ##' @export
 runModule.get.trait.data <- function(settings) {
   if (is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
@@ -18,14 +19,28 @@ runModule.get.trait.data <- function(settings) {
       pft.names <- sapply(pfts, function(x) x$name)
     }
 
-    PEcAn.logger::logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
-                paste(pft.names, collapse = ", ")))
+    PEcAn.logger::logger.info(paste0(
+      "Getting trait data for all PFTs listed by any Settings object in the list: ",
+      paste(pft.names, collapse = ", ")
+    ))
 
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
+    forceupdate <-
+      ifelse(is.null(settings$meta.analysis$update),
+             FALSE,
+             settings$meta.analysis$update)
+    write <- settings$database$bety$write
+    settings$pfts <-
+      PEcAn.DB::get.trait.data(
+        pfts = pfts,
+        modeltype = modeltype,
+        dbfiles = dbfiles,
+        database = database,
+        forceupdate = forceupdate,
+        write = write
+      )
     return(settings)
   } else if (PEcAn.settings::is.Settings(settings)) {
     pfts <- settings$pfts
@@ -35,8 +50,20 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- PEcAn.DB::get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
+    forceupdate <-
+      ifelse(is.null(settings$meta.analysis$update),
+             FALSE,
+             settings$meta.analysis$update)
+    write <- settings$database$bety$write
+    settings$pfts <-
+      PEcAn.DB::get.trait.data(
+        pfts = pfts,
+        modeltype = modeltype,
+        dbfiles = dbfiles,
+        database = database,
+        forceupdate = forceupdate,
+        write = write
+      )
     return(settings)
   } else {
     stop("runModule.get.trait.data only works with Settings or MultiSettings")

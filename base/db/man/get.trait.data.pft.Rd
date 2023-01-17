@@ -10,7 +10,8 @@ get.trait.data.pft(
   dbfiles,
   dbcon,
   trait.names,
-  forceupdate = FALSE
+  forceupdate = FALSE,
+  write = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ get.trait.data.pft(
 \item{trait.names}{list of trait names to retrieve}
 
 \item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
+
+\item{write}{(Logical) If `TRUE` updated posteriors will be written to
+BETYdb.  Defaults to FALSE.}
 }
 \value{
 updated pft with posteriorid
