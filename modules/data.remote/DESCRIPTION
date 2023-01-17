@@ -16,7 +16,7 @@ Imports:
     DBI,
     dplyr,
     glue,
-    lubridate,
+    lubridate (>= 1.6.0),
     ncdf4,
     PEcAn.DB,
     PEcAn.utils,
