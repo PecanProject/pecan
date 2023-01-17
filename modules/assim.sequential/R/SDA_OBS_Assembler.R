@@ -13,6 +13,9 @@
 #' @examples
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
+  
+  #library
+  library(PEcAn.data.remote)
   #read settings
   settings <- PEcAn.settings::read.settings(settings_dir)
   
@@ -55,7 +58,6 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
   #test for loop
   for (i in 1:length(Var)) {
     #grab function based on the variable name
-    library(PEcAn.data.remote)
     var <- Var[i]
     obs_prep_fun <- get(paste0(var, "_prep"))
     
