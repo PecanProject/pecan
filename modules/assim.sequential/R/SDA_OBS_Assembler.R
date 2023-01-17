@@ -13,5 +13,5 @@
 #' @examples
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
-return(0)
+  return(0)
 }
