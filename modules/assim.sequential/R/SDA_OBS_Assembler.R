@@ -36,57 +36,65 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
                     lon = settings %>% map(~.x[['run']] ) %>% map('site') %>% map('lon') %>% unlist() %>% as.numeric(),
                     site_name = rep("name", length(settings %>% map(~.x[['run']] ) %>% map('site') %>% map('lat') %>% unlist() %>% as.numeric())))
   
+  #collect time points
+  #we need to know which var we want to proceed 
+  #cause for every variable we assigned the same time_step object, we only need to grab it from any of what we have here.
+  #here we grab the first var to calculate the time step.
+  var_first <- Var[1]
+  for (i in 1:length(Obs_Prep)) {
+    if(!is.character(try(Obs_Prep[[i]]$Var == var_first, silent = T)))Time_Step <- Obs_Prep[[i]]$Time_Step
+  }
+  #time operations
+  if(Time_Step$unit == "year"){
+    years <- seq(0, (lubridate::year(Obs_Prep$End_Date) - lubridate::year(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
+    time_points <- as.Date(Obs_Prep$Start_Date) %m+% years(years)
+  }else if(Time_Step$unit == "day"){
+    days <- seq(0, (lubridate::yday(Obs_Prep$End_Date) - lubridate::yday(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
+    time_points <- as.Date(Obs_Prep$Start_Date) %m+% days(days)
+  }
+  
   #We need to keep the order from Var to the actual obs.mean and obs.cov
   OBS <- list()
   new_var <- c()
-  # for(i in 1:length(Var)){
-  #   library(PEcAn.data.remote)
-  #   fcn <- paste0(Var[i], "Prep")
-  #   Temp_out <- do.call(fcn, args = list(
-  #     
-  #   ))
-  # }
+  #test for loop
   for (i in 1:length(Var)) {
+    #grab function based on the variable name
+    library(PEcAn.data.remote)
     var <- Var[i]
-    if("AGB" == var){
-      AGB_Output <- PEcAn.data.remote::AGB_prep(Site_Info = Site_Info, 
-                                                Start_Date = Obs_Prep$Start_Date, 
-                                                End_Date = Obs_Prep$End_Date,
-                                                Time_Step = Obs_Prep$AGB$Time_Step,
-                                                AGB_dir = Obs_Prep$AGB$AGB_dir,
-                                                OutDir = Obs_Prep$AGB$Out_dir,
-                                                Export_CSV = Obs_Prep$AGB$Export_CSV,
-                                                Allow_download = Obs_Prep$AGB$Allow_download,
-                                                buffer = as.numeric(Obs_Prep$AGB$buffer),
-                                                skip_buffer = skip_buffer)
-      time_points <- AGB_Output$time_points
-      OBS[[i]] <- AGB_Output$AGB_Output
-      new_var <- c(new_var, AGB_Output$var)
-    }else if("LAI" == var){
-      LAI_Output <- PEcAn.data.remote::LAI_prep(Site_Info = Site_Info, 
-                                                Start_Date = Obs_Prep$Start_Date, 
-                                                End_Date = Obs_Prep$End_Date,
-                                                Time_Step = Obs_Prep$LAI$Time_Step,
-                                                NCore = Obs_Prep$LAI$NCore,
-                                                OutDir = Obs_Prep$LAI$Out_dir,
-                                                Search_Window = Obs_Prep$LAI$Search_Window,
-                                                Export_CSV = Obs_Prep$LAI$Export_CSV)
-      time_points <- LAI_Output$time_points
-      OBS[[i]] <- LAI_Output$LAI_Output
-      new_var <- c(new_var, LAI_Output$var)
-    }else if("SMP" == var){
-      SMP_Output <- PEcAn.data.remote::SMP_prep(Site_Info = Site_Info, 
-                                                  Start_Date = Obs_Prep$Start_Date, 
-                                                  End_Date = Obs_Prep$End_Date,
-                                                  Time_Step = Obs_Prep$SMAP$Time_Step,
-                                                  OutDir = Obs_Prep$SMAP$Out_dir,
-                                                  Search_Window = Obs_Prep$SMAP$Search_Window,
-                                                  Export_CSV = Obs_Prep$SMAP$Export_CSV,
-                                                  Update_CSV = Obs_Prep$SMAP$Update_CSV)
-      time_points <- SMP_Output$time_points
-      OBS[[i]] <- SMP_Output$SMP_Output
-      new_var <- c(new_var, SMP_Output$var)
+    obs_prep_fun <- get(paste0(var, "_prep"))
+    
+    #grab function argument names
+    fun_args <- formalArgs(obs_prep_fun)
+    
+    #create args list given function argument names
+    args <- list()
+    #fill in args with what we have so far.
+    Ind_list_match <- c()
+    for (j in 1:length(fun_args)) {
+      if(!is.character(try(variable <- get(fun_args[j]), silent = T))){
+        if(typeof(variable)!="closure"){
+          args[[fun_args[j]]] <- variable
+          Ind_list_match <- c(Ind_list_match, j)
+        }
+      }
     }
+    #fill in more args in the Obs_Prep object.
+    Temp_unlist <- unlist(Obs_Prep)
+    for (j in 1:length(fun_args)) {
+      if(j %in% Ind_list_match) next #if we already assigned then jump to the next.
+      Ind_single_match <- grep(str_replace_all(fun_args[j], "[^[:alnum:]]", ""), 
+                                  str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
+                                  ignore.case = T)
+      if(length(Ind_single_match)>1){
+        Ind_single_match <- grep(str_replace_all(paste0(var, fun_args[j]), "[^[:alnum:]]", ""), 
+                                 str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
+                                 ignore.case = T)
+      }
+      args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
+    }
+    #function calls
+    OBS[[i]] <- do.call(obs_prep_fun, args)[[1]]
+    new_var <- c(new_var, var)
   }
   
   #Create obs.mean and obs.cov
@@ -137,6 +145,22 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
       }
     }
   }
+  
+  #rename variables to the var/names in settings.
+  for (i in 1:length(time_points)) {
+    for (j in 1:length(obs.mean[[i]])) {
+      if("AGB" %in% names(obs.mean[[i]][[j]])){
+        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="AGB")] <- "AbvGrndWood"
+      }
+      if("SMP" %in% names(obs.mean[[i]][[j]])){
+        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="SMP")] <- "SoilMoistFrac"
+      }
+      if("SoilC" %in% names(obs.mean[[i]][[j]])){
+        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="SoilC")] <- "TotSoilCarb"
+      }
+    }
+  }
+  
   save(obs.mean, file = file.path(OutDir, "obs.mean.Rdata"))
   save(obs.cov, file = file.path(OutDir, "obs.cov.Rdata"))
   list(obs.mean = obs.mean, obs.cov = obs.cov)
