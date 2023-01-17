@@ -70,7 +70,7 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
       return(AGB)
     }
   }
-  #calculate total herbaceous biomass, already in gC
+  #calculate total herbaceous biomass, already in kgC
   tot_herb <- sum(dat[[1]][,"dryMass"])/(herb_plot*herb_num)
   
   #Calculate AGB
@@ -83,12 +83,12 @@ cohort2pool <- function(dat, allom_param = NULL, dbh_name="DBH") {
   tot_leaf <- sum(leaf,na.rm = TRUE)
   
   #Divide by plot area, divide by 2 to convert from kg to kgC
-  leaf_biomass = ((tot_leaf/(total_area))/2 + tot_herb/1000)*1000#convert from kg to g
+  leaf_biomass = ((tot_leaf/(total_area))/2 + tot_herb)#in kg
   
   if(tot_biomass == 0){
     AGB <- leaf_biomass
   }else{
-    AGB <- ((tot_biomass/(total_area))/2 + tot_herb/1000)*1000#in gram
+    AGB <- ((tot_biomass/(total_area))/2 + tot_herb)#in kg
   }
   wood_biomass = AGB - leaf_biomass
   
