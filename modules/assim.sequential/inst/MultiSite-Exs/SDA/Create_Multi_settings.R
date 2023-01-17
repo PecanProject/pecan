@@ -25,6 +25,7 @@ Allow_download <- TRUE
 AGB_Out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 AGB_Export_CSV <- TRUE
 AGB_Time_Step <- list(unit="year", num=1)
+buffer <- 250
 
 #LAI
 LAI_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
@@ -33,12 +34,16 @@ NCore <- NULL
 LAI_Time_Step <- list(unit="year", num=1)
 LAI_Export_CSV <- TRUE
 
-#SMAP
-SMAP_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-SMAP_Search_Window <- 30
-SMAP_Time_Step <- list(unit="year", num=1)
-SMAP_Export_CSV <- TRUE
+#SMP
+SMP_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+SMP_Search_Window <- 30
+SMP_Time_Step <- list(unit="year", num=1)
+SMP_Export_CSV <- TRUE
 Update_CSV <- FALSE
+
+#SoilC
+SoilC_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+SoilC_Time_Step <- list(unit="year", num=1)
 
 #Obs Date
 Obs_Start_Date <- "2012-07-15"
@@ -78,7 +83,8 @@ template <- Settings(list(
     Obs_Prep = structure(list(
       AGB = structure(list(Var = "AbvGrndWood", AGB_dir = AGB_dir, Time_Step = AGB_Time_Step, Allow_download = Allow_download, Out_dir = AGB_Out_dir, Export_CSV = AGB_Export_CSV)),
       LAI = structure(list(Var = "LAI", Out_dir = LAI_dir, Search_Window = LAI_Search_Window, NCore = NCore, Time_Step = LAI_Time_Step, Export_CSV = LAI_Export_CSV)),
-      SMAP = structure(list(Var = "SMP", Out_dir = SMAP_dir, Search_Window = SMAP_Search_Window, Time_Step = SMAP_Time_Step, Export_CSV = SMAP_Export_CSV, Update_CSV = Update_CSV)),
+      SMP = structure(list(Var = "SMP", Out_dir = SMP_dir, Search_Window = SMP_Search_Window, Time_Step = SMP_Time_Step, Export_CSV = SMP_Export_CSV, Update_CSV = Update_CSV)),
+      SoilC = structure(list(Var = "SoilC", Out_dir = SoilC_dir, Time_Step = SoilC_Time_Step)),
       Start_Date = Obs_Start_Date,
       End_Date = Obs_End_Date
     ))
