@@ -626,7 +626,7 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
   
   #Make sure var names are in correct order
   forecast_noaa_ds <- forecast_noaa_ds %>%
-    dplyr::select(.data$time, tidyselect::all_of(cf_var_names), .data$NOAA.member)
+    dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
   
   #Write netCDF
   write_noaa_gefs_netcdf(df = forecast_noaa_ds,
