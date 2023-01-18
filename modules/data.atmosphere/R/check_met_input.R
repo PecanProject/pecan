@@ -45,19 +45,19 @@ check_met_input_file <- function(metfile,
     "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
   )
   test_dims <- list(
-    try2(assertthat::validate_that(is.list(dimensions))),
+    try2(assertthat::assert_that(is.list(dimensions))),
     try2(assertthat::are_equal(length(dimensions), 3)),
-    try2(assertthat::validate_that("time" %in% names(dimensions))),
-    try2(testthat::expect_match(
-      ncdf4::ncatt_get(nc, "time", "units")[["value"]],
-      time_regex
+    try2(assertthat::assert_that("time" %in% names(dimensions))),
+    try2(assertthat::assert_that(str_match(
+      ncdf4::ncatt_get(nc, "time", "units")[["value"]], 
+      time_regex)
     )),
-    try2(assertthat::validate_that("latitude" %in% names(dimensions))),
+    try2(assertthat::assert_that("latitude" %in% names(dimensions))),
     try2(assertthat::are_equal(
       ncdf4::ncatt_get(nc, "latitude", "units")[["value"]],
       "degrees_north"
     )),
-    try2(assertthat::validate_that("longitude" %in% names(dimensions))),
+    try2(assertthat::assert_that("longitude" %in% names(dimensions))),
     try2(assertthat::are_equal(
       ncdf4::ncatt_get(nc, "longitude", "units")[["value"]],
       "degrees_east"

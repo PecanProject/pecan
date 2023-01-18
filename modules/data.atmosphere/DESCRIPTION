@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    assertthat,
     curl,
     data.table,
     dplyr,
