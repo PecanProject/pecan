@@ -11,7 +11,8 @@ model2netcdf.ED2(
   start_date,
   end_date,
   pfts,
-  settings = NULL
+  settings = NULL,
+  process_partial = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,10 @@ model2netcdf.ED2(
 \item{pfts}{a named vector of PFT numbers where the names are PFT names}
 
 \item{settings}{pecan settings object}
+
+\item{process_partial}{should failed runs be processed? Defaults to \code{FALSE}.
+\code{TRUE} will generate .nc files for runs that have generated some, but not
+all, of the expected outputs}
 }
 \description{
 Modified from code to convert ED2's HDF5 output into the NACP
