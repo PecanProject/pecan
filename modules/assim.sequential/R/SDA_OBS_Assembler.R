@@ -11,7 +11,6 @@
 #' @author Dongchen Zhang
 #'
 #' @examples
-#' @import PEcAn.data.remote
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
   #read settings
