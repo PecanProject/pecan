@@ -41,6 +41,7 @@ Suggests:
     magic (>= 1.5.0),
     methods,
     PEcAn.benchmark,
+    PEcAn.data.remote,
     plotrix,
     plyr (>= 1.8.4),
     raster,
