@@ -27,6 +27,7 @@ Imports:
     PEcAn.settings,
     PEcAn.workflow,
     purrr,
+    stringr,
     sp,
     tidyr,
     utils,
