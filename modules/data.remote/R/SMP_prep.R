@@ -16,6 +16,9 @@
 #' @author Dongchen Zhang
 SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                       OutDir, Search_Window = 30, Export_CSV = TRUE, Update_CSV = FALSE){
+  #export special operator
+  `%>%` <- magrittr::`%>%` 
+  `%m+%` <- as.function(lubridate::`%m+%`)
   
   #note that, the SMAP_gee.csv file comes from Google Earth Engine (GEE) directly.
   #Code for generating this file can be found through this link: 
@@ -70,10 +73,10 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
     years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
-    time_points <- as.Date(Start_Date) %m+% years(years)
+    time_points <- as.Date(Start_Date) %m+% lubridate::years(years)
   }else if(Time_Step$unit == "day"){
     days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
-    time_points <- as.Date(Start_Date) %m+% days(days)
+    time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   

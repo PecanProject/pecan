@@ -13,6 +13,10 @@
 #' @examples
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
+  #export special operator
+  `%>%` <- magrittr::`%>%` 
+  `%m+%` <- as.function(lubridate::`%m+%`)
+  
   #read settings
   settings <- PEcAn.settings::read.settings(settings_dir)
   
@@ -27,10 +31,11 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
   }
   
   #prepare site_info offline, because we need to submit this to GEO, which doesn't support Bety connection.
-  Site_Info <- list(site_id = settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character(),
-                    lat = settings %>% map(~.x[['run']] ) %>% map('site') %>% map('lat') %>% unlist() %>% as.numeric(),
-                    lon = settings %>% map(~.x[['run']] ) %>% map('site') %>% map('lon') %>% unlist() %>% as.numeric(),
-                    site_name = rep("name", length(settings %>% map(~.x[['run']] ) %>% map('site') %>% map('lat') %>% unlist() %>% as.numeric())))
+  
+  Site_Info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
+                    lat = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric(),
+                    lon = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lon') %>% unlist() %>% as.numeric(),
+                    site_name = rep("name", length(settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric())))
   
   #collect time points
   #we need to know which var we want to proceed 
@@ -43,10 +48,10 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
   #time operations
   if(Time_Step$unit == "year"){
     years <- seq(0, (lubridate::year(Obs_Prep$End_Date) - lubridate::year(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
-    time_points <- as.Date(Obs_Prep$Start_Date) %m+% years(years)
+    time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::years(years)
   }else if(Time_Step$unit == "day"){
     days <- seq(0, (lubridate::yday(Obs_Prep$End_Date) - lubridate::yday(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
-    time_points <- as.Date(Obs_Prep$Start_Date) %m+% days(days)
+    time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::days(days)
   }
   
   #We need to keep the order from Var to the actual obs.mean and obs.cov
@@ -56,10 +61,10 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
   for (i in 1:length(Var)) {
     #grab function based on the variable name
     var <- Var[i]
-    obs_prep_fun <- get(paste0(var, "_prep"))
+    obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(var, "_prep"))
     
     #grab function argument names
-    fun_args <- formalArgs(obs_prep_fun)
+    fun_args <- methods::formalArgs(obs_prep_fun)
     
     #create args list given function argument names
     args <- list()
@@ -78,12 +83,12 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
     Temp_unlist <- unlist(Obs_Prep)
     for (j in 1:length(fun_args)) {
       if(j %in% Ind_list_match) next #if we already assigned then jump to the next.
-      Ind_single_match <- grep(str_replace_all(fun_args[j], "[^[:alnum:]]", ""), 
-                                  str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
+      Ind_single_match <- grep(stringr::str_replace_all(fun_args[j], "[^[:alnum:]]", ""), 
+                               stringr::str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
                                   ignore.case = T)
       if(length(Ind_single_match)>1){
-        Ind_single_match <- grep(str_replace_all(paste0(var, fun_args[j]), "[^[:alnum:]]", ""), 
-                                 str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
+        Ind_single_match <- grep(stringr::str_replace_all(paste0(var, fun_args[j]), "[^[:alnum:]]", ""), 
+                                 stringr::str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
                                  ignore.case = T)
       }
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
@@ -126,8 +131,8 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
       site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(new_var)) %>% data.frame %>% `colnames<-`(new_var)
       site_sd_var[[j]] <- new_diag(sd_all_var[j,])
     }
-    obs.mean[[i]] <- site_dat_var %>% set_names(Site_Info$site_id)
-    obs.cov[[i]] <- site_sd_var %>% set_names(Site_Info$site_id)
+    obs.mean[[i]] <- site_dat_var %>% purrr::set_names(Site_Info$site_id)
+    obs.cov[[i]] <- site_sd_var %>% purrr::set_names(Site_Info$site_id)
   }
   names(obs.mean) <- gsub("-", "/", time_points)#not sure if I have to do this.
   names(obs.cov) <- gsub("-", "/", time_points)

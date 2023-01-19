@@ -13,6 +13,10 @@
 #' @author Dongchen Zhang
 SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                            OutDir = NULL){
+  #export special operator
+  `%>%` <- magrittr::`%>%` 
+  `%m+%` <- as.function(lubridate::`%m+%`)
+  
   #if we export CSV but didn't provide any path
   if(is.null(OutDir)){
     PEcAn.logger::logger.info("Please provide the input dir!")
@@ -22,10 +26,10 @@ SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="y
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
     years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
-    time_points <- as.Date(Start_Date) %m+% years(years)
+    time_points <- as.Date(Start_Date) %m+% lubridate::years(years)
   }else if(Time_Step$unit == "day"){
     days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
-    time_points <- as.Date(Start_Date) %m+% days(days)
+    time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }
   
   #if we have previous extracted soilgrids csv file.

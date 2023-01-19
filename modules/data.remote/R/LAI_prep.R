@@ -16,6 +16,10 @@
 #' @author Dongchen Zhang
 LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      NCore = NULL, OutDir = NULL, Search_Window = 30, Export_CSV = FALSE){
+  #export special operator
+  `%>%` <- magrittr::`%>%` 
+  `%m+%` <- as.function(lubridate::`%m+%`)
+  
   #if we export CSV but didn't provide any path
   if(as.logical(Export_CSV) && is.null(OutDir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
@@ -25,10 +29,10 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   #calculate time points given start, end date, and time step.
   if(Time_Step$unit == "year"){
     years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
-    time_points <- as.Date(Start_Date) %m+% years(years)
+    time_points <- as.Date(Start_Date) %m+% lubridate::years(years)
   }else if(Time_Step$unit == "day"){
     days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
-    time_points <- as.Date(Start_Date) %m+% days(days)
+    time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
