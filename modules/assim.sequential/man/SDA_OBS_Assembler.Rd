@@ -29,12 +29,6 @@ list of obs.mean and obs.cov
 \description{
 Assembler for preparing obs.mean and obs.cov for the SDA workflow
 }
-\examples{
-settings_dir <- "~/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA/pecan.xml"
-OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-Var <- c("SMP", "LAI", "AGB")
-OBS <- PEcAnAssimSequential::SDA_OBS_Assembler(settings_dir, Var, OutDir)
-}
 \author{
 Dongchen Zhang
 }

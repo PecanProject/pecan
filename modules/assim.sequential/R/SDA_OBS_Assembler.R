@@ -11,10 +11,6 @@
 #' @author Dongchen Zhang
 #'
 #' @examples
-#' settings_dir <- "~/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA/pecan.xml"
-#' OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-#' Var <- c("SMP", "LAI", "AGB")
-#' OBS <- PEcAnAssimSequential::SDA_OBS_Assembler(settings_dir, Var, OutDir)
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
   #read settings
