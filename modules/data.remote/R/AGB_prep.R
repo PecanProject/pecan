@@ -55,7 +55,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
   if(file.exists(file.path(OutDir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
-    Previous_CSV <- as.data.frame(read.csv(file.path(OutDir, "AGB.csv")))
+    Previous_CSV <- as.data.frame(utils::read.csv(file.path(OutDir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     AGB_Output$site_id <- Site_Info$site_id
@@ -79,7 +79,7 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   }
   
   #only Site that has NA for any time points need to be downloaded.
-  new_Site_Info <- Site_Info %>% purrr::map(function(x)x[!complete.cases(AGB_Output)])
+  new_Site_Info <- Site_Info %>% purrr::map(function(x)x[!stats::complete.cases(AGB_Output)])
   
   #if we have any site missing previously
   if(length(new_Site_Info$site_id) != 0){
@@ -123,9 +123,9 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
         site_id <- id
         lon <- new_Site_Info$lon[which(new_Site_Info$site_id==id)]
         lat <- new_Site_Info$lat[which(new_Site_Info$site_id==id)]
-        agb <- site_AGB[paste0(time_points[i], "_AGB")] %>% set_names("agb")
-        sd <- site_AGB[paste0(time_points[i], "_SD")] %>% set_names("sd")
-        Current_CSV <- rbind(Current_CSV, tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
+        agb <- site_AGB[paste0(time_points[i], "_AGB")] %>% purrr::set_names("agb")
+        sd <- site_AGB[paste0(time_points[i], "_SD")] %>% purrr::set_names("sd")
+        Current_CSV <- rbind(Current_CSV, tibble::tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
       }
     }
 
@@ -134,9 +134,9 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, Current_CSV)
         Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
-        write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
       }else{
-        write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
       }
     }
   }

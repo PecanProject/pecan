@@ -34,7 +34,7 @@ SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="y
   
   #if we have previous extracted soilgrids csv file.
   if(file.exists(file.path(OutDir, "soilgrids_soilC_data.csv"))){
-    Previous_CSV <- as.data.frame(read.csv(file.path(OutDir, "soilgrids_soilC_data.csv")))
+    Previous_CSV <- as.data.frame(utils::read.csv(file.path(OutDir, "soilgrids_soilC_data.csv")))
     SoilC_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_SoilC"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     SoilC_Output$site_id <- Site_Info$site_id

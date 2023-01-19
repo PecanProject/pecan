@@ -33,7 +33,7 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       PEcAn.logger::logger.info("Please Provide SMAP dir that contains at least the SMAP_gee.csv file!")
       return(0)
     }else{
-      SMAP_gee <- read.csv(file.path(OutDir, "SMAP_gee.csv"))
+      SMAP_gee <- utils::read.csv(file.path(OutDir, "SMAP_gee.csv"))
       
       #prepare CSV from Current SMAP_gee file
       SMAP_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "smp", "sd"))
@@ -51,15 +51,15 @@ SMP_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
         distloc <- match(min(Distance), Distance)
         site_id <- Site_Info$site_id[distloc]
         
-        SMAP_CSV <- rbind(SMAP_CSV, tibble(date, site_id, lat, lon, smp, sd))#in date, id, lat, lon, smp, sd
+        SMAP_CSV <- rbind(SMAP_CSV, tibble::tibble(date, site_id, lat, lon, smp, sd))#in date, id, lat, lon, smp, sd
       }
       if(as.logical((Export_CSV))){
-        write.csv(SMAP_CSV, file = file.path(OutDir, "SMAP.csv"), row.names = F)
+        utils::write.csv(SMAP_CSV, file = file.path(OutDir, "SMAP.csv"), row.names = F)
       }
     }
   }else{
     #TODO: When current SMAP.csv need to be updated
-    SMAP_CSV <- read.csv(file.path(OutDir, "SMAP.csv"))
+    SMAP_CSV <- utils::read.csv(file.path(OutDir, "SMAP.csv"))
     Current_years <- sort(unique(lubridate::year(SMAP_CSV$date)))
     Required_years <- lubridate::year(Start_Date):lubridate::year(End_Date)
     Required_years <- Required_years[which(Required_years>=2015)] #SMAP data only available after year 2015.
