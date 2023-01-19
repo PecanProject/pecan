@@ -11,7 +11,7 @@
 #' @author Dongchen Zhang
 #'
 #' @examples
-#' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
+#' settings_dir <- "~/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA/pecan.xml"
 #' OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 #' Var <- c("SMP", "LAI", "AGB")
 #' OBS <- PEcAnAssimSequential::SDA_OBS_Assembler(settings_dir, Var, OutDir)
