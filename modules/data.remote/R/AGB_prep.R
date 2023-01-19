@@ -16,8 +16,6 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom stats complete.cases
-#' @importFrom purrr set_names
 AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
