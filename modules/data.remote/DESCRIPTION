@@ -14,9 +14,7 @@ Description: PEcAn module for processing remote data. Python module requirements
 Imports:
     curl,
     DBI,
-    dplyr,
     glue,
-    lubridate,
     ncdf4,
     PEcAn.DB,
     PEcAn.utils,
@@ -29,7 +27,6 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     stringr (>= 1.1.0),
-    swfscMisc,
     doParallel,
     parallel,
     foreach
