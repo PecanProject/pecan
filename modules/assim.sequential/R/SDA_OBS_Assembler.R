@@ -11,6 +11,13 @@
 #' @author Dongchen Zhang
 #'
 #' @examples
+#' \dontrun{
+#' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
+#' OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+#' Var <- c("SMP", "LAI", "AGB")
+#' OBS <- SDA_OBS_Assembler(settings_dir, Var, OutDir)
+#' }
+
 
 SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
   #export special operator
