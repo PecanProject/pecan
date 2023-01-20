@@ -99,7 +99,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         src = settings$modeloutdir,
         dst = dirname(settings$host$outdir),
         #include all directories, exclude all files
-        options = c("--include='*/'", "--exclude='*'"),
+        options = c("--include=*/", "--exclude=*"),
         delete = TRUE
       ),
       sleep = 2

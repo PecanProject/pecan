@@ -46,7 +46,7 @@ remote.copy.from <- function(host, src, dst, options = NULL, delete = FALSE, std
   }
   PEcAn.logger::logger.debug("rsync", shQuote(args))
   out <-
-    system2("rsync", args, stdout = "", stderr = as.logical(stderr))
+    system2("rsync", shQuote(args), stdout = "", stderr = as.logical(stderr))
   
   # Informative errors from rsync man page
   msg <-
