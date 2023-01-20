@@ -30,10 +30,12 @@ list of obs.mean and obs.cov
 Assembler for preparing obs.mean and obs.cov for the SDA workflow
 }
 \examples{
+\dontrun{
 settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
 OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 Var <- c("SMP", "LAI", "AGB")
 OBS <- SDA_OBS_Assembler(settings_dir, Var, OutDir)
+}
 }
 \author{
 Dongchen Zhang
