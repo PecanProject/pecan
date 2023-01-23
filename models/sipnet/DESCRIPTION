@@ -33,3 +33,5 @@ LazyData: FALSE
 Encoding: UTF-8
 Require: 
 RoxygenNote: 7.1.2
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer
+X-schema.org-isPartOf: https://pecanproject.org 
