@@ -59,7 +59,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
   if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
     Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
+      `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     AGB_Output$site_id <- Site_Info$site_id
     
     #Calculate LAI for each time step and site.
@@ -69,14 +69,14 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
       for (id in Site_Info$site_id) {
         site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
         if(length(site_AGB$agb[which(site_AGB$date == lubridate::year(t))])==1){
-          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AGB")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
+          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
           AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == lubridate::year(t))]
         }
       }
     }
   }else{#we don't have any previous downloaded CSV file.
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
+      `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
     AGB_Output$site_id <- Site_Info$site_id
   }
   
@@ -89,7 +89,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
       #extracting AGB data
       med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = buffer, fun = "mean", 
                                                                 AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]] %>% dplyr::select(-2) %>%
-        `colnames<-`(c("site_id", paste0(time_points, "_AGB")))
+        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
       sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
                                                                  AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]]%>% dplyr::select(-c(1:2)) %>%
         `colnames<-`(c(paste0(time_points, "_SD")))
@@ -109,7 +109,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
         sdev_agb_data <- rbind(sdev_agb_data, sdev[[i]][min_var_Ind,])
         med_agb_data <- rbind(med_agb_data, med[[i]][min_var_Ind,])
       }
-      colnames(med_agb_data) <- paste0(time_points, "_AGB")
+      colnames(med_agb_data) <- paste0(time_points, "_AbvGrndWood")
       colnames(sdev_agb_data) <- paste0(time_points, "_SD")
       #Handle data
       AGB_Output <- cbind(med_agb_data, sdev_agb_data) %>% as.data.frame
@@ -125,7 +125,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
         site_id <- id
         lon <- new_Site_Info$lon[which(new_Site_Info$site_id==id)]
         lat <- new_Site_Info$lat[which(new_Site_Info$site_id==id)]
-        agb <- site_AGB[paste0(time_points[i], "_AGB")] %>% purrr::set_names("agb")
+        agb <- site_AGB[paste0(time_points[i], "_AbvGrndWood")] %>% purrr::set_names("agb")
         sd <- site_AGB[paste0(time_points[i], "_SD")] %>% purrr::set_names("sd")
         Current_CSV <- rbind(Current_CSV, tibble::tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
       }

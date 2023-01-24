@@ -38,7 +38,7 @@ Soilgrids_SoilC_prep <- function(Site_Info, Start_Date, End_Date, timestep = lis
   if(file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
     Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "soilgrids_soilC_data.csv")))
     SoilC_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_SoilC"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
+      `colnames<-`(c("site_id", paste0(time_points, "_TotSoilCarb"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     SoilC_Output$site_id <- Site_Info$site_id
     
     #loop over time and site
@@ -46,7 +46,7 @@ Soilgrids_SoilC_prep <- function(Site_Info, Start_Date, End_Date, timestep = lis
       t <- time_points[i]
       for (id in Site_Info$site_id) {
         site_SoilC <- Previous_CSV[which(Previous_CSV$Site_ID == id),]
-        SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_SoilC")] <- site_SoilC$Total_soilC_0.200cm
+        SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_TotSoilCarb")] <- site_SoilC$Total_soilC_0.200cm
         SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_SD")] <- site_SoilC$Std_soilC_0.200cm
       }
     }

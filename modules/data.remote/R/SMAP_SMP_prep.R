@@ -84,7 +84,7 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
   
   #initialize SMAP_Output
   SMAP_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
-    `colnames<-`(c("site_id", paste0(time_points, "_SMP"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    `colnames<-`(c("site_id", paste0(time_points, "_SoilMoistFrac"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
   SMAP_Output$site_id <- Site_Info$site_id
   
   #Calculate SMAP for each time step and site.
@@ -95,7 +95,7 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
       site_SMP <- SMAP_CSV[which(SMAP_CSV$site_id == id),]
       diff_days <- abs(lubridate::days(lubridate::date(site_SMP$date)-lubridate::date(t))@day)
       if(sum(diff_days <= Search_Window)){#data found
-        SMAP_Output[which(SMAP_Output$site_id==id), paste0(t, "_SMP")] <- site_SMP$smp[which.min(diff_days)]
+        SMAP_Output[which(SMAP_Output$site_id==id), paste0(t, "_SoilMoistFrac")] <- site_SMP$smp[which.min(diff_days)]
         SMAP_Output[which(SMAP_Output$site_id==id), paste0(t, "_SD")] <- site_SMP$sd[which.min(diff_days)]
       }
     }
