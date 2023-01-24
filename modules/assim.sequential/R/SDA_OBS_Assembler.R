@@ -42,7 +42,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   site_info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
                     lat = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric(),
                     lon = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lon') %>% unlist() %>% as.numeric(),
-                    site_name = rep("name", length(settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.character())))
+                    site_name = rep("name", length(settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric())))
   
   #collect time points
   #we need to know which var we want to proceed 
