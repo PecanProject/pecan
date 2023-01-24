@@ -100,15 +100,15 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
     }
     #clean list (remove any item with length of zero)
-    Ind <- c()
+    cleaned_args <- list()
     for (j in seq_along(args)) {
-      if(length(args[[j]])==0){
-        Ind <- c(Ind, j)
+      if(length(args[[j]])!=0){
+        cleaned_args[[j]] <- args[[j]]
       }
     }
-    args <- args[-Ind]
+    names(cleaned_args) <- names(args)[seq_along(cleaned_args)]
     #function calls
-    OBS[[i]] <- do.call(obs_prep_fun, args)[[1]]
+    OBS[[i]] <- do.call(obs_prep_fun, cleaned_args)[[1]]
     new_var <- c(new_var, var)
   }
   
