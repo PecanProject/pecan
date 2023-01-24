@@ -10,6 +10,7 @@
 #' @export
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
+#' @importFrom lubridate %m+%
 #'
 #' @examples
 #' \dontrun{
@@ -21,9 +22,6 @@
 
 
 SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
-  #export special operator
-  `%m+%` <- as.function(lubridate::`%m+%`)
-  
   #read settings
   settings <- PEcAn.settings::read.settings(settings_dir)
   
@@ -37,7 +35,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
     return(0)
   }
   
-  #prepare site_info offline, because we need to submit this to GEO, which doesn't support Bety connection.
+  #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
   
   site_info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
                     lat = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric(),
