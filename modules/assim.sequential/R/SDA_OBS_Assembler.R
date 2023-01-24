@@ -1,7 +1,7 @@
 #' Assembler for preparing obs.mean and obs.cov for the SDA workflow
 #'
 #' @param settings_dir the path of settings.xml object.
-#' @param Var Variable name, currently support: SMP, AGB, and LAI.
+#' @param var_name Variable name, currently support: SMP, AGB, and LAI.
 #' @param outdir the path to store obs.mean and obs.cov
 #' @param Obs_Prep if your settings object doesn't contain Obs_Prep, you can import it separately (details see L17-18).
 #' @param skip_buffer flag to skip calculating min var based on buffer area for agb data.
@@ -14,12 +14,12 @@
 #' \dontrun{
 #' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
 #' outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-#' Var <- c("SMP", "LAI", "AGB")
-#' OBS <- SDA_OBS_Assembler(settings_dir, Var, outdir)
+#' var_name <- c("SMP", "LAI", "AGB")
+#' OBS <- SDA_OBS_Assembler(settings_dir, var_name, outdir)
 #' }
 
 
-SDA_OBS_Assembler <- function(settings_dir, Var, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
+SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
@@ -48,9 +48,9 @@ SDA_OBS_Assembler <- function(settings_dir, Var, outdir, Obs_Prep = NULL, skip_b
   #we need to know which var we want to proceed 
   #cause for every variable we assigned the same timestep object, we only need to grab it from any of what we have here.
   #here we grab the first var to calculate the time step.
-  var_first <- Var[1]
+  var_first <- var_name[1]
   for (i in 1:length(Obs_Prep)) {
-    if(!is.character(try(Obs_Prep[[i]]$Var == var_first, silent = T)))timestep <- Obs_Prep[[i]]$timestep
+    if(!is.character(try(Obs_Prep[[i]]$var_name == var_first, silent = T)))timestep <- Obs_Prep[[i]]$timestep
   }
   #time operations
   if(timestep$unit == "year"){
@@ -63,13 +63,13 @@ SDA_OBS_Assembler <- function(settings_dir, Var, outdir, Obs_Prep = NULL, skip_b
     PEcAn.logger::logger.error("The Obs_prep functions only support year or day as timestep units!")
   }
   
-  #We need to keep the order from Var to the actual obs.mean and obs.cov
+  #We need to keep the order from var_name to the actual obs.mean and obs.cov
   OBS <- list()
   new_var <- c()
   #test for loop
-  for (i in 1:length(Var)) {
+  for (i in seq_along(var_name)) {
     #grab function based on the variable name
-    var <- Var[i]
+    var <- var_name[i]
     obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(var, "_prep"))
     
     #grab function argument names
@@ -126,9 +126,9 @@ SDA_OBS_Assembler <- function(settings_dir, Var, outdir, Obs_Prep = NULL, skip_b
     dat_all_var <- sd_all_var <- matrix(NA, length(Site_Info$site_id), length(new_var)) %>% `colnames<-`(new_var)
     #over variable
     for (j in 1:length(OBS)) {
-      if(paste0(t, "_", Var[j]) %in% colnames(OBS[[j]])){
-        dat_all_var[,j] <- OBS[[j]][,paste0(t, "_", Var[j])]
-        sd_all_var[,j] <- OBS[[j]][,paste0(t, "_SD")]^2 #convert from SD to Var
+      if(paste0(t, "_", var_name[j]) %in% colnames(OBS[[j]])){
+        dat_all_var[,j] <- OBS[[j]][,paste0(t, "_", var_name[j])]
+        sd_all_var[,j] <- OBS[[j]][,paste0(t, "_SD")]^2 #convert from SD to var_name
       }else{
         dat_all_var[,j] <- NA
         sd_all_var[,j] <- NA
