@@ -4,7 +4,7 @@
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
 #' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
-#' @param AGB_dir Where the Landtrendr AGB data can be accessed.
+#' @param AGB_input_dir Where the Landtrendr AGB data can be accessed.
 #' @param outdir Where the final CSV file will be stored.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #' @param Allow_download If data is missing, should we download the missing data?
@@ -17,7 +17,7 @@
 #' @examples
 #' @author Dongchen Zhang
 AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
-                     AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
+                     AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      outdir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
@@ -42,13 +42,13 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #check if we have all AGB data downloaded, if not, download them
   if(as.logical(Allow_download)){
-    AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_dir, pattern = "*median.tif")))
+    AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_input_dir, pattern = "*median.tif")))
     missing_years_median <- lubridate::year((time_points[which(!lubridate::year(time_points)%in%AGB_median_years)])) #for landtrendr AGB data, we only have data before 2018.
     
     #starting downloading
     if(length(missing_years_median)>0){
       if(getOption('timeout') < 3600) options(timeout=3600)#enable 1h download time
-      PEcAn.data.remote::download.LandTrendr.AGB(outdir = AGB_dir, product_dates = missing_years_median, run_parallel = FALSE)
+      PEcAn.data.remote::download.LandTrendr.AGB(outdir = AGB_input_dir, product_dates = missing_years_median, run_parallel = FALSE)
     }
   }
   
@@ -86,19 +86,19 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
     if(is.null(buffer)){
       #extracting AGB data
       med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = buffer, fun = "mean", 
-                                                                AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]] %>% dplyr::select(-2) %>%
+                                                                AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]] %>% dplyr::select(-2) %>%
         `colnames<-`(c("site_id", paste0(time_points, "_AGB")))
       sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
-                                                                 AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]]%>% dplyr::select(-c(1:2)) %>%
+                                                                 AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))[[1]]%>% dplyr::select(-c(1:2)) %>%
         `colnames<-`(c(paste0(time_points, "_SD")))
       #Handle data
       AGB_Output <- cbind(med_agb_data, sdev_agb_data)
     }else{#buffer is not empty
       #extracting AGB data
       med <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "median", buffer = buffer, fun = "mean", 
-                                                                AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
+                                                                AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
       sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
-                                                                 AGB_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
+                                                                 AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
       sdev_agb_data <- med_agb_data <- c()
       for (i in 1:length(new_Site_Info$site_id)) {
         temp_var <- rowSums(sdev[[i]])
