@@ -8,7 +8,7 @@ MODIS_LAI_prep(
   site_info,
   start_date,
   end_date,
-  timestep = list(unit = "year", num = 1),
+  time_points,
   NCore = NULL,
   outdir = NULL,
   search_window = 30,
@@ -22,7 +22,7 @@ MODIS_LAI_prep(
 
 \item{end_date}{End date of SDA workflow.}
 
-\item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
+\item{time_points}{A vector contains each time point within the start and end date.}
 
 \item{NCore}{Number of CPU to be used for LAI extraction.}
 

@@ -3,7 +3,7 @@
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param start_date Start date of SDA workflow.
 #' @param end_date End date of SDA workflow.
-#' @param timestep A list containing time step and number of time step, which allows time step to be any years or days.
+#' @param time_points A vector contains each time point within the start and end date.
 #' @param outdir Where the final CSV file, and the CSV file from GEE are stored.
 #' @param search_window search window for locate available SMP values.
 #' @param export_csv Decide if we want to export the CSV file.
@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-SMAP_SMP_prep <- function(site_info, start_date, end_date, timestep = list(unit="year", num=1), 
+SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points, 
                       outdir, search_window = 30, export_csv = TRUE, update_csv = FALSE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
@@ -70,17 +70,6 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, timestep = list(unit=
     }
   }
   
-  #calculate time points given start, end date, and time step.
-  if(timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(end_date) - lubridate::year(start_date)), as.numeric(timestep$num))#how many years between start and end date
-    time_points <- as.Date(start_date) %m+% lubridate::years(years)
-  }else if(timestep$unit == "day"){
-    days <- seq(0, (lubridate::yday(end_date) - lubridate::yday(start_date)), as.numeric(timestep$num))#how many days between start and end date
-    time_points <- as.Date(start_date) %m+% lubridate::days(days)
-  }else{
-    PEcAn.logger::logger.error("The SMAP_SMP_prep function only supports year or day as timestep units!")
-    return(0)
-  }
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   
   #initialize SMAP_Output

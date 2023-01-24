@@ -3,7 +3,7 @@
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param start_date Start date of SDA workflow.
 #' @param end_date End date of SDA workflow.
-#' @param timestep A list containing time step and number of time step, which allows time step to be any years or days.
+#' @param time_points A vector contains each time point within the start and end date.
 #' @param AGB_input_dir Where the Landtrendr AGB data can be accessed.
 #' @param outdir Where the final CSV file will be stored.
 #' @param export_csv Decide if we want to export the CSV file.
@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-Landtrendr_AGB_prep <- function(site_info, start_date, end_date, timestep = list(unit="year", num=1), 
+Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points, 
                      AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      outdir = NULL, export_csv = TRUE, allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #export special operator
@@ -26,18 +26,6 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, timestep = list
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
-    return(0)
-  }
-  
-  #calculate time points given start, end date, and time step.
-  if(timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(end_date) - lubridate::year(start_date)), as.numeric(timestep$num))#how many years between start and end date
-    time_points <- as.Date(start_date) %m+% lubridate::years(years)
-  }else if(timestep$unit == "day"){
-    days <- seq(0, (lubridate::yday(end_date) - lubridate::yday(start_date)), as.numeric(timestep$num))#how many days between start and end date
-    time_points <- as.Date(start_date) %m+% lubridate::days(days)
-  }else{
-    PEcAn.logger::logger.error("The Landtrendr_AGB_prep function only supports year or day as timestep units!")
     return(0)
   }
   
