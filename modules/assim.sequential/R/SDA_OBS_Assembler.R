@@ -3,8 +3,6 @@
 #' @param settings_dir the path of settings.xml object.
 #' @param var_name Variable name, currently support: SMP, AGB, and LAI.
 #' @param outdir the path to store obs.mean and obs.cov
-#' @param Obs_Prep if your settings object doesn't contain Obs_Prep, you can import it separately (details see L17-18).
-#' @param skip_buffer flag to skip calculating min var based on buffer area for agb data.
 #'
 #' @return list of obs.mean and obs.cov
 #' @export
@@ -16,24 +14,18 @@
 #' \dontrun{
 #' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
 #' outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-#' var_name <- c("SMP", "LAI", "AGB")
+#' var_name <- c("LAI", "AbvGrndWood", "SoilMoistFrac", "TotSoilCarb")
 #' OBS <- SDA_OBS_Assembler(settings_dir, var_name, outdir)
 #' }
 
 
-SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
+SDA_OBS_Assembler <- function(settings_dir, var_name, outdir){
   #read settings
   settings <- PEcAn.settings::read.settings(settings_dir)
   
-  # I prefer to include Obs_Prep info in the settings object, that will make life easier!
-  # if you don't like it, you can provide the Obs_Prep object 
-  # followed strictly by L76 - L82 in "/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA/Create_Multi_settings.R"
-  if(!is.null(settings$state.data.assimilation$Obs_Prep)){
-    Obs_Prep <- settings$state.data.assimilation$Obs_Prep
-  }else if(is.null(Obs_Prep)){
-    PEcAn.logger::logger.info("Please provide info of Obs_Prep object!")
-    return(0)
-  }
+  #extract Obs_Prep object from settings.
+  Obs_Prep <- settings$state.data.assimilation$Obs_Prep
+  
   
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
   

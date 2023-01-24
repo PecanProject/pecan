@@ -71,12 +71,12 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
-    if(is.null(buffer)){
+    if(is.null(buffer) | skip_buffer){
       #extracting AGB data
-      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", buffer = buffer, fun = "mean", 
+      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", fun = "mean", 
                                                                 AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% dplyr::select(-2) %>%
         `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
-      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "stdv", buffer = buffer, fun = "mean", 
+      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "stdv", fun = "mean", 
                                                                  AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]]%>% dplyr::select(-c(1:2)) %>%
         `colnames<-`(c(paste0(time_points, "_SD")))
       #Handle data
