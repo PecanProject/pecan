@@ -13,9 +13,10 @@
 #' @examples
 #' \dontrun{
 #' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
+#' settings <- PEcAn.settings::read.settings(settings_dir)
 #' outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 #' var_name <- c("LAI", "AbvGrndWood", "SoilMoistFrac", "TotSoilCarb")
-#' OBS <- SDA_OBS_Assembler(settings_dir, var_name, outdir)
+#' OBS <- SDA_OBS_Assembler(settings, var_name, outdir)
 #' }
 
 
