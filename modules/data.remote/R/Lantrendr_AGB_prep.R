@@ -21,7 +21,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
                      AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      outdir = NULL, export_csv = TRUE, allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #if we export CSV but didn't provide any path
-  if(as.logical(export_csv) && is.null(outdir)){
+  if(as.logicalal(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
@@ -29,7 +29,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   time_points <- time_points[which(lubridate::year(time_points)<2018)] #filter out any time points that are larger than 2017
   
   #check if we have all AGB data downloaded, if not, download them
-  if(as.logical(allow_download)){
+  if(as.logicalal(allow_download)){
     AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_input_dir, pattern = "*median.tif")))
     missing_years_median <- lubridate::year((time_points[which(!lubridate::year(time_points)%in%AGB_median_years)])) #for landtrendr AGB data, we only have data before 2018.
     
@@ -42,7 +42,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logic(skip_buffer)){
+  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logical(skip_buffer)){
     Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
@@ -71,7 +71,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
-    if(is.null(buffer) | as.logic(skip_buffer)){
+    if(is.null(buffer) | as.logical(skip_buffer)){
       #extracting AGB data
       med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", fun = "mean", 
                                                                 AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% dplyr::select(-2) %>%
