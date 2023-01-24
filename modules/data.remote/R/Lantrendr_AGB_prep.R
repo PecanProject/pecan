@@ -42,7 +42,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
+  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logic(skip_buffer)){
     Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
@@ -71,7 +71,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
-    if(is.null(buffer) | skip_buffer){
+    if(is.null(buffer) | as.logic(skip_buffer)){
       #extracting AGB data
       med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", fun = "mean", 
                                                                 AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% dplyr::select(-2) %>%
