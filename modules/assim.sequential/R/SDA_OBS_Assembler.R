@@ -70,7 +70,18 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   for (i in seq_along(var_name)) {
     #grab function based on the variable name
     var <- var_name[i]
-    obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(var, "_prep"))
+    
+    #grab function name by searching var_name inside each variable section.
+    for (j in seq_along(Obs_Prep)) {
+      Error <- try(if(Obs_Prep[[j]]$var_name==var){
+        fun_name <- names(Obs_Prep)[j]
+        break
+      })
+      if(is.character(Error)){
+        PEcAn.logger::logger.error("Please provide consistent function name in the settings!")
+      }
+    }
+    obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep"))
     
     #grab function argument names
     fun_args <- methods::formalArgs(obs_prep_fun)
@@ -152,21 +163,6 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
       if(sum(is.na(obs.mean[[i]][[j]]))){
         obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-which(is.na(obs.mean[[i]][[j]]))]
         obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-which(is.na(rowSums(obs.cov[[i]][[j]]))), -which(is.na(colSums(obs.cov[[i]][[j]])))]
-      }
-    }
-  }
-  
-  #rename variables to the var/names in settings.
-  for (i in 1:length(time_points)) {
-    for (j in 1:length(obs.mean[[i]])) {
-      if("AGB" %in% names(obs.mean[[i]][[j]])){
-        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="AGB")] <- "AbvGrndWood"
-      }
-      if("SMP" %in% names(obs.mean[[i]][[j]])){
-        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="SMP")] <- "SoilMoistFrac"
-      }
-      if("SoilC" %in% names(obs.mean[[i]][[j]])){
-        names(obs.mean[[i]][[j]])[which(names(obs.mean[[i]][[j]])=="SoilC")] <- "TotSoilCarb"
       }
     }
   }
