@@ -99,6 +99,14 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
       }
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
     }
+    #clean list (remove any item with length of zero)
+    Ind <- c()
+    for (j in seq_along(args)) {
+      if(length(args[[j]])==0){
+        Ind <- c(Ind, j)
+      }
+    }
+    args <- args[-Ind]
     #function calls
     OBS[[i]] <- do.call(obs_prep_fun, args)[[1]]
     new_var <- c(new_var, var)
