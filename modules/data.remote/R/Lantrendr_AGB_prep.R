@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
+Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      outdir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #export special operator
