@@ -3,7 +3,7 @@
 #' @param Site_Info Bety list of site info including site_id, lon, and lat.
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
-#' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
+#' @param timestep A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param NCore Number of CPU to be used for LAI extraction.
 #' @param outdir Where the final CSV file will be stored.
 #' @param Search_Window search window for locate available LAI values.
@@ -14,7 +14,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
+MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit="year", num=1), 
                      NCore = NULL, outdir = NULL, Search_Window = 30, Export_CSV = FALSE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
@@ -27,12 +27,14 @@ MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(uni
   }
 
   #calculate time points given start, end date, and time step.
-  if(Time_Step$unit == "year"){
-    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
+  if(timestep$unit == "year"){
+    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(timestep$num))#how many years between start and end date
     time_points <- as.Date(Start_Date) %m+% lubridate::years(years)
-  }else if(Time_Step$unit == "day"){
-    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
+  }else if(timestep$unit == "day"){
+    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(timestep$num))#how many days between start and end date
     time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
+  }else{
+    PEcAn.logger::logger.error("The MODIS_LAI_prep function only supports year or day as timestep units!")
   }
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.

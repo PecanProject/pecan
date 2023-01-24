@@ -46,19 +46,21 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
   
   #collect time points
   #we need to know which var we want to proceed 
-  #cause for every variable we assigned the same time_step object, we only need to grab it from any of what we have here.
+  #cause for every variable we assigned the same timestep object, we only need to grab it from any of what we have here.
   #here we grab the first var to calculate the time step.
   var_first <- Var[1]
   for (i in 1:length(Obs_Prep)) {
-    if(!is.character(try(Obs_Prep[[i]]$Var == var_first, silent = T)))Time_Step <- Obs_Prep[[i]]$Time_Step
+    if(!is.character(try(Obs_Prep[[i]]$Var == var_first, silent = T)))timestep <- Obs_Prep[[i]]$timestep
   }
   #time operations
-  if(Time_Step$unit == "year"){
-    years <- seq(0, (lubridate::year(Obs_Prep$End_Date) - lubridate::year(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many years between start and end date
+  if(timestep$unit == "year"){
+    years <- seq(0, (lubridate::year(Obs_Prep$End_Date) - lubridate::year(Obs_Prep$Start_Date)), as.numeric(timestep$num))#how many years between start and end date
     time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::years(years)
-  }else if(Time_Step$unit == "day"){
-    days <- seq(0, (lubridate::yday(Obs_Prep$End_Date) - lubridate::yday(Obs_Prep$Start_Date)), as.numeric(Time_Step$num))#how many days between start and end date
+  }else if(timestep$unit == "day"){
+    days <- seq(0, (lubridate::yday(Obs_Prep$End_Date) - lubridate::yday(Obs_Prep$Start_Date)), as.numeric(timestep$num))#how many days between start and end date
     time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::days(days)
+  }else{
+    PEcAn.logger::logger.error("The Obs_prep functions only support year or day as timestep units!")
   }
   
   #We need to keep the order from Var to the actual obs.mean and obs.cov

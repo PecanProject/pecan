@@ -8,7 +8,7 @@ Landtrendr_AGB_prep(
   Site_Info,
   Start_Date,
   End_Date,
-  Time_Step = list(unit = "year", num = 1),
+  timestep = list(unit = "year", num = 1),
   AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB",
   outdir = NULL,
   Export_CSV = TRUE,
@@ -24,7 +24,7 @@ Landtrendr_AGB_prep(
 
 \item{End_Date}{End date of SDA workflow.}
 
-\item{Time_Step}{A list containing time step and number of time step, which allows time step to be any years or days.}
+\item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
 \item{AGB_input_dir}{Where the Landtrendr AGB data can be accessed.}
 
