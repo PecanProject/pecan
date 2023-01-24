@@ -66,3 +66,5 @@ Encoding: UTF-8
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 2
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer,Ecosystem Demography, terrestrial biosphere, plant community dynamics, biogeochemical,soil fluxes, Carbon, Water, Nitrogen, SAS approximation, ED2 
+X-schema.org-isPartOf: https://pecanproject.org 

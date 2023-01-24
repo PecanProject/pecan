@@ -33,5 +33,5 @@ LazyData: FALSE
 Encoding: UTF-8
 Require: 
 RoxygenNote: 7.1.2
-X-schema.org-keywords: R, Predictive Ecosystem Analyzer, NetCDF file merging, met2model SIPNET wrapper, Read Restart, initial condition sampling, Datetime conversion of DOY, veg2model
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer, Carbon, Water, vegetated ecosystem , atmosphere, high speed model, Bruteforce Suitable, SIPNET
 X-schema.org-isPartOf: https://pecanproject.org 

@@ -40,3 +40,5 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer, plant growth prediction, time, climate, Biofuel Ecophysiological Traits, physiological , biophysical , BIOCRO
+X-schema.org-isPartOf: https://pecanproject.org 
