@@ -5,32 +5,32 @@
 \title{Prepare SMAP Soil Moisture (SMP) data for the SDA workflow.}
 \usage{
 SMAP_SMP_prep(
-  Site_Info,
-  Start_Date,
-  End_Date,
+  site_info,
+  start_date,
+  end_date,
   timestep = list(unit = "year", num = 1),
   outdir,
-  Search_Window = 30,
-  Export_CSV = TRUE,
-  Update_CSV = FALSE
+  search_window = 30,
+  export_csv = TRUE,
+  update_csv = FALSE
 )
 }
 \arguments{
-\item{Site_Info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
-\item{Start_Date}{Start date of SDA workflow.}
+\item{start_date}{Start date of SDA workflow.}
 
-\item{End_Date}{End date of SDA workflow.}
+\item{end_date}{End date of SDA workflow.}
 
 \item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
 \item{outdir}{Where the final CSV file, and the CSV file from GEE are stored.}
 
-\item{Search_Window}{search window for locate available SMP values.}
+\item{search_window}{search window for locate available SMP values.}
 
-\item{Export_CSV}{Decide if we want to export the CSV file.}
+\item{export_csv}{Decide if we want to export the CSV file.}
 
-\item{Update_CSV}{Decide if we want to update current CSV file given an updated SMAP_gee.csv file}
+\item{update_csv}{Decide if we want to update current CSV file given an updated SMAP_gee.csv file}
 }
 \value{
 A data frame containing SMAP smp and sd for each site and each time step.

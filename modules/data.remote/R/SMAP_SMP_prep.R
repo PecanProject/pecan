@@ -1,21 +1,21 @@
 #' Prepare SMAP Soil Moisture (SMP) data for the SDA workflow.
 #'
-#' @param Site_Info Bety list of site info including site_id, lon, and lat.
-#' @param Start_Date Start date of SDA workflow.
-#' @param End_Date End date of SDA workflow.
+#' @param site_info Bety list of site info including site_id, lon, and lat.
+#' @param start_date Start date of SDA workflow.
+#' @param end_date End date of SDA workflow.
 #' @param timestep A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param outdir Where the final CSV file, and the CSV file from GEE are stored.
-#' @param Search_Window search window for locate available SMP values.
-#' @param Export_CSV Decide if we want to export the CSV file.
-#' @param Update_CSV Decide if we want to update current CSV file given an updated SMAP_gee.csv file
+#' @param search_window search window for locate available SMP values.
+#' @param export_csv Decide if we want to export the CSV file.
+#' @param update_csv Decide if we want to update current CSV file given an updated SMAP_gee.csv file
 #'
 #' @return A data frame containing SMAP smp and sd for each site and each time step.
 #' @export
 #'
 #' @examples
 #' @author Dongchen Zhang
-SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit="year", num=1), 
-                      outdir, Search_Window = 30, Export_CSV = TRUE, Update_CSV = FALSE){
+SMAP_SMP_prep <- function(site_info, start_date, end_date, timestep = list(unit="year", num=1), 
+                      outdir, search_window = 30, export_csv = TRUE, update_csv = FALSE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
@@ -28,7 +28,7 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
   #for the next time, it will save you lot of time if you can provide the SMAP.csv directly.
   
   #check if SMAP.csv exists.
-  if(!file.exists(file.path(outdir, "SMAP.csv")) | as.logical(Update_CSV)){
+  if(!file.exists(file.path(outdir, "SMAP.csv")) | as.logical(update_csv)){
     if(!file.exists(file.path(outdir, "SMAP_gee.csv"))){
       PEcAn.logger::logger.info("Please Provide SMAP dir that contains at least the SMAP_gee.csv file!")
       return(0)
@@ -47,13 +47,13 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
         sd <- 0.04 * 100 #From Daniel
         
         #Match current lon/lat with site_info
-        Distance <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = Site_Info$lat, lon2 = Site_Info$lon)
+        Distance <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = site_info$lat, lon2 = site_info$lon)
         distloc <- match(min(Distance), Distance)
-        site_id <- Site_Info$site_id[distloc]
+        site_id <- site_info$site_id[distloc]
         
         SMAP_CSV <- rbind(SMAP_CSV, tibble::tibble(date, site_id, lat, lon, smp, sd))#in date, id, lat, lon, smp, sd
       }
-      if(as.logical((Export_CSV))){
+      if(as.logical((export_csv))){
         utils::write.csv(SMAP_CSV, file = file.path(outdir, "SMAP.csv"), row.names = F)
       }
     }
@@ -61,22 +61,22 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
     #TODO: When current SMAP.csv need to be updated
     SMAP_CSV <- utils::read.csv(file.path(outdir, "SMAP.csv"))
     Current_years <- sort(unique(lubridate::year(SMAP_CSV$date)))
-    Required_years <- lubridate::year(Start_Date):lubridate::year(End_Date)
+    Required_years <- lubridate::year(start_date):lubridate::year(end_date)
     Required_years <- Required_years[which(Required_years>=2015)] #SMAP data only available after year 2015.
     if(sum(!Required_years%in%Current_years)){
       PEcAn.logger::logger.info("The existing SMAP.csv file doesn't contain data between start and end date!")
-      PEcAn.logger::logger.info("Please update the SMAP_gee.csv file to include the data that are missing! And then flag Update_CSV as TRUE to proceed!")
+      PEcAn.logger::logger.info("Please update the SMAP_gee.csv file to include the data that are missing! And then flag update_csv as TRUE to proceed!")
       return(0)
     }
   }
   
   #calculate time points given start, end date, and time step.
   if(timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(End_Date) - lubridate::year(Start_Date)), as.numeric(timestep$num))#how many years between start and end date
-    time_points <- as.Date(Start_Date) %m+% lubridate::years(years)
+    years <- seq(0, (lubridate::year(end_date) - lubridate::year(start_date)), as.numeric(timestep$num))#how many years between start and end date
+    time_points <- as.Date(start_date) %m+% lubridate::years(years)
   }else if(timestep$unit == "day"){
-    days <- seq(0, (lubridate::yday(End_Date) - lubridate::yday(Start_Date)), as.numeric(timestep$num))#how many days between start and end date
-    time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
+    days <- seq(0, (lubridate::yday(end_date) - lubridate::yday(start_date)), as.numeric(timestep$num))#how many days between start and end date
+    time_points <- as.Date(start_date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The SMAP_SMP_prep function only supports year or day as timestep units!")
     return(0)
@@ -84,18 +84,18 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   
   #initialize SMAP_Output
-  SMAP_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
+  SMAP_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
     `colnames<-`(c("site_id", paste0(time_points, "_SoilMoistFrac"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
-  SMAP_Output$site_id <- Site_Info$site_id
+  SMAP_Output$site_id <- site_info$site_id
   
   #Calculate SMAP for each time step and site.
   #loop over time and site
   for (i in seq_along(time_points)) {
     t <- time_points[i]#otherwise the t will be number instead of date.
-    for (id in Site_Info$site_id) {
+    for (id in site_info$site_id) {
       site_SMP <- SMAP_CSV[which(SMAP_CSV$site_id == id),]
       diff_days <- abs(lubridate::days(lubridate::date(site_SMP$date)-lubridate::date(t))@day)
-      if(sum(diff_days <= Search_Window)){#data found
+      if(sum(diff_days <= search_window)){#data found
         SMAP_Output[which(SMAP_Output$site_id==id), paste0(t, "_SoilMoistFrac")] <- site_SMP$smp[which.min(diff_days)]
         SMAP_Output[which(SMAP_Output$site_id==id), paste0(t, "_SD")] <- site_SMP$sd[which.min(diff_days)]
       }

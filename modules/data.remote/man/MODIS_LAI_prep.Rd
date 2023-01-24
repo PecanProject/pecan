@@ -5,22 +5,22 @@
 \title{Prepare MODIS LAI data for the SDA workflow.}
 \usage{
 MODIS_LAI_prep(
-  Site_Info,
-  Start_Date,
-  End_Date,
+  site_info,
+  start_date,
+  end_date,
   timestep = list(unit = "year", num = 1),
   NCore = NULL,
   outdir = NULL,
-  Search_Window = 30,
-  Export_CSV = FALSE
+  search_window = 30,
+  export_csv = FALSE
 )
 }
 \arguments{
-\item{Site_Info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
-\item{Start_Date}{Start date of SDA workflow.}
+\item{start_date}{Start date of SDA workflow.}
 
-\item{End_Date}{End date of SDA workflow.}
+\item{end_date}{End date of SDA workflow.}
 
 \item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
@@ -28,9 +28,9 @@ MODIS_LAI_prep(
 
 \item{outdir}{Where the final CSV file will be stored.}
 
-\item{Search_Window}{search window for locate available LAI values.}
+\item{search_window}{search window for locate available LAI values.}
 
-\item{Export_CSV}{Decide if we want to export the CSV file.}
+\item{export_csv}{Decide if we want to export the CSV file.}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

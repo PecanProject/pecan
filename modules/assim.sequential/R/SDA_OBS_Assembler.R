@@ -39,7 +39,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   
   #prepare site_info offline, because we need to submit this to GEO, which doesn't support Bety connection.
   
-  Site_Info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
+  site_info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
                     lat = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric(),
                     lon = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lon') %>% unlist() %>% as.numeric(),
                     site_name = rep("name", length(settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric())))
@@ -54,11 +54,11 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   }
   #time operations
   if(timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(Obs_Prep$End_Date) - lubridate::year(Obs_Prep$Start_Date)), as.numeric(timestep$num))#how many years between start and end date
-    time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::years(years)
+    years <- seq(0, (lubridate::year(Obs_Prep$end.date) - lubridate::year(Obs_Prep$start.date)), as.numeric(timestep$num))#how many years between start and end date
+    time_points <- as.Date(Obs_Prep$start.date) %m+% lubridate::years(years)
   }else if(timestep$unit == "day"){
-    days <- seq(0, (lubridate::yday(Obs_Prep$End_Date) - lubridate::yday(Obs_Prep$Start_Date)), as.numeric(timestep$num))#how many days between start and end date
-    time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::days(days)
+    days <- seq(0, (lubridate::yday(Obs_Prep$end.date) - lubridate::yday(Obs_Prep$start.date)), as.numeric(timestep$num))#how many days between start and end date
+    time_points <- as.Date(Obs_Prep$start.date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The Obs_prep functions only support year or day as timestep units!")
     return(0)

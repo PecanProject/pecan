@@ -5,24 +5,24 @@
 \title{Prepare Landtrendr AGB data for the SDA workflow.}
 \usage{
 Landtrendr_AGB_prep(
-  Site_Info,
-  Start_Date,
-  End_Date,
+  site_info,
+  start_date,
+  end_date,
   timestep = list(unit = "year", num = 1),
   AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB",
   outdir = NULL,
-  Export_CSV = TRUE,
-  Allow_download = FALSE,
+  export_csv = TRUE,
+  allow_download = FALSE,
   buffer = NULL,
   skip_buffer = TRUE
 )
 }
 \arguments{
-\item{Site_Info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
-\item{Start_Date}{Start date of SDA workflow.}
+\item{start_date}{Start date of SDA workflow.}
 
-\item{End_Date}{End date of SDA workflow.}
+\item{end_date}{End date of SDA workflow.}
 
 \item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
@@ -30,9 +30,9 @@ Landtrendr_AGB_prep(
 
 \item{outdir}{Where the final CSV file will be stored.}
 
-\item{Export_CSV}{Decide if we want to export the CSV file.}
+\item{export_csv}{Decide if we want to export the CSV file.}
 
-\item{Allow_download}{If data is missing, should we download the missing data?}
+\item{allow_download}{If data is missing, should we download the missing data?}
 
 \item{buffer}{buffer area to calculate the min var of AGB data.}
 

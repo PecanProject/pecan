@@ -5,19 +5,19 @@
 \title{Prepare Soilgrids SoilC data for the SDA workflow.}
 \usage{
 Soilgrids_SoilC_prep(
-  Site_Info,
-  Start_Date,
-  End_Date,
+  site_info,
+  start_date,
+  end_date,
   timestep = list(unit = "year", num = 1),
   outdir = NULL
 )
 }
 \arguments{
-\item{Site_Info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
-\item{Start_Date}{Start date of SDA workflow.}
+\item{start_date}{Start date of SDA workflow.}
 
-\item{End_Date}{End date of SDA workflow.}
+\item{end_date}{End date of SDA workflow.}
 
 \item{timestep}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
