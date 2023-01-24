@@ -109,7 +109,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
                                stringr::str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
                                   ignore.case = T)
       if(length(Ind_single_match)>1){
-        Ind_single_match <- grep(stringr::str_replace_all(paste0(var, fun_args[j]), "[^[:alnum:]]", ""), 
+        Ind_single_match <- grep(stringr::str_replace_all(paste0(fun_name, fun_args[j]), "[^[:alnum:]]", ""), 
                                  stringr::str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
                                  ignore.case = T)
       }
