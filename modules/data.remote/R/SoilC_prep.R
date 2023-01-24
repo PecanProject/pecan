@@ -4,7 +4,7 @@
 #' @param Start_Date Start date of SDA workflow.
 #' @param End_Date End date of SDA workflow.
 #' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
-#' @param OutDir Where the final CSV file will be stored.
+#' @param outdir Where the final CSV file will be stored.
 #'
 #' @return A data frame containing AGB median and sd for each site and each time step.
 #' @export
@@ -12,13 +12,13 @@
 #' @examples
 #' @author Dongchen Zhang
 SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
-                           OutDir = NULL){
+                           outdir = NULL){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
   
   #if we export CSV but didn't provide any path
-  if(is.null(OutDir)){
+  if(is.null(outdir)){
     PEcAn.logger::logger.info("Please provide the input dir!")
     return(0)
   }
@@ -33,8 +33,8 @@ SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="y
   }
   
   #if we have previous extracted soilgrids csv file.
-  if(file.exists(file.path(OutDir, "soilgrids_soilC_data.csv"))){
-    Previous_CSV <- as.data.frame(utils::read.csv(file.path(OutDir, "soilgrids_soilC_data.csv")))
+  if(file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
+    Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "soilgrids_soilC_data.csv")))
     SoilC_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_SoilC"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     SoilC_Output$site_id <- Site_Info$site_id

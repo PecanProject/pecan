@@ -5,7 +5,7 @@
 #' @param End_Date End date of SDA workflow.
 #' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param NCore Number of CPU to be used for LAI extraction.
-#' @param OutDir Where the final CSV file will be stored.
+#' @param outdir Where the final CSV file will be stored.
 #' @param Search_Window search window for locate available LAI values.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #'
@@ -15,14 +15,14 @@
 #' @examples
 #' @author Dongchen Zhang
 LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
-                     NCore = NULL, OutDir = NULL, Search_Window = 30, Export_CSV = FALSE){
+                     NCore = NULL, outdir = NULL, Search_Window = 30, Export_CSV = FALSE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
   
   #if we export CSV but didn't provide any path
-  if(as.logical(Export_CSV) && is.null(OutDir)){
-    PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
+  if(as.logical(Export_CSV) && is.null(outdir)){
+    PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
 
@@ -37,8 +37,8 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(OutDir, "LAI.csv"))){
-    Previous_CSV <- utils::read.csv(file.path(OutDir, "LAI.csv"))
+  if(file.exists(file.path(outdir, "LAI.csv"))){
+    Previous_CSV <- utils::read.csv(file.path(outdir, "LAI.csv"))
     LAI_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
     LAI_Output$site_id <- Site_Info$site_id
@@ -95,10 +95,10 @@ LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, LAI)
         Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
-        utils::write.csv(Current_CSV, file = file.path(OutDir, "LAI.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(outdir, "LAI.csv"), row.names = FALSE)
       }else{
         Current_CSV <- LAI
-        utils::write.csv(Current_CSV, file = file.path(OutDir, "LAI.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(outdir, "LAI.csv"), row.names = FALSE)
       }
     }
     

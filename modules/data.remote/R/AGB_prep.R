@@ -5,7 +5,7 @@
 #' @param End_Date End date of SDA workflow.
 #' @param Time_Step A list containing time step and number of time step, which allows time step to be any years or days.
 #' @param AGB_dir Where the Landtrendr AGB data can be accessed.
-#' @param OutDir Where the final CSV file will be stored.
+#' @param outdir Where the final CSV file will be stored.
 #' @param Export_CSV Decide if we want to export the CSV file.
 #' @param Allow_download If data is missing, should we download the missing data?
 #' @param buffer buffer area to calculate the min var of AGB data.
@@ -18,14 +18,14 @@
 #' @author Dongchen Zhang
 AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
-                     OutDir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
+                     outdir = NULL, Export_CSV = TRUE, Allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
   
   #if we export CSV but didn't provide any path
-  if(as.logical(Export_CSV) && is.null(OutDir)){
-    PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the Outdir!")
+  if(as.logical(Export_CSV) && is.null(outdir)){
+    PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
   
@@ -54,8 +54,8 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(OutDir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
-    Previous_CSV <- as.data.frame(utils::read.csv(file.path(OutDir, "AGB.csv")))
+  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && skip_buffer){
+    Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
     AGB_Output <- matrix(NA, length(Site_Info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     AGB_Output$site_id <- Site_Info$site_id
@@ -134,9 +134,9 @@ AGB_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="yea
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, Current_CSV)
         Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
-        utils::write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
       }else{
-        utils::write.csv(Current_CSV, file = file.path(OutDir, "AGB.csv"), row.names = FALSE)
+        utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
       }
     }
   }
