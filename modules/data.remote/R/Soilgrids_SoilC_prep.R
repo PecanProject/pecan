@@ -11,7 +11,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
+Soilgrids_SoilC_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                            outdir = NULL){
   #export special operator
   `%>%` <- magrittr::`%>%` 
