@@ -11,12 +11,9 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
+#' @importFrom magrittr %>%
 Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points, 
                            outdir = NULL){
-  #export special operator
-  `%>%` <- magrittr::`%>%` 
-  `%m+%` <- as.function(lubridate::`%m+%`)
-  
   #if we export CSV but didn't provide any path
   if(is.null(outdir)){
     PEcAn.logger::logger.info("Please provide the input dir!")

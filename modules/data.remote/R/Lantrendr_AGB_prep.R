@@ -16,13 +16,10 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
+#' @importFrom magrittr %>%
 Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points, 
                      AGB_input_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
                      outdir = NULL, export_csv = TRUE, allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
-  #export special operator
-  `%>%` <- magrittr::`%>%` 
-  `%m+%` <- as.function(lubridate::`%m+%`)
-  
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")

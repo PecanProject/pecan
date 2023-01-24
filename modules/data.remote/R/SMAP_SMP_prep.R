@@ -14,12 +14,9 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
+#' @importFrom magrittr %>%
 SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points, 
                       outdir, search_window = 30, export_csv = TRUE, update_csv = FALSE){
-  #export special operator
-  `%>%` <- magrittr::`%>%` 
-  `%m+%` <- as.function(lubridate::`%m+%`)
-  
   #note that, the SMAP_gee.csv file comes from Google Earth Engine (GEE) directly.
   #Code for generating this file can be found through this link: 
   #https://code.earthengine.google.com/ecbeb770e576d8ef72f72f5f12da3496

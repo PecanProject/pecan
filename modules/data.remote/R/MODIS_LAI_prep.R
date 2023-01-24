@@ -14,12 +14,9 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
+#' @importFrom magrittr %>%
 MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points, 
                      NCore = NULL, outdir = NULL, search_window = 30, export_csv = FALSE){
-  #export special operator
-  `%>%` <- magrittr::`%>%` 
-  `%m+%` <- as.function(lubridate::`%m+%`)
-  
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")

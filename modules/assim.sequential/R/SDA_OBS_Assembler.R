@@ -9,6 +9,7 @@
 #' @return list of obs.mean and obs.cov
 #' @export
 #' @author Dongchen Zhang
+#' @importFrom magrittr %>%
 #'
 #' @examples
 #' \dontrun{
@@ -21,7 +22,6 @@
 
 SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
   #export special operator
-  `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
   
   #read settings
