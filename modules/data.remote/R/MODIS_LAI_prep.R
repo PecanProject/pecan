@@ -14,7 +14,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
+MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, Time_Step = list(unit="year", num=1), 
                      NCore = NULL, outdir = NULL, Search_Window = 30, Export_CSV = FALSE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
