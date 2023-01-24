@@ -10,7 +10,7 @@ LAI_prep(
   End_Date,
   Time_Step = list(unit = "year", num = 1),
   NCore = NULL,
-  OutDir = NULL,
+  outdir = NULL,
   Search_Window = 30,
   Export_CSV = FALSE
 )
@@ -26,7 +26,7 @@ LAI_prep(
 
 \item{NCore}{Number of CPU to be used for LAI extraction.}
 
-\item{OutDir}{Where the final CSV file will be stored.}
+\item{outdir}{Where the final CSV file will be stored.}
 
 \item{Search_Window}{search window for locate available LAI values.}
 

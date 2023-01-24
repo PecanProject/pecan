@@ -10,7 +10,7 @@ AGB_prep(
   End_Date,
   Time_Step = list(unit = "year", num = 1),
   AGB_dir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB",
-  OutDir = NULL,
+  outdir = NULL,
   Export_CSV = TRUE,
   Allow_download = FALSE,
   buffer = NULL,
@@ -28,7 +28,7 @@ AGB_prep(
 
 \item{AGB_dir}{Where the Landtrendr AGB data can be accessed.}
 
-\item{OutDir}{Where the final CSV file will be stored.}
+\item{outdir}{Where the final CSV file will be stored.}
 
 \item{Export_CSV}{Decide if we want to export the CSV file.}
 

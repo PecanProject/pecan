@@ -9,7 +9,7 @@ SoilC_prep(
   Start_Date,
   End_Date,
   Time_Step = list(unit = "year", num = 1),
-  OutDir = NULL
+  outdir = NULL
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ SoilC_prep(
 
 \item{Time_Step}{A list containing time step and number of time step, which allows time step to be any years or days.}
 
-\item{OutDir}{Where the final CSV file will be stored.}
+\item{outdir}{Where the final CSV file will be stored.}
 }
 \value{
 A data frame containing AGB median and sd for each site and each time step.
