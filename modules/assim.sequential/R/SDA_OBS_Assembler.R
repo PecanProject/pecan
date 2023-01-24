@@ -1,6 +1,6 @@
 #' Assembler for preparing obs.mean and obs.cov for the SDA workflow
 #'
-#' @param settings_dir the path of settings.xml object.
+#' @param settings the settings object created by Create_Multi_settings.R script.
 #' @param var_name Variable name, currently support: SMP, AGB, and LAI.
 #' @param outdir the path to store obs.mean and obs.cov
 #'
@@ -19,10 +19,7 @@
 #' }
 
 
-SDA_OBS_Assembler <- function(settings_dir, var_name, outdir){
-  #read settings
-  settings <- PEcAn.settings::read.settings(settings_dir)
-  
+SDA_OBS_Assembler <- function(settings, var_name, outdir){
   #extract Obs_Prep object from settings.
   Obs_Prep <- settings$state.data.assimilation$Obs_Prep
   

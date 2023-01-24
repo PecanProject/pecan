@@ -4,10 +4,10 @@
 \alias{SDA_OBS_Assembler}
 \title{Assembler for preparing obs.mean and obs.cov for the SDA workflow}
 \usage{
-SDA_OBS_Assembler(settings_dir, var_name, outdir)
+SDA_OBS_Assembler(settings, var_name, outdir)
 }
 \arguments{
-\item{settings_dir}{the path of settings.xml object.}
+\item{settings}{the settings object created by Create_Multi_settings.R script.}
 
 \item{var_name}{Variable name, currently support: SMP, AGB, and LAI.}
 
