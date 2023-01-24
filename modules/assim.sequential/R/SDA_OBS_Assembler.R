@@ -136,7 +136,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   #over time
   for (i in seq_along(time_points)) {
     t <- time_points[i]
-    dat_all_var <- sd_all_var <- matrix(NA, length(Site_Info$site_id), length(new_var)) %>% `colnames<-`(new_var)
+    dat_all_var <- sd_all_var <- matrix(NA, length(site_info$site_id), length(new_var)) %>% `colnames<-`(new_var)
     #over variable
     for (j in seq_along(OBS)) {
       if(paste0(t, "_", var_name[j]) %in% colnames(OBS[[j]])){
@@ -153,8 +153,8 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
       site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(new_var)) %>% data.frame %>% `colnames<-`(new_var)
       site_sd_var[[j]] <- new_diag(sd_all_var[j,])
     }
-    obs.mean[[i]] <- site_dat_var %>% purrr::set_names(Site_Info$site_id)
-    obs.cov[[i]] <- site_sd_var %>% purrr::set_names(Site_Info$site_id)
+    obs.mean[[i]] <- site_dat_var %>% purrr::set_names(site_info$site_id)
+    obs.cov[[i]] <- site_sd_var %>% purrr::set_names(site_info$site_id)
   }
   names(obs.mean) <- gsub("-", "/", time_points)#not sure if I have to do this.
   names(obs.cov) <- gsub("-", "/", time_points)
