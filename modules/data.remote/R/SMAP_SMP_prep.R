@@ -79,6 +79,7 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
     time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The SMAP_SMP_prep function only supports year or day as timestep units!")
+    return(0)
   }
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   

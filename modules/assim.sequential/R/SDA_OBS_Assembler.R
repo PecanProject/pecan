@@ -61,6 +61,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
     time_points <- as.Date(Obs_Prep$Start_Date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The Obs_prep functions only support year or day as timestep units!")
+    return(0)
   }
   
   #We need to keep the order from var_name to the actual obs.mean and obs.cov
@@ -76,9 +77,10 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
       Error <- try(if(Obs_Prep[[j]]$var_name==var){
         fun_name <- names(Obs_Prep)[j]
         break
-      })
+      }, silent = T)
       if(is.character(Error)){
         PEcAn.logger::logger.error("Please provide consistent function name in the settings!")
+        return(0)
       }
     }
     obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep"))

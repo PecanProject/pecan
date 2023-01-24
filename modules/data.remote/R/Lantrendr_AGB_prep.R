@@ -38,6 +38,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
     time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The Landtrendr_AGB_prep function only supports year or day as timestep units!")
+    return(0)
   }
   
   time_points <- time_points[which(lubridate::year(time_points)<2018)] #filter out any time points that are larger than 2017

@@ -32,6 +32,7 @@ Soilgrids_SoilC_prep <- function(Site_Info, Start_Date, End_Date, timestep = lis
     time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The Soilgrids_SoilC_prep function only supports year or day as timestep units!")
+    return(0)
   }
   
   #if we have previous extracted soilgrids csv file.

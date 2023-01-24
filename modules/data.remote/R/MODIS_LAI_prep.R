@@ -35,6 +35,7 @@ MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit
     time_points <- as.Date(Start_Date) %m+% lubridate::days(days)
   }else{
     PEcAn.logger::logger.error("The MODIS_LAI_prep function only supports year or day as timestep units!")
+    return(0)
   }
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
