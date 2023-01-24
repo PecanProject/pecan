@@ -47,7 +47,7 @@ MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (i in 1:length(time_points)) {
+    for (i in seq_along(time_points)) {
       t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in Site_Info$site_id) {
         site_LAI <- Previous_CSV[which(Previous_CSV$site_id == id),]
@@ -106,7 +106,7 @@ MODIS_LAI_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (i in 1:length(time_points)) {
+    for (i in seq_along(time_points)) {
       t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in new_Site_Info$site_id) {
         site_LAI <- Current_CSV[which(Current_CSV$site_id == id),]

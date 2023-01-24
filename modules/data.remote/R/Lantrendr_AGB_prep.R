@@ -64,7 +64,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
     
     #Calculate LAI for each time step and site.
     #loop over time and site
-    for (i in 1:length(time_points)) {
+    for (i in seq_along(time_points)) {
       t <- time_points[i]
       for (id in Site_Info$site_id) {
         site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
@@ -102,7 +102,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
       sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(new_Site_Info, "stdv", buffer = buffer, fun = "mean", 
                                                                  AGB_input_dir, product_dates=lubridate::year(Start_Date):lubridate::year(End_Date))
       sdev_agb_data <- med_agb_data <- c()
-      for (i in 1:length(new_Site_Info$site_id)) {
+      for (i in seq_along(new_Site_Info$site_id)) {
         temp_var <- rowSums(sdev[[i]])
         min_var_Ind <- which.min(temp_var)
         
@@ -120,7 +120,7 @@ Landtrendr_AGB_prep <- function(Site_Info, Start_Date, End_Date, timestep = list
     Current_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
     for (id in AGB_Output$site_id) {
       site_AGB <- AGB_Output[which(AGB_Output$site_id==id),]
-      for (i in 1:length(time_points)) {
+      for (i in seq_along(time_points)) {
         date <- lubridate::year(time_points[i])
         site_id <- id
         lon <- new_Site_Info$lon[which(new_Site_Info$site_id==id)]

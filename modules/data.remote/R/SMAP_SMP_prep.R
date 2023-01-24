@@ -89,7 +89,7 @@ SMAP_SMP_prep <- function(Site_Info, Start_Date, End_Date, timestep = list(unit=
   
   #Calculate SMAP for each time step and site.
   #loop over time and site
-  for (i in 1:length(time_points)) {
+  for (i in seq_along(time_points)) {
     t <- time_points[i]#otherwise the t will be number instead of date.
     for (id in Site_Info$site_id) {
       site_SMP <- SMAP_CSV[which(SMAP_CSV$site_id == id),]

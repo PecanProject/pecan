@@ -42,7 +42,7 @@ Soilgrids_SoilC_prep <- function(Site_Info, Start_Date, End_Date, timestep = lis
     SoilC_Output$site_id <- Site_Info$site_id
     
     #loop over time and site
-    for (i in 1:length(time_points)) {
+    for (i in seq_along(time_points)) {
       t <- time_points[i]
       for (id in Site_Info$site_id) {
         site_SoilC <- Previous_CSV[which(Previous_CSV$Site_ID == id),]

@@ -49,7 +49,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   #cause for every variable we assigned the same timestep object, we only need to grab it from any of what we have here.
   #here we grab the first var to calculate the time step.
   var_first <- var_name[1]
-  for (i in 1:length(Obs_Prep)) {
+  for (i in seq_along(Obs_Prep)) {
     if(!is.character(try(Obs_Prep[[i]]$var_name == var_first, silent = T)))timestep <- Obs_Prep[[i]]$timestep
   }
   #time operations
@@ -90,7 +90,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
     args <- list()
     #fill in args with what we have so far.
     Ind_list_match <- c()
-    for (j in 1:length(fun_args)) {
+    for (j in seq_along(fun_args)) {
       if(!is.character(try(variable <- get(fun_args[j]), silent = T))){
         if(typeof(variable)!="closure"){
           args[[fun_args[j]]] <- variable
@@ -101,7 +101,7 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
     
     #fill in more args in the Obs_Prep object.
     Temp_unlist <- unlist(Obs_Prep)
-    for (j in 1:length(fun_args)) {
+    for (j in seq_along(fun_args)) {
       if(j %in% Ind_list_match) next #if we already assigned then jump to the next.
       Ind_single_match <- grep(stringr::str_replace_all(fun_args[j], "[^[:alnum:]]", ""), 
                                stringr::str_replace_all(names(Temp_unlist), "[^[:alnum:]]", ""),
@@ -132,11 +132,11 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   }
   
   #over time
-  for (i in 1:length(time_points)) {
+  for (i in seq_along(time_points)) {
     t <- time_points[i]
     dat_all_var <- sd_all_var <- matrix(NA, length(Site_Info$site_id), length(new_var)) %>% `colnames<-`(new_var)
     #over variable
-    for (j in 1:length(OBS)) {
+    for (j in seq_along(OBS)) {
       if(paste0(t, "_", var_name[j]) %in% colnames(OBS[[j]])){
         dat_all_var[,j] <- OBS[[j]][,paste0(t, "_", var_name[j])]
         sd_all_var[,j] <- OBS[[j]][,paste0(t, "_SD")]^2 #convert from SD to var_name
@@ -158,8 +158,8 @@ SDA_OBS_Assembler <- function(settings_dir, var_name, outdir, Obs_Prep = NULL, s
   names(obs.cov) <- gsub("-", "/", time_points)
   
   #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
-  for (i in 1:length(obs.mean)) {
-    for (j in 1:length(obs.mean[[i]])) {
+  for (i in seq_along(obs.mean)) {
+    for (j in seq_along(obs.mean[[i]])) {
       if(sum(is.na(obs.mean[[i]][[j]]))){
         obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-which(is.na(obs.mean[[i]][[j]]))]
         obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-which(is.na(rowSums(obs.cov[[i]][[j]]))), -which(is.na(colSums(obs.cov[[i]][[j]])))]
