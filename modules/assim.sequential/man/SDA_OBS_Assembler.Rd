@@ -7,7 +7,7 @@
 SDA_OBS_Assembler(
   settings_dir,
   Var,
-  OutDir,
+  outdir,
   Obs_Prep = NULL,
   skip_buffer = TRUE
 )
@@ -17,7 +17,7 @@ SDA_OBS_Assembler(
 
 \item{Var}{Variable name, currently support: SMP, AGB, and LAI.}
 
-\item{OutDir}{the path to store obs.mean and obs.cov}
+\item{outdir}{the path to store obs.mean and obs.cov}
 
 \item{Obs_Prep}{if your settings object doesn't contain Obs_Prep, you can import it separately (details see L17-18).}
 
@@ -32,9 +32,9 @@ Assembler for preparing obs.mean and obs.cov for the SDA workflow
 \examples{
 \dontrun{
 settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
-OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 Var <- c("SMP", "LAI", "AGB")
-OBS <- SDA_OBS_Assembler(settings_dir, Var, OutDir)
+OBS <- SDA_OBS_Assembler(settings_dir, Var, outdir)
 }
 }
 \author{

@@ -2,7 +2,7 @@
 #'
 #' @param settings_dir the path of settings.xml object.
 #' @param Var Variable name, currently support: SMP, AGB, and LAI.
-#' @param OutDir the path to store obs.mean and obs.cov
+#' @param outdir the path to store obs.mean and obs.cov
 #' @param Obs_Prep if your settings object doesn't contain Obs_Prep, you can import it separately (details see L17-18).
 #' @param skip_buffer flag to skip calculating min var based on buffer area for agb data.
 #'
@@ -13,13 +13,13 @@
 #' @examples
 #' \dontrun{
 #' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
-#' OutDir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+#' outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 #' Var <- c("SMP", "LAI", "AGB")
-#' OBS <- SDA_OBS_Assembler(settings_dir, Var, OutDir)
+#' OBS <- SDA_OBS_Assembler(settings_dir, Var, outdir)
 #' }
 
 
-SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_buffer = TRUE){
+SDA_OBS_Assembler <- function(settings_dir, Var, outdir, Obs_Prep = NULL, skip_buffer = TRUE){
   #export special operator
   `%>%` <- magrittr::`%>%` 
   `%m+%` <- as.function(lubridate::`%m+%`)
@@ -171,7 +171,7 @@ SDA_OBS_Assembler <- function(settings_dir, Var, OutDir, Obs_Prep = NULL, skip_b
     }
   }
   
-  save(obs.mean, file = file.path(OutDir, "obs.mean.Rdata"))
-  save(obs.cov, file = file.path(OutDir, "obs.cov.Rdata"))
+  save(obs.mean, file = file.path(outdir, "obs.mean.Rdata"))
+  save(obs.cov, file = file.path(outdir, "obs.cov.Rdata"))
   list(obs.mean = obs.mean, obs.cov = obs.cov)
 }
