@@ -92,7 +92,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]*100  ## unitless
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]*100  ## here we multiply it by 100 to convert from proportion to percentage.
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
     params$restart <- c(params$restart, forecast[[length(forecast)]])
   }
