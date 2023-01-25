@@ -398,8 +398,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = aqq[,,1],
-        bq = length(elements.W.Data),
+        aq = aqq[,,t],
+        bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
         r = solve(R)
