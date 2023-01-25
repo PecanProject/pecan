@@ -98,8 +98,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("SoilMoistFrac" %in% variables) {
-    new.state$SoilMoistFrac <- new.state$SoilMoistFrac/100
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac ## unitless
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac/100 ## divide it by 100 to convert from percentage to proportion.
     if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("litterWFrac")
     
