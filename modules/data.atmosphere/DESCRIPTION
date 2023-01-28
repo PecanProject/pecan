@@ -77,3 +77,5 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer, data.atmosphere, meteorological products conversion, climate driver data
+X-schema.org-isPartOf: https://pecanproject.org 
