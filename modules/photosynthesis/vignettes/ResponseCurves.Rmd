@@ -42,14 +42,12 @@ The hierarchical version of this model is equivalent to the standard model excep
 
 ## Install package from Github
 
-You should only have to do this once, and you only have to do this if you are downloading just this package separate from the rest of PEcAn
+If you have all of PEcAn installed, skip this -- PEcAn.photosynthesis is already installed!
 
-```{r}
-if (!require("PEcAn.photosynthesis", character.only = TRUE)) {
-  devtools::install_github("PecanProject/pecan/modules/photosynthesis") 
-}
-knitr::opts_chunk$set(cache = TRUE)
-```
+To install only the PEcAn.photosynthesis package, separately from the rest of PEcAn, run the following in R:
+`remotes::install_github("PecanProject/pecan/modules/photosynthesis")`
+
+You should only have to do this once.
 
 ## Load library and example data
 
