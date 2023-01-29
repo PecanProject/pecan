@@ -9,7 +9,7 @@ plot_photo(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE)
 \arguments{
 \item{data}{input data}
 
-\item{out}{directory where output will be stored}
+\item{out}{fitted model output from \code{\link{fitA}}}
 
 \item{curve}{Whether to do Quality Control by examining the 'ACi' curve, the 'AQ' curve, or both}
 
