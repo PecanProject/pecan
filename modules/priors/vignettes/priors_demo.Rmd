@@ -296,7 +296,7 @@ vcmax.density <- with(vcmax.dist, pr.dens(distribution, a, b), xlim = c(0,50))
 vcmax.c4 <- all.vcmax.data$ft == 2
 vcmax.data <- all.vcmax.data[,c('ft', 'Y')]
 vcmax.data$mean <- vcmax.data$Y
-vcmax.data$se <- 1/(sqrt(n) * obs.prec)
+vcmax.data$se <- 1/(sqrt(vcmax.data$n) * vcmax.data$obs.prec)
 vcmax.data <- vcmax.data[,c('ft', 'mean', 'se')]
 #vcmax.mean <- all.vcmax.data$Y[!c4,]
 #vcmax.se   <- with(all.vcmax.data[!c4,], 1/(sqrt(n) * obs.prec))#[reorder]
