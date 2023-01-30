@@ -1,18 +1,18 @@
-
 # PEcAn.BIOCRO
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
 <!-- badges: end -->
 
-The goal of PEcAn.BIOCRO is to ...
+BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosystem levels and determines plant biomass allocation and crop yields, using underlying physiological and ecological processes to do so.
 
 ## Installation
 
 You can install the development version of PEcAn.BIOCRO like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+library(devtools)
+install_github('ebimodeling/biocro')
 ```
 
 ## Example
@@ -23,4 +23,3 @@ This is a basic example which shows you how to solve a common problem:
 library(PEcAn.BIOCRO)
 ## basic example code
 ```
-
