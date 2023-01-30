@@ -42,7 +42,7 @@ site.pft.link.settings <- function(settings) {
      new.pfts <-  pft.l %>%
        purrr::discard(~.x %in% def.pfts) %>%
        purrr::map(~list(name = as.character(.x), constants = 1)) %>%
-       stats::setNames(rep("pft", length(.)))
+       purrr::set_names("pft")
 
 
     #add them to the list
