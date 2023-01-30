@@ -59,19 +59,19 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = PEcAn.utils::ud_convert(Ha.vcmax, "kJ", "J"))
+    trait.samples$Ha.vcmax <- PEcAn.utils::ud_convert(trait.samples$Ha.vcmax, "kJ", "J")
   }
   if ("Hd.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.vcmax = PEcAn.utils::ud_convert(Hd.vcmax, "kJ", "J"))
+    trait.samples$Hd.vcmax <- PEcAn.utils::ud_convert(trait.samples$Hd.vcmax, "kJ", "J")
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = PEcAn.utils::ud_convert(Ha.jmax, "kJ", "J"))
+    trait.samples$Ha.jmax <- PEcAn.utils::ud_convert(trait.samples$Ha.jmax, "kJ", "J")
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = PEcAn.utils::ud_convert(Hd.jmax, "kJ", "J"))
+    trait.samples$Hd.jmax <- PEcAn.utils::ud_convert(trait.samples$Hd.jmax, "kJ", "J")
   }
   if ("leaf_reflect_vis" %in% names(trait.samples) & "leaf_trans_vis" %in% names(trait.samples) ){
     leaf_abs <- 1-(trait.samples[["leaf_reflect_vis"]]+trait.samples[["leaf_trans_vis"]])
@@ -81,11 +81,11 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   }
   if ("leaf_width" %in% names(trait.samples)) {
     ## Convert from mm to m
-    trait.samples <- transform(trait.samples, leaf_width = PEcAn.utils::ud_convert(leaf_width, "mm", "m"))
+    trait.samples$leaf_width <- PEcAn.utils::ud_convert(trait.samples$leaf_width, "mm", "m")
   }
   if ("g0" %in% names(trait.samples)) {
     ## Convert from umol H2O m-2 s-1 to mol m-2s-1
-    trait.samples <- transform(trait.samples, g0 = PEcAn.utils::ud_convert(g0, "umol H2O m-2 s-1", "mol H2O m-2 s-1"))
+    trait.samples$g0 <- PEcAn.utils::ud_convert(trait.samples$g0, "umol H2O m-2 s-1", "mol H2O m-2 s-1")
   }
   
   # for debugging conversions 
