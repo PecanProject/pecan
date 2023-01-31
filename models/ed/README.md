@@ -1,8 +1,9 @@
-
 # PEcAn.ED2
 
 <!-- badges: start -->
+
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
 <!-- badges: end -->
 
 ## Installation
@@ -19,6 +20,7 @@ install.packages('PEcAn.ED')
 ```
 
 Or you can install directly from GitHub with the remotes package like so:
+
 ``` r
 library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/ed")
@@ -32,4 +34,3 @@ This is a basic example which shows you how to solve a common problem:
 library(PEcAn.ED2)
 ## basic example code
 ```
-
