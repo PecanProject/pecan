@@ -83,14 +83,7 @@ prepare_ed_veg_filename <- function(path_prefix, suffix, latitude = NULL, longit
       "lon", as.character(longitude)
     )
   } else {
-    testthat::test_that(
-      "Latitude and longitude are already present in `path_prefix`",
-      {
-        testthat::expect_true(
-          grepl("lat[[:digit:]]+(\\.[[:digit:]]+)?lon[[:digit:]]+(\\.[[:digit:]]+)?", path_prefix)
-        )
-      }
-    )
+    assertthat::assert_that(grepl("lat[[:digit:]]+(\\.[[:digit:]]+)?lon[[:digit:]]+(\\.[[:digit:]]+)?", path_prefix))
     path_prefix_full <- path_prefix
   }
   base_name <- basename(path_prefix_full)
