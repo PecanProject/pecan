@@ -16,7 +16,7 @@ You can install the development version of `PEcAn.ED2` from r-universe like so:
 options(repos = c(
   pecanproject = 'https://pecanproject.r-universe.dev',
   CRAN = 'https://cloud.r-project.org'))
-# Download and install PEcAn.ED in R
+# Download and install PEcAn.ED2 in R
 install.packages('PEcAn.ED2')
 ```
 
