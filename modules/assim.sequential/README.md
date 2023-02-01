@@ -25,7 +25,7 @@ Or you can install directly from GitHub with the remotes package like so:
 
 ``` r
 library(remotes)
-install_github('pecanproject/pecan',  subdir = "models/assim.sequential")
+install_github('pecanproject/pecan',  subdir = "modules/assim.sequential")
 ```
 
 ## Example

@@ -24,7 +24,7 @@ Or you can install directly from GitHub with the remotes package like so:
 
 ``` r
 library(remotes)
-install_github('pecanproject/pecan',  subdir = "models/allometry")
+install_github('pecanproject/pecan',  subdir = "modules/allometry")
 ```
 
 ## Example

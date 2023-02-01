@@ -8,14 +8,24 @@
 
 <!-- badges: end -->
 
-The goal of PEcAn.visualization is to ...
-
 ## Installation
 
-You can install the development version of PEcAn.visualization like so:
+You can install the development version of `PEcAn.visualization` from r-universe like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.visualization in R
+install.packages('PEcAn.visualization')
+```
+
+Or you can install directly from GitHub with the remotes package like so:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "base/visualization")
 ```
 
 ## Example

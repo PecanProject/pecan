@@ -8,14 +8,24 @@
 
 <!-- badges: end -->
 
-The goal of PEcAn.DB is to ...
-
 ## Installation
 
-You can install the development version of PEcAn.DB like so:
+You can install the development version of `PEcAn.DB` from r-universe like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.DB in R
+install.packages('PEcAn.DB')
+```
+
+Or you can install directly from GitHub with the remotes package like so:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "base/db")
 ```
 
 ## Example
