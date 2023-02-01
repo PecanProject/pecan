@@ -8,14 +8,24 @@
 
 <!-- badges: end -->
 
-The goal of PEcAn.data.remote is to ...
-
 ## Installation
 
-You can install the development version of PEcAn.data.remote like so:
+You can install the development version of `PEcAn.data.remote` from r-universe like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.data.remote in R
+install.packages('PEcAn.data.remote')
+```
+
+Or you can install directly from GitHub with the remotes package like so:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "modules/data.remote")
 ```
 
 ## Example

@@ -10,10 +10,22 @@
 
 ## Installation
 
-You can install the development version of PEcAn.priors like so:
+You can install the development version of `PEcAn.priors` from r-universe like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.priors in R
+install.packages('PEcAn.priors')
+```
+
+Or you can install directly from GitHub with the remotes package like so:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "modules/priors")
 ```
 
 ## Example
