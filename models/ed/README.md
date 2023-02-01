@@ -2,8 +2,8 @@
 
 <!-- badges: start -->
 
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![PEcAn.ED2 status badge](https://pecanproject.r-universe.dev/badges/PEcAn.ED2)](https://pecanproject.r-universe.dev)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) 
+[![PEcAn.ED2 status badge](https://pecanproject.r-universe.dev/badges/PEcAn.ED2)](https://pecanproject.r-universe.dev/PEcAn.ED2)
 
 <!-- badges: end -->
 

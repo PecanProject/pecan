@@ -3,7 +3,7 @@
 <!-- badges: start -->
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![PEcAn.BIOCRO status badge](https://pecanproject.r-universe.dev/badges/PEcAn.BIOCRO)](https://pecanproject.r-universe.dev)
+[![PEcAn.BIOCRO status badge](https://pecanproject.r-universe.dev/badges/PEcAn.BIOCRO)](https://pecanproject.r-universe.dev/PEcAn.BIOCRO)
 
 <!-- badges: end -->
 
