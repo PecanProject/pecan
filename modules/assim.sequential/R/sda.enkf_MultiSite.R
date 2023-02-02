@@ -369,7 +369,7 @@ sda.enkf.multisite <- function(settings,
         if (control$debug) browser()
         #if restart then use restart.list, include site for debugging purposes
         if(restart_flag){
-          restart.arg = restart.list$`646`
+          restart.arg = restart.list$`646` #debugging hack site specific
         }else{
           restart.arg = NULL
         }
