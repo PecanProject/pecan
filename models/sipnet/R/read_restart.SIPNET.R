@@ -23,7 +23,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
   # additional varnames, because we need these deterministic relationships
-  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
+  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content", "SWE", "SoilMoistFrac")
   
   # Read ensemble output
   ens <- PEcAn.utils::read.output(runid = runid,
@@ -52,10 +52,10 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
-    params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
+    params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac, 0, 0)
     
     if (length(params$restart)>0)
-      names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+      names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac", "SWE", "SoilMoistFrac")
   }
   
   if ("GWBI" %in% var.names) {
@@ -94,13 +94,14 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
-    params$restart <- c(params$restart, forecast[[length(forecast)]])
+    params$restart["SoilMoistFrac"] <- ens$SoilMoistFrac[last]
   }
   
   # This is snow
   if ("SWE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
+    params$restart["SWE"] <- ens$SWE[last]
   }
   
   if ("TotLivBiom" %in% var.names) {
