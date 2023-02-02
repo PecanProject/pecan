@@ -92,16 +92,20 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("SoilMoistFrac" %in% var.names) {
+    if("SoilMoistFrac" %in% names(params$restart)){
+      params$restart["SoilMoistFrac"] <- ens$SoilMoistFrac[last]
+    }
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
-    params$restart["SoilMoistFrac"] <- ens$SoilMoistFrac[last]
   }
   
   # This is snow
   if ("SWE" %in% var.names) {
+    if("SWE" %in% names(params$restart)){
+      params$restart["SWE"] <- ens$SWE[last]
+    }
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
-    params$restart["SWE"] <- ens$SWE[last]
   }
   
   if ("TotLivBiom" %in% var.names) {
