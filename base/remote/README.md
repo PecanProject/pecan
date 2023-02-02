@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Model Execution Utilities
+
 ## Installation
 
 You can install the development version of `PEcAn.remote` from r-universe like so:

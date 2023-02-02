@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Settings package
+
 ## Installation
 
 You can install the development version of `PEcAn.settings` from r-universe like so:

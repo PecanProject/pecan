@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn functions used for ecological forecasts and reanalysis
+
 ## Installation
 
 You can install the development version of `PEcAn.workflow` from r-universe like so:

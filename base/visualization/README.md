@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn visualization functions
+
 ## Installation
 
 You can install the development version of `PEcAn.visualization` from r-universe like so:

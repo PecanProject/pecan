@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+Logger Functions for 'PEcAn'
+
 ## Installation
 
 You can install the development version of `PEcAn.logger` from r-universe like so:

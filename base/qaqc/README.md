@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn integration and model skill testing
+
 ## Installation
 
 You can install the development version of `PEcAn.qaqc` from r-universe like so:
