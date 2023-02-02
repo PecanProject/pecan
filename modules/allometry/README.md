@@ -7,6 +7,8 @@
 
 <!-- badges: end -->
 
+PEcAn Allometry Functions
+
 ## Installation
 
 You can install the development version of `PEcAn.allometry` from r-universe like so:

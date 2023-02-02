@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn functions used for exploring model residuals and structures
+
 ## Installation
 
 You can install the development version of `PEcAn.data.mining` from r-universe like so:

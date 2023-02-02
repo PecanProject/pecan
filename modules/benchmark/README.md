@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Functions Used for Benchmarking
+
 ## Installation
 
 You can install the development version of `PEcAn.benchmark` from r-universe like so:

@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Functions Used for Meta-Analysis
+
 ## Installation
 
 You can install the development version of `PEcAn.MA` from r-universe like so:

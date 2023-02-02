@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+Gausian Process Emulator
+
 ## Installation
 
 You can install the development version of `PEcAn.data.emulator` from r-universe like so:

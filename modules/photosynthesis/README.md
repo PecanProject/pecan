@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn functions used for leaf-level photosynthesis calculations
+
 ## Installation
 
 You can install the development version of `PEcAn.photosynthesis` from r-universe like so:

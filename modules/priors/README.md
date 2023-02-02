@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Functions Used to Estimate Priors from Data
+
 ## Installation
 
 You can install the development version of `PEcAn.priors` from r-universe like so:
