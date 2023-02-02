@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the GDAY Model
+
 ## Installation
 
 You can install the development version of `PEcAn.GDAY` from r-universe like so:

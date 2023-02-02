@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Functions Used for Ecological Forecasts and Reanalysis using MAESPA
+
 ## Installation
 
 You can install the development version of `PEcAn.MAESPA` from r-universe like so:

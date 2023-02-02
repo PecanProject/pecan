@@ -7,6 +7,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the BASGRA Model
+
 ## Installation
 
 You can install the development version of `PEcAn.BASGRA` from r-universe like so:

@@ -6,6 +6,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the PRELES Model
+
 ## Installation
 
 You can install the development version of `PEcAn.PRELES` from r-universe like so:

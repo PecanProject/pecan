@@ -7,6 +7,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the DALEC Model
+
 ## Installation
 
 You can install the development version of `PEcAn.DALEC` from r-universe like so:

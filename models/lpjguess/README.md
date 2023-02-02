@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the LPJ-GUESS Model
+
 ## Installation
 
 You can install the development version of `PEcAn.LPJGUESS` from r-universe like so:

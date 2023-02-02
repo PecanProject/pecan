@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of CLM4.5 Model
+
 ## Installation
 
 You can install the development version of `PEcAn.CLM45` from r-universe like so:

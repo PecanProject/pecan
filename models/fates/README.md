@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of FATES Model
+
 ## Installation
 
 You can install the development version of `PEcAn.FATES` from r-universe like so:

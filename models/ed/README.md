@@ -7,6 +7,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of ED2 Model
+
 ## Installation
 
 You can install the development version of `PEcAn.ED2` from r-universe like so:

@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+PEcAn Package for Integration of the Dvmdostem Model
+
 ## Installation
 
 You can install the development version of `PEcAn.dvmdostem` from r-universe like so:
