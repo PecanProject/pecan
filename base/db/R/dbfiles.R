@@ -324,7 +324,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
           container.id = inputs$id,
           con = con,
           hostname = hostname,
-          machine.check = TRUE,
+          machine.check = TRUE, 
           return.all = return.all
         )
 
@@ -350,7 +350,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         container.id = inputs$id,
         con = con,
         hostname = hostname,
-        machine.check = TRUE,
+        machine.check = FALSE, #issues with hostid not matching and resulting in error message dispite files existing on host machine
         return.all = return.all
       )
 
