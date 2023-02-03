@@ -15,6 +15,7 @@
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
+##' @importFrom rlang .data
 ##' @export
 find_formats_without_inputs <- function(con, user_id_code = NULL, created_after = NULL, updated_after = NULL, created_before = NULL, updated_before = NULL){
 
