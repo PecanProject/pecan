@@ -350,10 +350,9 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         container.id = inputs$id,
         con = con,
         hostname = hostname,
-        machine.check = FALSE, #issues with hostid not matching and resulting in error message dispite files existing on host machine
+        machine.check = TRUE, #issues with hostid not matching and resulting in error message dispite files existing on host machine
         return.all = return.all
       )
-      PEcAn.logger::logger.info("Set machine.check = FALSE, when TRUE results in error message even when files are on host machine")
 
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
