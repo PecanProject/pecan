@@ -13,6 +13,7 @@ Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: PEcAn integration and model skill testing
 Imports:
     graphics,
+    rlang,
     PEcAn.logger,
     plotrix,
     stats
