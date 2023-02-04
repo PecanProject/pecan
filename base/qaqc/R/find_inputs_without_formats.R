@@ -14,14 +14,14 @@
 ##' or look at the README
 ##' @importFrom rlang .data
 ##' @export
-find_inputs_without_formats<-function(con, user_id_code=NULL, created_after=NULL, updated_after=NULL, created_before = NULL, updated_before = NULL){
+find_inputs_without_formats<-function(con, user_id=NULL, created_after=NULL, updated_after=NULL, created_before = NULL, updated_before = NULL){
   
   input_command<-dplyr::tbl(con, 'inputs')
   
   format_command<-dplyr::tbl(con, 'formats')
   
   if(!is.null(user_id_code)){
-    input_command<-dplyr::filter(input_command, .data$user_id == !!user_id_code)
+    input_command<-dplyr::filter(input_command, .data$user_id == !!user_id)
   }
   if(!is.null(created_before)){
     input_command<-dplyr::filter(input_command, .data$created_at < !!created_before)  
