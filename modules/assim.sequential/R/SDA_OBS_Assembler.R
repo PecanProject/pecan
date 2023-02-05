@@ -40,7 +40,7 @@ SDA_OBS_Assembler <- function(settings){
   if(diff_dates) time_points_all <- list()
   #test for loop
   for (i in seq_along(Obs_Prep)) {
-    #
+    #detect if current section is for different variable preparation function or not.
     if(names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "obs_outdir")){
       next
     }else{
