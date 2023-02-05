@@ -1,8 +1,6 @@
 #' Assembler for preparing obs.mean and obs.cov for the SDA workflow
 #'
 #' @param settings the settings object created by Create_Multi_settings.R script.
-#' @param var_name Variable name, currently support: SMP, AGB, and LAI.
-#' @param outdir the path to store obs.mean and obs.cov
 #'
 #' @return list of obs.mean and obs.cov
 #' @export
@@ -14,59 +12,50 @@
 #' \dontrun{
 #' settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
 #' settings <- PEcAn.settings::read.settings(settings_dir)
-#' outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-#' var_name <- c("LAI", "AbvGrndWood", "SoilMoistFrac", "TotSoilCarb")
-#' OBS <- SDA_OBS_Assembler(settings, var_name, outdir)
+#' OBS <- SDA_OBS_Assembler(settings)
 #' }
-
-
-SDA_OBS_Assembler <- function(settings, var_name, outdir){
+#' 
+SDA_OBS_Assembler <- function(settings){
   #extract Obs_Prep object from settings.
   Obs_Prep <- settings$state.data.assimilation$Obs_Prep
   
-  
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
-  
   site_info <- list(site_id = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character(),
                     lat = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric(),
                     lon = settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lon') %>% unlist() %>% as.numeric(),
                     site_name = rep("name", length(settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('lat') %>% unlist() %>% as.numeric())))
   
-  #collect time points
-  #we need to know which var we want to proceed 
-  #cause for every variable we assigned the same timestep object, we only need to grab it from any of what we have here.
-  #here we grab the first var to calculate the time step.
-  #time operations
-  if(Obs_Prep$timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(Obs_Prep$end.date) - lubridate::year(Obs_Prep$start.date)), as.numeric(Obs_Prep$timestep$num))#how many years between start and end date
-    time_points <- as.Date(Obs_Prep$start.date) %m+% lubridate::years(years)
-  }else if(Obs_Prep$timestep$unit == "day"){
-    days <- seq(0, (lubridate::yday(Obs_Prep$end.date) - lubridate::yday(Obs_Prep$start.date)), as.numeric(Obs_Prep$timestep$num))#how many days between start and end date
-    time_points <- as.Date(Obs_Prep$start.date) %m+% lubridate::days(days)
+  #convert from timestep to time points
+  if(length(Obs_Prep$timestep)>0){
+    time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, Obs_Prep$timestep)
+    if(time_points) return(0)
+    diff_dates <- FALSE
   }else{
-    PEcAn.logger::logger.error("The Obs_prep functions only support year or day as timestep units!")
-    return(0)
+    diff_dates <- TRUE
   }
   
   #We need to keep the order from var_name to the actual obs.mean and obs.cov
   OBS <- list()
-  new_var <- c()
+  var <- c()
+  if(diff_dates) time_points_all <- list()
   #test for loop
-  for (i in seq_along(var_name)) {
-    #grab function based on the variable name
-    var <- var_name[i]
+  for (i in seq_along(Obs_Prep)) {
+    #
+    if(names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "outdir")){
+      next
+    }else{
+      fun_name <- names(Obs_Prep)[i]
+    }
     
-    #grab function name by searching var_name inside each variable section.
-    for (j in seq_along(Obs_Prep)) {
-      Error <- try(if(Obs_Prep[[j]]$var_name==var){
-        fun_name <- names(Obs_Prep)[j]
-        break
-      }, silent = T)
-      if(is.character(Error)){
-        PEcAn.logger::logger.error("Please provide consistent function name in the settings!")
+    #if we are dealing with different timestep for different variables.
+    if(diff_dates){
+      timestep <- Obs_Prep[[i]]$timestep
+      if(!exists("timestep")){
+        PEcAn.logger::logger.error(paste0("Please provide timestep under each variable if you didn't provide timestep under Obs_Prep section!"))
         return(0)
       }
-    }
+      time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep)
+    } 
     obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep"))
     
     #grab function argument names
@@ -108,8 +97,15 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
     }
     names(cleaned_args) <- names(args)[seq_along(cleaned_args)]
     #function calls
-    OBS[[i]] <- do.call(obs_prep_fun, cleaned_args)[[1]]
-    new_var <- c(new_var, var)
+    Temp <- do.call(obs_prep_fun, cleaned_args)
+    OBS[[i]] <- Temp[[1]]
+    time_points_all[[i]] <- Temp[[2]]
+    var <- c(var, Temp[[3]])
+  }
+  
+  #combine different time points from different variables together
+  if(diff_dates){
+    time_points <- sort(unique(do.call("c", time_points_all)))
   }
   
   #Create obs.mean and obs.cov
@@ -128,12 +124,12 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
   #over time
   for (i in seq_along(time_points)) {
     t <- time_points[i]
-    dat_all_var <- sd_all_var <- matrix(NA, length(site_info$site_id), length(new_var)) %>% `colnames<-`(new_var)
+    dat_all_var <- sd_all_var <- matrix(NA, length(site_info$site_id), length(var)) %>% `colnames<-`(var)
     #over variable
     for (j in seq_along(OBS)) {
-      if(paste0(t, "_", var_name[j]) %in% colnames(OBS[[j]])){
-        dat_all_var[,j] <- OBS[[j]][,paste0(t, "_", var_name[j])]
-        sd_all_var[,j] <- OBS[[j]][,paste0(t, "_SD")]^2 #convert from SD to var_name
+      if(paste0(t, "_", var[j]) %in% colnames(OBS[[j]])){
+        dat_all_var[,j] <- OBS[[j]][,paste0(t, "_", var[j])]
+        sd_all_var[,j] <- OBS[[j]][,paste0(t, "_SD")]^2 #convert from SD to var
       }else{
         dat_all_var[,j] <- NA
         sd_all_var[,j] <- NA
@@ -142,7 +138,7 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
     #over site
     site_dat_var <- site_sd_var <- list()
     for (j in 1:dim(dat_all_var)[1]) {
-      site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(new_var)) %>% data.frame %>% `colnames<-`(new_var)
+      site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(var)) %>% data.frame %>% `colnames<-`(var)
       site_sd_var[[j]] <- new_diag(sd_all_var[j,])
     }
     obs.mean[[i]] <- site_dat_var %>% purrr::set_names(site_info$site_id)
@@ -161,7 +157,7 @@ SDA_OBS_Assembler <- function(settings, var_name, outdir){
     }
   }
   
-  save(obs.mean, file = file.path(outdir, "obs.mean.Rdata"))
-  save(obs.cov, file = file.path(outdir, "obs.cov.Rdata"))
+  save(obs.mean, file = file.path(Obs_Prep$obs_outdir, "obs.mean.Rdata"))
+  save(obs.cov, file = file.path(Obs_Prep$obs_outdir, "obs.cov.Rdata"))
   list(obs.mean = obs.mean, obs.cov = obs.cov)
 }
