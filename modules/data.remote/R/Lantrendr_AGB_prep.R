@@ -128,5 +128,6 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       }
     }
   }
+  PEcAn.logger::logger.info("Landtrendr AGB Prep Completed!")
   list(AGB_Output = AGB_Output, time_points = time_points, var = "AbvGrndWood")
 }

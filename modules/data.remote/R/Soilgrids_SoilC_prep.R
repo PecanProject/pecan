@@ -40,5 +40,6 @@ Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points,
     PEcAn.logger::logger.info("The soilgrids prep function needs the SoilC.CSV file to be prepared before hand!")
     return(0)
   }
-  list(SoilC_Output = SoilC_Output, time_points = time_points, var = "SoilC")
+  PEcAn.logger::logger.info("Soilgrids SoilC Prep Completed!")
+  list(SoilC_Output = SoilC_Output, time_points = time_points, var = "TotSoilCarb")
 }

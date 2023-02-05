@@ -87,6 +87,7 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
       }
     }
   }
+  PEcAn.logger::logger.info("SMAP SMP Prep Completed!")
   list(SMP_Output = SMAP_Output, time_points = time_points, var = "SoilMoistFrac")
 }
 
