@@ -20,34 +20,34 @@ pft_csv_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
 
 #Obs_prep part
 #AGB
-AGB_dir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
-Allow_download <- TRUE
-AGB_Out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-AGB_Export_CSV <- TRUE
-AGB_Time_Step <- list(unit="year", num=1)
-buffer <- 250
+AGB_input_dir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
+allow_download <- TRUE
+AGB_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+AGB_export_csv <- TRUE
+AGB_timestep <- list(unit="year", num=1)
 
 #LAI
-LAI_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-LAI_Search_Window <- 30
-NCore <- NULL
-LAI_Time_Step <- list(unit="year", num=1)
-LAI_Export_CSV <- TRUE
+LAI_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+LAI_search_window <- 30
+LAI_timestep <- list(unit="year", num=1)
+LAI_export_csv <- TRUE
+run_parallel <- TRUE
 
 #SMP
-SMP_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-SMP_Search_Window <- 30
-SMP_Time_Step <- list(unit="year", num=1)
-SMP_Export_CSV <- TRUE
-Update_CSV <- FALSE
+SMP_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+SMP_search_window <- 30
+SMP_timestep <- list(unit="year", num=1)
+SMP_export_csv <- TRUE
+update_csv <- FALSE
 
 #SoilC
-SoilC_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-SoilC_Time_Step <- list(unit="year", num=1)
+SoilC_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+SoilC_timestep <- list(unit="year", num=1)
 
 #Obs Date
 Obs_Start_Date <- "2012-07-15"
 Obs_End_Date <- "2021-07-15"
+obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 
 #Start building template
 template <- Settings(list(
@@ -81,12 +81,13 @@ template <- Settings(list(
     end.date = end_date,
     
     Obs_Prep = structure(list(
-      AGB = structure(list(Var = "AbvGrndWood", AGB_dir = AGB_dir, Time_Step = AGB_Time_Step, Allow_download = Allow_download, Out_dir = AGB_Out_dir, Export_CSV = AGB_Export_CSV)),
-      LAI = structure(list(Var = "LAI", Out_dir = LAI_dir, Search_Window = LAI_Search_Window, NCore = NCore, Time_Step = LAI_Time_Step, Export_CSV = LAI_Export_CSV)),
-      SMP = structure(list(Var = "SMP", Out_dir = SMP_dir, Search_Window = SMP_Search_Window, Time_Step = SMP_Time_Step, Export_CSV = SMP_Export_CSV, Update_CSV = Update_CSV)),
-      SoilC = structure(list(Var = "SoilC", Out_dir = SoilC_dir, Time_Step = SoilC_Time_Step)),
+      Landtrendr_AGB = structure(list(AGB_input_dir = AGB_input_dir, timestep = AGB_Time_Step, allow_download = allow_download, outdir = AGB_outdir, export_csv = AGB_export_csv)),
+      MODIS_LAI = structure(list(outdir = LAI_outdir, search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
+      SMAP_SMP = structure(list(outdir = SMP_outdir, search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+      Soilgrids_SoilC = structure(list(outdir = SoilC_outdir, timestep = SoilC_timestep)),
       Start_Date = Obs_Start_Date,
-      End_Date = Obs_End_Date
+      End_Date = Obs_End_Date,
+      obs_outdir = obs_outdir
     ))
   )),
   
