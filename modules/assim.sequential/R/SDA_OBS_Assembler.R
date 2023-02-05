@@ -41,7 +41,7 @@ SDA_OBS_Assembler <- function(settings){
   #test for loop
   for (i in seq_along(Obs_Prep)) {
     #
-    if(names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "outdir")){
+    if(names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "obs_outdir")){
       next
     }else{
       fun_name <- names(Obs_Prep)[i]
