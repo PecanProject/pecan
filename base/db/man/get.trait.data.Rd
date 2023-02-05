@@ -10,13 +10,15 @@ get.trait.data(
   dbfiles,
   database,
   forceupdate,
+  write = FALSE,
   trait.names = NULL
 )
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}
 
-\item{modeltype}{type of model that is used, this is is used to distinguis between different pfts with the same name.}
+\item{modeltype}{type of model that is used, this is is used to distinguish
+between different PFTs with the same name.}
 
 \item{dbfiles}{location where previous results are found}
 
@@ -26,6 +28,9 @@ argument to [db.query()])}
 \item{forceupdate}{(Logical) If `TRUE`, force a database update
 whether or not it is needed. If `FALSE`, only update if an
 update is needed.}
+
+\item{write}{(Logical) If `TRUE` updated posteriors will be written to
+BETYdb.  Defaults to FALSE.}
 
 \item{trait.names}{Character vector of trait names to search. If
 `NULL` (default), use all traits that have a prior for at least

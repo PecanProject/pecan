@@ -51,7 +51,7 @@ Visit our [webage](https://pecanproject.github.io) to keep up with latest news, 
 
 #### Web Interface demo
 The fastest way to begin modeling ecosystems is through the PEcAn web interface.  
-We have a [demo website](http://pecan.ncsa.illinois.edu/pecan) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
+We have a [demo website](http://pecan.ncsa.illinois.edu/pecan/01-introduction.php) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
 
 The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have set up the run it will execute on our server; depending on the number of people executing a model and the model selected this can take between a few seconds and a few minutes to finish. Once it's finished, you see the results of the execution and can plot the outputs of the model. Complete examples of a few executions can be found in our online [tutorials](http://pecanproject.github.io/tutorials.html).
 

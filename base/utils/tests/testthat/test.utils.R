@@ -78,7 +78,7 @@ test_that("summarize.result works appropriately", {
   expect_that(summarize.result(testresult)$mean, equals(testresult$mean)) 
   
   # check that four means are produced for a single site
-  testresult2 <- transform(testresult, site_id= 1) 
+  testresult2 <- dplyr::mutate(testresult, site_id= 1) 
   expect_that(nrow(summarize.result(testresult2)), equals(4))  
   
   # check that if stat == NA, SE will be computed

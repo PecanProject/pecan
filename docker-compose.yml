@@ -122,6 +122,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
+      - "traefik.http.services.bety.loadbalancer.server.port=8000"
       - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
 
   # ----------------------------------------------------------------------
