@@ -10,6 +10,7 @@ MODIS_LAI_prep(
   end_date,
   time_points,
   NCore = NULL,
+  run_parallel,
   outdir = NULL,
   search_window = 30,
   export_csv = FALSE
@@ -25,6 +26,8 @@ MODIS_LAI_prep(
 \item{time_points}{A vector contains each time point within the start and end date.}
 
 \item{NCore}{Number of CPU to be used for LAI extraction.}
+
+\item{run_parallel}{Bool variable decide if you want to proceed parallelly.}
 
 \item{outdir}{Where the final CSV file will be stored.}
 
