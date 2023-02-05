@@ -137,3 +137,47 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   return(Y)
 }
 
+
+
+#' convert from timestep to actual time points.
+#' supports year, month, week, and day as time unit.
+#'
+#' @param start.date start date when the first observation was taken.
+#' @param end.date end date when the last observation was taken.
+#' @param timestep a list includes time unit and number of time unit per timestep.
+#' @return timepoints from start to end date given the number of time unit per timestep.
+#' @export
+#' @author Dongchen Zhang
+#' @importFrom lubridate %m+%
+obs_timestep2timepoint <- function(start.date, end.date, timestep){
+  if(timestep$unit == "year"){
+    years <- seq(0, (lubridate::year(end.date) - lubridate::year(start.date)), as.numeric(timestep$num))#how many years between start and end date
+    time_points <- as.Date(start.date) %m+% lubridate::years(years)
+  }else if(timestep$unit == "month"){
+    #how many months in total
+    months <- 12 * (lubridate::year(end.date) - lubridate::year(start.date) - 1) + 
+      (12 - lubridate::month(start.date) + lubridate::month(end.date))
+    time_points <- as.Date(start.date) %m+% months(seq(0, months, as.numeric(timestep$num)))
+  }else if(timestep$unit == "week"){
+    #calculate how many days per year and how many days in total
+    years <- days_in_years <- lubridate::year(end.date):lubridate::year(start.date)#how many years between start and end date
+    days_in_years[which(years%%4 == 0)] <- 366
+    days_in_years[which(years%%4 != 0)] <- 365
+    days <- sum(days_in_years[-c(1, length(days_in_years))]) + 
+      (days_in_years[1] - lubridate::yday(start.date)) + lubridate::yday(end.date)
+    #convert from days to weeks
+    time_points <- as.Date(start.date) %m+% days(seq(0, days, 7 * as.numeric(timestep$num)))
+  }else if(timestep$unit == "day"){
+    #calculate how many days per year and how many days in total
+    years <- days_in_years <- lubridate::year(end.date):lubridate::year(start.date)#how many years between start and end date
+    days_in_years[which(years%%4 == 0)] <- 366
+    days_in_years[which(years%%4 != 0)] <- 365
+    days <- sum(days_in_years[-c(1, length(days_in_years))]) + 
+      (days_in_years[1] - lubridate::yday(start.date)) + lubridate::yday(end.date)
+    time_points <- as.Date(start.date) %m+% days(seq(0, days, as.numeric(timestep$num)))
+  }else{
+    PEcAn.logger::logger.error("The Obs_prep functions only support year, month, week, and day as timestep unit!")
+    return(0)
+  }
+  time_points[which(time_points <= end.date & time_points >= start.date)]
+}
