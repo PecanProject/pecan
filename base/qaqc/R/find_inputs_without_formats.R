@@ -19,7 +19,7 @@ find_inputs_without_formats <- function(con, user_id = NULL, created_after = NUL
 
   format_command <- dplyr::tbl(con, "formats")
 
-  if (!is.null(user_id_code)) {
+  if (!is.null(user_id)) {
     input_command <- dplyr::filter(input_command, .data$user_id == !!user_id)
   }
   if (!is.null(created_before)) {

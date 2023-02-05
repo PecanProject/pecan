@@ -12,11 +12,13 @@ Author: David LeBauer, Tess McCabe
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: PEcAn integration and model skill testing
 Imports:
+    dplyr,
     graphics,
     rlang,
+    PEcAn.DB,
     PEcAn.logger,
     plotrix,
-    stats
+    stats 
 Suggests:
     knitr,
     mvbutils,
