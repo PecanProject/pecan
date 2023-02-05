@@ -4,14 +4,10 @@
 \alias{SDA_OBS_Assembler}
 \title{Assembler for preparing obs.mean and obs.cov for the SDA workflow}
 \usage{
-SDA_OBS_Assembler(settings, var_name, outdir)
+SDA_OBS_Assembler(settings)
 }
 \arguments{
 \item{settings}{the settings object created by Create_Multi_settings.R script.}
-
-\item{var_name}{Variable name, currently support: SMP, AGB, and LAI.}
-
-\item{outdir}{the path to store obs.mean and obs.cov}
 }
 \value{
 list of obs.mean and obs.cov
@@ -23,10 +19,9 @@ Assembler for preparing obs.mean and obs.cov for the SDA workflow
 \dontrun{
 settings_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/IC/pecan.xml"
 settings <- PEcAn.settings::read.settings(settings_dir)
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
-var_name <- c("LAI", "AbvGrndWood", "SoilMoistFrac", "TotSoilCarb")
-OBS <- SDA_OBS_Assembler(settings, var_name, outdir)
+OBS <- SDA_OBS_Assembler(settings)
 }
+
 }
 \author{
 Dongchen Zhang
