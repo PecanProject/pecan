@@ -6,6 +6,17 @@
 \usage{
 plot_photo(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE)
 }
+\arguments{
+\item{data}{input data}
+
+\item{out}{fitted model output from \code{\link{fitA}}}
+
+\item{curve}{Whether to do Quality Control by examining the 'ACi' curve, the 'AQ' curve, or both}
+
+\item{tol}{Code automatically tries to separate ACi and AQ curves in the same dataset by detecting the 'reference' condition for light and CO2 respectively. This is the relative error around the mode in that detection.}
+
+\item{byLeaf}{whether to plot fits on a leaf-by-leaf basis}
+}
 \description{
 plot_photo
 }
