@@ -5,6 +5,7 @@
 #' @param end_date End date of SDA workflow.
 #' @param time_points A vector contains each time point within the start and end date.
 #' @param NCore Number of CPU to be used for LAI extraction.
+#' @param run_parallel Bool variable decide if you want to proceed parallelly.
 #' @param outdir Where the final CSV file will be stored.
 #' @param search_window search window for locate available LAI values.
 #' @param export_csv Decide if we want to export the CSV file.
@@ -16,12 +17,29 @@
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points, 
-                     NCore = NULL, outdir = NULL, search_window = 30, export_csv = FALSE){
+                     NCore = NULL, run_parallel, outdir = NULL, search_window = 30, export_csv = FALSE){
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
+  
+  #collect available dates for all sites.
+  time_exist <- c()
+  for (i in seq_along(site_info$site_id)) {
+    time_exist <- c(time_exist, MODISTools::mt_dates("MOD15A2H", site_info$lat[i], site_info$lon[i])["calendar_date"])
+  }
+  PEcAn.logger::logger.info("MODIS LAI Dates Matches Completed!")
+  time_exist <- sort(unique(do.call("c", time_exist)))
+  
+  new_time_points <- as.Date(c())
+  for (i in seq_along(time_points)) {
+    if(sum((abs(lubridate::days(lubridate::date(time_points[i]))@day-
+                lubridate::days(lubridate::date(time_exist))@day)<=search_window))>0){
+      new_time_points <- c(new_time_points, time_points[i])
+    }
+  }
+  time_points <- new_time_points
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
@@ -64,11 +82,11 @@ MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points,
     
     #download LAI data and LAI std
     lai_data <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                              run_parallel = TRUE, ncores = NCore, product = "MOD15A2H", band = "Lai_500m",
+                                              run_parallel = as.logic(run_parallel), ncores = NCore, product = "MOD15A2H", band = "Lai_500m",
                                               package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
     
     lai_sd <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                            run_parallel = TRUE, ncores = NCore, product = "MOD15A2H", band = "LaiStdDev_500m",
+                                            run_parallel = as.logic(run_parallel), ncores = NCore, product = "MOD15A2H", band = "LaiStdDev_500m",
                                             package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
     
     #combine data together and pick what we want
@@ -107,5 +125,6 @@ MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points,
       }
     }
   }
+  PEcAn.logger::logger.info("MODIS LAI Prep Completed!")
   list(LAI_Output = LAI_Output, time_points = time_points, var = "LAI")
 }
