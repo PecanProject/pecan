@@ -82,11 +82,11 @@ MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points,
     
     #download LAI data and LAI std
     lai_data <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                              run_parallel = as.logic(run_parallel), ncores = NCore, product = "MOD15A2H", band = "Lai_500m",
+                                              run_parallel = as.logical(run_parallel), ncores = NCore, product = "MOD15A2H", band = "Lai_500m",
                                               package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
     
     lai_sd <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                            run_parallel = as.logic(run_parallel), ncores = NCore, product = "MOD15A2H", band = "LaiStdDev_500m",
+                                            run_parallel = as.logical(run_parallel), ncores = NCore, product = "MOD15A2H", band = "LaiStdDev_500m",
                                             package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
     
     #combine data together and pick what we want
