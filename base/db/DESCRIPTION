@@ -70,9 +70,17 @@ Suggests:
     RPostgres,
     RSQLite,
     rcrossref,
-    rmarkdown,
+    rmarkdown (>= 2.19),
     testthat (>= 2.0.0),
     tidyverse
+X-Comment-Remotes:
+    Installing markdown from GitHub because as of 2023-02-05, this is the
+    easiest way to get version >= 2.19 onto Docker images that use older
+    Rstudio Package Manager snapshots.
+    When building on a system that finds a new enough version on CRAN,
+    OK to remove the Remotes line and this comment.
+Remotes:
+    github::rstudio/rmarkdown@v2.20
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr
 Copyright: Authors
