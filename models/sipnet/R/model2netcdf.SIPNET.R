@@ -211,7 +211,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[15]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
     output[[16]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[[17]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
+    output[[18]] <- (sub.sipnet.output$litterWater * 10) # Litter water kgW/m2
 
+    
     #calculate LAI for standard output
     param <- read.table(file.path(gsub(pattern = "/out/",
                                  replacement = "/run/", x = outdir),
@@ -219,13 +221,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     id <- which(param[, 1] == "leafCSpWt")
     leafC <- 0.48
     SLA <- 1000 / param[id, 2] #SLA, m2/kgC
-    output[[18]] <- output[[9]] * SLA # LAI
+    output[[19]] <- output[[9]] * SLA # LAI
 
-    output[[19]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
-    output[[20]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-    output[[21]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
-    output[[22]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
-    output[[23]] <- c(rbind(bounds[,1], bounds[,2]))
+    output[[20]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
+    output[[21]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
+    output[[22]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
+    output[[23]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
+    output[[24]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
@@ -272,14 +274,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[15]] <- PEcAn.utils::to_ncvar("SoilMoistFrac", dims)
     nc_var[[16]] <- PEcAn.utils::to_ncvar("SWE", dims)
     nc_var[[17]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[18]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[19]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
-    nc_var[[20]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
-    nc_var[[21]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+    nc_var[[18]] <- PEcAn.utils::to_ncvar("litterWater", dims)
+    nc_var[[19]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[20]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
+    nc_var[[21]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
+    nc_var[[22]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                      longname = "Gross Woody Biomass Increment")
-    nc_var[[22]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+    nc_var[[23]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                      longname = "Total aboveground biomass")
-    nc_var[[23]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+    nc_var[[24]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                     prec = "double")
     
