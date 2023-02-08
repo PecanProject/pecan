@@ -88,6 +88,7 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.SIPNET
 ##' @title Function to convert SIPNET model output to standard netCDF format
+##'
 ##' @param outdir Location of SIPNET model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
@@ -97,10 +98,11 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param overwrite Flag for overwriting nc files or not
 ##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
 ##' @param prefix prefix to read the output files
+##' @param delete.raw Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, prefix = "sipnet.out",
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
                                 overwrite = FALSE, conflict = FALSE) {
 
   ### Read in model output in SIPNET format
