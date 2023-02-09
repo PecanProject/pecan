@@ -14,33 +14,59 @@
 #' @param t Default t=1, for function to work within time loop
 #' @param var.names list of state variables taken from settings object
 #' @param my.read_restart object that points to the model restart function i.e. read_restart.SIPNET
+#' @param restart_flag flag if it's a restart stage.
 #'
 #' @return X ready to be passed to SDA Analysis code
 #' @export
 #'
 #' @examples
-build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart){
-
-  reads <-
-    furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
-      
-      X_tmp <- vector("list", 2)
-      
-      for (i in seq_len(nens)) {
-        X_tmp[[i]] <- do.call( my.read_restart,
-                               args = list(
-                                 outdir = outdir,
-                                 runid = configs$runs$id[i] %>% as.character(),
-                                 stop.time = read_restart_times[t+1],
-                                 settings = settings,
-                                 var.names = var.names,
-                                 params = siteparams[[i]]
-                               )
-        )
+build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag){
+  if(t == 1 & restart_flag){
+    reads <-
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+        # Loading the model package - this is required bc of the furrr
+        #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
+        #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
         
-      }
-      return(X_tmp)
-    })
+        X_tmp <- vector("list", 2)
+        
+        for (i in seq_len(nens)) {
+          X_tmp[[i]] <- do.call( my.read_restart,
+                                 args = list(
+                                   outdir = outdir,
+                                   runid = settings$runs$id[i] %>% as.character(),
+                                   stop.time = read_restart_times[t+1],
+                                   settings = settings,
+                                   var.names = var.names,
+                                   params = siteparams[[i]]
+                                 )
+          )
+          
+        }
+        return(X_tmp)
+      })
     
+  }else{
+    reads <-
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+        
+        X_tmp <- vector("list", 2)
+        
+        for (i in seq_len(nens)) {
+          X_tmp[[i]] <- do.call( my.read_restart,
+                                 args = list(
+                                   outdir = outdir,
+                                   runid = configs$runs$id[i] %>% as.character(),
+                                   stop.time = read_restart_times[t+1],
+                                   settings = settings,
+                                   var.names = var.names,
+                                   params = siteparams[[i]]
+                                 )
+          )
+          
+        }
+        return(X_tmp)
+      })
+  }
   return(reads)
 }
