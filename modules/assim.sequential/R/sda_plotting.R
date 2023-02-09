@@ -414,7 +414,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
 
       p<-ready.to.plot%>%
-        ggplot(aes(x=Date))+
+        ggplot2::ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
         geom_point(aes(y=means, color=Type),size=3,alpha=0.75)+
@@ -503,7 +503,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
       p<-ready.FA%>%
 #        filter(Variables==vari)%>%
-        ggplot(aes(Date,Value))+
+        ggplot2::ggplot(aes(Date,Value))+
         geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
         geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
@@ -710,7 +710,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -743,7 +743,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Variable==vari, Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -761,13 +761,16 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
   if(Add_Map){
     #------------------------------------------------ map
-    site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+    site.locs <- settings %>% 
+      map(~.x[['run']] ) %>% 
+      map('site') %>% 
+      map_dfr(~c(.x[['lon']],.x[['lat']]) %>%
+                as.numeric)%>% 
       t %>%
       as.data.frame()%>%
       `colnames<-`(c("Lon","Lat")) %>%
       mutate(Site=site.ids %>% unique(),
              Name=site.names)
-    
     
     suppressMessages({
       aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
@@ -789,7 +792,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       mutate(Data = Site %in% sites.w.data)
     
     #plotting
-    map.plot<- ggplot() + 
+    map.plot<- ggplot2::ggplot() + 
       geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
       geom_point(data = site.locs,
                  aes(x = Lon, y = Lat),

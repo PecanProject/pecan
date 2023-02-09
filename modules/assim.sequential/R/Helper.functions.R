@@ -151,7 +151,9 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
 #' @importFrom lubridate %m+%
 obs_timestep2timepoint <- function(start.date, end.date, timestep){
   if(timestep$unit == "year"){
-    years <- seq(0, (lubridate::year(end.date) - lubridate::year(start.date)), as.numeric(timestep$num))#how many years between start and end date
+    years <- seq(from = 0, 
+                 to = (lubridate::year(end.date) - lubridate::year(start.date)), 
+                 by = as.numeric(timestep$num))#how many years between start and end date
     time_points <- as.Date(start.date) %m+% lubridate::years(years)
   }else if(timestep$unit == "month"){
     #how many months in total

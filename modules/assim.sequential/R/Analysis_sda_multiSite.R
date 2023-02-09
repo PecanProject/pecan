@@ -264,10 +264,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
-         #diag(diag(Pf), ncol(Pf), nrow(Pf))
-    Pf <-Local.support(Pf,
-                    blocked.dis,
-                    settings$state.data.assimilation$scalef %>% as.numeric())
+    Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 
   #### initial conditions
@@ -362,7 +359,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   
   recompileGEF <- extraArg$recompileGEF
   if(t > 1){
-    if(length(extraArg$pre_elements) != length(elements.W.Data)) recompileGEF <- TRUE
+    if(length(extraArg$pre_elements) != length(elements.W.Data)){
+      recompileGEF <- TRUE
+    }
   } 
   if(t == 1 | recompileGEF){ #TO DO need to make something that works to pick whether to compile or not
   # initial Q depends on the size of aqq

@@ -25,8 +25,8 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
-  
-  time_points <- time_points[which(lubridate::year(time_points)<2018)] #filter out any time points that are larger than 2017
+  #Landtrendr AGB doesn't provide data after 2017.
+  time_points <- time_points[which(lubridate::year(time_points) < 2018)]
   
   #check if we have all AGB data downloaded, if not, download them
   if(as.logical(allow_download)){
@@ -73,12 +73,20 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   if(length(new_site_info$site_id) != 0){
     if(is.null(buffer) | as.logical(skip_buffer)){
       #extracting AGB data
-      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", fun = "mean", 
-                                                                AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% dplyr::select(-2) %>%
-        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
-      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "stdv", fun = "mean", 
-                                                                 AGB_input_dir, product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]]%>% dplyr::select(-c(1:2)) %>%
-        `colnames<-`(c(paste0(time_points, "_SD")))
+      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
+                                                                "median", 
+                                                                fun = "mean", 
+                                                                AGB_input_dir, 
+                                                                product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
+                                                                              dplyr::select(-2) %>%
+                                                                              `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
+      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
+                                                                 "stdv", 
+                                                                 fun = "mean", 
+                                                                 AGB_input_dir, 
+                                                                 product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
+                                                                               dplyr::select(-c(1:2)) %>%
+                                                                               `colnames<-`(c(paste0(time_points, "_SD")))
       #Handle data
       AGB_Output <- cbind(med_agb_data, sdev_agb_data)
     }else{#buffer is not empty
@@ -103,7 +111,9 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
     }
     
     #prepare CSV from AGB_Output
-    Current_CSV <- matrix(NA, 0, 6) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
+    Current_CSV <- matrix(NA, 0, 6) %>% 
+      `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
+    
     for (id in AGB_Output$site_id) {
       site_AGB <- AGB_Output[which(AGB_Output$site_id==id),]
       for (i in seq_along(time_points)) {
@@ -117,7 +127,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       }
     }
 
-    #Compare with existing CSV file. (We name the CSV file as LAI.csv)
+    #Compare with existing CSV file. (We name the CSV file as AGB.csv)
     if(export_csv){
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, Current_CSV)

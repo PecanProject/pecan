@@ -80,10 +80,22 @@ sda.enkf.multisite <- function(settings,
   
   is.local <- PEcAn.remote::is.localhost(settings$host)
   #------------------Reading up the MCMC settings
-  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 5e4, settings$state.data.assimilation$nitrGEF %>%as.numeric)
-  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 10, settings$state.data.assimilation$nthin %>%as.numeric)
-  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
-  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
+  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 
+                     5e4, 
+                     settings$state.data.assimilation$nitrGEF %>% 
+                       as.numeric)
+  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 
+                  10, 
+                  settings$state.data.assimilation$nthin %>% 
+                    as.numeric)
+  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 
+                   1e4, 
+                   settings$state.data.assimilation$nburnin %>% 
+                     as.numeric)
+  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), 
+                        TRUE, 
+                        settings$state.data.assimilation$censored.data %>% 
+                          as.logical)
   #--------Initialization
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
@@ -714,8 +726,18 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      try(PEcAnAssimSequential::post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
-      if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+        post.analysis.multisite.ggplot(settings, 
+                                       t, 
+                                       obs.times, 
+                                       obs.mean, 
+                                       obs.cov, 
+                                       FORECAST, 
+                                       ANALYSIS ,
+                                       plot.title=control$plot.title, 
+                                       facetg=control$facet.plots, 
+                                       readsFF=readsFF)
+      }   
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
     #rename sipnet.out
