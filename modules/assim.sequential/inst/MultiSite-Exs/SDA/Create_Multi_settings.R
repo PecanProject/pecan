@@ -41,9 +41,9 @@ update_csv <- FALSE
 SoilC_timestep <- list(unit="year", num=1)
 
 #Obs Date
-Obs_Start_Date <- "2012-07-15"
-Obs_End_Date <- "2021-07-15"
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+obs_start_date <- "2012-07-15"
+obs_end_date <- "2021-07-15"
+obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 
 #Start building template
 template <- Settings(list(
@@ -77,13 +77,13 @@ template <- Settings(list(
     end.date = end_date,
     
     Obs_Prep = structure(list(
-      Landtrendr_AGB = structure(list(AGB_input_dir = AGB_input_dir, timestep = AGB_Time_Step, allow_download = allow_download, export_csv = AGB_export_csv)),
+      Landtrendr_AGB = structure(list(AGB_input_dir = AGB_input_dir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
       MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
       SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
       Soilgrids_SoilC = structure(list(timestep = SoilC_timestep)),
-      Start_Date = Obs_Start_Date,
-      End_Date = Obs_End_Date,
-      outdir = outdir
+      start.date = obs_start_date,
+      end.date = obs_end_date,
+      outdir = obs_outdir
     ))
   )),
   
@@ -309,27 +309,18 @@ for (i in 1:nSite) {
 
 #add Lat and Lon to each site
 #grab Site IDs from settings
-observations <- c()
+site_ID <- c()
 for (i in 1:length(settings)) {
   obs <- settings[[i]]$run$site$id
-  observations <- c(observations,obs)
+  site_ID <- c(site_ID,obs)
 }
 #query site info
 #open a connection to bety and grab site info based on site IDs
-bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
-                            host     = settings$database$bety$host,
-                            user     = settings$database$bety$user,
-                            password = settings$database$bety$password)
-con <- bety$con
+con <- db.open(settings$database$bety)
+site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                      ST_Y(ST_CENTROID(geometry)) AS lat 
+                           FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
 
-site_ID <- observations
-suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
-                                            ids = site_ID, .con = con))
-suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
-                  lon=qry_results$lon, time_zone=qry_results$time_zone)
 #write Lat and Lon into the settings
 for (i in 1:nSite) {
   temp_ID <- settings[[i]]$run$site$id
@@ -345,4 +336,4 @@ write.settings(settings, outputfile = "pecan.xml")
 
 #test create site pft function
 #read the settings already done previously
-settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml")
+settings <- read.settings(file.path(settings$outdir, "pecan.xml"))
