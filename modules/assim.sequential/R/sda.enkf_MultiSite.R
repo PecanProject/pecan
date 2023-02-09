@@ -279,7 +279,16 @@ sda.enkf.multisite <- function(settings,
         }) %>%
         setNames(site.ids)
       #now all build_X args are properly formatted for the function to return X
-      reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names = var.names, my.read_restart = my.read_restart)
+      reads <- build_X(out.configs = out.configs, 
+                       settings = settings, 
+                       new.params = new.params, 
+                       nens = nens, 
+                       read_restart_times = read_restart_times, 
+                       outdir = paste0(old.dir, "out/"), 
+                       t = 1, 
+                       var.names = var.names, 
+                       my.read_restart = my.read_restart)
+      
       #let's read the parameters of each site/ens
       params.list <- reads %>% map(~.x %>% map("params"))
       # Now let's read the state variables of site/ens
