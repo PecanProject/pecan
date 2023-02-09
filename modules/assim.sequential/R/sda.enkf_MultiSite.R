@@ -287,7 +287,8 @@ sda.enkf.multisite <- function(settings,
                        outdir = paste0(old.dir, "out/"), 
                        t = 1, 
                        var.names = var.names, 
-                       my.read_restart = my.read_restart)
+                       my.read_restart = my.read_restart,
+                       restart_flag = restart_flag)
       
       #let's read the parameters of each site/ens
       params.list <- reads %>% map(~.x %>% map("params"))
@@ -447,7 +448,8 @@ sda.enkf.multisite <- function(settings,
                          outdir = outdir, 
                          t = t, 
                          var.names = var.names, 
-                         my.read_restart = my.read_restart)
+                         my.read_restart = my.read_restart,
+                         restart_flag = restart_flag)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
