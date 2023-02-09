@@ -709,5 +709,5 @@ sda.enkf.multisite <- function(settings,
     
   } ### end loop over time
   
-} # sda.enkf
-  
+ } # sda.enkf
+}
