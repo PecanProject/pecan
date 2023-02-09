@@ -781,7 +781,6 @@ The following tags can be used for state data assimilation. More detailed inform
    <Landtrendr_AGB>
     <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
     <allow_download>TRUE</allow_download>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <export_csv>TRUE</export_csv>
     <timestep>
      <unit>year</unit>
@@ -789,7 +788,6 @@ The following tags can be used for state data assimilation. More detailed inform
     </timestep>
    </Landtrendr_AGB>
    <MODIS_LAI>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
     <run_parallel>TRUE</run_parallel>
@@ -799,7 +797,6 @@ The following tags can be used for state data assimilation. More detailed inform
     </timestep>
    </MODIS_LAI>
    <SMAP_SMP>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
     <update_csv>FALSE</update_csv>
@@ -809,7 +806,6 @@ The following tags can be used for state data assimilation. More detailed inform
     </timestep>
    </SMAP_SMP>
    <Soilgrids_SoilC>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <timestep>
      <unit>year</unit>
      <num>1</num>
@@ -892,7 +888,6 @@ The following tags can be used for observation preparation for the SDA workflow.
    <Landtrendr_AGB>
     <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
     <allow_download>TRUE</allow_download>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <export_csv>TRUE</export_csv>
     <timestep>
      <unit>year</unit>
@@ -900,7 +895,6 @@ The following tags can be used for observation preparation for the SDA workflow.
     </timestep>
    </Landtrendr_AGB>
    <MODIS_LAI>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
     <run_parallel>TRUE</run_parallel>
@@ -910,7 +904,6 @@ The following tags can be used for observation preparation for the SDA workflow.
     </timestep>
    </MODIS_LAI>
    <SMAP_SMP>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
     <update_csv>FALSE</update_csv>
@@ -920,13 +913,12 @@ The following tags can be used for observation preparation for the SDA workflow.
     </timestep>
    </SMAP_SMP>
    <Soilgrids_SoilC>
-    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
     <timestep>
      <unit>year</unit>
      <num>1</num>
     </timestep>
    </Soilgrids_SoilC>
-   <obs_outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</obs_outdir>
+   <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
    <start.date>2012-07-15</start.date>
    <end.date>2021-07-15</end.date>
   </Obs_Prep>
@@ -941,7 +933,6 @@ The following tags can be used for observation preparation for the SDA workflow.
 * **search_window** : [optional] This tag is used for LAI and SMAP observation preparation functions, which defines the search window within which the closest observation is selected.
 * **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself.
 * **timestep** : [optional] This tag defines the time unit and how many unit time per each time step. It supports year, month, week, and day as time unit. If you assign a general timestep just under the Obs_Prep section, all variable will be handled with the same timestep. If you assign each variable with each timestep, then the assembler function will create obs.mean and obs.cov with mixed temporal resolution.
-* **obs_outdir** : [required] This tag defines the directory where to export the obs.mean and obs.cov Rdata files.
 * **start.date** : [required] This tag defines the exact start point of time, which differs from the start.date in the state.data.assimilation section in a way that it is the time when first observation should be taken.
 * **end.date** : [required] This tag defines the exact end point of time, which differs from the end.date in the state.data.assimilation section in a way that it is the time when last observation should be taken.
 
