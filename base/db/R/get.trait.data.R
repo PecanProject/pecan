@@ -16,22 +16,33 @@
 ##' - `settings$database$bety`
 ##' - `settings$database$dbfiles`
 ##' - `settings$meta.analysis$update`
+##' 
 ##' @param pfts the list of pfts to get traits for
-##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
+##' @param modeltype type of model that is used, this is is used to distinguish
+##'   between different PFTs with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters (see `params`
 ##'   argument to [db.query()])
 ##' @param forceupdate (Logical) If `TRUE`, force a database update
 ##'   whether or not it is needed. If `FALSE`, only update if an
 ##'   update is needed.
+##' @param write (Logical) If `TRUE` updated posteriors will be written to
+##'   BETYdb.  Defaults to FALSE.
 ##' @param trait.names Character vector of trait names to search. If
 ##'   `NULL` (default), use all traits that have a prior for at least
 ##'   one of the `pfts`.
 ##' @return list of PFTs with update posteriorids
 ##' @author David LeBauer, Shawn Serbin, Alexey Shiklomanov
 ##' @export
-get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
-                           trait.names = NULL) {
+get.trait.data <-
+  function(pfts,
+           modeltype,
+           dbfiles,
+           database,
+           forceupdate,
+           write = FALSE,
+           trait.names = NULL) {
+    
   if (!is.list(pfts)) {
     PEcAn.logger::logger.severe('pfts must be a list')
   }
@@ -68,6 +79,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,
                    modeltype = modeltype,
                    dbfiles = dbfiles,
                    dbcon = dbcon,
+                   write = write,
                    forceupdate = forceupdate,
                    trait.names = trait.names)
   

@@ -1,7 +1,7 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn Package for Integration of ED2 Model
-Version: 1.7.2
+Version: 1.7.2.9000
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
@@ -23,7 +23,7 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      comment = c(ORCID = "0000-0002-7430-7879")),
              person("University of Illinois, NCSA", role = c("cph")))
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
-    Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
+    Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov, Eric R. Scott
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -34,20 +34,22 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends: 
     R (>= 2.10)
 Imports:
-    PEcAn.data.atmosphere,
-    PEcAn.data.land,
-    PEcAn.logger,
-    PEcAn.remote,
-    PEcAn.settings,
-    PEcAn.utils,
     abind (>= 1.4.5),
+    assertthat,
     dplyr,
     glue,
     hdf5r,
     lubridate,
     magrittr,
     ncdf4 (>= 1.15),
+    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.settings,
+    PEcAn.utils,
     purrr,
+    rlang,
     stringr(>= 1.1.0),
     tidyr,
     tibble,
@@ -66,4 +68,3 @@ Encoding: UTF-8
 RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 2
-
