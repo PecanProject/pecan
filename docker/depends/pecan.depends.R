@@ -16,7 +16,8 @@ remotes::install_github(c(
 'r-lib/testthat@v3.1.6',
 'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
-'ropensci/nneo'
+'ropensci/nneo',
+'rstudio/rmarkdown@v2.20'
 ), lib = rlib)
 
 # install all packages (depends, imports, suggests)
