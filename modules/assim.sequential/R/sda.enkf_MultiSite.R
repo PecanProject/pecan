@@ -254,22 +254,7 @@ sda.enkf.multisite <- function(settings,
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
-      new.params <- list()
-      all.pft.names <- names(ensemble.samples)
-      for (i in 1:length(settings)) {
-        #match pft name
-        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
-        which.pft <- which(all.pft.names==site.pft.name)
-        
-        site.param <- list()
-        site.samples <- ensemble.samples[which.pft]
-        for (j in seq_len(nens)) {
-          site.param[[j]] <- lapply(site.samples, function(x, n) {
-            x[j, ] }, n = j)
-        } 
-        new.params[[i]] <- site.param
-      }
-      names(new.params) <- site.ids
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
       
       #create inputs object for met using previous forecast ensemble members
       ####add function here, pause on this feature until we add feature to model runs that saves driver ensemble members
@@ -329,31 +314,15 @@ sda.enkf.multisite <- function(settings,
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
-      new.params <- list()
-      all.pft.names <- names(ensemble.samples)
-      for (i in 1:length(settings)) {
-        #match pft name
-        site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
-        which.pft <- which(all.pft.names==site.pft.name)
-        
-        site.param <- list()
-        site.samples <- ensemble.samples[which.pft]
-        for (j in seq_len(nens)) {
-          site.param[[j]] <- lapply(site.samples, function(x, n) {
-            x[j, ] }, n = j)
-        } 
-        new.params[[i]] <- site.param
-      }
-      names(new.params) <- site.ids
-    }
-    #sample met ensemble members
-    inputs <- conf.settings %>% map(function(setting) {
-      input.ens.gen(
-        settings = setting,
-        input = "met",
-        method = setting$ensemble$samplingspace$met$method,
-        parent_ids = NULL 
-      )
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      #sample met ensemble members
+      inputs <- conf.settings %>% map(function(setting) {
+        input.ens.gen(
+          settings = setting,
+          input = "met",
+          method = setting$ensemble$samplingspace$met$method,
+          parent_ids = NULL 
+        )
     }) 
   
   
@@ -428,7 +397,6 @@ sda.enkf.multisite <- function(settings,
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
         X <- X
       }else{
-        
         if (control$debug) browser()
         #if restart then use restart.list, include site for debugging purposes
         if(restart_flag){
@@ -462,29 +430,15 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <-
-          furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
-            # Loading the model package - this is required bc of the furrr
-            #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-            #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
-            
-            X_tmp <- vector("list", 2)
-            
-            for (i in seq_len(nens)) {
-              X_tmp[[i]] <- do.call( my.read_restart,
-                                     args = list(
-                                       outdir = outdir,
-                                       runid = configs$runs$id[i] %>% as.character(),
-                                       stop.time = read_restart_times[t+1],
-                                       settings = settings,
-                                       var.names = var.names,
-                                       params = siteparams[[i]]
-                                     )
-              )
-              
-            }
-            return(X_tmp)
-          })
+        reads <- build_X(out.configs = out.configs, 
+                         settings = settings, 
+                         new.params = new.params, 
+                         nens = nens, 
+                         read_restart_times = read_restart_times, 
+                         outdir = outdir, 
+                         t = t, 
+                         var.names = var.names, 
+                         my.read_restart = my.read_restart)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -756,3 +710,4 @@ sda.enkf.multisite <- function(settings,
   } ### end loop over time
   
 } # sda.enkf
+  

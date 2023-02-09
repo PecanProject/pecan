@@ -61,7 +61,7 @@ SDA_OBS_Assembler <- function(settings){
   #test for loop
   for (i in seq_along(Obs_Prep)) {
     #detect if current section is for different variable preparation function or not.
-    if (names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "obs_outdir")){
+    if (names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "outdir")){
       next
     }else{
       fun_name <- names(Obs_Prep)[i]
@@ -186,7 +186,7 @@ SDA_OBS_Assembler <- function(settings){
     }
   }
   
-  save(obs.mean, file = file.path(Obs_Prep$obs_outdir, "obs.mean.Rdata"))
-  save(obs.cov, file = file.path(Obs_Prep$obs_outdir, "obs.cov.Rdata"))
+  save(obs.mean, file = file.path(Obs_Prep$outdir, "Rdata", "obs.mean.Rdata"))
+  save(obs.cov, file = file.path(Obs_Prep$outdir, "Rdata", "obs.cov.Rdata"))
   list(obs.mean = obs.mean, obs.cov = obs.cov)
 }
