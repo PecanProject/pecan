@@ -894,6 +894,7 @@ The following tags can be used for observation preparation for the SDA workflow.
      <num>1</num>
     </timestep>
    </Landtrendr_AGB>
+   
    <MODIS_LAI>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
@@ -903,6 +904,7 @@ The following tags can be used for observation preparation for the SDA workflow.
      <num>1</num>
     </timestep>
    </MODIS_LAI>
+   
    <SMAP_SMP>
     <search_window>30</search_window>
     <export_csv>TRUE</export_csv>
@@ -912,6 +914,7 @@ The following tags can be used for observation preparation for the SDA workflow.
      <num>1</num>
     </timestep>
    </SMAP_SMP>
+   
    <Soilgrids_SoilC>
     <timestep>
      <unit>year</unit>
