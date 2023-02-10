@@ -45,6 +45,7 @@
 #' @param check_files Logical. If `TRUE`, perform basic diagnostics on met 
 #' files as well.
 #' @return List of ED met input parameters. See Details.
+#' @importFrom rlang .data
 #' @export
 read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
   if (!file.exists(filename)) {
@@ -88,7 +89,7 @@ read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
     variables_raw <- read.table(text = sub_file[4:6], header = TRUE)
     variables_raw$value_type <- c("update_frequency", "flag")
     variables_table <- variables_raw %>%
-      tidyr::gather("variable", "value", -value_type) %>%
+      tidyr::gather("variable", "value", -.data$value_type) %>%
       tidyr::spread("value_type", "value") %>%
       dplyr::left_join(met_variable_description, by = "variable") %>%
       dplyr::left_join(met_flag_description, by = "flag")
