@@ -80,6 +80,11 @@ convert.samples.ED <- function(trait.samples) {
       
     }  ## End dark_respiration_factor loop
   }  ## End Vcmax  
+  
+  if ("plant_min_temp" %in% names(trait.samples)) {
+    trait.samples[["plant_min_temp"]] <- 
+      PEcAn.utils::ud_convert(trait.samples[["plant_min_temp"]], "degC", "K")
+  }
   # for debugging conversions save(trait.samples, file = file.path(settings$outdir,
   # 'trait.samples.Rdata'))
   
