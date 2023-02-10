@@ -22,8 +22,8 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }
-  if (is.null(host)) {
-    PEcAn.logger::logger.severe("Host param provided is NULL : Possibly a typo in the host name variable or a missing host in the arguments passed")
+  if (!is.character(host) | length(host) > 1) {
+    PEcAn.logger::logger.severe("`host` should be a length 1 character vector, not ", class(host), " length ", length(host))
   }
   if (is.localhost(host)) {
     args <- c(args, src, dst)
