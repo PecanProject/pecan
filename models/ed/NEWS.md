@@ -5,6 +5,7 @@
 * Fixed a bug affecting the generation of job.sh for runs with many PFTs (#3075)
 * Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 * write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
+* Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
 
 # PEcAn.ED2 1.7.2.9000
 
