@@ -13,10 +13,11 @@ remotes::install_github(c(
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
-'r-lib/testthat@v3.0.4',
-'r-lib/vdiffr@v1.0.2',
+'r-lib/testthat@v3.1.6',
+'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
-'ropensci/nneo'
+'ropensci/nneo',
+'rstudio/rmarkdown@v2.20'
 ), lib = rlib)
 
 # install all packages (depends, imports, suggests)
