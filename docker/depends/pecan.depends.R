@@ -23,6 +23,7 @@ remotes::install_github(c(
 wanted <- c(
 'abind',
 'amerifluxr',
+'assertthat',
 'BayesianTools',
 'BioCro',
 'bit64',
