@@ -77,7 +77,8 @@ convert.samples.ED <- function(trait.samples) {
       
       ## Calculate dark_resp_factor -- Will be depreciated when moving from
       ## older versions of ED2
-      trait.samples[["dark_respiration_factor"]] <- trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
+      trait.samples[["dark_respiration_factor"]] <-
+        trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
       
       
     }  ## End dark_respiration_factor loop
