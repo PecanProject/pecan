@@ -55,6 +55,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   Note that both `units` and `udunits2` interface with the same underlying
   compiled code, so the `udunits2` *system library* is still required.
   (#2989; @nanu1605)
+- Occasionally some run directories were not getting copied over to remote hosts.  This should be fixed now (#3025)
 - Fixed a bug with ED2 where ED2IN tags supplied in `settings` that were not in the ED2IN template file were not getting added to ED2IN config files (#3034, #3033)
 - Fixed a bug where warnings were printed for file paths on remote servers even when they did exist (#3020)
 - Fixed bug in model2netcdf.SIPNET that caused LE to be overestimaed 10^3 (#3036)
@@ -66,6 +67,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   the cdo_setup argument in the template job file. In detail, people will need
   to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
   are in the Create_Multi_settings.R script. (#3052)
+- write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
 - runModule.get.trait.data() now correctly respects the settings$database$bety$write setting (#2968)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
