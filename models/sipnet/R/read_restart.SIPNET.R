@@ -25,7 +25,8 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   params$restart <-c() #state.vars not in var.names will be added here
   #SIPNET inital states refer to models/sipnet/inst/template.param
   state.vars <- c("SWE", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
-                  "litter_carbon_content", "fine_root_carbon_content", "coarse_root_carbon_content")
+                  "litter_carbon_content", "fine_root_carbon_content", 
+                  "coarse_root_carbon_content", "litterWater")
   #pre-populate parsm$restart with NAs so state names can be added
   params$restart <- rep(NA, length(setdiff(state.vars, var.names)))
   #add states to params$restart NOT in var.names
@@ -94,6 +95,13 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     params$restart["litter_carbon_content"] <- ens$litter_carbon_content[last]
   }
   
+  if ("litterWater" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$litterWater[last]  ##kgC/m2
+    names(forecast[[length(forecast)]]) <- c("litterWater")
+  }else{
+    params$restart["litterWater"] <- ens$litterWater[last]
+  }
+  
   if ("SoilMoistFrac" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
@@ -120,6 +128,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }else{
     params$restart["TotSoilCarb"] <- ens$TotSoilCarb[last]
   }
+  
+  #remove any remaining NAs from params$restart
+  na.omit(params$restart)
   
   print(runid)
   

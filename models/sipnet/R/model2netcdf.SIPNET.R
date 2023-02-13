@@ -276,7 +276,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[15]] <- PEcAn.utils::to_ncvar("SoilMoistFrac", dims)
     nc_var[[16]] <- PEcAn.utils::to_ncvar("SWE", dims)
     nc_var[[17]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[18]] <- PEcAn.utils::to_ncvar("litterWater", dims)
+    nc_var[[18]] <- PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims)
     nc_var[[19]] <- PEcAn.utils::to_ncvar("LAI", dims)
     nc_var[[20]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
     nc_var[[21]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
