@@ -83,7 +83,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
     priordata   <- subset(priordata, subset = !is.na(x))
     dx          <- with(priordata, min(abs(diff(x)[diff(x) != 0])))
     ## add jitter to separate equal values
-    priordata   <- transform(priordata, x = x + runif(length(x), -dx / 2, dx / 2))
+    priordata$x <- priordata$x + runif(length(priordata$x), -dx / 2, dx / 2)
     rug         <- geom_rug(data = priordata, aes(x))
     priorfigure <- priorfigure + rug
   }
