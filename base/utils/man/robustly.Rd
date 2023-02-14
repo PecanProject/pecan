@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{robustly}
 \alias{robustly}
-\title{Adverb to try calling a function \code{n} times before giving up}
+\title{Adverb to try calling a function `n` times before giving up}
 \usage{
 robustly(.f, n = 10, timeout = 0.2, silent = TRUE)
 }
@@ -19,7 +19,7 @@ robustly(.f, n = 10, timeout = 0.2, silent = TRUE)
 Modified version of input function
 }
 \description{
-Adverb to try calling a function \code{n} times before giving up
+Adverb to try calling a function `n` times before giving up
 }
 \examples{
 rlog <- robustly(log, timeout = 0.3)
