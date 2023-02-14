@@ -22,9 +22,15 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }
+  if (is.null(host)) {
+    PEcAn.logger::logger.severe("`host` object passed to the function is NULL : Try passing a valid host object")
+  }
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
+    if (is.null(host$name)) {
+      PEcAn.logger::logger.severe("`name` parameter in the `host` object is NULL : Try passing a valid host object")
+    }
     tunnel <- host$tunnel
     if (!is.null(host$data_tunnel)) {
       tunnel <- host$data_tunnel
