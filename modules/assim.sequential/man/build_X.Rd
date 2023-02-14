@@ -14,7 +14,7 @@ build_X(
   t = 1,
   var.names,
   my.read_restart,
-  restart_flag
+  restart_flag = FALSE
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ build_X(
 
 \item{my.read_restart}{object that points to the model restart function i.e. read_restart.SIPNET}
 
-\item{restart_flag}{flag if it's a restart stage.}
+\item{restart_flag}{flag if it's a restart stage. Default is FALSE.}
 }
 \value{
 X ready to be passed to SDA Analysis code

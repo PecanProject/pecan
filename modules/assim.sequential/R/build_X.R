@@ -14,13 +14,13 @@
 #' @param t Default t=1, for function to work within time loop
 #' @param var.names list of state variables taken from settings object
 #' @param my.read_restart object that points to the model restart function i.e. read_restart.SIPNET
-#' @param restart_flag flag if it's a restart stage.
+#' @param restart_flag flag if it's a restart stage. Default is FALSE.
 #'
 #' @return X ready to be passed to SDA Analysis code
 #' @export
 #'
 #' @examples
-build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag){
+build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag = FALSE){
   if(t == 1 & restart_flag){
     reads <-
       furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
