@@ -240,7 +240,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   outfile <- file.path(outdir, sprintf("merra-flux-%d-%02d-%02d.nc",
                                        year, month, day))
   if (overwrite || !file.exists(outfile)) {
-    req <- robustly(httr::GET, n = 10)(
+    req <- PEcAn.utils::robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
       httr::write_disk(outfile, overwrite = TRUE)
@@ -258,7 +258,7 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   outfile <- file.path(outdir, sprintf("merra-lfo-%d-%02d-%02d.nc",
                                        year, month, day))
   if (overwrite || !file.exists(outfile)) {
-    req <- robustly(httr::GET, n = 10)(
+    req <- PEcAn.utils::robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),
       httr::authenticate(user = "pecanproject", password = "Data4pecan3"),
       httr::write_disk(outfile, overwrite = TRUE)

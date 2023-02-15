@@ -39,6 +39,7 @@ Imports:
     magrittr,
     ncdf4 (>= 1.15),
     PEcAn.logger,
+    purrr,
     rlang,
     stringi,
     units
