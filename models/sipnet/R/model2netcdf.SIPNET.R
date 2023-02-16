@@ -250,36 +250,37 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
     # ******************** Declare netCDF variables ********************#
     mstmipvar <- PEcAn.utils::mstmipvar
-    nc_var <- list()
-    nc_var[[1]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    nc_var[[2]]  <- PEcAn.utils::to_ncvar("NPP", dims)
-    nc_var[[3]]  <- PEcAn.utils::to_ncvar("TotalResp", dims)
-    nc_var[[4]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
-    nc_var[[5]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
-    nc_var[[6]]  <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999,
-                          longname = "Soil Respiration") #need to figure out standard variable for this output
-    nc_var[[7]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-    # nc_var[[7]] <- mstmipvar('CarbPools', lat, lon, t, NA)
-    nc_var[[8]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
-    nc_var[[9]] <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims)
-    nc_var[[10]] <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
-    nc_var[[11]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    nc_var[[12]] <- PEcAn.utils::to_ncvar("Qle", dims)
-    nc_var[[13]] <- PEcAn.utils::to_ncvar("Transp", dims)
-    nc_var[[14]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
-    nc_var[[15]] <- PEcAn.utils::to_ncvar("SoilMoistFrac", dims)
-    nc_var[[16]] <- PEcAn.utils::to_ncvar("SWE", dims)
-    nc_var[[17]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
-    nc_var[[18]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    nc_var[[19]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
-    nc_var[[20]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
-    nc_var[[21]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                     longname = "Gross Woody Biomass Increment")
-    nc_var[[22]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                     longname = "Total aboveground biomass")
-    nc_var[[23]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
+    nc_var <- list(
+      "GPP" = PEcAn.utils::to_ncvar("GPP", dims),
+      "NPP" = PEcAn.utils::to_ncvar("NPP", dims),
+      "TotalResp" = PEcAn.utils::to_ncvar("TotalResp", dims),
+      "AutoResp" = PEcAn.utils::to_ncvar("AutoResp", dims),
+      "HeteroResp" = PEcAn.utils::to_ncvar("HeteroResp", dims),
+      "SoilResp" = ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999,
+                                    longname = "Soil Respiration"), #need to figure out standard variable for this output
+      "NEE" = PEcAn.utils::to_ncvar("NEE", dims),
+      "AbvGrndWood" = PEcAn.utils::to_ncvar("AbvGrndWood", dims),
+      "leaf_carbon_content" = PEcAn.utils::to_ncvar("leaf_carbon_content", dims),
+      "TotLivBiom" = PEcAn.utils::to_ncvar("TotLivBiom", dims),
+      "TotSoilCarb" = PEcAn.utils::to_ncvar("TotSoilCarb", dims),
+      "Qle" = PEcAn.utils::to_ncvar("Qle", dims),
+      "Transp" = PEcAn.utils::to_ncvar("Transp", dims),
+      "SoilMoist" = PEcAn.utils::to_ncvar("SoilMoist", dims),
+      "SoilMoistFrac" = PEcAn.utils::to_ncvar("SoilMoistFrac", dims),
+      "SWE" = PEcAn.utils::to_ncvar("SWE", dims),
+      "litter_carbon_content" = PEcAn.utils::to_ncvar("litter_carbon_content", dims),
+      "LAI" = PEcAn.utils::to_ncvar("LAI", dims),
+      "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
+      "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
+      "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                     longname = "Gross Woody Biomass Increment"),
+      "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                     longname = "Total aboveground biomass"),
+      "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='', 
                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                     prec = "double")
+                      
+    )
     
     # ******************** Create netCDF and output variables ********************#
     ### Output netCDF data
