@@ -200,15 +200,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
       ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
       ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
-      output[[12]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+      output[["Qle"]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     } else {
-     output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+     output[["Qle"]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     }
-    output[[13]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
-    output[[14]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
-    output[[15]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
-    output[[16]] <- (sub.sipnet.output$snow * 10)  # SWE
-    output[[17]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
+    output[["Transp"]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
+    output[["SoilMoist"]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
+    output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
+    output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
+    output[["litter_carbon_content"]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
 
     #calculate LAI for standard output
     param <- read.table(file.path(gsub(pattern = "/out/",
@@ -217,13 +217,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     id <- which(param[, 1] == "leafCSpWt")
     leafC <- 0.48
     SLA <- 1000 / param[id, 2] #SLA, m2/kgC
-    output[[18]] <- output[[9]] * SLA # LAI
+    output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA # LAI
 
-    output[[19]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
-    output[[20]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-    output[[21]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
-    output[[22]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
-    output[[23]] <- c(rbind(bounds[,1], bounds[,2]))
+    output[["fine_root_carbon_content"]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
+    output[["coarse_root_carbon_content"]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
+    output[["GWBI"]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
+    output[["AGB"]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
+    output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
@@ -278,8 +278,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                      longname = "Total aboveground biomass"),
       "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='', 
                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
-                                    prec = "double")
-                      
+                                    prec = "double")              
     )
     
     # ******************** Create netCDF and output variables ********************#
