@@ -9,9 +9,9 @@
 #' @export
 #'
 #' @examples
-#' @author Dongchen Zhang and Hamzed
-#' @describeIn This function is the refactored version of the original code "Weights_Site.R" written by Hamzed.
+#' @author Dongchen Zhang and Hamze Dokoohaki
 sda_weights_site <- function(FORECAST, ANALYSIS, t, ens){
+  #This function is the refactored version of the original code "Weights_Site.R" written by Hamzed.
   #read site ids from forecast results.
   site.ids <- attr(FORECAST[[1]],'Site') %>% unique() 
   
