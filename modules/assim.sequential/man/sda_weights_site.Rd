@@ -21,11 +21,6 @@ list of weights associated with each ensemble member of each site.
 \description{
 Calculate ensemble weights for each site at time t.
 }
-\section{Functions}{
-\itemize{
-\item \code{sda_weights_site}: function is the refactored version of the original code "Weights_Site.R" written by Hamzed.
-}}
-
 \author{
-Dongchen Zhang and Hamzed
+Dongchen Zhang and Hamze Dokoohaki
 }
