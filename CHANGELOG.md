@@ -71,6 +71,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - runModule.get.trait.data() now correctly respects the settings$database$bety$write setting (#2968)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
+- Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
 
 ### Changed
 

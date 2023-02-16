@@ -18,11 +18,12 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n"
 ##-------------------------------------------------------------------------------------------------#
 
 ##-------------------------------------------------------------------------------------------------#
-##' convert parameters from PEcAn database default units to ED defaults
-##' 
-##' Performs model specific unit conversions on a a list of trait values,
-##' such as those provided to write.config
-##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' Convert parameters from PEcAn database default units to ED defaults
+##'
+##' Performs model specific unit conversions on a a list of trait values, such
+##' as those provided to write.config
+##' @param trait.samples a matrix or dataframe of samples from the trait
+##'   distribution
 ##' @return matrix or dataframe with values transformed
 ##' @author Shawn Serbin, David LeBauer, Carl Davidson, Ryan Kelly
 convert.samples.ED <- function(trait.samples) {
@@ -30,7 +31,8 @@ convert.samples.ED <- function(trait.samples) {
   DEFAULT.MAINTENANCE.RESPIRATION <- 1 / 2
   ## convert SLA from m2 / kg leaf to m2 / kg C
   
-  # IF: trait.samples not being a list throws an error later in the write.config.xml.ED2
+  # IF: trait.samples not being a list throws an error later in the
+  # write.config.xml.ED2
   trait.samples <- as.list(trait.samples)
   
   if ("SLA" %in% names(trait.samples)) {
@@ -73,15 +75,20 @@ convert.samples.ED <- function(trait.samples) {
       # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
       trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
-      ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
-      trait.samples[["dark_respiration_factor"]] <- 
+      ## Calculate dark_resp_factor -- Will be depreciated when moving from
+      ## older versions of ED2
+      trait.samples[["dark_respiration_factor"]] <-
         trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
       
       
     }  ## End dark_respiration_factor loop
   }  ## End Vcmax  
-  # for debugging conversions save(trait.samples, file = file.path(settings$outdir,
-  # 'trait.samples.Rdata'))
+  
+  if ("plant_min_temp" %in% names(trait.samples)) {
+    trait.samples[["plant_min_temp"]] <- PEcAn.utils::ud_convert(trait.samples[["plant_min_temp"]], "degC", "K")
+  }
+  # for debugging conversions save(trait.samples, file =
+  # file.path(settings$outdir, 'trait.samples.Rdata'))
   
   # return converted samples
   return(trait.samples)
