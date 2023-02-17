@@ -13,7 +13,7 @@
 download_edi <- function(directory) {
   download_link <- "https://files.osf.io/v1/resources/b6umf/providers/osfstorage/5a948ea691b689000fa2a588/?zip="
   target_file <- paste0(directory, ".zip")
-  PEcAn.utils::download.file(download_link, target_file)
+  PEcAn.utils::download_file(download_link, target_file)
   unzip(target_file, exdir = directory)
   invisible(TRUE)
 }
