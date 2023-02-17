@@ -2,6 +2,18 @@
 #'
 #' For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
+#' @description
+#' `cos_solar_zenith_angle` returns the cosine of solar zenith angle.
+
+#' @references doy Day of year
+#' @references lat Latitude
+#' @references lon Longitude
+#' @references dt Timestep
+#' @references hr Hours timestep
+
+#' @examplesIf interactive()
+#' browseURL("https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/")
+
 #' @author Alexey Shiklomanov
 #' @param doy Day of year
 #' @param lat Latitude
