@@ -34,7 +34,7 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   # url where Ameriflux data is stored
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/", site, "/", raw.file)
   print(url)
-  PEcAn.utils::download.file(url,out.file,method)
+  PEcAn.utils::download_file(url,out.file,method)
 
   # return file info
   return(invisible(data.frame(file = out.file, 
