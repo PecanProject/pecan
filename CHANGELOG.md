@@ -435,6 +435,7 @@ This is a major change:
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
 - Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
+- The `PEcAn.utils::download.file()` function has now been renamed to `PEcAn.utils::download_file()`
 
 ## [1.5.3] - 2018-05-15
 
