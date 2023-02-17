@@ -6,7 +6,7 @@
 ##'
 ##' @param sitename sitename
 ##' @param outfolder location where output is stored
-##' @param method Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
+##' @param method Optional. Passed to download_file() function.  Use this to set custom programs such as ncftp to use when
 ##' downloading files from FTP sites
 ##' @param start_date desired start date YYYY-MM-DD
 ##' @param end_date desired end date YYYY-MM-DD

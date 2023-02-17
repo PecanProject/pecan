@@ -16,7 +16,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param username Ameriflux username
-##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
+##' @param method Optional. download_file() function option.  Use this to set custom programs such as ncftp
 ##' @param useremail Used email, should include 'address sign' for code to be functional
 ##' @param data_product AmeriFlux data product
 ##' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'

@@ -17,15 +17,15 @@ This custom PEcAn function works together with the base R function download.file
 Examples: <br>
 *HTTP* <br>
 ```
-download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
+download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
 ``` 
 *FTP*
 ```
-download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+download_file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
 ```
 *customizing to use ncftp when running behind an FTP firewall (requires ncftp to be installed and availible)* <br>
 ```
-download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
+download_file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
 ```
 
 <br>
