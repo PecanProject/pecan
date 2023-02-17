@@ -36,6 +36,7 @@ Suggests:
     corrplot,
     DBI,
     ggrepel,
+    emdbook,
     glue,
     gridExtra,
     magic (>= 1.5.0),

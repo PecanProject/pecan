@@ -71,6 +71,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - runModule.get.trait.data() now correctly respects the settings$database$bety$write setting (#2968)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
+- Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
 
 ### Changed
 
@@ -90,6 +91,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   This was needed to resolve a cyclic dependency between PEcAn.DB and PEcAn.utils.
   (#3026; @nanu1605)
 - Internal changes to keep up to date with tidyselect v1.2.0
+- The `PEcAn.utils::download.file()` function has now been renamed to `PEcAn.utils::download_file()`
 
 ### Removed
 
@@ -433,7 +435,7 @@ This is a major change:
 - Five functions from PEcAn.utils functions have been moved to other packages. The versions in PEcAn.utils are deprecated, will not be updated with any new features, and will be removed in a future release.
   - run.write.configs and runModule.run.write.configs have been moved to PEcAn.workflow
   - read.ensemble.output, get.ensemble.samples and write.ensemble.configs have been moved to PEcAn.uncertainty
-- Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.    
+- Change the way packages are checked for and called in SHINY apps. DESCRIPTION files in SHINY apps are not the place to declare pacakge dpendencies.
 
 ## [1.5.3] - 2018-05-15
 
