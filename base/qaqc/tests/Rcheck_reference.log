@@ -38,9 +38,7 @@ Non-standard file/directory found at top level:
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'::' or ':::' imports not declared from:
-  ‘dplyr’ ‘PEcAn.DB’
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
@@ -49,18 +47,6 @@ cull_database_entries: no visible global function definition for
   ‘read.table’
 cull_database_entries: no visible global function definition for
   ‘write.table’
-find_formats_without_inputs: no visible binding for global variable
-  ‘user_id’
-find_formats_without_inputs: no visible binding for global variable
-  ‘created_at’
-find_formats_without_inputs: no visible binding for global variable
-  ‘updated_at’
-find_inputs_without_formats: no visible binding for global variable
-  ‘user_id_code’
-find_inputs_without_formats: no visible binding for global variable
-  ‘created_at’
-find_inputs_without_formats: no visible binding for global variable
-  ‘updated_at’
 write_out_table: no visible global function definition for
   ‘write.table’
 Undefined global functions or variables:
@@ -83,4 +69,4 @@ to your NAMESPACE file.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 1 WARNING, 3 NOTEs
+Status: 0 WARNING, 3 NOTEs

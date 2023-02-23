@@ -84,7 +84,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
     if (length(file) == 0) {
       PEcAn.logger::logger.severe("Could not download data for", site, "for the year", year)
     }
-    PEcAn.utils::download.file(paste0(baseurl, file), outputfile)
+    PEcAn.utils::download_file(paste0(baseurl, file), outputfile)
   }
   
   # return list of files downloaded

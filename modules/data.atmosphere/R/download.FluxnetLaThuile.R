@@ -76,7 +76,7 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
     }
     
     file <- paste(baseurl, year, "synth.hourly.coreplusquality.csv", sep = ".")
-    PEcAn.utils::download.file(file, outputfile)
+    PEcAn.utils::download_file(file, outputfile)
   }
   
   # return list of files downloaded

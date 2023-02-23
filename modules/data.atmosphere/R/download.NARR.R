@@ -70,7 +70,7 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
       url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
       
       PEcAn.logger::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
-      PEcAn.utils::download.file(url, new.file, method)
+      PEcAn.utils::download_file(url, new.file, method)
     }
   }
   
