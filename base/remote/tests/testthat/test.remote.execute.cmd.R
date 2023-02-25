@@ -1,5 +1,3 @@
-library(PEcAn.remote)
-library(testthat)
 
 host <- list(name = "localhost")
 echo_string <- "pecan"
