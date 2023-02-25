@@ -1,4 +1,3 @@
-context("Testing remote.execute.cmd() for different possible inputs")
 library(PEcAn.remote)
 library(testthat)
 
