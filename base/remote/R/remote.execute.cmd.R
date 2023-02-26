@@ -31,7 +31,7 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
     if(is.null(host$name) || host$name == "") {
-      PEcAn.logger::logger.severe("`host$name` cannot be `NULL` or empty for remote execution")
+      PEcAn.logger::logger.severe("`name`parameter in `host` object cannot be `NULL` or empty for remote execution")
     }
     remote <- host$name
     if (!is.null(host$tunnel)) {
