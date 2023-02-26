@@ -33,7 +33,7 @@ Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points,
       for (id in site_info$site_id) {
         site_SoilC <- Previous_CSV[which(Previous_CSV$Site_ID == id),]
         SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_TotSoilCarb")] <- site_SoilC$Total_soilC_0.200cm
-        SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_SD")] <- site_SoilC$Std_soilC_0.200cm * sqrt(length(t))
+        SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_SD")] <- site_SoilC$Std_soilC_0.200cm
       }
     }
   }else{

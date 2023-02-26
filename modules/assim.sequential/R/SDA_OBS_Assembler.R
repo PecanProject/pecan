@@ -177,11 +177,16 @@ SDA_OBS_Assembler <- function(settings){
   names(obs.cov) <- gsub("-", "/", time_points)
   
   #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
+  #for soilgrids specifically, calculate the cov multiplier by the sqrt of length of total time steps.
+  Soilgrids_multiplier <- sqrt(length(time_points_all[[which(var == "TotSoilCarb")]]))
   for (i in seq_along(obs.mean)) {
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
         obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-which(is.na(obs.mean[[i]][[j]]))]
         obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-which(is.na(rowSums(obs.cov[[i]][[j]]))), -which(is.na(colSums(obs.cov[[i]][[j]])))]
+      }
+      if (names(obs.mean[[i]][[j]]) == "TotSoilCarb"){
+        obs.cov[[i]][[j]] <- obs.cov[[i]][[j]] * Soilgrids_multiplier
       }
     }
   }
