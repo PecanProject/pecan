@@ -134,12 +134,12 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
       cl <- parallel::makeCluster(ncores)
       doParallel::registerDoParallel(cl)
       foreach::foreach(i=1:length(files_to_download_final)) %dopar% 
-        try(PEcAn.utils::download.file(download_urls_final[i], file.path(outdir, 
+        try(PEcAn.utils::download_file(download_urls_final[i], file.path(outdir, 
                                                             files_to_download_final[i])))
     } else {
       PEcAn.logger::logger.info("Caution, downloading in serial. 
                                 Could take an extended period to finish") # needed?
-      Map(function(u, d) PEcAn.utils::download.file(u, d), download_urls_final, file.path(outdir,
+      Map(function(u, d) PEcAn.utils::download_file(u, d), download_urls_final, file.path(outdir,
                                                                              files_to_download_final))
     }
     # let user know downloading is complete

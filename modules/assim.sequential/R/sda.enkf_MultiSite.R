@@ -85,7 +85,7 @@ sda.enkf.multisite <- function(settings,
   nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
   censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
   #--------Initialization
-  FORECAST    <- ANALYSIS <- list()
+  FORECAST    <- ANALYSIS <- ens_weights <- list()
   enkf.params <- list()
   restart.list <- NULL
   #create SDA folder to store output
@@ -616,6 +616,7 @@ sda.enkf.multisite <- function(settings,
       new.state  <- as.data.frame(analysis)
       ANALYSIS[[obs.t]] <- analysis
       ANALYSIS <-ANALYSIS
+      ens_weights[[obs.t]] <- sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
       ###-------------------------------------------------------------------###
       ### save outputs                                                      ###
       ###-------------------------------------------------------------------###---- 

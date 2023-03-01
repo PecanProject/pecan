@@ -42,6 +42,7 @@ wanted <- c(
 'dplR',
 'dplyr',
 'ellipse',
+'emdbook',
 'foreach',
 'fs',
 'furrr',

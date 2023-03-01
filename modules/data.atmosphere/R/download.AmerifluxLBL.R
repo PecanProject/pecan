@@ -16,7 +16,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param username Ameriflux username
-##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
+##' @param method Optional. download_file() function option.  Use this to set custom programs such as ncftp
 ##' @param useremail Used email, should include 'address sign' for code to be functional
 ##' @param data_product AmeriFlux data product
 ##' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'
@@ -127,7 +127,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   if (download_file_flag) {
     extract_file_flag <- TRUE
-    PEcAn.utils::download.file(ftplink, output_zip_file, method)
+    PEcAn.utils::download_file(ftplink, output_zip_file, method)
     if (!file.exists(output_zip_file)) {
       PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
