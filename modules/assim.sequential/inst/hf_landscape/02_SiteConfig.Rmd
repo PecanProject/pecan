@@ -390,6 +390,67 @@ for (i in 1:nSite) {
 unlink(paste0(settings$outdir,"/pecan.xml"))
 PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
 
+
+## HACK: SAVE SETTINGS AS RDS or RData instead of XML
+saveRDS(settings,file=paste0(settings$outdir,"/pecan.RDS"))
 ```
 
 ## 3. Code to build *initial input files* at the patch-level
+
+*map LULC to PFT*
+```{r}
+##pft.site
+veg = readr::read_csv(file = "patches.csv")
+pft_site = veg %>% dplyr::mutate(
+  site = site_ID,
+  pft = dplyr::case_when(
+  nlcd == 41 ~ "temperate.deciduous.HPDA", ## deciduous
+  nlcd == 42 ~ "boreal.coniferous",        ## conifer
+  nlcd == 43 ~ "temperate.deciduous.HPDA", ## mixed
+  nlcd == 71 ~ "semiarid.grassland_HPDA",  ## herbaceous  
+  nlcd == 90 ~ "temperate.deciduous.HPDA"  ## woody wetland
+)) %>% dplyr::select(site,pft)
+readr::write_csv(pft_site,file=file.path(settings$outdir,"site_pft.csv"))
+```
+
+
+*pool init cond*
+For version 1, start with just one ensemble member
+```{r}
+veg = readr::read_csv(file = "patches.csv")
+veg_config = list()
+for(i in seq_along(site_ID)){
+  
+  ## soil C data
+  soil_carbon = 12.851 ## kgC/m2, default from Finzi paper
+  
+  #Prep Arguments for pool_ic function
+  dims <- list(time =1) #Time dimension may be irrelevant
+  variables <-list(AbvGrndWood = veg$agb[i]/10, LAI = veg$lai[i], soil_organic_carbon_content = soil_carbon)
+  poolinfo <- list(dims = dims,
+                vals = variables) ## check units on ALL variables!
+  
+  ## save output
+  outfolder = file.path(settings$outdir,"IC")
+  if(!dir.exists(outfolder)) dir.create(outfolder)
+  veg_config[[i]] = veg2model.SIPNET(outfolder, poolinfo, site_ID[i], 1)
+  
+  ## add to settings
+  settings[[i]]$run$inputs$poolinitcond <- list(path=veg_config[[i]]$file)
+}
+
+```
+
+
+
+*soil physical parameters*
+```{r}
+## optional, getting started without setting
+```
+
+*update settings*
+```{r}
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
+saveRDS(settings,file=paste0(settings$outdir,"/pecan.RDS"))
+```
+

@@ -48,7 +48,8 @@ laie <- rast("NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.b
 
 ```{r}
 ## visualize data
-plot(lairaw)
+lairaw2 = terra::clamp(lairaw,upper=5)
+plot(lairaw2)
 points(tower_utm[1],tower_utm[2])
 
 #plot(lai)
