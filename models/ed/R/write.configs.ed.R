@@ -459,22 +459,22 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   # a new history file, add the .csv file to models/ed/data-raw and run the
   # sysdata.R script in that folder
   
-  if(is.null(settings$model$revision)) {
-    PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
-    edhistory <- history
-  } else {
-    histfile <- paste0("history.r", settings$model$revision)
-    edhistory <- try(eval(str2lang(histfile)), silent = TRUE)
-  } 
-  
-  if(inherits(edhistory, "try-error")) {
-    PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
-    edhistory <- history
-  } else {
-    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
-  }
-
-  edtraits <- names(edhistory)
+  # if(is.null(settings$model$revision)) {
+  #   PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
+  #   edhistory <- history
+  # } else {
+  #   histfile <- paste0("history.r", settings$model$revision)
+  #   edhistory <- try(eval(str2lang(histfile)), silent = TRUE)
+  # } 
+  # 
+  # if(inherits(edhistory, "try-error")) {
+  #   PEcAn.logger::logger.debug("--- Using Generic ED2 History File")
+  #   edhistory <- history
+  # } else {
+  #   PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
+  # }
+  # 
+  # edtraits <- names(edhistory)
   pftmapping <- PEcAn.ED2::pftmapping
   
   ## Get ED2 specific model settings and put into output config xml file
@@ -542,13 +542,14 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 
       } else {
         ## Get default trait values from ED history
-        vals <- as.list(edhistory[edhistory$num == pft.number, ])
+        # vals <- as.list(edhistory[edhistory$num == pft.number, ])
 
         ## Convert trait values to ED units
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
 
         ## Selectively replace defaults with trait values
-        vals <- modifyList(vals, converted.trait.values)
+        # vals <- modifyList(vals, converted.trait.values)
+        vals <- converted.trait.values
 
         ## Convert settings constants to ED units
         converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
