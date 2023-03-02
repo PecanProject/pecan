@@ -706,7 +706,6 @@ sda.enkf.multisite <- function(settings,
       }   
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
-    #rename sipnet.out
     
     # remove files as SDA runs
     if (!(keepNC))
