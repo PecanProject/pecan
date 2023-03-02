@@ -20,7 +20,7 @@ pft_csv_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
 
 #Obs_prep part
 #AGB
-AGB_input_dir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
+AGB_indir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
 allow_download <- TRUE
 AGB_export_csv <- TRUE
 AGB_timestep <- list(unit="year", num=1)
@@ -39,6 +39,7 @@ update_csv <- FALSE
 
 #SoilC
 SoilC_timestep <- list(unit="year", num=1)
+SoilC_export_csv <- TRUE
 
 #Obs Date
 obs_start_date <- "2012-07-15"
@@ -77,10 +78,10 @@ template <- Settings(list(
     end.date = end_date,
     
     Obs_Prep = structure(list(
-      Landtrendr_AGB = structure(list(AGB_input_dir = AGB_input_dir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+      Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
       MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
       SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
-      Soilgrids_SoilC = structure(list(timestep = SoilC_timestep)),
+      Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
       start.date = obs_start_date,
       end.date = obs_end_date,
       outdir = obs_outdir
