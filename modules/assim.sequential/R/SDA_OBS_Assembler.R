@@ -1,6 +1,6 @@
 #' Assembler for preparing obs.mean and obs.cov for the SDA workflow
 #'
-#' @param settings the settings object created by Create_Multi_settings.R script.
+#' @param settings the settings object followed by PEcAn.settings format.
 #'
 #' @return list of obs.mean and obs.cov
 #' @export
@@ -54,7 +54,7 @@ SDA_OBS_Assembler <- function(settings){
     diff_dates <- TRUE
   }
   
-  #We need to keep the order from var_name to the actual obs.mean and obs.cov
+  #The order of obs.mean and obs.cov objects are relying on the order of how you organize the Obs_Prep section.
   OBS <- list()
   var <- c()
   if (diff_dates) time_points_all <- list()
@@ -146,9 +146,6 @@ SDA_OBS_Assembler <- function(settings){
       return(diag(vec))
     }
   }
-  rm_na_diag <- function(mat){
-    mat[-which(is.na(rowSums(mat))), -which(is.na(colSums(mat)))]
-  }
   
   #over time
   for (i in seq_along(time_points)) {
@@ -173,10 +170,8 @@ SDA_OBS_Assembler <- function(settings){
     obs.mean[[i]] <- site_dat_var %>% purrr::set_names(site_info$site_id)
     obs.cov[[i]] <- site_sd_var %>% purrr::set_names(site_info$site_id)
   }
-  names(obs.mean) <- gsub("-", "/", time_points)#not sure if I have to do this.
-  names(obs.cov) <- gsub("-", "/", time_points)
   
-  #remove NA data as this will crash the SDA. Removes rown numbers (may not be nessesary)
+  #remove NA data as this will crash the SDA.
   #for soilgrids specifically, calculate the cov multiplier by the sqrt of length of total time steps.
   Soilgrids_multiplier <- sqrt(length(time_points_all[[which(var == "TotSoilCarb")]]))
   for (i in seq_along(obs.mean)) {
