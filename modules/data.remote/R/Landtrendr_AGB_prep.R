@@ -18,8 +18,8 @@
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points, 
-                     AGB_indir = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB", 
-                     outdir = NULL, export_csv = TRUE, allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
+                     AGB_indir, outdir = NULL, export_csv = TRUE, 
+                     allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
@@ -52,7 +52,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     AGB_Output$site_id <- site_info$site_id
     
-    #Calculate LAI for each time step and site.
+    #Calculate AGB for each time step and site.
     #loop over time and site
     for (i in seq_along(time_points)) {
       t <- time_points[i]
