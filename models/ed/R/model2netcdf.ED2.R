@@ -1004,8 +1004,8 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       "DBH", #diameter at breast height (cm)
       "DDBH_DT", #change in DBH (cm/plant/yr) 
       "AGB_CO", #cohort level above ground biomass (kgC/plant)
-      "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/m2/yr)
-      "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/m2/s)
+      "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/plant/yr)
+      "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/plant/s)
       "BSEEDS_CO", #seed biomass in units of (kgC/plant)
       "NPLANT" #plant density (plants/m2), required for /plant -> /m2 conversion
     )
@@ -1100,7 +1100,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
         }
         
         #2) do per plant -> per area correction
-        if (.y %in% c("BSEEDS_CO", "AGB_CO")) {
+        if (.y %in% c("BSEEDS_CO", "AGB_CO", "MMEAN_NPPDAILY_CO", "MMEAN_TRANSP_CO")) {
           var <- purrr::map2(var, ed.dat$NPLANT, `*`)
         }
         
