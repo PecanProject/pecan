@@ -365,7 +365,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   } 
   if(t == 1 | recompileGEF){ #TO DO need to make something that works to pick whether to compile or not
   # initial Q depends on the size of aqq
-    aq.arg <- aqq[,,t]
     
     #Initial values
     inits.pred <-
