@@ -150,6 +150,8 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
 #' @author Dongchen Zhang
 #' @importFrom lubridate %m+%
 obs_timestep2timepoint <- function(start.date, end.date, timestep){
+  start.date <- lubridate::ymd(start.date)
+  end.date <- lubridate::ymd(end.date)
   if(timestep$unit == "year"){
     time_points <- seq(start.date, end.date, paste(timestep$num, "year"))
   }else if(timestep$unit == "month"){
