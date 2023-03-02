@@ -7,7 +7,7 @@
 SDA_OBS_Assembler(settings)
 }
 \arguments{
-\item{settings}{the settings object created by Create_Multi_settings.R script.}
+\item{settings}{the settings object followed by PEcAn.settings format.}
 }
 \value{
 list of obs.mean and obs.cov

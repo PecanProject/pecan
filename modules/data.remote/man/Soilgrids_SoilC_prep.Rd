@@ -9,7 +9,8 @@ Soilgrids_SoilC_prep(
   start_date,
   end_date,
   time_points,
-  outdir = NULL
+  outdir = NULL,
+  export_csv = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ Soilgrids_SoilC_prep(
 \item{time_points}{A vector contains each time point within the start and end date.}
 
 \item{outdir}{Where the final CSV file will be stored.}
+
+\item{export_csv}{Decide if we want to export the CSV file.}
 }
 \value{
 A data frame containing AGB median and sd for each site and each time step.

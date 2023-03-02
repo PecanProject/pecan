@@ -10,7 +10,7 @@ MODIS_LAI_prep(
   end_date,
   time_points,
   NCore = NULL,
-  run_parallel,
+  run_parallel = FALSE,
   outdir = NULL,
   search_window = 30,
   export_csv = FALSE
