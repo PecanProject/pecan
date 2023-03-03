@@ -185,7 +185,10 @@ SDA_OBS_Assembler <- function(settings){
       }
     }
   }
-  
+  #create folder in case it doesn't exist.
+  if(!file.exists(file.path(Obs_Prep$outdir, "Rdata"))){
+    dir.create(file.path(Obs_Prep$outdir, "Rdata"))
+  }
   save(obs.mean, file = file.path(Obs_Prep$outdir, "Rdata", "obs.mean.Rdata"))
   save(obs.cov, file = file.path(Obs_Prep$outdir, "Rdata", "obs.cov.Rdata"))
   list(obs.mean = obs.mean, obs.cov = obs.cov)

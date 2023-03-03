@@ -16,13 +16,13 @@
 Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points, 
                            outdir = NULL, export_csv = FALSE){
   #if we export CSV but didn't provide any path
-  if(as.logical(export_csv) && is.null(outdir)){
+  if(as.logical(export_csv) & is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
-  }else if(as.logical(export_csv) && !file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
+  }else if(as.logical(export_csv) & !file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
     #if we want to export the csv file for soilgrids data.
     Previous_CSV <- PEcAn.data.land::soilgrids_soilC_extract(site_info, outdir)
-  }else if(!as.logical(export_csv && !file.exists(file.path(outdir, "soilgrids_soilC_data.csv")))){
+  }else if(!as.logical(export_csv) & !file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
     #if we don't want to export the csv file.
     Previous_CSV <- PEcAn.data.land::soilgrids_soilC_extract(site_info)
   }else if(file.exists(file.path(outdir, "soilgrids_soilC_data.csv"))){
