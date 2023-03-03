@@ -231,7 +231,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "NSOURCE"    , "NSINK"            ,                                    # 96:97
     "NRT"        , "NCRT"             ,                                    # 98:99
     "rNLITT"     , "rNSOMF"           ,                                    # 100:101
-    "DAYL"       , "EVAP"             , "TRAN"                             # 102:104
+    "DAYL"       , "EVAP"             , "TRAN"        , "FLITTC_LEAF",     # 102:105
+    "FLITTC_ROOT", "NEE"              , "FHARVC"      , "FRUNOFFC",        # 106:109
+    "CSOM_A"     , "CSOM_W"           , "CSOM_E"      , "CSOM_N",          # 110:113
+    "CSOM_H"     , "NSOM"             , "TEMPR30"     , "PRECIP30"         # 114:117
   )
   
   outputUnits <- c(
@@ -260,11 +263,15 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "(g N m-2 d-1)", "(g N m-2 d-1)",                                                # 96:97
     "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 98:99
     "(g N m-2)"    , "(g N g-1 C)"  ,                                                # 100:101
-    "(d d-1)"      , "(mm d-1)"     , "(mm d-1)"                                     # 102:104
+    "(d d-1)"      , "(mm d-1)"     , "(mm d-1)"      , "(g C m-2 d-1)",             # 102:105
+    "(g C m-2 d-1)", "(g C m-2 d-1)", "(g C m-2 d-1)" , "(g C m-2 d-1)",             # 106:109
+    "(g C m-2)"    , "(g C m-2)"    , "(g C m-2)"     , "(g C m-2)",                 # 110:113
+    "(g C m-2)"    , "(g N m-2)"    , "(degC)"        , "(mm)"
   )
   
   NOUT <- as.integer( length(outputNames) )
   
+  if (length(outputUnits) != NOUT) { PEcAn.logger::logger.severe('#outputNames != #outputUnits') }
   
   ############################# SITE CONDITIONS  ########################
   # this part corresponds to  initialise_BASGRA_***.R functions  
@@ -335,12 +342,13 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                      calendar_fert,
                      calendar_Ndep,
                      days_harvest,
+                     as.integer(144), 
                      NDAYS,
                      NOUT,
-                     matrix(0, NDAYS, NOUT))[[8]]
-  
+                     matrix(0, NDAYS, NOUT))[[9]]
   # for now a hack to write other states out
-  save(output, file = file.path(outdir, "output_basgra.Rdata"))
+  # save(output, file = file.path(outdir, "output_basgra.Rdata"))
+  write.csv(setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
   last_vals <- output[nrow(output),]
   names(last_vals) <- outputNames
   save(last_vals, file = file.path(outdir, "last_vals_basgra.Rdata"))
@@ -426,6 +434,18 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # during the groowing season its depth will mainly be equal to the rooting depth, but during winter its depth will be ROOTD-Fdepth
     soilm <- output[thisyear, which(outputNames == "WAL")] # mm
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
+
+    # Additional C fluxes
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FLITTC_LEAF"],
+                                                         "g m-2", "kg m-2") / sec_in_day    
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FLITTC_ROOT"],
+                                                         "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FHARVC"],
+                                                         "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "NEE"],
+                                                         "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FRUNOFFC"],
+                                                         "g m-2", "kg m-2") / sec_in_day
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -474,6 +494,16 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("Qle", dims)
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
                                       longname = "Average Layer Soil Moisture")
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("leaf_litter_carbon_flux", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='Flux of carbon from leaf litter to soil pools')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("fine_root_litter_carbon_flux", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='Flux of carbon from fine root litter to soil pools')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("harvest_carbon_flux", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='Flux of carbon removed by harvest')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("NEE_alt", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='Alternative NEE')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("FRUNOFFC", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='C in runoff')
     
     # ******************** Declare netCDF variables ********************#
     
