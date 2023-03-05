@@ -20,30 +20,17 @@ SDA_OBS_Assembler <- function(settings){
   Obs_Prep <- settings$state.data.assimilation$Obs_Prep
   
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
-  site_info <- list(site_id = settings %>% 
-                      purrr::map(~.x[['run']] ) %>% 
-                      purrr::map('site') %>% 
-                      purrr::map('id') %>% 
-                      unlist() %>% 
-                      as.character(),
-                    lat = settings %>% 
-                      purrr::map(~.x[['run']] ) %>% 
-                      purrr::map('site') %>% 
-                      purrr::map('lat') %>% 
-                      unlist() %>% 
-                      as.numeric(),
-                    lon = settings %>% 
-                      purrr::map(~.x[['run']] ) %>% 
-                      purrr::map('site') %>% 
-                      purrr::map('lon') %>% 
-                      unlist() %>% 
-                      as.numeric(),
-                    site_name = rep("name", length(settings %>% 
-                                                     purrr::map(~.x[['run']] ) %>% 
-                                                     purrr::map('site') %>% 
-                                                     purrr::map('lat') %>% 
-                                                     unlist() %>% 
-                                                     as.numeric())))
+  site_info <- settings %>% 
+    purrr::map(~.x[['run']] ) %>% 
+    purrr::map('site')%>% 
+    purrr::map(function(site.list){
+      #conversion from string to number
+      site.list$lat <- as.numeric(site.list$lat)
+      site.list$lon <- as.numeric(site.list$lon)
+      list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, name=site.list$name)
+    })%>% 
+    dplyr::bind_rows() %>% 
+    as.list()
   
   #convert from timestep to time points
   if (length(Obs_Prep$timestep)>0){
@@ -173,7 +160,7 @@ SDA_OBS_Assembler <- function(settings){
   
   #remove NA data as this will crash the SDA.
   #for soilgrids specifically, calculate the cov multiplier by the sqrt of length of total time steps.
-  Soilgrids_multiplier <- sqrt(length(time_points_all[[which(var == "TotSoilCarb")]]))
+  Soilgrids_multiplier <- length(time_points_all[[which(var == "TotSoilCarb")]])
   for (i in seq_along(obs.mean)) {
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
