@@ -426,7 +426,8 @@ sda.enkf.multisite <- function(settings,
               settings = settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
-              restart = restart.arg
+              restart = restart.arg,
+              rename = TRUE
             )
           }) %>%
           setNames(site.ids)
