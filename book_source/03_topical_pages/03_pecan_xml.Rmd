@@ -886,7 +886,7 @@ The following tags can be used for observation preparation for the SDA workflow.
 <state.data.assimilation>
   <Obs_Prep>
    <Landtrendr_AGB>
-    <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
+    <AGB_indir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_indir>
     <allow_download>TRUE</allow_download>
     <export_csv>TRUE</export_csv>
     <timestep>
@@ -928,16 +928,23 @@ The following tags can be used for observation preparation for the SDA workflow.
 </state.data.assimilation>
 ```
 
-* **Landtrendr_AGB** : [optional] The naming convention of this section is based on "DataSource_AbbreviationOfData", if you want to proceed with the SDA_Obs_Assembler function and generate obs.mean and obs.cov of the landtrendr AGB data, you need to specify it in a similar style.
-* **AGB_indir** : [required] This tag is only for Landtrendr_AGB_prep function, which points to the directory where the pre-downloaded AGB files existed.
-* **allow_download** : [optional] This tag is only for Landtrendr_AGB_prep function, which decide if we want to proceed to download the AGB files (that will take a while, and a lot of space) if some of them are detected to be empty. The default value is FALSE.
+The `Obs_Prep` section is specifically designed for the SDA_OBS_Assembler function within the `state.data.assimilation` section, which helps construct the obs.mean and obs.cov objects more efficiently. The assembler function provides support for MODIS LAI, Landtrendr AGB, SMAP soil moisture profile, and Soilgrids soil C observations. Within the `Obs_Prep` section, the user needs to specify data streams that will be proceeded in the assembler function as `DataSource_AbbreviationOfData` (for example: `Landtrendr_AGB` for Landtrendr aboveground biomass observations, or `Soilgrids_SoilC` for soilgrids soil organic carbon concentration). Other than that, the output directory, and start and end date need to be set within the `Obs_Prep` section, note that if you choose to export csv file for any data, you will get the corresponding csv file just under the outdir, for the Rdata of obs.mean and obs.cov objects, they will be stored whthin the Rdata folder within the outdir, if the Rdata folder is not created, then the assembler will help to create this folder automatically. 
 * **outdir** : [required] This tag is for every observation preparation function, which points to the directory where the csv file associated with each data stream should be generated, read, or updated.
-* **export_csv** : [optional] This tag is for every observation preparation function, which decide if we want to export the csv file to the outdir. Normally the outdir should be given in order to set export_csv as TRUE. The default value is TRUE.
-* **search_window** : [optional] This tag is used for LAI and SMAP observation preparation functions, which defines the search window within which the closest observation to the target date is selected. The default value is 30 days.
-* **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself. The default value is FALSE.
-* **timestep** : [optional] This tag defines the time unit and how many unit time per each time step. It supports year, month, week, and day as time unit. If you assign a general timestep just under the Obs_Prep section, all variable will be handled with the same timestep. If you assign each variable with each timestep, then the assembler function will create obs.mean and obs.cov with mixed temporal resolution. The default value is list(unit="year", num=1).
 * **start.date** : [required] This tag defines the exact start point of time, which differs from the start.date in the state.data.assimilation section in a way that it is the time when first observation should be taken.
 * **end.date** : [required] This tag defines the exact end point of time, which differs from the end.date in the state.data.assimilation section in a way that it is the time when last observation should be taken.
+
+Within each data-specific section (for example, within `Landtrendr_AGB` section), there are few general settings need to be set like the `export_csv` and `timestep` arguments.
+* **export_csv** : [optional] This tag is for every observation preparation function, which decide if we want to export the csv file to the outdir. Normally the outdir should be given in order to set export_csv as TRUE. The default value is TRUE.
+* **timestep** : [optional] This tag defines the time unit and how many unit time per each time step. It supports year, month, week, and day as time unit. If you assign a general timestep just under the Obs_Prep section, all variable will be handled with the same timestep. If you assign each variable with each timestep, then the assembler function will create obs.mean and obs.cov with mixed temporal resolution. The default value is list(unit="year", num=1).
+
+There are also several settings that are data-specific, for example, the `AGB_indir` only applies to Landtrendr AGB data that points to the directory where the AGB files are stored. Beyond that, the allow_download is also AGB specific, which decide if you want to download the AGB files if some are missing.
+* **AGB_indir** : [required] This tag is only for Landtrendr_AGB_prep function, which points to the directory where the pre-downloaded AGB files existed.
+* **allow_download** : [optional] This tag is only for Landtrendr_AGB_prep function, which decide if we want to proceed to download the AGB files (that will take a while, and a lot of space) if some of them are detected to be empty. The default value is FALSE.
+
+For the MODIS LAI and SMAP soil moisture observations, the `search_window` specifies how many days you want to search for the data with desired dates. Beyond that, the `update_csv` is specifically used for the SMAP data, which decide if you want to reproduce formatted csv file based on the downloaded `SMAP_gee.csv` file
+* **search_window** : [optional] This tag is used for LAI and SMAP observation preparation functions, which defines the search window within which the closest observation to the target date is selected. The default value is 30 days.
+* **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself. The default value is FALSE.
+
 
 ### (experimental) Brown Dog {#xml-browndog}
 
