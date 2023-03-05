@@ -26,12 +26,12 @@ Imports:
     PEcAn.remote,
     PEcAn.settings,
     PEcAn.workflow,
-    PEcAn.data.land,
     purrr,
     stringr,
     sp,
     tidyr,
-    utils
+    utils,
+    XML
 Suggests:
     corrplot,
     DBI,
@@ -50,8 +50,7 @@ Suggests:
     sf,
     stats,
     testthat,
-    tictoc,
-    XML
+    tictoc
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8

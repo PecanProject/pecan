@@ -30,7 +30,8 @@ Imports:
     stringr (>= 1.1.0),
     doParallel,
     parallel,
-    foreach
+    foreach,
+    PEcAn.data.land
 Suggests:
     testthat (>= 1.0.2),
     ggplot2,
