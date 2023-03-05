@@ -26,6 +26,7 @@ Imports:
     PEcAn.remote,
     PEcAn.settings,
     PEcAn.workflow,
+    PEcAn.data.land,
     purrr,
     stringr,
     sp,
