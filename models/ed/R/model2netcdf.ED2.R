@@ -1007,18 +1007,24 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/plant/yr)
       "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/plant/s)
       "BSEEDS_CO", #seed biomass in units of (kgC/plant)
-      "NPLANT" #plant density (plants/m2), required for /plant -> /m2 conversion
+      "NPLANT", #plant density (plants/m2), required for /plant -> /m2 conversion
+      "PFT" #pft numbers
     )
   
   # List of vars to extract includes the requested one, plus others needed below 
   vars <- c(
     varnames,
-    "PFT"#, #pft numbers
-
-    # "AREA", #patch area relative to site area (unitless)
-    # "AREA_SI", #site area relative to polygon area (unitless)
-    # "PACO_N" #number of cohorts in each patch
-    )
+    #patch area relative to site area (unitless).  Needed to weight sums and
+    #means across patches
+    "AREA", 
+    
+    #index of the first cohort of each patch.  Needed for figuring out which
+    #patch each cohort belongs to
+    "PACO_ID", 
+    
+    #number of cohorts in each patch
+    "PACO_N"
+  )
   
   # list to collect outputs
   ed.dat <- list()
@@ -1076,7 +1082,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     pfts <- pfts[!(soil.check)]
   }
   
-  # Aggregate over PFT and DBH bins  
+  # Aggregate over PFT and cohort (DBH bins)  
   for (i in seq_along(ysel)) {
  
     #At this point, every element in ed.dat is a list of variables each having
@@ -1084,10 +1090,9 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     #each variable, the following needs to be mapped to to each month:
     #' 1) Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
     #' 2) Is the variable in per-plant units? If so, it needs converting to per area units
-    #' 3) Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
-    #' 4) group by PFT and sum cohorts
+    #' TODO: 3) Aggregate cohorts within each patch, weight by patch and aggregate across patches
+    #' 4) Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
     
-    #TODO: This is written in a way that only apply to cohort-level variables.  Should this be generalized?
     out <- 
       #TODO, this outer imap could be made into a for-loop if it makes it easier for people to read and edit in the future.  not necessarily faster with imap
       purrr::imap(ed.dat[names(ed.dat) %in% varnames], ~{ 
@@ -1104,7 +1109,12 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
           var <- purrr::map2(var, ed.dat$NPLANT, `*`)
         }
         
-        #3) convert units to PEcAn standard if necessary
+        #3a) Aggregate PFT cohorts within a patch
+        
+        #3b) Aggregate PFTs across patches (weighted by AREA)
+        
+        
+        #4) convert units to PEcAn standard if necessary
         #input units are according to the ED2 source code: https://raw.githubusercontent.com/EDmodel/ED2/master/ED/src/memory/ed_state_vars.F90, output units are according to PEcAn.utils::standard_vars
         if(.y == "MMEAN_NPPDAILY_CO") {
           var <- purrr::map(var, ~ PEcAn.utils::ud_convert(.x, u1 = "kg/m2/yr", u2 = "kg/m2/s"))
@@ -1141,6 +1151,77 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   return(out)
   
 } # end read_E_files
+
+
+read_E_files_new <- function() {
+  
+  # copy in all the setup stuff here
+  
+  # #extract data from a single -E- .h5 file as a tibble
+  extract_E_file <- function(file, cohort_vars, patch_vars) {
+    nc <- ncdf4::nc_open(file)
+    on.exit(ncdf4::nc_close(nc), add = FALSE)
+    avail_cohort <- cohort_vars[cohort_vars %in% names(nc$var)]
+    if(length(avail_cohort) == 0) {
+      PEcAn.logger::logger.warn("No cohort-level variables found!")
+      return(NULL)
+    }
+    avail_patch <- patch_vars[patch_vars %in% names(nc$var)]
+    if(length(avail_patch) == 0) {
+      PEcAn.logger::logger.warn("No patch-level variables found!")
+      return(NULL)
+    }
+    # cohort-level and patch-level variables are extracted separately, then joined with a rolling-join
+    cohort_df <-
+      purrr::map(avail_cohort, function(.x) ncdf4::ncvar_get(nc, .x)) |> 
+      map(as.vector) |> 
+      purrr::set_names(avail_cohort) |> 
+      tibble::as_tibble() |>
+      dplyr::mutate(COHORT_ID = 1:n())
+    
+    patch_df <-
+      purrr::map(avail_patch, function(.x) ncdf4::ncvar_get(nc, .x)) |>
+      map(as.vector) |> 
+      purrr::set_names(avail_patch) |>
+      tibble::as_tibble() |>
+      dplyr::mutate(PATCH_ID = 1:n())
+    
+    # join patch data with cohort data.  PACO_ID is the "index of the first
+    # cohort of each patch", so I use a rolling join (requires dplyr >=
+    # 1.1.0) to combine them.
+    dplyr::left_join(cohort_df, patch_df, dplyr::join_by(closest(COHORT_ID >= PACO_ID))) |>
+      #dates in filename are not valid because day is 00.  Extract just year
+      #and month and use lubridate to build date
+      dplyr::mutate(date = stringr::str_match(basename(file), "(\\d{4}-\\d{2})-\\d{2}")[, 2] |> lubridate::ym()) |>
+      dplyr::select(date, dplyr::everything()) |>
+      dplyr::select(-PACO_ID)
+  }
+  
+  raw <- 
+    purrr::map(e_files, ~foo(.x, cohort_vars, patch_vars)) |> 
+    dplyr::bind_rows() 
+  
+  out <- raw |>
+    dplyr::mutate(
+      #per unit area corrections
+      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO), ~.x*NPLANT),
+      #pecan standard units
+      MMEAN_NPPDAILY_CO = units::set_units(MMEAN_NPPDAILY_CO,"kg/m^2/s")
+    ) |> 
+    # weight by patch area and sum across cohorts and patches
+    group_by(date, PFT) |> 
+    summarize(
+      across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO, NPLANT),
+             ~sum(.x*AREA)),
+      DBH_mean = mean(DBH)
+    )
+  
+  # outlist <- out |> ...
+  #TODO: convert back to list here
+  
+  return(out_list)
+  
+}
 
 
 
