@@ -971,194 +971,28 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
             !is.null(pfts))
   
-  # there are multiple -E- files per year
-  ysel <- which(yr == yfiles)
-  
-  # grab year-month info from file names, e.g. "199906"
-  times <- gsub(
-    "(.*)\\-(.*)\\-(.*)\\-(.*)\\-(.*)", "\\1\\2",
-    sapply(
-      strsplit(h5_files, "-E-"), 
-      function(x) x[2] # Select only the part of each name after res.flag
-    )
-  )
-  
-  #Check that all the expected files exist using start_date and end_date
-  expected_ym <- seq(
-    lubridate::ymd(start_date),
-    # an E file is only written if a month is completed.
-    # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
-    lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
-    by = "month"
-  ) %>% format("%Y%m")
-  
-  if(!all(expected_ym %in% times)) {
-    #TODO: possibly not an error, but then need to use actual months of output files for time dimension in put_E_values(),  not start_date:end_date.
-    PEcAn.logger::logger.error("Not all expected E files found!")
-  }
-  
-  # lets make it work for a subset of vars fist
-  # TODO :  read all (or more) variables, functionality exists, see below
-  varnames <-
-    c(
-      "DBH", #diameter at breast height (cm)
-      "DDBH_DT", #change in DBH (cm/plant/yr) 
+  # #extract data from a single -E- .h5 file as a tibble
+  extract_E_file <- function(file) {
+    
+    # Cohort-level variables to extract
+    cohort_vars <- c(
+      "DBH", #diameter at breast height (cm) of each cohort
       "AGB_CO", #cohort level above ground biomass (kgC/plant)
-      "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/plant/yr)
+      "MMEAN_NPPDAILY_CO", #net primary productivity (kgC/plant/yr) 
       "MMEAN_TRANSP_CO", #Monthly mean leaf transpiration (kg/plant/s)
       "BSEEDS_CO", #seed biomass in units of (kgC/plant)
       "NPLANT", #plant density (plants/m2), required for /plant -> /m2 conversion
       "PFT" #pft numbers
     )
-  
-  # List of vars to extract includes the requested one, plus others needed below 
-  vars <- c(
-    varnames,
-    #patch area relative to site area (unitless).  Needed to weight sums and
-    #means across patches
-    "AREA", 
     
-    #index of the first cohort of each patch.  Needed for figuring out which
-    #patch each cohort belongs to
-    "PACO_ID", 
+    # Patch-level variables needed for calculations
+    patch_vars <- c(
+      "AREA", # fractional patch area relative to site area (unitless)
+      "AGE", #patch age since last disturbance
+      "PACO_N", #number of cohorts in each patch
+      "PACO_ID" #index of the first cohort of each patch.  Needed for figuring out which patch each cohort belongs to
+    )
     
-    #number of cohorts in each patch
-    "PACO_N"
-  )
-  
-  # list to collect outputs
-  ed.dat <- list()
-  
-  # loop over the files for that year
-  for(i in ysel) {
-    
-    nc <- ncdf4::nc_open(file.path(outdir, h5_files[i]))
-    on.exit(ncdf4::nc_close(nc), add = FALSE)
-    allvars <- names(nc$var)
-    if (!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
-    
-    # extract all the data into list
-    #TODO warn if a variable isn't available and return -999 (?)
-    if (length(ed.dat) == 0){
-      for (j in 1:length(allvars)) {
-        ed.dat[[j]] <- list()
-        ed.dat[[j]][[1]] <- ncdf4::ncvar_get(nc, allvars[j])
-      }
-      names(ed.dat) <- allvars
-    } else {
-      
-      # 2nd and more months
-      t <- length(ed.dat[[1]]) + 1
-      
-      for (j in 1:length(allvars)) {
-        
-        k <- which(names(ed.dat) == allvars[j])
-        
-        if (length(k)>0) {
-          
-          ed.dat[[k]][[t]] <- ncdf4::ncvar_get(nc, allvars[j])
-          
-        } else { ## add a new ed.datiable. ***Not checked (shouldn't come up?)
-          
-          ed.dat[[length(ed.dat)+1]] <- list()    # Add space for new ed.datiable
-          ed.dat[[length(ed.dat)]][1:(t-1)] <- NA # Give NA for all previous time points
-          ed.dat[[length(ed.dat)]][t] <- ncdf4::ncvar_get(nc, allvars[j]) # Assign the value of the new ed.datiable at this time point
-          names(ed.dat)[[length(ed.dat)]] <- allvars[j] 
-          
-        }
-      }      
-    }
-    
-  } # end ysel-loop
-
-  
-  # even if this is a SA run for soil, currently we are not reading any variable
-  # that has a soil dimension. "soil" will be passed to read.output as pft.name
-  # from upstream, when it's not part of the attribute it will read the sum
-  soil.check <- grepl("soil", names(pfts))
-  if(any(soil.check)){
-    # for now keep soil out
-    #TODO: print a message??
-    pfts <- pfts[!(soil.check)]
-  }
-  
-  # Aggregate over PFT and cohort (DBH bins)  
-  for (i in seq_along(ysel)) {
- 
-    #At this point, every element in ed.dat is a list of variables each having
-    #one element per month that is usually a vector but sometimes a matrix. For
-    #each variable, the following needs to be mapped to to each month:
-    #' 1) Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
-    #' 2) Is the variable in per-plant units? If so, it needs converting to per area units
-    #' TODO: 3) Aggregate cohorts within each patch, weight by patch and aggregate across patches
-    #' 4) Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
-    
-    out <- 
-      #TODO, this outer imap could be made into a for-loop if it makes it easier for people to read and edit in the future.  not necessarily faster with imap
-      purrr::imap(ed.dat[names(ed.dat) %in% varnames], ~{ 
-        #.x is elements of ed.dat and .y is names of ed.dat
-        #1) collapse matrix variables into vector
-        if (all(purrr::map_lgl(.x, is.matrix))) {
-          var <- purrr::map(.x, colSums)
-        } else {
-          var <- .x
-        }
-        
-        #2) do per plant -> per area correction
-        if (.y %in% c("BSEEDS_CO", "AGB_CO", "MMEAN_NPPDAILY_CO", "MMEAN_TRANSP_CO")) {
-          var <- purrr::map2(var, ed.dat$NPLANT, `*`)
-        }
-        
-        #3a) Aggregate PFT cohorts within a patch
-        
-        #3b) Aggregate PFTs across patches (weighted by AREA)
-        
-        
-        #4) convert units to PEcAn standard if necessary
-        #input units are according to the ED2 source code: https://raw.githubusercontent.com/EDmodel/ED2/master/ED/src/memory/ed_state_vars.F90, output units are according to PEcAn.utils::standard_vars
-        if(.y == "MMEAN_NPPDAILY_CO") {
-          var <- purrr::map(var, ~ PEcAn.utils::ud_convert(.x, u1 = "kg/m2/yr", u2 = "kg/m2/s"))
-        }
-
-        var
-      }) 
-    
-    #sum cohorts by PFT
-    out <- 
-      purrr::map(.x = out, #for each variable in `out`
-          ~purrr::map2(.x = .x, .y = ed.dat$PFT, #for each month in each variable
-                ~ tapply(.x, .y, sum) #sum variable by PFT number
-          ))
-  }
-    
-  #Bind rows for months together to produce a matrix with ncol = length(pfts) and nrow = number of months
-  out <- purrr::map(out, ~do.call(rbind, .x))
-  
-  out$PFT <- pfts #named vector for matching PFT numbers to names
-  
-  #New varnames to match PEcAn standard
-  names(out) <- dplyr::case_when(
-                  #ED2 name             #PEcAN name
-    names(out) == "AGB_CO"            ~ "AGB_PFT",
-    names(out) == "BSEEDS_CO"         ~ "BSEEDS",
-    names(out) == "DDBH_DT"           ~ "DDBH",
-    names(out) == "MMEAN_NPPDAILY_CO" ~ "NPP_PFT",
-    names(out) == "MMEAN_TRANSP_CO"   ~ "TRANSP_PFT",
-    names(out) == "NPLANT"            ~ "DENS",
-    TRUE ~ names(out)
-  )
-  
-  return(out)
-  
-} # end read_E_files
-
-
-read_E_files_new <- function() {
-  
-  # copy in all the setup stuff here
-  
-  # #extract data from a single -E- .h5 file as a tibble
-  extract_E_file <- function(file, cohort_vars, patch_vars) {
     nc <- ncdf4::nc_open(file)
     on.exit(ncdf4::nc_close(nc), add = FALSE)
     avail_cohort <- cohort_vars[cohort_vars %in% names(nc$var)]
@@ -1171,53 +1005,83 @@ read_E_files_new <- function() {
       PEcAn.logger::logger.warn("No patch-level variables found!")
       return(NULL)
     }
-    # cohort-level and patch-level variables are extracted separately, then joined with a rolling-join
+    # Cohort-level and patch-level variables are extracted separately, then
+    # joined with a rolling-join
     cohort_df <-
-      purrr::map(avail_cohort, function(.x) ncdf4::ncvar_get(nc, .x)) |> 
-      map(as.vector) |> 
-      purrr::set_names(avail_cohort) |> 
-      tibble::as_tibble() |>
-      dplyr::mutate(COHORT_ID = 1:n())
+      purrr::map(avail_cohort, function(.x) as.vector(ncdf4::ncvar_get(nc, .x))) %>%
+      purrr::set_names(avail_cohort) %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate(COHORT_ID = 1:nrow(.))
     
     patch_df <-
-      purrr::map(avail_patch, function(.x) ncdf4::ncvar_get(nc, .x)) |>
-      map(as.vector) |> 
-      purrr::set_names(avail_patch) |>
-      tibble::as_tibble() |>
-      dplyr::mutate(PATCH_ID = 1:n())
+      purrr::map(avail_patch, function(.x) as.vector(ncdf4::ncvar_get(nc, .x))) %>%
+      purrr::set_names(avail_patch) %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate(PATCH_ID = 1:nrow(.))
     
+    # TODO: this section needs to be re-worked to not depend on dplyr >= 1.1.0
+    # 
     # join patch data with cohort data.  PACO_ID is the "index of the first
     # cohort of each patch", so I use a rolling join (requires dplyr >=
     # 1.1.0) to combine them.
-    dplyr::left_join(cohort_df, patch_df, dplyr::join_by(closest(COHORT_ID >= PACO_ID))) |>
-      #dates in filename are not valid because day is 00.  Extract just year
-      #and month and use lubridate to build date
-      dplyr::mutate(date = stringr::str_match(basename(file), "(\\d{4}-\\d{2})-\\d{2}")[, 2] |> lubridate::ym()) |>
-      dplyr::select(date, dplyr::everything()) |>
+    dplyr::left_join(cohort_df, patch_df, dplyr::join_by(closest(COHORT_ID >= PACO_ID))) %>%
+      # Dates in filename are not valid because day is 00.  Extract just year
+      # and month and use lubridate:ym() to build date
+      dplyr::mutate(date = stringr::str_match(basename(file), "(\\d{4}-\\d{2})-\\d{2}")[, 2] %>% lubridate::ym()) %>%
+      dplyr::select(date, dplyr::everything()) %>%
       dplyr::select(-PACO_ID)
   }
   
+  # Extract data from all the .h5 files
   raw <- 
-    purrr::map(e_files, ~foo(.x, cohort_vars, patch_vars)) |> 
+    purrr::map(file.path(outdir, h5_files), extract_E_file) %>% 
     dplyr::bind_rows() 
   
-  out <- raw |>
+  # Unit conversions
+  out <- raw %>% 
     dplyr::mutate(
-      #per unit area corrections
-      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO), ~.x*NPLANT),
-      #pecan standard units
-      MMEAN_NPPDAILY_CO = units::set_units(MMEAN_NPPDAILY_CO,"kg/m^2/s")
-    ) |> 
-    # weight by patch area and sum across cohorts and patches
-    group_by(date, PFT) |> 
-    summarize(
-      across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO, NPLANT),
+      # Convert units of per plant to per m^2 by multiplying by plant density
+      # (plant/m^2)
+      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO),
+                    function(.x) .x * NPLANT),
+      # Convert to pecan standard units
+      MMEAN_NPPDAILY_CO = PEcAn.utils::ud_convert(MMEAN_NPPDAILY_CO, "kg/m^2/yr", "kg/m^2/s")
+    ) %>%
+    # Weighted summary
+    # For each month (-E- file) and PFT...
+    dplyr::group_by(date, PFT) %>% 
+    # ... get a weighted sum across cohorts and patches
+    dplyr::summarize(
+      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO, NPLANT),
              ~sum(.x*AREA)),
-      DBH_mean = mean(DBH)
+      #(or a mean when it makes sense)
+      DBH_mean = mean(DBH),
+      .groups = "drop"
     )
   
-  # outlist <- out |> ...
-  #TODO: convert back to list here
+  # Rename variables to PEcAn standard and convert to list
+  out_list <- out %>% 
+    dplyr::select(
+      #PEcAN name    #ED2 name          
+      "AGB_PFT"    = "AGB_CO",
+      "BSEEDS"     = "BSEEDS_CO",
+      "DBH"        = "DBH_mean",
+      "NPP_PFT"    = "MMEAN_NPPDAILY_CO",
+      "TRANSP_PFT" = "MMEAN_TRANSP_CO",
+      "DENS"       = "NPLANT"
+    ) %>% as.list
+  
+  
+  # even if this is a SA run for soil, currently we are not reading any variable
+  # that has a soil dimension. "soil" will be passed to read.output as pft.name
+  # from upstream, when it's not part of the attribute it will read the sum
+  soil.check <- grepl("soil", names(pfts))
+  if(any(soil.check)){
+    # for now keep soil out
+    #TODO: print a message??
+    pfts <- pfts[!(soil.check)]
+  }
+  out_list$PFT <- pfts #named vector for matching PFT numbers to names
   
   return(out_list)
   
