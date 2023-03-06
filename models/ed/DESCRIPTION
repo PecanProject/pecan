@@ -36,7 +36,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     assertthat,
-    dplyr (>= 1.1.0),
+    dplyr,
     glue,
     hdf5r,
     lubridate,

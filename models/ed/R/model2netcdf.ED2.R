@@ -1018,12 +1018,17 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       tibble::as_tibble() %>%
       dplyr::mutate(PATCH_ID = 1:dplyr::n())
     
-    # TODO: this section needs to be re-worked to not depend on dplyr >= 1.1.0
-    # 
-    # join patch data with cohort data.  PACO_ID is the "index of the first
-    # cohort of each patch", so I use a rolling join (requires dplyr >=
-    # 1.1.0) to combine them.
-    dplyr::left_join(cohort_df, patch_df, dplyr::join_by(closest(COHORT_ID >= PACO_ID))) %>%
+    # join patch data with cohort data.  PACO_N is the number of cohorts (i.e.
+    # rows) in each patch, so I use that to figure out which rows are in which
+    # patch.
+    cohort_patch_id <- c()
+    for (i in seq_len(nrow(patch_df))) {
+      cohort_patch_id <- c(cohort_patch_id, rep(i, patch_df$PACO_N[i]))
+    }
+    cohort_df$PATCH_ID <- cohort_patch_id
+    
+    # Then the cohort and patch dataframes can be joined by PATCH_ID
+    dplyr::left_join(cohort_df, patch_df, by = "PATCH_ID") %>% 
       # Dates in filename are not valid because day is 00.  Extract just year
       # and month and use lubridate:ym() to build date
       dplyr::mutate(date = stringr::str_match(basename(file), "(\\d{4}-\\d{2})-\\d{2}")[, 2] %>% lubridate::ym()) %>%
