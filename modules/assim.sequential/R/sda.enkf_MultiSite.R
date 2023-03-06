@@ -159,6 +159,11 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
+  #switch to depreciated version for debugging purposes
+  # do.call("library", list(paste0("PEcAn.", model)))
+  # my.write_restart <- paste0("write_restart.", model)
+  # my.read_restart <- paste0("read_restart.", model)
+  # my.split_inputs  <- paste0("split_inputs.", model)
   my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
   my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
   my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
@@ -364,7 +369,7 @@ sda.enkf.multisite <- function(settings,
         if (control$debug) browser()
         #if restart then use restart.list, include site for debugging purposes
         if(restart_flag){
-          restart.arg = restart.list$`646`
+          restart.arg = restart.list #$`646`debugging hack site specific
         }else{
           restart.arg = NULL
         }

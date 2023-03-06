@@ -115,7 +115,13 @@
     </settings.646>
   </run>
   <host>
-    <name>localhost</name>
+    <name>geo.bu.edu</name>
+    <user>ahelgeso</user>
+    <prerun>module load R/4.1.2</prerun>
+    <qsub>qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N SIPNETrun -S /bin/bash -o /projectnb/dietzelab/ahelgeso/Jobs/qsub -e /projectnb/dietzelab/ahelgeso/Jobs/qsub</qsub>
+    <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
+    <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
+    <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
   </host>
   <multisettings>run</multisettings>
   <settings.info>
