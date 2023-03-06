@@ -1233,13 +1233,6 @@ put_E_values <-
       missval = -999,
       longname = "Diameter at breast height by PFT"
     ),
-    ncdf4::ncvar_def(
-      "DDBH", #original ED2 name: DDBH_DT
-      units = "cm yr-1",
-      dim = list(lon, lat, t, p),
-      missval = -999,
-      longname = "Rate of change in dbh by PFT"
-    ),
    ncdf4::ncvar_def(
      "NPP_PFT", #original ED2 name: MMEAN_NPPDAILY_CO
      units = "KgC m-2 s-1",
