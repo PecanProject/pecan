@@ -1,0 +1,452 @@
+module yasso
+implicit none
+private
+
+real, parameter :: days_yr = 365.0
+integer, parameter, public :: statesize_yasso = 5
+
+! The yasso parameter vector:
+! 1-16 matrix A entries: 4*alpha, 12*p
+! 17-21 Leaching parameters: w1,...,w5 IGNORED IN THIS FUNCTION
+! 22-23 Temperature-dependence parameters for AWE fractions: beta_1, beta_2
+! 24-25 Temperature-dependence parameters for N fraction: beta_N1, beta_N2
+! 26-27 Temperature-dependence parameters for H fraction: beta_H1, beta_H2
+! 28-30 Precipitation-dependence parameters for AWE, N and H fraction: gamma, gamma_N, gamma_H
+! 31-32 Humus decomposition parameters: p_H, alpha_H (Note the order!)
+! 33-35 Woody parameters: theta_1, theta_2, r 
+
+! The Yasso20 maximum a posteriori parameters:
+real, parameter, public :: param_y20_map(35) = (/ &
+     0.51, &
+     5.19, &
+     0.13, &
+     0.1, &
+     0.5, &
+     0., &
+     1., &
+     1., &
+     0.99, &
+     0., &
+     0., &
+     0., &
+     0., &
+     0., &
+     0.163, &
+     0., &
+     -0., &
+     0., &
+     0., &
+     0., &
+     0., &
+     0.158, &
+     -0.002, &
+     0.17, &
+     -0.005, &
+     0.067, &
+     -0., &
+     -1.44, &
+     -2.0, &
+     -6.9, &
+     0.0042, &
+     0.0015, &
+     -2.55, &
+     1.24, &
+     0.25/)
+
+! Nitrogen-specific parameters
+!
+real, parameter, public :: nc_mb = 0.1 ! N-C ratio of the microbial biomass 
+real, parameter, public :: cue_min = 0.1 ! minimum microbial carbon use efficiency
+real, public :: nc_h_max = 0.1 ! N-C ratio of the H pool
+
+! AWENH composition from Palosuo et al. (2015), for grasses. For now, we'll use the same
+! composition for both above and below ground inputs. The last values (H) are always 0.
+real, parameter :: awenh_fineroot(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
+real, parameter :: awenh_leaf(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
+
+! Parameters that control the basgra/yasso coupling
+!real, public :: use_yasso = 0.0  ! if > 0, use Yasso for SOC 
+!real, public :: no_nitrogen_limit = -1.0 ! if > 0, assume no nitrogen limitation in crops
+!real, public :: hist_carbon_input = 600.0 ! carbon input per year, used for initialization
+!real, public :: hist_tempr = 5.0 ! average climate for initialization
+!real, public :: hist_tempr_ampl = 10.0
+!real, public :: hist_precip = 600.0
+
+integer, parameter, public :: met_ind_init = 1
+
+public decompose
+public initialize
+public average_met
+public partition_nitr
+contains
+
+  subroutine initialize(param, flux_leafc_day, flux_rootc_day, flux_nitr_day, &
+       tempr_c, precip_day, tempr_ampl, totc_min, cstate, nstate)
+    ! A simple algorithm to initialize the SOC pools into a steady state or a partial
+    ! steady-state. First, the equilibrium SOC is evaluated. Then, if totc_min is > 0 and
+    ! greater than the equilibrium, the deficit will be covered by increasing the H
+    ! pool. The nitrogen pool is left unconstrained and is equal to the equilibrium N +
+    ! the possible contribution from the extra H. 
+    real, intent(in) :: param(:) ! parameter vector
+    real, intent(in) :: flux_leafc_day ! carbon input with "leaf" composition per day
+    real, intent(in) :: flux_rootc_day ! carbon input with "fineroot" composition per day
+    real, intent(in) :: flux_nitr_day  ! organic nitrogen input per day
+    real, intent(in) :: tempr_c
+    real, intent(in) :: tempr_ampl
+    real, intent(in) :: precip_day ! mm
+    real, intent(in) :: totc_min ! see above
+    real, intent(out) :: cstate(statesize_yasso)
+    real, intent(out) :: nstate ! nitrogen
+    
+    real :: neg_c_input_yr(statesize_yasso)
+    real :: matrix(statesize_yasso, statesize_yasso)
+    real :: totc
+    real :: decomp_h
+    real :: cue
+    real :: cupt_awen
+    real :: nc_awen
+    real :: growth_c
+    real :: resp
+    integer :: cue_iter
+    real :: nc_som
+
+    integer, parameter :: max_cue_iter = 10
+    
+    ! Carbon
+    ! 
+    neg_c_input_yr = -(flux_leafc_day * awenh_leaf + flux_rootc_day * awenh_fineroot) * 365.0
+    call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl,  matrix)
+    ! Solve the equilibrium condition Ax + b = 0
+    call solve(matrix, neg_c_input_yr, cstate)
+    totc = sum(cstate)
+    print *, 'totc before adjust', totc, totc_min
+    if (totc_min > 0.0 .and. totc < totc_min) then
+       cstate(5) = cstate(5) + totc_min - totc
+    end if
+    print *, 'totc after adjust', sum(cstate)
+
+    ! Nitrogen
+    !
+    decomp_h = matrix(5,5) * cstate(5)
+    cue = 0.43 ! initially
+    resp = -sum(neg_c_input_yr) ! respiration equal to C input in equilibrium
+    do cue_iter = 1, max_cue_iter
+       cupt_awen = (resp - decomp_h) / (1.0 - cue)
+       growth_c = cue * cupt_awen
+       ! Solve nc_awen from the state equation (below) such that nstate becomes stationary:
+       nc_awen = (1.0 / cupt_awen) * (nc_mb * cue * cupt_awen - nc_h_max*decomp_h + flux_nitr_day*days_yr)
+       nstate = sum(cstate(1:4)) * nc_awen + nc_h_max * cstate(5)
+       nc_som = nstate / sum(cstate)
+       cue = max(min(0.43 * (nc_som / nc_mb) ** 0.6, 1.0), cue_min)
+    end do
+    
+  end subroutine initialize
+  
+  subroutine decompose(param, timestep_days, flux_leafc_day, flux_rootc_day, flux_nitr_day, tempr_c, &
+       precip_day, cstate, nstate, ctend, ntend)
+    real, intent(in) :: param(:) ! parameter vector
+    real, intent(in) :: timestep_days
+    real, intent(in) :: flux_leafc_day ! carbon input with "leaf" composition per day
+    real, intent(in) :: flux_rootc_day ! carbon input with "fineroot" composition per day
+    real, intent(in) :: flux_nitr_day  ! organic nitrogen input per day
+    real, intent(in) :: tempr_c ! air temperature
+    real, intent(in) :: precip_day ! precipitation mm / day
+    real, intent(in) :: cstate(:) ! AWENH
+    real, intent(in) :: nstate ! nitrogen, single pool
+    real, intent(out) :: ctend(:) ! AWENH time derivative
+    real, intent(out) :: ntend ! nitrogen, single pool    
+    
+    real :: matrix(statesize_yasso, statesize_yasso)
+    real :: c_input_yr(statesize_yasso)
+    real :: totc ! total C, step beginning
+    real :: decomp_h ! C mineralization from the H pool
+    real :: cue ! carbon use (growth) efficiency
+    real :: nc_som ! current N:C ratio of the SOM
+    real :: growth_c ! microbial growth in C
+    real :: cupt_awen ! C uptake from AWEN
+    real :: cupt_h ! C uptake from H
+    real :: timestep_yr
+    real :: nc_awen ! N:C ratio of the AWEN pools
+    real :: nitr_awen ! nitrogen remaining after subtracting H nitrogen from the total
+    real :: nc_h ! N:C of the H pool
+    real :: resp ! heterotrophic respiration
+    
+    c_input_yr = (flux_leafc_day * awenh_leaf + flux_rootc_day * awenh_fineroot) * days_yr
+    totc = sum(cstate)
+
+    ! Carbon
+    !
+    call evaluate_matrix(param, tempr_c, precip_day * days_yr, matrix)
+    ! The equation is in form of dx/dt = Ax + b. The standalone Y20 uses a matrix
+    ! exponential in yearly or longer steps, but here with a daily timestep this is not
+    ! needed and explicit 1st order time stepping is used instead.
+    timestep_yr = timestep_days / days_yr
+    ctend = c_input_yr*timestep_yr + matmul(matrix, cstate) * timestep_yr   ! (matmul(matrix, cstate) + c_input_yr) * timestep_yr
+    resp = sum(c_input_yr*timestep_yr - ctend)
+    ! Nitrogen
+    !
+    if (totc < 1e-6) then
+       ! No SOM, no need for N dynamics
+       ntend = flux_nitr_day
+    else
+       decomp_h = matrix(5,5) * cstate(5) * timestep_yr
+       if (cstate(5) * nc_h_max > nstate) then
+          ! This should require very unusual inputs or parameters. Handle it nevertheless:
+          nc_h = nstate / totc
+       else
+          nc_h = nc_h_max
+       end if
+       nitr_awen = nstate - cstate(5) * nc_h
+       nc_awen = nitr_awen / (totc - cstate(5) + 1e-9)
+       nc_som = nstate / totc
+       cue = max(min(0.43 * (nc_som / nc_mb) ** 0.6, 1.0), cue_min)
+       ! resp_from_awen = uptake_from_awen * (1 - CUE), and thus: 
+       cupt_awen = (resp - decomp_h) / (1.0 - cue)
+       ! Yasso has no C flow from H to AWEN so we assume no C uptake from H.
+       growth_c = cue * cupt_awen
+       ! The immobilization / mineralization is equal to the difference of nitrogen needed for
+       ! microbial growth and the nitrogen released from the decomposed organic matter.
+       ntend = nc_mb * growth_c - nc_awen * cupt_awen - nc_h * decomp_h + flux_nitr_day
+    end if
+    
+  end subroutine decompose
+
+  subroutine partition_nitr(cstate, nstate, nitr_awen, nitr_h)
+    real, intent(in) :: nstate
+    real, intent(in) :: cstate(statesize_yasso)
+    real, intent(out) :: nitr_awen
+    real, intent(out) :: nitr_h
+
+    real :: totc
+    real :: nc_h
+    
+    if (cstate(5) * nc_h_max > nstate) then
+       ! This should require very unusual inputs or parameters. Handle it nevertheless:
+       nc_h = nstate / totc
+    else
+       nc_h = nc_h_max
+    end if
+    nitr_h = nc_h * cstate(5)
+    nitr_awen = nstate - nitr_h
+  end subroutine partition_nitr
+  
+  subroutine evaluate_matrix(param, tempr, precip, matrix)
+    real, intent(in) :: param(:) ! parameter vector
+    real, intent(in) :: tempr ! temperature deg C
+    real, intent(in) :: precip ! mm / yr
+    real, intent(out) :: matrix(:,:) ! decomposition matrix, "A" in YASSO publications
+
+    real :: temprm  ! temperature modifier for AWE
+    real :: temprmN ! temperature modifier for N
+    real :: temprmH ! temperature modifier for H
+    real :: decm  ! rate modifier for AWE
+    real :: decmN ! rate modifier for N
+    real :: decmH ! rate modifier for H
+
+    integer :: ii
+    
+    temprm = exp(param(22)*tempr + param(23)*tempr**2)
+    temprmN = exp(param(24)*tempr + param(25)*tempr**2)
+    temprmH = exp(param(26)*tempr + param(27)*tempr**2)
+
+    ! The full rate modifiers including precipitation. The Y20 code has here division
+    ! by 12 due to monthly averaging of the temperature modifer, which is not done here.
+    decm = temprm * (1.0 - exp(param(28) * precip * 0.001))
+    decmN = temprmN * (1.0 - exp(param(29) * precip * 0.001))
+    decmH = temprmH * (1.0 - exp(param(30) * precip * 0.001))
+    
+    ! Calculating matrix A (will work ok despite the sign of alphas)
+    DO ii = 1,3
+       matrix(ii,ii) = -ABS(param(ii))*decm
+    END DO
+    matrix(4,4) = -ABS(param(4))*decmN
+    
+    matrix(1,2) = param(5)*ABS(matrix(2,2))
+    matrix(1,3) = param(6)*ABS(matrix(3,3))
+    matrix(1,4) = param(7)*ABS(matrix(4,4))
+    matrix(1,5) = 0.0 ! no mass flows from H -> AWEN
+    matrix(2,1) = param(8)*ABS(matrix(1,1))
+    matrix(2,3) = param(9)*ABS(matrix(3,3))
+    matrix(2,4) = param(10)*ABS(matrix(4,4))
+    matrix(2,5) = 0.0
+    matrix(3,1) = param(11)*ABS(matrix(1,1))
+    matrix(3,2) = param(12)*ABS(matrix(2,2))
+    matrix(3,4) = param(13)*ABS(matrix(4,4))
+    matrix(3,5) = 0.0
+    matrix(4,1) = param(14)*ABS(matrix(1,1))
+    matrix(4,2) = param(15)*ABS(matrix(2,2))
+    matrix(4,3) = param(16)*ABS(matrix(3,3))
+    matrix(4,5) = 0.0
+    matrix(5,5) = -ABS(param(32))*decmH ! no size effect in humus
+    DO ii = 1,4
+       matrix(5,ii) = param(31)*ABS(matrix(ii,ii)) ! mass flows AWEN -> H (size effect is present here)
+    END DO
+    
+  end subroutine evaluate_matrix
+
+  subroutine evaluate_matrix_mean_tempr(param, tempr, precip, tempr_ampl, matrix)
+    ! Evaluate the matrix as above, but use the old YASSO-15 temperature averaging
+    real, intent(in) :: param(:) ! parameter vector
+    real, intent(in) :: tempr ! temperature deg C
+    real, intent(in) :: precip ! mm / yr
+    real, intent(in) :: tempr_ampl ! temperature yearly amplitude, deg C
+    real, intent(out) :: matrix(:,:) ! decomposition matrix, "A" in YASSO publications
+
+    real :: temprm  ! temperature modifier for AWE
+    real :: temprmN ! temperature modifier for N
+    real :: temprmH ! temperature modifier for H
+    real :: decm  ! rate modifier for AWE
+    real :: decmN ! rate modifier for N
+    real :: decmH ! rate modifier for H
+    real :: te(4) ! temperature for averaging the temperature modifier
+    
+    integer :: ii
+    real, parameter :: pi = 3.141592653589793
+    
+    ! temperature annual cycle approximation
+    te(1) = tempr+4*tempr_ampl*(1/sqrt(2.0)-1)/pi
+    te(2) = tempr-4*tempr_ampl/sqrt(2.0)/pi
+    te(3) = tempr+4*tempr_ampl*(1-1/sqrt(2.0))/pi
+    te(4) = tempr+4*tempr_ampl/sqrt(2.0)/pi
+
+    ! average over the 4 temperature points
+    temprm = 0.25 * sum(exp(param(22)*te + param(23)*te**2))
+    temprmN = 0.25 * sum(exp(param(24)*te + param(25)*te**2))
+    temprmH = 0.25 * sum(exp(param(26)*te + param(27)*te**2))
+
+    ! The full rate modifiers including precipitation. The Y20 code has here division
+    ! by 12 due to monthly averaging of the temperature modifer, which is not done here.
+    decm = temprm * (1.0 - exp(param(28) * precip * 0.001))
+    decmN = temprmN * (1.0 - exp(param(29) * precip * 0.001))
+    decmH = temprmH * (1.0 - exp(param(30) * precip * 0.001))
+    
+    ! Calculating matrix A (will work ok despite the sign of alphas)
+    DO ii = 1,3
+       matrix(ii,ii) = -ABS(param(ii))*decm
+    END DO
+    matrix(4,4) = -ABS(param(4))*decmN
+    
+    matrix(1,2) = param(5)*ABS(matrix(2,2))
+    matrix(1,3) = param(6)*ABS(matrix(3,3))
+    matrix(1,4) = param(7)*ABS(matrix(4,4))
+    matrix(1,5) = 0.0 ! no mass flows from H -> AWEN
+    matrix(2,1) = param(8)*ABS(matrix(1,1))
+    matrix(2,3) = param(9)*ABS(matrix(3,3))
+    matrix(2,4) = param(10)*ABS(matrix(4,4))
+    matrix(2,5) = 0.0
+    matrix(3,1) = param(11)*ABS(matrix(1,1))
+    matrix(3,2) = param(12)*ABS(matrix(2,2))
+    matrix(3,4) = param(13)*ABS(matrix(4,4))
+    matrix(3,5) = 0.0
+    matrix(4,1) = param(14)*ABS(matrix(1,1))
+    matrix(4,2) = param(15)*ABS(matrix(2,2))
+    matrix(4,3) = param(16)*ABS(matrix(3,3))
+    matrix(4,5) = 0.0
+    matrix(5,5) = -ABS(param(32))*decmH ! no size effect in humus
+    DO ii = 1,4
+       matrix(5,ii) = param(31)*ABS(matrix(ii,ii)) ! mass flows AWEN -> H (size effect is present here)
+    END DO
+    
+  end subroutine evaluate_matrix_mean_tempr
+
+  subroutine average_met(met_daily, met_rolling, aver_size, met_state, met_ind)
+    real, intent(in) :: met_daily(:)
+    real, intent(out) :: met_rolling(:)
+    integer, intent(in) :: aver_size ! number of days to average over, must not change
+    real, intent(inout) :: met_state(:,:) ! size(met_daily), aver_size + 1
+    integer, intent(inout) :: met_ind     ! a counter, must be 1 on first call
+
+    if (met_ind < 1 .or. met_ind > aver_size+1) then
+       print *, 'something wrong with met_ind: ', met_ind
+       error stop
+    end if
+    if (size(met_state, 2) /= aver_size + 1 .or. size(met_state, 1) /= size(met_rolling)) then
+       print *, 'met_state has wrong size', shape(met_state)
+       error stop
+    end if
+    
+    if (met_ind <= aver_size) then
+       met_state(:,met_ind) = met_daily
+       met_ind = met_ind + 1
+    else
+       met_state(:,aver_size+1) = met_daily
+       met_state(:,1:aver_size) = met_state(:,2:aver_size+1)
+    end if
+
+    met_rolling = sum(met_state(:,1:met_ind-1), dim=2) / (met_ind-1)
+    
+  end subroutine average_met
+  
+  !************************************************************************************
+  ! Linear algebra for the steady state computation
+  
+  SUBROUTINE solve(A, b, x)
+    ! Solve linear system A*x = b
+    IMPLICIT NONE
+    INTEGER,PARAMETER :: n = 5
+    REAL,DIMENSION(n,n),INTENT(IN) :: A
+    REAL,DIMENSION(n),INTENT(IN) :: b
+    REAL,DIMENSION(n),INTENT(OUT) :: x
+    REAL,DIMENSION(n,n) :: U
+    REAL,DIMENSION(n) :: c
+    INTEGER :: i
+
+    ! transform the problem to upper diagonal form
+    CALL pgauss(A, b, U, c)
+
+    ! solve U*x = c via back substitution
+    x(n) = c(n)/U(n,n)
+    DO i = n-1,1,-1
+       x(i) = (c(i) - DOT_PRODUCT(U(i,i+1:n),x(i+1:n)))/U(i,i)
+    END DO
+  END SUBROUTINE solve
+
+  SUBROUTINE pgauss(A, b, U, c)
+    ! Transform the lin. system to upper diagonal form using gaussian elimination
+    ! with pivoting
+    IMPLICIT NONE
+    INTEGER,PARAMETER :: n = 5
+    REAL,DIMENSION(n,n),INTENT(IN) :: A
+    REAL,DIMENSION(n),INTENT(IN) :: b
+    REAL,DIMENSION(n,n),INTENT(OUT) :: U
+    REAL,DIMENSION(n),INTENT(OUT) :: c
+    INTEGER :: k, j
+    REAL,PARAMETER :: tol = 1E-12
+
+    U = A
+    c = b
+    DO k = 1,n-1
+       CALL pivot(U,c,k) ! do pivoting (though may not be necessary in our case)
+       IF (ABS(U(k,k)) <= tol) THEN
+          write(*,*) 'Warning!!! Matrix is singular to working precision!'
+       END IF
+       U(k+1:n,k) = U(k+1:n,k)/U(k,k)
+       DO j = k+1,n
+          U(j,k+1:n) = U(j,k+1:n) - U(j,k)*U(k,k+1:n)
+       END DO
+       c(k+1:n) = c(k+1:n) - c(k)*U(k+1:n,k)
+    END DO
+  END SUBROUTINE pgauss
+
+  SUBROUTINE pivot(A, b, k)
+    ! perform pivoting to matrix A and vector b at row k
+    IMPLICIT NONE
+    INTEGER,PARAMETER :: n = 5
+    REAL,DIMENSION(n,n),INTENT(INOUT) :: A
+    REAL,DIMENSION(n),INTENT(INOUT) :: b
+    INTEGER,INTENT(IN) :: k
+    INTEGER :: q, pk
+
+    !write(*,*) 'Pivot elements are: ', A(k:n,k)
+    q = MAXLOC(ABS(A(k:n,k)),1)
+    !write(*,*) q
+    IF (q > 1) THEN
+       pk = k-1+q
+       A(k:pk:pk-k,:) = A(pk:k:k-pk,:)
+       b(k:pk:pk-k) = b(pk:k:k-pk)
+    END IF
+    !write(*,*) 'Pivot elements are: ', A(k:n,k)
+  END SUBROUTINE pivot
+  
+end module yasso
+

@@ -138,11 +138,12 @@ Subroutine HardeningSink(CLV,DAYL,doy,LT50,Tsurf)
 end Subroutine HardeningSink
 
 Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
-                  GLV,GRES,GRT,GST,RESMOB,NSHmob)
+                  GLV,GRES,GRT,GST,RESMOB,NSHmob, use_nitrogen)
   real :: LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF
   real :: GLV,GRES,GRT,GST,RESMOB,NSHmob
   real :: ALLOTOT,CSTAV,GRESSI,SOURCE
   real :: NSHEXCESS
+  logical, intent(in) :: use_nitrogen
   PHOT     = PARINT * TRANRF * 12. * LUEMXQ * NOHARV
   RESMOB   = (CRES * NOHARV / TCRES) * max(0.,min( 1.,DAVTMP/5. ))
   SOURCE   = RESMOB + PHOT
@@ -166,8 +167,12 @@ Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
   NSHK     = (CLV+CST)*NCSHMAX * (1.-exp(-K*LAI))/(K*LAI)
   NSHEXCESS = max( 0., NSH-NSHK )
   NSHmob   = NOHARV * NSHEXCESS / TCNSHMOB
-  NSOURCE  = NMIN/TCNUPT + NSHmob
   NSINK    = max(0., (GLVSI+GSTSI)*NCSHMAX )
+  if (use_nitrogen) then
+     NSOURCE  = NMIN/TCNUPT + NSHmob
+  else
+     NSOURCE = NSINK
+  end if
 !  NSINK    = (GLVSI+GSTSI)*NCSHMAX
   fNgrowth = min( 1., NSOURCE / NSINK )
   GLAISI   = GLAISI * fNgrowth

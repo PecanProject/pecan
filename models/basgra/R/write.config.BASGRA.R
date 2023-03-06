@@ -31,8 +31,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   outdir <- file.path(settings$host$outdir, run.id)
   
   # load default(!) BASGRA params
-  run_params <- PEcAn.utils::load_local(system.file("BASGRA_params.Rdata", package = "PEcAn.BASGRA"))$default_params
-  
+  df_run_params <- read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
+  run_params <- setNames(df_run_params[,2], df_run_params[,1])
   run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
@@ -524,8 +524,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[names(run_params) == "TILG2I"] <- gtil*last_vals[names(last_vals) == "TILG2"]  / 
       (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
     
-    run_params[names(run_params) == "DAYLI"]  <- last_vals[names(last_vals) == "DAYL"]
-    
     run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
     
     run_params[names(run_params) == "WALI"]        <- last_vals[names(last_vals) == "WAL"] 
@@ -588,7 +586,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     "@RUN_PARAMS@",
     paste0("c(", PEcAn.utils::listToArgString(run_params), ")"),
     jobsh)
-  
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   

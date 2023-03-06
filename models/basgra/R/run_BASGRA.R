@@ -38,7 +38,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   start_year  <- lubridate::year(start_date)
   end_year    <- lubridate::year(end_date)
   
-  if(co2_file == "NULL") co2_file <- NULL
+  if(length(co2_file) > 0 && co2_file == "NULL") co2_file <- NULL
   ################################################################################
   ### FUNCTIONS FOR READING WEATHER DATA
   mini_met2model_BASGRA <- function(file_path,
@@ -83,7 +83,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       }else{
         old.file <- file.path(dirname(file_path), paste(basename(file_path), year, "nc", sep = "."))
       }
-      
       
       if (file.exists(old.file)) {
         
@@ -336,13 +335,18 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   days_harvest <- as.integer(days_harvest)
   
   # run  model
+  NPARAMS = as.integer(144)
+  if (length(run_params) != NPARAMS) {
+    PEcAn.logger::logger.severe(sprintf('%i parameters required, %i given', NPARAMS, length(run_params)))
+  }
+
   output <- .Fortran('BASGRA',
                      run_params,
                      matrix_weather,
                      calendar_fert,
                      calendar_Ndep,
                      days_harvest,
-                     as.integer(144), 
+                     NPARAMS, 
                      NDAYS,
                      NOUT,
                      matrix(0, NDAYS, NOUT))[[9]]

@@ -1,7 +1,7 @@
-subroutine BASGRA( PARAMS, MATRIX_WEATHER, &
-                   CALENDAR_FERT, CALENDAR_NDEP, DAYS_HARVEST, &
-				   NDAYS, NOUT, &
-				   y)
+subroutine BASGRA(PARAMS, MATRIX_WEATHER, &
+     CALENDAR_FERT, CALENDAR_NDEP, DAYS_HARVEST, &
+     NPARAMS, NDAYS, NOUT, &
+     y)
 !-------------------------------------------------------------------------------
 ! This is the BASic GRAss model originally written in MATLAB/Simulink by Marcel
 ! van Oijen, Mats Hoglind, Stig Morten Thorsen and Ad Schapendonk.
@@ -21,10 +21,12 @@ use environment
 use resources
 use soil
 use plant
+use yasso
+use set_params_mod
 implicit none
 
 integer, dimension(300,3) :: DAYS_HARVEST
-real                      :: PARAMS(140)
+real                      :: PARAMS(NPARAMS)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
 #else
@@ -35,7 +37,7 @@ real   , dimension(300,3) :: CALENDAR_FERT, CALENDAR_NDEP
 integer, dimension(300,2) :: DAYS_FERT    , DAYS_NDEP
 real   , dimension(300)   :: NFERTV       , NDEPV
 
-integer                   :: day, doy, i, NDAYS, NOUT, year
+integer                   :: day, doy, i, NDAYS, NOUT, year, NPARAMS
 real                      :: y(NDAYS,NOUT)
 
 ! State variables plants
@@ -69,6 +71,21 @@ real :: Ndep, Nfert
 
 real :: F_DIGEST_DM, F_DIGEST_DMSH, F_DIGEST_LV, F_DIGEST_ST, F_DIGEST_WALL
 real :: F_WALL_DM  , F_WALL_DMSH  , F_WALL_LV  , F_WALL_ST
+
+! yasso
+real :: yasso_cstate(statesize_yasso)
+real :: yasso_ctend(statesize_yasso)
+real :: runoff_cstate(statesize_yasso)
+real :: yasso_nstate
+real :: yasso_ntend
+real :: yasso_met_state(2, 31) ! for calculating 30-day averages of tempr & precip
+real :: yasso_met(2) ! 30-day rolling tempr, precip
+integer :: yasso_met_ind ! counter for averaging the met variables
+
+if (NOUT < 117) then
+   print *, 'NOUT < 117 too small:', NOUT
+   error stop
+end if
 
 ! Parameters
 call set_params(PARAMS)
@@ -120,10 +137,40 @@ YIELD_TOT  = YIELDI
 Nfert_TOT  = 0
 DM_MAX     = 0
 
-! Initial constants for soil state variables
-CLITT      = CLITT0
-CSOMF      = CSOMF0
-CSOMS      = CSOMS0 
+if (use_yasso) then
+   ! Yasso currently requires DELT = 1
+   if (abs(DELT - 1.0) > 1e-6) then
+      print *, 'Yasso soil model requires DELT = 1'
+      error stop
+   end if
+   if (use_nitrogen) then
+      print *, 'Nitroge-Yasso not yet fully implemented'
+      error stop
+   end if
+   yasso_met_ind = 1
+   call initialize(&
+        param_y20_map, &
+        0.5 * hist_carbon_input / 365.0, &
+        0.5 * hist_carbon_input / 365.0, &
+        hist_carbon_input * 0.02 / 365.0, & ! C:N 50 for carbon input
+        hist_mean_tempr, hist_yearly_precip / 365.0, hist_tempr_ampl, &
+        totc_min_init, &
+        yasso_cstate, &
+        yasso_nstate)
+else
+   ! Initial constants for soil state variables
+   CLITT      = CLITT0
+   CSOMF      = CSOMF0
+   CSOMS      = CSOMS0 
+   NLITT      = NLITT0
+   NSOMF      = NSOMF0
+   NSOMS      = NSOMS0
+   ! missing values for yasso variables
+   yasso_cstate = -1e35
+   yasso_nstate = -1e35
+   yasso_met = -1e35
+end if
+
 DRYSTOR    = DRYSTORI
 Fdepth     = FdepthI
 NLITT      = NLITT0
@@ -164,7 +211,7 @@ do day = 1, NDAYS
   call O2status       (O2,ROOTD)
   ! Plant
   call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
-                                                       GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
+       GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
                                                        
       
   CLV     = CLV     - HARVLV
@@ -181,7 +228,7 @@ do day = 1, NDAYS
   call LUECO2TM       (PARAV)
   call HardeningSink  (CLV,DAYL,doy,LT50,Tsurf)
   call Growth         (LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
-                                                       GLV,GRES,GRT,GST,RESMOB,NSHmob)
+                                                       GLV,GRES,GRT,GST,RESMOB,NSHmob, use_nitrogen)
   call PlantRespiration(FO2,RESPHARD)
   call Senescence     (CLV,CRT,CSTUB,LAI,LT50,PERMgas,TANAER,TILV,Tsurf, &
                                                        DeHardRate,DLAI,DLV,DRT,DSTUB,dTANAER,DTILV,HardRate)
@@ -191,11 +238,31 @@ do day = 1, NDAYS
   call O2fluxes       (O2,PERMgas,ROOTD,RplantAer,     O2IN,O2OUT)
   call N_fert         (year,doy,DAYS_FERT,NFERTV,      Nfert)
   call N_dep          (year,doy,DAYS_NDEP,NDEPV,       Ndep)
-  call CNsoil         (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS) 
+  if (use_yasso) then
+     call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
+     call decompose(&
+          param_y20_map, &
+          DELT, & ! timestep
+          DSTUB + DLV, & ! leaf litter flux
+          DRT, &
+          DNSH + DNRT, & ! total N input
+          yasso_met(1), &! 30-day temperature
+          yasso_met(2), &! 30-day precip,
+          yasso_cstate, &
+          yasso_nstate, &
+          yasso_ctend, &
+          yasso_ntend)
+     call CNSoil_stub(ROOTD, RWA, WFPS, WAL, GRT, yasso_cstate, yasso_nstate, NMIN, runoff_cstate)
+     ! Diagnose C and N mineralisation from the tendencies.
+     Nmineralisation = -(yasso_ntend + DNSH + DNRT)
+     Rsoil = -(sum(yasso_ctend) - DSTUB - DLV - DRT)
+  else
+     call CNsoil         (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS)
+  end if
   call Nplant         (NSHmob,CLV,CRT,CST,DLAI,DLV,DRT,GLAI,GLV,GRT,GST, &
                                                        HARVLA,HARVLV,HARVST,LAI,NRT,NSH, &
                                                        DNRT,DNSH,GNRT,GNSH,HARVNSH, &
-													   NCDSH,NCGSH,NCHARVSH,NSHmobsoil,Nupt)
+                                                       NCDSH,NCGSH,NCHARVSH,NSHmobsoil,Nupt)
 
 ! Extra variables
   DMLV      = CLV   / 0.45           ! Leaf dry matter; g m-2
@@ -247,18 +314,28 @@ do day = 1, NDAYS
   Nfert_TOT = Nfert_TOT + Nfert
   DM_MAX    = max( DM, DM_MAX )
   
-! State equations soil
-  CLITT   = CLITT + DLV + DSTUB              - rCLITT - dCLITT
-  CSOMF   = CSOMF + DRT         + dCLITTsomf - rCSOMF - dCSOMF
-  CSOMS   = CSOMS               + dCSOMFsoms          - dCSOMS
+  ! State equations soil
+  if (use_yasso) then
+     yasso_cstate = yasso_cstate + yasso_ctend - runoff_cstate
+     yasso_nstate = yasso_nstate + yasso_ntend - rNSOMF
+  else
+     CLITT   = CLITT + DLV + DSTUB              - rCLITT - dCLITT
+     CSOMF   = CSOMF + DRT         + dCLITTsomf - rCSOMF - dCSOMF
+     CSOMS   = CSOMS               + dCSOMFsoms          - dCSOMS
+     NLITT   = NLITT + DNSH             - rNLITT - dNLITT
+     NSOMF   = NSOMF + DNRT + NLITTsomf - rNSOMF - dNSOMF 
+     NSOMS   = NSOMS        + NSOMFsoms          - dNSOMS
+  end if
+  
   DRYSTOR = DRYSTOR + reFreeze + Psnow - SnowMelt
   Fdepth  = Fdepth  + Frate
-  NLITT   = NLITT + DNSH             - rNLITT - dNLITT
-  NSOMF   = NSOMF + DNRT + NLITTsomf - rNSOMF - dNSOMF 
-  NSOMS   = NSOMS        + NSOMFsoms          - dNSOMS
-  NMIN    = NMIN  + Ndep + Nfert + Nmineralisation + Nfixation + NSHmobsoil &
-            - Nupt - Nleaching - Nemission
-  NMIN    = max(0.,NMIN)
+  if (.not. use_nitrogen) then
+     NMIN = -1e35
+  else
+     NMIN    = NMIN  + Ndep + Nfert + Nmineralisation + Nfixation + NSHmobsoil &
+          - Nupt - Nleaching - Nemission
+     NMIN    = max(0.,NMIN)
+  end if
   O2      = O2      + O2IN - O2OUT
   Sdepth  = Sdepth  + Psnow/RHOnewSnow - PackMelt
   TANAER  = TANAER  + dTANAER
@@ -389,6 +466,17 @@ do day = 1, NDAYS
   y(day,103) = EVAP
   y(day,104) = TRAN
 
+  y(day,105) = DLV+DSTUB ! FLITTC_LEAF
+  y(day,106) = DRT       ! FLITTC_ROOT
+
+  y(day,107) = Rsoil - GRT - GST - GLV - GRES + RESMOB ! NEE
+  y(day,108) = HARVLV + HARVRE + HARVST ! HARVEST C
+  y(day,109) = rCLITT + rCSOMF ! C RUNOFF
+
+  ! yasso outputs
+  y(day,110:114) = yasso_cstate
+  y(day,115) = yasso_nstate
+  y(day,116:117) = yasso_met
 enddo
 
 end

@@ -59,5 +59,13 @@ real, parameter       :: Bias = Kmin + Ampl
 ! SA parameters
 real                  :: NFERTMULT
 
+! Yasso
+logical               :: use_yasso
+logical               :: use_nitrogen
+real                  :: hist_carbon_input
+real                  :: hist_mean_tempr
+real                  :: hist_yearly_precip
+real                  :: hist_tempr_ampl
+real                  :: totc_min_init ! used in initialization
 end module parameters_site
 

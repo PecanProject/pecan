@@ -183,5 +183,46 @@ Subroutine CNsoil(ROOTD,RWA,WFPS,WAL,GCR,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOM
   NemissionN2O    = Nemission *     fN2O
   NemissionNO     = Nemission * (1.-fN2O) 
 end Subroutine CNsoil
+
+subroutine CNSoil_stub(ROOTD, RWA, WFPS, WAL, GCR, cstate_yasso, nstate_yasso, NMIN, runoff_cstate)
+  use yasso, only : partition_nitr, statesize_yasso
+  real, intent(in) :: ROOTD
+  real, intent(in) :: RWA
+  real, intent(in) :: WFPS
+  real, intent(in) :: WAL
+  real, intent(in) :: GCR
+  real, intent(in) :: cstate_yasso(statesize_yasso)
+  real, intent(in) :: nstate_yasso
+  real, intent(in) :: NMIN
+  real, intent(out) :: runoff_cstate(statesize_yasso)
   
+  real :: c_awen
+  real :: nitr_awen, nitr_h
+  real :: fN2O
+  
+  c_awen = sum(cstate_yasso(1:4))
+  call partition_nitr(cstate_yasso, nstate_yasso, nitr_awen, nitr_h)
+
+  runoff_cstate(1:4) = ((cstate_yasso(1:4)*RUNOFF) / ROOTD) * RRUNBULK * 0.001
+  runoff_cstate(5)   = 0.0
+  rCSOMF      = sum(runoff_cstate)
+  !rCSOMF      = ((c_awen*RUNOFF) / ROOTD) * RRUNBULK * 0.001
+  rNSOMF      = ((nitr_awen*RUNOFF) / ROOTD) * RRUNBULK * 0.001
+  rCLITT = 0.0
+  rNLITT = 0.0
+  
+  ! N fixation, leaching, emission
+  Nfixation       = gCR * KNFIX
+  ! Nleaching       = (NMIN*RNLEACH*DRAIN) / WAL
+  if ((WAL > 0.) .and. (NMIN > 0.)) then
+    Nleaching       = (NMIN*RNLEACH*DRAIN) / WAL
+  else
+    Nleaching       = 0.
+  end if
+  Nemission       =  NMIN * KNEMIT * RWA
+  fN2O            = 1. / (1. + exp(-RFN2O*(WFPS-WFPS50N2O)))
+  NemissionN2O    = Nemission *     fN2O
+  NemissionNO     = Nemission * (1.-fN2O) 
+end subroutine CNSoil_stub
+
 end module soil
