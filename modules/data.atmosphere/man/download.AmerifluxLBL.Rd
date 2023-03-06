@@ -35,7 +35,7 @@ The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 
 \item{username}{Ameriflux username}
 
-\item{method}{Optional. download.file() function option.  Use this to set custom programs such as ncftp}
+\item{method}{Optional. download_file() function option.  Use this to set custom programs such as ncftp}
 
 \item{useremail}{Used email, should include 'address sign' for code to be functional}
 

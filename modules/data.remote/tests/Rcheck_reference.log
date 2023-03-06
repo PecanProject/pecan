@@ -99,8 +99,6 @@ download.LandTrendr.AGB: no visible binding for global variable ‘k’
 download.NLCD: no visible global function definition for ‘dbfile.check’
 download.NLCD: no visible global function definition for ‘db.query’
 download.NLCD: no visible global function definition for
-  ‘download.file’
-download.NLCD: no visible global function definition for
   ‘dbfile.insert’
 download.thredds.AGB : get_data: no visible global function definition
   for ‘write.csv’
