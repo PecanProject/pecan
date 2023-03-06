@@ -954,6 +954,7 @@ put_T_values <-
 ##'   
 ##' @return a list
 ##' 
+##' TODO: deprecate yr and yfiles as they are no longer used.
 read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
                          pfts, settings = NULL) {
   
@@ -1011,13 +1012,13 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       purrr::map(avail_cohort, function(.x) as.vector(ncdf4::ncvar_get(nc, .x))) %>%
       purrr::set_names(avail_cohort) %>%
       tibble::as_tibble() %>%
-      dplyr::mutate(COHORT_ID = 1:nrow(.))
+      dplyr::mutate(COHORT_ID = 1:dplyr::n())
     
     patch_df <-
       purrr::map(avail_patch, function(.x) as.vector(ncdf4::ncvar_get(nc, .x))) %>%
       purrr::set_names(avail_patch) %>%
       tibble::as_tibble() %>%
-      dplyr::mutate(PATCH_ID = 1:nrow(.))
+      dplyr::mutate(PATCH_ID = 1:dplyr::n())
     
     # TODO: this section needs to be re-worked to not depend on dplyr >= 1.1.0
     # 
@@ -1029,7 +1030,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       # and month and use lubridate:ym() to build date
       dplyr::mutate(date = stringr::str_match(basename(file), "(\\d{4}-\\d{2})-\\d{2}")[, 2] %>% lubridate::ym()) %>%
       dplyr::select(date, dplyr::everything()) %>%
-      dplyr::select(-PACO_ID)
+      dplyr::select(-"PACO_ID")
   }
   
   # Extract data from all the .h5 files
@@ -1042,20 +1043,24 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     dplyr::mutate(
       # Convert units of per plant to per m^2 by multiplying by plant density
       # (plant/m^2)
-      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO),
-                    function(.x) .x * NPLANT),
+      dplyr::across(
+        dplyr::any_of(c("BSEEDS_CO", "AGB_CO", "MMEAN_NPPDAILY_CO", "MMEAN_TRANSP_CO")),
+        function(.x) .x * .data$NPLANT
+      ),
       # Convert to pecan standard units
-      MMEAN_NPPDAILY_CO = PEcAn.utils::ud_convert(MMEAN_NPPDAILY_CO, "kg/m^2/yr", "kg/m^2/s")
+      MMEAN_NPPDAILY_CO = PEcAn.utils::ud_convert(.data$MMEAN_NPPDAILY_CO, "kg/m^2/yr", "kg/m^2/s")
     ) %>%
     # Weighted summary
     # For each month (-E- file) and PFT...
-    dplyr::group_by(date, PFT) %>% 
+    dplyr::group_by(.data$date, .data$PFT) %>% 
     # ... get a weighted sum across cohorts and patches
     dplyr::summarize(
-      dplyr::across(c(BSEEDS_CO, AGB_CO, MMEAN_NPPDAILY_CO, MMEAN_TRANSP_CO, NPLANT),
-             ~sum(.x*AREA)),
+      dplyr::across(
+        dplyr::any_of(c("BSEEDS_CO", "AGB_CO", "MMEAN_NPPDAILY_CO", "MMEAN_TRANSP_CO", "NPLANT")),
+        function(.x) sum(.x * .data$AREA)
+      ),
       #(or a mean when it makes sense)
-      DBH_mean = mean(DBH),
+      DBH_mean = mean(.data$DBH),
       .groups = "drop"
     )
   
@@ -1069,7 +1074,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       "NPP_PFT"    = "MMEAN_NPPDAILY_CO",
       "TRANSP_PFT" = "MMEAN_TRANSP_CO",
       "DENS"       = "NPLANT"
-    ) %>% as.list
+    ) %>% as.list()
   
   
   # even if this is a SA run for soil, currently we are not reading any variable
