@@ -937,9 +937,8 @@ put_T_values <-
 ##' area using the plant density and patch area before converting units to PEcAn
 ##' standards.
 ##'
-##' @param yr length 1 numeric vector; the year being processed
-##' @param yfiles numeric vector of the years on the filenames, will be used to
-##'   matched `h5_files` for that year
+##' @param yr unused. For consistency with `read_T_files()`.
+##' @param yfiles unused. For consistency with `read_T_files()`.
 ##' @param h5_files character vector of names of E h5 files (e.g.
 ##'   "analysis-E-1999-06-00-000000-g01.h5")
 ##' @param outdir directory where ED2 output files are found
@@ -954,7 +953,6 @@ put_T_values <-
 ##'   
 ##' @return a list
 ##' 
-##' TODO: deprecate yr and yfiles as they are no longer used.
 read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date, 
                          pfts, settings = NULL) {
   
