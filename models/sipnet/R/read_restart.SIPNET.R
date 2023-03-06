@@ -27,6 +27,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   state.vars <- c("SWE", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
                   "litter_carbon_content", "fine_root_carbon_content", 
                   "coarse_root_carbon_content", "litter_mass_content_of_water")
+  #when adding new state variables make sure the naming is consistent across read_restart, write_restart and write.configs
   #pre-populate parsm$restart with NAs so state names can be added
   params$restart <- rep(NA, length(setdiff(state.vars, var.names)))
   #add states to params$restart NOT in var.names
