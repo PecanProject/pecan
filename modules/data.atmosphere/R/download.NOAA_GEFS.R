@@ -2,7 +2,7 @@
 ##' 
 ##' @section Information on Units:
 ##' Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, 
-##' but is converted at the station and downlaoded in Kelvin.
+##' but is converted at the station and downloaded in Kelvin.
 ##' @references https://www.ncdc.noaa.gov/crn/measurements.html
 ##' 
 ##' @section NOAA_GEFS General Information:
