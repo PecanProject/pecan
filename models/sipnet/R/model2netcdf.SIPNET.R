@@ -88,6 +88,7 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.SIPNET
 ##' @title Function to convert SIPNET model output to standard netCDF format
+##' 
 ##' @param outdir Location of SIPNET model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
@@ -97,10 +98,11 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param overwrite Flag for overwriting nc files or not
 ##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
 ##' @param prefix prefix to read the output files
+##' @param delete.raw Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, prefix = "sipnet.out",
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
                                 overwrite = FALSE, conflict = FALSE) {
 
   ### Read in model output in SIPNET format
@@ -209,7 +211,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
     output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[["litter_carbon_content"]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
-
+    output[["litter_mass_content_of_water"]] <- (sub.sipnet.output$litterWater * 10) # Litter water kgW/m2
     #calculate LAI for standard output
     param <- read.table(file.path(gsub(pattern = "/out/",
                                  replacement = "/run/", x = outdir),
@@ -218,7 +220,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     leafC <- 0.48
     SLA <- 1000 / param[id, 2] #SLA, m2/kgC
     output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA # LAI
-
     output[["fine_root_carbon_content"]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
     output[["coarse_root_carbon_content"]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
     output[["GWBI"]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
@@ -269,6 +270,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "SoilMoistFrac" = PEcAn.utils::to_ncvar("SoilMoistFrac", dims),
       "SWE" = PEcAn.utils::to_ncvar("SWE", dims),
       "litter_carbon_content" = PEcAn.utils::to_ncvar("litter_carbon_content", dims),
+      "litter_mass_content_of_water" = PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims),
       "LAI" = PEcAn.utils::to_ncvar("LAI", dims),
       "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
@@ -276,7 +278,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                      longname = "Gross Woody Biomass Increment"),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                      longname = "Total aboveground biomass"),
-      "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='', 
+      "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                     prec = "double")              
     )
