@@ -269,21 +269,21 @@ template <- Settings(list(
 sitegroupId <- 1000000031
 nSite <- 39
 
-multiRunSettings <- createSitegroupMultiSettings(
+multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
   template,
   sitegroupId = sitegroupId,
   nSite = nSite)
 if(file.exists(XML_out_dir)){
   unlink(XML_out_dir)
 }
-write.settings(multiRunSettings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(multiRunSettings, outputfile = "pecan.xml")
 
 #here we re-read the xml file to fix issues of some special character within the Host section.
 tmp = readChar(XML_out_dir,100000000)
 tmp = gsub("&amp;","&",tmp)
 writeChar(tmp, XML_out_dir)
 
-settings <- read.settings(XML_out_dir)
+settings <- PEcAn.settings::read.settings(XML_out_dir)
 
 #iteratively grab ERA5 paths for each site
 for (i in 1:nSite) {
@@ -317,7 +317,7 @@ for (i in 1:length(settings)) {
 }
 #query site info
 #open a connection to bety and grab site info based on site IDs
-con <- db.open(settings$database$bety)
+con <- PEcAn.DB::db.open(settings$database$bety)
 site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                       ST_Y(ST_CENTROID(geometry)) AS lat 
                            FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
@@ -333,8 +333,8 @@ for (i in 1:nSite) {
 
 #####
 unlink(paste0(settings$outdir,"/pecan.xml"))
-write.settings(settings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
 
 #test create site pft function
 #read the settings already done previously
-settings <- read.settings(file.path(settings$outdir, "pecan.xml"))
+settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.xml"))
