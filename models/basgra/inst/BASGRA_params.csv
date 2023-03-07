@@ -90,7 +90,7 @@
 "FSOMFSOMS",0.03
 "RNLEACH",0.5
 "KNEMIT",5e-04
-"NMIN0",2
+"NMIN0",0
 "TCLITT",365
 "TCSOMF",1460
 "TCSOMS",73000
@@ -135,3 +135,11 @@
 "NLITT0",6
 "NSOMF0",320
 "NSOMS0",448
+"use_yasso", 0
+"use_nitrogen",1
+"cn_h_min",10                                                                                                                       
+"totc_min_init",16000                                                                                                                   
+"hist_carbon_input",600.0
+"hist_mean_tempr",5.0
+"hist_yearly_precip",600
+"hist_tempr_ampl",10
