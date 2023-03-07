@@ -39,7 +39,6 @@ Suggests:
     reshape,
     dplyr,
     lubridate,
-    swfscMisc,
     tibble
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

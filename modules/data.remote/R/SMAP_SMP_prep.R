@@ -44,7 +44,8 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
         sd <- 0.04 * 100 #From Daniel
         
         #Match current lon/lat with site_info
-        Distance <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = site_info$lat, lon2 = site_info$lon)
+        Longlat_matrix <- matrix(c(lon, site_info$lon, lat, site_info$lat), ncol=2)
+        Distance <- sp::spDistsN1(Longlat_matrix, Longlat_matrix[1,], longlat = TRUE)[-1]
         distloc <- match(min(Distance), Distance)
         site_id <- site_info$site_id[distloc]
         
