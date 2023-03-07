@@ -81,13 +81,28 @@ MODIS_LAI_prep <- function(site_info, start_date, end_date, time_points,
     end_YEARDOY <- paste0(lubridate::year(end_date),sprintf("%03d", 365))
     
     #download LAI data and LAI std
-    lai_data <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                              run_parallel = as.logical(run_parallel), ncores = NCore, product = "MOD15A2H", band = "Lai_500m",
-                                              package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+    lai_data <- PEcAn.data.remote::call_MODIS(outdir = NULL, 
+                                              var = "LAI", 
+                                              site_info = new_site_info, 
+                                              product_dates = c(start_YEARDOY, end_YEARDOY),
+                                              run_parallel = as.logical(run_parallel), 
+                                              ncores = NCore, 
+                                              product = "MOD15A2H", 
+                                              band = "Lai_500m",
+                                              package_method = "MODISTools", 
+                                              QC_filter = TRUE, 
+                                              progress = FALSE)
     
-    lai_sd <- PEcAn.data.remote::call_MODIS(outdir = NULL, var = "LAI", site_info = new_site_info, product_dates = c(start_YEARDOY, end_YEARDOY),
-                                            run_parallel = as.logical(run_parallel), ncores = NCore, product = "MOD15A2H", band = "LaiStdDev_500m",
-                                            package_method = "MODISTools", QC_filter = TRUE, progress = FALSE)
+    lai_sd <- PEcAn.data.remote::call_MODIS(outdir = NULL, 
+                                            var = "LAI", 
+                                            site_info = new_site_info, 
+                                            product_dates = c(start_YEARDOY, end_YEARDOY),
+                                            run_parallel = as.logical(run_parallel), 
+                                            ncores = NCore, 
+                                            product = "MOD15A2H", 
+                                            band = "LaiStdDev_500m",
+                                            package_method = "MODISTools", 
+                                            QC_filter = TRUE, progress = FALSE)
     
     #combine data together and pick what we want
     LAI <- cbind(lai_data %>% as.data.frame %>% dplyr::select("calendar_date", "site_id", "lat", "lon", "data", "qc"), lai_sd$data) %>% 
