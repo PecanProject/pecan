@@ -325,6 +325,7 @@ sda.enkf.multisite <- function(settings,
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+    }
       #sample met ensemble members
       inputs <- conf.settings %>% map(function(setting) {
         input.ens.gen(
@@ -350,12 +351,9 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------------###-----  
       #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
       if (t>1){
-        #removing old simulations
-        #list.files(outdir, "*.nc", recursive = T, full.names = T) %>%
-        #furrr::future_map(~ unlink(.x))
-        
         #for next time step split the met if model requires
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+        #TODO: Will use the metsplit function later.
         inputs.split <- conf.settings %>%
           `class<-`(c("list")) %>%
           purrr::map2(inputs, function(settings, inputs) {
@@ -718,8 +716,5 @@ sda.enkf.multisite <- function(settings,
     {
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
-    
   } ### end loop over time
-  
- } # sda.enkf
-}
+} # sda.enkf
