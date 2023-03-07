@@ -88,7 +88,7 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' Converts all output contained in a folder to netCDF.
 ##' @name model2netcdf.SIPNET
 ##' @title Function to convert SIPNET model output to standard netCDF format
-##' 
+##'
 ##' @param outdir Location of SIPNET model output
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site

@@ -122,7 +122,6 @@
     <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
     <qstat>'qstat -j @JOBID@ &amp;> /dev/null || echo DONE'</qstat>
     <tunnel>/projectnb/dietzelab/ahelgeso/tunnel</tunnel>
-    <name>localhost</name>
   </host>
   <multisettings>run</multisettings>
   <settings.info>
