@@ -157,19 +157,19 @@ template <- PEcAn.settings::Settings(list(
       list(name = "temperate.deciduous.HPDA", 
            constants = structure(list(num = "1")), 
            posteriorid = "1000022311", 
-           outdir = "/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA"
+           posterior.files = "/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA" ## previously was outdir
       )),
     
     pft = structure(
       list(name = "boreal.coniferous",
-           outdir = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/Conifer/boreal.coniferous"
+           posterior.files = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/Conifer/boreal.coniferous"
       )),
     
     pft = structure(
       list(name = "semiarid.grassland_HPDA",
            constants = structure(list(num = "1")),
            posteriorid = "1000016525",
-           outdir = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/GrassA/semiarid.grassland"
+           posterior.files = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/GrassA/semiarid.grassland"
       ))
   )),
   
@@ -440,7 +440,6 @@ for(i in seq_along(site_ID)){
 }
 
 ```
-
 
 
 *soil physical parameters*

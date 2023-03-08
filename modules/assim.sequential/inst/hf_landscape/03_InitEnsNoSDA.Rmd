@@ -1,0 +1,40 @@
+---
+title: "Initial Ensemble Forecast, no SDA"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simple ensemble run, based on workflow.R
+```{r}
+library("PEcAn.all")
+settings = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/pecan.RDS")
+settings <- PEcAn.settings::prepare.settings(settings, force = FALSE)
+
+settings1 <- PEcAn.workflow::runModule.run.write.configs(settings[[1]])
+  ## run write config failing
+  ## current posterior file checks are (a) failing and (b) not checking site_pft.csv
+  ##    is looking for posterior.files not outdir
+
+    posterior.files.vec<-settings$pfts %>%
+      purrr::map(purrr::possibly('posterior.files', NA_character_)) %>%
+      purrr::modify_depth(1, function(x) {
+        ifelse(is.null(x), NA_character_, x)
+      }) %>%
+      unlist()
+posterior.files = map_chr(settings$pfts,"posterior.files")
+
+PEcAn.workflow::runModule_start_model_runs(settings1, stop.on.error = FALSE)
+runModule.get.results(settings)
+runModule.run.ensemble.analysis(settings, TRUE)
+```
+
+## pull together, weight, and visualize outputs
+```{r}
+
+```
+
