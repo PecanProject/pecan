@@ -62,8 +62,15 @@ SDA_OBS_Assembler <- function(settings){
         return(0)
       }
       time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep)
-    } 
-    obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep"))
+    }
+    #Search function inside the data.remote package
+    if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep")), silent = T))){
+      #Search function inside the data.land package, this is explicit for Soilgrids prep function.
+      if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", paste0(fun_name, "_prep")), silent = T))){
+        PEcAn.logger::logger.info("Couldn't find the function: ", paste0(fun_name, "_prep"), ". Please Check it!")
+        return(0)
+      }
+    }
     
     #grab function argument names
     fun_args <- methods::formalArgs(obs_prep_fun)
