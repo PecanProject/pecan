@@ -1070,7 +1070,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   # Rename variables to PEcAn standard and convert to list
   out_list <- out %>% 
     dplyr::select(
-      #PEcAN name    #ED2 name          
+      #PEcAn name    #ED2 name          
       "AGB_PFT"    = "AGB_CO",
       "BSEEDS"     = "BSEEDS_CO",
       "DBH"        = "DBH_mean",
