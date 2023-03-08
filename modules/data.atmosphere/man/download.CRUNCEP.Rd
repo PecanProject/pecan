@@ -33,7 +33,7 @@ but only the year portion is used and the resulting files always contain a full 
 \item{verbose}{logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 to control printing of debug info}
 
-\item{maxErrors}{Maximum times to re-try folloing an error accessing netCDF data through THREDDS}
+\item{maxErrors}{Maximum times to re-try following an error accessing netCDF data through THREDDS}
 
 \item{sleep}{Wait time between attempts following a THREDDS or other error}
 

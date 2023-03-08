@@ -24,7 +24,7 @@ find_inputs_without_formats(
 }
 \description{
 This is a function that returns a dataframe with all of the input entries that have no assosiated format records.
-This is very rare in the database.   
+This is very rare in the database.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 or look at the README

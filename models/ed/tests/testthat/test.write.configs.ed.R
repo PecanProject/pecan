@@ -49,15 +49,14 @@ defaults <-
     )
   )
 
-test_that("convert.samples.ED works as expected",{
+test_that("convert.samples.ED works as expected", {
   testthat::local_edition(3)
   expect_equal(convert.samples.ED(c("Vcmax" = 1))[["Vcmax"]],
                0.7052557)
-  expect_equal(
-    convert.samples.ED(c("root_respiration_rate" = 1))[["root_respiration_factor"]],
-    0.35263,
-    tolerance = 1e-5
-  )
+  expect_equal(convert.samples.ED(c("plant_min_temp" = 0))[["plant_min_temp"]], 273.15)
+  expect_equal(convert.samples.ED(c("root_respiration_rate" = 1))[["root_respiration_factor"]],
+               0.35263,
+               tolerance = 1e-5)
 })
 
 testdir <- tempfile()

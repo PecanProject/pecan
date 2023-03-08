@@ -11,6 +11,8 @@ on:
 
   pull_request:
 
+  merge_group:
+
 jobs:
   bookdown:
     runs-on: ubuntu-latest  

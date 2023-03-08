@@ -85,7 +85,7 @@ sda.enkf.multisite <- function(settings,
   nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
   censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
   #--------Initialization
-  FORECAST    <- ANALYSIS <- list()
+  FORECAST    <- ANALYSIS <- ens_weights <- list()
   enkf.params <- list()
   restart.list <- NULL
   #create SDA folder to store output
@@ -159,6 +159,11 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
+  #switch to depreciated version for debugging purposes
+  # do.call("library", list(paste0("PEcAn.", model)))
+  # my.write_restart <- paste0("write_restart.", model)
+  # my.read_restart <- paste0("read_restart.", model)
+  # my.split_inputs  <- paste0("split_inputs.", model)
   my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
   my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
   my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
@@ -364,7 +369,7 @@ sda.enkf.multisite <- function(settings,
         if (control$debug) browser()
         #if restart then use restart.list, include site for debugging purposes
         if(restart_flag){
-          restart.arg = restart.list$`646`
+          restart.arg = restart.list #$`646`debugging hack site specific
         }else{
           restart.arg = NULL
         }
@@ -611,6 +616,7 @@ sda.enkf.multisite <- function(settings,
       new.state  <- as.data.frame(analysis)
       ANALYSIS[[obs.t]] <- analysis
       ANALYSIS <-ANALYSIS
+      ens_weights[[obs.t]] <- sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
       ###-------------------------------------------------------------------###
       ### save outputs                                                      ###
       ###-------------------------------------------------------------------###---- 
