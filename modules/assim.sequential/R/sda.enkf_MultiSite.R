@@ -198,7 +198,6 @@ sda.enkf.multisite <- function(settings,
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
-      # source('/projectnb/dietzelab/dongchen/dongchenpecan/models/sipnet/R/split_inputs.SIPNET.R')
       inputs.split <- list()
       if (!no_split) {
         for (i in 1:length(settings$run$inputs$met$path)) {
@@ -353,31 +352,7 @@ sda.enkf.multisite <- function(settings,
       if (t>1){
         #for next time step split the met if model requires
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-        #TODO: Will use the metsplit function later.
-        inputs.split <- conf.settings %>%
-          `class<-`(c("list")) %>%
-          purrr::map2(inputs, function(settings, inputs) {
-            # Loading the model package - this is required bc of the furrr
-            library(paste0("PEcAn.",model), character.only = TRUE)
-            
-            inputs.split <- list()
-            if (!no_split) {
-              for (i in seq_len(nens)) {
-                #---------------- model specific split inputs
-                inputs.split$samples[i] <- do.call(
-                  my.split_inputs,
-                  args = list(
-                    settings = settings,
-                    start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
-                    stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
-                    inputs = inputs$samples[[i]])
-                )
-              }
-            } else{
-              inputs.split <- inputs
-            }
-            inputs.split
-          })
+        inputs.split <- PEcAnAssimSequential::metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
         
         ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
