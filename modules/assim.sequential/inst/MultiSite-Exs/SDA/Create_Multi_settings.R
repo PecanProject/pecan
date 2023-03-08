@@ -47,7 +47,7 @@ obs_end_date <- "2021-07-15"
 obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 
 #Start building template
-template <- Settings(list(
+template <- PEcAn.settings::Settings(list(
   ############################################################################
   ############################################################################
   ###                                                                      ###
