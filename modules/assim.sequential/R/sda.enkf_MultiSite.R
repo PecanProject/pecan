@@ -659,7 +659,7 @@ sda.enkf.multisite <- function(settings,
            FORECAST,
            ANALYSIS,
            enkf.params,
-           new.state, new.params,params.list,
+           new.state, new.params,params.list, ens_weights,
            out.configs, ensemble.samples, inputs, Viz.output,
            file = file.path(settings$outdir, "sda.output.Rdata"))
       
