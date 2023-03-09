@@ -325,7 +325,7 @@ site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
 #write Lat and Lon into the settings
 for (i in 1:nSite) {
   temp_ID <- settings[[i]]$run$site$id
-  index_site_info <- which(site_info$site_id==temp_ID)
+  index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
   settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
