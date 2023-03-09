@@ -164,10 +164,12 @@ SDA_OBS_Assembler <- function(settings){
     obs.mean[[i]] <- site_dat_var %>% purrr::set_names(site_info$site_id)
     obs.cov[[i]] <- site_sd_var %>% purrr::set_names(site_info$site_id)
   }
-  
+  names(obs.mean) <- names(obs.cov) <- time_points
   #remove NA data as this will crash the SDA.
   #for soilgrids specifically, calculate the cov multiplier by the sqrt of length of total time steps.
-  Soilgrids_multiplier <- length(time_points_all[[which(var == "TotSoilCarb")]])
+  if("TotSoilCarb" %in% var){
+    Soilgrids_multiplier <- length(time_points_all[[which(var == "TotSoilCarb")]])
+  }
   for (i in seq_along(obs.mean)) {
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
