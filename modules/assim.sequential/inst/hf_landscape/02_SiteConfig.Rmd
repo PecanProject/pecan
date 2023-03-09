@@ -209,8 +209,8 @@ template <- PEcAn.settings::Settings(list(
                          type = "SIPNET",
                          revision = "ssr",
                          delete.raw = FALSE,
-                         binary = "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
-                         jobtemplate = "~/sipnet_geo.job"
+                         binary = "/fs/data5/pecan.models/SIPNET/trunk/sipnet", ##"/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
+                         jobtemplate = NULL #"/home/zhangdc/sipnet_geo.job"
   )),
   
   ###########################################################################
@@ -221,19 +221,20 @@ template <- PEcAn.settings::Settings(list(
   ###########################################################################
   ###########################################################################
   #be carefull of the host section, you need to specify the host of your own!!!
-  host = structure(list(
-    name = "geo.bu.edu",
-    usr = "dietze",
-    folder = SDA_out_dir,
-    prerun = "module load R/4.1.2",
-    cdosetup = "module load cdo/2.0.6",
-    qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-    qsub.jobid = "Your job ([0-9]+) .*",
-    qstat = "qstat -j @JOBID@ || echo DONE",
-    tunnel = "~/Tunnel/Tunnel",
-    outdir = SDA_out_dir,
-    rundir = SDA_run_dir
-  )),
+  host = structure(list(name="localhost")),
+  # host = structure(list(
+  #   name = "geo.bu.edu",
+  #   usr = "dietze",
+  #   folder = SDA_out_dir,
+  #   prerun = "module load R/4.1.2",
+  #   cdosetup = "module load cdo/2.0.6",
+  #   qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+  #   qsub.jobid = "Your job ([0-9]+) .*",
+  #   qstat = "qstat -j @JOBID@ || echo DONE",
+  #   tunnel = "~/Tunnel/Tunnel",
+  #   outdir = SDA_out_dir,
+  #   rundir = SDA_run_dir
+  # )),
   
   ############################################################################
   ############################################################################
@@ -378,7 +379,7 @@ site_info = db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
 #write Lat and Lon into the settings
 for (i in 1:nSite) {
   temp_ID <- settings[[i]]$run$site$id
-  index_site_info <- which(site_info$site_id==temp_ID)
+  index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
   settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
