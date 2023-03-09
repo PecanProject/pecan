@@ -1099,7 +1099,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     #TODO: print a message??
     pfts <- pfts[!(soil.check)]
   }
-  out_list$PFT <- pfts #named vector for matching PFT numbers to names
+  out_list$PFT <- sort(pfts) #named vector for matching PFT numbers to names
   
   return(out_list)
   
