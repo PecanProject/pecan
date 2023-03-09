@@ -39,7 +39,7 @@ test_that("read E files without ED2 pft number", {
 })
 
 test_that("read E files without settings arg and with ED2 pft number", {
-  pft_with_number <- list(pft = list(name = "SetariaWT", ed2_pft_number = "1"))
+  pft_with_number <- c("SetariaWT" = 1)
   result <-
     read_E_files(
       yr = 2004,
@@ -48,7 +48,7 @@ test_that("read E files without settings arg and with ED2 pft number", {
       outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
       start_date = "2004/07/01",
       end_date = "2004/08/01",
-      pfts =  pft_with_number
+      pfts = pft_with_number
     )
   expect_type(result, "list")
   expect_equal(length(result), 8)
