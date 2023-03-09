@@ -1072,14 +1072,13 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   out_list <-
     out %>% 
     dplyr::arrange(PFT, date) %>% 
-    dplyr::select(-PFT) %>% 
+    dplyr::select(-PFT, -date) %>% 
     #output is expected to be list of matrixes with ncol == number of PFTs.
     #Here, I make a tibble with matrix-columns (each data frame column is a
     #2-column matrix), then convert it to a list.
-    dplyr::reframe(dplyr::across(-"date",
+    dplyr::reframe(dplyr::across(dplyr::everything(),
       function(.x) matrix(.x, ncol = n_pft)
-    ),
-    date = unique(date)) %>% 
+    )) %>% 
     dplyr::select(
       #PEcAn name    #ED2 name
       "AGB_PFT"    = "AGB_CO",
@@ -1087,8 +1086,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       "DBH"        = "DBH_mean",
       "NPP_PFT"    = "MMEAN_NPPDAILY_CO",
       "TRANSP_PFT" = "MMEAN_TRANSP_CO",
-      "DENS"       = "NPLANT",
-      "date"
+      "DENS"       = "NPLANT"
     ) %>% as.list()
   
   
@@ -1163,14 +1161,13 @@ put_E_values <-
   ## "2001-07-01" "2001-08-01" "2001-09-01"....) and which is the correct length
   ## for each full or partial year
   output_date_vector <-
-    # seq(
-    #   lubridate::ymd(start_date),
-    #   # an E file is only written if a month is completed.
-    #   # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
-    #   lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
-    #   by = "month"
-    # )
-    lubridate::ymd(var_list$date) #just use dates from file names already extracted
+    seq(
+      lubridate::ymd(start_date),
+      # an E file is only written if a month is completed.
+      # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
+      lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
+      by = "month"
+    )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
   ## 31 30 31)
   num_days_per_month <- lubridate::days_in_month(output_date_vector)
