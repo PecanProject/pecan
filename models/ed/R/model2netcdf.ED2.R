@@ -1068,9 +1068,19 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     )
   
   # Rename variables to PEcAn standard and convert to list
-  out_list <- out %>% 
+  n_pft <- length(unique(out$PFT))
+  out_list <-
+    out %>% 
+    dplyr::arrange(PFT, date) %>% 
+    dplyr::select(-PFT, -date) %>% 
+    #output is expected to be list of matrixes with ncol == number of PFTs.
+    #Here, I make a tibble with matrix-columns (each data frame column is a
+    #2-column matrix), then convert it to a list.
+    dplyr::reframe(dplyr::across(dplyr::everything(),
+      function(.x) matrix(.x, ncol = n_pft)
+    )) %>% 
     dplyr::select(
-      #PEcAn name    #ED2 name          
+      #PEcAn name    #ED2 name
       "AGB_PFT"    = "AGB_CO",
       "BSEEDS"     = "BSEEDS_CO",
       "DBH"        = "DBH_mean",
