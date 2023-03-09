@@ -23,13 +23,14 @@ test_that("read E files without ED2 pft number", {
       name = 'ebifarm.c3grass'
     )
   )
+  settings2<-settings
+  settings2$pfts <- pfts_without_number
   result <-
     read_E_files(
       yr = 2004,
       yfiles = 2004,
       h5_files =  e_file,
       outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
-      pfts = pfts_without_number,
       settings = settings
     )
   expect_type(result, "list")

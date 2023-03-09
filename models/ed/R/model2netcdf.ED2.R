@@ -964,9 +964,9 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     }
     if(missing(start_date)) start_date <- settings$run$start.date
     if(missing(end_date)) end_date <- settings$run$end.date
-    if(missing(pfts)) pfts <- settings$pfts
+    if(missing(pfts)) pfts <- extract_pfts(settings$pfts)
   }
-  pfts <- extract_pfts(pfts)
+  
   stopifnot(!is.null(outdir), !is.null(start_date), !is.null(end_date), 
             !is.null(pfts))
   
@@ -1170,7 +1170,7 @@ put_E_values <-
     #   lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
     #   by = "month"
     # )
-    lubridate::ymd(var_list$date)
+    lubridate::ymd(var_list$date) #just use dates from file names already extracted
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
   ## 31 30 31)
   num_days_per_month <- lubridate::days_in_month(output_date_vector)
