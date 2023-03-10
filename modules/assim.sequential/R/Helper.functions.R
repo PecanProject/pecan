@@ -137,3 +137,32 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   return(Y)
 }
 
+
+
+#' convert from timestep to actual time points.
+#' supports year, month, week, and day as time unit.
+#'
+#' @param start.date start date when the first observation was taken.
+#' @param end.date end date when the last observation was taken.
+#' @param timestep a list includes time unit and number of time unit per timestep.
+#' @return timepoints from start to end date given the number of time unit per timestep.
+#' @export
+#' @author Dongchen Zhang
+#' @importFrom lubridate %m+%
+obs_timestep2timepoint <- function(start.date, end.date, timestep){
+  start.date <- lubridate::ymd(start.date)
+  end.date <- lubridate::ymd(end.date)
+  if(timestep$unit == "year"){
+    time_points <- seq(start.date, end.date, paste(timestep$num, "year"))
+  }else if(timestep$unit == "month"){
+    time_points <- seq(start.date, end.date, paste(timestep$num, "month"))
+  }else if(timestep$unit == "week"){
+    time_points <- seq(start.date, end.date, paste(timestep$num, "week"))
+  }else if(timestep$unit == "day"){
+    time_points <- seq(start.date, end.date, paste(timestep$num, "day"))
+  }else{
+    PEcAn.logger::logger.error("The Obs_prep functions only support year, month, week, and day as timestep unit!")
+    return(0)
+  }
+  time_points[which(time_points <= end.date & time_points >= start.date)]
+}

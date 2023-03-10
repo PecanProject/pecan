@@ -17,7 +17,9 @@ sda_matchparam <- function(settings, ensemble.samples, site.ids, nens){
   #reformatting params
   new.params <- list()
   all.pft.names <- names(ensemble.samples)
-  for (i in 1:length(settings$pfts$pft$name)) {
+  
+  #loop over each site.
+  for (i in 1:length(site.ids)) {
     #match pft name
     site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
     which.pft <- which(all.pft.names==site.pft.name)

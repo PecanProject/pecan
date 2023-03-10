@@ -38,7 +38,7 @@ see if you need to change any of these:
 - Added litter_mass_content_of_water to standard_vars table
 - Added litter_mass_content_of_water to model2netcdf.SIPNET
 - Added all SIPNET state variables to read_restart and write_restart
-
+- Added Observation preparation functions into the SDA workflow, which supports AGB, LAI, Soil Carbon, and Soil moisture.
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
 ### Fixed

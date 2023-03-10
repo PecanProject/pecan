@@ -80,16 +80,28 @@ sda.enkf.multisite <- function(settings,
   
   is.local <- PEcAn.remote::is.localhost(settings$host)
   #------------------Reading up the MCMC settings
-  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 1e6, settings$state.data.assimilation$nitrGEF %>%as.numeric)
-  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 100, settings$state.data.assimilation$nthin %>%as.numeric)
-  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 1e4, settings$state.data.assimilation$nburnin %>%as.numeric)
-  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), TRUE, settings$state.data.assimilation$censored.data %>% as.logical)
+  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 
+                     5e4, 
+                     settings$state.data.assimilation$nitrGEF %>% 
+                       as.numeric)
+  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 
+                  10, 
+                  settings$state.data.assimilation$nthin %>% 
+                    as.numeric)
+  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 
+                   1e4, 
+                   settings$state.data.assimilation$nburnin %>% 
+                     as.numeric)
+  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), 
+                        TRUE, 
+                        settings$state.data.assimilation$censored.data %>% 
+                          as.logical)
   #--------Initialization
   FORECAST    <- ANALYSIS <- ens_weights <- list()
   enkf.params <- list()
   restart.list <- NULL
   #create SDA folder to store output
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
+  if(!dir.exists(settings$outdir)) dir.create(settings$outdir, showWarnings = FALSE)
   
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
@@ -159,14 +171,10 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
-  #switch to depreciated version for debugging purposes
-  # do.call("library", list(paste0("PEcAn.", model)))
-  # my.write_restart <- paste0("write_restart.", model)
-  # my.read_restart <- paste0("read_restart.", model)
-  # my.split_inputs  <- paste0("split_inputs.", model)
-  my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
-  my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
-  my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
+  do.call("library", list(paste0("PEcAn.", model)))
+  my.write_restart <- paste0("write_restart.", model)
+  my.read_restart <- paste0("read_restart.", model)
+  my.split_inputs  <- paste0("split_inputs.", model)
   #- Double checking some of the inputs
   if (is.null(adjustment)) adjustment <- TRUE
   # models that don't need split_inputs, check register file for that
@@ -190,7 +198,6 @@ sda.enkf.multisite <- function(settings,
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
-      # source('/projectnb/dietzelab/dongchen/dongchenpecan/models/sipnet/R/split_inputs.SIPNET.R')
       inputs.split <- list()
       if (!no_split) {
         for (i in 1:length(settings$run$inputs$met$path)) {
@@ -200,7 +207,7 @@ sda.enkf.multisite <- function(settings,
             my.split_inputs,
             args = list(
               settings = settings,
-              start.time = settings$run$site$met.start, # This depends if we are restart or not
+              start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
               inputs =  settings$run$inputs$met$path[[i]],
               outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
@@ -271,7 +278,17 @@ sda.enkf.multisite <- function(settings,
         }) %>%
         setNames(site.ids)
       #now all build_X args are properly formatted for the function to return X
-      reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = paste0(old.dir, "out/"), t = 1, var.names = var.names, my.read_restart = my.read_restart)
+      reads <- build_X(out.configs = out.configs, 
+                       settings = settings, 
+                       new.params = new.params, 
+                       nens = nens, 
+                       read_restart_times = read_restart_times, 
+                       outdir = paste0(old.dir, "out/"), 
+                       t = 1, 
+                       var.names = var.names, 
+                       my.read_restart = my.read_restart,
+                       restart_flag = restart_flag)
+      
       #let's read the parameters of each site/ens
       params.list <- reads %>% map(~.x %>% map("params"))
       # Now let's read the state variables of site/ens
@@ -305,16 +322,17 @@ sda.enkf.multisite <- function(settings,
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens) 
+      #reformatting params
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
-    #sample met ensemble members
-    inputs <- conf.settings %>% map(function(setting) {
-      input.ens.gen(
-        settings = setting,
-        input = "met",
-        method = setting$ensemble$samplingspace$met$method,
-        parent_ids = NULL 
-      )
+      #sample met ensemble members
+      inputs <- conf.settings %>% map(function(setting) {
+        input.ens.gen(
+          settings = setting,
+          input = "met",
+          method = setting$ensemble$samplingspace$met$method,
+          parent_ids = NULL 
+        )
     }) 
   
   
@@ -332,12 +350,9 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------------###-----  
       #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
       if (t>1){
-        #removing old simulations
-        #list.files(outdir, "*.nc", recursive = T, full.names = T) %>%
-        #furrr::future_map(~ unlink(.x))
-        
         #for next time step split the met if model requires
-        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split, obs.times, t, nens, restart_flag, my.split_inputs)
+        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+        inputs.split <- PEcAnAssimSequential::metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
         
         ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
@@ -365,7 +380,6 @@ sda.enkf.multisite <- function(settings,
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
         X <- X
       }else{
-        
         if (control$debug) browser()
         #if restart then use restart.list, include site for debugging purposes
         if(restart_flag){
@@ -375,7 +389,7 @@ sda.enkf.multisite <- function(settings,
         }
         out.configs <- conf.settings %>%
           `class<-`(c("list")) %>%
-          furrr::future_map2(restart.list, function(settings, restart.arg = restart.arg) {
+          furrr::future_map2(restart.list, function(settings, restart.arg) {
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
@@ -385,7 +399,8 @@ sda.enkf.multisite <- function(settings,
               settings = settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
-              restart = restart.arg
+              restart = restart.arg,
+              rename = TRUE
             )
           }) %>%
           setNames(site.ids)
@@ -399,7 +414,16 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, settings = settings, new.params = new.params, nens = nens, read_restart_times = read_restart_times, outdir = outdir, t = t, var.names = var.names, my.read_restart = my.read_restart)
+        reads <- build_X(out.configs = out.configs, 
+                         settings = settings, 
+                         new.params = new.params, 
+                         nens = nens, 
+                         read_restart_times = read_restart_times, 
+                         outdir = outdir, 
+                         t = t, 
+                         var.names = var.names, 
+                         my.read_restart = my.read_restart,
+                         restart_flag = restart_flag)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -410,7 +434,10 @@ sda.enkf.multisite <- function(settings,
         
         
         #replacing crazy outliers before it's too late
-        if (control$OutlierDetection) X <- outlier.detector.boxplot(X)
+        if (control$OutlierDetection){
+          X <- outlier.detector.boxplot(X)
+          PEcAn.logger::logger.info("Outlier Detection.")
+        } 
         
         # Now we have a matrix that columns are state variables and rows are ensembles.
         # this matrix looks like this
@@ -433,7 +460,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.na(obs.check)) {
+      if (all(!is.na(obs.check))) {
         if (control$debug) browser()
         #Making R and Y
         Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
@@ -446,7 +473,7 @@ sda.enkf.multisite <- function(settings,
           diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         }
         # making the mapping operator
-        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]]) #works for only 1 site 
+        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
         
         aqq         <- NULL
         bqq         <- numeric(nt + 1)
@@ -487,7 +514,11 @@ sda.enkf.multisite <- function(settings,
         
         #-analysis function
 
-        
+        if(t>1){
+          pre_elements <- enkf.params[[t-1]]$elements.W.Data
+        }else{
+          pre_elements <- NULL
+        }
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
@@ -504,7 +535,8 @@ sda.enkf.multisite <- function(settings,
             censored.data = censored.data,
             recompileGEF = recompileGEF,
             recompileTobit = recompileTobit,
-            wts = wts
+            wts = wts,
+            pre_elements = pre_elements
           ),
           choose = choose,
           nt = nt,
@@ -627,18 +659,28 @@ sda.enkf.multisite <- function(settings,
            FORECAST,
            ANALYSIS,
            enkf.params,
-           new.state, new.params,params.list,
+           new.state, new.params,params.list, ens_weights,
            out.configs, ensemble.samples, inputs, Viz.output,
            file = file.path(settings$outdir, "sda.output.Rdata"))
       
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      try(post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title = "test"))
-      if ((t%%2==0 | t==nt) & (control$TimeseriesPlot))   post.analysis.multisite.ggplot(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS ,plot.title=control$plot.title, facetg=control$facet.plots, readsFF=readsFF)
+      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+        post.analysis.multisite.ggplot(settings, 
+                                       t, 
+                                       obs.times, 
+                                       obs.mean, 
+                                       obs.cov, 
+                                       FORECAST, 
+                                       ANALYSIS ,
+                                       plot.title=control$plot.title, 
+                                       facetg=control$facet.plots, 
+                                       readsFF=readsFF)
+      }   
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
-      
+    
     # remove files as SDA runs
     if (!(keepNC))
     {
@@ -649,7 +691,5 @@ sda.enkf.multisite <- function(settings,
     {
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
-    
   } ### end loop over time
-  
 } # sda.enkf
