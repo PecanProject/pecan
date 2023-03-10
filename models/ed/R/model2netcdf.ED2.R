@@ -134,20 +134,29 @@ model2netcdf.ED2 <- function(outdir,
     }
 
     # generate start/end dates for processing
-    if (y == start_year) {
-      start_date_real <- lubridate::ymd(start_date)
+    
+    # read_E_files already takes care of adjusting start and end dates to match
+    # ED2 output.  These adjustments dont' make sense for E files, so skip them.
+    if(rflag == "-E-"){
+      start_date_real <- start_date
+      end_date_real <- end_date
     } else {
-      #When would this be run?
-      start_date_real <- lubridate::make_date(y, 1, 1)
+      
+      if (y == start_year) {
+        start_date_real <- lubridate::ymd(start_date)
+      } else {
+        #When would this be run?
+        start_date_real <- lubridate::make_date(y, 1, 1)
+      }
+      
+      if (y == end_year) {
+        end_date_real <- lubridate::ymd(end_date)
+      } else {
+        #When would this be run?
+        end_date_real <- lubridate::make_date(y, 12, 31)
+      }
     }
-
-    if (y == end_year) {
-      end_date_real <- lubridate::ymd(end_date)
-    } else {
-      #When would this be run?
-      end_date_real <- lubridate::make_date(y, 12, 31)
-    }
-
+    
     # create lat/long nc variables
     lat <- ncdf4::ncdim_def("lat", "degrees_north",
                             vals = as.numeric(sitelat),
@@ -155,7 +164,7 @@ model2netcdf.ED2 <- function(outdir,
     lon <- ncdf4::ncdim_def("lon", "degrees_east",
                             vals = as.numeric(sitelon),
                             longname = "station_longitude")
-
+    
     # ----- put values to nc_var list
     nc_var <- list()
     for (i in seq_along(out_list)) {
