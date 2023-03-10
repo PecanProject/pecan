@@ -1036,9 +1036,9 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
       dplyr::select(-"PACO_ID")
   }
   
-  # Extract data from all the .h5 files
+  # Extract data from all the .h5 files of the yr
   raw <- 
-    purrr::map(file.path(outdir, h5_files), extract_E_file) %>% 
+    purrr::map(file.path(outdir, h5_files[yr == yfiles]), extract_E_file) %>% 
     dplyr::bind_rows() 
   
   # Unit conversions
@@ -1165,6 +1165,7 @@ put_E_values <-
       lubridate::ymd(start_date),
       # an E file is only written if a month is completed.
       # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
+      #TODO: taht's not quite right.  If start date is 2002-06-01 and end date is 2003-06-30 you won't get 2003-06-00 but you WILL get 2002-12-00.  It's not the last month of every year that's missing, it's the last month of the *run* that's missing always.
       lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
       by = "month"
     )
