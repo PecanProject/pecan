@@ -101,7 +101,7 @@ sda.enkf.multisite <- function(settings,
   enkf.params <- list()
   restart.list <- NULL
   #create SDA folder to store output
-  if(!dir.exists("SDA")) dir.create("SDA",showWarnings = FALSE)
+  if(!dir.exists(settings$outdir)) dir.create(settings$outdir, showWarnings = FALSE)
   
   ##### Creating matrices that describe the bounds of the state variables
   ##### interval is remade everytime depending on the data at time t
