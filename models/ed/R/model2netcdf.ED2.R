@@ -1159,14 +1159,26 @@ put_E_values <-
   ##### setup output time and time bounds
   ## Create a date vector that contains each month of the model run (e.g.
   ## "2001-07-01" "2001-08-01" "2001-09-01"....) and which is the correct length
-  ## for each full or partial year
+  ## for each full or partial year.  In the last year of the simulation, the .h5
+  ## for the  month in end_date will never be written, because it won't be
+  ## complete.
+  if(yr == lubridate::year(start_date)){
+    date_vec_start <- lubridate::floor_date(lubridate::ymd(start_date), "month")
+    #TODO I should check what happens if a run starts not on the first day of the month
+  } else {
+    date_vec_start <- lubridate::make_date(year = yr, month = 1, day = 1)
+  }
+  
+  date_vec_end <- lubridate::floor_date(lubridate::ymd(end_date), "month")
+  if (yr == lubridate::year(end_date)) {
+    #remove the last month
+    date_vec_end <- date_vec_end - lubridate::months(1)
+  }
+  
   output_date_vector <-
     seq(
-      lubridate::ymd(start_date),
-      # an E file is only written if a month is completed.
-      # E.g. start_date=2004-07-01, end_date=2004-08-31 will result in one E file for 2004-07
-      #TODO: taht's not quite right.  If start date is 2002-06-01 and end date is 2003-06-30 you won't get 2003-06-00 but you WILL get 2002-12-00.  It's not the last month of every year that's missing, it's the last month of the *run* that's missing always.
-      lubridate::floor_date(lubridate::ymd(end_date), "month") - lubridate::days(1), 
+      date_vec_start,
+      date_vec_end, 
       by = "month"
     )
   ## Create a vector of the number of days in each month by year (e.g. 31 31 30
