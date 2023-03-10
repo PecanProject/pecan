@@ -1173,6 +1173,8 @@ put_E_values <-
   if (yr == lubridate::year(end_date)) {
     #remove the last month
     date_vec_end <- date_vec_end - months(1)
+  } else {
+    date_vec_end <- lubridate::make_date(year = yr, month = 12, day = 1)
   }
   
   output_date_vector <-
