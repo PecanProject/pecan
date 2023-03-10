@@ -36,7 +36,10 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   result <- httr::POST(url, body = json_query, encode = "json", httr::add_headers(`Content-Type` = "application/json"))
   link <- httr::content(result)
   ftplink <- NULL
-  if (length(link$dataURLsList) > 0) {
+
+  if(is.null(link) || is.atomic(link)) {
+    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an Fluxnet2015 site?")
+  } else if (length(link$dataURLsList) > 0) {
     ftplink <- link$dataURLsList[[1]]$URL
   }
   
