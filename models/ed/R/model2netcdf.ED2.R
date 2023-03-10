@@ -1172,7 +1172,7 @@ put_E_values <-
   date_vec_end <- lubridate::floor_date(lubridate::ymd(end_date), "month")
   if (yr == lubridate::year(end_date)) {
     #remove the last month
-    date_vec_end <- date_vec_end - lubridate::months(1)
+    date_vec_end <- date_vec_end - months(1)
   }
   
   output_date_vector <-
