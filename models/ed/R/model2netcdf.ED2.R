@@ -1085,7 +1085,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     #output is expected to be list of matrixes with ncol == number of PFTs.
     #Here, I make a tibble with matrix-columns (each data frame column is a
     #2-column matrix), then convert it to a list.
-    dplyr::reframe(dplyr::across(dplyr::everything(),
+    dplyr::summarize(dplyr::across(dplyr::everything(),
       function(.x) matrix(.x, ncol = n_pft)
     )) %>% 
     dplyr::select(
