@@ -192,9 +192,9 @@ SDA_OBS_Assembler <- function(settings){
       purrr::map(function(all_timepoints){
         all_timepoints[which(!all_timepoints %in% time_points)]
       }) %>% 
-      do.call(what = "c", args = .) %>% 
+      do.call(what = "c") %>% 
       unique()
-    if(!is_empty(timepoints_fill)){
+    if(!is.null(timepoints_fill)){
       for (i in seq_along(timepoints_fill)) {
         obs.mean <- rlist::list.append(obs.mean, NULL)
         obs.cov <- rlist::list.append(obs.cov, NULL)
