@@ -20,12 +20,227 @@ write_harv_fert <- function(path_harv, path_fert) {
   df_fertilize <- data.frame(
     year = 2019,
     doy = 128,
-    amount = 6.5
+    amount = 10.0
   )
   fertilize_file <- path_fert #
   write.csv(df_fertilize, fertilize_file, row.names=FALSE)
 
 }
+
+write_new_fert <- function(path_fert, which_type) {
+  if (which_type == 'mineral') {
+    df_fertilize <- data.frame(
+      year = 2019,
+      doy = 128,
+      Nmin = 10.0,
+      Norg = 0.0,
+      C_soluble = 0.0,
+      C_compost = 0.0
+    )
+  } else if (which_type == 'soluble') {
+    df_fertilize <- data.frame(
+      year = 2019,
+      doy = 128,
+      Nmin = 0.0,
+      Norg = 10.0,
+      C_soluble = 200.0,
+      C_compost = 0.0
+    )
+  } else if (which_type == 'compost') {
+    df_fertilize <- data.frame(
+      year = 2019,
+      doy = 128,
+      Nmin = 0.0,
+      Norg = 10.0,
+      C_soluble = 0.0,
+      C_compost = 200.0
+    )
+  } else if (which_type == 'invalid') {    
+    df_fertilize <- data.frame(
+      year = 2019,
+      doy = 128,
+      Nmin = 6.5,
+      badstuff = 6.0
+    )
+  }
+  fertilize_file <- path_fert #
+  write.csv(df_fertilize, fertilize_file, row.names=FALSE)
+}
+
+test_that('two harvests yield more than one', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  fert_file <- file.path(outfolder, 'fertilize.csv')
+  write_new_fert(fert_file, 'mineral')
+
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = 2019,
+      doy = 125
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_one_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = c(2019, 2019),
+      doy = c(125, 165)
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_two_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  expect_gt(sum(output_two_harv$YIELD), sum(output_one_harv$YIELD))
+})
+
+test_that('harvest followed by cut yields same as only harvest but different mean LAI', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  fert_file <- file.path(outfolder, 'fertilize.csv')
+  write_new_fert(fert_file, 'mineral')
+
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = 2019,
+      doy = 125,
+      CLAIV = 0.7
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_only_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = c(2019, 2019),
+      doy = c(125, 165),
+      CLAIV = c(0.7, 0.7),
+      cut_only = c(0, 1)
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_harv_cut <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  expect_equal(sum(output_only_harv$YIELD), sum(output_harv_cut$YIELD))
+  expect_equal(sum(output_only_harv$FHARVC), sum(output_harv_cut$FHARVC))
+  expect_false(mean(output_only_harv$LAI) == mean(output_harv_cut$LAI))
+})
+
+test_that('changing CLAIV changes LAI and yield', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  fert_file <- file.path(outfolder, 'fertilize.csv')
+  write_new_fert(fert_file, 'mineral')
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = 2019,
+      doy = 125,
+      CLAIV = 1.0
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_high <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  write.csv(
+    data.frame(
+      year = 2019,
+      doy = 125,
+      CLAIV = 0.001
+    ),
+    harv_file, row.names=FALSE
+  )
+  run_BASGRA(
+    met_path, run_params, harv_file, fert_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_low <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  
+  expect_true(any(output_high$LAI > output_low$LAI))
+  # for a single harvest, we expect a higher yield with lower CLAIV
+  expect_gt(sum(output_low$FHARVC), sum(output_high$FHARVC))
+})
+
+test_that('invalid harvest file raises an error', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  fert_file <- file.path(outfolder, 'fertilize.csv')
+  write_new_fert(fert_file, 'mineral')
+  harv_file <- file.path(outfolder, 'harvest.csv')
+  write.csv(
+    data.frame(
+      year = 2019,
+      doy = 125,
+      garbage = 1.0
+    ),
+    harv_file, row.names=FALSE
+  )
+  expect_error(
+    run_BASGRA(
+      met_path, run_params, harv_file, fert_file,
+      start_date = '2019-01-01',
+      end_date = '2019-12-31 23:00',
+      outdir = outfolder,
+      sitelat = 60.29,
+      sitelon = 22.39 # match the test meteo data file
+    )
+  )
+})
 
 test_that('model produces some output', {
   met_path <- 'test.met'
@@ -48,6 +263,111 @@ test_that('model produces some output', {
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_true(any(output$LAI > 0))
   expect_true(all(!is.na(output)))
+})
+
+test_that('Fertilizer C inputs work consistently with Yasso', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params_yasso.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fert_file_mineral <- file.path(outfolder, 'fert.mineral.csv')
+  write_harv_fert(harvest_file, fert_file_mineral)
+  
+  run_BASGRA(
+    met_path, run_params, harvest_file, fert_file_mineral,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_mineral <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  fert_file_soluble <- file.path(outfolder, 'fert.soluble.csv')
+  write_new_fert(fert_file_soluble, 'soluble')
+  run_BASGRA(
+    met_path, run_params, harvest_file, fert_file_soluble,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_soluble <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  
+  expect_true(all(output_soluble$CSOM_W >= output_mineral$CSOM_W))
+  expect_true(any(output_soluble$CSOM_W > output_mineral$CSOM_W))
+
+  fert_file_compost <- file.path(outfolder, 'fert.compost.csv')
+  write_new_fert(fert_file_compost, 'compost')
+  run_BASGRA(
+    met_path, run_params, harvest_file, fert_file_compost,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_compost <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  
+  expect_true(all(output_compost$CSOM_A >= output_mineral$CSOM_A))
+  expect_true(any(output_compost$CSOM_A > output_mineral$CSOM_A))
+  expect_true(all(output_compost$CSOM_N >= output_mineral$CSOM_N))
+  expect_true(any(output_compost$CSOM_N > output_mineral$CSOM_N))
+
+  expect_true(all(output_compost$CSOM_A >= output_soluble$CSOM_A))
+  expect_true(any(output_compost$CSOM_A > output_soluble$CSOM_A))
+
+  fert_file_bad <- file.path(outfolder, 'fert.bad.csv')
+  write_new_fert(fert_file_bad, 'invalid')
+  expect_error(
+    run_BASGRA(
+      met_path, run_params, harvest_file, fert_file_bad,
+      start_date = '2019-01-01',
+      end_date = '2019-12-31 23:00',
+      outdir = outfolder,
+      sitelat = 60.29,
+      sitelon = 22.39 # match the test meteo data file
+    )
+  )
+})
+
+
+test_that('new fertilization file format matches the old', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params_basic <- setNames(df_params[,2], df_params[,1])
+  df_params <- read.csv('BASGRA_params_yasso.csv')
+  run_params_yasso <- setNames(df_params[,2], df_params[,1])
+  
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fert_file_old <- file.path(outfolder, 'fert.old.csv')
+  write_harv_fert(harvest_file, fert_file_old)
+  fert_file_mineral <- file.path(outfolder, 'fert.mineral.csv')
+  write_new_fert(fert_file_mineral, 'mineral')
+
+  run_BASGRA(
+    met_path, run_params_basic, harvest_file, fert_file_old,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_old_fert <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  run_BASGRA(
+    met_path, run_params_basic, harvest_file, fert_file_mineral,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_mineral <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  expect_equal(output_old_fert, output_mineral)  
 })
 
 test_that('model shows no nitrogen limitation when run with use_nitrogen = 0', {

@@ -65,7 +65,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
       }
       
-      
       NDAYS          <- length(simdays)
       NWEATHER       <- as.integer(9)
       matrix_weather <- matrix( 0., nrow = NDAYS, ncol = NWEATHER )
@@ -109,7 +108,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
           PEcAn.logger::logger.error("Check units of time in the weather data.")
         }
 
-        
         rad <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         # temporary hack, not sure if it will generalize with other data products
@@ -121,7 +119,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
         Tair   <- Tair[ydays %in% simdays]
         Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
-        
         
         #in BASGRA tmin and tmax is only used to calculate the average daily temperature, see environment.f90
         t_dmean <- round(tapply(Tair_C, ind, mean, na.rm = TRUE), digits = 2) # maybe round these numbers 
@@ -158,7 +155,6 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
             PEcAn.logger::logger.severe("No variable found to calculate wind_speed")
           }
         }
-        
         
         matrix_weather[ ,8] <- round(tapply(ws, ind, mean,  na.rm = TRUE), digits = 2) # mean wind speed (m s-1)			
         
@@ -300,12 +296,21 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   # write.table(matrix_weather[1:NDAYS,], file=paste0(outdir,"/clim",start_date,".",substr(end_date, 1,10),".csv"), 
   #            sep=",", row.names = FALSE, col.names=FALSE)
   
-  calendar_fert     <- matrix( 0, nrow=300, ncol=3 )
+  calendar_fert     <- matrix( 0, nrow=300, ncol=6)
   
-  # read in harvest days
+  # read in fertilization
   f_days <- as.matrix(utils::read.table(site_fertilize, header = TRUE, sep = ","))
-  calendar_fert[1:nrow(f_days),] <- f_days
-  
+  if (ncol(f_days) == 3) {
+    # old-style fertilization file
+    calendar_fert[1:nrow(f_days),1:3] <- f_days
+  } else {
+    if (ncol(f_days) != 6) {
+      PEcAn.logger::logger.severe(sprintf('Wrong number of columns (%i) in fertilization file', ncol(f_days)))
+    }
+    columns <- c('year', 'doy', 'Nmin', 'Norg', 'C_soluble', 'C_compost')
+    calendar_fert[1:nrow(f_days),] <- f_days[,columns]
+  }
+    
   calendar_Ndep     <- matrix( 0, nrow=300, ncol=3 )
   #calendar_Ndep[1,] <- c(1900,  1,0)
   #calendar_Ndep[2,] <- c(2100, 366, 0)
@@ -316,23 +321,41 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   calendar_Ndep[2,] <- c( 1980, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 1980
   calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 2100
   
-  days_harvest      <- matrix(as.integer(-1), nrow= 300, ncol = 3)
+  harvest_params <- matrix(0.0, nrow=300, ncol=2)
+  df_harvest <- read.csv(site_harvest)
+  n_events <- nrow(df_harvest)
+  allowed_harv_colnames <- c('year', 'doy', 'CLAIV', 'cut_only')
+  if (!all(colnames(df_harvest) %in% allowed_harv_colnames)) {
+    PEcAn.logger::logger.severe(c('Bad column names in harvest file: ', colnames(df_harvest)))
+  }
+  days_harvest <- matrix(as.integer(-1), nrow= 300, ncol = 2)
+  days_harvest[1:n_events,1:2] <- as.matrix(df_harvest[,c('year', 'doy')])
+  if ('CLAIV' %in% colnames(df_harvest)) {
+    harvest_params[1:n_events,1] <- df_harvest$CLAIV
+  } else { # default
+    harvest_params[1:n_events,1] <- run_params[names(run_params) == "CLAIV"]
+  }
+  if ('cut_only' %in% colnames(df_harvest)) {
+    harvest_params[1:n_events,2] <- df_harvest$cut_only
+  } else {
+    harvest_params[1:n_events,2] <- 0.0
+  }
   # read in harvest days
-  h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
-  days_harvest[1:nrow(h_days),1:2] <- h_days[,1:2]
+  #h_days <- as.matrix(utils::read.table(site_harvest, header = TRUE, sep = ","))
+  #days_harvest[1:nrow(h_days),1:2] <- h_days[,1:2]
   
   # This is a management specific parameter
   # CLAIV is used to determine LAI remaining after harvest
   # I modified BASGRA code to use different values for different harvests
   # I'll pass it via harvest file as the 3rd column
   # but just in case users forgot to add the third column to the harvest file:
-  if(ncol(h_days) == 3){
-    days_harvest[1:nrow(h_days),3] <- h_days[,3]*10 # as.integer
-  }else{
-    PEcAn.logger::logger.info("CLAIV not provided via harvest file. Using defaults.")
-    days_harvest[1:nrow(h_days),3] <- run_params[names(run_params) == "CLAIV"] 
-  }
-  days_harvest <- as.integer(days_harvest)
+  #if(ncol(h_days) == 3){
+  #  days_harvest[1:nrow(h_days),3] <- h_days[,3]*10 # as.integer
+  #}else{
+  #  PEcAn.logger::logger.info("CLAIV not provided via harvest file. Using defaults.")
+  #  days_harvest[1:nrow(h_days),3] <- run_params[names(run_params) == "CLAIV"] 
+  #}
+  #days_harvest <- as.integer(days_harvest)
   
   # run  model
   NPARAMS = as.integer(144)
@@ -345,13 +368,15 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                      matrix_weather,
                      calendar_fert,
                      calendar_Ndep,
-                     days_harvest,
+                     as.integer(days_harvest),
+                     harvest_params,
                      NPARAMS, 
                      NDAYS,
                      NOUT,
-                     matrix(0, NDAYS, NOUT))[[9]]
+                     matrix(0, NDAYS, NOUT))[[10]]
   # for now a hack to write other states out
   # save(output, file = file.path(outdir, "output_basgra.Rdata"))
+  
   write.csv(setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
   last_vals <- output[nrow(output),]
   names(last_vals) <- outputNames

@@ -107,17 +107,31 @@ Subroutine O2fluxes(O2,PERMgas,ROOTD,RplantAer, O2IN,O2OUT)
   O2IN  = PERMgas * ( (O2MX-O2) + O2OUT*DELT )  
 end Subroutine O2fluxes
 
-Subroutine N_fert(year,doy,DAYS_FERT,NFERTV, Nfert)
-  integer                  :: year,doy,i
-  integer,dimension(300,2) :: DAYS_FERT
-  real   ,dimension(300  ) :: NFERTV
-  real                     :: Nfert
-  Nfert   = 0
-  do i=1,300    
-    if ( (year==DAYS_FERT (i,1)) .and. (doy==DAYS_FERT (i,2)) ) then
-      Nfert   = NFERTV (i)
-	end if
+Subroutine N_fert(year,doy,DAYS_FERT,NFERTV, Nfert, input_soluble_c, input_compost_c, input_org_n)
+  integer, intent(in)      :: year,doy
+  integer, intent(in), dimension(:,:) :: DAYS_FERT
+  real, intent(in), dimension(:,:) :: NFERTV
+  real, intent(out)        :: Nfert
+  real, intent(out)        :: input_soluble_c
+  real, intent(out)        :: input_compost_c
+  real, intent(out)        :: input_org_n
+
+  integer :: i
+  
+  Nfert = 0.0
+  input_soluble_c = 0.0
+  input_compost_c = 0.0
+  input_org_n = 0.0
+  
+  do i=1,size(days_fert, 1)    
+     if ( (year==DAYS_FERT (i,1)) .and. (doy==DAYS_FERT (i,2)) ) then
+        Nfert   = NFERTV (i, 1)
+        input_org_n = NFERTV(i, 2)
+        input_soluble_c = NFERTV(i, 3)
+        input_compost_c = NFERTV(i, 4)
+     end if
   end do
+
 end Subroutine N_fert
 
 Subroutine N_dep(year,doy,DAYS_NDEP,NDEPV, Ndep)
