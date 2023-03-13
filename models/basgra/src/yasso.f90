@@ -116,11 +116,11 @@ contains
     ! Solve the equilibrium condition Ax + b = 0
     call solve(matrix, neg_c_input_yr, cstate)
     totc = sum(cstate)
-    print *, 'totc before adjust', totc, totc_min
+    !print *, 'totc before adjust', totc, totc_min
     if (totc_min > 0.0 .and. totc < totc_min) then
        cstate(5) = cstate(5) + totc_min - totc
     end if
-    print *, 'totc after adjust', sum(cstate)
+    !print *, 'totc after adjust', sum(cstate)
 
     ! Nitrogen
     !
