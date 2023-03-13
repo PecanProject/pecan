@@ -62,6 +62,25 @@ test_that('write.config retrieves default parameters from the file', {
   expect_equal(params.from.file$value, setNames(param.vector, NULL), tolerance=1e-4)
 })
 
+test_that('default param path from settings overrides the global default', {
+  jobtemplate <- create_job_template('@RUN_PARAMS@')
+  settings <- basesettings
+  settings$model$jobtemplate <- jobtemplate
+  trait.values = list(list()) # no traits given
+  param_path <- file.path(outfolder, 'modified.defaults.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'), col.names=c('name', 'value'))
+  df_params[df_params$name == 'NMIN0', 'value'] <- -9991
+  write.csv(df_params, param_path, row.names=FALSE)
+  settings$run$inputs$defaults$path <- param_path
+  run.id = 9998
+  dir.create(file.path(outfolder, run.id))
+  write.config.BASGRA(defaults, trait.values, settings, run.id)
+  job.file <- file.path(outfolder, run.id, 'job.sh')
+  content <- paste(readLines(job.file), collapse='\n')
+  param.vector <- eval(parse(text=content))
+  expect_equal(setNames(param.vector['NMIN0'], NULL), -9991)
+})
+
 test_that('write.config modifies some trait values', {
   jobtemplate <- create_job_template('@RUN_PARAMS@')
   settings <- basesettings

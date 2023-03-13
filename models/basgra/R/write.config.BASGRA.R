@@ -31,7 +31,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   outdir <- file.path(settings$host$outdir, run.id)
   
   # load default(!) BASGRA params
-  df_run_params <- read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
+  if (!is.null(settings$run$inputs$defaults$path)) {
+    df_run_params <- read.csv(settings$run$inputs$defaults$path)
+  } else {
+    df_run_params <- read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
+  }
   run_params <- setNames(df_run_params[,2], df_run_params[,1])
   run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
   
