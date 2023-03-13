@@ -6,6 +6,10 @@
 * Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
 * write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
 * Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
+* Fixed a bug in `read_E_files()` affecting `model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
+* DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
+* The `yr` and `yfiles` arguments of `read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
+
 
 # PEcAn.ED2 1.7.2.9000
 
