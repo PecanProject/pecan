@@ -16,14 +16,17 @@ real :: NSOURCE, NSINK
 
 Contains
 
-Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
-                             GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
-  integer :: doy,year
-  integer,dimension(300,3) :: DAYS_HARVEST
-  real    :: CLV, CRES, CST, LAI, PHEN, TILG1, TILG2, TILV
-  real    :: GSTUB, HARVLV, HARVLVP, HARVLA, HARVRE, HARVREP, HARVTILG2, HARVST, HARVSTP, HARVPH
+Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,HARVEST_PARAMS, LAI,PHEN,TILG1,TILG2,TILV, &
+     GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2, if_cut_only)
+  integer, intent(in) :: doy,year
+  integer, intent(in), dimension(300,2) :: DAYS_HARVEST
+  real, intent(in), dimension(300, 2) :: HARVEST_PARAMS
+  real, intent(in)    :: CLV, CRES, CST, LAI, PHEN, TILG1, TILG2, TILV
+  real, intent(out)    :: GSTUB, HARVLV, HARVLVP, HARVLA, HARVRE, HARVREP, HARVTILG2, HARVST, HARVSTP, HARVPH
+  logical, intent(out) :: if_cut_only ! if the cut grass is left on the field and not to be added to the yield pool
+
   real    :: CLAIV, CLAI, HARVFR, TV1
-  integer :: HARV, HARVP, TEMPOP, i
+  integer :: HARV, HARVP, i
  
   HARVP  = 1 
   HARV   = 0
@@ -33,9 +36,10 @@ Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV,
     if ( (year==DAYS_HARVEST(i,1)) .and. (doy==DAYS_HARVEST(i,2)) ) then
       HARV   = 1
       NOHARV = 0	
-      TEMPOP  = DAYS_HARVEST(i,3) 
-      CLAIV = TEMPOP * 0.1
-	end if
+      CLAIV  = HARVEST_PARAMS(i,1)
+      if_cut_only = HARVEST_PARAMS(i,2) > 0.0
+      exit
+    end if
   end do
   FRACTV = (TILV+TILG1) / (TILV+TILG1+TILG2)
   CLAI   = FRACTV * CLAIV

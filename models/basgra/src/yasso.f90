@@ -63,14 +63,9 @@ real, public :: nc_h_max = 0.1 ! N-C ratio of the H pool
 ! composition for both above and below ground inputs. The last values (H) are always 0.
 real, parameter :: awenh_fineroot(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
 real, parameter :: awenh_leaf(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
-
-! Parameters that control the basgra/yasso coupling
-!real, public :: use_yasso = 0.0  ! if > 0, use Yasso for SOC 
-!real, public :: no_nitrogen_limit = -1.0 ! if > 0, assume no nitrogen limitation in crops
-!real, public :: hist_carbon_input = 600.0 ! carbon input per year, used for initialization
-!real, public :: hist_tempr = 5.0 ! average climate for initialization
-!real, public :: hist_tempr_ampl = 10.0
-!real, public :: hist_precip = 600.0
+real, parameter :: awenh_soluble(statesize_yasso) = (/0.0, 1.0, 0.0, 0.0, 0.0/)
+! From Heikkinen et al 2021, composted horse manure with straw litter
+real, parameter :: awenh_compost(statesize_yasso) = (/0.69, 0.09, 0.02, 0.20, 0.0/)
 
 integer, parameter, public :: met_ind_init = 1
 
@@ -78,6 +73,8 @@ public decompose
 public initialize
 public average_met
 public partition_nitr
+public inputs_to_fractions
+
 contains
 
   subroutine initialize(param, flux_leafc_day, flux_rootc_day, flux_nitr_day, &
@@ -141,14 +138,30 @@ contains
     end do
     
   end subroutine initialize
+
+  subroutine inputs_to_fractions(leaf, root, soluble, compost, fract)
+    ! Split C in various types of inputs into the (here hard-coded) YASSO fractions
+    ! ("AWEN"). The fifth pool (H) never receives external input. Only C needs to be
+    ! split, nitrogen always goes to the total pool.
+    real, intent(in) :: leaf
+    real, intent(in) :: root
+    real, intent(in) :: soluble
+    real, intent(in) :: compost
+    real, intent(out) :: fract(statesize_yasso)
+
+    fract = leaf * awenh_leaf &
+         + root * awenh_fineroot &
+         + soluble * awenh_soluble &
+         + compost * awenh_compost
+    
+  end subroutine inputs_to_fractions
   
-  subroutine decompose(param, timestep_days, flux_leafc_day, flux_rootc_day, flux_nitr_day, tempr_c, &
+  subroutine decompose(param, timestep_days, c_input_awenh_day, nitr_input_day, tempr_c, &
        precip_day, cstate, nstate, ctend, ntend)
     real, intent(in) :: param(:) ! parameter vector
     real, intent(in) :: timestep_days
-    real, intent(in) :: flux_leafc_day ! carbon input with "leaf" composition per day
-    real, intent(in) :: flux_rootc_day ! carbon input with "fineroot" composition per day
-    real, intent(in) :: flux_nitr_day  ! organic nitrogen input per day
+    real, intent(in) :: c_input_awenh_day(statesize_yasso)
+    real, intent(in) :: nitr_input_day  ! organic nitrogen input per day
     real, intent(in) :: tempr_c ! air temperature
     real, intent(in) :: precip_day ! precipitation mm / day
     real, intent(in) :: cstate(:) ! AWENH
@@ -171,7 +184,7 @@ contains
     real :: nc_h ! N:C of the H pool
     real :: resp ! heterotrophic respiration
     
-    c_input_yr = (flux_leafc_day * awenh_leaf + flux_rootc_day * awenh_fineroot) * days_yr
+    c_input_yr = c_input_awenh_day * days_yr
     totc = sum(cstate)
 
     ! Carbon
@@ -187,7 +200,7 @@ contains
     !
     if (totc < 1e-6) then
        ! No SOM, no need for N dynamics
-       ntend = flux_nitr_day
+       ntend = nitr_input_day
     else
        decomp_h = matrix(5,5) * cstate(5) * timestep_yr
        if (cstate(5) * nc_h_max > nstate) then
@@ -206,7 +219,7 @@ contains
        growth_c = cue * cupt_awen
        ! The immobilization / mineralization is equal to the difference of nitrogen needed for
        ! microbial growth and the nitrogen released from the decomposed organic matter.
-       ntend = nc_mb * growth_c - nc_awen * cupt_awen - nc_h * decomp_h + flux_nitr_day
+       ntend = nc_mb * growth_c - nc_awen * cupt_awen - nc_h * decomp_h + nitr_input_day
     end if
     
   end subroutine decompose

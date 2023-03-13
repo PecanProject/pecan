@@ -1,5 +1,6 @@
 subroutine BASGRA(PARAMS, MATRIX_WEATHER, &
      CALENDAR_FERT, CALENDAR_NDEP, DAYS_HARVEST, &
+     HARVEST_PARAMS, &
      NPARAMS, NDAYS, NOUT, &
      y)
 !-------------------------------------------------------------------------------
@@ -25,7 +26,8 @@ use yasso
 use set_params_mod
 implicit none
 
-integer, dimension(300,3) :: DAYS_HARVEST
+integer, dimension(300,2) :: DAYS_HARVEST
+real, dimension(300,2)    :: HARVEST_PARAMS ! (day, 1=CLAIV, 2={if > 0, cut only})
 real                      :: PARAMS(NPARAMS)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
@@ -33,9 +35,10 @@ real                      :: PARAMS(NPARAMS)
   integer, parameter      :: NWEATHER =  9
 #endif
 real                      :: MATRIX_WEATHER(NMAXDAYS,NWEATHER)
-real   , dimension(300,3) :: CALENDAR_FERT, CALENDAR_NDEP
+real   , dimension(300,7) :: CALENDAR_FERT, CALENDAR_NDEP
 integer, dimension(300,2) :: DAYS_FERT    , DAYS_NDEP
-real   , dimension(300)   :: NFERTV       , NDEPV
+real   , dimension(300,4) :: NFERTV ! (day,[mineral-N, organic-N, soluble-C, compost-C])
+real   , dimension(300)   :: NDEPV
 
 integer                   :: day, doy, i, NDAYS, NOUT, year, NPARAMS
 real                      :: y(NDAYS,NOUT)
@@ -66,12 +69,15 @@ real :: O2OUT, PackMelt, poolDrain, poolInfil, Psnow, reFreeze, RESMOB
 real :: RGRTVG1, RROOTD, SnowMelt, THAWPS, THAWS, TILVG1, TILG1G2, TRAN, Wremain
 real :: NCSHI, NCGSH, NCDSH, NCHARVSH, GNSH, DNSH, HARVNSH, GNRT, DNRT
 real :: NSHmob, NSHmobsoil, Nupt
-
+real :: input_soluble_c, input_compost_c ! from organic amendments/fertilizers
+real :: input_org_n
 real :: Ndep, Nfert
 
 real :: F_DIGEST_DM, F_DIGEST_DMSH, F_DIGEST_LV, F_DIGEST_ST, F_DIGEST_WALL
 real :: F_WALL_DM  , F_WALL_DMSH  , F_WALL_LV  , F_WALL_ST
-
+logical :: if_cut_only ! add harvested biomass to litter, not yield fluxes
+real :: harv_c_to_litt, harv_n_to_litt
+real :: harv_c_exported
 ! yasso
 real :: yasso_cstate(statesize_yasso)
 real :: yasso_ctend(statesize_yasso)
@@ -81,6 +87,7 @@ real :: yasso_ntend
 real :: yasso_met_state(2, 31) ! for calculating 30-day averages of tempr & precip
 real :: yasso_met(2) ! 30-day rolling tempr, precip
 integer :: yasso_met_ind ! counter for averaging the met variables
+real :: cflux_to_yasso(statesize_yasso)
 
 if (NOUT < 117) then
    print *, 'NOUT < 117 too small:', NOUT
@@ -109,7 +116,8 @@ TMMXI  = MATRIX_WEATHER(:,5)
 ! Calendars
 DAYS_FERT  = CALENDAR_FERT (:,1:2)
 DAYS_NDEP  = CALENDAR_NDEP (:,1:2)
-NFERTV     = CALENDAR_FERT (:,3) * NFERTMULT
+NFERTV     = CALENDAR_FERT (:,3:6) * NFERTMULT
+
 NDEPV      = CALENDAR_NDEP (:,3)
 
 ! Initial constants for plant state variables
@@ -210,8 +218,8 @@ do day = 1, NDAYS
                                                        FREEZEL,IRRIG,THAWS)
   call O2status       (O2,ROOTD)
   ! Plant
-  call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
-       GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
+  call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,HARVEST_PARAMS, LAI,PHEN,TILG1,TILG2,TILV, &
+       GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2,if_cut_only)
                                                        
       
   CLV     = CLV     - HARVLV
@@ -236,16 +244,29 @@ do day = 1, NDAYS
                                                        GLAI,GTILV,TILVG1,TILG1G2)
   ! Soil 2
   call O2fluxes       (O2,PERMgas,ROOTD,RplantAer,     O2IN,O2OUT)
-  call N_fert         (year,doy,DAYS_FERT,NFERTV,      Nfert)
+  call N_fert         (year,doy,DAYS_FERT,NFERTV,      Nfert, input_soluble_c, input_compost_c, input_org_n)
   call N_dep          (year,doy,DAYS_NDEP,NDEPV,       Ndep)
+  if (if_cut_only) then
+     harv_c_to_litt = HARVLV + HARVST*HAGERE + HARVRE
+     harv_n_to_litt = HARVNSH
+  else
+     harv_c_to_litt = 0.0
+     harv_n_to_litt = 0.0
+  end if
+     
   if (use_yasso) then
      call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
+     call inputs_to_fractions(&
+          leaf = DSTUB + DLV + harv_c_to_litt, &
+          root = DRT, &
+          soluble = input_soluble_c, &
+          compost = input_compost_c, &
+          fract = cflux_to_yasso)
      call decompose(&
           param_y20_map, &
           DELT, & ! timestep
-          DSTUB + DLV, & ! leaf litter flux
-          DRT, &
-          DNSH + DNRT, & ! total N input
+          cflux_to_yasso, & ! segregated by the AWENH fraction
+          DNSH + DNRT + input_org_n + harv_n_to_litt, & ! total organic N input
           yasso_met(1), &! 30-day temperature
           yasso_met(2), &! 30-day precip,
           yasso_cstate, &
@@ -254,8 +275,8 @@ do day = 1, NDAYS
           yasso_ntend)
      call CNSoil_stub(ROOTD, RWA, WFPS, WAL, GRT, yasso_cstate, yasso_nstate, NMIN, runoff_cstate)
      ! Diagnose C and N mineralisation from the tendencies.
-     Nmineralisation = -(yasso_ntend + DNSH + DNRT)
-     Rsoil = -(sum(yasso_ctend) - DSTUB - DLV - DRT)
+     Nmineralisation = -(yasso_ntend + DNSH + DNRT + input_org_n)
+     Rsoil = -(sum(yasso_ctend) - sum(cflux_to_yasso))
   else
      call CNsoil         (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS)
   end if
@@ -301,7 +322,13 @@ do day = 1, NDAYS
   if((LAT>0).AND.(doy==305)) VERN = 0  
   if((LAT<0).AND.(doy==122)) VERN = 0  
   if(DAVTMP<TVERN)           VERN = 1
-  YIELD     = YIELD+(HARVLV + HARVST*HAGERE)/0.45 + HARVRE/0.40
+  if (.not. if_cut_only) then
+     ! the other case handled elsewhere
+     YIELD     = YIELD+(HARVLV + HARVST*HAGERE)/0.45 + HARVRE/0.40
+     harv_c_exported = HARVLV + HARVRE + HARVST
+  else
+     harv_c_exported = 0.0
+  end if
   YIELD_POT = (HARVLVP + HARVSTP*HAGERE)/0.45 + HARVREP/0.40
   if(YIELD>0) YIELD_LAST = YIELD
   YIELD_TOT = YIELD_TOT + YIELD
@@ -319,10 +346,10 @@ do day = 1, NDAYS
      yasso_cstate = yasso_cstate + yasso_ctend - runoff_cstate
      yasso_nstate = yasso_nstate + yasso_ntend - rNSOMF
   else
-     CLITT   = CLITT + DLV + DSTUB              - rCLITT - dCLITT
+     CLITT   = CLITT + DLV + DSTUB + harv_c_to_litt               - rCLITT - dCLITT
      CSOMF   = CSOMF + DRT         + dCLITTsomf - rCSOMF - dCSOMF
      CSOMS   = CSOMS               + dCSOMFsoms          - dCSOMS
-     NLITT   = NLITT + DNSH             - rNLITT - dNLITT
+     NLITT   = NLITT + DNSH        + harv_n_to_litt               - rNLITT - dNLITT
      NSOMF   = NSOMF + DNRT + NLITTsomf - rNSOMF - dNSOMF 
      NSOMS   = NSOMS        + NSOMFsoms          - dNSOMS
   end if
@@ -470,7 +497,7 @@ do day = 1, NDAYS
   y(day,106) = DRT       ! FLITTC_ROOT
 
   y(day,107) = Rsoil - GRT - GST - GLV - GRES + RESMOB ! NEE
-  y(day,108) = HARVLV + HARVRE + HARVST ! HARVEST C
+  y(day,108) = harv_c_exported
   y(day,109) = rCLITT + rCSOMF ! C RUNOFF
 
   ! yasso outputs
