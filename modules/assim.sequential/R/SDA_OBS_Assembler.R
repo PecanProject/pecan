@@ -194,7 +194,7 @@ SDA_OBS_Assembler <- function(settings){
       }) %>% 
       do.call(what = "c") %>% 
       unique()
-    if(!is.null(timepoints_fill)){
+    if(length(timepoints_fill)>0){
       for (i in seq_along(timepoints_fill)) {
         obs.mean <- rlist::list.append(obs.mean, NULL)
         obs.cov <- rlist::list.append(obs.cov, NULL)
