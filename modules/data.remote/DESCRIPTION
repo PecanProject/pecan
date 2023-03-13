@@ -25,6 +25,7 @@ Imports:
     MODISTools (>= 1.1.0),
     reticulate,
     PEcAn.logger,
+    magrittr,
     PEcAn.remote,
     stringr (>= 1.1.0),
     doParallel,
@@ -34,7 +35,10 @@ Suggests:
     testthat (>= 1.0.2),
     ggplot2,
     rgdal,
-    reshape
+    reshape,
+    dplyr,
+    lubridate,
+    tibble
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
