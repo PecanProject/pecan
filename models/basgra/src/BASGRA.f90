@@ -158,8 +158,8 @@ if (use_yasso) then
    yasso_met_ind = 1
    call initialize(&
         param_y20_map, &
-        0.5 * hist_carbon_input / 365.0, &
-        0.5 * hist_carbon_input / 365.0, &
+        0.3 * hist_carbon_input / 365.0, &
+        0.7 * hist_carbon_input / 365.0, &
         hist_carbon_input * 0.02 / 365.0, & ! C:N 50 for carbon input
         hist_mean_tempr, hist_yearly_precip / 365.0, hist_tempr_ampl, &
         totc_min_init, &
@@ -504,6 +504,9 @@ do day = 1, NDAYS
   y(day,110:114) = yasso_cstate
   y(day,115) = yasso_nstate
   y(day,116:117) = yasso_met
+
+  y(day,118) = input_soluble_c + input_compost_c ! C added in soil amendments
+
 enddo
 
 end

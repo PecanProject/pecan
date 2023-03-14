@@ -299,7 +299,8 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
   
   expect_true(all(output_soluble$CSOM_W >= output_mineral$CSOM_W))
   expect_true(any(output_soluble$CSOM_W > output_mineral$CSOM_W))
-
+  expect_equal(sum(output_soluble$FSOILAMDC), 200.0)
+  
   fert_file_compost <- file.path(outfolder, 'fert.compost.csv')
   write_new_fert(fert_file_compost, 'compost')
   run_BASGRA(
@@ -320,6 +321,8 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
   expect_true(all(output_compost$CSOM_A >= output_soluble$CSOM_A))
   expect_true(any(output_compost$CSOM_A > output_soluble$CSOM_A))
 
+  expect_equal(sum(output_compost$FSOILAMDC), 200.0)
+  
   fert_file_bad <- file.path(outfolder, 'fert.bad.csv')
   write_new_fert(fert_file_bad, 'invalid')
   expect_error(

@@ -229,7 +229,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "DAYL"       , "EVAP"             , "TRAN"        , "FLITTC_LEAF",     # 102:105
     "FLITTC_ROOT", "NEE"              , "FHARVC"      , "FRUNOFFC",        # 106:109
     "CSOM_A"     , "CSOM_W"           , "CSOM_E"      , "CSOM_N",          # 110:113
-    "CSOM_H"     , "NSOM"             , "TEMPR30"     , "PRECIP30"         # 114:117
+    "CSOM_H"     , "NSOM"             , "TEMPR30"     , "PRECIP30",        # 114:117
+    "FSOILAMDC"                                                            # 118
   )
   
   outputUnits <- c(
@@ -261,7 +262,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     "(d d-1)"      , "(mm d-1)"     , "(mm d-1)"      , "(g C m-2 d-1)",             # 102:105
     "(g C m-2 d-1)", "(g C m-2 d-1)", "(g C m-2 d-1)" , "(g C m-2 d-1)",             # 106:109
     "(g C m-2)"    , "(g C m-2)"    , "(g C m-2)"     , "(g C m-2)",                 # 110:113
-    "(g C m-2)"    , "(g N m-2)"    , "(degC)"        , "(mm)"
+    "(g C m-2)"    , "(g N m-2)"    , "(degC)"        , "(mm)",                      # 114:117
+    "(g C m-2 d-1)"                                                                  # 118
   )
   
   NOUT <- as.integer( length(outputNames) )
