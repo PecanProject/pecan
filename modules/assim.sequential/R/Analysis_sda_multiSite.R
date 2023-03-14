@@ -264,10 +264,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
-        Pf <-
-      Local.support(Pf,
-                    blocked.dis,
-                    settings$state.data.assimilation$scalef %>% as.numeric())
+    Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 
   #### initial conditions
@@ -361,9 +358,13 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
   
   recompileGEF <- extraArg$recompileGEF
+  if(t > 1){
+    if(length(extraArg$pre_elements) != length(elements.W.Data)){
+      recompileGEF <- TRUE
+    }
+  } 
   if(t == 1 | recompileGEF){ #TO DO need to make something that works to pick whether to compile or not
   # initial Q depends on the size of aqq
-    aq.arg <- aqq[,,t]
     
     #Initial values
     inits.pred <-
@@ -395,7 +396,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = aq.arg,
+        aq = aqq[,,t],
         bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
@@ -569,7 +570,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
               n = n,
               X.new=X.new,
               aqq=aqq,
-              bqq=bqq
+              bqq=bqq,
+              elements.W.Data=elements.W.Data
   )
   )
 }

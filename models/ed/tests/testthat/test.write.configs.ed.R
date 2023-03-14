@@ -6,15 +6,57 @@
 ## # which accompanies this distribution, and is available at
 ## # http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-test_that("convert.samples.ED works as expected",{
+# dummy trait values
+trait.values <-
+  list(
+    SetariaWT = structure(
+      list(
+        mort2 = 19.9551305310619,
+        growth_resp_factor = 0.271418338660799,
+        leaf_turnover_rate = 4.08633744111248,
+        leaf_width = 4.16095405673501,
+        nonlocal_dispersal = 0.208572992916628,
+        fineroot2leaf = 2.25017242716454,
+        root_turnover_rate = 0.527523622000746,
+        seedling_mortality = 0.949939872416094,
+        stomatal_slope = 4.07086860946459,
+        quantum_efficiency = 0.0565042189665225,
+        Vcmax = 22.3047025944851,
+        r_fract = 0.313812660341759,
+        cuticular_cond = 12992.9906222683,
+        root_respiration_rate = 5.48040042748477,
+        Vm_low_temp = 10.0000004842057,
+        SLA = 40.1495401375622
+      ),
+      row.names = "50",
+      class = "data.frame"
+    ),
+    env = structure(
+      list(),
+      .Names = character(0),
+      row.names = "NA",
+      class = "data.frame"
+    )
+  )
+
+defaults <-
+  list(
+    pft = list(
+      name = "SetariaWT",
+      ed2_pft_number = "1",
+      outdir = "/home/ericrscott/model-vignettes/ED2/testoutput/two_pfts/outdir//pft/SetariaWT",
+      posteriorid = 9000001416
+    )
+  )
+
+test_that("convert.samples.ED works as expected", {
   testthat::local_edition(3)
   expect_equal(convert.samples.ED(c("Vcmax" = 1))[["Vcmax"]],
                0.7052557)
-  expect_equal(
-    convert.samples.ED(c("root_respiration_rate" = 1))[["root_respiration_factor"]],
-    0.35263,
-    tolerance = 1e-5
-  )
+  expect_equal(convert.samples.ED(c("plant_min_temp" = 0))[["plant_min_temp"]], 273.15)
+  expect_equal(convert.samples.ED(c("root_respiration_rate" = 1))[["root_respiration_factor"]],
+               0.35263,
+               tolerance = 1e-5)
 })
 
 testdir <- tempfile()
@@ -138,6 +180,36 @@ test_that("New ED2IN tags get added at bottom of file", {
   #6. compare to template
   # ed2in_template <- read_ed2in(system.file(settings$model$edin, package = "PEcAn.ED2"))
   # Not sure what to expect regarding tag names or number of tags relative to template
+})
+
+
+test_that("write.config.xml.ED2() uses correct history file", {
+  #1. read in pecan.xml in data/pecan_checked.xml
+  settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
+  #for debugging:
+  # settings <- PEcAn.settings::read.settings("models/ed/tests/testthat/data/pecan_checked.xml")
+  
+  #2. Set rundir to tempdir
+  rundir <- tempfile()
+  dir.create(rundir)
+  on.exit(unlink(rundir, recursive = TRUE))
+  settings$rundir <- rundir
+  run.id <- "ENS-00001-76"
+  dir.create(file.path(rundir, run.id))
+  #3. set revision to 81
+  settings$model$revision <- "81"
+
+  x <- capture.output(
+    write.config.xml.ED2(
+      settings = settings,
+      trait.values = trait.values,
+      defaults = defaults
+    ),
+    type = "message"
+  )
+  
+  expect_true(any(stringr::str_detect(x, "history.r81")))
+  
 })
 
 

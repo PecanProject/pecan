@@ -28,6 +28,7 @@ generate_colors_sda <-function(){
 ##' @param FORECAST dataframe of state variables for each ensemble
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
+##' @param Add_Map Bool variable decide if we want to export the GIS map of Ecoregion.
 ##' @export
 
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
@@ -413,7 +414,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
 
       p<-ready.to.plot%>%
-        ggplot(aes(x=Date))+
+        ggplot2::ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
         geom_point(aes(y=means, color=Type),size=3,alpha=0.75)+
@@ -502,7 +503,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
       p<-ready.FA%>%
 #        filter(Variables==vari)%>%
-        ggplot(aes(Date,Value))+
+        ggplot2::ggplot(aes(Date,Value))+
         geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
         geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
@@ -528,7 +529,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL, Add_Map=FALSE){
 
   if (!requireNamespace("ggrepel", quietly = TRUE)) {
     PEcAn.logger::logger.error(
@@ -627,7 +628,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     })
       
 
-  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% names()
   #Observed data
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
@@ -709,7 +710,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -742,7 +743,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Variable==vari, Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -758,76 +759,84 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       })
   }
 
+  if(Add_Map){
+    #------------------------------------------------ map
+    site.locs <- settings %>% 
+      purrr::map(~.x[['run']] ) %>% 
+      purrr::map('site') %>% 
+      purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>%
+                as.numeric)%>% 
+      t %>%
+      as.data.frame()%>%
+      `colnames<-`(c("Lon","Lat")) %>%
+      dplyr::mutate(Site=site.ids %>% unique(),
+             Name=site.names)
+    
+    suppressMessages({
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
+    })
+    
+    #transform site locs into new projection - UTM 2163
+    site.locs.sp<-site.locs
+    coordinates(site.locs.sp) <- c("Lon", "Lat")
+    proj4string(site.locs.sp) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
+    res <- sp::spTransform(site.locs.sp, sp::CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
+    site.locs[,c(1,2)] <-res@coords
+    
+    #finding site with data
+    sites.w.data <-
+      obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
+    #adding the column to site
+    site.locs <- site.locs %>%
+      dplyr::mutate(Data = Site %in% sites.w.data)
+    
+    #plotting
+    map.plot<- ggplot2::ggplot() + 
+      geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
+      geom_point(data = site.locs,
+                 aes(x = Lon, y = Lat),
+                 size = 2) +
+      ggrepel::geom_label_repel(
+        data = site.locs,
+        aes(
+          x = Lon,
+          y = Lat,
+          label = paste0(Site, "\n", Name),
+          color = Data,
+        ),
+        vjust = 1.2,
+        fontface = "bold",
+        size = 3.5
+      ) + 
+      #coord_sf(datum = sf::st_crs(2163),default = F)+
+      scale_fill_manual(values = c("#a6cee3",
+                                   "#1f78b4","#b2df8a",
+                                   "#33a02c","#fb9a99",
+                                   "#e31a1c","#fdbf6f",
+                                   "#ff7f00","#cab2d6",
+                                   "#6a3d9a","#ffff99",
+                                   "#b15928","#fccde5",
+                                   "#d9d9d9","#66c2a5",
+                                   "#ffd92f","#8dd3c7",
+                                   "#80b1d3","#d9d9d9",
+                                   "#fdbf6f"),name="Eco-Region")+
+      scale_color_manual(values= c("#e31a1c","#33a02c"))+
+      theme_minimal()+
+      theme(axis.text = element_blank())
+    
+    #----- Reordering the plots
+    all.plots.print <-list(map.plot)
+    for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
+    
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots.print %>% purrr::map(~print(.x))
+    dev.off()
+  }else{
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots %>% purrr::map(~print(.x))
+    dev.off()
+  }
   
-  #------------------------------------------------ map
-  site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
-    t %>%
-    as.data.frame()%>%
-    `colnames<-`(c("Lon","Lat")) %>%
-    mutate(Site=site.ids %>% unique(),
-           Name=site.names)
-  
-
-  suppressMessages({
-    aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
-  })
-  
-  #transform site locs into new projection - UTM 2163
-  site.locs.sp<-site.locs
-  coordinates(site.locs.sp) <- c("Lon", "Lat")
-  proj4string(site.locs.sp) <- CRS("+proj=longlat +datum=WGS84")  ## for example
-  res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
-  site.locs[,c(1,2)] <-res@coords
-  
-  
-  #finding site with data
-  sites.w.data <-
-    obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
-  #adding the column to site
-  site.locs <- site.locs %>%
-    mutate(Data = Site %in% sites.w.data)
-
-  #plotting
-  map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
-    geom_point(data = site.locs,
-               aes(x = Lon, y = Lat),
-               size = 2) +
-    ggrepel::geom_label_repel(
-      data = site.locs,
-      aes(
-        x = Lon,
-        y = Lat,
-        label = paste0(Site, "\n", Name),
-        color = Data,
-      ),
-      vjust = 1.2,
-      fontface = "bold",
-      size = 3.5
-    ) + 
-    #coord_sf(datum = sf::st_crs(2163),default = F)+
-    scale_fill_manual(values = c("#a6cee3",
-      "#1f78b4","#b2df8a",
-      "#33a02c","#fb9a99",
-      "#e31a1c","#fdbf6f",
-      "#ff7f00","#cab2d6",
-      "#6a3d9a","#ffff99",
-      "#b15928","#fccde5",
-      "#d9d9d9","#66c2a5",
-      "#ffd92f","#8dd3c7",
-      "#80b1d3","#d9d9d9",
-      "#fdbf6f"),name="Eco-Region")+
-    scale_color_manual(values= c("#e31a1c","#33a02c"))+
-    theme_minimal()+
-    theme(axis.text = element_blank())
-
-  #----- Reordering the plots
-  all.plots.print <-list(map.plot)
-  for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
-  
-  pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
-  all.plots.print %>% purrr::map(~print(.x))
-  dev.off()
   
   #saving plot data
   save(all.plots, ready.to.plot, file = file.path(settings$outdir, "timeseries.plot.data.Rdata"))

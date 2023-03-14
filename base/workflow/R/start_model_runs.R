@@ -79,29 +79,40 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   jobfile <- NULL
   firstrun <- NULL
   
+  #Copy all run directories over if not local
+  if (!is_local) {
+    # copy over run directories
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.to(
+        host = settings$host,
+        src = settings$rundir, 
+        dst = dirname(settings$host$rundir), 
+        delete = TRUE
+      ), 
+      sleep = 2
+    )
+    
+    # copy over out directories
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.to(
+        host = settings$host,
+        src = settings$modeloutdir,
+        dst = dirname(settings$host$outdir),
+        #include all directories, exclude all files
+        options = c("--include=*/", "--exclude=*"),
+        delete = TRUE
+      ),
+      sleep = 2
+    )
+  }
+  
   # launch each of the jobs
   for (run in run_list) {
     run_id_string <- format(run, scientific = FALSE)
     # write start time to database
     PEcAn.DB::stamp_started(con = dbcon, run = run)
     
-    # if running on a remote cluster, create folders and copy any data
-    # to remote host
-    if (!is_local) {
-      PEcAn.remote::remote.execute.cmd(
-        host = settings$host,
-        cmd = "mkdir",
-        args = c(
-          "-p",
-          file.path(settings$host$outdir, run_id_string)))
-      PEcAn.remote::remote.copy.to(
-        host = settings$host,
-        src = file.path(settings$rundir, run_id_string),
-        dst = settings$host$rundir,
-        delete = TRUE)
-    }
-    
-    # check to see if we use the model launcer
+    # check to see if we use the model launcher
     if (is_rabbitmq) {
       run_id_string <- format(run, scientific = FALSE)
       folder <- file.path(settings$rundir, run_id_string)
@@ -159,10 +170,13 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       
       if (!is_local) {
         # copy data back to local
-        PEcAn.remote::remote.copy.from(
-          host = settings$host,
-          src = file.path(settings$host$outdir, run_id_string),
-          dst = settings$modeloutdir)
+        PEcAn.utils::retry.func(
+          PEcAn.remote::remote.copy.from(
+            host = settings$host,
+            src = file.path(settings$host$outdir, run_id_string),
+            dst = settings$modeloutdir),
+          sleep = 2
+        )
       }
       
       # write finished time to database
@@ -195,14 +209,17 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }
     
     if (!is_local) {
-      for (run in run_list){
+      for (run in run_list){ #only re-copy run dirs that have launcher and job list
         if (run %in% job_modellauncher) {
           # copy launcher and joblist
-          PEcAn.remote::remote.copy.to(
-            host = settings$host,
-            src = file.path(settings$rundir, format(run, scientific = FALSE)),
-            dst = settings$host$rundir,
-            delete = TRUE)
+          PEcAn.utils::retry.func(
+            PEcAn.remote::remote.copy.to(
+              host = settings$host,
+              src = file.path(settings$rundir, format(run, scientific = FALSE)),
+              dst = settings$host$rundir,
+              delete = TRUE),
+            sleep = 2
+          )
           
         }
       }
@@ -251,18 +268,31 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   if (length(jobids) > 0) {
     PEcAn.logger::logger.debug(
       "Waiting for the following jobs:",
-      unlist(jobids, use.names = FALSE))
+      unlist(unique(jobids)))
   }
   
+  #TODO figure out a way to do this while for unique(jobids) instead of jobids
   while (length(jobids) > 0) {
     Sys.sleep(10)
+    
+    if (!is_local) {
+      #Copy over log files to check progress
+      try(PEcAn.remote::remote.copy.from(
+        host = settings$host,
+        src = settings$host$outdir,
+        dst = dirname(settings$modeloutdir),
+        options = c('--exclude=*.h5')
+      ))
+    }
+    
     for (run in names(jobids)) {
       run_id_string <- format(run, scientific = FALSE)
       
       # check to see if job is done
       job_finished <- FALSE
       if (is_rabbitmq) {
-        job_finished <- file.exists(file.path(jobids[run], "rabbitmq.out"))
+        job_finished <- 
+          file.exists(file.path(settings$modeloutdir, run, "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- PEcAn.remote::qsub_run_finished(
           run = jobids[run],
@@ -271,18 +301,10 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-        
-        # Copy data back to local
-        if (!is_local) {
-          PEcAn.remote::remote.copy.from(
-            host = settings$host,
-            src = file.path(settings$host$outdir, run_id_string),
-            dst = settings$modeloutdir)
-        }
-        
+      
         # TODO check output log
         if (is_rabbitmq) {
-          data <- readLines(file.path(jobids[run], "rabbitmq.out"))
+          data <- readLines(file.path(settings$modeloutdir, run, "rabbitmq.out"))
           if (data[-1] == "ERROR") {
             msg <- paste("Run", run, "has an ERROR executing")
             if (stop.on.error) {
@@ -294,6 +316,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         }
         
         # Write finish time to database
+        #TODO this repeats for every run in `jobids` writing every run's time stamp every time. This actually takes quite a long time with a lot of ensembles and should either 1) not be a for loop (no `for(x in run_list)`) or 2) if `is_modellauncher`, be done outside of the jobids for loop after all jobs are finished.
         if (is_modellauncher) {
           for (x in run_list) {
             PEcAn.DB::stamp_finished(con = dbcon, run = x)
@@ -320,6 +343,17 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
     }  # end loop over runs
   }  # end while loop checking runs
   
+  # Copy data back to local
+  if (!is_local) {
+    PEcAn.utils::retry.func(
+      PEcAn.remote::remote.copy.from(
+        host = settings$host,
+        src = settings$host$outdir,
+        dst = dirname(settings$modeloutdir)
+      ),
+      sleep = 2
+    )
+  }
 } # start_model_runs
 
 

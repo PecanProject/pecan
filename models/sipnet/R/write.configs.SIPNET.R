@@ -468,7 +468,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     ## litterInit gC/m2
     if ("litter" %in% ic.names) {
-      param[which(param[, 1] == "litterInit"), 2] <- IC$litter
+      param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
     }
     ## soilInit gC/m2
     if ("soil" %in% ic.names) {
@@ -476,7 +476,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     ## litterWFracInit fraction
     if ("litterWFrac" %in% ic.names) {
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litterWFrac
+      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water
     }
     ## soilWFracInit fraction
     if ("soilWFrac" %in% ic.names) {

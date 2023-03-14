@@ -27,7 +27,7 @@ find_formats_without_inputs(
 \item{updated_before}{Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.}
 }
 \description{
-This is a fucntion that returns a dataframe with all of the format entries that have no assosiated input records.  
+This is a fucntion that returns a dataframe with all of the format entries that have no assosiated input records.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 or look at the README
