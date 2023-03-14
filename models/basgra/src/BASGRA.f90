@@ -278,6 +278,9 @@ do day = 1, NDAYS
      Nmineralisation = -(yasso_ntend + DNSH + DNRT + input_org_n)
      Rsoil = -(sum(yasso_ctend) - sum(cflux_to_yasso))
   else
+     ! The inputs are zeroed because they are currently ignored when run without YASSO.
+     input_soluble_c = 0.0
+     input_compost_c = 0.0
      call CNsoil         (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS)
   end if
   call Nplant         (NSHmob,CLV,CRT,CST,DLAI,DLV,DRT,GLAI,GLV,GRT,GST, &

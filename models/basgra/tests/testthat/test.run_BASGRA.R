@@ -265,6 +265,29 @@ test_that('model produces some output', {
   expect_true(all(!is.na(output)))
 })
 
+test_that('Fertilizer C inputs are zeroed without Yasso', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fert_file_mineral <- file.path(outfolder, 'fert.mineral.csv')
+  write_harv_fert(harvest_file, fert_file_mineral)
+  fert_file_soluble <- file.path(outfolder, 'fert.soluble.csv')
+  write_new_fert(fert_file_soluble, 'soluble')
+  run_BASGRA(
+    met_path, run_params, harvest_file, fert_file_soluble,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  expect_true(all(output$FSOILAMDC == 0.0))
+})
+
 test_that('Fertilizer C inputs work consistently with Yasso', {
   met_path <- 'test.met'
   df_params <- read.csv('BASGRA_params_yasso.csv')
