@@ -391,6 +391,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   sec_in_day <- 86400
   
   years <- seq(start_year, end_year)
+
+  # Having the Yasso soil affects how some C pools are aggregated
+  have_yasso <- run_params[137] > 0
+  
   for (y in years) {
     
     thisyear <- output[ , outputNames == "year"] == y
@@ -421,15 +425,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     
     clvd         <- output[thisyear, which(outputNames == "CLVD")] # (g C m-2)
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clvd, "g m-2", "kg m-2") 
-    
-    csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
-    
-    csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
-    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
-    
+
+    if (have_yasso) {
+      csomf         <- rowSums(output[thisyear, outputNames %in% c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N')]) # (g C m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
+      csoms         <- output[thisyear, outputNames == "CSOM_H"] # (g C m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")
+    } else {
+      csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
+      csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
+    }
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf + csoms, "g m-2", "kg m-2") 
-    
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG1")] 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG2")] 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILV")] 
@@ -476,6 +484,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "NEE"],
                                                          "g m-2", "kg m-2") / sec_in_day
     outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FRUNOFFC"],
+                                                         "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FSOILAMDC"],
                                                          "g m-2", "kg m-2") / sec_in_day
     
     # ******************** Declare netCDF dimensions and variables ********************#
@@ -535,6 +545,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                                     missval = -999, longname='Alternative NEE')
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("FRUNOFFC", units = "kg C m-2 s-1", dim = dims,
                                                     missval = -999, longname='C in runoff')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("FSOILAMDC", units = "kg C m-2 s-1", dim = dims,
+                                                    missval = -999, longname='Flux of carbon input in soil amendments')
+    
     
     # ******************** Declare netCDF variables ********************#
     

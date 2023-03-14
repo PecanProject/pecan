@@ -471,3 +471,36 @@ test_that('model produces reasonable yasso-specific output when use_yasso = 1 an
   expect_true(all(!is.na(output)))
 })
 
+test_that('Netcdf output is consistent with the raw output for certain variables', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params_yasso.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output.raw <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  nc <- ncdf4::nc_open(file.path(outfolder, '2019.nc'))
+
+  fastc_nc <- ncdf4::ncvar_get(nc, 'fast_soil_pool_carbon_content')
+  fastc_raw <- rowSums(output.raw[,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N')])
+  expect_equal(as.vector(fastc_nc), as.vector(fastc_raw*1e-3)) # g vs kg
+
+  slowc_nc <- ncdf4::ncvar_get(nc, 'slow_soil_pool_carbon_content')
+  slowc_raw <- output.raw[,'CSOM_H']
+  expect_equal(as.vector(slowc_nc), as.vector(slowc_raw*1e-3))
+
+  totc_nc <-  ncdf4::ncvar_get(nc, 'TotSoilCarb')
+  totc_raw <- rowSums(output.raw[, c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H')])
+  expect_equal(as.vector(totc_nc), as.vector(totc_raw*1e-3))
+  
+})
+
