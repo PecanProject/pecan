@@ -361,16 +361,16 @@ sda.enkf.multisite <- function(settings,
                              function(configs, settings, new.params, inputs) {
                                #if the new state for each site only has one row/col.
                                #then we need to convert it to matrix to solve the indexing issue.
-                               new_state <- new.state[, which(attr(X, "Site") %in% settings$run$site$id)]
-                               if(is.vector(new_state)){
-                                 new_state <- matrix(new_state)
+                               new_state_site <- new.state[, which(attr(X, "Site") %in% settings$run$site$id)]
+                               if(is.vector(new_state_site)){
+                                 new_state_site <- matrix(new_state_site)
                                }
                                list(
                                  runid = configs$runs$id,
                                  start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
                                  stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
                                  settings = settings,
-                                 new.state = new_state,
+                                 new.state = new_state_site,
                                  new.params = new.params,
                                  inputs = inputs,
                                  RENAME = TRUE,
