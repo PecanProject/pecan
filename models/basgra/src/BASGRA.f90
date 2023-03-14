@@ -504,6 +504,9 @@ do day = 1, NDAYS
   y(day,110:114) = yasso_cstate
   y(day,115) = yasso_nstate
   y(day,116:117) = yasso_met
+
+  y(day,118) = input_soluble_c + input_compost_c ! C added in soil amendments
+
 enddo
 
 end
