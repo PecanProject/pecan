@@ -9,6 +9,7 @@
 #' @param restart   Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA
 #' @param forceRun  Used to force job.sh files that were not run for ensembles in SDA (quick fix) 
 #' @param keepNC    Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.
+#' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
@@ -28,6 +29,7 @@ sda.enkf.multisite <- function(settings,
                                restart = NULL, 
                                forceRun = TRUE, 
                                keepNC = TRUE,
+                               pre_enkf_params = NULL,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -452,10 +454,7 @@ sda.enkf.multisite <- function(settings,
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
         
       }  ## end else from restart & t==1
-        
-        
       FORECAST[[obs.t]] <- X
-      
       
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
@@ -475,14 +474,21 @@ sda.enkf.multisite <- function(settings,
         # making the mapping operator
         H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
         
-        aqq         <- NULL
-        bqq         <- numeric(nt + 1)
+        #Pass aqq and bqq.
+        aqq <- NULL
+        bqq <- numeric(nt + 1)
         #if t>1
-        if (processvar && t > 1) {
+        if(is.null(pre_enkf_params) && t>1){
           aqq <- enkf.params[[t-1]]$aqq
           bqq <- enkf.params[[t-1]]$bqq
           X.new<-enkf.params[[t-1]]$X.new
         }
+        if(!is.null(pre_enkf_params) && t>1){
+          aqq <- pre_enkf_params[[t-1]]$aqq
+          bqq <- pre_enkf_params[[t-1]]$bqq
+          X.new<-pre_enkf_params[[t-1]]$X.new
+        }
+        
         if(!exists('Cmcmc_tobit2space')) {
           recompileTobit = TRUE
         }else{
@@ -510,10 +516,9 @@ sda.enkf.multisite <- function(settings,
         ###-------------------------------------------------------------------###
         ### Analysis                                                          ###
         ###-------------------------------------------------------------------###----
-        if(processvar == FALSE){an.method<-EnKF  }else{    an.method<-GEF.MultiSite   }
+        if(processvar == FALSE){an.method<-EnKF}else{an.method<-GEF.MultiSite}
         
         #-analysis function
-
         if(t>1){
           pre_elements <- enkf.params[[t-1]]$elements.W.Data
         }else{
