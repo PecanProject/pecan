@@ -12,6 +12,7 @@ sda.enkf.multisite(
   restart = NULL,
   forceRun = TRUE,
   keepNC = TRUE,
+  pre_enkf_params = NULL,
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
     FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
     = FALSE, Profiling = FALSE, OutlierDetection = FALSE),
@@ -32,6 +33,8 @@ sda.enkf.multisite(
 \item{forceRun}{Used to force job.sh files that were not run for ensembles in SDA (quick fix)}
 
 \item{keepNC}{Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.}
+
+\item{pre_enkf_params}{Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.}
 
 \item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
