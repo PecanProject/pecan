@@ -81,10 +81,13 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   
   #Define Q type from settings.
   q.type <- toupper(settings$state.data.assimilation$q.type)
+  single.q <-1
+  Site.q <-2
+  pft.q <-3
   if (is.null(q.type) | q.type=="SINGLE") {
-    q.type <- 1
+    q.type <- single.q
   } else{
-    q.type <- ifelse(q.type == "SITE", 2, 3)
+    q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
   } 
   
   #Forecast inputs 
