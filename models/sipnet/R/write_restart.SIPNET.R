@@ -85,10 +85,10 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("lai")
   }
   
-  if ("Litter" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$Litter, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
-    if (new.state$Litter < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("litter")
+  if ("litter_carbon_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$litter_carbon_content, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    if (new.state$litter_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("litter_carbon_content")
   }
   
   if ("TotSoilCarb" %in% variables) {
@@ -97,11 +97,13 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("soil")
   }
   
+  if("litter_mass_content_of_water" %in% variables){
+    analysis.save[[length(analysis.save) + 1]] <- new.state$litter_mass_content_of_water  ## unitless
+    if (new.state$litter_mass_content_of_water < 0 || new.state$litter_mass_content_of_water > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    names(analysis.save[[length(analysis.save)]]) <- c("litter_mass_content_of_water")
+  }
+  
   if ("SoilMoistFrac" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
-    names(analysis.save[[length(analysis.save)]]) <- c("litterWFrac")
-    
     analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
     if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
@@ -122,6 +124,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if (!is.null(analysis.save) && length(analysis.save)>0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
+    analysis.save.mat <- cbind(analysis.save.mat, IC_extra) #add in all restart values
   }else{
     analysis.save.mat <- NULL
   }

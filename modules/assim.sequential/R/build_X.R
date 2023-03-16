@@ -14,14 +14,14 @@
 #' @param t Default t=1, for function to work within time loop
 #' @param var.names list of state variables taken from settings object
 #' @param my.read_restart object that points to the model restart function i.e. read_restart.SIPNET
+#' @param restart_flag flag if it's a restart stage. Default is FALSE.
 #'
 #' @return X ready to be passed to SDA Analysis code
 #' @export
 #'
 #' @examples
-build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart){
-
-  if(t == 1){
+build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag = FALSE){
+  if(t == 1 & restart_flag){
     reads <-
       furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
         # Loading the model package - this is required bc of the furrr
@@ -49,9 +49,6 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
   }else{
     reads <-
       furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
-        # Loading the model package - this is required bc of the furrr
-        #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-        #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
         
         X_tmp <- vector("list", 2)
         
@@ -71,25 +68,5 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
         return(X_tmp)
       })
   }
-  
-  #commented out text below describes future work - Alexis
-  # #let's read the parameters of each site/ens
-  # params.list <- reads %>% map(~.x %>% map("params"))
-  # # Now let's read the state variables of site/ens
-  # X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
-  # 
-  # # Now we have a matrix that columns are state variables and rows are ensembles.
-  # # this matrix looks like this
-  # #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
-  # #[1,]  3.872521     37.2581  3.872521     37.2581
-  # # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-  # if (multi.site.flag){
-  #   X <- X %>%
-  #     map_dfc(~.x) %>% 
-  #     as.matrix() %>%
-  #     `colnames<-`(c(rep(var.names, length(X)))) %>%
-  #     `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-  # }
-    
   return(reads)
 }

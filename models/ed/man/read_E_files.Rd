@@ -16,10 +16,9 @@ read_E_files(
 )
 }
 \arguments{
-\item{yr}{length 1 numeric vector; the year being processed}
+\item{yr}{unused. For consistency with \code{read_T_files()}.}
 
-\item{yfiles}{numeric vector of the years on the filenames, will be used to
-matched \code{h5_files} for that year}
+\item{yfiles}{unused. For consistency with \code{read_T_files()}.}
 
 \item{h5_files}{character vector of names of E h5 files (e.g.
 "analysis-E-1999-06-00-000000-g01.h5")}
@@ -36,12 +35,6 @@ matched \code{h5_files} for that year}
 }
 \value{
 a list
-\enumerate{
-\item Is the variable a matrix?  If so, get colsums to turn it into a vector with one element per cohort
-\item Is the variable in per-plant units? If so, it needs converting to per area units
-\item Are the units PEcAn standard? If not, they need converting (e.g. with PEcAn.utils::ud_convert()) (make use of PEcAn.utils::standard.vars?)
-\item group by PFT and sum cohorts
-}
 }
 \description{
 This function reads in monthly output (-E- .h5 files) from ED2, does unit

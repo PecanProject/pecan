@@ -10,7 +10,7 @@ model2netcdf.SIPNET(
   sitelon,
   start_date,
   end_date,
-  delete.raw,
+  delete.raw = FALSE,
   revision,
   prefix = "sipnet.out",
   overwrite = FALSE,
@@ -27,6 +27,8 @@ model2netcdf.SIPNET(
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{delete.raw}{Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files}
 
 \item{revision}{model revision}
 

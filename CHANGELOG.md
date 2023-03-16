@@ -35,7 +35,10 @@ see if you need to change any of these:
 - `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
 -  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
 - Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
-
+- Added litter_mass_content_of_water to standard_vars table
+- Added litter_mass_content_of_water to model2netcdf.SIPNET
+- Added all SIPNET state variables to read_restart and write_restart
+- Added Observation preparation functions into the SDA workflow, which supports AGB, LAI, Soil Carbon, and Soil moisture.
 We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 
 ### Fixed
@@ -72,6 +75,9 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
 - Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
+* Fixed a bug in `PEcAn.ED2::read_E_files()` affecting `PEcAn.ED2::model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
+* DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
+* The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
 
 ### Changed
 
