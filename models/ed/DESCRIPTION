@@ -44,6 +44,7 @@ Imports:
     ncdf4 (>= 1.15),
     PEcAn.data.atmosphere,
     PEcAn.data.land,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
