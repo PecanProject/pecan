@@ -67,5 +67,6 @@ real                  :: hist_mean_tempr
 real                  :: hist_yearly_precip
 real                  :: hist_tempr_ampl
 real                  :: totc_min_init ! used in initialization
+real                  :: yasso_awen_rate_mod
 end module parameters_site
 

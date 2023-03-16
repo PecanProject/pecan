@@ -16,7 +16,8 @@ integer, parameter, public :: statesize_yasso = 5
 ! 33-35 Woody parameters: theta_1, theta_2, r 
 
 ! The Yasso20 maximum a posteriori parameters:
-real, parameter, public :: param_y20_map(35) = (/ &
+integer, parameter, public :: num_params_y20 = 35
+real, parameter, public :: param_y20_map(num_params_y20) = (/ &
      0.51, &
      5.19, &
      0.13, &
@@ -63,12 +64,14 @@ real, public :: nc_h_max = 0.1 ! N-C ratio of the H pool
 ! composition for both above and below ground inputs. The last values (H) are always 0.
 real, parameter :: awenh_fineroot(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
 real, parameter :: awenh_leaf(statesize_yasso) = (/0.46, 0.32, 0.04, 0.18, 0.0/)
+! A soil amendment consisting of soluble carbon (and nitrogen)
 real, parameter :: awenh_soluble(statesize_yasso) = (/0.0, 1.0, 0.0, 0.0, 0.0/)
 ! From Heikkinen et al 2021, composted horse manure with straw litter
 real, parameter :: awenh_compost(statesize_yasso) = (/0.69, 0.09, 0.02, 0.20, 0.0/)
 
 integer, parameter, public :: met_ind_init = 1
 
+public get_params
 public decompose
 public initialize
 public average_met
@@ -77,6 +80,16 @@ public inputs_to_fractions
 
 contains
 
+  subroutine get_params(param_base, awen_modifier, param_final)
+    real, intent(in) :: param_base(:) ! base params, e.g. the yasso20 MAP vector
+    real, intent(in) :: awen_modifier ! rate modifier applied to AWEN pools (e.g. multiply the alpha_{a...n})
+    real, intent(out) :: param_final(:) ! the modifier parameters
+
+    param_final(1:4) = param_base(1:4) * awen_modifier
+    param_final(4:size(param_base)) = param_base(4:)
+    
+  end subroutine get_params
+  
   subroutine initialize(param, flux_leafc_day, flux_rootc_day, flux_nitr_day, &
        tempr_c, precip_day, tempr_ampl, totc_min, cstate, nstate)
     ! A simple algorithm to initialize the SOC pools into a steady state or a partial
@@ -363,11 +376,13 @@ contains
   end subroutine evaluate_matrix_mean_tempr
 
   subroutine average_met(met_daily, met_rolling, aver_size, met_state, met_ind)
+    ! Evaluate a rolling window average for given met quantities. Used for scaling met
+    ! parameters from daily to monthly level.
     real, intent(in) :: met_daily(:)
     real, intent(out) :: met_rolling(:)
     integer, intent(in) :: aver_size ! number of days to average over, must not change
     real, intent(inout) :: met_state(:,:) ! size(met_daily), aver_size + 1
-    integer, intent(inout) :: met_ind     ! a counter, must be 1 on first call
+    integer, intent(inout) :: met_ind     ! a counter, must be 1 on first call, not changed outside
 
     if (met_ind < 1 .or. met_ind > aver_size+1) then
        print *, 'something wrong with met_ind: ', met_ind
@@ -379,9 +394,11 @@ contains
     end if
     
     if (met_ind <= aver_size) then
+       ! For the first aver_size days average as many values as have been input.
        met_state(:,met_ind) = met_daily
        met_ind = met_ind + 1
     else
+       ! met_ind now stays as aver_size+1
        met_state(:,aver_size+1) = met_daily
        met_state(:,1:aver_size) = met_state(:,2:aver_size+1)
     end if

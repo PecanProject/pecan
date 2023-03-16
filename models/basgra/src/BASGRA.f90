@@ -88,6 +88,7 @@ real :: yasso_met_state(2, 31) ! for calculating 30-day averages of tempr & prec
 real :: yasso_met(2) ! 30-day rolling tempr, precip
 integer :: yasso_met_ind ! counter for averaging the met variables
 real :: cflux_to_yasso(statesize_yasso)
+real :: yasso_param(num_params_y20)
 
 if (NOUT < 117) then
    print *, 'NOUT < 117 too small:', NOUT
@@ -156,8 +157,9 @@ if (use_yasso) then
       error stop
    end if
    yasso_met_ind = 1
+   call get_params(param_y20_map, yasso_awen_rate_mod, yasso_param)
    call initialize(&
-        param_y20_map, &
+        yasso_param, &
         0.3 * hist_carbon_input / 365.0, &
         0.7 * hist_carbon_input / 365.0, &
         hist_carbon_input * 0.02 / 365.0, & ! C:N 50 for carbon input
@@ -263,7 +265,7 @@ do day = 1, NDAYS
           compost = input_compost_c, &
           fract = cflux_to_yasso)
      call decompose(&
-          param_y20_map, &
+          yasso_param, &
           DELT, & ! timestep
           cflux_to_yasso, & ! segregated by the AWENH fraction
           DNSH + DNRT + input_org_n + harv_n_to_litt, & ! total organic N input
