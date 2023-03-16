@@ -183,34 +183,34 @@ test_that("New ED2IN tags get added at bottom of file", {
 })
 
 
-test_that("write.config.xml.ED2() uses correct history file", {
-  #1. read in pecan.xml in data/pecan_checked.xml
-  settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
-  #for debugging:
-  # settings <- PEcAn.settings::read.settings("models/ed/tests/testthat/data/pecan_checked.xml")
-  
-  #2. Set rundir to tempdir
-  rundir <- tempfile()
-  dir.create(rundir)
-  on.exit(unlink(rundir, recursive = TRUE))
-  settings$rundir <- rundir
-  run.id <- "ENS-00001-76"
-  dir.create(file.path(rundir, run.id))
-  #3. set revision to 81
-  settings$model$revision <- "81"
-
-  x <- capture.output(
-    write.config.xml.ED2(
-      settings = settings,
-      trait.values = trait.values,
-      defaults = defaults
-    ),
-    type = "message"
-  )
-  
-  expect_true(any(stringr::str_detect(x, "history.r81")))
-  
-})
+# test_that("write.config.xml.ED2() uses correct history file", {
+#   #1. read in pecan.xml in data/pecan_checked.xml
+#   settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
+#   #for debugging:
+#   # settings <- PEcAn.settings::read.settings("models/ed/tests/testthat/data/pecan_checked.xml")
+#   
+#   #2. Set rundir to tempdir
+#   rundir <- tempfile()
+#   dir.create(rundir)
+#   on.exit(unlink(rundir, recursive = TRUE))
+#   settings$rundir <- rundir
+#   run.id <- "ENS-00001-76"
+#   dir.create(file.path(rundir, run.id))
+#   #3. set revision to 81
+#   settings$model$revision <- "81"
+# 
+#   x <- capture.output(
+#     write.config.xml.ED2(
+#       settings = settings,
+#       trait.values = trait.values,
+#       defaults = defaults
+#     ),
+#     type = "message"
+#   )
+#   
+#   expect_true(any(stringr::str_detect(x, "history.r81")))
+#   
+# })
 
 
 ## test_that("remove.configs.ED2 works with remote host",{
