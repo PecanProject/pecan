@@ -28,12 +28,24 @@ sda_weights_site <- function(FORECAST, ANALYSIS, t, ens){
                                    site.ind <- which( attr(FORECAST[[1]],'Site') %in% one.site)
                                    #match date
                                    ind <- which( names(FORECAST) %in% Year.applid.weight)
-                                   #calculate analysis mean value
-                                   mu.a <- apply(ANALYSIS.r[,site.ind],2 ,mean)
-                                   #calculate analysis covariance matrix
-                                   Pa <- stats::cov(ANALYSIS.r[,site.ind])
-                                   #calculate weights
-                                   w <- emdbook::dmvnorm(FORECAST.r[,site.ind], mu.a, Pa, TRUE)
+                                   
+                                   #if we only have single variable.
+                                   if(length(site.ind) == 1){
+                                     #calculate analysis mean value
+                                     mu.a <- mean(ANALYSIS.r[,site.ind])
+                                     #calculate analysis variance
+                                     Pa <- stats::sd(ANALYSIS.r[,site.ind])
+                                     #calculate weights
+                                     w <- stats::dnorm(FORECAST.r[,site.ind], mu.a, Pa, TRUE)
+                                   }else{
+                                     #calculate analysis mean value
+                                     mu.a <- apply(ANALYSIS.r[,site.ind],2 ,mean)
+                                     #calculate analysis covariance matrix
+                                     Pa <- stats::cov(ANALYSIS.r[,site.ind])
+                                     #calculate weights
+                                     w <- emdbook::dmvnorm(FORECAST.r[,site.ind], mu.a, Pa, TRUE)
+                                   }
+                                   
                                    #return outputs
                                    data.frame(
                                      ens = 1:ens,
