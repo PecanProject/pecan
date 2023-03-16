@@ -42,7 +42,7 @@ SDA_OBS_Assembler <- function(settings){
   }
   
   #The order of obs.mean and obs.cov objects are relying on the order of how you organize the Obs_Prep section.
-  OBS <- list()
+  OBS <- timestep <- list()
   var <- c()
   if (diff_dates) time_points_all <- list()
   #test for loop
@@ -56,12 +56,12 @@ SDA_OBS_Assembler <- function(settings){
     
     #if we are dealing with different timestep for different variables.
     if (diff_dates){
-      timestep <- Obs_Prep[[i]]$timestep
+      timestep[[i]] <- Obs_Prep[[i]]$timestep
       if (!exists("timestep")){
         PEcAn.logger::logger.error(paste0("Please provide timestep under each variable if you didn't provide timestep under Obs_Prep section!"))
         return(0)
       }
-      time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep)
+      time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep[[i]])
     }
     #Search function inside the data.remote package
     if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep")), silent = T))){
@@ -181,6 +181,28 @@ SDA_OBS_Assembler <- function(settings){
       }
     }
   }
+  
+  #fill in empty element within obs.mean and obs.cov lists.
+  #if time steps for all obs are the same
+  if(length(unique(unlist(timestep))) == 2){
+    timepoints_fill <- timestep %>% 
+      purrr::map(function(var_timestep){
+        obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, var_timestep)
+      }) %>% 
+      purrr::map(function(all_timepoints){
+        all_timepoints[which(!all_timepoints %in% time_points)]
+      }) %>% 
+      do.call(what = "c") %>% 
+      unique()
+    if(length(timepoints_fill)>0){
+      for (i in seq_along(timepoints_fill)) {
+        obs.mean <- rlist::list.append(obs.mean, NULL)
+        obs.cov <- rlist::list.append(obs.cov, NULL)
+        names(obs.mean)[length(obs.mean)] <- names(obs.cov)[length(obs.cov)] <- as.character(timepoints_fill[i])
+      }
+    }
+  }
+  
   #create folder in case it doesn't exist.
   if(!file.exists(file.path(Obs_Prep$outdir, "Rdata"))){
     dir.create(file.path(Obs_Prep$outdir, "Rdata"))
