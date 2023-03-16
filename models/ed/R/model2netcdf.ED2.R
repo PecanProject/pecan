@@ -783,7 +783,7 @@ put_T_values <-
   model_timestep_s <- length(output_date_vector) / length(out[[1]])
   iter_per_day <- round(1 / model_timestep_s) ## e.g. 48
   ## Create a timesteps vector (e.g. 0.00000000 0.02083333 0.04166667 0.06250000 0.08333333 0.10416667 ...)
-  timesteps <- head(seq(0, 1, by = 1 / iter_per_day), -1)
+  timesteps <- utils::head(seq(0, 1, by = 1 / iter_per_day), -1)
   ## Create a new date vector where each day is repeated by iter_per_day 
   ## (e.g. "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" "2001-07-15" ...)
   sub_dates <- rep(output_date_vector, each = iter_per_day)
