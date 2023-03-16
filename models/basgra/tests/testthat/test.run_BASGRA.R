@@ -69,7 +69,7 @@ write_new_fert <- function(path_fert, which_type) {
 
 test_that('two harvests yield more than one', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   fert_file <- file.path(outfolder, 'fertilize.csv')
@@ -115,7 +115,7 @@ test_that('two harvests yield more than one', {
 
 test_that('harvest followed by cut yields same as only harvest but different mean LAI', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   fert_file <- file.path(outfolder, 'fertilize.csv')
@@ -167,7 +167,7 @@ test_that('harvest followed by cut yields same as only harvest but different mea
 
 test_that('changing CLAIV changes LAI and yield', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   fert_file <- file.path(outfolder, 'fertilize.csv')
@@ -216,7 +216,7 @@ test_that('changing CLAIV changes LAI and yield', {
 
 test_that('invalid harvest file raises an error', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   fert_file <- file.path(outfolder, 'fertilize.csv')
@@ -244,7 +244,7 @@ test_that('invalid harvest file raises an error', {
 
 test_that('model produces some output', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -267,7 +267,7 @@ test_that('model produces some output', {
 
 test_that('Fertilizer C inputs are zeroed without Yasso', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params <- setNames(df_params[,2], df_params[,1])
   
   outfolder <- mktmpdir()
@@ -363,7 +363,7 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
 
 test_that('new fertilization file format matches the old', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params_basic <- setNames(df_params[,2], df_params[,1])
   df_params <- read.csv('BASGRA_params_yasso.csv')
   run_params_yasso <- setNames(df_params[,2], df_params[,1])
@@ -501,6 +501,43 @@ test_that('Netcdf output is consistent with the raw output for certain variables
   totc_nc <-  ncdf4::ncvar_get(nc, 'TotSoilCarb')
   totc_raw <- rowSums(output.raw[, c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H')])
   expect_equal(as.vector(totc_nc), as.vector(totc_raw*1e-3))
-  
+})
+
+test_that('The yasso_awen_rate_mod parameter has a reasonable effect', {
+  met_path <- 'test.met'
+  df_params <- read.csv('BASGRA_params_yasso.csv')
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  run_params_mod <- run_params
+  run_params_mod['yasso_awen_rate_mod'] <- 2.0
+  run_BASGRA(
+    met_path, run_params_mod, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output_mod <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+
+  # One could have thought that output_mod should have a higher Rsoil. But it doesn't
+  # always, because also the initial state changes. Now we'll just test the
+  # initialization.
+  expect_gt(output_mod[1, 'CSOM_H'], output[1, 'CSOM_H'])
+  awen = c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N')
+  expect_lt(sum(output_mod[1, awen]), sum(output[1, awen]))
 })
 
