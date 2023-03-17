@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ldndcevent>
+  <global time='@time@' />
+    <event  id="0" >
+      '@Info@'
+    </event>
+</ldndcevent>
+
