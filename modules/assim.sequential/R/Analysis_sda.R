@@ -50,7 +50,7 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
+EnKF<-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function

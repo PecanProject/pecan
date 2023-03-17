@@ -12,7 +12,6 @@
 #' @export
 #' 
 #'
-#' @examples
 sda_matchparam <- function(settings, ensemble.samples, site.ids, nens){
   #reformatting params
   new.params <- list()

@@ -8,7 +8,6 @@
 #' @return list of weights associated with each ensemble member of each site.
 #' @export
 #'
-#' @examples
 #' @author Dongchen Zhang and Hamze Dokoohaki
 sda_weights_site <- function(FORECAST, ANALYSIS, t, ens){
   #This function is the refactored version 
