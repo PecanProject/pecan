@@ -10,16 +10,15 @@
           <mobile>
             <!-- model selection -->
             <modulelist>
-		          <module id="microclimate:@microclimate@" timemode='@timemode@' />
+		        <module id="microclimate:@microclimate@" timemode='@timemode@' />
           		<module id="watercycle:@watercycle@" timemode='@timemode@' >
           		  <options potentialevapotranspiration='@pevapotrans@' />
-          	  </module>
-          	  <module id="airchemistry:@airchemistry@" timemode='@timemode@' />
-          		<module id="physiology:@physiology@" timemode='@timemode@' />
-          		<module id="soilchemistry:@soilchemistry@" timemode='@timemode@' >
-          		  <options canopytransport='@canopytransport@' />
-          		  <options riverconnection='@riverconnection@' />
-		    </module>
+			</module>
+			<module id="airchemistry:@airchemistry@" timemode='@timemode@' />
+          		<module id="physiology:@physiology@" timemode='@timemode@' >
+			  <options plantfamilies='@plantfamilies@' />
+			</module>
+          		<module id="soilchemistry:@soilchemistry@" timemode='@timemode@' />
 
 			    <!-- outputs -->
 		        <module id="output:microclimate:daily" />
