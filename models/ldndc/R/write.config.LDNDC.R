@@ -23,7 +23,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # inspect input files closer (or do simulatons on different
   # environment. Set based on current model version (1.33)
   # and probably no reason to change.
-  MinPackReq <- "1.5" # Current version 1.35
+  MinPackReq <- "1.35" # Current version 1.35
   
   
   # Create Schedule time
@@ -136,6 +136,160 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   Sys.chmod(file.path(rundir, "job.sh")) # Permissions
   
   
+  ## ----- Preparing the event file ----- ##
+  
+  # Check if there is a path for event file
+  if(!is.null(settings$run$inputs$events$path)){
+    
+    
+    
+    # Path can be pointed either to ready xml-file or to the json-file from which to parse the relecant info
+    # Create some options have it will deal with these different sceanrious -- should be pretty straight-forward
+    
+    # Read the json file from given path
+    events_json <- jsonlite::fromJSON(settings$run$inputs$events$path)
+    
+    
+    # Choose only the events that are relative and make sure they are ordered correctly
+    events_json <- events_json$management$events %>% subset(., date >= as.Date(settings$run$start.date) & date <= as.Date(settings$run$end.date)) %>%
+      dplyr::arrange(date)
+    
+    
+    
+    ## Check how many events belong to the simulated period and create an event of them one by one
+    events_num <- length(events_json$mgmt_operations_event)
+    
+    # No events on given time period
+    if(events_num == 0){
+      event_text <- "<!--- There is no events on this time period -->"
+    }
+    
+    # At least one recorded event on the given time period
+    else{
+      # Initialize the text which is going to be populated by the information
+      # we got from the event.json files
+      event_text <- ""
+      
+      # Check every event one by one
+      for(et in 1:events_num){
+        event <- events_json[et,]
+        
+        # Time of the event
+        time <- event$date
+        
+        # Check if the event is a planting event
+        if(event$mgmt_operations_event == "planting"){
+          # If there is actually a planting event
+          # If not stated otherwise, the initial biomass should be pretty low probably?
+          # fractional cover should be given initial conditions, so nevertheless, initial
+          # biomass ja fractional cover should be provided
+          
+          # Check the planted species name
+          plant_name <- event$planted_crop
+          
+          
+          # If not any information about the plant event
+          # Do some plant coverage, check how to deal with initial conditions and
+          # as stated above, intial biomass ja fractional cover should be provided
+          # Should have maybe stated the planted species on intial conditions as well,
+          # in a case when there is continues growing plant in the field
+          
+          
+        }
+        
+        # Check fertilizer
+        if(event$mgmt_operations_event == "fertilizer"){
+          
+          # Get the fertilizer exact type from what it contains
+          if(!is.null(event$fertilizer_contain)){
+            type <- event$fertilizer_contain
+          }
+          
+          # Get it from the fertilizer product name
+          else if(is.null(event$fertilizer_contain) & !is.na(event$fertilizer_product_name)){
+            if(grepl("potassium salt", event$fertilizer_product_name)){
+              type <- "so4"
+            }
+            else if(grepl("befert", event$fertilizer_product_name)){
+              type <- "nh4no3"
+            }
+            else{
+              type <- "no3"
+            }
+          }
+          
+          # Fertilizer type not deduced from the above
+          else{
+            type <- "nh4no3"
+          }
+          
+          # Amount of fertilization
+          if(!is.na(event$N_in_applied_fertilizer)){
+            amount <- event$fertilizer_total_amount
+          } else {amount <- NULL}
+          
+          # Depth of fertilization
+          if(!is.null(event$application_depth_fert) & as.numeric(event$application_depth_fert) > 0){
+            depth <- event$application_depth_fert
+          } else {depth <- NULL}
+          
+          
+          # After gathering all relevant info for fertilizer -- made an event from it for ldndc to use
+          event_text <- paste0(event_text, "\n\n", "<event type='fertilize' ", "time='", time, "'> \n",
+                              "<fertilize type='", type, "' ")
+          event_text <- ifelse(!is.null(amount), paste0(event_text, "amount='", amount, "' "), event_text)
+          event_text <- ifelse(!is.null(depth), paste0(event_text, "depth='", depth, "' "), event_text)
+          event_text <- paste0(event_text, "/> \n </event>")
+          
+        }
+        
+        # Check cut events
+        if(event$mgmt_operations_event == "cut"){
+          
+          
+          # Cutting event should be applied to grasslands, but what about arable?
+          # Remains relative or height, which one will be used or can it depend?
+          
+          
+        }
+        
+        # Check tillage
+        if(event$mgmt_operations_event == "tillage"){
+          
+          # Depth of tillage
+          if(!is.null(event$tillage_operations_depth) & as.numeric(event$tillage_operations_depth) > 0){
+            depth <- event$tillage_operations_depth
+          } else {depth <- runif(1, 0.05, 0.2)}
+          
+          event_text <- paste0(event_text, "\n\n", "<event type='till' ", "time='", time, "'> \n",
+                               "<till depth='", depth, "' /> \n </event>")
+          
+        }
+        
+        # Check harvest
+        if(event$mgmt_operations_event == "harvest"){
+          
+          # Check if this has been done on grassland on in arable
+          # since harvesting in LDNDC removes that species from the field,
+          # so it is suitable when doing harvesting in arable site and we
+          # remove one species completely, but with grasslands we should
+          # stick with cutting when some plants are left on the field
+          
+          # Needs to know: 1) harvested species and 2) remains (fraction of biomass left on the field)
+          
+          # There should also be specific indetifier which is same for the planted and harvested crop, if
+          # there are more same species in the simulation period, these crops should be separated from each other
+        }
+      }
+    }
+    
+  }
+  
+  
+  
+  
+  
+  
   
   ## ----- Preparing the setup file ----- ##
   
@@ -184,7 +338,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     setupfile <- gsub("@riverconnection@", "yes", setupfile)
     
     # Report
-    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='@timemode@' />", setupfile)
+    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
@@ -254,7 +408,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     setupfile <- gsub("@riverconnection@", "no", setupfile)
     
     # Report
-    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='@timemode@' />", setupfile)
+    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
@@ -313,7 +467,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     setupfile <- gsub("@riverconnection@", "no", setupfile)
     
     # Report
-    setupfile <- gsub("@reportarable@", "", setupfile)
+    setupfile <- gsub("@reportarable@", "\n", setupfile)
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
@@ -323,7 +477,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
     
     
-    # Viikki species
+    # Lettosuo species
     mnemonic_1 <- "trees"
     group <- "wood"
     
@@ -589,12 +743,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     #57 EXP_ROOT_DISTRIBUTION - 
     if ("exp_root_distribution" %in% pft.names) {
-      if(site_id == "15000000027"){
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", rbinom(1,1,0.1)*pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
-      }
-      else{
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
-      }
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t\t<par name='EXP_ROOT_DISTRIBUTION' value='", pft.traits[which(pft.names == "exp_root_distribution")], "' /> \n"), collapse="")
     }
     
     #58 EXT - extinction_coefficient_diffuse
@@ -654,13 +803,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     #89 GDD_BASE_TEMPERATURE (C) - gdd_tbase (C)
     if ("gdd_tbase" %in% pft.names) {
-      #b.2.1 <- paste(b.2.1, paste0("\t\t\t\t\t\t<par name='GDD_BASE_TEMPERATURE' value='", pft.traits[which(pft.names == "gdd_tbase")], "' /> \n"), collapse="")
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_BASE_TEMPERATURE' value='", pft.traits[which(pft.names == "gdd_tbase")], "' /> \n"), collapse="")
     }
     
     #90 GDD_MAX_TEMPERATURE - gdd_tmax
     if ("gdd_tmax" %in% pft.names) {
-      #b.2.1 <- paste(b.2.1, paste0("\t\t\t\t\t\t<par name='GDD_MAX_TEMPERATURE' value='", pft.traits[which(pft.names == "gdd_tmax")], "' /> \n"), collapse="")
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MAX_TEMPERATURE' value='", pft.traits[which(pft.names == "gdd_tmax")], "' /> \n"), collapse="")
     }
     
@@ -676,30 +823,17 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     #93 GDD_FLOWERING - 
     if ("gdd_flowering" %in% pft.names) {
-      gdd_flowering <- pft.traits[which(pft.names == "gdd_flowering")]
       b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_FLOWERING' value='", pft.traits[which(pft.names == "gdd_flowering")], "' /> \n"), collapse="")
     }
     
     #94 GDD_GRAIN_FILLING - 
     if ("gdd_grain_filling" %in% pft.names) {
-      if(!("gdd_flowering" %in% pft.names)){
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
-      }
-      else{
-        gdd_grainfilling <- gdd_flowering + runif(1, min = 125, max = 280)
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", gdd_grainfilling, "' /> \n"), collapse="")
-      }
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
     }
     
     #95 GDD_MATURITY - 
     if ("gdd_maturity" %in% pft.names) {
-      if(!("gdd_flowering" %in% pft.names)){
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", pft.traits[which(pft.names == "gdd_maturity")], "' /> \n"), collapse="")
-      }
-      else{
-        gdd_maturity <- gdd_grainfilling + runif(1, min = 600, max = 700)
-        b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", gdd_maturity, "' /> \n"), collapse="")
-      }
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='GDD_MATURITY' value='", pft.traits[which(pft.names == "gdd_maturity")], "' /> \n"), collapse="")
     }
     
     #96 GDDFOLEND -
@@ -794,7 +928,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     #119 INI_N_FIX - 
     if ("ini_n_fix" %in% pft.names) {
-      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='INI_N_FIX' value='", rbinom(1,1,0.1)*pft.traits[which(pft.names == "ini_n_fix")], "' /> \n"), collapse="")
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='INI_N_FIX' value='", pft.traits[which(pft.names == "ini_n_fix")], "' /> \n"), collapse="")
     }
     
     #120 KC25 (mmol mol-1 mbar-1)- 
@@ -1090,7 +1224,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     #187 SENESCENCE_DROUGHT - 
     if ("senescence_drought" %in% pft.names) {
-      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SENESCENCE_DROUGHT' value='", rbinom(1,1,0.1)*pft.traits[which(pft.names == "senescence_drought")], "' /> \n"), collapse="") # In order to have zeros
+      b.2 <- paste(b.2, paste0("\t\t\t\t\t\t<par name='SENESCENCE_DROUGHT' value='", pft.traits[which(pft.names == "senescence_drought")], "' /> \n"), collapse="") # In order to have zeros
     }
     
     #188 SENESCENCE_FROST - 
@@ -2055,9 +2189,9 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
           soil_layer_values <- paste0(soil_layer_values, paste0("ph='", ph, "' "))
         }
         
-        if("soil_organic_carbon_content" %in% names(soil_IC_list$vals)){
+        if("soil_carbon_content" %in% names(soil_IC_list$vals)){
           # Total Carbon Content - kg N m-2 to kg N kg-1 ??
-          corg <- unlist(soil_IC_list$vals["soil_organic_carbon_content"])[[depth_level]]
+          corg <- unlist(soil_IC_list$vals["soil_carbon_content"])[[depth_level]]
           soil_layer_values <- paste0(soil_layer_values, paste0("corg='", corg, "' "))
         }
         
@@ -2131,9 +2265,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   else{
     PEcAn.logger::logger.severe("More than one soil path given: only one soil path is supported")
   }
-  
-
-  
   
   
   ## Writing and saving species- and siteparameters + initial soil conditions
