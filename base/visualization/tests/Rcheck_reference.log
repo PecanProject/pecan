@@ -93,10 +93,6 @@ Namespaces in Imports field not imported from:
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-map.output: no visible binding for global variable ‘long’
-map.output: no visible binding for global variable ‘lat’
-map.output: no visible binding for global variable ‘group’
-map.output: no visible binding for global variable ‘lon’
 vwReg: no visible binding for global variable ‘x’
 vwReg: no visible binding for global variable ‘y’
 vwReg: no visible binding for global variable ‘dens.scaled’
