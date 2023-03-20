@@ -1081,11 +1081,13 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   # dimensions don't get screwed up later.  Other code in model2netcdf.ED2
   # assumes the dimensions are constant for the entire year.
   
-  expected <- expand_grid(
+  expected <- tidyr::expand_grid(
     date = unique(out$date),
     PFT = unique(out$PFT)
   )
-  out <- full_join(out, expected) %>% arrange(date)
+  out <- 
+    dplyr::full_join(out, expected, by = c("date", "PFT")) %>%
+    dplyr::arrange(.data$date)
   
   # Rename variables to PEcAn standard and convert to list
   n_pft <- length(unique(out$PFT))
