@@ -77,28 +77,32 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   if(length(new_site_info$site_id) != 0){
     if(is.null(buffer) | as.logical(skip_buffer)){
       #extracting AGB data
-      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
-                                                                "median", 
+      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                                dataset = "median", 
                                                                 fun = "mean", 
-                                                                AGB_indir, 
-                                                                product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
-                                                                              dplyr::select(-2) %>%
-                                                                              `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
-      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
-                                                                 "stdv", 
+                                                                data_dir = AGB_indir, 
+                                                                product_dates = lubridate::year(time_points))
+      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                                 dataset = "stdv", 
                                                                  fun = "mean", 
-                                                                 AGB_indir, 
-                                                                 product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
-                                                                               dplyr::select(-c(1:2)) %>%
-                                                                               `colnames<-`(c(paste0(time_points, "_SD")))
+                                                                 data_dir = AGB_indir, 
+                                                                 product_dates = lubridate::year(time_points))
       #Handle data
       AGB_Output <- cbind(med_agb_data, sdev_agb_data)
     }else{#buffer is not empty
       #extracting AGB data
-      med <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", buffer = buffer, fun = "mean", 
-                                                                AGB_indir, product_dates=lubridate::year(start_date):lubridate::year(end_date))
-      sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "stdv", buffer = buffer, fun = "mean", 
-                                                                 AGB_indir, product_dates=lubridate::year(start_date):lubridate::year(end_date))
+      med <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                       dataset = "median", 
+                                                       buffer = buffer, 
+                                                       fun = "mean", 
+                                                       data_dir = AGB_indir, 
+                                                       product_dates = lubridate::year(time_points))
+      sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                        dataset = "stdv", 
+                                                        buffer = buffer, 
+                                                        fun = "mean", 
+                                                        data_dir = AGB_indir, 
+                                                        product_dates = lubridate::year(time_points))
       sdev_agb_data <- med_agb_data <- c()
       for (i in seq_along(new_site_info$site_id)) {
         temp_var <- rowSums(sdev[[i]])
