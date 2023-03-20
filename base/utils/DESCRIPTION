@@ -49,7 +49,6 @@ Suggests:
     ggplot2,
     MASS,
     randtoolbox,
-    raster,
     rjags,
     sp,
     testthat (>= 2.0.0),

@@ -32,12 +32,13 @@ Imports:
     parallel,
     foreach
 Suggests:
-    testthat (>= 1.0.2),
+    dplyr,
     ggplot2,
+    lubridate,
+    raster,
     rgdal,
     reshape,
-    dplyr,
-    lubridate,
+    testthat (>= 1.0.2),
     tibble
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
