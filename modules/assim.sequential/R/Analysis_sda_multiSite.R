@@ -15,11 +15,12 @@
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
+EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   #------------------------------Setup
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  site.ids <- settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist()
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
@@ -43,7 +44,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
     Pf <- Contruct.Pf (site.ids, var.names, X,
                        localization.FUN=eval(parse(text = Localization.FUN)),
                        t=extraArg$t,
-                       blocked.dis,
+                       blocked.dis=blocked.dis,
                        scalef)
   }else{
     PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
@@ -108,6 +109,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
+  interval <- NULL
+  #added this line in case you don't need to do censoring.
+  X.new <- NULL
   # Reading the extra arguments
   if(!is.null(extraArg$aqq) && !is.null(extraArg$bqq)){
     aqq <- extraArg$aqq

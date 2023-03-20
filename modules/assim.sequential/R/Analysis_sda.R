@@ -66,7 +66,7 @@ EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
   Y <- Observed$Y
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-  Pf <- cov(X)
+  Pf <- stats::cov(X)
   
   
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
@@ -146,7 +146,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   wts <- extraArg$wts/sum(extraArg$wts)
   
   if(any(is.na(wts))){
-    logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
+    PEcAn.logger::logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
     wts[is.na(wts)] <- 0
   }
   if(sum(wts==0)){
@@ -302,10 +302,10 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       save(dat.tobit2space, file = file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
     }
     
-    pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
+    grDevices::pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
     set.seed(t)
     try(assessParams(dat = dat.tobit2space[sample(x = 10:nrow(dat.tobit2space),size = 500,replace = F),],wts=wts, Xt = X))
-    dev.off()
+    grDevices::dev.off()
     
     ## TO DO Add MCMC Diagnostics, how do we do it for pecan meta-analysis?
     
@@ -609,8 +609,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   aqq   <- V
   bqq   <- n
   
-  pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
-  par(mfrow = c(2, 3))
+  grDevices::pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
+  graphics::par(mfrow = c(2, 3))
   
   for(rr in 1:length(iX)){
     graphics::plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
@@ -631,7 +631,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     eigen_save[rr,] <- eigen((matrix(dat_save[rr, iq],ncol(X),ncol(X))))$values
   }
   apply(eigen_save,2,graphics::plot,typ='l')
-  dev.off()
+  grDevices::dev.off()
   
   return(list(mu.f = mu.f,
               Pf = Pf,

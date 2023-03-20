@@ -24,13 +24,13 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
    #foreach site let's get the Xs
-    pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] ,use="complete.obs")
+    pf.matrix [pos.in.matrix, pos.in.matrix] <- stats::cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
   # This is where we estimate the cov between state variables of different sites
   #I put this into a sperate loop so we can have more control over it
-  site.cov.orders <- expand.grid(site.ids,site.ids) %>%
-                        filter( Var1 != Var2)
+  sites.comb <- expand.grid(site.ids,site.ids)
+  site.cov.orders <- sites.comb[which(sites.comb[,1] != sites.comb[,2]),]
 
   for (i in 1:nrow(site.cov.orders)){
     # first we need to find out where to put it in the big matrix
@@ -180,7 +180,7 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
   nvariable <- length(var.names)
   #This is used inside the loop below for moving between the sites when populating the big H matrix
-  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
+  nobs <- obs.t.mean %>% purrr::map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
   nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
   
   #Having the total number of obs as the row number
