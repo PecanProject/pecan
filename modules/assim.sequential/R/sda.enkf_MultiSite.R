@@ -173,6 +173,9 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
+  #my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
+  #my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
+  #my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
@@ -361,13 +364,18 @@ sda.enkf.multisite <- function(settings,
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
                              function(configs, settings, new.params, inputs) {
+                               #if the new state for each site only has one row/col.
+                               #then we need to convert it to matrix to solve the indexing issue.
+                               new_state_site <- new.state[, which(attr(X, "Site") %in% settings$run$site$id)]
+                               if(is.vector(new_state_site)){
+                                 new_state_site <- matrix(new_state_site)
+                               }
                                list(
                                  runid = configs$runs$id,
                                  start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
                                  stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
                                  settings = settings,
-                                 new.state = new.state[, which(attr(X, "Site") %in% settings$run$site$id)],
-                                 #!!!!!!!!!!
+                                 new.state = new_state_site,
                                  new.params = new.params,
                                  inputs = inputs,
                                  RENAME = TRUE,
@@ -653,7 +661,7 @@ sda.enkf.multisite <- function(settings,
       new.state  <- as.data.frame(analysis)
       ANALYSIS[[obs.t]] <- analysis
       ANALYSIS <-ANALYSIS
-      ens_weights[[obs.t]] <- sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
+      ens_weights[[obs.t]] <- PEcAnAssimSequential::sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
       ###-------------------------------------------------------------------###
       ### save outputs                                                      ###
       ###-------------------------------------------------------------------###---- 
@@ -697,4 +705,5 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
   } ### end loop over time
+  
 } # sda.enkf

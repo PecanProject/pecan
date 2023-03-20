@@ -113,11 +113,31 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   # filter.herb <- filter.herb[!is.na(filter.herb$scientificName),]
   # filter.date <- filter.date[!is.na(filter.date$scientificName),]
   
-  # #soil carbon
+ #####calculate the site-specific fraction of 0-30cm soc to the whole soil profile soc based on Magpit data
   neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, type = "basic",api = "https://data.neonscience.org/api/v0")
   perbulksample <- neonstore::neon_read(table = "perbulksample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = end_date, dir = store_dir)
+if(is.null(perbulksample) | is.null(perbiogeosample) | is.null(perarchivesample)){
+  print("no Magpit soil carbon data found!")
+  joined.soilmg <- NA
+}else{
+  joined.soilmg <- dplyr::left_join(perarchivesample, perbiogeosample, by = "horizonID")
+  joined.soilmg <- dplyr::left_join(joined.soilmg, perbulksample, by = "horizonID")
+  joined.soilmg<-joined.soilmg[joined.soilmg$bulkDensSampleType=="Regular",]
+  joined.soilmg<-joined.soilmg[joined.soilmg$biogeoSampleType=="Regular",]
+  joined.soilmg<-joined.soilmg[!duplicated(joined.soilmg$biogeoTopDepth),]
+  joined.soilmg<-dplyr::select(joined.soilmg,"collectDate.x","siteID.x","biogeoTopDepth","biogeoBottomDepth","bulkDensExclCoarseFrag","carbonTot","bulkDensSampleType","biogeoSampleType")
+  joined.soilmg.top30 <- joined.soilmg[joined.soilmg$biogeoBottomDepth<=35,] #set maxi 35 here to allow more top layers to be considered, e.g. 0-31cm
+  soilcarbon.top30 <- sum(joined.soilmg.top30$bulkDensExclCoarseFrag * joined.soilmg.top30$carbonTot * 0.001 *  (joined.soilmg.top30$biogeoBottomDepth - joined.soilmg.top30$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
+  #remove NA from soil data
+  soilcarbon.whole <- sum(joined.soilmg$bulkDensExclCoarseFrag * joined.soilmg$carbonTot * 0.001 *  (joined.soilmg$biogeoBottomDepth - joined.soilmg$biogeoTopDepth) * 10000, na.rm=T)/1000 #convert from gram to kilogram
+  frac_30 <- soilcarbon.top30/soilcarbon.whole
+}
+
+####calculate soil C of 0-30cm depth from periodic soil core collections
   if(is.null(perbulksample)){
-    print("no soil carbon data found!")
+    print("no Magpit soil bulk density data found!")
     joined.soil <- NA
   }else{
     #filter for regular type of bulk density measurements
@@ -131,9 +151,9 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     bulkDensExclCoarseFrag <- bulkDensExclCoarseFrag[Ind]
     
     #calculate bulk density (need to do: more precise depth matching)
-    bulkDensity <- mean(bulkDensExclCoarseFrag[which(bulkDensBottomDepth <= 30)])
+    bulkDensity <- mean(bulkDensExclCoarseFrag[which(bulkDensBottomDepth <= 35)]) #set maxi 35 here to allow more bulk density samples to be considered, e.g. 23-33 cm (there might be a typo for 0-110 cm for JORN sites, so only bulk density for 22-33 cm is available)
     
-    #if there is no bulk density measurements bellow 30cm.
+    #if there is no bulk density measurements above 30cm.
     if(is.na(bulkDensity)){
       joined.soil <- NA
     }else{
@@ -145,13 +165,13 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
       sls_soilCoreCollection <- neonstore::neon_read(table = "sls_soilCoreCollection", product = "DP1.10086.001", site = sitename, start_date = as.Date("2012-01-01"), end_date = as.Date("2021-01-01"), dir = store_dir)
       
       if(is.null(sls_soilChemistry) | is.null(sls_soilCoreCollection)){
-        print("no soil carbon data found!")
+        print("no periodic soil carbon data found!")
         joined.soil <- NA
       }else{
         joined.soil <- dplyr::left_join(sls_soilChemistry, sls_soilCoreCollection, by = "sampleID")
         
         #select columns
-        joined.soil <- dplyr::select(joined.soil, .data$siteID.x, .data$plotID.x, .data$plotType.x, .data$organicCPercent, .data$collectDate.x, .data$sampleTopDepth, .data$sampleBottomDepth)
+        joined.soil <- dplyr::select(joined.soil, "siteID.x", "plotID.x", "plotType.x", "organicCPercent", "collectDate.x", "sampleTopDepth", "sampleBottomDepth")
         joined.soil$year <- lubridate::year(joined.soil$collectDate.x)
         colnames(joined.soil) <- c("site_name", "plot", "plotType", "organicCPercent", "date", "top", "bottom", "year")
         
@@ -162,14 +182,14 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
         
         #calculate soil carbon
         joined.soil$bulkDensity <- bulkDensity
-        
-        #here we multiply bulkdensity (in kg/m3) with soil depth (in m) to calculate the soil biomass (in kg/m2) at the top 30 cm depth of soil.
+        joined.soil$frac_30 <- frac_30
+        #here we multiply bulkdensity (in kg/m3) with soil depth (in m) to calculate the soil carbon (in kg/m2) at the top 30 cm depth of soil, and then divide it by frac_30 to get the value for whole profile.
         #note that we have to divide by 100 because of percentage for the organicCPercent variable.
-        joined.soil$SoilCarbon <- joined.soil$organicCPercent/100 * PEcAn.utils::ud_convert(joined.soil$bulkDensity, "g cm-3", "kg m-3") * PEcAn.utils::ud_convert(30, "cm", "m")
+        joined.soil$SoilCarbon <- joined.soil$organicCPercent/100 * PEcAn.utils::ud_convert(joined.soil$bulkDensity, "g cm-3", "kg m-3") * PEcAn.utils::ud_convert(30, "cm", "m")/joined.soil$frac_30
       }
     }
   }
-  
+ 
   #Create veg_info object as a list
   veg_info <- list()
   #Set filter.date as veg_info[[2]]
@@ -177,6 +197,6 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
   #Set plot size as veg_info[[1]]
   veg_info[[1]] <- filter.herb
   veg_info[[3]] <- joined.soil
-  
+
   return(veg_info)
 }

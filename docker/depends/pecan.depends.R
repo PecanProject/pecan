@@ -113,6 +113,7 @@ wanted <- c(
 'rjags',
 'rjson',
 'rlang',
+'rlist',
 'rmarkdown',
 'RPostgres',
 'RPostgreSQL',
