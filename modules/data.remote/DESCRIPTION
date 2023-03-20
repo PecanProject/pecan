@@ -32,6 +32,7 @@ Imports:
     parallel,
     foreach
 Suggests:
+    data.table,
     dplyr,
     ggplot2,
     lubridate,
