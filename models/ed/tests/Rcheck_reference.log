@@ -1,4 +1,3 @@
-* using log directory ‘/private/var/folders/wr/by_lst2d2fngf67mknmgf4340000gn/T/RtmplbRshU/file7b5043659c65/PEcAn.ED2.Rcheck’
 * using R version 4.2.2 (2022-10-31)
 * using platform: x86_64-apple-darwin17.0 (64-bit)
 * using session charset: UTF-8
@@ -74,96 +73,17 @@ Extensions’ manual.
 * checking R/sysdata.rda ... OK
 * checking files in ‘vignettes’ ... WARNING
 Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘ed_run_data/EDI.zip’,
-    ‘ed_run_data/EDI/ed_inputs/chd/temp.chd.avg.dat’,
-    ‘ed_run_data/EDI/ed_inputs/dgd/temp.dgd.avg.dat’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_00N180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30N180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_30S180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60N180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_60S180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S000E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S030E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S030W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S060E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S060W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S090E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S090W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S120E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S120W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S150E.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S150W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_90S180W.h5’,
-    ‘ed_run_data/EDI/oge2OLD/OGE2_HEADER’, ‘running_ed_from_R.Rmd’
+  ‘running_ed_from_R.Rmd’
 Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
   Running ‘test_ed_integration.R’
-  Running ‘testthat.R’ [12s/12s]
- [12s/13s] OK
+  Running ‘testthat.R’ OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
 
 Status: 3 WARNINGs, 2 NOTEs
-See
-  ‘/private/var/folders/wr/by_lst2d2fngf67mknmgf4340000gn/T/RtmplbRshU/file7b5043659c65/PEcAn.ED2.Rcheck/00check.log’
-for details.
 
 
