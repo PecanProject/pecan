@@ -173,6 +173,9 @@ sda.enkf.multisite <- function(settings,
 # Model Specific Setup ----------------------------------------------------
 
   #--get model specific functions
+  #my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
+  #my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
+  #my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
@@ -695,4 +698,5 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
   } ### end loop over time
+  
 } # sda.enkf

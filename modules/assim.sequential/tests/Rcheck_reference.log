@@ -644,7 +644,6 @@ sda.enkf.original: no visible global function definition for ‘abline’
 sda.enkf.original: no visible global function definition for ‘mtext’
 sda.enkf.original: no visible global function definition for ‘cov2cor’
 sda.particle: no visible global function definition for ‘read.output’
-sda.particle: no visible binding for global variable ‘settings’
 sda.particle: no visible global function definition for
   ‘read.ensemble.ts’
 sda.particle: no visible global function definition for ‘rnorm’
@@ -714,18 +713,8 @@ File ‘PEcAnAssimSequential/R/Analysis_sda.R’:
 Undocumented arguments in documentation object 'Contruct.Pf'
   ‘t’ ‘blocked.dis’ ‘...’
 
-Undocumented arguments in documentation object 'EnKF.MultiSite'
-  ‘setting’
-Documented arguments not in \usage in documentation object 'EnKF.MultiSite':
-  ‘settings’
-
-Undocumented arguments in documentation object 'EnKF'
-  ‘setting’
-Documented arguments not in \usage in documentation object 'EnKF':
-  ‘settings’
-
 Undocumented arguments in documentation object 'GEF'
-  ‘H’ ‘setting’
+  ‘H’
 
 Undocumented arguments in documentation object 'SDA_remote_launcher'
   ‘run.bash.args’

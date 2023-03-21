@@ -98,6 +98,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
   (#3026; @nanu1605)
 - Internal changes to keep up to date with tidyselect v1.2.0
 - The `PEcAn.utils::download.file()` function has now been renamed to `PEcAn.utils::download_file()`
+- The `regrid()` and `grid2netcdf()` function from `PEcAn.utils` have been moved to `PEcAn.data.remote` package.
 
 ### Removed
 
