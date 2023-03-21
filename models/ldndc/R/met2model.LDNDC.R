@@ -213,8 +213,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         prefix_latitude <- paste0('\t latitude = "', lat, '"')
         prefix_longitude <- paste0('\t longitude = "', lon, '"')
         
-        data_prefix <- paste(#"%global", prefix_global, # global includes the global time, but this is already got
-                             # from elsewhere and not necessary here.
+        data_prefix <- paste("%global", prefix_global, # global includes the global time, but this is already got
+                              #from elsewhere and not necessary here(?).
                              "%climate", prefix_climate,
                              "%attributes", prefix_latitude, prefix_longitude,
                              "%data \n", sep = "\n")
