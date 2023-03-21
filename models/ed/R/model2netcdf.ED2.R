@@ -1079,11 +1079,11 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
   # Make sure every PFT is found in every date.  This is not necessarily the
   # case in ED2 output, but we need to fill in some dummy values so the
   # dimensions don't get screwed up later.  Other code in model2netcdf.ED2
-  # assumes the dimensions are constant for the entire year.
+  # assumes the dimensions are constant for the entire run.
   
   expected <- tidyr::expand_grid(
     date = unique(out$date),
-    PFT = unique(out$PFT)
+    PFT = pfts
   )
   out <- 
     dplyr::full_join(out, expected, by = c("date", "PFT")) %>%
@@ -1121,6 +1121,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     #TODO: print a message??
     pfts <- pfts[!(soil.check)]
   }
+  #TODO filter this so it's only PFTs that show up in the year OR add dummy rows for all PFTs
   out_list$PFT <- sort(pfts) #named vector for matching PFT numbers to names
   
   return(out_list)
