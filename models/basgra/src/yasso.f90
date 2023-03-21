@@ -94,7 +94,10 @@ contains
     param_final(1:3) = alpha_awen(1:3) + pc_rate * decomp_pc(1)
     param_final(4) = alpha_awen(4)
     param_final(22:23) = beta12 + pc_tresp * decomp_pc(2)
-    
+    ! hard constraints on parameter value
+    param_final(1:4) = max(param_final(1:4), 1e-6) ! decomposition rates must be strictly positive
+    param_final(22) = max(param_final(22), 0.0) ! first order temperature response must be positive
+    param_final(23) = min(param_final(23), 0.0) ! second order temperature response must be negative
   end subroutine get_params
   
   subroutine initialize(param, flux_leafc_day, flux_rootc_day, flux_nitr_day, &
