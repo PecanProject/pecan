@@ -367,7 +367,10 @@ test_that('new fertilization file format matches the old', {
   met_path <- 'test.met'
   df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
   run_params_basic <- setNames(df_params[,2], df_params[,1])
-  df_params <- read.csv('BASGRA_params_yasso.csv')
+
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
   run_params_yasso <- setNames(df_params[,2], df_params[,1])
   
   outfolder <- mktmpdir()
