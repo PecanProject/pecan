@@ -4,6 +4,7 @@
 #' @param ... Package names, as characters. Can be passed as
 #'   individual arguments, character vectors, or any combination thereof.
 #' @return `pkgs`, invisibly
+#' @export
 #' @author Alexey Shiklomanov
 #' @examples
 #' # Only need ::: because package isn't exported.

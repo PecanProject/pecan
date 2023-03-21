@@ -5,7 +5,7 @@
 ##' @return dataframe with regridded data
 ##' @author David LeBauer
 regrid <- function(latlon.data) {
-  need_packages("raster", "sp")
+  PEcAn.utils::need_packages("raster", "sp")
   ## from http://stackoverflow.com/a/15351169/513006
   spdf <- sp::SpatialPointsDataFrame(data.frame(x = latlon.data$lon, y = latlon.data$lat),
                                  data = data.frame(z = latlon.data$yield))
@@ -59,7 +59,7 @@ grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
                          calendar = "standard",
                          unlim = TRUE)
 
-  yieldvar <- to_ncvar("CropYield", list(lat, lon, time))
+  yieldvar <- PEcAn.utils::to_ncvar("CropYield", list(lat, lon, time))
   nc <- ncdf4::nc_create(filename = outfile, vars = list(CropYield = yieldvar))
 
   ## Output netCDF data
