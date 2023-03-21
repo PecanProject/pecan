@@ -388,12 +388,6 @@ sda.enkf.multisite <- function(settings,
         X <- X
       }else{
         if (control$debug) browser()
-        #if restart then use restart.list, include site for debugging purposes
-        if(restart_flag){
-          restart.arg = restart.list #$`646`debugging hack site specific
-        }else{
-          restart.arg = NULL
-        }
         out.configs <- conf.settings %>%
           `class<-`(c("list")) %>%
           furrr::future_map2(restart.list, function(settings, restart.arg) {
