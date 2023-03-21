@@ -1050,6 +1050,7 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     purrr::map(file.path(outdir, h5_files[yr == yfiles]), extract_E_file) %>% 
     dplyr::bind_rows() 
   
+  
   # Unit conversions
   out <- raw %>% 
     dplyr::mutate(
@@ -1069,12 +1070,24 @@ read_E_files <- function(yr, yfiles, h5_files, outdir, start_date, end_date,
     dplyr::summarize(
       dplyr::across(
         dplyr::any_of(c("BSEEDS_CO", "AGB_CO", "MMEAN_NPPDAILY_CO", "MMEAN_TRANSP_CO", "NPLANT")),
-        function(.x) sum(.x * .data$AREA)
+        function(.x) sum(.x * .data$AREA, na.rm = TRUE)
       ),
       #(or a mean when it makes sense)
-      DBH_mean = mean(.data$DBH),
+      DBH_mean = mean(.data$DBH, na.rm = TRUE),
       .groups = "drop"
     )
+  # Make sure every PFT is found in every date.  This is not necessarily the
+  # case in ED2 output, but we need to fill in some dummy values so the
+  # dimensions don't get screwed up later.  Other code in model2netcdf.ED2
+  # assumes the dimensions are constant for the entire year.
+  
+  expected <- tidyr::expand_grid(
+    date = unique(out$date),
+    PFT = unique(out$PFT)
+  )
+  out <- 
+    dplyr::full_join(out, expected, by = c("date", "PFT")) %>%
+    dplyr::arrange(.data$date)
   
   # Rename variables to PEcAn standard and convert to list
   n_pft <- length(unique(out$PFT))
