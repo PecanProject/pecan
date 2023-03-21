@@ -94,7 +94,6 @@ Contruct.Pf: no visible global function definition for ‘filter’
 Contruct.Pf: no visible binding for global variable ‘Var1’
 Contruct.Pf: no visible binding for global variable ‘Var2’
 EnKF: no visible global function definition for ‘cov’
-EnKF.MultiSite: no visible binding for global variable ‘settings’
 EnKF.MultiSite: no visible binding for global variable ‘site.ids’
 EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF: no visible global function definition for ‘logger.warn’
@@ -103,7 +102,6 @@ GEF: no visible global function definition for ‘dev.off’
 GEF: no visible binding for global variable ‘obs.mean’
 GEF: no visible global function definition for ‘par’
 GEF: no visible global function definition for ‘abline’
-GEF.MultiSite: no visible binding for global variable ‘settings’
 GEF.MultiSite: no visible global function definition for ‘cov’
 GEF.MultiSite: no visible binding for '<<-' assignment to
   ‘tobit2space_pred’
@@ -659,7 +657,6 @@ sda.enkf.original: no visible global function definition for ‘abline’
 sda.enkf.original: no visible global function definition for ‘mtext’
 sda.enkf.original: no visible global function definition for ‘cov2cor’
 sda.particle: no visible global function definition for ‘read.output’
-sda.particle: no visible binding for global variable ‘settings’
 sda.particle: no visible global function definition for
   ‘read.ensemble.ts’
 sda.particle: no visible global function definition for ‘rnorm’
@@ -729,18 +726,8 @@ File ‘PEcAnAssimSequential/R/Analysis_sda.R’:
 Undocumented arguments in documentation object 'Contruct.Pf'
   ‘t’ ‘blocked.dis’ ‘...’
 
-Undocumented arguments in documentation object 'EnKF.MultiSite'
-  ‘setting’
-Documented arguments not in \usage in documentation object 'EnKF.MultiSite':
-  ‘settings’
-
-Undocumented arguments in documentation object 'EnKF'
-  ‘setting’
-Documented arguments not in \usage in documentation object 'EnKF':
-  ‘settings’
-
 Undocumented arguments in documentation object 'GEF'
-  ‘H’ ‘setting’
+  ‘H’
 
 Undocumented arguments in documentation object 'SDA_remote_launcher'
   ‘run.bash.args’
