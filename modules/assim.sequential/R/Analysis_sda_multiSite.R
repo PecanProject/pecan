@@ -73,31 +73,34 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @rdname GEF
 ##' @export
 GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
-  #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
-  # What type of Q needs to be estimated ? if it's defined then it's either Site or PFT based if not then it's one for all.
-  q.type <- toupper(settings$state.data.assimilation$q.type)
   
+  #Define Q type from settings.
+  q.type <- toupper(settings$state.data.assimilation$q.type)
   single.q <-1
   Site.q <-2
   pft.q <-3
-  
   if (is.null(q.type) | q.type=="SINGLE") {
     q.type <- single.q
   } else{
     q.type <- ifelse(q.type == "SITE", Site.q, pft.q)
   } 
+  
   #Forecast inputs 
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
-  Pf = cov(X) # Cov Forecast - This is used as an initial condition
-  diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
-  
+  if(!is.null(extraArg$Pf)){
+    Pf <- extraArg$Pf
+  }else{
+    Pf <- cov(X) # Cov Forecast - This is used as an initial condition
+    diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
+  }
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
+  
   #Observed inputs
   R <- Observed$R
   Y <- Observed$Y
@@ -105,13 +108,11 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
-  # Taking care of censored data ------------------------------    
-  ### create matrix the describes the support for each observed state variable at time t
-  interval <- NULL
-  X.new <- NULL
   # Reading the extra arguments
-  aqq <- extraArg$aqq
-  bqq <- extraArg$bqq
+  if(!is.null(extraArg$aqq) && !is.null(extraArg$bqq)){
+    aqq <- extraArg$aqq
+    bqq <- extraArg$bqq
+  }
   wts <- extraArg$wts/sum(extraArg$wts)
   if(any(is.na(wts))){
     PEcAn.logger::logger.warn(
@@ -128,9 +129,9 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   nburnin <- extraArg$nburnin
   censored.data <- extraArg$censored.data
   ###-------------------------------------------------------------------###
-  # if we had censored data
+  # if we had censored data and we don't have pre-calculated Pf.
   ###-------------------------------------------------------------------###----
-  if (censored.data) {
+  if (censored.data && is.null(extraArg$Pf)) {
     intervalX <- matrix(NA, ncol(X), 2)
     rownames(intervalX) <- colnames(X)
     outdir     <- settings$modeloutdir
@@ -176,7 +177,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                                nu_0 = ncol(X)+1,
                                wts = wts*nrow(X), #sigma x2 max Y
                                Sigma_0 = solve(diag(1000,length(mu.f))))#some measure of prior obs
-      
       inits.tobit2space <<-
         list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
       #set.seed(0)
@@ -256,7 +256,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       matrix(colMeans(dat.tobit2space[, iycens]), nrow(X), ncol(X))
   } # end of if we have censored data
   
-  
   ###-------------------------------------------------------------------###
   # Generalized Ensemble Filter                                       ###-----
   ###-------------------------------------------------------------------###
@@ -264,19 +263,14 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
   if (exists('blocked.dis')){
-        Pf <-
-      Local.support(Pf,
-                    blocked.dis,
-                    settings$state.data.assimilation$scalef %>% as.numeric())
+    Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 
   #### initial conditions
-  ## We are figuring out the aqq here 
+  ## we only calculate aqq and bqq when t=1.
   if (t == 1) {
     bqq[1] <- length(elements.W.Data)
-    
     if (is.null(aqq)) {
-      
       if (q.type==Site.q) { # if we wanna estimate a q per site
         aqq <-
           array(1, dim = c(length(elements.W.Data), length(elements.W.Data), nt))
@@ -284,7 +278,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
           aqq[,,i] <- diag(length(elements.W.Data))
         }
       } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
-        
         site.pfts <- settings %>%
           map( ~ .x[['run']]) %>%
           map('site') %>%
@@ -300,19 +293,16 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
             }
           },  ~ 1) %>%
           unlist()
-        
         aqq<- array(1, dim = c(max(site.pfts), max(site.pfts), nt))
       }else{ # This is where we estimate just one q for all
         aqq<- array(1, dim = c(1, 1, nt))
       }
-
     } else{
       if (length(elements.W.Data) != dim(aqq)[1] |
           length(elements.W.Data) != dim(aqq)[2]) {
         PEcAn.logger::logger.warn('error: X has changed dimensions')
       }
     }
-
   } else{
     # if(length(elements.W.Data)==ncol(aqq[, , t])){
       if (ncol(aqq) > 1 & nrow(aqq) > 1)
@@ -322,12 +312,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                     ceiling(elements.W.Data/length(var.names))],
           settings$state.data.assimilation$scalef %>% as.numeric()
         )
-    # }
-    
-  }
+      }
 
-
-  
   ### create matrix the describes the support for each observed state variable at time t
   interval <- matrix(NA, length(unlist(obs.mean[[t]])), 2)
   
@@ -359,12 +345,14 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   #### from the interval matrix
   y.ind <- as.numeric(Y > interval[, 1])
   y.censored <- as.numeric(ifelse(Y > interval[, 1], Y, 0))
-  
   recompileGEF <- extraArg$recompileGEF
+  if(t > 1){
+    if(length(extraArg$pre_elements) != length(elements.W.Data)){
+      recompileGEF <- TRUE
+    }
+  } 
   if(t == 1 | recompileGEF){ #TO DO need to make something that works to pick whether to compile or not
   # initial Q depends on the size of aqq
-    aq.arg <- aqq[,,t]
-    
     #Initial values
     inits.pred <-
       list(
@@ -378,7 +366,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                             X.mod = ncol(X),
                             Q = c(nrow(aqq), ncol(aqq))
     )
-    
     # Contants defined in the model
     constants.tobit <-
       list(
@@ -395,7 +382,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
       list(
         muf = as.vector(mu.f),
         pf = Pf,
-        aq = aq.arg,
+        aq = aqq[,,t],
         bq = bqq[t],
         y.ind = y.ind,
         y.censored = y.censored,
@@ -429,10 +416,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
                                 inits = inits.pred,
                                 name = 'base')
     }
-    
-    
-    
-    
     model_pred$initializeInfo()
     ## Adding X.mod,q,r as data for building model.
     conf <- configureMCMC(model_pred, print=TRUE)
@@ -445,9 +428,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         conf$addSampler(node, 'toggle', control=list(type='RW'))
       }
 
-
     conf$printSamplers()
-
     Rmcmc <<- buildMCMC(conf)
     Cmodel <<- compileNimble(model_pred)
     Cmcmc <<- compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
@@ -455,9 +436,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     for(i in 1:length(y.ind)) {
         valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
       }
-
-    
-    
     save(
       inits.pred,
       dimensions.tobit,
@@ -480,10 +458,6 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     Cmodel$muf <- mu.f
     Cmodel$pf <- Pf
     Cmodel$r <- solve(R)
-    
-    # inits.pred = list(q = diag(length(elements.W.Data)),
-    #                   X.mod = as.vector(mu.f),
-    #                   X = as.vector(mu.f)[elements.W.Data]) #
     inits.pred <-
       list(
         X.mod = as.vector(mu.f),
@@ -502,11 +476,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     }
     
   }
-
-
   dat <- runMCMC(Cmcmc, niter = nitr.GEF, nburnin = nburnin, thin = nthin, nchains = 1)
-  #browser()
-  #dat <- do.call(rbind, dat)
   
   #---- Saving the chains
   save(dat, file=file.path(settings$outdir, paste0('dat',t,'.Rdata')))
@@ -525,39 +495,27 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # Setting up the prior for the next step from the posterior of this step
   if (t < nt){
     if (q.type == single.q){ #if it's a gamma case
-      
       aqq[1, 1, t + 1] <- mean(mq)
       bqq[t + 1] <- stats::var(mq  %>%  as.numeric())
-      
     } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,
                     length(elements.W.Data),
                     length(elements.W.Data))
-      
       WV  <- matrix(0, length(elements.W.Data), length(elements.W.Data))
-      
       for (i in seq_along(elements.W.Data)) {
         for (j in seq_along(elements.W.Data)) {
           WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
         }
       }
-      
       n <- mean(WV)
       if (n < length(mu.f)) {
         n <- length(mu.f)
       }
       V <- solve(q.bar) * n
-      
-      
       aqq[, ,t + 1] <- V
       bqq[t + 1] <- n
     }
-
   }
-  
-
-  
-
   #---- Trying to release some of the memory back to the os 
   gc()
   #
@@ -569,7 +527,8 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
               n = n,
               X.new=X.new,
               aqq=aqq,
-              bqq=bqq
+              bqq=bqq,
+              elements.W.Data=elements.W.Data
   )
   )
 }

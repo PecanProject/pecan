@@ -101,22 +101,17 @@ download_edi: no visible global function definition for ‘unzip’
 modify_df: no visible global function definition for ‘modifyList’
 modify_ed2in: no visible global function definition for ‘modifyList’
 put_E_values: no visible global function definition for ‘data’
-put_E_values: no visible binding for global variable ‘pftmapping’
 put_T_values: no visible global function definition for ‘head’
 read_E_files: no visible global function definition for ‘data’
-read_E_files: no visible binding for global variable ‘pftmapping’
 read_S_files: no visible global function definition for ‘data’
-read_S_files: no visible binding for global variable ‘pftmapping’
 read_css: no visible global function definition for ‘read.table’
 read_ed_metheader: no visible global function definition for
   ‘read.table’
-read_ed_metheader: no visible binding for global variable ‘value_type’
 read_pss: no visible global function definition for ‘read.table’
 read_pss: ... may be used in an incorrect context: ‘check_pss(pss,
   ...)’
 read_site: no visible global function definition for ‘read.table’
 veg2model.ED2: no visible global function definition for ‘data’
-veg2model.ED2: no visible binding for global variable ‘pftmapping’
 veg2model.ED2: no visible global function definition for ‘median’
 veg2model.ED2: no visible global function definition for ‘write.table’
 write.config.ED2: no visible global function definition for ‘saveXML’
@@ -124,9 +119,6 @@ write.config.ED2: no visible global function definition for ‘db.query’
 write.config.ED2: no visible global function definition for
   ‘modifyList’
 write.config.xml.ED2: no visible global function definition for ‘data’
-write.config.xml.ED2: no visible binding for global variable
-  ‘pftmapping’
-write.config.xml.ED2: no visible binding for global variable ‘soil’
 write.config.xml.ED2: no visible global function definition for
   ‘modifyList’
 write_css: no visible global function definition for ‘write.table’

@@ -39,6 +39,7 @@ Imports:
     magrittr,
     ncdf4 (>= 1.15),
     PEcAn.logger,
+    purrr,
     rlang,
     stringi,
     units
@@ -48,9 +49,7 @@ Suggests:
     ggplot2,
     MASS,
     randtoolbox,
-    raster,
     rjags,
-    sp,
     testthat (>= 2.0.0),
     xtable
 License: BSD_3_clause + file LICENSE

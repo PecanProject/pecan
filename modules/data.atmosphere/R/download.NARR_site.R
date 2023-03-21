@@ -208,7 +208,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   sfc_df <- generate_narr_url(dates, FALSE)
 
   # Load dimensions, etc. from first netCDF file
-  nc1 <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
+  nc1 <- PEcAn.utils::robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
   on.exit(ncdf4::nc_close(nc1), add = TRUE)
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
@@ -235,7 +235,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
         .packages = c("PEcAn.data.atmosphere", "magrittr"),
         .export = c("get_narr_url", "robustly")
       ),
-        robustly(get_narr_url)(url, xy = xy, flx = flx)
+        PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)
     )
     flx_data_raw <- dplyr::filter(get_dfs, .data$flx)
     sfc_data_raw <- dplyr::filter(get_dfs, !.data$flx)
@@ -257,7 +257,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = TRUE,
           pb = pb
@@ -268,7 +268,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = FALSE,
           pb = pb

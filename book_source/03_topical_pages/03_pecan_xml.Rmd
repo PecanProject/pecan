@@ -752,9 +752,69 @@ The following tags can be used for state data assimilation. More detailed inform
 	<process.variance>FALSE</process.variance>
   <sample.parameters>FALSE</sample.parameters>
   <state.variables>
-   <variable>AGB.pft</variable>
-   <variable>TotSoilCarb</variable>
+   <variable>
+    <variable.name>AbvGrndWood</variable.name>
+    <unit>MgC/ha</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>LAI</variable.name>
+    <unit></unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+  <variable.name>SoilMoistFrac</variable.name>
+  <unit></unit>
+  <min_value>0</min_value>
+  <max_value>100</max_value>
+  </variable>
+   <variable>
+    <variable.name>TotSoilCarb</variable.name>
+    <unit>kg/m^2</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
   </state.variables>
+  <Obs_Prep>
+   <Landtrendr_AGB>
+    <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
+    <allow_download>TRUE</allow_download>
+    <export_csv>TRUE</export_csv>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </Landtrendr_AGB>
+   <MODIS_LAI>
+    <search_window>30</search_window>
+    <export_csv>TRUE</export_csv>
+    <run_parallel>TRUE</run_parallel>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </MODIS_LAI>
+   <SMAP_SMP>
+    <search_window>30</search_window>
+    <export_csv>TRUE</export_csv>
+    <update_csv>FALSE</update_csv>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </SMAP_SMP>
+   <Soilgrids_SoilC>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </Soilgrids_SoilC>
+   <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
+   <start.date>2012-07-15</start.date>
+   <end.date>2021-07-15</end.date>
+  </Obs_Prep>
   <spin.up>
   	<start.date>2004/01/01</start.date>
 	  <end.date>2006/12/31</end.date>
@@ -768,13 +828,125 @@ The following tags can be used for state data assimilation. More detailed inform
 * **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the intial conditions of the forecast.
 * **_NOTE:_** If TRUE, you must also assign a vector of trait names to pick.trait.params within the sda.enkf function.
-* **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format). Default is "AGB" - Above Ground Biomass.
+* **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format, with pre-specified variable name, unit, and range). Four variables can be assimilated so far: including Aboveground biomass (AbvGrndWood), LAI, SoilMoistFrac, and Soil carbon (TotSoilCarb).
+* **Obs_Prep** : [required] This section will be handled through the SDA_Obs_Assembler function, if you want to proceed with this function, this section is required.
 * **spin.up** : [required] start.date and end.date for model spin up.
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because spin up can be done over a subset of the run.
 * **forecast.time.step** : [optional] start.date and end.date for model spin up.
 * **start.date** : [required?] start date of the state data assimilation (in YYYY/MM/DD format) 
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
+
+### State Variables for State Data Assimilation {#xml-state-variables}
+
+The following tags can be used for documentation of state variables required for the SDA workflow.
+
+```xml
+<state.data.assimilation>
+  <state.variables>
+   <variable>
+    <variable.name>AbvGrndWood</variable.name>
+    <unit>MgC/ha</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+    <variable.name>LAI</variable.name>
+    <unit></unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+   <variable>
+  <variable.name>SoilMoistFrac</variable.name>
+  <unit></unit>
+  <min_value>0</min_value>
+  <max_value>100</max_value>
+  </variable>
+   <variable>
+    <variable.name>TotSoilCarb</variable.name>
+    <unit>kg/m^2</unit>
+    <min_value>0</min_value>
+    <max_value>9999</max_value>
+   </variable>
+  </state.variables>
+</state.data.assimilation>
+```
+
+* **variable** : [required] Each of this section should include each state variables separately.
+* **variable.name** : [required] The name of the state variable (same as what we call it in the model output file. for example, "SIPNET.out" file).
+* **unit** : [required] The unit of the state variable (can be empty if it's unitless).
+* **min_value** : [required] The minimum range of the state variable.
+* **max_value** : [required] The maximum range of the state variable.
+
+### Observation Preparation for State Data Assimilation {#xml-observation-preparation}
+
+The following tags can be used for observation preparation for the SDA workflow.
+
+```xml
+<state.data.assimilation>
+  <Obs_Prep>
+   <Landtrendr_AGB>
+    <AGB_indir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_indir>
+    <allow_download>TRUE</allow_download>
+    <export_csv>TRUE</export_csv>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </Landtrendr_AGB>
+   
+   <MODIS_LAI>
+    <search_window>30</search_window>
+    <export_csv>TRUE</export_csv>
+    <run_parallel>TRUE</run_parallel>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </MODIS_LAI>
+   
+   <SMAP_SMP>
+    <search_window>30</search_window>
+    <export_csv>TRUE</export_csv>
+    <update_csv>FALSE</update_csv>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </SMAP_SMP>
+   
+   <Soilgrids_SoilC>
+    <timestep>
+     <unit>year</unit>
+     <num>1</num>
+    </timestep>
+   </Soilgrids_SoilC>
+   <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
+   <start.date>2012-07-15</start.date>
+   <end.date>2021-07-15</end.date>
+  </Obs_Prep>
+</state.data.assimilation>
+```
+
+The `Obs_Prep` section is specifically designed for the SDA_OBS_Assembler function within the `state.data.assimilation` section, which helps construct the obs.mean and obs.cov objects more efficiently. Within the `Obs_Prep` section, the user needs to specify data streams that will be proceeded in the assembler function as `DataSource_AbbreviationOfData` (for example: `Landtrendr_AGB` for Landtrendr aboveground biomass observations, or `Soilgrids_SoilC` for soilgrids soil organic carbon concentration). There are four functions that can be used for preparing observations: `MODIS_LAI_prep`, `Soilgrids_SoilC_prep`, `SMAP_SMP_prep`, and `Landtrendr_AGB_prep` functions.
+Other than that, the output directory, and start and end date need to be set within the `Obs_Prep` section, note that if you choose to export csv file for any data, you will get the corresponding csv file just under the outdir, for the Rdata of obs.mean and obs.cov objects, they will be stored whthin the Rdata folder within the outdir, if the Rdata folder is not created, then the assembler will help to create this folder automatically. 
+* **outdir** : [required] This tag is for every observation preparation function, which points to the directory where the csv file associated with each data stream should be generated, read, or updated.
+* **start.date** : [required] This tag defines the exact start point of time, which differs from the start.date in the state.data.assimilation section in a way that it is the time when first observation should be taken.
+* **end.date** : [required] This tag defines the exact end point of time, which differs from the end.date in the state.data.assimilation section in a way that it is the time when last observation should be taken.
+
+Within each data-specific section (for example, within `Landtrendr_AGB` section), there are few general settings need to be set like the `export_csv` and `timestep` arguments.
+* **export_csv** : [optional] This tag is for every observation preparation function, which decide if we want to export the csv file to the outdir. Normally the outdir should be given in order to set export_csv as TRUE. The default value is TRUE.
+* **timestep** : [optional] This tag defines the time unit and how many unit time per each time step. It supports year, month, week, and day as time unit. If you assign a general timestep just under the Obs_Prep section, all variable will be handled with the same timestep. If you assign each variable with each timestep, then the assembler function will create obs.mean and obs.cov with mixed temporal resolution. The default value is list(unit="year", num=1).
+
+There are also several settings that are data-specific, for example, the `AGB_indir` only applies to Landtrendr AGB data that points to the directory where the AGB files are stored. Beyond that, the allow_download is also AGB specific, which decide if you want to download the AGB files if some are missing.
+* **AGB_indir** : [required] This tag is only for Landtrendr_AGB_prep function, which points to the directory where the pre-downloaded AGB files existed.
+* **allow_download** : [optional] This tag is only for Landtrendr_AGB_prep function, which decide if we want to proceed to download the AGB files (that will take a while, and a lot of space) if some of them are detected to be empty. The default value is FALSE.
+
+For the MODIS LAI and SMAP soil moisture observations, the `search_window` specifies how many days you want to search for the data with desired dates. Beyond that, the `update_csv` is specifically used for the SMAP data, which decide if you want to reproduce formatted csv file based on the downloaded `SMAP_gee.csv` file. For the `run_parallel` in MODIS LAI settings, it specify if you want to proceed the function parallely.
+* **search_window** : [optional] This tag is used for LAI and SMAP observation preparation functions, which defines the search window within which the closest observation to the target date is selected. The default value is 30 days.
+* **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself. The default value is FALSE.
+* **run_parallel** : [optional] This tag defines if you want to proceed the MODIS LAI function parallely, the default value is FALSE.
+
 
 ### (experimental) Brown Dog {#xml-browndog}
 

@@ -15,6 +15,7 @@ Imports:
     dplyr,
     furrr,
     future,
+    ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
     Matrix,
@@ -27,14 +28,15 @@ Imports:
     PEcAn.settings,
     PEcAn.workflow,
     purrr,
+    stringr,
     sp,
     tidyr,
-    utils,
-    XML
+    utils
 Suggests:
     corrplot,
     DBI,
     ggrepel,
+    emdbook,
     glue,
     gridExtra,
     magic (>= 1.5.0),
@@ -45,10 +47,12 @@ Suggests:
     plyr (>= 1.8.4),
     raster,
     reshape2 (>= 1.4.2),
+    rlist,
     sf,
     stats,
     testthat,
-    tictoc
+    tictoc,
+    XML
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8

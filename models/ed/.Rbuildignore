@@ -2,3 +2,5 @@
 ^model_info\.json$
 ^scripts$
 ^data-raw$
+^.*\.Rproj$
+^\.Rproj\.user$

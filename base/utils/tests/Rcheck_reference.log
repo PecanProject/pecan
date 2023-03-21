@@ -90,8 +90,6 @@ The Date field is over a month old.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-grid2netcdf: no visible binding for global variable ‘years’
-grid2netcdf: no visible binding for global variable ‘yieldarray’
 mcmc.list2init: no visible binding for global variable ‘nr’
 
 Undefined global functions or variables:

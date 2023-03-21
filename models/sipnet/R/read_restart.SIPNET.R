@@ -22,15 +22,22 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
-  # additional varnames, because we need these deterministic relationships
-  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
-  
+  params$restart <-c() #state.vars not in var.names will be added here
+  #SIPNET inital states refer to models/sipnet/inst/template.param
+  state.vars <- c("SWE", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
+                  "litter_carbon_content", "fine_root_carbon_content", 
+                  "coarse_root_carbon_content", "litter_mass_content_of_water")
+  #when adding new state variables make sure the naming is consistent across read_restart, write_restart and write.configs
+  #pre-populate parsm$restart with NAs so state names can be added
+  params$restart <- rep(NA, length(setdiff(state.vars, var.names)))
+  #add states to params$restart NOT in var.names
+  names(params$restart) <- setdiff(state.vars, var.names)
   # Read ensemble output
   ens <- PEcAn.utils::read.output(runid = runid,
                                   outdir = file.path(outdir, runid),
                                   start.year = lubridate::year(stop.time),
                                   end.year = lubridate::year(stop.time),
-                                  variables = c(var.names,"time_bounds"))
+                                  variables = c(state.vars,"time_bounds"))
   #calculate last
   start.time <- as.Date(paste0(lubridate::year(stop.time),"-01-01"))
   time_var <- ens$time_bounds[1,]
@@ -38,24 +45,25 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   # last <- which(as.Date(real_time)==as.Date(stop.time))[1]
   last <- which(as.Date(real_time)==as.Date(stop.time))[length(which(as.Date(real_time)==as.Date(stop.time)))]
   
-  params$restart <-c() ## This will be filled with some restart coefficient if above ground wood is in the state variables.
-  
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
     forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
     
+    wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
+    if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
+    
+    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+  }else{
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
-    abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
-    coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
-    params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
-    
-    if (length(params$restart)>0)
-      names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
   }
   
   if ("GWBI" %in% var.names) {
@@ -84,23 +92,37 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("LAI" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$LAI[last]  ## m2/m2 
     names(forecast[[length(forecast)]]) <- c("LAI")
+  }else{
+    params$restart["LAI"] <- ens$LAI[last]
   }
   
   if ("litter_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
+  }else{
+    params$restart["litter_carbon_content"] <- ens$litter_carbon_content[last]
+  }
+  
+  if ("litter_mass_content_of_water" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$litter_mass_content_of_water[last]  ##kgC/m2
+    names(forecast[[length(forecast)]]) <- c("litter_mass_content_of_water")
+  }else{
+    params$restart["litter_mass_content_of_water"] <- ens$litter_mass_content_of_water[last]
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]*100  ## here we multiply it by 100 to convert from proportion to percentage.
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
-    params$restart <- c(params$restart, forecast[[length(forecast)]])
+  }else{
+    params$restart["SoilMoistFrac"] <- ens$SoilMoistFrac[last]
   }
   
   # This is snow
   if ("SWE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
+  }else{
+    params$restart["SWE"] <- ens$SWE[last]
   }
   
   if ("TotLivBiom" %in% var.names) {
@@ -111,7 +133,12 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   if ("TotSoilCarb" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
+  }else{
+    params$restart["TotSoilCarb"] <- ens$TotSoilCarb[last]
   }
+  
+  #remove any remaining NAs from params$restart
+  stats::na.omit(params$restart)
   
   print(runid)
   

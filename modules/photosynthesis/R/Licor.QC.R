@@ -30,13 +30,13 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
          col = status[dat$QC[sel] + 2], 
          pch = 20, cex = 2, 
          main = paste("CLICK ON OUTLIERS\n", dat$fname[1]))
-    points(dat$Ci[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
-    text(ulhc[1], ulhc[2], "FAIL\nALL", col = "red")
-    legend("bottomright", legend = c("fail", "unchecked", "pass", "other"),
+    graphics::points(dat$Ci[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
+    graphics::text(ulhc[1], ulhc[2], "FAIL\nALL", col = "red")
+    graphics::legend("bottomright", legend = c("fail", "unchecked", "pass", "other"),
            col = status, pch = 18, cex = 1.5, bty = "n")
     
     ## flag outliers
-    flag <- identify(c(dat$Ci[sel], ulhc[1]), c(dat$Photo[sel], ulhc[2]))
+    flag <- graphics::identify(c(dat$Ci[sel], ulhc[1]), c(dat$Photo[sel], ulhc[2]))
     if (length(flag) > 0) {
       if (max(flag) > length(sel)) {
         dat$QC[sel] <- -1
@@ -51,11 +51,11 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
          col = status[dat$QC[sel] + 2],
          pch = 20, cex = 2, 
          main = paste("UPDATED", dat$fname[1], "\nclick to undo Outliers"))
-    points(dat$Ci[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
-    legend("bottomright", legend = c("fail", "unchecked", "pass"), 
+    graphics::points(dat$Ci[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
+    graphics::legend("bottomright", legend = c("fail", "unchecked", "pass"), 
            col = status, pch = 18, cex = 1.5, bty = "n")
     
-    flag <- identify(dat$Ci[sel], dat$Photo[sel])
+    flag <- graphics::identify(dat$Ci[sel], dat$Photo[sel])
     ## undo outliers
     if (length(flag) > 0) {
       dat$QC[sel[flag]] <- 1
@@ -80,13 +80,13 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
          col = status[dat$QC[sel] + 2],
          pch = 20, cex = 2, 
          main = paste("CLICK ON OUTLIERS\n", dat$fname[1]))
-    points(dat$PARi[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
-    text(ulhc[1], ulhc[2], "FAIL\nALL", col = "red")
-    legend("bottomright", legend = c("fail", "unchecked", "pass", "other"), 
+    graphics::points(dat$PARi[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
+    graphics::text(ulhc[1], ulhc[2], "FAIL\nALL", col = "red")
+    graphics::legend("bottomright", legend = c("fail", "unchecked", "pass", "other"), 
            col = status, pch = 18, cex = 1.5, bty = "n")
     
     ## flag outliers
-    flag <- identify(c(dat$PARi[sel], ulhc[1]), c(dat$Photo[sel], ulhc[2]))
+    flag <- graphics::identify(c(dat$PARi[sel], ulhc[1]), c(dat$Photo[sel], ulhc[2]))
     if (length(flag) > 0) {
       if (max(flag) > length(sel)) {
         dat$QC[sel] <- -1
@@ -101,12 +101,12 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
          col = status[dat$QC[sel] + 2], 
          pch = 20, cex = 2, 
          main = paste("UPDATED", dat$fname[1], "\nclick to undo Outliers"))
-    points(dat$PARi[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
-    legend("bottomright", legend = c("fail", "unchecked", "pass"), 
+    graphics::points(dat$PARi[-sel], dat$Photo[-sel], col = status[4], pch = 20, cex = 2)
+    graphics::legend("bottomright", legend = c("fail", "unchecked", "pass"), 
            col = status, pch = 18, cex = 1.5, bty = "n")
     
     ## undo outliers
-    flag <- identify(dat$PARi[sel], dat$Photo[sel])
+    flag <- graphics::identify(dat$PARi[sel], dat$Photo[sel])
     if (length(flag) > 0) {
       dat$QC[sel[flag]] <- 1
     }
@@ -120,6 +120,6 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
 ##' @author Xiaohui Feng
 ##' @export
 estimate_mode <- function(x, adjust = 0.1) {
-  d <- density(x, na.rm = TRUE, adjust = adjust)
+  d <- stats::density(x, na.rm = TRUE, adjust = adjust)
   return(d$x[which.max(d$y)])
 } # estimate_mode
