@@ -53,17 +53,17 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
-    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
   }else{
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
-    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
   }
   
   if ("GWBI" %in% var.names) {
