@@ -24,7 +24,6 @@ write_harv_fert <- function(path_harv, path_fert) {
   )
   fertilize_file <- path_fert #
   write.csv(df_fertilize, fertilize_file, row.names=FALSE)
-
 }
 
 write_new_fert <- function(path_fert, which_type) {
@@ -290,7 +289,10 @@ test_that('Fertilizer C inputs are zeroed without Yasso', {
 
 test_that('Fertilizer C inputs work consistently with Yasso', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_yasso.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
+  
   run_params <- setNames(df_params[,2], df_params[,1])
   
   outfolder <- mktmpdir()
@@ -398,7 +400,9 @@ test_that('new fertilization file format matches the old', {
 
 test_that('model shows no nitrogen limitation when run with use_nitrogen = 0', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_no_nitrogen.csv')
+  #df_params <- read.csv('BASGRA_params_no_nitrogen.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -420,7 +424,9 @@ test_that('model shows no nitrogen limitation when run with use_nitrogen = 0', {
 
 test_that('model crashes when run with use_yasso = 1 and use_nitrogen = 1', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_yasso_use_nitrogen.csv')
+  #df_params <- read.csv('BASGRA_params_yasso_use_nitrogen.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -451,7 +457,9 @@ test_that('model crashes when run with use_yasso = 1 and use_nitrogen = 1', {
 
 test_that('model produces reasonable yasso-specific output when use_yasso = 1 and use_nitrogen = 0', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_yasso.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -473,7 +481,9 @@ test_that('model produces reasonable yasso-specific output when use_yasso = 1 an
 
 test_that('Netcdf output is consistent with the raw output for certain variables', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_yasso.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -503,9 +513,11 @@ test_that('Netcdf output is consistent with the raw output for certain variables
   expect_equal(as.vector(totc_nc), as.vector(totc_raw*1e-3))
 })
 
-test_that('The yasso_awen_rate_mod parameter has a reasonable effect', {
+test_that('The yasso_rate_pc parameter has a reasonable effect', {
   met_path <- 'test.met'
-  df_params <- read.csv('BASGRA_params_yasso.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
   run_params <- setNames(df_params[,2], df_params[,1])
   outfolder <- mktmpdir()
   harvest_file <- file.path(outfolder, 'harvest.csv')
@@ -522,7 +534,7 @@ test_that('The yasso_awen_rate_mod parameter has a reasonable effect', {
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
   run_params_mod <- run_params
-  run_params_mod['yasso_awen_rate_mod'] <- 2.0
+  run_params_mod['yasso_rate_pc'] <- -1.0 # the component has negative values so this speeds up the decomp
   run_BASGRA(
     met_path, run_params_mod, harvest_file, fertilize_file,
     start_date = '2019-01-01',

@@ -67,6 +67,10 @@ real                  :: hist_mean_tempr
 real                  :: hist_yearly_precip
 real                  :: hist_tempr_ampl
 real                  :: totc_min_init ! used in initialization
-real                  :: yasso_awen_rate_mod
+real                  :: yasso_alpha_awen(4) ! base decomposition rates for the faster-cycling pools
+real                  :: yasso_beta12(2)     ! temperature sensitivity parameters
+! principal component parametrization for the decomposition rates and temperature sensitivity
+real                  :: yasso_decomp_pc(2)  
+
 end module parameters_site
 

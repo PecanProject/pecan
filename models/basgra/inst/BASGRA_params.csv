@@ -135,7 +135,7 @@
 "NLITT0",6
 "NSOMF0",320
 "NSOMS0",448
-"use_yasso", 0
+"use_yasso",0
 "use_nitrogen",1
 "cn_h_min",10                                                                                                                       
 "totc_min_init",16000                                                                                                                   
@@ -143,4 +143,11 @@
 "hist_mean_tempr",5.0
 "hist_yearly_precip",600
 "hist_tempr_ampl",10
-"yasso_awen_rate_mod",1.0
+"yasso_alpha_a",0.51
+"yasso_alpha_w",5.19
+"yasso_alpha_e",0.13
+"yasso_alpha_n",0.10
+"yasso_beta_1",0.158
+"yasso_beta_2",-0.002
+"yasso_rate_pc",0.0
+"yasso_tresp_pc",0.0

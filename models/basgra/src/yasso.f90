@@ -80,13 +80,20 @@ public inputs_to_fractions
 
 contains
 
-  subroutine get_params(param_base, awen_modifier, param_final)
+  subroutine get_params(param_base, alpha_awen, beta12, decomp_pc, param_final)
     real, intent(in) :: param_base(:) ! base params, e.g. the yasso20 MAP vector
-    real, intent(in) :: awen_modifier ! rate modifier applied to AWEN pools (e.g. multiply the alpha_{a...n})
-    real, intent(out) :: param_final(:) ! the modifier parameters
+    real, intent(in) :: alpha_awen(4) ! base decomposition rate for the AWEN pools
+    real, intent(in) :: beta12(2)     ! temperature sensitivity parameters
+    real, intent(in) :: decomp_pc(2)  ! perturbations along principal components for (1) AWE rates and (2) beta1 and beta2
+    real, intent(out) :: param_final(:) ! the modified parameters
 
-    param_final(1:4) = param_base(1:4) * awen_modifier
-    param_final(4:size(param_base)) = param_base(4:)
+    real, parameter :: pc_rate(3) = (/-0.101565, -1.017149, -0.024609/)
+    real, parameter :: pc_tresp(2) = (/0.023387, -0.000753/)
+    
+    param_final = param_base
+    param_final(1:3) = alpha_awen(1:3) + pc_rate * decomp_pc(1)
+    param_final(4) = alpha_awen(4)
+    param_final(22:23) = beta12 + pc_tresp * decomp_pc(2)
     
   end subroutine get_params
   

@@ -11,7 +11,7 @@ contains
 
     real :: cn_h_min
 
-    if (size(pa) < 145) then
+    if (size(pa) < 152) then
        print *, 'parameter vector too small:', size(pa)
        error stop
     end if
@@ -183,7 +183,10 @@ contains
     hist_mean_tempr = pa(142)
     hist_yearly_precip = pa(143)
     hist_tempr_ampl = pa(144)
-    yasso_awen_rate_mod = pa(145)
+
+    yasso_alpha_awen = pa(145:148)
+    yasso_beta12 = pa(149:150)
+    yasso_decomp_pc = pa(151:152)
     
     ! Parameter transformations 
     CLVI  = LOG10CLVI

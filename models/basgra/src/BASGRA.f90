@@ -157,7 +157,7 @@ if (use_yasso) then
       error stop
    end if
    yasso_met_ind = 1
-   call get_params(param_y20_map, yasso_awen_rate_mod, yasso_param)
+   call get_params(param_y20_map, yasso_alpha_awen, yasso_beta12, yasso_decomp_pc, yasso_param)
    call initialize(&
         yasso_param, &
         0.3 * hist_carbon_input / 365.0, &

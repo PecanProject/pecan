@@ -252,6 +252,19 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     if ("etil_resv_harv" %in% pft.names) {
       run_params[which(names(run_params) == "HAGERE")] <- pft.traits[which(pft.names == "etil_resv_harv")]
     }
+
+    # Yasso decomposition parameters
+    param_pairs <- list(
+      c('som_a_decomp_rate', 'yasso_alpha_a'), c('som_w_decomp_rate', 'yasso_alpha_w'),
+      c('som_e_decomp_rate', 'yasso_alpha_e'), c('som_n_decomp_rate', 'yasso_alpha_n'),
+      c('yasso_rate_pc', 'yasso_rate_pc'), c('yasso_tresp_pc', 'yasso_tres_pc')
+    )
+    for (param_pair in param_pairs) {
+      # Yasso-specific params
+      if (param_pair[1] %in% pft.names) {
+        run_params[which(names(run_params) == param_pair[2])] <- pft.traits[which(pft.names == param_pair[1])]
+      }
+    }
     
   } #### End parameter update
   
