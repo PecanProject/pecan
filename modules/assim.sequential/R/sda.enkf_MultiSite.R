@@ -547,7 +547,6 @@ sda.enkf.multisite <- function(settings,
           obs.mean = obs.mean,
           nitr = 100000,
           nburnin = 10000,
-          
           obs.cov = obs.cov,
           site.ids = site.ids,
           blocked.dis = blocked.dis,

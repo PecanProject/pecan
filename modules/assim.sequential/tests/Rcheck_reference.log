@@ -87,24 +87,9 @@ Use \uxxxx escapes for other characters.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-Construct.H.multisite: no visible global function definition for
-  ‘map_dbl’
-Contruct.Pf: no visible global function definition for ‘cov’
-Contruct.Pf: no visible global function definition for ‘filter’
-Contruct.Pf: no visible binding for global variable ‘Var1’
-Contruct.Pf: no visible binding for global variable ‘Var2’
-EnKF: no visible global function definition for ‘cov’
-EnKF.MultiSite: no visible binding for global variable ‘settings’
-EnKF.MultiSite: no visible binding for global variable ‘site.ids’
 EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
-GEF: no visible global function definition for ‘logger.warn’
-GEF: no visible global function definition for ‘pdf’
-GEF: no visible global function definition for ‘dev.off’
 GEF: no visible binding for global variable ‘obs.mean’
-GEF: no visible global function definition for ‘par’
 GEF: no visible global function definition for ‘abline’
-GEF.MultiSite: no visible binding for global variable ‘settings’
-GEF.MultiSite: no visible global function definition for ‘cov’
 GEF.MultiSite: no visible binding for '<<-' assignment to
   ‘tobit2space_pred’
 GEF.MultiSite: no visible binding for '<<-' assignment to

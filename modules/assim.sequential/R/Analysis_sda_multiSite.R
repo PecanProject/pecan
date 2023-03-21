@@ -44,7 +44,7 @@ EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
     Pf <- Contruct.Pf (site.ids, var.names, X,
                        localization.FUN=eval(parse(text = Localization.FUN)),
                        t=extraArg$t,
-                       blocked.dis=blocked.dis,
+                       blocked.dis,
                        scalef)
   }else{
     PEcAn.logger::logger.severe("You need to send this function a multisetting object containing multiple sites/runs.")
@@ -53,7 +53,6 @@ EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   if (!is.null(Q)) {
     Pf <- Pf + Q
   }
-  
   
   if (length(Y) > 1) {
     PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
@@ -73,7 +72,7 @@ EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
+GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
@@ -97,7 +96,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   if(!is.null(extraArg$Pf)){
     Pf <- extraArg$Pf
   }else{
-    Pf <- cov(X) # Cov Forecast - This is used as an initial condition
+    Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
   }
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
@@ -488,7 +487,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
-  Pa   <- cov(dat[, iX])
+  Pa   <- stats::cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean),

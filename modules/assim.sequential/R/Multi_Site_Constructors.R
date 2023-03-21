@@ -29,8 +29,8 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   
   # This is where we estimate the cov between state variables of different sites
   #I put this into a sperate loop so we can have more control over it
-  sites.comb <- expand.grid(site.ids,site.ids)
-  site.cov.orders <- sites.comb[which(sites.comb[,1] != sites.comb[,2]),]
+  site.cov.orders <- expand.grid(site.ids,site.ids) %>% 
+    dplyr::filter(.data$Var1 != .data$Var2)
 
   for (i in 1:nrow(site.cov.orders)){
     # first we need to find out where to put it in the big matrix

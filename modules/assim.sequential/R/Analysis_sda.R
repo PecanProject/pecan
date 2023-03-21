@@ -50,7 +50,7 @@ Analysis.sda<-function(settings,
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF<-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
+EnKF<-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   
   #------------------------------Setup
   #-- reading the dots and exposing them to the inside of the function
@@ -213,8 +213,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                        name = 'space')
       
       try(logprob_y_tobit2space <- tobit2space_pred$calculate('y.censored'))
-      if(is.na(logprob_y_tobit2space)) logger.warn('We cannot calculate a logprobability for your data in the tobit2space model. Check data.tobit2space variable in the global environment to make sure its what you want.')
-      if(logprob_y_tobit2space < -1000000) logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
+      if(is.na(logprob_y_tobit2space)) PEcAn.logger::logger.warn('We cannot calculate a logprobability for your data in the tobit2space model. Check data.tobit2space variable in the global environment to make sure its what you want.')
+      if(logprob_y_tobit2space < -1000000) PEcAn.logger::logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
       
       ## Adding X.mod,q,r as data for building model.
       conf_tobit2space <- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
@@ -297,7 +297,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       }
       print(gelman.keep.tobit2space)
       
-      if(any(gelman.keep.tobit2space > 1.5)) logger.warn(paste('Gelman value > 1.5 for tobit2space model. Re-assess time point', t))
+      if(any(gelman.keep.tobit2space > 1.5)) PEcAn.logger::logger.warn(paste('Gelman value > 1.5 for tobit2space model. Re-assess time point', t))
 
       save(dat.tobit2space, file = file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
     }
@@ -361,7 +361,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
   
   if(sum(y.censored,na.rm=T)==0){
-    logger.warn('NO DATA. Check y.censored in Analysis_sda.R')
+    PEcAn.logger::logger.warn('NO DATA. Check y.censored in Analysis_sda.R')
   }
   
   #which type of observation do we have at this time point?
@@ -567,7 +567,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     gelman.keep[ff] <- try(coda::gelman.diag(mcmc.check,transform = T)$psrf[1])
   }
   print(gelman.keep)
-  if(any(gelman.keep > 1.5,na.rm = T)) logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
+  if(any(gelman.keep > 1.5,na.rm = T)) PEcAn.logger::logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
   
   try(save(gelman.keep.tobit2space,gelman.keep,file = file.path(outdir, paste0('gelman.diag',t,'.Rdata'))))
   
