@@ -9,9 +9,6 @@
 #' @param nens number of ensemble members in model runs, taken from restart$runids
 #'
 #' @return new.params object used to 
-#' @export
-#' 
-#'
 sda_matchparam <- function(settings, ensemble.samples, site.ids, nens){
   #reformatting params
   new.params <- list()

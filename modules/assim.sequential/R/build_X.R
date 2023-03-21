@@ -17,8 +17,6 @@
 #' @param restart_flag flag if it's a restart stage. Default is FALSE.
 #'
 #' @return X ready to be passed to SDA Analysis code
-#' @export
-#'
 build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag = FALSE){
   if(t == 1 & restart_flag){
     reads <-
