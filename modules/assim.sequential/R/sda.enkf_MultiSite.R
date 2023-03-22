@@ -50,7 +50,11 @@ sda.enkf.multisite <- function(settings,
   }else{
     restart_flag = FALSE
   }
-  future::plan(multiprocess)
+  if (future::supportsMulticore()) {
+    future::plan(future::multicore)
+  } else {
+    future::plan(future::multisession)
+  }
   if (control$debug) browser()
   tictoc::tic("Prepration")
   ###-------------------------------------------------------------------###
