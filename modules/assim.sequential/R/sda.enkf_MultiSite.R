@@ -328,7 +328,7 @@ sda.enkf.multisite <- function(settings,
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
-      new.params <- PEcAnAssimSequential:::sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       inputs <- conf.settings %>% map(function(setting) {
@@ -417,7 +417,7 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
+        reads <- build_X(out.configs = out.configs, 
                          settings = settings, 
                          new.params = new.params, 
                          nens = nens, 
