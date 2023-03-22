@@ -258,7 +258,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
-      load(file.path(old.dir, "samples.Rdata"))
+      ensemble.samples <- loadRdata(file.path(old.dir, "samples.Rdata"))
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
@@ -330,7 +330,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+      ensemble.samples <- loadRdata(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
@@ -410,7 +410,7 @@ sda.enkf.multisite <- function(settings,
               rename = TRUE
             )
           }) %>%
-          setNames(site.ids)
+          stats::setNames(site.ids)
         
         #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
         runs.tmp <- list.dirs(rundir, full.names = F)
@@ -703,3 +703,12 @@ sda.enkf.multisite <- function(settings,
   } ### end loop over time
   
 } # sda.enkf
+
+#' @title loadRData
+#' @param fileName path to the Rdata.
+#' Enable the feature of passing loaded object into new variable.
+loadRData <- function(fileName){
+  #loads an RData file, and returns it
+  load(fileName)
+  mget(ls()[ls() != "fileName"])
+}
