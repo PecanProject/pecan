@@ -120,9 +120,9 @@ sda.enkf.multisite <- function(settings,
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
-    site.ids <- conf.settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+    site.ids <- conf.settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+    site.locs <- conf.settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
@@ -299,9 +299,9 @@ sda.enkf.multisite <- function(settings,
                        restart_flag = restart_flag)
       
       #let's read the parameters of each site/ens
-      params.list <- reads %>% map(~.x %>% map("params"))
+      params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
       # Now let's read the state variables of site/ens
-      X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+      X <- reads %>% purrr::map(~.x %>% purrr::map_df(~.x[["X"]] %>% t %>% as.data.frame))
       
       # Now we have a matrix that columns are state variables and rows are ensembles.
       # this matrix looks like this
@@ -310,7 +310,7 @@ sda.enkf.multisite <- function(settings,
       # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
       if (multi.site.flag){
         X <- X %>%
-          map_dfc(~.x) %>% 
+          purrr::map_dfc(~.x) %>% 
           as.matrix() %>%
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
@@ -335,7 +335,7 @@ sda.enkf.multisite <- function(settings,
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
-      inputs <- conf.settings %>% map(function(setting) {
+      inputs <- conf.settings %>% purrr::map(function(setting) {
         input.ens.gen(
           settings = setting,
           input = "met",
@@ -434,10 +434,10 @@ sda.enkf.multisite <- function(settings,
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
-        params.list <- reads %>% map(~.x %>% map("params"))
+        params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
         # Now let's read the state variables of site/ens
         #don't need to build X when t=1
-        X <- reads %>% map(~.x %>% map_df(~.x[["X"]] %>% t %>% as.data.frame))
+        X <- reads %>% purrr::map(~.x %>% purrr::map_df(~.x[["X"]] %>% t %>% as.data.frame))
         
         
         #replacing crazy outliers before it's too late
@@ -453,7 +453,7 @@ sda.enkf.multisite <- function(settings,
         # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
         if (multi.site.flag)
           X <- X %>%
-          map_dfc(~.x) %>% 
+          purrr::map_dfc(~.x) %>% 
           as.matrix() %>%
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
