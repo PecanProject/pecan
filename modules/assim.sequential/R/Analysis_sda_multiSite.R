@@ -112,10 +112,8 @@ GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
   #added this line in case you don't need to do censoring.
   X.new <- NULL
   # Reading the extra arguments
-  if(!is.null(extraArg$aqq) && !is.null(extraArg$bqq)){
-    aqq <- extraArg$aqq
-    bqq <- extraArg$bqq
-  }
+  aqq <- extraArg$aqq
+  bqq <- extraArg$bqq
   wts <- extraArg$wts/sum(extraArg$wts)
   if(any(is.na(wts))){
     PEcAn.logger::logger.warn(
