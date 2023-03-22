@@ -328,7 +328,7 @@ sda.enkf.multisite <- function(settings,
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- PEcAnAssimSequential:::sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       inputs <- conf.settings %>% map(function(setting) {
@@ -359,7 +359,6 @@ sda.enkf.multisite <- function(settings,
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- PEcAnAssimSequential::metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
         
-        ##browser()
         #---------------- setting up the restart argument for each site separatly and keeping them in a list
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
@@ -418,7 +417,7 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, 
+        reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
                          settings = settings, 
                          new.params = new.params, 
                          nens = nens, 
