@@ -138,7 +138,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   #remove any remaining NAs from params$restart
-  stats::na.omit(params$restart)
+  params$restart <- stats::na.omit(params$restart)
   
   print(runid)
   
