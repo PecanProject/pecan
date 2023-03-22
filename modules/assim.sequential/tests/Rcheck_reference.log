@@ -112,7 +112,6 @@ GEF.MultiSite: no visible binding for global variable
   ‘samplerNumberOffset_tobit2space’
 GEF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF.MultiSite: no visible binding for global variable ‘nt’
-GEF.MultiSite: no visible global function definition for ‘map’
 GEF.MultiSite: no visible global function definition for ‘modify’
 GEF.MultiSite: no visible global function definition for ‘modify_if’
 GEF.MultiSite: no visible binding for global variable ‘distances’
