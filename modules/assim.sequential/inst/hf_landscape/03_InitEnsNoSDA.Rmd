@@ -7,6 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(terra)
 ```
 
 ## Simple ensemble run, based on workflow.R
@@ -37,32 +40,38 @@ PEcAn2EFI <- function(s=settings){
   #s = settings[[1]] ## testing
   outdir <- s$modeloutdir
 
-  ## load ensemble objects, used code from get.results
-  if (!is.null(ens.ensemble.id)) {
-    fname <- ensemble.filename(s, "ensemble.samples", "Rdata", 
-                               ensemble.id = ens.ensemble.id, 
-                               all.var.yr = TRUE)
-  } else if (!is.null(s$ensemble$ensemble.id)) {
-    ens.ensemble.id <- s$ensemble$ensemble.id
-    fname <- ensemble.filename(s, "ensemble.samples", "Rdata",
-                               ensemble.id = ens.ensemble.id, 
-                               all.var.yr = TRUE)
-  } else {
-    fname <- file.path(outdir, "samples.Rdata")
-  }     
-  if (!file.exists(fname)) {
-    PEcAn.logger::logger.severe("No ensemble samples file found!")
-  }
-  load(fname)
-  if (!exists("ens.run.ids")) {
-    ens.run.ids <- runs.samples$ens
-  }
+  # ## load ensemble objects, used code from get.results
+  # if (!is.null(ens.ensemble.id)) {
+  #   fname <- ensemble.filename(s, "ensemble.samples", "Rdata", 
+  #                              ensemble.id = ens.ensemble.id, 
+  #                              all.var.yr = TRUE)
+  # } else if (!is.null(s$ensemble$ensemble.id)) {
+  #   ens.ensemble.id <- s$ensemble$ensemble.id
+  #   fname <- ensemble.filename(s, "ensemble.samples", "Rdata",
+  #                              ensemble.id = ens.ensemble.id, 
+  #                              all.var.yr = TRUE)
+  # } else {
+  #   fname <- file.path(outdir, "samples.Rdata")
+  # }     
+  # if (!file.exists(fname)) {
+  #   PEcAn.logger::logger.severe("No ensemble samples file found!")
+  # }
+  # load(fname)
+  # if (!exists("ens.run.ids")) {
+  #   ens.run.ids <- runs.samples$ens
+  # }
+  ens.run.ids = paste("ENS",
+                      formatC(1:s$ensemble$size, width = 5, format = "d", flag = "0"),
+                      s$run$site$id,
+                      sep="-"
+                      )
   
   variable = s$ensemble$variable
   ensemble.output <- list()
-  for (row in rownames(ens.run.ids)) {
+  for (row in seq_along(ens.run.ids)) { #rownames(ens.run.ids)
     ## read output
-    run.id <- ens.run.ids[row, "id"]
+    #run.id <- ens.run.ids[row, "id"]
+    run.id <- ens.run.ids[row]
     PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
     ensemble.output[[row]] <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables=NULL)
     
@@ -89,13 +98,85 @@ PEcAn2EFI <- function(s=settings){
   return(dplyr::bind_rows(ensemble.output))
 }
 
-out = runModule.PEcAn2EFI(settings)
+out = data.table::rbindlist(runModule.PEcAn2EFI(settings))
+saveRDS(out,"out.RDS")
 
 ```
 
 
 ## pull together, weight, and visualize outputs
 ```{r}
+if(!exists("out")){
+  out = readRDS("out.RDS")
+}
+
+## plot example time-series
+sitets <- out[[1]] %>% 
+  dplyr::select(NPP,time_bounds) %>%
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day) %>% 
+  dplyr::summarise(mu = mean(NPP),lci = quantile(NPP,0.025),uci=quantile(NPP,0.975))
+  
+ggplot2::ggplot(sitets, aes(x = day, y = mu)) + 
+  geom_line(col='black') + 
+  geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.1) +
+  labs(x="time",y="NPP")
+
+cumNPP <- out[[1]] %>%
+  dplyr::select(NPP,time_bounds,parameter) %>%  ## first, calculate cumulative sum for each ensemble member
+  dplyr::group_by(parameter) %>%
+  dplyr::mutate(cumNPP = cumsum(NPP)) %>%
+  dplyr::ungroup() %>% dplyr::select(-parameter) %>% ## drop ensemble dimension, then calculate daily mean & CI
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day) %>% 
+  dplyr::summarise(mu = mean(cumNPP),lci = quantile(cumNPP,0.025),uci=quantile(cumNPP,0.975))
+
+ggplot2::ggplot(cumNPP, aes(x = day, y = mu)) + 
+  geom_line(col='black') + 
+  geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.1) +
+  labs(x="time",y="NPP")
+```
+
+## spatial visualizations
+```{r}
+tower_lonlat = data.frame(lon=-72.17265,lat=42.53691)
+tower_utm    = c(732183.98,4713266.18)
+if(!exists("patches")){
+  patches = read.csv("patches.csv")
+}
+if(!exists("patchMap")){
+  patchMap <- terra::rast("patches.tif")
+  pmap <- project(patchMap, "+proj=longlat",method="near")
+  plot(pmap)
+  points(tower_lonlat[1],tower_lonlat[2])
+  tow = extract(pmap,tower_lonlat)
+}
+if(!exists("o2")){
+  o2 <- data.table::rbindlist(out)
+}
+
+## calculate daily means
+dm <- o2 %>% dplyr::select(NPP,time_bounds,site_id) %>%
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day,site_id) %>% 
+  dplyr::summarise(mu = mean(NPP),lci = quantile(NPP,0.025),uci=quantile(NPP,0.975),.groups = "drop")
+
+## plot example maps of mean and uncertainties
+foo = dm[dm$day == as.Date("2016-07-04"),]
+nmap = pmap
+for(i in seq_len(nrow(patches))){
+  nmap[pmap == i] = foo$mu[i]
+}
+plot(nmap)
+
+## animated map
+```
+
+
+
+## landscape-scale weighted time-series
+```{r}
+
 
 ```
 
