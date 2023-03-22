@@ -336,7 +336,7 @@ sda.enkf.multisite <- function(settings,
     }
       #sample met ensemble members
       inputs <- conf.settings %>% purrr::map(function(setting) {
-        input.ens.gen(
+        PEcAn.uncertainty::input.ens.gen(
           settings = setting,
           input = "met",
           method = setting$ensemble$samplingspace$met$method,
