@@ -400,7 +400,7 @@ sda.enkf.multisite <- function(settings,
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
-            write.ensemble.configs(
+            PEcAn.uncertainty::write.ensemble.configs(
               defaults = settings$pfts,
               ensemble.samples = ensemble.samples,
               settings = settings,
