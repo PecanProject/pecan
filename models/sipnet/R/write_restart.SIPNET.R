@@ -68,15 +68,6 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
      AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
      analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
      names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
-    names(analysis.save[[length(analysis.save)]]) <- c("abvGrndWoodFrac")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$coarseRootFrac 
-    names(analysis.save[[length(analysis.save)]]) <- c("coarseRootFrac")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$fineRootFrac 
-    names(analysis.save[[length(analysis.save)]]) <- c("fineRootFrac")
   }
   
   if ("LeafC" %in% variables) {
