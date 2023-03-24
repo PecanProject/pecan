@@ -101,9 +101,9 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("SWE" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10  
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10
     if (analysis.save[[length(analysis.save)]] < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("snow")
+    names(analysis.save[[length(analysis.save)]]) <- c("SWE")
   }
 
   if ("LAI" %in% variables) {
