@@ -588,10 +588,6 @@ sda.enkf: no visible global function definition for
 sda.enkf: no visible global function definition for ‘logger.severe’
 sda.enkf: no visible global function definition for ‘cov’
 sda.enkf: no visible global function definition for ‘rmvnorm’
-sda.enkf.multisite: no visible binding for global variable
-  ‘ensemble.samples’
-sda.enkf.multisite: no visible global function definition for ‘write.ensemble.configs’
-sda.enkf.multisite: no visible global function definition for ‘input.ens.gen’
 sda.enkf.original: no visible global function definition for ‘db.open’
 sda.enkf.original: no visible global function definition for ‘is’
 sda.enkf.original: no visible global function definition for ‘db.close’
