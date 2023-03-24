@@ -30,8 +30,7 @@ Imports:
     PEcAn.workflow,
     purrr,
     rlang,
-    stringr,
-    sp
+    stringr
 Suggests:
     corrplot,
     DBI,
@@ -53,6 +52,7 @@ Suggests:
     testthat,
     tictoc,
     tidyr,
+    sp,
     utils,
     XML
 License: BSD_3_clause + file LICENSE
