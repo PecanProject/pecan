@@ -10,6 +10,7 @@
 #' @param forceRun  Used to force job.sh files that were not run for ensembles in SDA (quick fix) 
 #' @param keepNC    Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.
 #' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
+#' @param run_parallel If allows to proceed under parallel mode, default is TRUE.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
@@ -30,6 +31,7 @@ sda.enkf.multisite <- function(settings,
                                forceRun = TRUE, 
                                keepNC = TRUE,
                                pre_enkf_params = NULL,
+                               run_parallel = TRUE,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -50,10 +52,12 @@ sda.enkf.multisite <- function(settings,
   }else{
     restart_flag = FALSE
   }
-  if (future::supportsMulticore()) {
-    future::plan(future::multicore)
-  } else {
-    future::plan(future::multisession)
+  if(run_parallel){
+    if (future::supportsMulticore()) {
+      future::plan(future::multicore)
+    } else {
+      future::plan(future::multisession)
+    }
   }
   if (control$debug) browser()
   tictoc::tic("Prepration")
@@ -258,7 +262,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
-      ensemble.samples <- loadRdata(file.path(old.dir, "samples.Rdata"))
+      load(file.path(old.dir, "samples.Rdata"))
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
@@ -330,7 +334,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-      ensemble.samples <- loadRdata(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
@@ -344,16 +348,26 @@ sda.enkf.multisite <- function(settings,
         )
     }) 
   
-  
+  #remove null from both obs.mean and obs.cov
+  ind.NotNull <- c()
+  for (i in seq_along(obs.mean)) {
+    if(!is.null(obs.mean[[i]])){
+      ind.NotNull <- c(ind.NotNull, i)
+    }
+  }
+  obs.mean <- obs.mean[ind.NotNull]
+  obs.cov <- obs.cov[ind.NotNull]
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
-      obs <- obs.mean[[t]]
-      obs.check <- obs[[1]]
-      obs.t<-names(obs.mean)[t]
+      if(is.character(try(obs <- obs.mean[[t]], silent = T))){
+        obs.check <- NA
+      }else{
+        obs.check <- obs[[1]]
+      }
+      obs.t<-obs.times[t]
       obs.year <- lubridate::year(obs.t)
-      
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
       ###-------------------------------------------------------------------------###-----  
@@ -701,14 +715,4 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
   } ### end loop over time
-  
 } # sda.enkf
-
-#' @title loadRData
-#' @param fileName path to the Rdata.
-#' Enable the feature of passing loaded object into new variable.
-loadRData <- function(fileName){
-  #loads an RData file, and returns it
-  load(fileName)
-  mget(ls()[ls() != "fileName"])
-}
