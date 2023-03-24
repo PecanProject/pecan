@@ -280,10 +280,10 @@ GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
         }
       } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
         site.pfts <- settings %>%
-          map( ~ .x[['run']]) %>%
-          map('site') %>%
-          map('site.pft') %>%
-          map('pft.name') %>%
+          purrr::map( ~ .x[['run']]) %>%
+          purrr::map('site') %>%
+          purrr::map('site.pft') %>%
+          purrr::map('pft.name') %>%
           modify(as.factor) %>%
           modify(as.numeric) %>%
           modify_if(function(x) {
