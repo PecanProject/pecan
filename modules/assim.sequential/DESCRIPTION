@@ -26,6 +26,7 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
+    PEcAn.uncertainty,
     PEcAn.workflow,
     purrr,
     stringr,
