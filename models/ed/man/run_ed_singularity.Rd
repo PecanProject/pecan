@@ -21,7 +21,7 @@ run_ed_singularity(
 
 \item{singularity_args}{Additional arguments to be passed to \verb{singularity run} (before)}
 
-\item{Additional}{arguments to \link[base:system2]{base::system2}}
+\item{...}{Additional arguments to \link[base:system2]{base::system2}}
 }
 \description{
 Uses \link[base:system2]{base::system2} to run ED or EDR via a Singularity container.

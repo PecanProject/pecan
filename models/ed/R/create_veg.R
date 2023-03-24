@@ -70,6 +70,6 @@ create_site <- function(input, check = TRUE) {
 #' @return Modified `data.frame`
 modify_df <- function(input, base) {
   col_names <- colnames(base)
-  out_list <- modifyList(as.list(base), as.list(input))
+  out_list <- utils::modifyList(as.list(base), as.list(input))
   as.data.frame(out_list)[col_names]
 }

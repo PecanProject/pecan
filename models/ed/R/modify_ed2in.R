@@ -89,7 +89,7 @@ modify_ed2in <- function(ed2in, ...,
   if (is.null(.dots)) {
     .dots <- list()
   }
-  dots <- modifyList(.dots, list(...))
+  dots <- utils::modifyList(.dots, list(...))
   is_upper <- names(dots) == toupper(names(dots))
   lower_args <- names(dots)[!is_upper]
   if (length(lower_args) > 0) {
@@ -211,7 +211,7 @@ modify_ed2in <- function(ed2in, ...,
     # 3 for HDF5 output, 0 for no output
     on_types <- (valid_types %in% output_types) * 3
     names(on_types) <- names(valid_types)
-    ed2in <- modifyList(ed2in, as.list(on_types))
+    ed2in <- utils::modifyList(ed2in, as.list(on_types))
   }
 
   if (!is.null(output_dir)) {
@@ -249,6 +249,6 @@ modify_ed2in <- function(ed2in, ...,
       )
     }
   }
-  ed2in <- modifyList(ed2in, namelist_args)
+  ed2in <- utils::modifyList(ed2in, namelist_args)
   ed2in
 }
