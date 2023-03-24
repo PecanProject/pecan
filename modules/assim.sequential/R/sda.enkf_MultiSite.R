@@ -11,6 +11,7 @@
 #' @param keepNC    Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.
 #' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
 #' @param run_parallel If allows to proceed under parallel mode, default is TRUE.
+#' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.
 #'
@@ -32,6 +33,7 @@ sda.enkf.multisite <- function(settings,
                                keepNC = TRUE,
                                pre_enkf_params = NULL,
                                run_parallel = TRUE,
+                               ensemble.samples = NULL,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -262,7 +264,9 @@ sda.enkf.multisite <- function(settings,
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
-      load(file.path(old.dir, "samples.Rdata"))
+      if(is.null(ensemble.samples)){
+        load(file.path(old.dir, "samples.Rdata"))
+      }
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
       #sim.time<-seq_len(nt)
       #create params object using previous forecast ensemble members
@@ -289,7 +293,7 @@ sda.enkf.multisite <- function(settings,
             restart = restart.arg
           )
         }) %>%
-        setNames(site.ids)
+        stats::setNames(site.ids)
       #now all build_X args are properly formatted for the function to return X
       reads <- build_X(out.configs = out.configs, 
                        settings = settings, 
@@ -334,13 +338,15 @@ sda.enkf.multisite <- function(settings,
     }else{
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+      if(is.null(ensemble.samples)){
+        load(file.path(old.dir, "samples.Rdata"))
+      }
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       inputs <- conf.settings %>% purrr::map(function(setting) {
-        input.ens.gen(
+        PEcAn.uncertainty::input.ens.gen(
           settings = setting,
           input = "met",
           method = setting$ensemble$samplingspace$met$method,
@@ -414,7 +420,7 @@ sda.enkf.multisite <- function(settings,
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
-            write.ensemble.configs(
+            PEcAn.uncertainty::write.ensemble.configs(
               defaults = settings$pfts,
               ensemble.samples = ensemble.samples,
               settings = settings,
@@ -592,7 +598,7 @@ sda.enkf.multisite <- function(settings,
             enkf.params[[obs.t]],
             R = list(R),
             Y = list(Y),
-            RestartList = list(restart.list %>% setNames(site.ids))
+            RestartList = list(restart.list %>% stats::setNames(site.ids))
           )
         
         ###-------------------------------------------------------------------###
