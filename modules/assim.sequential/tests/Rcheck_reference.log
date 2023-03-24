@@ -589,7 +589,7 @@ sda.enkf: no visible global function definition for ‘logger.severe’
 sda.enkf: no visible global function definition for ‘cov’
 sda.enkf: no visible global function definition for ‘rmvnorm’
 sda.enkf.multisite: no visible binding for global variable
-  ‘multiprocess’
+  ‘ensemble.samples’
 sda.enkf.original: no visible global function definition for ‘db.open’
 sda.enkf.original: no visible global function definition for ‘is’
 sda.enkf.original: no visible global function definition for ‘db.close’
