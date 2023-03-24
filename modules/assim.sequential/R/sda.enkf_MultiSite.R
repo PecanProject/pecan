@@ -339,7 +339,7 @@ sda.enkf.multisite <- function(settings,
       if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
       #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
       if(is.null(ensemble.samples)){
-        load(file.path(old.dir, "samples.Rdata"))
+        load(file.path(settings$outdir, "samples.Rdata"))
       }
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
