@@ -9,6 +9,7 @@
 ##' @description The argument X needs to have an attribute pointing the state variables to their corresponding site. This attribute needs to be called `Site`.
 ##' At the moment, the cov between state variables at blocks defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
+##' @importFrom rlang .data
 ##' @export 
 
 
@@ -29,8 +30,8 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   
   # This is where we estimate the cov between state variables of different sites
   #I put this into a sperate loop so we can have more control over it
-  site.combs <- expand.grid(site.ids,site.ids)
-  site.cov.orders <- site.combs[which(site.combs$Var1 != site.combs$Var2),]
+  site.cov.orders <- expand.grid(site.ids,site.ids) %>%
+    filter( .data$Var1 != .data$Var2)
 
   for (i in 1:nrow(site.cov.orders)){
     # first we need to find out where to put it in the big matrix
