@@ -340,7 +340,7 @@ sda.enkf.multisite <- function(settings,
     }
       #sample met ensemble members
       inputs <- conf.settings %>% purrr::map(function(setting) {
-        PEcAn.uncertainty::input.ens.gen(
+        input.ens.gen(
           settings = setting,
           input = "met",
           method = setting$ensemble$samplingspace$met$method,
@@ -414,7 +414,7 @@ sda.enkf.multisite <- function(settings,
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
-            PEcAn.uncertainty::write.ensemble.configs(
+            write.ensemble.configs(
               defaults = settings$pfts,
               ensemble.samples = ensemble.samples,
               settings = settings,
