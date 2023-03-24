@@ -48,6 +48,7 @@ Suggests:
     raster,
     reshape2 (>= 1.4.2),
     rlist,
+    rlang,
     sf,
     stats,
     testthat,
