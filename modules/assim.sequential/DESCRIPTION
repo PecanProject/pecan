@@ -29,9 +29,9 @@ Imports:
     PEcAn.uncertainty,
     PEcAn.workflow,
     purrr,
+    rlang,
     stringr,
-    sp,
-    utils
+    sp
 Suggests:
     corrplot,
     DBI,
@@ -48,12 +48,12 @@ Suggests:
     raster,
     reshape2 (>= 1.4.2),
     rlist,
-    rlang,
     sf,
     stats,
     testthat,
     tictoc,
     tidyr,
+    utils,
     XML
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
