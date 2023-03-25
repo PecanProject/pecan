@@ -7,6 +7,9 @@ returns out list, readvar variables to read from file, expr if any derivation is
 \usage{
 ed.var(varname)
 }
+\arguments{
+\item{varname}{character; variable name to read from file}
+}
 \description{
 Lookup function for translating commonly used ED variables
 returns out list, readvar variables to read from file, expr if any derivation is needed
