@@ -26,5 +26,5 @@ write_out_table<-function(table,table_name,outdir, relevant_table_columns){
   
   
   table<-table[ , (relevant_table_columns)]
-  write.table(table, file=paste(outdir,"/query_of_",table_name ,sep=""),row.names = FALSE,sep="|")
+  utils::write.table(table, file=paste(outdir,"/query_of_",table_name ,sep=""),row.names = FALSE,sep="|")
 }

@@ -122,7 +122,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     template.param <- settings$model$default.param
   }
   
-  param <- read.table(template.param)
+  param <- utils::read.table(template.param)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -572,7 +572,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 
-  write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
+  utils::write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
 #--------------------------------------------------------------------------------------------------#
