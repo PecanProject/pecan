@@ -83,10 +83,10 @@ read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
         PEcAn.logger::logger.warn(msg)
       }
     }
-    metadata <- unlist(read.table(text = sub_file[2]))
+    metadata <- unlist(utils::read.table(text = sub_file[2]))
     names(metadata) <- c("nlon", "nlat", "dx", "dy", "xmin", "ymin")
     nvars <- as.numeric(sub_file[3])
-    variables_raw <- read.table(text = sub_file[4:6], header = TRUE)
+    variables_raw <- utils::read.table(text = sub_file[4:6], header = TRUE)
     variables_raw$value_type <- c("update_frequency", "flag")
     variables_table <- variables_raw %>%
       tidyr::gather("variable", "value", -.data$value_type) %>%
