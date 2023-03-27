@@ -87,22 +87,9 @@ Use \uxxxx escapes for other characters.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-Construct.H.multisite: no visible global function definition for
-  ‘map_dbl’
-Contruct.Pf: no visible global function definition for ‘cov’
-Contruct.Pf: no visible global function definition for ‘filter’
-Contruct.Pf: no visible binding for global variable ‘Var1’
-Contruct.Pf: no visible binding for global variable ‘Var2’
-EnKF: no visible global function definition for ‘cov’
-EnKF.MultiSite: no visible binding for global variable ‘site.ids’
 EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
-GEF: no visible global function definition for ‘logger.warn’
-GEF: no visible global function definition for ‘pdf’
-GEF: no visible global function definition for ‘dev.off’
 GEF: no visible binding for global variable ‘obs.mean’
-GEF: no visible global function definition for ‘par’
 GEF: no visible global function definition for ‘abline’
-GEF.MultiSite: no visible global function definition for ‘cov’
 GEF.MultiSite: no visible binding for '<<-' assignment to
   ‘tobit2space_pred’
 GEF.MultiSite: no visible binding for '<<-' assignment to
@@ -125,7 +112,6 @@ GEF.MultiSite: no visible binding for global variable
   ‘samplerNumberOffset_tobit2space’
 GEF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF.MultiSite: no visible binding for global variable ‘nt’
-GEF.MultiSite: no visible global function definition for ‘map’
 GEF.MultiSite: no visible global function definition for ‘modify’
 GEF.MultiSite: no visible global function definition for ‘modify_if’
 GEF.MultiSite: no visible binding for global variable ‘distances’
@@ -602,22 +588,6 @@ sda.enkf: no visible global function definition for
 sda.enkf: no visible global function definition for ‘logger.severe’
 sda.enkf: no visible global function definition for ‘cov’
 sda.enkf: no visible global function definition for ‘rmvnorm’
-sda.enkf.multisite: no visible binding for global variable
-  ‘multiprocess’
-sda.enkf.multisite: no visible global function definition for ‘map’
-sda.enkf.multisite: no visible global function definition for ‘map_dfr’
-sda.enkf.multisite: no visible global function definition for ‘tail’
-sda.enkf.multisite: no visible binding for global variable
-  ‘ensemble.samples’
-sda.enkf.multisite : <anonymous>: no visible global function definition
-  for ‘input.ens.gen’
-sda.enkf.multisite : <anonymous>: no visible global function definition
-  for ‘write.ensemble.configs’
-sda.enkf.multisite : <anonymous>: no visible binding for global
-  variable ‘ensemble.samples’
-sda.enkf.multisite: no visible global function definition for
-  ‘setNames’
-sda.enkf.multisite: no visible global function definition for ‘map_dfc’
 sda.enkf.original: no visible global function definition for ‘db.open’
 sda.enkf.original: no visible global function definition for ‘is’
 sda.enkf.original: no visible global function definition for ‘db.close’

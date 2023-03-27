@@ -53,17 +53,18 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
-    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
   }else{
+    params$restart["AbvGrndWood"] <- PEcAn.utils::ud_convert(ens$AbvGrndWood[last],  "kg/m^2", "g/m^2")
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
     if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
     
-    params$restart["AbvGrndWood"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarse_root_carbon_content"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fine_root_carbon_content"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
+    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
   }
   
   if ("GWBI" %in% var.names) {
@@ -100,7 +101,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }else{
-    params$restart["litter_carbon_content"] <- ens$litter_carbon_content[last]
+    params$restart["litter_carbon_content"] <- PEcAn.utils::ud_convert(ens$litter_carbon_content[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
   }
   
   if ("litter_mass_content_of_water" %in% var.names) {
@@ -122,7 +123,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
     names(forecast[[length(forecast)]]) <- c("SWE")
   }else{
-    params$restart["SWE"] <- ens$SWE[last]
+    params$restart["SWE"] <- ens$SWE[last]/10
   }
   
   if ("TotLivBiom" %in% var.names) {
@@ -131,14 +132,14 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }else{
-    params$restart["TotSoilCarb"] <- ens$TotSoilCarb[last]
+    params$restart["TotSoilCarb"] <- PEcAn.utils::ud_convert(ens$TotSoilCarb[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
   }
   
   #remove any remaining NAs from params$restart
-  stats::na.omit(params$restart)
+  params$restart <- stats::na.omit(params$restart)
   
   print(runid)
   

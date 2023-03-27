@@ -68,15 +68,6 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
      AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
      analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
      names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
-    names(analysis.save[[length(analysis.save)]]) <- c("abvGrndWoodFrac")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$coarseRootFrac 
-    names(analysis.save[[length(analysis.save)]]) <- c("coarseRootFrac")
-    
-    analysis.save[[length(analysis.save) + 1]] <- IC_extra$fineRootFrac 
-    names(analysis.save[[length(analysis.save)]]) <- c("fineRootFrac")
   }
   
   if ("LeafC" %in% variables) {
@@ -104,15 +95,15 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("SoilMoistFrac" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac  ## unitless
-    if (new.state$SoilMoistFrac < 0 || new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac/100  ## unitless
+    if (analysis.save[[length(analysis.save)]] < 0 || analysis.save[[length(analysis.save)]] > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
   }
   
   if ("SWE" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10  
-    if (new.state$SWE < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("snow")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10
+    if (analysis.save[[length(analysis.save)]] < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("SWE")
   }
 
   if ("LAI" %in% variables) {

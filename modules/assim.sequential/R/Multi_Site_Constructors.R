@@ -9,6 +9,7 @@
 ##' @description The argument X needs to have an attribute pointing the state variables to their corresponding site. This attribute needs to be called `Site`.
 ##' At the moment, the cov between state variables at blocks defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
+##' @importFrom rlang .data
 ##' @export 
 
 
@@ -24,20 +25,20 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
    #foreach site let's get the Xs
-    pf.matrix [pos.in.matrix, pos.in.matrix] <- cov( X [, pos.in.matrix] ,use="complete.obs")
+    pf.matrix [pos.in.matrix, pos.in.matrix] <- stats::cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
   # This is where we estimate the cov between state variables of different sites
   #I put this into a sperate loop so we can have more control over it
   site.cov.orders <- expand.grid(site.ids,site.ids) %>%
-                        filter( Var1 != Var2)
+    dplyr::filter( .data$Var1 != .data$Var2)
 
   for (i in 1:nrow(site.cov.orders)){
     # first we need to find out where to put it in the big matrix
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
     cols.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,2])
     #estimated between these two sites
-    two.site.cov <- cov( X [, c(rows.in.matrix, cols.in.matrix)],use="complete.obs" )[(nvariable+1):(2*nvariable),1:nvariable]
+    two.site.cov <- stats::cov( X [, c(rows.in.matrix, cols.in.matrix)],use="complete.obs" )[(nvariable+1):(2*nvariable),1:nvariable]
     # I'm setting the off diag to zero 
     two.site.cov [which(lower.tri(two.site.cov, diag = FALSE),TRUE) %>% rbind (which(upper.tri(two.site.cov,FALSE),TRUE))] <- 0
     #putting it back to the main matrix
@@ -180,7 +181,7 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
   nvariable <- length(var.names)
   #This is used inside the loop below for moving between the sites when populating the big H matrix
-  nobs <- obs.t.mean %>% map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
+  nobs <- obs.t.mean %>% purrr::map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
   nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
   
   #Having the total number of obs as the row number
