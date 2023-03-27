@@ -107,7 +107,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
-  sipnet_output <- read.table(sipnet_out_file, header = T, skip = 1, sep = "")
+  sipnet_output <- utils::read.table(sipnet_out_file, header = T, skip = 1, sep = "")
   #sipnet_output_dims <- dim(sipnet_output)
 
   ### Determine number of years and output timestep
@@ -154,7 +154,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     sub.sipnet.output <- subset(sipnet_output, year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out_day
-    step <- head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
+    step <- utils::head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
                                                 ## hard-coded "step" because 
                                                 ## leap years may not contain 
                                                 ## all "steps", or
@@ -213,7 +213,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["litter_carbon_content"]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
     output[["litter_mass_content_of_water"]] <- (sub.sipnet.output$litterWater * 10) # Litter water kgW/m2
     #calculate LAI for standard output
-    param <- read.table(file.path(gsub(pattern = "/out/",
+    param <- utils::read.table(file.path(gsub(pattern = "/out/",
                                  replacement = "/run/", x = outdir),
                             "sipnet.param"), stringsAsFactors = FALSE)
     id <- which(param[, 1] == "leafCSpWt")
