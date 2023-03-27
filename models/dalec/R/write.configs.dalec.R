@@ -118,7 +118,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     if("SLA" %in% names(params)){
       sla <- PEcAn.utils::ud_convert(params[1,"SLA"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (revert convert.samples conversion to dalec default; need standard for prepare.pools)
     } else{
-      default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
+      default.param <- utils::read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
       sla <- PEcAn.utils::ud_convert(default.param[which(default.param$cmdFlag == "SLA"),"val"], 'm2 g-1', 'm2 kg-1') #convert SLA to m2/kgC from m2/gC (dalec default)
     }
 
