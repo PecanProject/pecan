@@ -372,7 +372,7 @@ sda.enkf.multisite <- function(settings,
       }else{
         obs.check <- obs[[1]]
       }
-      obs.t<-as.Date(obs.times[t])
+      obs.t<-as.character(lubridate::date(obs.times[t]))
       obs.year <- lubridate::year(obs.t)
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###

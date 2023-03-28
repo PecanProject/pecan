@@ -328,7 +328,7 @@ for (i in 1:nSite) {
   index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
-  settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+  settings[[i]]$run$site$name <- site_info$sitename[index_site_info]#temp_ID
 }
 
 #####
