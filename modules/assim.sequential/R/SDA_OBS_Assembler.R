@@ -27,14 +27,13 @@ SDA_OBS_Assembler <- function(settings){
       #conversion from string to number
       site.list$lat <- as.numeric(site.list$lat)
       site.list$lon <- as.numeric(site.list$lon)
-      list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, name=site.list$name)
+      list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
     })%>% 
     dplyr::bind_rows() %>% 
     as.list()
   
   #convert from timestep to time points
   if (length(Obs_Prep$timestep)>0){
-    time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, Obs_Prep$timestep)
     diff_dates <- FALSE
   }else{
     diff_dates <- TRUE
@@ -129,9 +128,7 @@ SDA_OBS_Assembler <- function(settings){
   }
   
   #combine different time points from different variables together
-  if (diff_dates){
-    time_points <- sort(unique(do.call("c", time_points_all)))
-  }
+  time_points <- sort(unique(do.call("c", time_points_all)))
   
   #Create obs.mean and obs.cov
   obs.mean <- obs.cov <- list()
@@ -175,8 +172,13 @@ SDA_OBS_Assembler <- function(settings){
   for (i in seq_along(obs.mean)) {
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
-        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-which(is.na(obs.mean[[i]][[j]]))]
-        obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-which(is.na(rowSums(obs.cov[[i]][[j]]))), -which(is.na(colSums(obs.cov[[i]][[j]])))]
+        na_ind <- which(is.na(obs.mean[[i]][[j]]))
+        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
+        if(length(na_ind) == 1){
+          obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind]
+        }else{
+          obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind, -na_ind]
+        }
       }
       if (names(obs.mean[[i]][[j]]) == "TotSoilCarb"){
         obs.cov[[i]][[j]] <- obs.cov[[i]][[j]] * Soilgrids_multiplier
