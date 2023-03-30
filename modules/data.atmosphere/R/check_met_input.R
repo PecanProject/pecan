@@ -48,7 +48,7 @@ check_met_input_file <- function(metfile,
     try2(assertthat::assert_that(is.list(dimensions))),
     try2(assertthat::are_equal(length(dimensions), 3)),
     try2(assertthat::assert_that("time" %in% names(dimensions))),
-    try2(assertthat::assert_that(str_match(
+    try2(assertthat::assert_that(stringr::str_match(
       ncdf4::ncatt_get(nc, "time", "units")[["value"]], 
       time_regex)
     )),
