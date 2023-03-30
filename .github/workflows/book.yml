@@ -60,7 +60,7 @@ jobs:
         token: ${{ secrets.GH_PAT }}
     # upload new documentation
     - name: publish to github
-      if: github.event_name != 'pull_request'
+      if: github.event_name == 'push'
       run: |
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
