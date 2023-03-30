@@ -67,7 +67,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         } else {
           ensemble.id <- NULL
         }
-        if(file.exists(fname)) load(fname)
+        if(file.exists(fname)) load(fname, envir = environment())
         
         # For backwards compatibility, define some variables if not just loaded
         if(!exists("pft.names"))    pft.names <- names(trait.samples)
@@ -82,7 +82,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
           settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
           ensemble.id = ensemble.id, variable = variable.fn,
           start.year = start.year, end.year = end.year)
-        load(fname)
+        load(fname, envir = environment())
         
         ### Generate SA output and diagnostic plots
         sensitivity.results <- list()
