@@ -11,6 +11,7 @@ run.sensitivity.analysis(
   variable = NULL,
   start.year = NULL,
   end.year = NULL,
+  pft = NULL,
   ...
 )
 }
@@ -28,6 +29,9 @@ to all specified in `settings`}
 \item{start.year}{defaults to what is specified in `settings`}
 
 \item{end.year}{defaults to what is specified in `settings`}
+
+\item{pft}{a vector of PFT names found in `settings` to run sensitivity
+analysis on}
 
 \item{...}{currently unused}
 }
