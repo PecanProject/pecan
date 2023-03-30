@@ -24,6 +24,8 @@
 ##'   to all specified in `settings`
 ##' @param start.year defaults to what is specified in `settings`
 ##' @param end.year defaults to what is specified in `settings`
+##' @param pft a vector of PFT names found in `settings` to run sensitivity
+##'   analysis on
 ##' @param ... currently unused
 ##' 
 ##'
@@ -37,7 +39,7 @@
 ##' run.sensitivity.analysis(settings)
 ##' }
 ##'
-run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, ...){
+run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, pft=NULL, ...){
   if ('sensitivity.analysis' %in% names(settings)) {
     # Set variable and years. Use args first, then settings, then defaults/error
     if(is.null(start.year)) {
@@ -102,76 +104,79 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         
         ### Generate SA output and diagnostic plots
         sensitivity.results <- list()
-        for(pft in settings$pfts){
-          traits <- trait.names[[pft$name]]
-          quantiles.str <- rownames(sa.samples[[pft$name]])
-          quantiles.str <- quantiles.str[which(quantiles.str != '50')]
-          quantiles <- as.numeric(quantiles.str)/100
-          
-          C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
-          if(any(C.units)){
-            for(x in which(C.units)) {
-              trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
+        
+        for (pft in settings$pfts) {
+          if (pft$name %in% pft) {
+            traits <- trait.names[[pft$name]]
+            quantiles.str <- rownames(sa.samples[[pft$name]])
+            quantiles.str <- quantiles.str[which(quantiles.str != '50')]
+            quantiles <- as.numeric(quantiles.str)/100
+            
+            C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
+            if(any(C.units)){
+              for(x in which(C.units)) {
+                trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
+              }
             }
-          }
-          
-          ## only perform sensitivity analysis on traits where no more than 2 results are missing
-          good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
-          if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
-            bad.saruns <- !good.saruns
-            warning(paste('missing >2 runs for', vecpaste(traits[bad.saruns]),
-                          '\n sensitivity analysis or variance decomposition will be performed on these trait(s)',
-                          '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
-          }
-          
-          ### Gather SA results
-          sensitivity.results[[pft$name]] <- sensitivity.analysis(
-            trait.samples = trait.samples[[pft$name]][traits],
-            sa.samples = sa.samples[[pft$name]][ ,traits, drop=FALSE],
-            sa.output = sensitivity.output[[pft$name]][ ,traits, drop=FALSE],
-            outdir = pft$outdir)
-          
-          ### Send diagnostic output to the console
-          print(sensitivity.results[[pft$name]]$variance.decomposition.output)
-          print(sensitivity.output[[pft$name]])
-          
-          ### Plotting - Optional
-          if(plot){
-            fname <- sensitivity.filename(
-              settings, "sensitivity.analysis", "pdf",
-              all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
-              start.year=start.year, end.year=end.year)
             
-            ### Generate SA diagnostic plots
-            sensitivity.plots <- plot_sensitivities(
-              sensitivity.results[[pft$name]]$sensitivity.output, linesize = 1, dotsize = 3)
+            ## only perform sensitivity analysis on traits where no more than 2 results are missing
+            good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
+            if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
+              bad.saruns <- !good.saruns
+              warning(paste('missing >2 runs for', vecpaste(traits[bad.saruns]),
+                            '\n sensitivity analysis or variance decomposition will be performed on these trait(s)',
+                            '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
+            }
             
-            pdf(fname, height = 12, width = 9)
-            ## arrange plots  http://stackoverflow.com/q/10706753/199217
-            ncol <- floor(sqrt(length(sensitivity.plots)))
-            print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol=ncol)))
-            print(sensitivity.plots) # old method.  depreciated.
-            dev.off()
+            ### Gather SA results
+            sensitivity.results[[pft$name]] <- sensitivity.analysis(
+              trait.samples = trait.samples[[pft$name]][traits],
+              sa.samples = sa.samples[[pft$name]][ ,traits, drop=FALSE],
+              sa.output = sensitivity.output[[pft$name]][ ,traits, drop=FALSE],
+              outdir = pft$outdir)
             
-            ### Generate VD diagnostic plots
-            vd.plots <- plot_variance_decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
-            #variance.scale = log, variance.prefix='Log')
-            fname <- sensitivity.filename(settings, "variance.decomposition", "pdf",
-                                          all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
-                                          start.year=start.year, end.year=end.year)
+            ### Send diagnostic output to the console
+            print(sensitivity.results[[pft$name]]$variance.decomposition.output)
+            print(sensitivity.output[[pft$name]])
             
-            pdf(fname, width = 11, height = 8)
-            do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
-            dev.off()
-          }
+            ### Plotting - Optional
+            if(plot){
+              fname <- sensitivity.filename(
+                settings, "sensitivity.analysis", "pdf",
+                all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
+                start.year=start.year, end.year=end.year)
+              
+              ### Generate SA diagnostic plots
+              sensitivity.plots <- plot_sensitivities(
+                sensitivity.results[[pft$name]]$sensitivity.output, linesize = 1, dotsize = 3)
+              
+              pdf(fname, height = 12, width = 9)
+              ## arrange plots  http://stackoverflow.com/q/10706753/199217
+              ncol <- floor(sqrt(length(sensitivity.plots)))
+              print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol=ncol)))
+              print(sensitivity.plots) # old method.  depreciated.
+              dev.off()
+              
+              ### Generate VD diagnostic plots
+              vd.plots <- plot_variance_decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
+              #variance.scale = log, variance.prefix='Log')
+              fname <- sensitivity.filename(settings, "variance.decomposition", "pdf",
+                                            all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
+                                            start.year=start.year, end.year=end.year)
+              
+              pdf(fname, width = 11, height = 8)
+              do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
+              dev.off()
+            }
+            
+          }  ## end if sensitivity analysis
           
-        }  ## end if sensitivity analysis
-        
-        fname <- sensitivity.filename(settings, "sensitivity.results", "Rdata",
-                                      all.var.yr=FALSE, pft=NULL, ensemble.id=ensemble.id, variable=variable.fn,
-                                      start.year=start.year, end.year=end.year)
-        
-        save(sensitivity.results, file = fname)
+          fname <- sensitivity.filename(settings, "sensitivity.results", "Rdata",
+                                        all.var.yr=FALSE, pft=NULL, ensemble.id=ensemble.id, variable=variable.fn,
+                                        start.year=start.year, end.year=end.year)
+          
+          save(sensitivity.results, file = fname)
+        }
       }
     }
   }
