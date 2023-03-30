@@ -54,7 +54,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         # Have to load samples.Rdata for the traits. But can overwrite the run ids if a sensitivity analysis ensemble id provided. samples.Rdata always has only the most recent ensembles for both ensemble and sensitivity runs.
         fname <- file.path(settings$outdir, 'samples.Rdata')
         if(!file.exists(fname)) PEcAn.logger::logger.severe("No samples.Rdata file found!")
-        load(fname)
+        load(fname, envir = environment())
         
         # Can specify ensemble ids manually. If not, look in settings. If none there, will use the most recent, which was loaded with samples.Rdata
         if(!is.null(ensemble.id)) {
