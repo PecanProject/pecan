@@ -24,7 +24,7 @@
 ##'   to all specified in `settings`
 ##' @param start.year defaults to what is specified in `settings`
 ##' @param end.year defaults to what is specified in `settings`
-##' @param pft a vector of PFT names found in `settings` to run sensitivity
+##' @param pfts a vector of PFT names found in `settings` to run sensitivity
 ##'   analysis on
 ##' @param ... currently unused
 ##' 
@@ -39,7 +39,7 @@
 ##' run.sensitivity.analysis(settings)
 ##' }
 ##'
-run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, pft=NULL, ...){
+run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, pfts = NULL, ...){
   if ('sensitivity.analysis' %in% names(settings)) {
     # Set variable and years. Use args first, then settings, then defaults/error
     if(is.null(start.year)) {
@@ -106,7 +106,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         sensitivity.results <- list()
         
         for (pft in settings$pfts) {
-          if (pft$name %in% pft) {
+          if (pft$name %in% pfts) {
             traits <- trait.names[[pft$name]]
             quantiles.str <- rownames(sa.samples[[pft$name]])
             quantiles.str <- quantiles.str[which(quantiles.str != '50')]
