@@ -17,7 +17,7 @@ write_restart.ED2(
 )
 }
 \arguments{
-\item{outdir}{outout directory}
+\item{outdir}{output directory}
 
 \item{runid}{run id}
 
@@ -31,9 +31,11 @@ write_restart.ED2(
 
 \item{RENAME}{flag to either rename output file or not}
 
-\item{new.params}{optional, additionals params to pass write.configs that are deterministically related to the parameters updated by the analysis}
+\item{new.params}{optional, additional params to pass \code{write.configs} that
+are deterministically related to the parameters updated by the analysis}
 
-\item{inputs}{new input paths updated by the SDA workflow, will be passed to write.configs}
+\item{inputs}{new input paths updated by the SDA workflow, will be passed to
+\code{write.configs}}
 }
 \value{
 TRUE if successful

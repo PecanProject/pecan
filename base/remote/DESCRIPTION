@@ -22,9 +22,10 @@ Imports:
     jsonlite,
     urltools
 Suggests:
+    getPass,
     testthat,
     tools,
-    getPass
+    withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true

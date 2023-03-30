@@ -114,6 +114,8 @@ extract_NLCD: no visible global function definition for ‘CRS’
 extract_NLCD: no visible global function definition for ‘spTransform’
 extract_NLCD: no visible global function definition for ‘crs’
 extract_NLCD: no visible global function definition for ‘extract’
+grid2netcdf: no visible binding for global variable ‘years’
+grid2netcdf: no visible binding for global variable ‘yieldarray’
 Undefined global functions or variables:
   CRS SpatialPoints crs db.query dbfile.check dbfile.insert
   download.file extract foreach k raster spTransform stopCluster
