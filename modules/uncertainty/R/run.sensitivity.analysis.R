@@ -39,7 +39,16 @@
 ##' run.sensitivity.analysis(settings)
 ##' }
 ##'
-run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, pfts = NULL, ...){
+run.sensitivity.analysis <-
+  function(settings,
+           plot = TRUE,
+           ensemble.id = NULL,
+           variable = NULL,
+           start.year = NULL,
+           end.year = NULL,
+           pfts = NULL,
+           ...) {
+    
   if ('sensitivity.analysis' %in% names(settings)) {
     # Set variable and years. Use args first, then settings, then defaults/error
     if(is.null(start.year)) {
