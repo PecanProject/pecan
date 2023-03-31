@@ -174,14 +174,19 @@ SDA_OBS_Assembler <- function(settings){
       if (sum(is.na(obs.mean[[i]][[j]]))){
         na_ind <- which(is.na(obs.mean[[i]][[j]]))
         obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
-        if(length(na_ind) == 1){
+        if(length(obs.mean[[i]][[j]]) == 1){
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind]
         }else{
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind, -na_ind]
         }
       }
-      if (names(obs.mean[[i]][[j]]) == "TotSoilCarb"){
-        obs.cov[[i]][[j]] <- obs.cov[[i]][[j]] * Soilgrids_multiplier
+      SoilC_ind <- which(names(obs.mean[[i]][[j]]) == "TotSoilCarb")
+      if (length(SoilC_ind) > 0){
+        if(length(obs.mean[[i]][[j]]) > 1){
+          diag(obs.cov[[i]][[j]])[SoilC_ind] <- diag(obs.cov[[i]][[j]])[SoilC_ind] * Soilgrids_multiplier
+        }else{
+          obs.cov[[i]][[j]][SoilC_ind] <- obs.cov[[i]][[j]][SoilC_ind] * Soilgrids_multiplier
+        }
       }
     }
   }
@@ -214,11 +219,17 @@ SDA_OBS_Assembler <- function(settings){
         unique()
     }
     
+    obs_mean_fill <- obs_cov_fill <- list()
     if(length(timepoints_fill)>0){
-      for (i in seq_along(timepoints_fill)) {
-        obs.mean <- rlist::list.append(obs.mean, NULL)
-        obs.cov <- rlist::list.append(obs.cov, NULL)
-        names(obs.mean)[length(obs.mean)] <- names(obs.cov)[length(obs.cov)] <- as.character(timepoints_fill[i])
+      time_points_start_end <- sort(c(timepoints_fill, time_points))
+      for (i in seq_along(time_points_start_end)) {
+        if(time_points_start_end[i] %in% timepoints_fill){
+          obs_mean_fill[[as.character(time_points_start_end[i])]] <- list(NULL)
+          obs_cov_fill[[as.character(time_points_start_end[i])]] <- list(NULL)
+        }else{
+          obs_mean_fill[[as.character(time_points_start_end[i])]] <- obs.mean[[as.character(time_points_start_end[i])]]
+          obs_cov_fill[[as.character(time_points_start_end[i])]] <- obs.cov[[as.character(time_points_start_end[i])]]
+        }
       }
     }
   }
