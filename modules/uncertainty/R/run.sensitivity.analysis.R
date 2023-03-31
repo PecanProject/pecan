@@ -73,8 +73,16 @@ run.sensitivity.analysis <-
     }
     if(is.null(pfts)) {
       #extract just pft names
-      pfts <- settings %>% purrr::map_chr("name")
-    } 
+      pfts <- purrr::map_chr(settings, "name")
+    } else {
+      # validate pfts argument
+      if(!is.character(pfts)) {
+        PEcAn.logger::logger.severe("Please supply a character vector for `pfts`")
+      }
+      if(!pfts %in% purrr::map_chr(settings, "name")) {
+        PEcAn.logger::logger.severe("`pfts` must be a subset of the PFTs defined in `settings`")
+      }
+    }
 
     variables <- variable
     if(length(variables) >= 1) {
