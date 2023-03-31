@@ -71,6 +71,10 @@ run.sensitivity.analysis <-
     if(is.null(variable)) {
       PEcAn.logger::logger.severe("No variables for sensitivity analysis!")
     }
+    if(is.null(pfts)) {
+      #extract just pft names
+      pfts <- settings %>% purrr::map_chr("name")
+    } 
 
     variables <- variable
     if(length(variables) >= 1) {
