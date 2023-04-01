@@ -137,8 +137,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## Edit ED2IN file for runs
   revision <- settings$model$revision
   if (is.null(revision)) {
-    model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-    revision <- model$revision
+    PEcAn.logger::logger.severe("ED2 model `revision` not specified in PEcAn settings file.")
   }
   revision <- gsub("^r", "", revision)
 
