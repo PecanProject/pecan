@@ -49,6 +49,8 @@ dir.create(set$outdir)
 dir.create(set$rundir)
 dir.create(set$modeloutdir)
 dir.create(set$pfts$pft$outdir)
+## job.sh
+set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/template.job"
 
 set <- PEcAn.settings::prepare.settings(set, force = FALSE)
 
@@ -59,3 +61,4 @@ PEcAn.workflow::runModule_start_model_runs(set, stop.on.error = FALSE)
 ## future work
 ## * Integrate in Phyllis's changes to be able to save and reuse previous ensemble draws
 ## * restart from previous forecast
+## not sure why need to delete last line from met to get things to run.
