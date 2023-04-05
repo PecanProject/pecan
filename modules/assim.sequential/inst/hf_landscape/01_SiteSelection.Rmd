@@ -32,6 +32,9 @@ NEON AOP mosaic data are provided in tiles with UTM coordinates in each file nam
 
 NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2022. https://doi.org/10.48443/ys43-cb22. Dataset accessed from https://data.neonscience.org on December 21, 2022
 
+First download only got one tile, went back for more!
+NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2023. https://doi.org/10.48443/7x5a-mn68. Dataset accessed from https://data.neonscience.org on March 22, 2023
+
 ```{r}
 ## load data
 laifile = "NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20221221T142516Z.RELEASE-2022/NEON_D01_HARV_DP3_732000_4713000_LAI.tif"
@@ -54,8 +57,6 @@ points(tower_utm[1],tower_utm[2])
 
 #plot(lai)
 #points(tower_utm[1],tower_utm[2])
-
-
 ```
 Set overall grid  based on LAI map
 ```{r}
@@ -191,5 +192,39 @@ writeRaster(nlcd, "patches.tif", overwrite=TRUE)
 ```
 
 
+## compare patches to ground plots
+```{r}
+if(!exists("pmap")){
+  patchMap <- terra::rast("patches.tif")
+  pmap <- project(patchMap, "+proj=longlat",method="near")
+  plot(pmap)
+  points(tower_lonlat[1],tower_lonlat[2])
+  tow = extract(pmap,tower_lonlat)
+}
+
+pfile = "/projectnb/dietzelab/dietze/hf_landscape_SDA/HF_Biometry_Plots_Lat_Long.csv"
+if(file.exists(pfile)){
+  inv.plot = read.csv(pfile) %>% rename(lat=Latitude,lon=Longitude) %>% select(lon,lat)
+  inv.patch = extract(pmap,inv.plot)  
+  count = table(inv.patch$Layer_1)
+  count = tibble(patch=as.numeric(names(count)),n=count)
+  p2 = left_join(patches,count,"patch")
+  
+  plot(pmap)
+  points(inv.plot$lon,inv.plot$lat)
+}
+
+lairaw3 = terra::project(lairaw2,"+proj=longlat")
+plot(lairaw3)
+points(inv.plot$lon,inv.plot$lat)
+
+inv.ll = terra::vect(inv.plot, crs="+proj=longlat")
+plot(lairaw3)
+points(inv.ll)
+
+inv.utm = terra::project(inv.ll,lairaw2)
+plot(lairaw2)
+points(inv.utm)
+```
 
 
