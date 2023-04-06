@@ -353,25 +353,10 @@ sda.enkf.multisite <- function(settings,
           parent_ids = NULL 
         )
     }) 
-  
-  #remove null from both obs.mean and obs.cov
-  ind.NotNull <- c()
-  for (i in seq_along(obs.mean)) {
-    if(!is.null(obs.mean[[i]])){
-      ind.NotNull <- c(ind.NotNull, i)
-    }
-  }
-  obs.mean <- obs.mean[ind.NotNull]
-  obs.cov <- obs.cov[ind.NotNull]
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
-      if(is.character(try(obs <- obs.mean[[t]], silent = T))){
-        obs.check <- NA
-      }else{
-        obs.check <- obs[[1]]
-      }
       obs.t<-as.character(lubridate::date(obs.times[t]))
       obs.year <- lubridate::year(obs.t)
       ###-------------------------------------------------------------------------###
@@ -484,7 +469,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (all(!is.na(obs.check))) {
+      if (!is.null(obs.mean[[t]][[1]])) {
         if (control$debug) browser()
         #Making R and Y
         Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
