@@ -44,7 +44,8 @@ sda.enkf.multisite <- function(settings,
                                             debug = FALSE,
                                             pause = FALSE,
                                             Profiling = FALSE,
-                                            OutlierDetection=FALSE),
+                                            OutlierDetection=FALSE,
+                                            sendemail = NULL),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -73,7 +74,6 @@ sda.enkf.multisite <- function(settings,
   outdir     <- settings$modeloutdir # currently model runs locally, this will change if remote is enabled
   rundir     <- settings$host$rundir
   host       <- settings$host
-  
   
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
@@ -357,7 +357,7 @@ sda.enkf.multisite <- function(settings,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
-      obs.t<-as.character(lubridate::date(obs.times[t]))
+      obs.t <- as.character(lubridate::date(obs.times[t]))
       obs.year <- lubridate::year(obs.t)
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
@@ -419,8 +419,8 @@ sda.enkf.multisite <- function(settings,
         
         #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
         runs.tmp <- list.dirs(rundir, full.names = F)
+        runs.tmp <- runs.tmp[grepl("ENS-*", runs.tmp)]
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-        
         PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         
         #------------- Reading - every iteration and for SDA
@@ -498,6 +498,9 @@ sda.enkf.multisite <- function(settings,
           bqq <- pre_enkf_params[[t-1]]$bqq
           X.new<-pre_enkf_params[[t-1]]$X.new
         }
+        if(!is.null(pre_enkf_params)){
+          Pf <- pre_enkf_params[[t]]$Pf
+        }
         
         if(!exists('Cmcmc_tobit2space')) {
           recompileTobit = TRUE
@@ -543,6 +546,7 @@ sda.enkf.multisite <- function(settings,
           extraArg = list(
             aqq = aqq,
             bqq = bqq,
+            Pf = Pf,
             t = t,
             nitr.GEF = nitr.GEF,
             nthin = nthin,
@@ -630,11 +634,14 @@ sda.enkf.multisite <- function(settings,
           #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
           #Pa <- Pf + solve(q.bar)
           #hack have Pa = Pf for now
-          Pf = stats::cov(X) # Cov Forecast - This is used as an initial condition
+          if(!is.null(pre_enkf_params)){
+            Pf <- pre_enkf_params[[t]]$Pf
+          }else{
+            Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
+          }
           Pa <- Pf
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
-        
       }
       
       ###-------------------------------------------------------------------###
@@ -680,7 +687,7 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot) & !is.null(obs.mean[[t]][[1]])){
         post.analysis.multisite.ggplot(settings, 
                                        t, 
                                        obs.times, 
@@ -705,5 +712,9 @@ sda.enkf.multisite <- function(settings,
     {
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
+    if(!is.null(control$sendemail)){
+        PEcAn.utils::sendmail(control$sendemail$from, control$sendemail$to, "SDA progress report", paste("Time point:", obs.times[t], "has been completed!"))
+    }
+    
   } ### end loop over time
 } # sda.enkf

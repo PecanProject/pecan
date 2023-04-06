@@ -17,7 +17,7 @@ sda.enkf.multisite(
   ensemble.samples = NULL,
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
     FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
-    = FALSE, Profiling = FALSE, OutlierDetection = FALSE),
+    = FALSE, Profiling = FALSE, OutlierDetection = FALSE, sendemail = NULL),
   ...
 )
 }
