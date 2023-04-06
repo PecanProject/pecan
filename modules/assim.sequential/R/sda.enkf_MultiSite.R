@@ -44,8 +44,7 @@ sda.enkf.multisite <- function(settings,
                                             debug = FALSE,
                                             pause = FALSE,
                                             Profiling = FALSE,
-                                            OutlierDetection=FALSE,
-                                            sendemail = NULL),
+                                            OutlierDetection=FALSE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -712,9 +711,5 @@ sda.enkf.multisite <- function(settings,
     {
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
-    if(!is.null(control$sendemail)){
-        PEcAn.utils::sendmail(control$sendemail$from, control$sendemail$to, "SDA progress report", paste("Time point:", obs.times[t], "has been completed!"))
-    }
-    
   } ### end loop over time
 } # sda.enkf
