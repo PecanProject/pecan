@@ -39,7 +39,8 @@ see if you need to change any of these:
 - Added litter_mass_content_of_water to model2netcdf.SIPNET
 - Added all SIPNET state variables to read_restart and write_restart
 - Added Observation preparation functions into the SDA workflow, which supports AGB, LAI, Soil Carbon, and Soil moisture.
-We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
+- We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
+- Added an optional `pfts` argument to `PEcAn.uncertainty::run.sensitivity.analysis()` so that sensitivity analysis and variance decomposition can be run on a subset of PFTs defined in `settings` if desired (#3155).
 
 ### Fixed
 
