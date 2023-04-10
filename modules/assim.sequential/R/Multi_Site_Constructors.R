@@ -172,12 +172,12 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
 ##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
 ##' @export
 Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
-  
-  site.ids.matrix <- sort(rep(site.ids, length(var.names)))
+  #we first create a matrix containing site.ids, var.names, observations, and the index of observations across obs.mean.
+  site.ids.matrix <- rep(site.ids, each = length(var.names))#this is 
   var.names.matrix <- rep(var.names, length(site.ids))
   H.pre.matrix <- data.frame(site.ids.matrix, var.names.matrix, NA, NA) %>% `colnames<-` (c("site.id", "var.name", "obs", "obs.ind"))
   obs.ind <- 1
-  for (i in 1:dim(H.pre.matrix)[1]) {
+  for (i in seq_along(site.ids.matrix)) {
     site.id <- H.pre.matrix[i,]$site.id
     var.name <- H.pre.matrix[i,]$var.name
     site.ind <- which(names(obs.t.mean)==site.id)
@@ -192,7 +192,7 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
     }
   }
   H <- matrix(0, max(H.pre.matrix$obs.ind, na.rm=T), dim(H.pre.matrix)[1])
-  for (i in 1:dim(H.pre.matrix)[1]) {
+  for (i in seq_along(site.ids.matrix)) {
     H[H.pre.matrix[i,]$obs.ind, i] <- 1
   }
   H
