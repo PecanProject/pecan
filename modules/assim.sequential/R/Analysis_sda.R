@@ -6,7 +6,7 @@
 ##' @param FUN   A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param H is a matrix of 1's and 0's specifying which observations go with which variables.
 ##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param ... Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
 ##’ @details
@@ -40,7 +40,7 @@ Analysis.sda<-function(settings,
 ##' @param settings  pecan standard settings list.  
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param H is a matrix of 1's and 0's specifying which observations go with which variables.
 ##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param ... Extra argument sent to the analysis function.
 ##’ @details
@@ -660,9 +660,9 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
 ##’ @details
 ##’  
 ##' 
-##' @description This function creates a mtrix mapping obsereved data to their forecast state variable.
+##' @description This function creates a matrix mapping obsereved data to their forecast state variable.
 ##' 
-##' @return This returns a mtrix specifying which observation go with which state variables.
+##' @return This returns a matrix specifying which observation go with which state variables.
 ##' @export
 Construct_H <- function(choose, Y, X){
   ## design matrix
