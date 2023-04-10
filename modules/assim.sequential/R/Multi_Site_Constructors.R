@@ -173,10 +173,11 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
 ##' @export
 Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   #we first create a matrix containing site.ids, var.names, observations, and the index of observations across obs.mean.
-  site.ids.matrix <- rep(site.ids, each = length(var.names))#this is 
-  var.names.matrix <- rep(var.names, length(site.ids))
+  site.ids.matrix <- rep(site.ids, each = length(var.names))#this is replicated site.ids. The number of replication depends on how many vars in total.
+  var.names.matrix <- rep(var.names, length(site.ids))#this is the state variable names from settings.
   H.pre.matrix <- data.frame(site.ids.matrix, var.names.matrix, NA, NA) %>% `colnames<-` (c("site.id", "var.name", "obs", "obs.ind"))
   obs.ind <- 1
+  #loop over site.ids * var.names
   for (i in seq_along(site.ids.matrix)) {
     site.id <- H.pre.matrix[i,]$site.id
     var.name <- H.pre.matrix[i,]$var.name
@@ -185,12 +186,14 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
       obs <- obs.t.mean[[site.ind]]
       var.ind <- which(names(obs)==var.name)
       if(length(var.ind) > 0){
+        #write observation and the index into the matrix.
         H.pre.matrix[i,]$obs <- obs[[var.ind]]
         H.pre.matrix[i,]$obs.ind <- obs.ind
         obs.ind <- obs.ind + 1
       }
     }
   }
+  #convert the matrix into H matrix.
   H <- matrix(0, max(H.pre.matrix$obs.ind, na.rm=T), dim(H.pre.matrix)[1])
   for (i in seq_along(site.ids.matrix)) {
     H[H.pre.matrix[i,]$obs.ind, i] <- 1
