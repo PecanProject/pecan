@@ -172,45 +172,28 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
 ##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
 ##' @export
 Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
-
-  site.ids.with.data <- names(obs.t.mean)
-  site.specific.Hs <- list()
   
-  
-  nsite <- length(site.ids) # number of sites
-  nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
-  nvariable <- length(var.names)
-  #This is used inside the loop below for moving between the sites when populating the big H matrix
-  nobs <- obs.t.mean %>% purrr::map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
-  nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
-  
-  #Having the total number of obs as the row number
-  H <- matrix(0,  nobstotal, (nvariable*nsite))
-  j<-1
-  
-  for(i in seq_along(site.ids))
-    {
-    site <- site.ids[i]
-    choose <- sapply(names(obs.t.mean[[site]]), agrep, x = var.names,
-                     max = 1, USE.NAMES = FALSE) %>% unlist  
-    
-    if(is.null(choose)) next;
-    
-    H.this.site <- matrix(0, length(choose), nvariable)
-    
-    for (n in seq_along(choose))
-    {
-      H.this.site[n, choose[n]] <- 1
-      #sapply(choose[n], agrep, x = seq_along(var.names), max = 1, USE.NAMES = FALSE) %>% unlist
-      #H.this.site[n, choose.col] = 1
+  site.ids.matrix <- sort(rep(site.ids, length(var.names)))
+  var.names.matrix <- rep(var.names, length(site.ids))
+  H.pre.matrix <- data.frame(site.ids.matrix, var.names.matrix, NA, NA) %>% `colnames<-` (c("site.id", "var.name", "obs", "obs.ind"))
+  obs.ind <- 1
+  for (i in 1:dim(H.pre.matrix)[1]) {
+    site.id <- H.pre.matrix[i,]$site.id
+    var.name <- H.pre.matrix[i,]$var.name
+    site.ind <- which(names(obs.t.mean)==site.id)
+    if(length(site.ind) > 0){
+      obs <- obs.t.mean[[site.ind]]
+      var.ind <- which(names(obs)==var.name)
+      if(length(var.ind) > 0){
+        H.pre.matrix[i,]$obs <- obs[[var.ind]]
+        H.pre.matrix[i,]$obs.ind <- obs.ind
+        obs.ind <- obs.ind + 1
+      }
     }
-    
-    pos.row <- ((nobs*j)-(nobs-1)):(nobs*j)
-    pos.col <- ((nvariable*i)-(nvariable-1)):(nvariable*i)
-    
-    H[pos.row,pos.col] <- H.this.site
-    j <- j+1
   }
-    
-  return(H)
+  H <- matrix(0, max(H.pre.matrix$obs.ind, na.rm=T), dim(H.pre.matrix)[1])
+  for (i in 1:dim(H.pre.matrix)[1]) {
+    H[H.pre.matrix[i,]$obs.ind, i] <- 1
+  }
+  H
 }
