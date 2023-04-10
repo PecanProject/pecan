@@ -263,7 +263,7 @@ GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
-  if (exists('blocked.dis')){
+  if (exists('blocked.dis') & is.null(extraArg$Pf)){
     Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 

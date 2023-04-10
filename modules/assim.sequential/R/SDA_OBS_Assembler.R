@@ -219,8 +219,8 @@ SDA_OBS_Assembler <- function(settings){
         unique()
     }
     
-    obs_mean_fill <- obs_cov_fill <- list()
     if(length(timepoints_fill)>0){
+      obs_mean_fill <- obs_cov_fill <- list()
       time_points_start_end <- sort(c(timepoints_fill, time_points))
       for (i in seq_along(time_points_start_end)) {
         if(time_points_start_end[i] %in% timepoints_fill){
@@ -231,6 +231,8 @@ SDA_OBS_Assembler <- function(settings){
           obs_cov_fill[[as.character(time_points_start_end[i])]] <- obs.cov[[as.character(time_points_start_end[i])]]
         }
       }
+      obs.mean <- obs_mean_fill
+      obs.cov <- obs_cov_fill
     }
   }
   
