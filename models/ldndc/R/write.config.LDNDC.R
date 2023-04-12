@@ -29,7 +29,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Create Schedule time
   if(!is.null(settings$run$start.date) & !is.null(settings$run$end.date)){
     
-    steps <- 48 # Hard-coded for now
+    steps <- 24 # Hard-coded for now
     ScheduleTime <- paste0(format(as.POSIXlt(settings$run$start.date), "%Y-%m-%d"), "/",
                            steps, " -> ", as.Date(format(as.POSIXlt(settings$run$end.date), "%Y-%m-%d"))+1)
                           # One extra day added to the end day of simulations, because the simulations will stop to
@@ -54,11 +54,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     OutputPrefix <- file.path(outdir, "Output/")
   }
   
-  # Groundwater is available for Viikki site
-  if(settings$run$site$id == "15000000029"){
-    GroundWater = '<groundwater source="groundwater.txt" format="txt" />'
-  }
-  else{GroundWater = ""}
   
   
   #-----------------------------------------------------------------------
@@ -136,164 +131,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   Sys.chmod(file.path(rundir, "job.sh")) # Permissions
   
   
-  ## ----- Preparing the event file ----- ##
-  
-  
-  
-  
-  ## -- NOT FUNCTIONAL YET -- ##
-  # Check if there is a path for event file
-  # if(!is.null(settings$run$inputs$events$path)){
-  #   
-  #   
-  #   
-  #   # Path can be pointed either to ready xml-file or to the json-file from which to parse the relecant info
-  #   # Create some options have it will deal with these different sceanrious -- should be pretty straight-forward
-  #   
-  #   # Read the json file from given path
-  #   events_json <- jsonlite::fromJSON(settings$run$inputs$events$path)
-  #   
-  #   
-  #   # Choose only the events that are relative and make sure they are ordered correctly
-  #   events_json <- events_json$management$events %>% subset(., date >= as.Date(settings$run$start.date) & date <= as.Date(settings$run$end.date)) %>%
-  #     dplyr::arrange(date)
-  #   
-  #   
-  #   
-  #   ## Check how many events belong to the simulated period and create an event of them one by one
-  #   events_num <- length(events_json$mgmt_operations_event)
-  #   
-  #   # No events on given time period
-  #   if(events_num == 0){
-  #     event_text <- "<!--- There is no events on this time period -->"
-  #   }
-  #   
-  #   # At least one recorded event on the given time period
-  #   else{
-  #     # Initialize the text which is going to be populated by the information
-  #     # we got from the event.json files
-  #     event_text <- ""
-  #     
-  #     # Check every event one by one
-  #     for(et in 1:events_num){
-  #       event <- events_json[et,]
-  #       
-  #       # Time of the event
-  #       time <- event$date
-  #       
-  #       # Check if the event is a planting event
-  #       if(event$mgmt_operations_event == "planting"){
-  #         # If there is actually a planting event
-  #         # If not stated otherwise, the initial biomass should be pretty low probably?
-  #         # fractional cover should be given initial conditions, so nevertheless, initial
-  #         # biomass ja fractional cover should be provided
-  #         
-  #         # Check the planted species name
-  #         plant_name <- event$planted_crop
-  #         
-  #         
-  #         # If not any information about the plant event
-  #         # Do some plant coverage, check how to deal with initial conditions and
-  #         # as stated above, intial biomass ja fractional cover should be provided
-  #         # Should have maybe stated the planted species on intial conditions as well,
-  #         # in a case when there is continues growing plant in the field
-  #         
-  #         
-  #       }
-  #       
-  #       # Check fertilizer
-  #       if(event$mgmt_operations_event == "fertilizer"){
-  #         
-  #         # Get the fertilizer exact type from what it contains
-  #         if(!is.null(event$fertilizer_contain)){
-  #           type <- event$fertilizer_contain
-  #         }
-  #         
-  #         # Get it from the fertilizer product name
-  #         else if(is.null(event$fertilizer_contain) & !is.na(event$fertilizer_product_name)){
-  #           if(grepl("potassium salt", event$fertilizer_product_name)){
-  #             type <- "so4"
-  #           }
-  #           else if(grepl("befert", event$fertilizer_product_name)){
-  #             type <- "nh4no3"
-  #           }
-  #           else{
-  #             type <- "no3"
-  #           }
-  #         }
-  #         
-  #         # Fertilizer type not deduced from the above
-  #         else{
-  #           type <- "nh4no3"
-  #         }
-  #         
-  #         # Amount of fertilization
-  #         if(!is.na(event$N_in_applied_fertilizer)){
-  #           amount <- event$fertilizer_total_amount
-  #         } else {amount <- NULL}
-  #         
-  #         # Depth of fertilization
-  #         if(!is.null(event$application_depth_fert) & as.numeric(event$application_depth_fert) > 0){
-  #           depth <- event$application_depth_fert
-  #         } else {depth <- NULL}
-  #         
-  #         
-  #         # After gathering all relevant info for fertilizer -- made an event from it for ldndc to use
-  #         event_text <- paste0(event_text, "\n\n", "<event type='fertilize' ", "time='", time, "'> \n",
-  #                             "<fertilize type='", type, "' ")
-  #         event_text <- ifelse(!is.null(amount), paste0(event_text, "amount='", amount, "' "), event_text)
-  #         event_text <- ifelse(!is.null(depth), paste0(event_text, "depth='", depth, "' "), event_text)
-  #         event_text <- paste0(event_text, "/> \n </event>")
-  #         
-  #       }
-  #       
-  #       # Check cut events
-  #       if(event$mgmt_operations_event == "cut"){
-  #         
-  #         
-  #         # Cutting event should be applied to grasslands, but what about arable?
-  #         # Remains relative or height, which one will be used or can it depend?
-  #         
-  #         
-  #       }
-  #       
-  #       # Check tillage
-  #       if(event$mgmt_operations_event == "tillage"){
-  #         
-  #         # Depth of tillage
-  #         if(!is.null(event$tillage_operations_depth) & as.numeric(event$tillage_operations_depth) > 0){
-  #           depth <- event$tillage_operations_depth
-  #         } else {depth <- runif(1, 0.05, 0.2)}
-  #         
-  #         event_text <- paste0(event_text, "\n\n", "<event type='till' ", "time='", time, "'> \n",
-  #                              "<till depth='", depth, "' /> \n </event>")
-  #         
-  #       }
-  #       
-  #       # Check harvest
-  #       if(event$mgmt_operations_event == "harvest"){
-  #         
-  #         # Check if this has been done on grassland on in arable
-  #         # since harvesting in LDNDC removes that species from the field,
-  #         # so it is suitable when doing harvesting in arable site and we
-  #         # remove one species completely, but with grasslands we should
-  #         # stick with cutting when some plants are left on the field
-  #         
-  #         # Needs to know: 1) harvested species and 2) remains (fraction of biomass left on the field)
-  #         
-  #         # There should also be specific indetifier which is same for the planted and harvested crop, if
-  #         # there are more same species in the simulation period, these crops should be separated from each other
-  #       }
-  #     }
-  #   }
-  #   
-  # }
-  
-  
-  
-  
-  
-  
   
   ## ----- Preparing the setup file ----- ##
   
@@ -318,10 +155,24 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Viikki: 15000000029
   # Lettosuo: 15000000023
   site_id <- settings$run$site$id
-  if(site_id == "15000000027"){
-    
-    ### Haltiala setup
-    
+  
+  
+  # Fetch event file from the given path
+  eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
+  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+  
+  
+  ## Handle the setups, when working with grass/crop fields
+  # Available species: timothy, oat and barley
+  pfts_accepts <- c("barley", "oats", "timothy")
+  pfts_run <- NULL
+  for(pft_names in 1:length(settings$pfts)){
+    pfts_run <- c(pfts_run, settings$pfts[[pft_names]]$name)
+  }
+  
+  
+  if(all(pfts_run %in% pfts_accepts)){
+  
     ## Modules
     # Microclimate module
     setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
@@ -335,12 +186,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     # Physiology module
     setupfile <- gsub("@physiology@", "plamox", setupfile)
-    setupfile <- gsub("@plantfamilies@", "crops", setupfile)
+    setupfile <- gsub("@plantfamilies@", "crops grass", setupfile)
     
     # Soil modules and options
     setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
-    #setupfile <- gsub("@canopytransport@", "yes", setupfile)
-    #setupfile <- gsub("@riverconnection@", "yes", setupfile)
     
     # Report
     setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
@@ -348,39 +197,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
     
-    # Haltiala events
-    eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
-    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
-    
-    
-    # Haltiala species
-    mnemonic_2.1 <- "sbar"
-    mnemonic_2.2 <- "oats"
-    
-    
-    ## Crops
-    
-    # Barley
-    b.1.1 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.1,  "' > \n")
-    b.2 <- ""
-    b.3.1 <- paste0("\t\t\t</species> \n\n")
-    
-    # Oats
-    b.1.2 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.2, "' > \n")
-    
-    b.3.2 <- paste0("\t\t\t</species> \n")
-    
-    
-    
-    #----
-      
-    # Soil info
-    soil_use_history <- "arable"
-    soil_type <- "CLLO"
-    litter_height <- "0.0"
-    
-    
+
   }
+    
+    
   
   if(site_id == "15000000029"){
     
@@ -499,8 +319,72 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
   }
   
+  site_id <- settings$run$site$id
+  if(site_id == "1000005093"){
+    
+    ### Jokioinen setup
+    
+    ## Modules
+    # Microclimate module
+    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
+    
+    # Watercycle module and option
+    setupfile <- gsub("@watercycle@", "watercycledndc", setupfile)
+    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
+    
+    # Airchemistry module
+    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
+    
+    # Physiology module
+    setupfile <- gsub("@physiology@", "plamox", setupfile)
+    setupfile <- gsub("@plantfamilies@", "crops grass", setupfile)
+    
+    # Soil modules and options
+    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
+    
+    # Report
+    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
+    
+    # Write the populated setup file as an xml-file
+    writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
+    
+    # Haltiala events
+    eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
+    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
+    
+    
+    # Haltiala species
+    mnemonic_2.1 <- "sbar"
+    mnemonic_2.2 <- "perg"
+    
+    
+    ## Crops / grass
+    
+    # Barley
+    b.1.1 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.1,  "' > \n")
+    b.2 <- ""
+    b.3.1 <- paste0("\t\t\t</species> \n\n")
+    
+    # Perg
+    b.1.2 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.2, "' > \n")
+    
+    b.3.2 <- paste0("\t\t\t</species> \n")
+    
+    
+    
+    #----
+    
+    # Soil info
+    soil_use_history <- "arable"
+    soil_type <- "ORMA"
+    litter_height <- "0.0"
+    
+    
+  }
+  
+  
   # Use only one of the specified sites: Haltiala or Viikki
-  if(!(site_id %in% c("15000000027", "15000000029", "15000000023"))){
+  if(!(site_id %in% c("15000000027", "15000000029", "15000000023", "1000005093"))){
     PEcAn.logger::logger.severe("Given site id is not currently supported")
   }
   
@@ -2016,6 +1900,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       
     
   }
+
   
   ## INITIAL SOIL CONDITIONS
   soil_layer <- list()
@@ -2267,24 +2152,69 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   ## Writing and saving species- and siteparameters + initial soil conditions
   
+  # Soil info
+  soil_use_history <- "arable"
+  soil_type <- "CLLO"
+  litter_height <- "0.0"
+  
+  speciesparfile_pfts <- NULL
+  
   # Handle the populating of speciesparameters after we have read the info from priors
-  if(site_id == "15000000027"){
-    speciesparfile <- gsub("@Info@", paste(
-                                         b.1.1,species_par_values["barley"][[1]],b.3.1,
-                                         b.1.2,species_par_values["oat"][[1]],b.3.2),
-                                         speciesparfile)
-  }
-  if(site_id == "15000000029"){
-    speciesparfile <- gsub("@Info@", paste(a.1,
-                                           species_par_values["timothy"][[1]],
-                                           a.2), speciesparfile)
+  for(pftn in 1:length(pfts_run)){
+    ## Crops ##
+    # Barley
+    if(pftn == "barley"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='sbar'> \n",
+                                    species_par_values["barley"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
+    # Oat
+    if(pftn == "oats"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='oats'> \n",
+                                    species_par_values["oat"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
+    # Timothy
+    if(pftn == "timothy"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='perg'> \n",
+                                    species_par_values["timothy"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
   }
   
-  if(site_id == "15000000023"){
-    speciesparfile <- gsub("@Info@", paste(a.1,
-                                           species_par_values["pipy"][[1]],
-                                           a.2), speciesparfile)
-  }
+  # Combine the speciesparameter info
+  speciesparfile <- gsub("@Info@", speciesparfile_pfts)
+  
+  
+  
+  # 
+  # if(site_id == "15000000027"){
+  #   speciesparfile <- gsub("@Info@", paste(
+  #                                        b.1.1,species_par_values["barley"][[1]],b.3.1,
+  #                                        b.1.2,species_par_values["oat"][[1]],b.3.2),
+  #                                        speciesparfile)
+  # }
+  # if(site_id == "15000000029"){
+  #   speciesparfile <- gsub("@Info@", paste(a.1,
+  #                                          species_par_values["timothy"][[1]],
+  #                                          a.2), speciesparfile)
+  # }
+  # 
+  # if(site_id == "15000000023"){
+  #   speciesparfile <- gsub("@Info@", paste(a.1,
+  #                                          species_par_values["pipy"][[1]],
+  #                                          a.2), speciesparfile)
+  # }
+  # 
+  # if(site_id == "1000005093"){
+  #   speciesparfile <- gsub("@Info@", paste(
+  #                                          b.1.1,species_par_values["barley"][[1]],b.3.1,
+  #                                          b.1.2,species_par_values["timothy"][[1]],b.3.2),
+  #                                          speciesparfile)
+  # }
   
   # Write to a new xml-file, which will be used on a run. Every simulation run will have
   # their own set of speciesparameters values
