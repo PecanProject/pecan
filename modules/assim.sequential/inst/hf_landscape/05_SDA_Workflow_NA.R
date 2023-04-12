@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript --vanilla
 # Modified from Alexis Helgeson's assim.sequential/inst/restart_SDAworkflow_scripts/SDA_Workflow_NA.R
 #
 # ----------------------------------------------------------------------
@@ -118,9 +119,6 @@ set$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"))
 next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M"))
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 #set <- PEcAn.settings::prepare.settings(set, force = TRUE)
-set$host$rundir <- set$rundir
-set$host$outdir <- set$modeloutdir
-set$host$folder <- set$modeloutdir
 ## TODO: make sure settings are prepared; for remote, make sure to set host directories
 
 ## outdirs
@@ -128,13 +126,16 @@ set$outdir = file.path(set$outdir,paste0("FNA",start.date))
 set$rundir = file.path(set$outdir,"run")
 set$modeloutdir = file.path(set$outdir,"out")
 set$pfts$pft$outdir = file.path(set$outdir,"pft")
+set$host$rundir <- set$rundir
+set$host$outdir <- set$modeloutdir
+set$host$folder <- set$modeloutdir
 dir.create(set$outdir)
 dir.create(set$rundir)
 dir.create(set$modeloutdir)
 dir.create(set$pfts$pft$outdir)
 
 #manually add in clim files 
-met_paths <- list.files(path = file.path("/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV", met.start), full.names = TRUE, pattern = ".clim")
+met_paths <- list.files(path = file.path("/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV", start.date), full.names = TRUE, pattern = ".clim")
 if(is_empty(met_paths)){
   stop_quietly()
 }
@@ -178,7 +179,7 @@ sda.enkf.multisite(settings = set,
                                   BiasPlot = FALSE,
                                   plot.title = NULL,
                                   facet.plots = FALSE,
-                                  debug = TRUE,
+                                  debug = FALSE,
                                   pause = FALSE,
                                   Profiling = FALSE,
                                   OutlierDetection=FALSE))

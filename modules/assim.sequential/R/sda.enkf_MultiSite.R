@@ -419,10 +419,12 @@ sda.enkf.multisite <- function(settings,
           }) %>%
           stats::setNames(site.ids)
         
-        #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+        #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
         runs.tmp <- list.dirs(rundir, full.names = F)
         runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+        paste(file.path(rundir, 'runs.txt'))  ## testing
+        Sys.sleep(0.01)                       ## testing
         PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         
         #------------- Reading - every iteration and for SDA
