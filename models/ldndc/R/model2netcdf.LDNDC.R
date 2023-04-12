@@ -34,7 +34,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
-                         select = c(datetime, lai, dC_co2_upt.kgCm.2., dC_maintenance_resp.kgCm.2.,
+                         select = c(datetime, species, lai, dC_co2_upt.kgCm.2., dC_maintenance_resp.kgCm.2.,
                                     dC_transport_resp.kgCm.2., dC_growth_resp.kgCm.2.))
     
     
@@ -55,13 +55,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
                          select = c('datetime', 'lai'))
   }
   
-  
-  
-  # ldndc.out <- merge(ecosystem, physiology, by = "datetime", all = TRUE) %>%
-  #   mutate(Date = format(as.POSIXlt(datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
-  #   mutate(Year = lubridate::year(Date), Day = strftime(Date, format = "%j"),
-  #          Step = rep(0:(length(Date)/length(unique(Date))-1),length(unique(Date)))) %>%
-  #   select(Year, Day, Step, dC_NEE.kgCha.1., C_total.kgCha.1., lai)
+  ## If there are several species on the field, choose the rows which shows the sum values of species variables.
+  if(!identical((which(physiology$species == ":ALL:")), integer(0))){
+    physiology <- physiology[which(physiology$species == ":ALL:"),]
+  }
+
   
   # Temporary solution to get "no visible binding" note off from the variables: 'Date', 'Year' and 'Day'
   Date <- Year <- Day <- NULL
