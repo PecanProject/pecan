@@ -55,6 +55,17 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   }
   
   
+  # Add groundwater file, if it is available for site
+  # Not obligatory file for model run
+  if(!is.null(settings$run$inputs$groundwater$path1)){
+    GroundWater = '<groundwater source="groundwater.txt" format="txt" />'
+    groundwaterfile <- readLines(con = file.path(settings$run$inputs$groundwater$path1))
+    writeLines(groundwaterfile, con = file.path(settings$rundir, run.id, "groundwater.txt"))
+  }
+  else{GroundWater = ""}
+  
+  
+  
   
   #-----------------------------------------------------------------------
   ## Fill .ldndc template with the given settings
@@ -245,7 +256,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   sitefile <- readLines(con = system.file("site_template.xml", package = "PEcAn.LDNDC"), n = -1)
   
   # Use airchemistry file, which represents Finland
-  airchemistry <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
+  airchemistryfile <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   # For species, read the speciesparameters template
@@ -2072,6 +2083,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                     species_par_values["timothy"][[1]],
                                     "\t\t\t </species> \n\n")
     }
+    # Pipy, need to check a correct name for this wood species
+    if(pftn == "pipy"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='pipy'> \n",
+                                    species_par_values["pipy"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
   }
   
   # Combine the speciesparameter info
@@ -2101,7 +2119,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   writeLines(sitefile, con = file.path(settings$rundir, run.id, "site.xml"))
   
   # Write airchemistry file (not modified anywhere)
-  writeLines(airchemistry, con = file.path(settings$rundir, run.id, "airchemistry.txt"))
+  writeLines(airchemistryfile, con = file.path(settings$rundir, run.id, "airchemistry.txt"))
   
   
   
