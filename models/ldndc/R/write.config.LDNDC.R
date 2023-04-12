@@ -157,21 +157,20 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   site_id <- settings$run$site$id
   
   
-  # Fetch event file from the given path
-  eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
-  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
   
-  
-  ## Handle the setups, when working with grass/crop fields
-  # Available species: timothy, oat and barley
-  pfts_accepts <- c("barley", "oats", "timothy")
+  ## Handle the setups, when working with grass, crop and forest fields
+  # Available species for grass/crops: timothy, oat and barley
+  # Available species for forest:      pipy(?)
+  pfts_grasscrops <- c("barley", "oats", "timothy")
+  pfts_forest <- c("pipy")
   pfts_run <- NULL
   for(pft_names in 1:length(settings$pfts)){
     pfts_run <- c(pfts_run, settings$pfts[[pft_names]]$name)
   }
   
   
-  if(all(pfts_run %in% pfts_accepts)){
+  # Setup file created  for grass and crop simulations:
+  if(all(pfts_run %in% pfts_grasscrops)){
   
     ## Modules
     # Microclimate module
@@ -196,75 +195,12 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
-    
 
   }
-    
-    
   
-  if(site_id == "15000000029"){
+  # Setup file created for forest simulations
+  else if(all(pfts_run %in% pfts_forest)){
     
-    ### Viikki setup
-
-    ## Modules
-    # Microclimate module
-    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
-    
-    # Watercycle module and option
-    setupfile <- gsub("@watercycle@", "watercycledndc", setupfile)
-    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
-    
-    # Airchemistry module
-    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
-    
-    # Physiology module
-    setupfile <- gsub("@physiology@", "plamox", setupfile)
-    
-    # Soil modules and options
-    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
-    setupfile <- gsub("@canopytransport@", "yes", setupfile)
-    setupfile <- gsub("@riverconnection@", "no", setupfile)
-    
-    # Report
-    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
-    
-    # Write the populated setup file as an xml-file
-    writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
-    
-    
-    # Viikki  watertable
-    groundwater <- readLines(con = system.file("groundwater_viik.txt", package = "PEcAn.LDNDC"), n = -1)
-    writeLines(groundwater, con = file.path(settings$rundir, run.id, "groundwater.txt"))
-    
-    # Viikki species
-    mnemonic_1 <- "perg"
-    group <- "grass"
-    
-    ## Grass
-    a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
-    
-    # Timothy
-    b.2 <- ""
-    
-    
-    # Indentation (grass)
-    a.2 <- paste0("\t\t\t</species>")
-    
-    
-    #----
-    
-    # Soil info
-    soil_use_history <- "grassland"
-    soil_type <- "CLAY"
-    litter_height <- "0.0"
-    
-  }
-  
-  
-  if(site_id == "15000000023"){
-
-    ### Lettosuo
-
     ## Modules
     # Microclimate module
     setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
@@ -281,8 +217,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     # Soil modules and options
     setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
-    setupfile <- gsub("@canopytransport@", "no", setupfile)
-    setupfile <- gsub("@riverconnection@", "no", setupfile)
     
     # Report
     setupfile <- gsub("@reportarable@", "\n", setupfile)
@@ -290,108 +224,28 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Write the populated setup file as an xml-file
     writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
     
-    # Lettosuo events
-    eventsfile <- readLines(con = system.file("events_letto.xml", package = "PEcAn.LDNDC"), n = -1)
-    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
-    
-    
-    # Lettosuo species
-    mnemonic_1 <- "trees"
-    group <- "wood"
-    
-    ## Forest
-    a.1 <- paste0("<species mnemonic='", mnemonic_1, "' group='", group, "' > \n")
-    
-    # PISY
-    b.2 <- ""
-    
-    
-    # Indentation (forest)
-    a.2 <- paste0("\t\t\t</species>")
-    
-    
-    #----
-    
-    # Soil info
-    soil_use_history <- "grassland"
-    soil_type <- "ORMA"
-    litter_height <- "2.0"
     
   }
   
-  site_id <- settings$run$site$id
-  if(site_id == "1000005093"){
-    
-    ### Jokioinen setup
-    
-    ## Modules
-    # Microclimate module
-    setupfile <- gsub("@microclimate@", "canopyecm", setupfile)
-    
-    # Watercycle module and option
-    setupfile <- gsub("@watercycle@", "watercycledndc", setupfile)
-    setupfile <- gsub("@pevapotrans@", "penman", setupfile)
-    
-    # Airchemistry module
-    setupfile <- gsub("@airchemistry@", "airchemistrydndc", setupfile)
-    
-    # Physiology module
-    setupfile <- gsub("@physiology@", "plamox", setupfile)
-    setupfile <- gsub("@plantfamilies@", "crops grass", setupfile)
-    
-    # Soil modules and options
-    setupfile <- gsub("@soilchemistry@", "metrx", setupfile)
-    
-    # Report
-    setupfile <- gsub("@reportarable@", "<module id='output:report:arable' timemode='subdaily' />", setupfile)
-    
-    # Write the populated setup file as an xml-file
-    writeLines(setupfile, con = file.path(settings$rundir, run.id, "setup.xml"))
-    
-    # Haltiala events
-    eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
-    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
-    
-    
-    # Haltiala species
-    mnemonic_2.1 <- "sbar"
-    mnemonic_2.2 <- "perg"
-    
-    
-    ## Crops / grass
-    
-    # Barley
-    b.1.1 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.1,  "' > \n")
-    b.2 <- ""
-    b.3.1 <- paste0("\t\t\t</species> \n\n")
-    
-    # Perg
-    b.1.2 <- paste0("\t\t\t<species mnemonic='", mnemonic_2.2, "' > \n")
-    
-    b.3.2 <- paste0("\t\t\t</species> \n")
-    
-    
-    
-    #----
-    
-    # Soil info
-    soil_use_history <- "arable"
-    soil_type <- "ORMA"
-    litter_height <- "0.0"
-    
-    
+  # Given pfts were not among the supported species
+  else{
+    PEcAn.logger::logger.severe("Given species are not currently supported")
   }
   
   
-  # Use only one of the specified sites: Haltiala or Viikki
-  if(!(site_id %in% c("15000000027", "15000000029", "15000000023", "1000005093"))){
-    PEcAn.logger::logger.severe("Given site id is not currently supported")
-  }
+  ## ----- Fetching other site specific file templates ----- ##
   
+  ### Event, site and airchemistry files ###
   
+  # Fetch event file from the given path, this might be modified, if initial
+  # conditions are given, check the part of handling initial conditions later on
+  eventsfile <- readLines(con = file.path(settings$run$inputs$events$path1))
   
+  # Fetch default site file. Will also be populated based on the given initial conditions
+  sitefile <- readLines(con = system.file("site_template.xml", package = "PEcAn.LDNDC"), n = -1)
   
-  
+  # Use airchemistry file, which represents Finland
+  airchemistry <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   # For species, read the speciesparameters template
@@ -406,9 +260,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## Set-up the necessary files in to the run directory so
   ## model is able to function properly. Later on, these
   ## files should be populated with initial values.
-    
-  
-
   
   # Siteparameters
   h.2 <- ""
@@ -1932,35 +1783,79 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$poolinitcond$path)
     
     
-    # Before moving to write site file, check siteparameter initial conditions and site initial condition
-    # Siteparameter
     
+    ## --- Initial condtions for the site --- ##
+    
+    # Before moving to write site file, check siteparameter initial conditions and site initial condition
+    
+    ## Siteparameter file
     #300 RCNM -
     # C:N ratio of humus
     if ("c2n_humus" %in% names(soil_IC_list$vals)) {
       h.2 <- paste(h.2, paste0("\t\t<par name='RCNM' value='", unlist(soil_IC_list$vals["c2n_humus"])[[1]], "' /> \n"), collapse="")
     }
     
-    # Initial conditions in Viikki
-    if(site_id == "15000000029"){
-      # Initial biomass in the field
+    ## Event file
+    # Populate the events file, if there are placeholders for initial biomasses or fractional cover
+    # Initial biomass in the field
+    if(any(grepl("@InitialBiomass@", eventsfile))){
       if ("AGB" %in% names(soil_IC_list$vals)) {
         initialbiomass <- ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1")
       }
       else{
         initialbiomass <- 100
       }
-      
-      # Fractional cover of the plants
+      # Fill in the value
+      eventsfile <- gsub("@InitialBiomass@", paste0("'", initialbiomass, "'"), eventsfile)
+    }
+    # Fractional cover of the plants
+    if(any(grepl("@FractionalCover@", eventsfile))){
       if ("fractional_cover" %in% names(soil_IC_list$vals)) {
         fractionalcover <- unlist(soil_IC_list$vals["fractional_cover"])[[1]]*100
       }
       else{
         fractionalcover <- 70
       }
-      
+      # Fill in the value
+      eventsfile <- gsub("@FractionalCover@", paste0("'", fractionalcover, "'"), eventsfile)
     }
     
+    
+    ## Site file (general)
+    # Soil use history
+    if(any(grepl("@Info_Use_History@", sitefile))){
+      if ("history" %in% names(soil_IC_list$vals)){
+        soil_use_history <- unlist(soil_IC_list$vals["history"])[[1]]
+      }
+      else{
+        soil_use_history <- "arable"
+      }
+      sitefile <- gsub("@Info_Use_History@", paste0("'", soil_use_history, "'"), sitefile)
+    }
+    
+    # Soil type
+    if(any(grepl("@Soil_Type@", sitefile))){
+      if ("soil_type" %in% names(soil_IC_list$vals)){
+        soil_use_history <- unlist(soil_IC_list$vals["soil_type"])[[1]]
+      }
+      else{
+        soil_use_history <- "CLLO"
+      }
+      sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
+    }
+    
+    # Litter height
+    if(any(grepl("@Litter_Height@", sitefile))){
+      if ("litter_height" %in% names(soil_IC_list$vals)){
+        litter_height <- unlist(soil_IC_list$vals["litter_height"])[[1]]
+      }
+      else{
+        litter_height <- "0.0"
+      }
+      sitefile <- gsub("@Litter_Height@", paste0("'", litter_height, "'"), sitefile)
+    }
+    
+    ## -- Layers -- ##
     
     # Check how many depth layers is given and the depth of each
     depth <- soil_IC_list$dims$depth
@@ -2151,12 +2046,6 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   
   ## Writing and saving species- and siteparameters + initial soil conditions
-  
-  # Soil info
-  soil_use_history <- "arable"
-  soil_type <- "CLLO"
-  litter_height <- "0.0"
-  
   speciesparfile_pfts <- NULL
   
   # Handle the populating of speciesparameters after we have read the info from priors
@@ -2189,37 +2078,12 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   speciesparfile <- gsub("@Info@", speciesparfile_pfts)
   
   
-  
-  # 
-  # if(site_id == "15000000027"){
-  #   speciesparfile <- gsub("@Info@", paste(
-  #                                        b.1.1,species_par_values["barley"][[1]],b.3.1,
-  #                                        b.1.2,species_par_values["oat"][[1]],b.3.2),
-  #                                        speciesparfile)
-  # }
-  # if(site_id == "15000000029"){
-  #   speciesparfile <- gsub("@Info@", paste(a.1,
-  #                                          species_par_values["timothy"][[1]],
-  #                                          a.2), speciesparfile)
-  # }
-  # 
-  # if(site_id == "15000000023"){
-  #   speciesparfile <- gsub("@Info@", paste(a.1,
-  #                                          species_par_values["pipy"][[1]],
-  #                                          a.2), speciesparfile)
-  # }
-  # 
-  # if(site_id == "1000005093"){
-  #   speciesparfile <- gsub("@Info@", paste(
-  #                                          b.1.1,species_par_values["barley"][[1]],b.3.1,
-  #                                          b.1.2,species_par_values["timothy"][[1]],b.3.2),
-  #                                          speciesparfile)
-  # }
-  
   # Write to a new xml-file, which will be used on a run. Every simulation run will have
   # their own set of speciesparameters values
   writeLines(speciesparfile, con = file.path(settings$rundir, run.id, "speciesparameters.xml"))
   
+  ## Write events to a new xml file
+  writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
   
   
   # Handle the populating of siteparameters
@@ -2230,44 +2094,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   
   
-  
-  # Default site file
-  sitefile <- readLines(con = system.file("site_template.xml", package = "PEcAn.LDNDC"), n = -1)
-  
-  # Populate sitefile with given parameter. NOTE! Initial conditions are expected here to
-  # be given as a parameters, so those should be found from prior table
-  # If not set, then use the values defined earlier on this file.
-  #sitefile <- gsub("@Info_Surface_Layer@", soil_surface, sitefile)
-  sitefile <- gsub("@Info_Use_History@", paste0("'", soil_use_history, "'"), sitefile)
-  sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
-  sitefile <- gsub("@Litter_Height@", paste0("'", litter_height, "'"), sitefile)
+  # Populate sitefile layer info with given parameter
   sitefile <- gsub("@Info_Surface_Layer@", soil_combine, sitefile)
-  
   
   # Write soil conditions
   writeLines(sitefile, con = file.path(settings$rundir, run.id, "site.xml"))
   
-  ##
-  
-  
-  # Viikki events
-  if(site_id == "15000000029"){
-    # Default events file
-    eventsfile <- readLines(con = system.file("events_viik.xml", package = "PEcAn.LDNDC"), n = -1)
-    
-    #
-    eventsfile <- gsub("@InitialBiomass@", paste0("'", initialbiomass, "'"), eventsfile)
-    eventsfile <- gsub("@FractionalCover@", paste0("'", fractionalcover, "'"), eventsfile)
-    
-    # Write initial conditions on planting
-    writeLines(eventsfile, con = file.path(settings$rundir, run.id, "events.xml"))
-  }
-  
-  
-  
-  
-  # Use airchemistry file, which represents Finland
-  airchemistry <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
+  # Write airchemistry file (not modified anywhere)
   writeLines(airchemistry, con = file.path(settings$rundir, run.id, "airchemistry.txt"))
   
   
