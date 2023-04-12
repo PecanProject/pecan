@@ -26,12 +26,11 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
+    PEcAn.uncertainty,
     PEcAn.workflow,
     purrr,
-    stringr,
-    sp,
-    tidyr,
-    utils
+    rlang,
+    stringr
 Suggests:
     corrplot,
     DBI,
@@ -52,6 +51,9 @@ Suggests:
     stats,
     testthat,
     tictoc,
+    tidyr,
+    sp,
+    utils,
     XML
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

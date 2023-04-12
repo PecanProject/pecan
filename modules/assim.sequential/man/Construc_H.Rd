@@ -15,10 +15,10 @@ Construct_H(choose, Y, X)
 \item{X}{Dataframe or matrix of forecast state variables for different ensembles.}
 }
 \value{
-This returns a mtrix specifying which observation go with which state variables.
+This returns a matrix specifying which observation go with which state variables.
 }
 \description{
-This function creates a mtrix mapping obsereved data to their forecast state variable.
+This function creates a matrix mapping obsereved data to their forecast state variable.
 }
 \author{
 Hamze Dokoohaki

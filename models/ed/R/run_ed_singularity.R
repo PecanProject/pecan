@@ -21,7 +21,7 @@
 #' @param ed2in_path Path to ED2IN file.
 #' @param app Singularity "app" to run. Either "ED" or "EDR".
 #' @param singularity_args Additional arguments to be passed to `singularity run` (before)
-#' @param Additional arguments to [base::system2]
+#' @param ... Additional arguments to [base::system2]
 #' @export
 run_ed_singularity <- function(img_path, ed2in_path,
                                app = "ED",

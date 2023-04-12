@@ -45,6 +45,7 @@ SoilC_export_csv <- TRUE
 obs_start_date <- "2012-07-15"
 obs_end_date <- "2021-07-15"
 obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+timestep <- list(unit="year", num=1)
 
 #Start building template
 template <- PEcAn.settings::Settings(list(
@@ -84,7 +85,8 @@ template <- PEcAn.settings::Settings(list(
       Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
       start.date = obs_start_date,
       end.date = obs_end_date,
-      outdir = obs_outdir
+      outdir = obs_outdir,
+      timestep = timestep
     ))
   )),
   
@@ -328,7 +330,7 @@ for (i in 1:nSite) {
   index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
-  settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+  settings[[i]]$run$site$name <- site_info$sitename[index_site_info]#temp_ID
 }
 
 #####

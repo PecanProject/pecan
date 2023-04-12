@@ -137,8 +137,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## Edit ED2IN file for runs
   revision <- settings$model$revision
   if (is.null(revision)) {
-    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-    revision <- model$revision
+    PEcAn.logger::logger.severe("ED2 model `revision` not specified in PEcAn settings file.")
   }
   revision <- gsub("^r", "", revision)
 
@@ -255,7 +254,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     
     # Overwrite defaults with values from settings$model$ed2in_tags list
     if(!is.null(settings$model$ed2in_tags)){
-      sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+      sda_tags <- utils::modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
     }
     ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE, check_paths = check)
   }
@@ -520,12 +519,12 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       }
 
       if (grepl("soil", pft)) {
-        data(soil, package = "PEcAn.ED2", envir = environment())
+        utils::data(soil, package = "PEcAn.ED2", envir = environment())
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
 
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
-        vals <- modifyList(vals, converted.trait.values)
+        vals <- utils::modifyList(vals, converted.trait.values)
 
         decompositon.xml <- PEcAn.settings::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
@@ -548,14 +547,14 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
 
         ## Selectively replace defaults with trait values
-        vals <- modifyList(vals, converted.trait.values)
+        vals <- utils::modifyList(vals, converted.trait.values)
 
         ## Convert settings constants to ED units
         converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
 
         ## Selectively replace defaults and trait values with constants from settings
         if (!is.null(converted.defaults)){
-          vals <- modifyList(vals, converted.defaults)
+          vals <- utils::modifyList(vals, converted.defaults)
         }
         
         ## Make sure that include_pft is set to 1

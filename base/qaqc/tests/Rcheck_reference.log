@@ -42,19 +42,7 @@ Non-standard file/directory found at top level:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-cull_database_entries: no visible global function definition for
-  ‘read.table’
-cull_database_entries: no visible global function definition for
-  ‘write.table’
-write_out_table: no visible global function definition for
-  ‘write.table’
-Undefined global functions or variables:
-  created_at read.table updated_at
-  user_id user_id_code write.table
-Consider adding
-  importFrom("utils", "read.table", "write.table")
-to your NAMESPACE file.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -69,4 +57,4 @@ to your NAMESPACE file.
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
 * DONE
-Status: 0 WARNING, 3 NOTEs
+Status: 0 WARNING, 2 NOTEs

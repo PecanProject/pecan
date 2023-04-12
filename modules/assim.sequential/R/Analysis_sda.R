@@ -6,7 +6,7 @@
 ##' @param FUN   A Function for performing the analysis step. Two available options are: 1-EnKF and 2-GEF.
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param H is a matrix of 1's and 0's specifying which observations go with which variables.
 ##' @param extraArg This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param ... Extra argument sent to the analysis function. In case you're using the `GEF` function, this function requires nt, obs.mean, obs.cov, which are the total number of steps, list of observed means and list of observed cov respectively.
 ##’ @details
@@ -40,7 +40,7 @@ Analysis.sda<-function(settings,
 ##' @param settings  pecan standard settings list.  
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which variables.
+##' @param H is a matrix of 1's and 0's specifying which observations go with which variables.
 ##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.
 ##' @param ... Extra argument sent to the analysis function.
 ##’ @details
@@ -66,7 +66,7 @@ EnKF<-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   Y <- Observed$Y
   # Enkf---------------------------------------------------
   mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-  Pf <- cov(X)
+  Pf <- stats::cov(X)
   
   
   diag(Pf)[which(diag(Pf) == 0)] <- 0.1 ## hack for zero variance
@@ -146,7 +146,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   wts <- extraArg$wts/sum(extraArg$wts)
   
   if(any(is.na(wts))){
-    logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
+    PEcAn.logger::logger.warn(paste('We found an NA in the wts for the ensemble members. Is this what you want? For now, we will change the NA to a zero.'))
     wts[is.na(wts)] <- 0
   }
   if(sum(wts==0)){
@@ -213,8 +213,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
                                        name = 'space')
       
       try(logprob_y_tobit2space <- tobit2space_pred$calculate('y.censored'))
-      if(is.na(logprob_y_tobit2space)) logger.warn('We cannot calculate a logprobability for your data in the tobit2space model. Check data.tobit2space variable in the global environment to make sure its what you want.')
-      if(logprob_y_tobit2space < -1000000) logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
+      if(is.na(logprob_y_tobit2space)) PEcAn.logger::logger.warn('We cannot calculate a logprobability for your data in the tobit2space model. Check data.tobit2space variable in the global environment to make sure its what you want.')
+      if(logprob_y_tobit2space < -1000000) PEcAn.logger::logger.warn(paste('Log probability very low for y in tobit2space model during time',t,'. Check initial conditions.'))
       
       ## Adding X.mod,q,r as data for building model.
       conf_tobit2space <- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
@@ -297,15 +297,15 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
       }
       print(gelman.keep.tobit2space)
       
-      if(any(gelman.keep.tobit2space > 1.5)) logger.warn(paste('Gelman value > 1.5 for tobit2space model. Re-assess time point', t))
+      if(any(gelman.keep.tobit2space > 1.5)) PEcAn.logger::logger.warn(paste('Gelman value > 1.5 for tobit2space model. Re-assess time point', t))
 
       save(dat.tobit2space, file = file.path(outdir, paste0('dat.tobit2space',t,'.Rdata')))
     }
     
-    pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
+    grDevices::pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
     set.seed(t)
     try(assessParams(dat = dat.tobit2space[sample(x = 10:nrow(dat.tobit2space),size = 500,replace = F),],wts=wts, Xt = X))
-    dev.off()
+    grDevices::dev.off()
     
     ## TO DO Add MCMC Diagnostics, how do we do it for pecan meta-analysis?
     
@@ -361,7 +361,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
   
   if(sum(y.censored,na.rm=T)==0){
-    logger.warn('NO DATA. Check y.censored in Analysis_sda.R')
+    PEcAn.logger::logger.warn('NO DATA. Check y.censored in Analysis_sda.R')
   }
   
   #which type of observation do we have at this time point?
@@ -567,7 +567,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     gelman.keep[ff] <- try(coda::gelman.diag(mcmc.check,transform = T)$psrf[1])
   }
   print(gelman.keep)
-  if(any(gelman.keep > 1.5,na.rm = T)) logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
+  if(any(gelman.keep > 1.5,na.rm = T)) PEcAn.logger::logger.warn(paste('Gelman value > 1.5 for GEF model. Re-assess time point', t))
   
   try(save(gelman.keep.tobit2space,gelman.keep,file = file.path(outdir, paste0('gelman.diag',t,'.Rdata'))))
   
@@ -609,8 +609,8 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   aqq   <- V
   bqq   <- n
   
-  pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
-  par(mfrow = c(2, 3))
+  grDevices::pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
+  graphics::par(mfrow = c(2, 3))
   
   for(rr in 1:length(iX)){
     graphics::plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
@@ -631,7 +631,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     eigen_save[rr,] <- eigen((matrix(dat_save[rr, iq],ncol(X),ncol(X))))$values
   }
   apply(eigen_save,2,graphics::plot,typ='l')
-  dev.off()
+  grDevices::dev.off()
   
   return(list(mu.f = mu.f,
               Pf = Pf,
@@ -660,9 +660,9 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
 ##’ @details
 ##’  
 ##' 
-##' @description This function creates a mtrix mapping obsereved data to their forecast state variable.
+##' @description This function creates a matrix mapping obsereved data to their forecast state variable.
 ##' 
-##' @return This returns a mtrix specifying which observation go with which state variables.
+##' @return This returns a matrix specifying which observation go with which state variables.
 ##' @export
 Construct_H <- function(choose, Y, X){
   ## design matrix

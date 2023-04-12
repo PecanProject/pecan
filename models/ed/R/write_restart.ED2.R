@@ -1,7 +1,18 @@
 #' @title Write ED2 restart file from SDA results
 #' 
+#' @param outdir output directory
+#' @param runid run id
+#' @param start.time Time of current assimilation step
+#' @param stop.time Time of next assimilation step
+#' @param settings pecan settings list
+#' @param new.state Analysis state matrix returned by `sda.enkf`
+#' @param RENAME flag to either rename output file or not
+#' @param new.params optional, additional params to pass `write.configs` that
+#'   are deterministically related to the parameters updated by the analysis
+#' @param inputs new input paths updated by the SDA workflow, will be passed to
+#'   `write.configs`
+#'   
 #' @author Alexey Shiklomanov, Istem Fer
-#' @inheritParams PEcAn.ModelName::write_restart.ModelName
 #' @return TRUE if successful
 #' @export
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,

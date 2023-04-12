@@ -122,7 +122,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     template.param <- settings$model$default.param
   }
   
-  param <- read.table(template.param)
+  param <- utils::read.table(template.param)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -467,7 +467,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "laiInit"), 2] <- IC$lai
     }
     ## litterInit gC/m2
-    if ("litter" %in% ic.names) {
+    if ("litter_carbon_content" %in% ic.names) {
       param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
     }
     ## soilInit gC/m2
@@ -475,16 +475,17 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
     ## litterWFracInit fraction
-    if ("litterWFrac" %in% ic.names) {
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water
+    if ("litter_mass_content_of_water" %in% ic.names) {
+      #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
+      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
     ## soilWFracInit fraction
     if ("soilWFrac" %in% ic.names) {
       param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
     }
     ## snowInit cm water equivalent
-    if ("snow" %in% ic.names) {
-      param[which(param[, 1] == "snowInit"), 2] <- IC$snow
+    if ("SWE" %in% ic.names) {
+      param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
     ## microbeInit mgC/g soil
     if ("microbe" %in% ic.names) {
@@ -572,7 +573,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 
-  write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
+  utils::write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
 #--------------------------------------------------------------------------------------------------#
