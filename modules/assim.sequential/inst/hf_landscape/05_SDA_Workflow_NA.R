@@ -35,7 +35,7 @@ option_list = list(optparse::make_option("--start.date",
                                          type="character")
                    )
 args <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
-#args$start.date = "2022-05-18"
+#args$start.date = "2022-05-18 00:00:00"
 #args$prev = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FOF2022-05-17/"
 start.date = lubridate::as_date(args$start.date)
 
@@ -118,9 +118,9 @@ set$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"))
 next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M"))
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 #set <- PEcAn.settings::prepare.settings(set, force = TRUE)
-#set$host$rundir <- set$rundir
-#set$host$outdir <- set$modeloutdir
-#set$host$folder <- set$modeloutdir
+set$host$rundir <- set$rundir
+set$host$outdir <- set$modeloutdir
+set$host$folder <- set$modeloutdir
 ## TODO: make sure settings are prepared; for remote, make sure to set host directories
 
 ## outdirs

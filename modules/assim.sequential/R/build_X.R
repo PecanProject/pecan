@@ -31,7 +31,7 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
           X_tmp[[i]] <- do.call( my.read_restart,
                                  args = list(
                                    outdir = outdir,
-                                   runid = settings$runs$id[i] %>% as.character(),
+                                   runid = settings$run$id[i] %>% as.character(),
                                    stop.time = read_restart_times[t+1],
                                    settings = settings,
                                    var.names = var.names,
