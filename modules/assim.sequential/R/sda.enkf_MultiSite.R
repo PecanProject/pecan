@@ -420,7 +420,8 @@ sda.enkf.multisite <- function(settings,
         runs.tmp <- list.dirs(rundir, full.names = F)
         runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-        PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        # PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        PEcAn.workflow::qsub_parallel(settings, files=PEcAn.workflow::merge_job_files(settings, 20))
         
         #------------- Reading - every iteration and for SDA
         
@@ -711,5 +712,6 @@ sda.enkf.multisite <- function(settings,
     {
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
+    PEcAn.utils::sendmail("zhangdc@bu.edu", "zhangdc@bu.edu", "SDA progress report", paste("Time point:", obs.times[t], "has been completed!"))
   } ### end loop over time
 } # sda.enkf

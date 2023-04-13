@@ -2,7 +2,9 @@
 
 export(create_execute_test_xml)
 export(do_conversions)
+export(merge_job_files)
 export(model_specific_tags)
+export(qsub_parallel)
 export(run.write.configs)
 export(runModule.get.trait.data)
 export(runModule.run.write.configs)
