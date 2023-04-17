@@ -56,6 +56,4 @@ State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensembl
 }
 \author{
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}
-
-Michael Dietze and Ann Raiho \email{dietze@bu.edu}
 }

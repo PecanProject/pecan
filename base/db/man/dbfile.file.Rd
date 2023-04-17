@@ -46,6 +46,4 @@ If none is found, both will return NA.
 }
 \author{
 Rob Kooper
-
-Rob Kooper
 }
