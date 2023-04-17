@@ -78,7 +78,7 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 
 doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript \
 	-e "roxver <- packageVersion('roxygen2')" \
-	-e "if (roxver != '7.1.2') stop('Roxygen2 version is ', roxver, ', but PEcAn package documentation must be built with exactly version 7.1.2')" \
+	-e "if (roxver != '7.2.3') stop('Roxygen2 version is ', roxver, ', but PEcAn package documentation must be built with exactly version 7.2.3')" \
 	-e "devtools::document('"$(strip $(1))"')"
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
@@ -131,7 +131,7 @@ clean:
 	echo `date` > $@
 
 .install/roxygen2: | .install .install/devtools
-	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) devtools::install_version('roxygen2', '7.1.2')"
+	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) devtools::install_version('roxygen2', '7.2.3')"
 	echo `date` > $@
 
 .install/testthat: | .install
