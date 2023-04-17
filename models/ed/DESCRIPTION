@@ -66,6 +66,6 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 2
