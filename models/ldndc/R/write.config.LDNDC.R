@@ -61,8 +61,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     GroundWater = '<groundwater source="groundwater.txt" format="txt" />'
     groundwaterfile <- readLines(con = file.path(settings$run$inputs$groundwater$path1))
     writeLines(groundwaterfile, con = file.path(settings$rundir, run.id, "groundwater.txt"))
-  }
-  else{GroundWater = ""}
+  }else{GroundWater = ""}
   
   
   
@@ -256,7 +255,12 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   sitefile <- readLines(con = system.file("site_template.xml", package = "PEcAn.LDNDC"), n = -1)
   
   # Use airchemistry file, which represents Finland
-  airchemistryfile <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
+  if(!is.null(settings$run$inputs$airchemistry$path1)){
+    airchemistryfile <- readLines(con = file.path(settings$run$inputs$airchemistry$path1))
+  } else{
+    airchemistryfile <- readLines(con = system.file("airchemistry.txt", package = "PEcAn.LDNDC"), n = -1)
+  }
+  
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   # For species, read the speciesparameters template
@@ -272,7 +276,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## model is able to function properly. Later on, these
   ## files should be populated with initial values.
   
-  # Siteparameters
+  # Species and Siteparameters
+  b.2 <- ""
   h.2 <- ""
   
   species_par_values <- list()
@@ -1847,10 +1852,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Soil type
     if(any(grepl("@Soil_Type@", sitefile))){
       if ("soil_type" %in% names(soil_IC_list$vals)){
-        soil_use_history <- unlist(soil_IC_list$vals["soil_type"])[[1]]
+        soil_type <- unlist(soil_IC_list$vals["soil_type"])[[1]]
       }
       else{
-        soil_use_history <- "CLLO"
+        soil_type <- "ORMA"
       }
       sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
     }
@@ -2060,7 +2065,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   speciesparfile_pfts <- NULL
   
   # Handle the populating of speciesparameters after we have read the info from priors
-  for(pftn in 1:length(pfts_run)){
+  for(pftn in pfts_run){
     ## Crops ##
     # Barley
     if(pftn == "barley"){
@@ -2076,6 +2081,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                     species_par_values["oat"][[1]],
                                     "\t\t\t </species> \n\n")
     }
+    ## Grass
     # Timothy
     if(pftn == "timothy"){
       speciesparfile_pfts <- paste0(speciesparfile_pfts,
@@ -2083,6 +2089,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                     species_par_values["timothy"][[1]],
                                     "\t\t\t </species> \n\n")
     }
+    ## Forest
     # Pipy, need to check a correct name for this wood species
     if(pftn == "pipy"){
       speciesparfile_pfts <- paste0(speciesparfile_pfts,
@@ -2092,8 +2099,9 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
   }
   
+  
   # Combine the speciesparameter info
-  speciesparfile <- gsub("@Info@", speciesparfile_pfts)
+  speciesparfile <- gsub("@Info@", speciesparfile_pfts, speciesparfile)
   
   
   # Write to a new xml-file, which will be used on a run. Every simulation run will have
