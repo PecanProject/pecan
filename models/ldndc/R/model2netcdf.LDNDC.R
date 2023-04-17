@@ -42,17 +42,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
                             select = c(datetime, sC_co2_hetero.kgCm.2.))
     
   } else{
-    PEcAn.logger::logger.info("Files with daily timesteps used")
-    
-    
-    ## Ecosystem subset
-    ecosystem <- subset(read.csv("ecosystem-daily.txt", header = T, sep = "\t"),
-                        select = c('datetime', 'dC_NEE.kgCha.1.', 'C_total.kgCha.1.'))
-  
-  
-    ## Physiology subset
-    physiology <- subset(read.csv("physiology-daily.txt", header = T, sep = "\t"),
-                         select = c('datetime', 'lai'))
+    PEcAn.logger::logger.severe("Subdaily output files not found, check the configurations for the LDNDC runs")
   }
   
   ## If there are several species on the field, choose the rows which shows the sum values of species variables.
@@ -77,7 +67,6 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   
   
   
-  
   ## Check that the data match, based on the years we want
   simu_years <- unique(ldndc.out$Year)
   
@@ -96,10 +85,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   for(y in year_seq){
     # if file exist and overwrite is F, then move on to the next
     
-    print(paste("---- Prosessing year: ", y)) # debugging
+    print(paste("---- Prosessing year: ", y))
     
     # Subset data for prosessing
-    sub.ldndnc.out <- subset(ldndc.out, Year == y)
+    sub.ldndc.out <- subset(ldndc.out, Year == y)
+    
     
     
     
@@ -117,36 +107,38 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     }
     
     ## Subset the years we are interested in
-    sub.ldndnc.out <- subset(sub.ldndnc.out, Day >= begin_date & Day <= end_d)
+    sub.ldndc.out <- subset(sub.ldndc.out, Day >= begin_date & Day <= end_d)
+    
+    
+    # Aggregate the daily values
+    # sub.ldndc.out.daily <- sub.ldndc.out %>% group_by(Year, Day) %>%
+    #   summarise(lai_daily = mean(lai), dC_maintenance_resp.kgCm.2._daily = sum(dC_maintenance_resp.kgCm.2.),
+    #             dC_transport_resp.kgCm.2._daily = sum(dC_transport_resp.kgCm.2.), dC_growth_resp.kgCm.2._daily = sum(dC_growth_resp.kgCm.2.),
+    #             dC_co2_upt.kgCm.2._daily = sum(dC_co2_upt.kgCm.2.), sC_co2_hetero.kgCm.2._daily = sum(sC_co2_hetero.kgCm.2.))
     
     
     # Create the tvals that are used in nc-files
-    tvals <- sub.ldndnc.out[["Day"]] + sub.ldndnc.out[["Step"]] /out_day -1
-    
+    tvals <- sub.ldndc.out[["Day"]] + sub.ldndc.out[["Step"]] /out_day -1
+    #tvals_daily <- sub.ldndc.out.daily[["Day"]] - 1
     
     
     
     ## Outputs need to be an appropriate units, this can be done here
     output <- list()
-    # NEE value is on kg, so change it mg (*1 000 000), then change ha to m2 (/10 000) and then day to seconds (86400)
-    #output[[1]] <- sub.ldndnc.out$dC_NEE.kgCha.1. * 100 / timestep.s
-    
-    # Kilogram of total soil carbon in a m2
-    #output[[2]] <- sub.ldndnc.out$C_total.kgCha.1. / 10000
     
     # LAI
-    output[[1]] <- sub.ldndnc.out$lai
+    output[[1]] <- sub.ldndc.out$lai
     
     # Photosynthesis rate - GPP
-    GPP <- sub.ldndnc.out$dC_co2_upt.kgCm.2./timestep.s
+    GPP <- sub.ldndc.out$dC_co2_upt.kgCm.2./timestep.s
     output[[2]] <- GPP
     
     # Autotrophic respiration
-    Autotrophic <- (sub.ldndnc.out$dC_maintenance_resp.kgCm.2. + sub.ldndnc.out$dC_transport_resp.kgCm.2. + sub.ldndnc.out$dC_growth_resp.kgCm.2.)/timestep.s
+    Autotrophic <- (sub.ldndc.out$dC_maintenance_resp.kgCm.2. + sub.ldndc.out$dC_transport_resp.kgCm.2. + sub.ldndc.out$dC_growth_resp.kgCm.2.)/timestep.s
     output[[3]] <- Autotrophic
     
     # Heterotrophic respiration
-    Heterotrophic <- sub.ldndnc.out$sC_co2_hetero.kgCm.2./timestep.s
+    Heterotrophic <- sub.ldndc.out$sC_co2_hetero.kgCm.2./timestep.s
     output[[4]] <- Heterotrophic
     
     # Total respiration
@@ -154,6 +146,10 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     # NEE
     output[[6]] <- Autotrophic + Heterotrophic - GPP
+    
+    
+    # LAI Daily
+    #output[[7]] <- sub.ldndc.out.daily$lai_daily
     
     #### Declare netCDF variables ####
     t <- ncdf4::ncdim_def(name = "time",
@@ -164,12 +160,21 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
                           unlim = TRUE)
     
     
+    # t_daily <- ncdf4::ncdim_def(name = "daily_time",
+    #                             longname = "daily_time",
+    #                             units = paste0("days since ", y, "-01-01"), # 00:00:00
+    #                             vals = tvals_daily,
+    #                             calendar = "standard",
+    #                             unlim = FALSE)
+    
+    
     
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 
                             longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), 
                             longname = "station_longitude")
     dims <- list(lon = lon, lat = lat, time = t)
+    #dims_daily <- list(lon = lon, lat = lat, time = t_daily)
     time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
                                       longname="history time interval endpoint dimensions",
                                       vals = 1:2, units="")
@@ -178,14 +183,17 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     ## Declare netCDF variables ##
     nc_var <- list()
-    #nc_var[[1]] <- PEcAn.utils::to_ncvar("NEE", dims)
-    #nc_var[[2]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    
+    # Subdaily values
     nc_var[[1]] <- PEcAn.utils::to_ncvar("LAI", dims)
     nc_var[[2]] <- PEcAn.utils::to_ncvar("GPP", dims)
     nc_var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
     nc_var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
     nc_var[[5]] <- PEcAn.utils::to_ncvar("TotalResp", dims)
     nc_var[[6]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    
+    # Daily values
+   # nc_var[[7]] <- PEcAn.utils::to_ncvar("LAI_Daily", dims_daily)
     
     
     ## Output netCDF data
