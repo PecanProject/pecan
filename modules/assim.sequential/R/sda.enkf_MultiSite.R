@@ -341,7 +341,7 @@ sda.enkf.multisite <- function(settings,
         load(file.path(settings$outdir, "samples.Rdata"))
       }
       #reformatting params
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- PEcAnAssimSequential:::sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       inputs <- conf.settings %>% purrr::map(function(setting) {
@@ -421,21 +421,25 @@ sda.enkf.multisite <- function(settings,
         runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
         # PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
-        PEcAn.workflow::qsub_parallel(settings, files=PEcAn.workflow::merge_job_files(settings, 20))
+        PEcAn.workflow::qsub_parallel(settings, files=PEcAn.workflow::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
         
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, 
-                         settings = settings, 
-                         new.params = new.params, 
-                         nens = nens, 
-                         read_restart_times = read_restart_times, 
-                         outdir = outdir, 
-                         t = t, 
-                         var.names = var.names, 
-                         my.read_restart = my.read_restart,
-                         restart_flag = restart_flag)
+        while (is.character(try(reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
+                                                                        settings = settings, 
+                                                                        new.params = new.params, 
+                                                                        nens = nens, 
+                                                                        read_restart_times = read_restart_times, 
+                                                                        outdir = outdir, 
+                                                                        t = t, 
+                                                                        var.names = var.names, 
+                                                                        my.read_restart = my.read_restart,
+                                                                        restart_flag = restart_flag), silent = T))) {
+          Sys.sleep(5)
+          PEcAn.logger::logger.info("Empty folder, try again!")
+        }
+        
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -500,6 +504,8 @@ sda.enkf.multisite <- function(settings,
         }
         if(!is.null(pre_enkf_params)){
           Pf <- pre_enkf_params[[t]]$Pf
+        }else{
+          Pf <- NULL
         }
         
         if(!exists('Cmcmc_tobit2space')) {
