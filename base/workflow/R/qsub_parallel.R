@@ -79,6 +79,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   PEcAn.logger::logger.info("Jobs submitted!")
   #check if jobs are completed
   PEcAn.logger::logger.info("Checking the qsub jobs status!")
+  PEcAn.logger::logger.info(paste0("Checking the file ", prefix))
   ## setup progressbar
   pb <- utils::txtProgressBar(min = 0, max = length(unlist(run_list)), style = 3)
   pbi <- 0
