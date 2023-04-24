@@ -178,7 +178,7 @@ tobit.model <-  nimbleCode({
 GEF.MultiSite.Nimble <-  nimbleCode({
   if (q.type == 1) {
     # Sorting out qs
-    qq ~ dgamma(aq, bq) ## aq and bq are estimated over time
+    qq ~ dgamma(shape = aq, rate = bq) ## aq and bq are estimated over time
     q[1:YN, 1:YN] <- qq * diag(YN)
   } else if (q.type == 2) {
     # Sorting out qs
