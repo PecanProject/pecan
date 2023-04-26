@@ -16,6 +16,7 @@ Imports:
     furrr,
     future,
     ggplot2,
+    ggpubr,
     lubridate (>= 1.6.0),
     magrittr,
     Matrix,
@@ -29,7 +30,6 @@ Imports:
     PEcAn.uncertainty,
     PEcAn.workflow,
     purrr,
-    rlang,
     stringr
 Suggests:
     corrplot,
@@ -46,6 +46,7 @@ Suggests:
     plyr (>= 1.8.4),
     raster,
     reshape2 (>= 1.4.2),
+    rlang,
     rlist,
     sf,
     stats,
