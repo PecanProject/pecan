@@ -853,7 +853,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
                                 style = list(general_color = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black"),
                                              fill_color = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey"),
                                              title_color = "red")){
-  #TODO: make size adjustable.
+  #TODO: make page, font, line, point sizes adjustable.
   time_points <- names(FORECAST)
   site_ids <- attributes(FORECAST[[1]])$Site
   var_names <- attributes(FORECAST[[1]])$dimnames[[2]]
@@ -952,6 +952,8 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
       PEcAn.logger::logger.info("Please provide the pdf path!")
       return(0)
     } else {
+      PDF_w <- 20
+      PDF_h <- 16
       p <- list()
       for (PFT in sort(unique(pft$pft))) {
         site_id_pft <- pft$site[which(pft$pft == PFT)]
