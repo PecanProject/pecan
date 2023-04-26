@@ -981,7 +981,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
     }
   }
   #print pdf
-  pdf(paste0(outdir,"/SDA.pdf"),width = PDF_w, height = PDF_h)
+  pdf(file.path(outdir, paste0("SDA_", by, ".pdf")),width = PDF_w, height = PDF_h)
   print(p)
   dev.off()
 }
