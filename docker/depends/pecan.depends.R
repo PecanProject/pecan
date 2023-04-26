@@ -52,6 +52,7 @@ wanted <- c(
 'ggmap',
 'ggmcmc',
 'ggplot2',
+'ggpubr',
 'ggrepel',
 'glue',
 'graphics',
