@@ -8,6 +8,7 @@
 \alias{post.analysis.ggplot}
 \alias{post.analysis.ggplot.violin}
 \alias{post.analysis.multisite.ggplot}
+\alias{SDA_timeseries_plot}
 \title{Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot}
 \usage{
 interactive.plotting.sda(
@@ -86,6 +87,19 @@ post.analysis.multisite.ggplot(
   facetg = FALSE,
   readsFF = NULL,
   Add_Map = FALSE
+)
+
+SDA_timeseries_plot(
+  ANALYSIS,
+  FORECAST,
+  obs.mean,
+  obs.cov,
+  outdir,
+  pft.path = NULL,
+  by = "site",
+  CI = c(0.025, 0.975),
+  unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb =
+    "kg/m2")
 )
 }
 \arguments{
