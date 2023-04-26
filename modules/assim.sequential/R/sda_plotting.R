@@ -849,7 +849,11 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 ##' @rdname interactive.plotting.sda
 ##' @export
 SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, pft.path = NULL, by = "site", CI = c(0.025, 0.975), 
-                                unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb = "kg/m2")){
+                                unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb = "kg/m2"),
+                                style = list(general_color = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black"),
+                                             fill_color = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey"),
+                                             title_color = "red")){
+  #TODO: make size adjustable.
   time_points <- names(FORECAST)
   site_ids <- attributes(FORECAST[[1]])$Site
   var_names <- attributes(FORECAST[[1]])$dimnames[[2]]
@@ -912,12 +916,12 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
                                        geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
                                        geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                        geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                       scale_fill_manual(values = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey")) +
-                                       scale_color_manual(values = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black")) +
+                                       scale_fill_manual(values = style$fill_color) +
+                                       scale_color_manual(values = style$general_color) +
                                        ylab(paste0(var.name, " (", unit[var.name], ")")))
       }
       p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
-                                                         top = ggpubr::text_grob(site.id, color = "red", face = "bold", size = 14)))
+                                                         top = ggpubr::text_grob(site.id, color = style$title_color, face = "bold", size = 14)))
     }
     #if we plot by each state variable
   } else if (by == "var") {
@@ -934,13 +938,13 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
                                       geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
                                       geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                       geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                      scale_fill_manual(values = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey")) +
-                                      scale_color_manual(values = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black")) +
+                                      scale_fill_manual(values = style$fill_color) +
+                                      scale_color_manual(values = style$general_color) +
                                       ylab(paste0(var.name, " (", unit[var.name], ")")) +
                                       ggtitle(site.id))
       }
       p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = var_p, common.legend = TRUE), 
-                                                         top = ggpubr::text_grob(var.name, color = "red", face = "bold", size = 14)))
+                                                         top = ggpubr::text_grob(var.name, color = style$title_color, face = "bold", size = 14)))
     }
     #if we plot by each (pft * state variable)
   } else if (by == "pft") {
@@ -962,13 +966,13 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean, obs.cov, outdir, p
                                            geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
                                            geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                            geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                           scale_fill_manual(values = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey")) +
-                                           scale_color_manual(values = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black")) +
+                                           scale_fill_manual(values = style$fill_color) +
+                                           scale_color_manual(values = style$general_color) +
                                            ylab(paste0(var.name, " (", unit[var.name], ")")) +
                                            ggtitle(site.id))
           }
           var_p <- rlist::list.append(var_p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
-                                                                     top = ggpubr::text_grob(paste(PFT, var.name), color = "red", face = "bold", size = 14)))
+                                                                     top = ggpubr::text_grob(paste(PFT, var.name), color = style$title_color, face = "bold", size = 14)))
         }
         p <- rlist::list.append(p, var_p)
       }

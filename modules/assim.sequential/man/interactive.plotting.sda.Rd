@@ -99,7 +99,10 @@ SDA_timeseries_plot(
   by = "site",
   CI = c(0.025, 0.975),
   unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb =
-    "kg/m2")
+    "kg/m2"),
+  style = list(general_color = c(FORECAST = "blue", ANALYSIS = "red", OBS = "black"),
+    fill_color = c(FORECAST = "yellow", ANALYSIS = "green", OBS = "grey"), title_color =
+    "red")
 )
 }
 \arguments{
