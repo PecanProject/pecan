@@ -27,9 +27,8 @@ metSplit <- function(conf.settings, inputs, settings, model, no_split = FALSE, o
     stop.time = obs.times[t]
   }
   #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-  inputs.split <- conf.settings %>%
-    `class<-`(c("list")) %>%
-    purrr::map2(inputs, function(settings, inputs) {
+  inputs.split <- 
+    furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")), inputs, model), function(settings, inputs, model) {
       # Loading the model package - this is required bc of the furrr
       library(paste0("PEcAn.",model), character.only = TRUE)
       
