@@ -144,7 +144,7 @@ clean:
 	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
 		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
 		-e "    || packageVersion('roxygen2') != '7.2.3') {" \
-		-e "  devtools::install_version('roxygen2', '7.2.3')" \
+		-e "  devtools::install_github('r-lib/roxygen2@v7.2.3')" \
 		-e "}"
 	$(eval INSTALLED_ROXYGEN_VERSION := 7.2.3)
 	echo `date` > $@
