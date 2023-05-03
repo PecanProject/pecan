@@ -27,77 +27,7 @@ PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 ## process forecast output into EFI long csv format
 ```{r}
-runModule.PEcAn2EFI <- function(settings) {
-  if (PEcAn.settings::is.MultiSettings(settings)) {
-    return(PEcAn.settings::papply(settings, runModule.PEcAn2EFI))
-  } else if (PEcAn.settings::is.Settings(settings)) {
-    return(PEcAn2EFI(settings))
-  } else {
-    stop("runModule.get.results only works with Settings or MultiSettings")
-  }
-}
-
-PEcAn2EFI <- function(s=settings){
-  #s = settings[[1]] ## testing
-  outdir <- s$modeloutdir
-
-  # ## load ensemble objects, used code from get.results
-  # if (!is.null(ens.ensemble.id)) {
-  #   fname <- ensemble.filename(s, "ensemble.samples", "Rdata", 
-  #                              ensemble.id = ens.ensemble.id, 
-  #                              all.var.yr = TRUE)
-  # } else if (!is.null(s$ensemble$ensemble.id)) {
-  #   ens.ensemble.id <- s$ensemble$ensemble.id
-  #   fname <- ensemble.filename(s, "ensemble.samples", "Rdata",
-  #                              ensemble.id = ens.ensemble.id, 
-  #                              all.var.yr = TRUE)
-  # } else {
-  #   fname <- file.path(outdir, "samples.Rdata")
-  # }     
-  # if (!file.exists(fname)) {
-  #   PEcAn.logger::logger.severe("No ensemble samples file found!")
-  # }
-  # load(fname)
-  # if (!exists("ens.run.ids")) {
-  #   ens.run.ids <- runs.samples$ens
-  # }
-  ens.run.ids = paste("ENS",
-                      formatC(1:s$ensemble$size, width = 5, format = "d", flag = "0"),
-                      s$run$site$id,
-                      sep="-"
-                      )
-  
-  variable = s$ensemble$variable
-  ensemble.output <- list()
-  for (row in seq_along(ens.run.ids)) { #rownames(ens.run.ids)
-    ## read output
-    #run.id <- ens.run.ids[row, "id"]
-    run.id <- ens.run.ids[row]
-    PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
-    ensemble.output[[row]] <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables=NULL)
-    
-    ## reprocess time_bounds
-    doy = as.vector(ensemble.output[[row]]$time_bounds[1,])  ## day of year
-    years = c(which(doy < 0.00001),length(doy)+1) ## get breaks between years
-    if(years[1] != 1) years = c(1,years) ## add current year if not start of year
-    years = rep(lubridate::year(start_date):lubridate::year(end_date),times=diff(years)) ## convert to years
-    tod = lubridate::as_datetime(lubridate::seconds_to_period(floor((doy - floor(doy)) * 60 *60))) ## time of day
-    lubridate::year(tod) <- years   
-    lubridate::yday(tod) <- floor(doy)    
-    ensemble.output[[row]]$time_bounds = tod
-    
-    ## convert to data frame
-    ensemble.output[[row]]  = as.data.frame(ensemble.output[[row]]) %>% 
-      dplyr::mutate(
-        parameter = row,
-        reference_datetime = lubridate::as_datetime(s$run$start.date),
-        site_id = s$run$site$id
-      )
-  }
-  names(ensemble.output) = ens.run.ids
-  
-  return(dplyr::bind_rows(ensemble.output))
-}
+source("~/pecan/modules/assim.sequential/inst/hf_landscape/PEcAn2EFI.R")
 
 out = data.table::rbindlist(runModule.PEcAn2EFI(settings))
 saveRDS(out,"out.RDS")

@@ -1,8 +1,22 @@
-## Reanalysis helper script around 05_SDA_Workflow_NA
-## original start date was 2022-05-17
-runDays <- seq(as.Date("2022-06-03"), as.Date("2022-06-23"), by="days")
+## Forecast helper script around 05_SDA_Workflow_NA
+runDays = Sys.Date()
 FORCE = FALSE  ## should we overwrite previously completed runs
 
+## check for missed days
+start_date = runDays
+success = FALSE
+NoMet = read.csv("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/NO_MET",header=FALSE)[,1]
+while(!success & runDays - start_date < lubridate::days(35) ){
+  this.out = dir(file.path(paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",start_date),"out"),full.names = TRUE)
+  if(length(this.out) > 0 & !FORCE) { ## this day ran successfully
+    success = TRUE
+    break
+  }
+  start_date = start_date - lubridate::days(1)
+}
+runDays = seq(from=start_date,to=runDays,by="1 day")
+
+## run forecast
 for (s in seq_along(runDays)) {
   ## did we do this run already?
   now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",runDays[s])
@@ -46,7 +60,6 @@ for (s in seq_along(runDays)) {
 ##########################################
 
 ## minio settings and helper functions
-
 source("~/pecan/modules/assim.sequential/inst/hf_landscape/PEcAn2EFI.R")
 source("~/pecan/modules/assim.sequential/inst/hf_landscape/minio_secrets.R")
 ## minio_secrets contains the following:
@@ -65,8 +78,6 @@ minio_uri_public <- function(...) {
   template <- "s3://%s?scheme=http&endpoint_override=%s%s%s"
   sprintf(template, minio_path(...), minio_host, ":", minio_port)
 }
-
-runDays <- seq(as.Date("2022-05-18"), as.Date("2022-06-05"), by="days")
 
 ## loop over dates
 for (s in seq_along(runDays)) {
@@ -101,8 +112,10 @@ for (s in seq_along(runDays)) {
                                    start_date = runDays[s])
   }
   out = dplyr::bind_rows(out)
-
+  
   ## push to container in parquet format
   out %>% dplyr::group_by(reference_datetime) %>% arrow::write_dataset(minio_uri(),format="parquet")
   
 }
+
+

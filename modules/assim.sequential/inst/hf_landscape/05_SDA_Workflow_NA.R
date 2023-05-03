@@ -137,6 +137,8 @@ dir.create(set$pfts$pft$outdir)
 #manually add in clim files 
 met_paths <- list.files(path = file.path("/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV", start.date), full.names = TRUE, pattern = ".clim")
 if(is_empty(met_paths)){
+  print(paste("SKIPPING: NO MET FOR",start.date))
+  cat(as.character(start.date),sep="\n",file=file.path(dirname(set$outdir),"NO_MET"),append=TRUE) ## add to list of dates missing met
   stop_quietly()
 }
 met_paths = as.list(met_paths)
