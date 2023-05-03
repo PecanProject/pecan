@@ -43,7 +43,7 @@ COPY pecan.depends.R /
 RUN  --mount=type=secret,id=github_token \
   export GITHUB_PAT=`cat /run/secrets/github_token` \
   && Rscript -e "install.packages(c('devtools'))" \
-  && Rscript -e "devtools::install_version('roxygen2', '7.1.2', repos = 'cran.r-project.org')" \
+  && Rscript -e "devtools::install_version('roxygen2', '7.2.3', repos = 'cran.r-project.org')" \
   && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 
