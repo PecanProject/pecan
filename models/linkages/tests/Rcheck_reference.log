@@ -1,15 +1,65 @@
-* using log directory ‘/tmp/RtmpsZI91X/PEcAn.LINKAGES.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/models/PEcAn.LINKAGES.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.LINKAGES/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.LINKAGES’ version ‘1.7.0’
+* this is package ‘PEcAn.LINKAGES’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘Ann Raiho <araiho@nd.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  ## This is the master copy of the PEcAn License
+
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  PEcAn project
+  www.pecanproject.org
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Unknown, possibly misspelled, fields in DESCRIPTION:
+  ‘Remotes’
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.utils, PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote
+Suggests or Enhances not in mainstream repositories:
+  linkages
+
+The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Requires orphaned package: ‘udunits2’
+* checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
@@ -20,10 +70,12 @@ Requires orphaned package: ‘udunits2’
 * checking whether package ‘PEcAn.LINKAGES’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+Author field differs from that derived from Authors@R
+  Author:    ‘Ann Raiho, Mike Dietze’
+  Authors@R: ‘Mike Dietze [aut], Ann Raiho [aut, cre], University of Illinois, NCSA [cph]’
+
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -36,15 +88,18 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
 '::' or ':::' import not declared from: ‘PEcAn.data.land’
 'library' or 'require' call not declared from: ‘PEcAn.data.atmosphere’
 'library' or 'require' call to ‘PEcAn.utils’ which was already attached by Depends.
   Please remove these calls from your code.
 'library' or 'require' calls in package code:
-  ‘linkages’ ‘PEcAn.data.atmosphere’
+  ‘PEcAn.data.atmosphere’ ‘linkages’
   Please use :: or requireNamespace() instead.
   See section 'Suggested packages' in the 'Writing R Extensions' manual.
+Namespace in Imports field not imported from: ‘PEcAn.data.atmosphere’
+  All declared Imports should be used.
 Package in Depends field not imported from: ‘PEcAn.utils’
   These packages need to be imported from (in the NAMESPACE file)
   for when this namespace is loaded but not attached.
@@ -74,6 +129,14 @@ model2netcdf.LINKAGES: no visible binding for global variable
 read_restart.LINKAGES: no visible global function definition for
   ‘read.output’
 sample.IC.LINKAGES: no visible global function definition for ‘runif’
+write.config.LINKAGES: no visible global function definition for
+  ‘read.csv’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.open’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.close’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.query’
 write_restart.LINKAGES: no visible global function definition for
   ‘read.csv’
 write_restart.LINKAGES: no visible global function definition for
@@ -93,25 +156,15 @@ write_restart.LINKAGES: no visible global function definition for
 write_restart.LINKAGES: no visible global function definition for
   ‘optimize’
 write_restart.LINKAGES: no visible global function definition for
-  ‘rnorm’
-write_restart.LINKAGES: no visible global function definition for
   ‘year’
-write.config.LINKAGES: no visible global function definition for
-  ‘read.csv’
-write.config.LINKAGES: no visible global function definition for
-  ‘db.open’
-write.config.LINKAGES: no visible global function definition for
-  ‘db.close’
-write.config.LINKAGES: no visible global function definition for
-  ‘db.query’
 Undefined global functions or variables:
   abvgroundwood.biomass ag.biomass ag.npp agb.pft aggregate area
   db.close db.open db.query dbh.save et f.comp flush.console
   hetero.resp iage.save leaf.litter logger.severe nee nogro.save
-  ntrees.kill optimize read.csv read.output rnorm runif
-  total.soil.carbon water year
+  ntrees.kill optimize read.csv read.output runif total.soil.carbon
+  water year
 Consider adding
-  importFrom("stats", "aggregate", "optimize", "rnorm", "runif")
+  importFrom("stats", "aggregate", "optimize", "runif")
   importFrom("utils", "flush.console", "read.csv")
 to your NAMESPACE file.
 * checking Rd files ... OK
@@ -158,5 +211,8 @@ Argument items with no description in Rd object 'write_restart.LINKAGES':
 * checking examples ... NONE
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 3 WARNINGs, 2 NOTEs
+
+Status: 4 WARNINGs, 2 NOTEs

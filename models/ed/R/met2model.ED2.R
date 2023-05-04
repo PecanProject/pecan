@@ -21,9 +21,12 @@
 #' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 #' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 #' @param lst timezone offset to GMT in hours
+#' @param lat latitude; if not provide the function will attempt to discover it in input files
+#' @param lon longitude; if not provide the function will attempt to discover it in input files
 #' @param overwrite should existing files be overwritten
 #' @param verbose should the function be very verbose
 #' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
+#' @param ... currently unused
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
   
@@ -72,7 +75,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   year_seq <- seq(start_year, end_year)
-  day_secs <- udunits2::ud.convert(1, "day", "seconds")
+  day_secs <- PEcAn.utils::ud_convert(1, "day", "seconds")
 
   # Check that we have all the input files we need
   need_input_files <- file.path(in.path, paste(in.prefix, year_seq, "nc", sep = "."))
@@ -179,7 +182,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     useCO2 <- is.numeric(CO2)
 
     ## convert time to seconds
-    sec <- udunits2::ud.convert(tdays, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    sec <- PEcAn.utils::ud_convert(tdays, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
     ncdf4::nc_close(nc)
 

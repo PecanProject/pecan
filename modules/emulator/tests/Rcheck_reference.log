@@ -1,12 +1,55 @@
-* using log directory ‘/tmp/RtmpNwieb2/PEcAn.emulator.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.emulator.Rcheck’
+* using R version 4.2.1 (2022-06-23)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.emulator/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.emulator’ version ‘1.7.0’
+* this is package ‘PEcAn.emulator’ version ‘1.7.2’
 * package encoding: UTF-8
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Michael Dietze <dietze@bu.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  ## This is the master copy of the PEcAn License
+
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  PEcAn project
+  www.pecanproject.org
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -19,10 +62,8 @@
 * checking whether package ‘PEcAn.emulator’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -35,18 +76,8 @@ address and non-empty name.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking dependencies in R code ... WARNING
-'library' or 'require' call not declared from: ‘time’
-'library' or 'require' calls to packages already attached by Depends:
-  ‘MCMCpack’ ‘mvtnorm’
-  Please remove these calls from your code.
-'library' or 'require' call to ‘time’ in package code.
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Packages in Depends field not imported from:
-  ‘MCMCpack’ ‘mlegp’ ‘mvtnorm’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... WARNING
 calcSpatialCov:
   function(x, ...)
@@ -107,211 +138,20 @@ See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
 manual.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-GaussProcess: no visible global function definition for ‘var’
-GaussProcess: no visible global function definition for ‘nlm’
-GaussProcess: no visible global function definition for ‘progressBar’
-GaussProcess: no visible global function definition for ‘rmvnorm’
-GaussProcess: no visible global function definition for ‘rnorm’
-GaussProcess: no visible global function definition for ‘dmvnorm’
-GaussProcess: no visible global function definition for ‘runif’
-GaussProcess: no visible global function definition for ‘update’
-GaussProcess: no visible global function definition for ‘rinvgamma’
-get_ss: no visible global function definition for ‘rnorm’
-get_y: no visible global function definition for ‘pda.calc.llik’
-gp_mle: no visible global function definition for ‘dmvnorm’
-gp_mle2: no visible global function definition for ‘dmvnorm’
-gpeval: no visible binding for global variable ‘splinefuns’
-gpeval : <anonymous>: no visible binding for global variable
-  ‘splinefuns’
-gpeval: no visible binding for global variable ‘ytrend’
-is.accepted: no visible global function definition for ‘runif’
-jump: no visible global function definition for ‘new’
-lhc: no visible global function definition for ‘runif’
-mcmc.GP: no visible global function definition for ‘pda.calc.llik.par’
-mcmc.GP: no visible global function definition for
-  ‘pda.adjust.jumps.bs’
-mcmc.GP: no visible global function definition for ‘mvrnorm’
-mcmc.GP: no visible global function definition for ‘rnorm’
-mcmc.GP: no visible binding for global variable ‘jmp’
-minimize.GP: no visible global function definition for ‘median’
-minimize.GP: no visible binding for global variable ‘median’
-minimize.GP: no visible global function definition for ‘nlm’
-minimize.GP: no visible binding for global variable ‘splinefcns’
-mvjump: no visible global function definition for ‘new’
-plot.jump: no visible global function definition for ‘par’
-plot.jump: no visible global function definition for ‘plot’
-plot.jump: no visible global function definition for ‘abline’
-plot.mvjump: no visible global function definition for ‘par’
-plot.mvjump: no visible global function definition for ‘plot’
-plot.mvjump: no visible global function definition for ‘abline’
-plot.mvjump: no visible global function definition for ‘text’
-predict.GP: no visible global function definition for ‘median’
-predict.GP: no visible binding for global variable ‘median’
-predict.GP: no visible binding for global variable ‘splinefuns’
-predict.GP: no visible global function definition for ‘progressBar’
-predict.GP: no visible global function definition for ‘rmvnorm’
-predict.GP: no visible global function definition for ‘rnorm’
-predict.GP: no visible binding for global variable ‘quantile’
-summarize.GP: no visible global function definition for ‘par’
-summarize.GP: no visible global function definition for ‘pdf’
-summarize.GP: no visible global function definition for ‘plot’
-summarize.GP: no visible global function definition for ‘title’
-summarize.GP: no visible global function definition for ‘lines’
-summarize.GP: no visible global function definition for ‘dev.off’
-Undefined global functions or variables:
-  abline dev.off dmvnorm jmp lines median mvrnorm new nlm par
-  pda.adjust.jumps.bs pda.calc.llik pda.calc.llik.par pdf plot
-  progressBar quantile rinvgamma rmvnorm rnorm runif splinefcns
-  splinefuns text title update var ytrend
-Consider adding
-  importFrom("graphics", "abline", "lines", "par", "plot", "text",
-             "title")
-  importFrom("grDevices", "dev.off", "pdf")
-  importFrom("methods", "new")
-  importFrom("stats", "median", "nlm", "quantile", "rnorm", "runif",
-             "update", "var")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
-* checking Rd files ... NOTE
-prepare_Rd: emulator-package.Rd:27-29: Dropping empty section \references
-prepare_Rd: emulator-package.Rd:31-32: Dropping empty section \seealso
-prepare_Rd: emulator-package.Rd:33-34: Dropping empty section \examples
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'GaussProcess'
-  ‘x’ ‘y’ ‘isotropic’ ‘method’ ‘ngibbs’ ‘burnin’ ‘thin’ ‘jump.ic’ ‘psi’
-  ‘zeroMean’ ‘...’
-
-Undocumented arguments in documentation object 'arate'
-  ‘x’
-
-Undocumented arguments in documentation object 'bounded'
-  ‘xnew’ ‘rng’
-
-Undocumented arguments in documentation object 'calcSpatialCov'
-  ‘x’ ‘...’
-
-Undocumented arguments in documentation object 'calculate.prior'
-  ‘samples’ ‘priors’
-
-Undocumented arguments in documentation object 'ddist'
-  ‘x’ ‘prior’
-
-Undocumented arguments in documentation object 'distance'
-  ‘x’
-
-Undocumented arguments in documentation object 'distance.martix'
-  ‘x’ ‘power’
-
-Undocumented arguments in documentation object 'distance12.martix'
-  ‘x’ ‘n1’
-
-Undocumented arguments in documentation object 'get_ss'
-  ‘gp’ ‘xnew’ ‘pos.check’
-
-Undocumented arguments in documentation object 'get_y'
-  ‘SSnew’ ‘xnew’ ‘llik.fn’ ‘priors’ ‘llik.par’
-
-Undocumented arguments in documentation object 'gp_mle'
-  ‘theta’ ‘d’ ‘nugget’ ‘myY’
-
-Undocumented arguments in documentation object 'gp_mle2'
-  ‘theta’ ‘d’ ‘nugget’ ‘myY’ ‘maxval’
-
-Undocumented arguments in documentation object 'gpeval'
-  ‘xnew’ ‘k’ ‘mu’ ‘tau’ ‘psi’ ‘x’
-
-Undocumented arguments in documentation object 'groupid'
-  ‘x’
-
-Undocumented arguments in documentation object 'is.accepted'
-  ‘ycurr’ ‘ynew’ ‘format’
-
-Undocumented arguments in documentation object 'jump'
-  ‘ic’ ‘...’
-
-Undocumented arguments in documentation object 'ldinvgamma'
-  ‘x’ ‘shape’
-
-Undocumented arguments in documentation object 'mcmc.GP'
-  ‘gp’ ‘nmcmc’ ‘rng’ ‘splinefcns’ ‘jmp0’ ‘ar.target’ ‘settings’
-  ‘run.block’ ‘n.of.obs’ ‘llik.fn’ ‘hyper.pars’ ‘resume.list’
-
-Undocumented arguments in documentation object 'minimize.GP'
-  ‘gp’ ‘rng’
-
-Undocumented arguments in documentation object 'mvjump'
-  ‘ic’ ‘rate’ ‘nc’ ‘...’
-
-Undocumented arguments in documentation object 'nderiv'
-  ‘x’ ‘y’
-
-Undocumented arguments in documentation object 'p'
-  ‘x’ ‘...’
-
-Undocumented arguments in documentation object 'predict.GP'
-  ‘gp’ ‘xpred’ ‘splinefcns’
-
-Undocumented arguments in documentation object 'predict.density'
-  ‘den’
-
-Undocumented arguments in documentation object 'summarize.GP'
-  ‘gp’ ‘pdf_file’
-
-Undocumented arguments in documentation object 'update.mvjump'
-  ‘jmp’ ‘chain’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'GaussProcess':
-  ‘exclude’
-
-Argument items with no description in Rd object 'distance':
-  ‘power’
-
-Argument items with no description in Rd object 'distance.martix':
-  ‘dim’
-
-Argument items with no description in Rd object 'distance12.martix':
-  ‘power’
-
-Argument items with no description in Rd object 'gp_mle':
-  ‘maxval’
-
-Argument items with no description in Rd object 'gpeval':
-  ‘splinefcns’
-
-Argument items with no description in Rd object 'jump':
-  ‘rate’
-
-Argument items with no description in Rd object 'ldinvgamma':
-  ‘scale’
-
-Argument items with no description in Rd object 'mcmc.GP':
-  ‘x0’ ‘priors’
-
-Argument items with no description in Rd object 'minimize.GP':
-  ‘x0’ ‘splinefuns’
-
-Argument items with no description in Rd object 'plot.mvjump':
-  ‘jmp’
-
-Argument items with no description in Rd object 'predict.density':
-  ‘xnew’
-
-Argument items with no description in Rd object 'summarize.GP':
-  ‘txt_file’
-
+* checking Rd \usage sections ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
+* checking for code which exercises the package ... WARNING
+No examples, no tests, no vignettes
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 4 WARNINGs, 3 NOTEs
+
+Status: 2 WARNINGs, 1 NOTE

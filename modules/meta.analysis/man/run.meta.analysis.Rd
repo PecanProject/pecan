@@ -11,7 +11,8 @@ run.meta.analysis(
   threshold = 1.2,
   dbfiles,
   database,
-  use_ghs = TRUE
+  use_ghs = TRUE,
+  update = FALSE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ run.meta.analysis(
 \item{database}{database connection parameters}
 
 \item{use_ghs}{do not exclude greenhouse data if TRUE}
+
+\item{update}{logical: Rerun the meta-analysis if result files already exist?}
 }
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by

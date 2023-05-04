@@ -7,9 +7,15 @@
 \method{predict}{GP}(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL)
 }
 \arguments{
+\item{gp}{Gaussian Process}
+
+\item{xpred}{value of x where prediction should be made}
+
 \item{cI}{credible interval}
 
 \item{pI}{prediction interval}
+
+\item{splinefcns}{spline functions}
 }
 \description{
 predict.GP

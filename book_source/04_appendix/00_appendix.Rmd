@@ -6,8 +6,8 @@
 
 * Add list of developers
 
-## Using the PEcAn download.file() function
-download.file(url, destination_file, method) <br>
+## Using the PEcAn download_file() function
+download_file(url, destination_file, method) <br>
 <br>
 
 This custom PEcAn function works together with the base R function download.file (https://stat.ethz.ch/R-manual/R-devel/library/utils/html/download.file.html).  However, it provides expanded functionality to generalize the use for a broad range of environments.  This is because some computing environments are behind a firewall or proxy, including FTP firewalls. This may require the use of a custom FTP program and/or initial proxy server authentication to retrieve the files needed by PEcAn (e.g. meteorology drivers, other inputs) to run certain model simulations or tools.  For example, the Brookhaven National Laboratory (BNL) requires an initial connection to a FTP proxy before downloading files via FTP protocol. As a result, the computers running PEcAn behind the BNL firewall (e.g. https://modex.bnl.gov) use the ncftp cleint (http://www.ncftp.com/) to download files for PEcAn because the base options with R::base download.file() such as curl, libcurl which don't have the functionality to provide credentials for a proxy or even those such as wget which do but don't easily allow for connecting through a proxy server before downloading files. The current option for use in these instances is **ncftp**, specifically **ncftpget**
@@ -17,15 +17,15 @@ This custom PEcAn function works together with the base R function download.file
 Examples: <br>
 *HTTP* <br>
 ```
-download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
+download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
 ``` 
 *FTP*
 ```
-download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+download_file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
 ```
 *customizing to use ncftp when running behind an FTP firewall (requires ncftp to be installed and availible)* <br>
 ```
-download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
+download_file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
 ```
 
 <br>

@@ -2,12 +2,17 @@
 % Please edit documentation in R/other.helpers.ED2.R
 \name{translate_vars_ed}
 \alias{translate_vars_ed}
-\title{Function translating pecan vars to ED vars
-var.names <- c("DBH", "AGB", "AbvGrndWood")}
+\title{Function translating pecan vars to ED vars}
 \usage{
 translate_vars_ed(varnames)
 }
+\arguments{
+\item{varnames}{character; variable names to translate}
+}
 \description{
 Function translating pecan vars to ED vars
+}
+\examples{
 var.names <- c("DBH", "AGB", "AbvGrndWood")
+translate_vars_ed(var.names)
 }

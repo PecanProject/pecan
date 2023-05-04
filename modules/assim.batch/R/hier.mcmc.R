@@ -105,7 +105,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
   mu_site_curr <- matrix(rep(mu_site_init, nsites), ncol=nparam, byrow = TRUE)
   
   # values for each site will be accepted/rejected in themselves
-  currSS  <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+  currSS  <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
   # force it to be nvar x nsites matrix
   currSS  <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
   currllp <- lapply(seq_len(nsites), function(v) PEcAn.assim.batch::pda.calc.llik.par(settings, nstack[[v]], currSS[,v]))
@@ -217,7 +217,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     mu_site_new <- matrix(rep(proposed, nsites),ncol=nparam, byrow = TRUE)
     
     # re-predict current SS
-    currSS <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
+    currSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_curr[v,], pos.check))
     currSS <- matrix(currSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
     
     # calculate posterior
@@ -234,7 +234,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     })
     
     # predict new SS
-    newSS <- sapply(seq_len(nsites), function(v) PEcAn.emulator::get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
+    newSS <- sapply(seq_len(nsites), function(v) get_ss(gp.stack[[v]], mu_site_new[v,], pos.check))
     newSS <- matrix(newSS, nrow = length(settings$assim.batch$inputs), ncol = nsites)
     
     # calculate posterior
@@ -252,7 +252,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     })
     
     # Accept/reject with MH rule
-    ar <- PEcAn.emulator::is.accepted(currPost + currHR, newPost + newHR)
+    ar <- is.accepted(currPost + currHR, newPost + newHR)
     mu_site_curr[ar, ] <- mu_site_new[ar, ]
     musite.accept.count[thissite] <- musite.accept.count[thissite] + ar[thissite]
     

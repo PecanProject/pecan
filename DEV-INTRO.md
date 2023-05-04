@@ -231,7 +231,7 @@ docker-compose up -d
 
 The current folder (most likely your clone of the git repository) is mounted in some containers as `/pecan`, and in the case of rstudio also in your home folder as `pecan`. You can see which containers exactly in `docker-compose.override.yml`.
 
-You can now modify the code on your local machine, or you can use [rstudio](http://localhost:8000) in the docker stack. Once you made changes to the code you can compile the code either in the terminal of rstudio (`cd pecan && make`) or using `./scripts/compile.sh` from your machine (latter is nothing more than a shell script that runs `docker-compose exec executor sh -c 'cd /pecan && make'`.
+You can now modify the code on your local machine, or you can use [rstudio](http://pecan.localhost) in the docker stack. Once you made changes to the code you can compile the code either in the terminal of rstudio (`cd pecan && make`) or using `./scripts/compile.sh` from your machine (latter is nothing more than a shell script that runs `docker-compose exec executor sh -c 'cd /pecan && make'`.
 
 The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/lib` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
 
@@ -245,7 +245,7 @@ You can submit your workflow either in the executor container or in rstudio cont
 docker-compose exec executor bash
 # inside the container
 cd /pecan/tests
-R CMD ../web/workflow.R docker.sipnet.xml
+R CMD ../web/workflow.R --settings docker.sipnet.xml
 ```
 
 A better way of doing this is developed as part of GSOC, in which case you can leverage of the restful interface defined, or using the new R PEcAn API package.
@@ -310,7 +310,7 @@ If you want to reset the pecan lib folder that is mounted across all machines, f
 
 ```
 docker-compose down
-docker rm pecan_lib
+docker volume rm pecan_lib
 ```
 
 ## Linux and User permissions

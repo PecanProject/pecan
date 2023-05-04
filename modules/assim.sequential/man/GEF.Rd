@@ -16,7 +16,7 @@ GEF(
   ...
 )
 
-GEF.MultiSite(setting, Forecast, Observed, H, extraArg, ...)
+GEF.MultiSite(settings, Forecast, Observed, H, extraArg, ...)
 }
 \arguments{
 \item{settings}{pecan standard settings list.}

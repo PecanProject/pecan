@@ -16,7 +16,7 @@ plan(multisession)
 #------------------------------------------ That's all we need xml path and the out folder -----
 # ----------------------------------------------------------------------------------------------
 
-outputPath <- "/projectnb/dietzelab/kzarada/US_WCr_SDA_output/NoData/"
+outputPath <- "/projectnb/dietzelab/ahelgeso/SDA/Wcr_SDA_Output/NoData/"
 nodata <- TRUE
 restart <- FALSE
 days.obs <- 1  #how many of observed data to include -- not including today
@@ -30,7 +30,7 @@ c(
 ) %>% walk( ~ source(
   system.file("WillowCreek",
               .x,
-              package = "PEcAn.assim.sequential")
+              package = "PEcAnAssimSequential")
 ))
 
 
@@ -40,10 +40,10 @@ c(
 #--------------------------- Finding old sims
 
 
-setwd("/projectnb/dietzelab/kzarada/US_WCr_SDA_output/NoData/")
+setwd("/projectnb/dietzelab/ahelgeso/SDA/Wcr_SDA_Output/NoData/")
 
 #reading xml
-settings <- read.settings("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/nodata.xml")
+settings <- read.settings("/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/WillowCreek/nodata.xml")
 
 #connecting to DB
 con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
@@ -290,23 +290,23 @@ if(restart == TRUE){
 
 
 settings$host$name <- "geo.bu.edu"
-settings$host$user <- 'kzarada'
-settings$host$folder <- "/projectnb/dietzelab/kzarada/US_WCr_SDA_output"
-settings$host$job.sh <- "module load udunits/2.2.26 R/3.5.1" 
+settings$host$user <- "ahelgeso"
+settings$host$folder <- "/projectnb/dietzelab/ahelgeso/SDA/Wcr_SDA_Output/"
+settings$host$job.sh <- "module load R/4.1.2" 
 settings$host$qsub <- 'qsub -l h_rt=24:00:00 -V -N @NAME@ -o @STDOUT@ -e @STDERR@'
 settings$host$qsub.jobid <- 'Your job ([0-9]+) .*'
 settings$host$qstat <- 'qstat -j @JOBID@ || echo DONE'
-settings$host$tunnel <- '/tmp/tunnel'
+settings$host$tunnel <- "/projectnb/dietzelab/ahelgeso/tunnel"
 settings$model$binary = "/usr2/postdoc/istfer/SIPNET/1023/sipnet"
 
 
 unlink(c('run','out'), recursive = T)
 
-#debugonce(PEcAn.assim.sequential::sda.enkf)
+#debugonce(PEcAnAssimSequential::sda.enkf)
 if ('state.data.assimilation' %in% names(settings)) {
   if (PEcAn.utils::status.check("SDA") == 0) {
     PEcAn.utils::status.start("SDA")
-    PEcAn.assim.sequential::sda.enkf(
+    PEcAnAssimSequential::sda.enkf(
       settings, 
       restart=restart,
       Q=0,

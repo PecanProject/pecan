@@ -80,7 +80,7 @@ prepare_pools <- function(nc.path, constants = NULL){
       #Calculate LAI given leaf and sla
       sla <- constants$sla
       if (!is.null(sla) && is.valid(leaf)) {
-        LAI <- leaf * sla
+        LAI <- PEcAn.utils::ud_convert(leaf * sla, "g", "kg") #convert from g to kg
         
         IC.params[["LAI"]] <- LAI
       }
@@ -108,7 +108,7 @@ prepare_pools <- function(nc.path, constants = NULL){
             wood <- coarse.roots + ((stem.wood.frac * coarse.roots) / root.wood.frac) #cross multiply for stem wood and add 
             
           }else{
-           wood <- 0
+            wood <- 0
           }
           #reapportion wood, leaf and fine roots within TotLivBiom 
           leaf.new <- (leaf / (leaf + wood + fine.roots)) * TotLivBiom

@@ -18,7 +18,37 @@ XML_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
 
 pft_csv_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
 
-template <- Settings(list(
+#Obs_prep part
+#AGB
+AGB_indir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
+allow_download <- TRUE
+AGB_export_csv <- TRUE
+AGB_timestep <- list(unit="year", num=1)
+
+#LAI
+LAI_search_window <- 30
+LAI_timestep <- list(unit="year", num=1)
+LAI_export_csv <- TRUE
+run_parallel <- TRUE
+
+#SMP
+SMP_search_window <- 30
+SMP_timestep <- list(unit="year", num=1)
+SMP_export_csv <- TRUE
+update_csv <- FALSE
+
+#SoilC
+SoilC_timestep <- list(unit="year", num=1)
+SoilC_export_csv <- TRUE
+
+#Obs Date
+obs_start_date <- "2012-07-15"
+obs_end_date <- "2021-07-15"
+obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+timestep <- list(unit="year", num=1)
+
+#Start building template
+template <- PEcAn.settings::Settings(list(
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -28,8 +58,11 @@ template <- Settings(list(
   ############################################################################
   state.data.assimilation = structure(list(
     process.variance = TRUE,
-    adjustment = FALSE,
+    adjustment = TRUE,
     censored.data = FALSE,
+    FullYearNC = TRUE,
+    NC.Overwrite = FALSE,
+    NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
     Localization.FUN = "Local.support",
     scalef = 1,
@@ -38,11 +71,23 @@ template <- Settings(list(
       #you could add more state variables here
       variable = structure(list(variable.name = "AbvGrndWood", unit = "MgC/ha", min_value = 0, max_value = 9999)),
       variable = structure(list(variable.name = "LAI", unit = "", min_value = 0, max_value = 9999)),
+      variable = structure(list(variable.name = "SoilMoistFrac", unit = "", min_value = 0, max_value = 1)),#soilWFracInit
       variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999))
     )),
     forecast.time.step = "year",
     start.date = start_date,
-    end.date = end_date
+    end.date = end_date,
+    
+    Obs_Prep = structure(list(
+      Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+      MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
+      SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+      Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
+      start.date = obs_start_date,
+      end.date = obs_end_date,
+      outdir = obs_outdir,
+      timestep = timestep
+    ))
   )),
   
   ###########################################################################
@@ -163,7 +208,8 @@ template <- Settings(list(
     name = "geo.bu.edu",
     usr = "zhangdc",
     folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    prerun = "module load R/4.0.5",
+    prerun = "module load R/4.1.2",
+    cdosetup = "module load cdo/2.0.6",
     qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
     qsub.jobid = "Your job ([0-9]+) .*",
     qstat = "qstat -j @JOBID@ || echo DONE",
@@ -225,21 +271,21 @@ template <- Settings(list(
 sitegroupId <- 1000000031
 nSite <- 39
 
-multiRunSettings <- createSitegroupMultiSettings(
+multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
   template,
   sitegroupId = sitegroupId,
   nSite = nSite)
 if(file.exists(XML_out_dir)){
   unlink(XML_out_dir)
 }
-write.settings(multiRunSettings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(multiRunSettings, outputfile = "pecan.xml")
 
 #here we re-read the xml file to fix issues of some special character within the Host section.
 tmp = readChar(XML_out_dir,100000000)
 tmp = gsub("&amp;","&",tmp)
 writeChar(tmp, XML_out_dir)
 
-settings <- read.settings(XML_out_dir)
+settings <- PEcAn.settings::read.settings(XML_out_dir)
 
 #iteratively grab ERA5 paths for each site
 for (i in 1:nSite) {
@@ -249,19 +295,13 @@ for (i in 1:nSite) {
   
   #need a better way to code it up
   #test works!!!!
-  ERA5_Path <- structure(list(
-    path = temp_full_paths[1],
-    path = temp_full_paths[2],
-    path = temp_full_paths[3],
-    path = temp_full_paths[4],
-    path = temp_full_paths[5],
-    path = temp_full_paths[6],
-    path = temp_full_paths[7],
-    path = temp_full_paths[8],
-    path = temp_full_paths[9],
-    path = temp_full_paths[10]
-  ))
-  settings[[i]]$run$inputs$met$path <- ERA5_Path
+  #populated IC file paths into settings
+  Create_mult_list <- function(list.names, paths){
+    out <- as.list(paths)
+    names(out) <- list.names
+    out
+  }
+  settings[[i]]$run$inputs$met$path <- Create_mult_list(rep("path", length(temp_full_paths)), temp_full_paths)
   
   #code on met_start and met_end
   settings[[i]]$run$site$met.start <- start_date
@@ -272,40 +312,31 @@ for (i in 1:nSite) {
 
 #add Lat and Lon to each site
 #grab Site IDs from settings
-observations <- c()
+site_ID <- c()
 for (i in 1:length(settings)) {
   obs <- settings[[i]]$run$site$id
-  observations <- c(observations,obs)
+  site_ID <- c(site_ID,obs)
 }
 #query site info
 #open a connection to bety and grab site info based on site IDs
-bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
-                            host     = settings$database$bety$host,
-                            user     = settings$database$bety$user,
-                            password = settings$database$bety$password)
-con <- bety$con
+con <- PEcAn.DB::db.open(settings$database$bety)
+site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                      ST_Y(ST_CENTROID(geometry)) AS lat 
+                           FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
 
-site_ID <- observations
-suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
-                                            ids = site_ID, .con = con))
-suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
-                  lon=qry_results$lon, time_zone=qry_results$time_zone)
 #write Lat and Lon into the settings
 for (i in 1:nSite) {
   temp_ID <- settings[[i]]$run$site$id
-  index_site_info <- which(site_info$site_id==temp_ID)
+  index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
-  settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+  settings[[i]]$run$site$name <- site_info$sitename[index_site_info]#temp_ID
 }
 
 #####
 unlink(paste0(settings$outdir,"/pecan.xml"))
-write.settings(settings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
 
 #test create site pft function
 #read the settings already done previously
-settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml")
+settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.xml"))

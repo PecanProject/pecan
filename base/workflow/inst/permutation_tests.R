@@ -52,13 +52,13 @@ if (any(grepl(machid_rxp, argv))) {
 
 ## Find all models available on the current machine
 model_df <- tbl(bety, "dbfiles") %>%
-  filter(machine_id == !!mach_id) %>%
-  filter(container_type == "Model") %>%
-  left_join(tbl(bety, "models"), c("container_id" = "id")) %>%
-  select(model_id = container_id, model_name, revision,
+  dplyr::filter(machine_id == !!mach_id) %>%
+  dplyr::filter(container_type == "Model") %>%
+  dplyr::left_join(tbl(bety, "models"), c("container_id" = "id")) %>%
+  dplyr::select(model_id = container_id, model_name, revision,
          file_name, file_path, dbfile_id = id, ) %>%
-  collect() %>%
-  mutate(exists = file.exists(file.path(file_path, file_name)))
+  dplyr::collect() %>%
+  dplyr::mutate(exists = file.exists(file.path(file_path, file_name)))
 
 message("Found the following models on the machine:")
 print(model_df)
@@ -67,23 +67,23 @@ if (!all(model_df$exists)) {
   message("WARNING: The following models are registered on the machine ",
           "but their files do not exist:")
   model_df %>%
-    filter(!exists) %>%
+    dplyr::filter(!exists) %>%
     print()
 
   model_df <- model_df %>%
-    filter(exists)
+    dplyr::filter(exists)
 }
 
 ## Find Sites
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
 site_id_noinput <- tbl(bety, "sites") %>%
-  anti_join(tbl(bety, "inputs")) %>%
-  inner_join(tbl(bety, "sitegroups_sites") %>%
+  dplyr::anti_join(tbl(bety, "inputs")) %>%
+  dplyr::inner_join(tbl(bety, "sitegroups_sites") %>%
                filter(sitegroup_id == 1),
              by = c("id" = "site_id")) %>%
   dplyr::select("id.x", "notes", "sitename") %>%
   dplyr::filter(grepl("TOWER_BEGAN", notes)) %>%
-  collect() %>%
+  dplyr::collect() %>%
   dplyr::mutate(
     # Grab years from string within the notes
     start_year = substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
@@ -100,11 +100,11 @@ site_id_noinput <- tbl(bety, "sites") %>%
     in_date,
     as.numeric(end_year) - as.numeric(start_year) > 1
   ) %>%
-  mutate(sitename = gsub(" ", "_", sitename)) %>%
-  rename(site_id = id.x)
+  dplyr::mutate(sitename = gsub(" ", "_", sitename)) %>%
+  dplyr::rename(site_id = id.x)
 
 site_id_noinput %>%
-  select(site_id, sitename) %>%
+  dplyr::select(site_id, sitename) %>%
   print(n = Inf)
 
 message("Running tests at ", nrow(site_id_noinput), " sites:")

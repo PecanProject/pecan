@@ -34,7 +34,7 @@ Read.IC.info.BADM <-function(lat, long){
       NA_L2CODE == Code_Level,
       VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
     ) %>%
-    dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+    dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   
 
   # if no data was found on L2, then let's check for L1
@@ -46,7 +46,7 @@ Read.IC.info.BADM <-function(lat, long){
         NA_L1CODE == Code_Level,
         VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
       ) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
   
 
@@ -55,7 +55,7 @@ Read.IC.info.BADM <-function(lat, long){
     Code_Level <- "ALL"
     biomass.df <- U.S.SB %>%
       dplyr::filter(VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
 
   
@@ -129,7 +129,7 @@ Read.IC.info.BADM <-function(lat, long){
           
           
           PlantWoodIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
@@ -139,16 +139,16 @@ Read.IC.info.BADM <-function(lat, long){
             as.numeric()
           
           if (length(val) > 0)
-            SoilIni <- udunits2::ud.convert(val*cov.factor,  "g/m^2", "kg/m^2")
+            SoilIni <- PEcAn.utils::ud_convert(val*cov.factor,  "g/m^2", "kg/m^2")
           
         } else if (type == "*_LIT_BIOMASS") {
           litterIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1] %>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1] %>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         } else if (type == "*_ROOT_BIOMASS") {
           Rootini <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         }

@@ -561,7 +561,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
 
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
-    PEcAn.emulator::mcmc.GP(gp          = gp, ## Emulator(s)
+    mcmc.GP(gp          = gp, ## Emulator(s)
             x0          = init.list[[chain]],     ## Initial conditions
             nmcmc       = settings$assim.batch$iter,       ## Number of reps
             rng         = rng,       ## range

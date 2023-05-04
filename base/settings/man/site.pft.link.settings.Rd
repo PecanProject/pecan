@@ -14,6 +14,6 @@ pecan xml setting file
 }
 \description{
 This function reads in a pecan setting and check for the
- pft.site xml tag under run>inputs. If a path or a ID for the input is
- defined then, it will be used for linking sites with the pfts.
+pft.site xml tag under run>inputs. If a path or a ID for the input is
+defined then, it will be used for linking sites with the pfts.
 }

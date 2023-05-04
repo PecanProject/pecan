@@ -2,11 +2,11 @@
 ##' @title gp_mle
 ##' @export
 ##'
-##' @param theta
-##' @param d
-##' @param nugget
-##' @param myY
-##' @param maxval
+##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]
+##' @param d spatial distance matrix
+##' @param nugget allows additional error in Y rather than fix interpolation to go through points
+##' @param myY  vector of observed data
+##' @param maxval maximum value
 ##' 
 ##' @return val
 ##' 
@@ -39,7 +39,7 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
   
   S <- calcSpatialCov(d, phi, tauw)
   
-  val <- try(-sum(dmvnorm(myY, rep(mu, n), S + diag(tauv, n), log = TRUE)))
+  val <- try(-sum(mvtnorm::dmvnorm(myY, rep(mu, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)
   }
@@ -57,6 +57,11 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
 ##' @title gp_mle2 
 ##' @export
 ##' 
+##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]
+##' @param d spatial distance matrix
+##' @param nugget allows additional error in Y rather than fix interpolation to go through points
+##' @param myY  vector of observed data
+##' @param maxval maximum value
 gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
   
   ## get parms
@@ -84,7 +89,7 @@ gp_mle2 <- function(theta, d, nugget, myY, maxval = Inf) {
   
   S <- calcSpatialCov(d, phi, tauw)
   
-  val <- try(-sum(dmvnorm(myY, rep(0, n), S + diag(tauv, n), log = TRUE)))
+  val <- try(-sum(mvtnorm::dmvnorm(myY, rep(0, n), S + diag(tauv, n), log = TRUE)))
   if (!is.numeric(val)) {
     return(maxval)
   }

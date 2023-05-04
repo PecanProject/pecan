@@ -2,10 +2,11 @@
 ##' @title predict.GP
 ##' @export
 ##' 
-##' @param gp
-##' @param xpred
+##' @param gp Gaussian Process
+##' @param xpred value of x where prediction should be made
 ##' @param cI credible interval
 ##' @param pI prediction interval
+##' @param splinefcns spline functions
 ##' 
 ##' @author Michael Dietze
 predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
@@ -57,15 +58,15 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   if ((is.null(cI) && is.null(pI)) || gp$method == "MLE") {
     psibar <- NULL
     if (isotropic) {
-      psibar <- median(psi)
+      psibar <- stats::median(psi)
     } else {
       if (is.matrix(psi)) {
-        psibar <- apply(psi, 2, median)
+        psibar <- apply(psi, 2, stats::median)
       } else {
         psibar <- psi
       }
     }
-    tauwbar <- median(tauw)
+    tauwbar <- stats::median(tauw)
     Sprime <- calcSpatialCov(dprime, psibar, tauwbar)
     S12 <- Sprime[1:(npred * dim), (npred * dim + 1):(n.unique + npred * dim)]
     S22 <- Sprime[(npred * dim + 1):(n.unique + npred * dim),
@@ -74,7 +75,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
     if (gp$zeroMean) {
       ey <- eyprime <- 0
     } else {
-      ey <- eyprime <- median(mu)  #mean(y)
+      ey <- eyprime <- stats::median(mu)  #mean(y)
     }
     ybar <- tapply(y, x.id, mean)
     yprime <- eyprime + S12 %*% S22inv %*% (ybar - ey)
@@ -83,9 +84,9 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       ## add trend surface back on
       for (i in seq_len(nrow(xpred))) {
         f <- rep(NA, ncol(xpred))
-        y0 <- splinefuns[[ncol(xpred) + 1]]
+        y0 <- splinefcns[[ncol(xpred) + 1]]
         for (j in seq_along(xpred)) {
-          f[j] <- splinefuns[[j]](xpred[i, j])
+          f[j] <- splinefcns[[j]](xpred[i, j])
         }
         y.trend[i] <- y0 + sum(f - y0)
       }
@@ -99,11 +100,7 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   nsamp <- length(samp)
   # cInt <- pInt <- matrix(NA,nsamp,npred*dim)
   cInt <- pInt <- matrix(NA, nsamp, npred)
-  haveTime     <- require(time)
-  prevTime     <- NULL
-  if (haveTime) {
-    prevTime <- progressBar()
-  }
+  progress_bar <- utils::txtProgressBar(min = 0, max = length(samp), style = 3)
   for (g in samp) {
     j <- i <- which(g == samp)
     if (dim == 1) {
@@ -133,35 +130,34 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
       ## add trend surface back on
       for (i in seq_len(nrow(xpred))) {
         f <- rep(NA, length(xpred))
-        y0 <- splinefuns[[length(xpred) + 1]]
+        y0 <- splinefcns[[length(xpred) + 1]]
         for (j in seq_along(xpred)) {
-          f[j] <- splinefuns[[j]](xpred[i, j])
+          f[j] <- splinefcns[[j]](xpred[i, j])
         }
         y.trend[i] <- y0 + sum(f - y0)
       }
     }
     
     if (nugget) {
-      Wprime    <- rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
+      Wprime    <- mvtnorm::rmvnorm(1, S12 %*% S22inv %*% (W[i, ]), Sbar)
       cInt[j, ] <- mu[i] + Wprime + y.trend
-      pInt[j, ] <- rnorm(npred * dim, cInt[j, ], sqrt(tauv1))
+      pInt[j, ] <- stats::rnorm(npred * dim, cInt[j, ], sqrt(tauv1))
     } else {
       cInt[j, ] <- mu[i] + S12 %*% S22inv %*% (y - mu[i]) + y.trend
-      mypred <- try(rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
+      mypred <- try(mvtnorm::rmvnorm(1, cInt[j, ], Sbar), silent = TRUE)  ##wrap to prevent eigen failure
       if (is.numeric(mypred)) {
         pInt[j, ] <- mypred
       }
     }
-    if (haveTime) {
-      prevTime <- progressBar(i/length(samp), prevTime)
-    }
+    utils::setTxtProgressBar(progress_bar , i)
   }
+  close(progress_bar)
   cIntQuant <- pIntQuant <- NULL
   if (!is.null(cI)) {
-    cIntQuant <- apply(cInt, 2, quantile, cI, na.rm = T)
+    cIntQuant <- apply(cInt, 2, stats::quantile, cI, na.rm = T)
   }
   if (!is.null(pI)) {
-    pIntQuant <- apply(pInt, 2, quantile, pI, na.rm = T)
+    pIntQuant <- apply(pInt, 2, stats::quantile, pI, na.rm = T)
   }
   return(list(ci = cIntQuant, pi = pIntQuant))
 } # predict.GP

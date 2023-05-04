@@ -23,7 +23,15 @@ COPY base     /pecan/base/
 COPY modules  /pecan/modules/
 COPY models   /pecan/models/
 
-RUN cd /pecan && make && rm -rf /tmp/downloaded_packages
+# install all PEcAn packages
+# `make clean` is to remove artifacts copied in from host system
+#   (e.g. basgra.so)
+RUN --mount=type=secret,id=github_token \
+    export GITHUB_PAT=`cat /run/secrets/github_token` \
+    && cd /pecan \
+    && make clean \
+    && make \
+    && rm -rf /tmp/downloaded_packages
 
 # COPY WORKFLOW
 WORKDIR /work

@@ -1,6 +1,6 @@
-Package: PEcAn.assim.sequential
+Package: PEcAnAssimSequential
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
 Version: 1.7.2
 Date: 2021-10-04
 Author: Mike Dietze
@@ -15,6 +15,7 @@ Imports:
     dplyr,
     furrr,
     future,
+    ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
     Matrix,
@@ -25,16 +26,16 @@ Imports:
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.settings,
+    PEcAn.uncertainty,
     PEcAn.workflow,
     purrr,
-    sp,
-    tidyr,
-    utils,
-    XML
+    rlang,
+    stringr
 Suggests:
     corrplot,
     DBI,
     ggrepel,
+    emdbook,
     glue,
     gridExtra,
     magic (>= 1.5.0),
@@ -45,11 +46,16 @@ Suggests:
     plyr (>= 1.8.4),
     raster,
     reshape2 (>= 1.4.2),
+    rlist,
     sf,
     stats,
     testthat,
-    tictoc
+    tictoc,
+    tidyr,
+    sp,
+    utils,
+    XML
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
