@@ -20,8 +20,6 @@ fitA <- function(flux.data, cov.data = NULL, model = NULL) {
   ##  specify priors in model object
   ##  integrate with meta-analysis
   
-  library(rjags)
-  
   if (is.null(model)) {
     model <- list(a.fixed = NULL, a.random = NULL, V.fixed = NULL, V.random = NULL, 
                   n.iter = 5000, match = "fname")
@@ -257,9 +255,9 @@ init[[1]] <- list(r0 = 1.2, vmax0 = 39, alpha0 = 0.25, tau = 10, cp0 = 6, Jmax0 
 init[[2]] <- list(r0 = 1, vmax0 = 100, alpha0 = 0.2, tau = 20, cp0 = 4, Jmax0 = 150)  ##tau.Vleaf=20,beta1=1,beta2=1,beta5=-1,tau.Vmon=20,tpu=13,
 init[[3]] <- list(r0 = 2, vmax0 = 60, alpha0 = 0.28, tau = 20, cp0 = 5, Jmax0 = 60)  ##tau.Vleaf=100,beta1=1,beta2=2,beta5=2,tau.Vmon=3,tpu=20,
 
-mc3 <- jags.model(file = textConnection(my.model), data = mydat, inits = init, n.chains = 3)
+mc3 <- rjags::jags.model(file = textConnection(my.model), data = mydat, inits = init, n.chains = 3)
 
-mc3.out <- coda.samples(model = mc3, variable.names = out.variables, n.iter = model$n.iter)
+mc3.out <- rjags::coda.samples(model = mc3, variable.names = out.variables, n.iter = model$n.iter)
 
 ## split output
 out         <- list(params = NULL, predict = NULL, model = my.model)
@@ -282,7 +280,7 @@ return(out)
 ##' @param sep       file delimiter. defaults to tab
 ##' @param ...       optional arguements forwarded to read.table
 read_Licor <- function(filename, sep = "\t", ...) {
-  fbase <- sub(".txt", "", tail(unlist(strsplit(filename, "/")), n = 1))
+  fbase <- sub(".txt", "", utils::tail(unlist(strsplit(filename, "/")), n = 1))
   print(fbase)
   full <- readLines(filename)
   ## remove meta=data
@@ -292,7 +290,7 @@ read_Licor <- function(filename, sep = "\t", ...) {
     full <- full[-(start[i]:(skip[i] + 1 * (i > 1)))]  # +1 is to deal with second header
   }
   full <- full[grep("\t", full)]  ## skip timestamp lines
-  dat <- read.table(textConnection(full), header = TRUE, blank.lines.skip = TRUE,
+  dat <- utils::read.table(textConnection(full), header = TRUE, blank.lines.skip = TRUE,
                     sep = sep, ...)
   fname <- rep(fbase, nrow(dat))
   dat <- as.data.frame(cbind(fname, dat))
@@ -304,7 +302,7 @@ mat2mcmc.list <- function(w) {
   temp <- list()
   chain.col <- which(colnames(w) == "CHAIN")
   for (i in unique(w[, "CHAIN"])) {
-    temp[[i]] <- as.mcmc(w[w[, "CHAIN"] == i, -chain.col])
+    temp[[i]] <- coda::as.mcmc(w[w[, "CHAIN"] == i, -chain.col])
   }
-  return(as.mcmc.list(temp))
+  return(coda::as.mcmc.list(temp))
 } # mat2mcmc.list

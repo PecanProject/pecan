@@ -21,9 +21,12 @@
 #' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 #' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 #' @param lst timezone offset to GMT in hours
+#' @param lat latitude; if not provide the function will attempt to discover it in input files
+#' @param lon longitude; if not provide the function will attempt to discover it in input files
 #' @param overwrite should existing files be overwritten
 #' @param verbose should the function be very verbose
 #' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.
+#' @param ... currently unused
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, leap_year = TRUE, ...) {
   

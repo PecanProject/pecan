@@ -19,6 +19,6 @@ Spectra S3 class
 }
 \section{Functions}{
 \itemize{
-\item \code{is_spectra}: Test if object is class \code{spectra}
-}}
+\item \code{is_spectra()}: Test if object is class \code{spectra}
 
+}}

@@ -6,7 +6,7 @@
 
 ### Prerequisite:assumes that you have run an ensemble run
 
-sda.particle <- function(model) {
+sda.particle <- function(model, settings) {
   sda.demo <- FALSE  ## debugging flag
   unit.conv <- 0.001 * 2  #  kgC/ha/yr to Mg/ha/yr
   

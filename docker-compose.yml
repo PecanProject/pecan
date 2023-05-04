@@ -4,7 +4,7 @@ services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
-    image: "traefik:v2.5"
+    image: "traefik:v2.9"
     command:
       - --log.level=INFO
       - --api=true
@@ -31,43 +31,6 @@ services:
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.rule=Host(`traefik.pecan.localhost`)"
       - "traefik.http.routers.traefik.service=api@internal"
-
-  # ----------------------------------------------------------------------
-  # Access to the files generated and used by PEcAn, both through a
-  # web interface (minio) as well using the thredds server.
-  # ----------------------------------------------------------------------
-
-  # webserver to handle access to data
-  minio:
-    user: "${UID:-1001}:${GID:-1001}"
-    image: minio/minio:latest
-    command: server /data
-    restart: unless-stopped
-    networks:
-      - pecan
-    environment:
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-carya}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-illinois}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.minio.loadbalancer.server.port=9000"
-      - "traefik.http.routers.minio.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/minio/`)"
-    volumes:
-      - pecan:/data
-
-  # THREDDS data server
-  thredds:
-    user: "${UID:-1001}:${GID:-1001}"
-    image: pecan/thredds:${PECAN_VERSION:-latest}
-    restart: unless-stopped
-    networks:
-      - pecan
-    volumes:
-      - pecan:/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.thredds.loadbalancer.server.port=8080"
-      - "traefik.http.routers.thredds.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/thredds/`)"
 
   # ----------------------------------------------------------------------
   # Job management system. Jobs are distributed through the message
@@ -122,6 +85,7 @@ services:
       - postgres
     labels:
       - "traefik.enable=true"
+      - "traefik.http.services.bety.loadbalancer.server.port=8000"
       - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
 
   # ----------------------------------------------------------------------

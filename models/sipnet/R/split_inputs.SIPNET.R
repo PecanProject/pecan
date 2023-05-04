@@ -46,7 +46,7 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
     return(file)
   }
 
-  input.dat <- read.table(met, header = FALSE)
+  input.dat <- utils::read.table(met, header = FALSE)
 
 
   #@Hamze, I added the Date variable by using year, doy, and hour and filtered the clim based that and then removed it afterwards.
@@ -58,7 +58,7 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
   
   
   ###### Write Met to file
-  write.table(dat, file, row.names = FALSE, col.names = FALSE)
+  utils::write.table(dat, file, row.names = FALSE, col.names = FALSE)
 
   ###### Output input path to inputs
   #settings$run$inputs$met$path <- file
