@@ -163,7 +163,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens
   css$time[is.na(css$time)]     <- start_year
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)]       <- 1  # assign nominal small dbh to missing
-  density.median                <- median(css$n[which(css$n > 0)])
+  density.median                <- stats::median(css$n[which(css$n > 0)])
   css$n[is.na(css$n) | css$n == 0]    <- density.median
   css$hite <- css$bdead <- css$balive <- css$lai <- 0
     
@@ -177,10 +177,10 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens
   # Write files
   
   # css
-  write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
+  utils::write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
   
   # pss
-  write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
+  utils::write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
   
   # site
   # hardcoded per fia2ED implemention

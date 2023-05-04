@@ -39,7 +39,7 @@ write_ed_veg <- function(ed_veg, path_prefix) {
 #' @export
 write_css <- function(css, path_prefix, latitude = NULL, longitude = NULL) {
   css_fname <- prepare_ed_veg_filename(path_prefix, ".css", latitude, longitude)
-  write.table(css, css_fname, quote = FALSE, row.names = FALSE)
+  utils::write.table(css, css_fname, quote = FALSE, row.names = FALSE)
   invisible(css_fname)
 }
 
@@ -47,7 +47,7 @@ write_css <- function(css, path_prefix, latitude = NULL, longitude = NULL) {
 #' @export
 write_pss <- function(pss, path_prefix, latitude = NULL, longitude = NULL) {
   pss_fname <- prepare_ed_veg_filename(path_prefix, ".pss", latitude, longitude)
-  write.table(pss, pss_fname, quote = FALSE, row.names = FALSE)
+  utils::write.table(pss, pss_fname, quote = FALSE, row.names = FALSE)
   invisible(pss_fname)
 }
 
@@ -61,7 +61,7 @@ write_site <- function(site, path_prefix, latitude = NULL, longitude = NULL) {
     attr(site, "file_format")
   )
   writeLines(first_line, site_fname)
-  write.table(site, site_fname, quote = FALSE, row.names = FALSE, append = TRUE)
+  utils::write.table(site, site_fname, quote = FALSE, row.names = FALSE, append = TRUE)
   invisible(site_fname)
 }
 

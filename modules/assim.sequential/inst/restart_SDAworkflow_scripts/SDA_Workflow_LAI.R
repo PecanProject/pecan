@@ -255,9 +255,9 @@ settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"))
 next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M"))
 #Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force = TRUE)
-#settings$host$rundir <- settings$rundir
-#settings$host$outdir <- settings$modeloutdir
-#settings$host$folder <- settings$modeloutdir
+settings$host$rundir <- settings$rundir
+settings$host$outdir <- settings$modeloutdir
+settings$host$folder <- settings$modeloutdir
 setwd(settings$outdir)
 #Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")

@@ -13,7 +13,8 @@ build_X(
   outdir,
   t = 1,
   var.names,
-  my.read_restart
+  my.read_restart,
+  restart_flag = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ build_X(
 \item{var.names}{list of state variables taken from settings object}
 
 \item{my.read_restart}{object that points to the model restart function i.e. read_restart.SIPNET}
+
+\item{restart_flag}{flag if it's a restart stage. Default is FALSE.}
 }
 \value{
 X ready to be passed to SDA Analysis code

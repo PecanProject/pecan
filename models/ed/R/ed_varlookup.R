@@ -1,5 +1,6 @@
 #' Lookup function for translating commonly used ED variables
 #' returns out list, readvar variables to read from file, expr if any derivation is needed
+#' @param varname character; variable name to read from file
 #' @export
 ed.var <- function(varname) {
   if(varname == "AGB") {

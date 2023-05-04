@@ -44,8 +44,13 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-SETROPTIONS = "options(Ncpus = ${NCPUS})"
+SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
+EXPECTED_ROXYGEN_VERSION := 7.2.3
+INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
+	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
+	-e   "cat(as.character(packageVersion('roxygen2')))" \
+	-e "}")
 
 ### Macros
 
@@ -76,10 +81,15 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "stop_on_failure = TRUE," \
 	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
-doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript \
-	-e "roxver <- packageVersion('roxygen2')" \
-	-e "if (roxver != '7.1.2') stop('Roxygen2 version is ', roxver, ', but PEcAn package documentation must be built with exactly version 7.1.2')" \
-	-e "devtools::document('"$(strip $(1))"')"
+doc_R_pkg = \
+	$(if \
+		$(filter ${EXPECTED_ROXYGEN_VERSION},${INSTALLED_ROXYGEN_VERSION}), \
+		./scripts/time.sh "document ${1}" \
+			Rscript -e "devtools::document('"$(strip $(1))"')", \
+		$(error Roxygen2 version is ${INSTALLED_ROXYGEN_VERSION}, \
+			but PEcAn package documentation must be built with exactly \
+			version ${EXPECTED_ROXYGEN_VERSION}))
+
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
@@ -131,7 +141,12 @@ clean:
 	echo `date` > $@
 
 .install/roxygen2: | .install .install/devtools
-	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) devtools::install_version('roxygen2', '7.1.2')"
+	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
+		-e "    || packageVersion('roxygen2') != '7.2.3') {" \
+		-e "  devtools::install_github('r-lib/roxygen2@v7.2.3')" \
+		-e "}"
+	$(eval INSTALLED_ROXYGEN_VERSION := 7.2.3)
 	echo `date` > $@
 
 .install/testthat: | .install

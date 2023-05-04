@@ -173,14 +173,14 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     if(!is.null(settings$spin)){
       dt.co2 = PEcAn.utils::ud_convert(as.numeric(as.Date(settings$run$end.date)-
                                              as.Date(settings$run$start.date)),"days","years")
-      co2.dat <- read.table(settings$run$inputs$co2$path,header=FALSE)
+      co2.dat <- utils::read.table(settings$run$inputs$co2$path,header=FALSE)
       co2.per.year <- round(nrow(co2.dat)/dt.co2)
 
       ## as first pass, just repeat the whole sequence. Not doing resampling. Not worrying about how to loop the file
       co2.dat <- c(as.vector(co2.dat[seq_len(as.numeric(settings$spin$nyear)*co2.per.year+1),]),unlist(co2.dat))
 
       co2.local <- file.path(local.rundir,basename(settings$run$inputs$co2$path))
-      write.table(co2.dat,file = co2.local,col.names = FALSE,row.names = FALSE)
+      utils::write.table(co2.dat,file = co2.local,col.names = FALSE,row.names = FALSE)
       if(run.local){
         settings$run$inputs$co2$path <- co2.local
       } else {
@@ -373,7 +373,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   }
 
   ## parse into matrix of current defaults
-  defaults <- read.csv(textConnection(defaults), header = FALSE)
+  defaults <- utils::read.csv(textConnection(defaults), header = FALSE)
   defaults <- defaults[, -ncol(defaults)]  ## remove extra column created by NML line ending comma
   rownames(defaults) <- variables
   colnames(defaults) <- c("DEC", "EV", "C3", "C4", "SH")[1:ncol(defaults)]
