@@ -17,7 +17,7 @@
 #'  file and must contain a \code{<clowder>} key that specifies hostname, user, and
 #'  password for your Clowder server:
 #'
-#' \code{\preformatted{
+#' \preformatted{
 #'   <?xml version="1.0"?>
 #'   <pecan>
 #'     <clowder>
@@ -26,7 +26,7 @@
 #'       <password>superSecretPassw0rd</password>
 #'     </clowder>
 #'   </pecan>
-#' }}
+#' }
 #'
 #' @export
 #' @author Harsh Agrawal, Chris Black
@@ -57,9 +57,9 @@ download.Geostreams <- function(outfolder, sitename,
   sensor_info <- jsonlite::fromJSON(sensor_txt)
   sensor_id <- sensor_info$id
   sensor_mintime = lubridate::parse_date_time(sensor_info$min_start_time,
-                                              orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
+                                              orders = "ymdHMSz", tz = "UTC")
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
-                                              orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
+                                              orders = "ymdHMSz", tz = "UTC")
   if (start_date < sensor_mintime) {
     PEcAn.logger::logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
   }
@@ -71,8 +71,14 @@ download.Geostreams <- function(outfolder, sitename,
   for (year in lubridate::year(start_date):lubridate::year(end_date)) {
     query_args <- list(
       sensor_id = sensor_id,
-      since = max(start_date, lubridate::ymd(paste0(year, "-01-01"), tz="UTC")),
-      until = min(end_date, lubridate::ymd(paste0(year, "-12-31"), tz="UTC")),
+      since = strftime(
+        max(start_date, lubridate::ymd(paste0(year, "-01-01"), tz="UTC")),
+        format = "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"),
+      until = strftime(
+        min(end_date, lubridate::ymd(paste0(year, "-12-31"), tz="UTC")),
+        format = "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"),
       key = auth$key,
       ...)
 

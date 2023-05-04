@@ -2,21 +2,23 @@
 ##' @name download.MACA
 ##' @title download.MACA
 ##' @export
-##' @param outfolder
+##'
+##' @param outfolder location where output is stored
 ##' @param start_date , of the format "YEAR-01-01 00:00:00"
 ##' @param end_date , of the format "YEAR-12-31 23:59:59"
-##' @param lat
-##' @param lon
 ##' @param model , select which MACA model to run (options are BNU-ESM, CNRM-CM5, CSIRO-Mk3-6-0, bcc-csm1-1, bcc-csm1-1-m, CanESM2, GFDL-ESM2M, GFDL-ESM2G, HadGEM2-CC365, HadGEM2-ES365, inmcm4, MIROC5, MIROC-ESM, MIROC-ESM-CHEM, MRI-CGCM3, CCSM4, IPSL-CM5A-LR, IPSL-CM5A-MR, IPSL-CM5B-LR, NorESM1-M)
 ##' @param scenario , select which scenario to run (options are rcp45, rcp85)
 ##' @param ensemble_member , r1i1p1 is the only ensemble member available for this dataset, CCSM4 uses r6i1p1 instead
+##' @param site_id BETY site id 
+##' @param lat.in latitude of site
+##' @param lon.in longitude of site
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param verbose Default is FALSE, used as input in ncdf4::ncvar_def
+##' @param ... other inputs
 ##'
 ##' @author James Simkins
 download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
                           overwrite=FALSE, verbose=FALSE, ...){  
-  library(PEcAn.utils)
-  library(lubridate)
-  library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
@@ -103,7 +105,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       ncdf4::nc_close(dap)
       } else {
         dat.list[[j]] <- NA
-        var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
+        var.list[[j]] <- ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
     }
     
     dat.list <- as.data.frame(dat.list)
@@ -135,7 +137,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     }
     
     ## put data in new file
-    loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+    loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in seq_along(var$CF.name)){
       ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }

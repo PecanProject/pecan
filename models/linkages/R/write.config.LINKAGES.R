@@ -25,6 +25,7 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.id, 
                                   restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL) {
+
   # 850-869 repeated to fill 1000 years
   if (is.null(restart)) {
     restart <- FALSE # why not have restart default to FALSE above?
@@ -55,15 +56,16 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   iplot <- 1
   nyear <- length(year)
+  max.ind <- 1500
+  plat <- abs(as.numeric(settings$run$site$lat))
+  
   bgs <- 120
   egs <- 273
-  max.ind <- 15000
-  plat <- abs(as.numeric(settings$run$site$lat))
   
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
   dbcon <- db.open(settings$database$bety)
-  on.exit(db.close(dbcon))
+  on.exit(db.close(dbcon), add = TRUE)
   
   if("soil" %in% names(settings$run$inputs)){
     ## open soil file
@@ -81,7 +83,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
                       con = dbcon)
     
-    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100)
+    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100, silt = 100 - soils$sand_pct - soils$clay_pct)
     
     fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
     dry <- soil.dat$volume_fraction_of_condensed_water_in_soil_at_wilting_point * 100
@@ -94,12 +96,16 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   clat <- read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
-  climate_file <- settings$run$inputs$met$path
-  load(climate_file)
-  #temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
-  temp.mat <- temp.mat[which(temp.mat[,13]%in%start.year:end.year),]
-  precip.mat <- precip.mat[which( precip.mat[,13]%in%start.year:end.year),]
-  #precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
+  if(!is.null(inputs)){
+    climate_file <- inputs$met$path
+    load(climate_file)
+  }else{
+    climate_file <- settings$run$inputs$met$path
+    load(climate_file) 
+  }
+  
+  temp.mat <- matrix(temp.mat[which(rownames(temp.mat)%in%start.year:end.year),],ncol=12,byrow=F)
+  precip.mat <- matrix(precip.mat[which(rownames(precip.mat)%in%start.year:end.year),],ncol=12,byrow=F)
   
   basesc <- 74
   basesn <- 1.64
@@ -122,9 +128,20 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
         
       } else {
         ## copy values
-        if (!is.null(trait.values[[group]])) {
-          vals <- as.data.frame(trait.values[[group]])
+          # IF: not sure what's going on here but I had to have this hack to overwrite params below
+          # should come back to this
+          if(is.null(dim(trait.values[[group]]))){
+            vals <- as.data.frame(t(trait.values[[group]]))
+          }else{
+            vals <- as.data.frame(trait.values[[group]])
+          }
           
+          if ("SLA" %in% names(vals)) {
+            sla_use <- (1/vals$SLA)*1000
+            sla_use[sla_use>5000] <- stats::rnorm(1,4000,100)
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- sla_use
+            ## If change here need to change in write_restart as well
+            }
           
           # replace defaults with traits
           #new.params.locs <- which(names(spp.params) %in% names(vals))
@@ -156,6 +173,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
+
           if ("Gmax" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
           }
@@ -175,7 +193,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
           if ("FROST" %in% names(vals)) {
-             spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
           }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
@@ -192,9 +210,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("CM5" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM5 <- vals$CM5
           }
-          if ("FWT" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- vals$FWT
-          }
+          
           if ("SLTA" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SLTA <- vals$SLTA
           }
@@ -207,10 +223,10 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("TL" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
           }
+
         }
       }
     }
-  }
   
   switch.mat <- switch.mat[spp.params.save, ]
   
@@ -281,6 +297,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     jobsh <- gsub("@RESTARTFILE@", restartfile, jobsh)
   }
   
+  pft_names <- unlist(sapply(settings$pfts, `[[`, "name"))
+  pft_names <- paste0("pft_names = c('", paste(pft_names, collapse = "','"), "')")
+  jobsh <- gsub("@PFT_NAMES@", pft_names, jobsh)
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 } # write.config.LINKAGES

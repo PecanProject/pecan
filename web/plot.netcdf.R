@@ -31,5 +31,5 @@ filename <- args[7]
 # filename="plot.png"
  
 #error_reporting(E_ALL | E_STRICT);
-PEcAn.visualization::plot.netcdf(datafile, yvar, xvar, width, height, filename, year);
+PEcAn.visualization::plot_netcdf(datafile, yvar, xvar, width, height, filename, year);
  

@@ -28,14 +28,12 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
    PEcAn.logger::logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
   }
 
-  met_lookup <- read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
-                         header = TRUE, stringsAsFactors = FALSE)
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
   met_data <- list()
   met_units <- list()
   for (name in names(tem$var)) {
-    if (!(name %in% met_lookup$CF_standard_name)) {
+    if (!(name %in% pecan_standard_met_table$cf_standard_name)) {
       next
     }
     met_data[[name]] <- ncdf4::ncvar_get(nc = tem, varid = name)
@@ -46,7 +44,7 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
   time_unit <- sub(" since.*", "", tem$dim$time$units)
   time_base <- lubridate::parse_date_time(sub(".*since ", "", tem$dim$time$units),
                                           orders = c("ymdHMSz", "ymdHMS", "ymd"))
-  time_data <- udunits2::ud.convert(tem$dim$time$vals, time_unit, "days")
+  time_data <- PEcAn.utils::ud_convert(tem$dim$time$vals, time_unit, "days")
 
   lat_data <- as.numeric(ncdf4::ncvar_get(tem, "latitude"))
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
@@ -80,7 +78,7 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_data, 
                           create_dimvar = TRUE)
   time <- ncdf4::ncdim_def(name = "time", units = paste(time_unit, "since", time_base),
-                           vals = udunits2::ud.convert(upscaled_time, "days", time_unit),
+                           vals = PEcAn.utils::ud_convert(upscaled_time, "days", time_unit),
                            create_dimvar = TRUE, unlim = TRUE)
   dim <- list(lat, lon, time)
   
@@ -105,8 +103,8 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
   
   results$file <- loc.file
   results$host <- PEcAn.remote::fqdn()
-  results$startdate <- time_base + udunits2::ud.convert(upscaled_time[[1]], "days", "sec")
-  results$enddate <- time_base + udunits2::ud.convert(upscaled_time[[nrow(upscale_data)]], "days", "sec")
+  results$startdate <- time_base + PEcAn.utils::ud_convert(upscaled_time[[1]], "days", "sec")
+  results$enddate <- time_base + PEcAn.utils::ud_convert(upscaled_time[[nrow(upscale_data)]], "days", "sec")
   results$mimetype <- "application/x-netcdf"
   results$formatname <- "CF Meteorology"
   

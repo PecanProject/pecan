@@ -4,10 +4,25 @@
 \alias{predict_subdaily_met}
 \title{predict_subdaily_met}
 \usage{
-predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
-  direction.filter = "forward", lm.models.base, yrs.predict = NULL,
-  ens.labs = 1:3, resids = FALSE, overwrite = FALSE, verbose = FALSE,
-  seed = format(Sys.time(), "\%m\%d"), print.progress = FALSE, ...)
+predict_subdaily_met(
+  outfolder,
+  in.path,
+  in.prefix,
+  path.train,
+  direction.filter = "forward",
+  lm.models.base,
+  yrs.predict = NULL,
+  ens.labs = 1:3,
+  resids = FALSE,
+  adjust.pr = 1,
+  force.sanity = TRUE,
+  sanity.tries = 25,
+  overwrite = FALSE,
+  verbose = FALSE,
+  seed = format(Sys.time(), "\%m\%d"),
+  print.progress = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
@@ -31,6 +46,16 @@ For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory wit
 ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
+
+\item{adjust.pr}{- adjustment factor fore preciptiation when the extracted values seem off}
+
+\item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
+
+\item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
+
+\item{overwrite}{logical: replace output file if it already exists?}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
 
 \item{seed}{- manually set seed for results to be reproducible}
 
@@ -64,13 +89,17 @@ cores.max = 12
 n.ens = 3}
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{lm_ensemble_sims}},
-  \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{save.betas}}, \code{\link{save.model}},
-  \code{\link{subdaily_pred}},
-  \code{\link{temporal.downscale.functions}}
+Other tdm - Temporally Downscale Meteorology: 
+\code{\link{gen.subdaily.models}()},
+\code{\link{lm_ensemble_sims}()},
+\code{\link{model.train}()},
+\code{\link{nc.merge}()},
+\code{\link{save.betas}()},
+\code{\link{save.model}()},
+\code{\link{subdaily_pred}()},
+\code{\link{temporal.downscale.functions}()}
 }
 \author{
 Christy Rollinson, James Simkins
 }
+\concept{tdm - Temporally Downscale Meteorology}

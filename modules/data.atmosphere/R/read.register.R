@@ -7,11 +7,8 @@
 ##' @author Betsy Cowdery
 read.register <- function(register.xml, con) {
   
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   register <- XML::xmlToList(XML::xmlParse(register.xml))
-  print(as.data.frame(register))
+  PEcAn.logger::logger.debug(as.data.frame(register))
   
   # check scale
   if (is.null(register$scale)) {
@@ -38,13 +35,14 @@ read.register <- function(register.xml, con) {
     } else if ((!is.null(register$format$id) & is.null(register$format$name)) 
                | 
                (!is.null(register$format$id) & is.null(register$format$mimetype))) {
-      register$format$name <- db.query(paste("SELECT name from formats where id = ", register$format$id), 
-                                       con)[[1]]
-      register$format$mimetype <- db.query(paste("SELECT mime_type from formats where id = ", 
-                                                 register$format$id), con)[[1]]
+      register$format$name <- PEcAn.DB::db.query(
+        paste("SELECT name from formats where id = ", register$format$id), con)[[1]]
+      register$format$mimetype <- PEcAn.DB::db.query(
+        paste("SELECT mime_type from formats where id = ", register$format$id), con)[[1]]
     } else if (is.null(register$format$id) & !is.null(register$format$name) & !is.null(register$format$mimetype)) {
-      register$format$id <- db.query(paste0("SELECT id from formats where name = '", register$format$name, 
-                                            "' and mime_type = '", register$format$mimetype, "'"), con)[[1]]
+      register$format$id <- PEcAn.DB::db.query(
+        paste0("SELECT id from formats where name = '", register$format$name,
+               "' and mime_type = '", register$format$mimetype, "'"), con)[[1]]
     }
   }
   return(invisible(register))

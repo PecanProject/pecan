@@ -1,0 +1,101 @@
+# Package Dependencies {#package-dependencies}
+
+## Executive Summary: What to usually do
+
+When you're editing one PEcAn package and want to use a function from any other R package (including other PEcAn packages), the standard method is to add the other package to the `Imports:` field of your DESCRIPTION file, spell the function in fully namespaced form (`pkg::function()`) everywhere you call it, and be done. There are a few cases where this isn't enough, but they're rarer than you think. The rest of this section mostly deals with the exceptions to this rule and why not to use them when they can be avoided.
+
+## Big Picture: What's possible to do
+
+To make one PEcAn package use functionality from another R package (including other PEcAn packages), you must do at least one and up to four things in your own package.
+
+* Always, *declare* which packages your package depends on, so that R can install them as needed when someone installs your package and so that human readers can understand what additional functionality it uses. Declare dependencies by manually adding them to your package's DESCRIPTION file.
+* Sometimes, *import* functions from the dependency package into your package's namespace, so that your functions know where to find them. This is only sometimes necessary, because you can usually use `::` to call functions without importing them. Import functions by writing Roxygen `@importFrom` statements and do not edit the NAMESPACE file by hand.
+* Rarely, *load* dependency code into the R environment, so that the person using your package can use it without loading it separately. This is usually a bad idea, has caused many subtle bugs, and in PEcAn it should only be used when unavoidable. When unavoidable, prefer `requireNamespace(... quietly = TRUE)` over `Depends:` or `require()` or `library()`.
+* Only if your dependency relies on non-R tools, *install* any components that R won't know how to find for itself. These components are often but not always identifiable from a `SystemRequirements` field in the dependency's DESCRIPTION file. The exact installation procedure will vary case by case and from one operating system to another, and for PEcAn the key point is that you should skip this step until it proves necessary. When it does prove necessary, edit the documentation for your package to include advice on installing the dependency components, then edit the PEcAn build and testing scripts as needed so that they follow your advice.
+
+The advice below about each step is written specifically for PEcAn, although much of it holds for R packages in general. For more details about working with dependencies, start with Hadley Wickham's [R packages](http://r-pkgs.had.co.nz/description.html#dependencies) and treat the CRAN team's [Writing R Extensions](https://cran.r-project.org/doc/manuals/R-exts.html) as the final authority.
+
+
+## Declaring Dependencies: Depends, Suggests, Imports
+
+List all dependencies in the DESCRIPTION file. Every package that is used by your package's code must appear in exactly one of the sections `Depends`, `Imports`, or `Suggests`.
+
+Please list packages in alphabetical order within each section. R doesn't care about the order, but you will later when you're trying to check whether this package uses a particular dependency.
+
+* `Imports` is the correct place to declare most PEcAn dependencies. This ensures that they get installed, but *does not* automatically import any of their functions -- Since PEcAn style prefers to mostly use `::` instead of importing, this is what we want.
+
+* `Depends` is, despite the name, usually the wrong place to declare PEcAn dependencies. The only difference between `Depends` and `Imports` is that when the user attaches your packages to their own R workspace (e.g. using `library("PEcAn.yourpkg")`), the packages in `Depends` are attached as well. Notice that a call like `PEcAn.yourpkg::yourfun()` *will not* attach your package *or* its dependencies, so your code still needs to import or `::`-qualify all functions from packages listed in `Depends`. In short, `Depends` is not a shortcut, is for user convenience not developer convenience, and makes it easy to create subtle bugs that appear to work during interactive test sessions but fail when run from scripts. As the [R extensions manual](https://cran.r-project.org/doc/manuals/R-exts.html#Package-Dependencies) puts it (emphasis added):
+
+	> This [Imports and Depends] scheme was developed before all packages had namespaces (R 2.14.0 in October 2011), and good practice changed once that was in place. Field ‘Depends’ should nowadays be used rarely, only for packages which are intended to be put on the search path to make their facilities **available to the end user (and not to the package itself)**."
+
+* The `Suggests` field can be used to declare dependencies on packages that make your package more useful but are not completely essential. Again from the [R extensions manual](https://cran.r-project.org/doc/manuals/R-exts.html#Package-Dependencies):
+
+	> The `Suggests` field uses the same syntax as `Depends` and lists packages that are not necessarily needed. This includes packages used only in examples, tests or vignettes (see [Writing package vignettes](https://cran.r-project.org/doc/manuals/R-exts.html#Writing-package-vignettes)), and packages loaded in the body of functions. E.g., suppose an example from package foo uses a dataset from package bar. Then it is not necessary to have bar use foo unless one wants to execute all the examples/tests/vignettes: it is useful to have bar, but not necessary.
+
+	Some of the PEcAn model interface packages push this definition of "not necessarily needed" by declaring their coupled model package in `Suggests` rather than `Imports`. For example, the `PEcAn.BIOCRO` package cannot do anything useful when the BioCro model is not installed, but it lists BioCro in Suggests because *PEcAn as a whole* can work without it. This is a compromise to simplify installation of PEcAn for users who only plan to use a few models, so that they can avoid the bother of installing BioCro if they only plan to run, say, SIPNET.
+
+	Since the point of Suggests is that they are allowed to be missing, all code that uses a suggested package must behave reasonably when the package is not found. Depending on the situation, "reasonably" could mean checking whether the package is available and throwing an error as needed (PEcAn.BIOCRO uses its `.onLoad` function to check at load time whether BioCro is installed and will refuse to load if it is not), or providing an alternative behavior (`PEcAn.data.atmosphere::get_NARR_thredds` checks at call time for either `parallel` or `doParallel` and uses whichever one it finds first), or something else, but your code should never just assume that the suggested package is available.
+
+	You are not allowed to import functions from `Suggests` into your package's namespace, so always call them in `::`-qualified form. By default R will not install suggested packages when your package is installed, but users can change this using the `dependencies` argument of `install.packages`. Note that for testing on Travis CI, PEcAn *does* install all `Suggests` (because they are required for full package checks), so any of your code that runs when a suggested package is not available will never be exercised by Travis checks.
+
+	It is often tempting to move a dependency from Imports to Suggests because it is a hassle to install (large, hard to compile, no longer available from CRAN, currently broken on GitHub, etc), in the hopes that this will isolate the rest of PEcAn from the troublesome dependency. This helps for some cases, but fails for two very common ones: It does not reduce install time for CI builds, because all suggested packages need to be present when running full package checks (`R CMD check` or `devtools::check` or `make check`). It also does not prevent breakage when updating PEcAn via `make install`, because `devtools::install_deps` does not install suggested packages that are missing but does try to *upgrade* any that are already installed to the newest available version -- even if the installed version took ages to compile and would have worked just fine!
+
+## Importing Functions: Use Roxygen
+
+PEcAn style is to import very few functions and instead use fully namespaced function calls (`pkg::fn()`) everywhere it's practical to do so. In cases where double-colon notation would be especially burdensome, such as when importing custom binary operators like `%>%`, it's acceptable to import specific functions into the package namespace. Do this by using Roxygen comments of the form `#' @importFrom pkg function`, not by hand-editing the NAMESPACE file.
+
+If the import is only used in one or a few functions, use an `@importFrom` in the documentation for each function that uses it. If it is used all over the package, use a single `@importFrom` in the Roxygen documentation block for the whole package, which probably lives in a file called either `zzz.R` or `<your_package_name>-package.R`:
+
+```r
+#' What your package does
+#'
+#' Longer description of the package goes here.
+#' Probably with links to other resources about it, citations, etc.
+#'
+#' @docType package
+#' @name PEcAn.yourpkg
+#' @importFrom magrittr %>%
+NULL
+```
+
+Roxygen will make sure there's only one NAMESPACE entry per imported function no matter how many `importFrom` statements there are, but please pick a scheme (either import on every usage or once for the whole package), stick with it, and do not make function `x()` rely on an importFrom in the comments above function `y()`.
+
+Please do *not* import entire package namespaces (`#' @import pkg`); it increases the chance of function name collisions and makes it much harder to understand which package a given function was called from.
+
+A special note about importing functions from the [tidyverse](https://tidyverse.org): Be sure to import from the package(s) that actually contain the functions you want to use, e.g. `Imports: dplyr, magrittr, purrr` / `@importFrom magrittr %>%` / `purrr::map(...)`, not `Imports: tidyverse` / `@importFrom tidyverse %>%` / `tidyverse::map(...)`. The package named `tidyverse` is just a interactive shortcut that loads the whole collection of constituent packages; it doesn't export any functions in its own namespace and therefore importing it into your package doesn't make them available.
+
+## Loading Code: Don't... But Use `requireNamespace` When You Do
+
+The very short version of this section: We want to maintain clear separation between the [package's namespace](http://r-pkgs.had.co.nz/namespace.html) (which we control and want to keep predictable) and the global namespace (which the user controls, might change in ways we have no control over, and will be justifiably angry if we change it in ways they were not expecting). Therefore, avoid attaching packages to the search path (so no `Depends` and no `library()` or `require()` inside functions), and do not explicitly load other namespaces if you can help it.
+
+The longer version requires that we make a distinction often glossed over: *Loading* a package makes it possible for *R* to find things in the package namespace and does any actions needed to make it ready for use (e.g. running its .onLoad method, loading DLLs if the package contains compiled code, etc). *Attaching* a package (usually by calling `library("somePackage")`) loads it if it wasn't already loaded, and then adds it to the search path so that the *user* can find things in its namespace. As discussed in the "Declaring Dependancies" section above, dependencies listed in `Depends` will be attached when your package is attached, but they will be *neither attached nor loaded* when your package is loaded without being attached.
+
+Loading a dependency into the package namespace is undesirable because it makes it hard to understand our own code -- if we need to use something from elsewhere, we'd prefer call it from its own namespace using `::` (which implicitly loads the dependency!) or explicitly import it with a Roxygen `@import` directive. But in a few cases this isn't enough. The most common reason to need to explicitly load a dependency is that some packages *define* new S3 methods for generic functions defined in other packages, but do not *export* these methods directly. We would prefer that these packages did not do this, but sometimes we have to use them anyway. An [example from PEcAn](https://github.com/PecanProject/pecan/issues/1368) is that PEcAn.MA needs to call `as.matrix` on objects of class `mcmc.list`. When the `coda` namespace is loaded, `as.matrix(some_mcmc.list)` can be correctly dispatched by `base::as.matrix` to the unexported method `coda:::as.matrix.mcmc.list`, but when `coda` is not loaded this dispatch will fail. Unfortunately coda does not export `as.matrix.mcmc.list` so we cannot call it directly or import it into the PEcAn.MA namespace, so instead we [load the `coda` namespace](https://github.com/PecanProject/pecan/pull/1966/files#diff-e0b625a54a8654cc9b22d9c076e7a838R13) whenever PEcAn.MA is loaded.
+
+Attaching packages to the user's search path is even more problematic because it makes it hard for the user to understand *how your package will affect their own code*. Packages attached by a function stay attached after the function exits, so they can cause name collisions far downstream of the function call, potentially in code that has nothing to do with your package. And worse, since names are looked up in reverse order of package loading, it can cause behavior that differs in strange ways depending on the order of lines that look independent of each other:
+
+```r
+library(Hmisc)
+x = ...
+y = 3
+summarize(x) # calls Hmisc::summarize
+y2 <- some_package_that_attaches_dplyr::innocent.looking.function(y)
+# Loading required package: dplyr
+summarize(x) # Looks identical to previous summarize, but calls dplyr::summarize!
+```
+
+This is not to say that users will *never* want your package to attach another one for them, just that it's rare and that attaching dependencies is much more likely to cause bugs than to fix them and additionally doesn't usually save the package author any work.
+
+One possible exception to the do-not-attach-packages rule is a case where your dependency ignores all good practice and wrongly assumes, without checking, that all of its own dependencies are attached; if its DESCRIPTION uses only `Depends` instead of `Imports`, this is often a warning sign. For example, a small-but-surprising number of packages depend on the `methods` package without proper checks (this is probably because most *but not all* R interpreters attach `methods` by default and therefore it's easy for an author to forget it might ever be otherwise unless they happen to test with a but-not-all interpreter).
+
+If you find yourself with a dependency that does this, accept first that you are relying on a package that is broken, and you should either convince its maintainer to fix it or find a way to remove the dependency from PEcAn. But as a short-term workaround, it is sometimes possible for your code to attach the direct dependency so that it will behave right with regard to its secondary dependencies. If so, make sure the attachment happens every time your package is loaded (e.g. by calling `library(depname)` inside your package's `.onLoad` method) and not just when your package is attached (e.g. by putting it in Depends).
+
+When you do need to load or attach a dependency, it is probably better to do it inside your package's `.onLoad` method rather than in individual functions, but this isn't ironclad. To only load, use `requireNamespace(pkgname, quietly=TRUE)` -- this will make it available inside your package's namespace while avoiding (most) annoying loadtime messages and not disturbing the user's search path. To attach when you really can't avoid it, declare the dependency in `Depends` and *also* attach it using `library(pkgname)` in your .onLoad method.
+
+Note that scripts in `inst/` are considered to be sample code rather than part of the package namespace, so it is acceptable for them to explicitly attach packages using `library()`. You may also see code that uses `require(pkgname)`; this is just like `library`, but returns FALSE instead of erroring if package load fails. It is OK for scripts in `inst/` that can do *and do* do something useful when a dependency is missing, but if it is used as `if(!require(pkg)){ stop(...)}` then replace it with `library(pkg)`.
+
+If you think your package needs to load or attach code for any reason, please note why in your pull request description and be prepared for questions about it during code review. If your reviewers can think of an alternate approach that avoids loading or attaching, they will likely ask you to use it even if it creates extra work for you.
+
+## Installing dependencies: Let the machines do it
+
+In most cases you won't need to think about how dependencies get installed -- just declare them in your package's DESCRIPTION and the installation will be handled automatically by R and devtools during the build process. The main exception is when a dependency relies on non-R software that R does not know how to install automatically. For example, rjags relies on JAGS, which might be installed in a different place on every machine. If your dependency falls in this category, you will know (because your CI builds will keep failing until you figure out how to fix it), but the exact details of the fix will differ for every case.

@@ -21,8 +21,6 @@
 ##' @export
 plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   
-  library(mvtnorm)
-  
   ## Jenkins: hemlock (kg) b0 <- -2.5384 b1 <- 2.4814
   
   ## Allometric statistics
@@ -55,7 +53,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   for (g in seq_len(nrep)) {
     
     ## Draw allometries
-    b <- rmvnorm(1, B, Bcov)
+    b <- mvtnorm::rmvnorm(1, B, Bcov)
     
     ## convert tree diameter to biomass
     biomass <- matrix(exp(b[1] + b[2] * log(out[g, ])), ntree, nt)
@@ -115,7 +113,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
     lines(yrvec, upA)
     lines(yrvec, lowA)
   }
-  dev.off()
+  grDevices::dev.off()
   
   save(AGB, NPP, mNPP, sNPP, mAGB, sAGB, yrvec, 
        mbiomass_tsca, sbiomass_tsca, mbiomass_acsa3, sbiomass_acsa3, 

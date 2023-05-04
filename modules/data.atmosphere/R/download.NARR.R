@@ -1,12 +1,14 @@
 ##' Download NARR files
 ##'
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##' @param outfolder location where output is stored
 ##' @param overwrite Overwrite existing files?  Default=FALSE
 ##' @param verbose Turn on verbose output? Default=FALSE
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param ... other inputs
 ##' example options(download.ftp.method="ncftpget")
+##' @importFrom magrittr %>%
 ##' 
 ##' @examples
 ##' \dontrun{
@@ -17,8 +19,6 @@
 ##'
 ##' @author Betsy Cowdery, Shawn Serbin
 download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, method, ...) {
-  
-  library(PEcAn.utils)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -70,7 +70,7 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
       url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
       
       PEcAn.logger::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
-      PEcAn.utils::download.file(url, new.file, method)
+      PEcAn.utils::download_file(url, new.file, method)
     }
   }
   

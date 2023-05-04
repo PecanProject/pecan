@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.ed.R
 \name{write.config.jobsh.ED2}
 \alias{write.config.jobsh.ED2}
-\title{Write ED2 config.xml file}
+\title{Write ED2 job.sh file}
 \usage{
 write.config.jobsh.ED2(settings, run.id)
 }
@@ -11,7 +11,7 @@ write.config.jobsh.ED2(settings, run.id)
 run$host$rundir, run$host$outdir, run$host$scratchdir,
 run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
 run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
-run$end.date, model$binary}
+run$end.date, model$binary, model$binary_args}
 
 \item{run.id}{PEcAn run ID}
 }

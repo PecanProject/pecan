@@ -8,15 +8,18 @@ with the development of PEcAn.
 # ----------------------------------------------------------------------
 options(warn = 1, keep.source = TRUE, error =
           quote({
-            status.end("ERROR")
+            # Need all these try() calls to make sure all wrapup steps are
+            # executed, even if some steps generate errors of their own
 
-            db.print.connections()
-            cat("Environment:\n", file=stderr());
-            
+            try(status.end("ERROR"))
+
+            try(db.print.connections())
+            try(cat("Environment:\n", file=stderr()));
+
             # TODO: setup option for dumping to a file (?)
             # Set `to.file` argument to write this to a file for post-mortem debugging
-            dump.frames();  # writes to last.dump
-            
+            try(dump.frames());  # writes to last.dump
+
             #
             # Debugging in R
             #   http://www.stats.uwo.ca/faculty/murdoch/software/debuggingR/index.shtml
@@ -33,12 +36,12 @@ options(warn = 1, keep.source = TRUE, error =
             #   geterrmessage
             #
             # Output based on the debugger function definition.
-            
-            n <- length(last.dump)
-            calls <- names(last.dump)
-            cat(paste("  ", 1L:n, ": ", calls, sep = ""), sep = "\n", file=stderr())
-            cat("\n", file=stderr())
-            
+
+            try({
+                n <- length(last.dump)
+                calls <- names(last.dump)
+                cat(paste("  ", 1L:n, ": ", calls, sep = ""), sep = "\n", file=stderr())
+                cat("\n", file=stderr())})
             if (!interactive()) {
               q()
             }

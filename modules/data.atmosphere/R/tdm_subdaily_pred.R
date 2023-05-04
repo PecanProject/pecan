@@ -39,7 +39,7 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
   m  <- newdata[,model.predict$factors]
   m[,"as.ordered(hour)"] <- as.ordered(m$hour)
   m$hour <- as.numeric(m$hour)
-  
+
   # Adding hours to make sure prediction works okay
   # Note: This really messes with the order of things!
   if(length(unique(df.hr$hour))!= length(unique(m$hour))){
@@ -56,10 +56,6 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
     # newdata <- newdata[order(newdata$ens, newdata$hour),]
   } 
   
-
-  
-  
-  
   Xp <-  model.matrix(eval(model.predict$formula), m, contrasts.arg=model.predict$contr)
 
   if (resid.err == TRUE) {
@@ -74,7 +70,13 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
     err.resid <- Xp.res[, resid.piv] %*% t(Rbeta.resid)
   } # End residual error
   
-  dat.sim <- Xp[, piv] %*% t(Rbeta) + err.resid
+  if(length(piv)==ncol(Rbeta)){
+    dat.sim <- Xp[, piv] %*% t(Rbeta) + err.resid
+  } else {
+    # dat.sim <- Xp[,piv] %*% t(Rbeta[,piv]) + err.resid
+    dat.sim <- Xp[,piv] %*% t(matrix(Rbeta[,piv], nrow=nrow(Rbeta))) + err.resid
+  }
+  
   
   
   return(dat.sim)

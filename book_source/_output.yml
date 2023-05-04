@@ -1,4 +1,5 @@
 bookdown::gitbook:
-    config:
-        toc:
-            collapse: section
+  split_by: chapter
+  config:
+    toc:
+      collapse: section

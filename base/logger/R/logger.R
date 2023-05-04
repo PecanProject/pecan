@@ -88,21 +88,22 @@ logger.error <- function(msg, ...) {
 ##' Prints an severe message and stops execution.
 ##' 
 ##' This function will print a message and stop execution of the code. This
-##' should only be used if the application should terminate. 
+##' should only be used if the application should terminate.
 ##' 
-##' set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+##' set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
 ##' the session. This is set by default to TRUE if interactive or running
 ##' inside Rstudio.
 ##'
 ##' @param msg the message that should be printed.
 ##' @param ... any additional text that should be printed.
+##' @inheritParams logger.message
 ##' @export
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.severe('missing parameters')
 ##' }
-logger.severe <- function(msg, ...) {
+logger.severe <- function(msg, ..., wrap = TRUE) {
   logger.message("SEVERE", msg, ...)
   
   # run option
@@ -129,24 +130,27 @@ logger.severe <- function(msg, ...) {
 ##' @param level the level of the message (DEBUG, INFO, WARN, ERROR)
 ##' @param msg the message that should be printed.
 ##' @param ... any additional text that should be printed.
+##' @param wrap Whether or not to wrap long messages (default =
+##'   `TRUE`). If `FALSE`, preserve format of original string. Useful
+##'   for specifically formatted error messages.
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.message('DEBUG', 'variable', 5)
 ##' }
-logger.message <- function(level, msg, ...) {
+logger.message <- function(level, msg, ..., wrap = TRUE) {
   if (logger.getLevelNumber(level) >= .utils.logger$level) {
-    dump.frames(dumpto = "dump.log")
-    calls <- names(dump.log)
+    calls <- utils::limitedLabels(sys.calls())
     calls <- calls[!grepl("^(#[0-9]+: )?(PEcAn\\.logger::)?logger", calls)]
-    func <- sub("\\(.*", "", tail(calls, 1))
+    calls <- calls[!grepl("(severe|error|warn|info|debug)ifnot", calls)]
+    func <- sub("\\(.*", "", utils::tail(calls, 1))
     if (length(func) == 0) {
       func <- "console"
     }
     
     stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
-    long.msg <- paste(c(msg, ...), collapse = " ")
-    if (nchar(long.msg) > 20) {
+    long.msg <- stringi::stri_trans_general(paste(c(msg, ...), collapse = " "), "latin-ascii")
+    if (nchar(long.msg) > 20 && wrap) {
       new.msg <- paste("\n", strwrap(long.msg, width = .utils.logger$width, 
                                      indent = 2, exdent = 2), collapse = " ")
     } else {
@@ -176,28 +180,29 @@ logger.message <- function(level, msg, ...) {
 ##'
 ##' @param level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
+##' @return When logger level is set, the previous level is returned invisibly.
+##'   This can be passed to `logger.setLevel()` to restore the previous level.
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.setLevel('DEBUG')
 ##' }
 logger.setLevel <- function(level) {
+  original_level <- logger.getLevel()
   .utils.logger$level <- logger.getLevelNumber(level)
+  invisible(original_level)
 } # logger.setLevel
 
 
-##' Returns numeric value for string
-##'
-##' Given the string representation this will return the numeric value
-##' ALL   =  0
-##' DEBUG = 10
-##' INFO  = 20
-##' WARN  = 30
-##' ERROR = 40
-##' ALL   = 99
-##'
-##' @return level the level of the message
-##' @author Rob Kooper
+## Given the string representation this will return the numeric value
+## DEBUG = 10
+## INFO  = 20
+## WARN  = 30
+## ERROR = 40
+## ALL   = 99
+##
+##@return level the level of the message
+##@author Rob Kooper
 logger.getLevelNumber <- function(level) {
   if (toupper(level) == "ALL") {
     return(0)

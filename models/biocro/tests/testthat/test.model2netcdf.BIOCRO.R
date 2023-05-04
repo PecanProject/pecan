@@ -6,6 +6,9 @@ dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 file.copy(from = "data/result.RData", to = outdir)
 
 settings <- PEcAn.settings::read.settings("data/pecan.biocro.xml")
+settings$database$bety <- do.call(
+  PEcAn.DB::get_postgres_envvars,
+  settings$database$bety)
 
 start_date <- settings$run$start.date
 

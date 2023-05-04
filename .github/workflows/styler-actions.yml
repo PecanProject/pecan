@@ -1,0 +1,89 @@
+on:
+  issue_comment:
+    types: [created]
+name: Commands
+jobs:
+  style:
+    if: startsWith(github.event.comment.body, '/style')
+    name: style
+    runs-on: macOS-latest
+    steps:
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.4
+      - name: list changed files
+        run: echo '${{ steps.file_changes.outputs.files_modified }}'
+      - name: work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: false
+      - uses: r-lib/actions/pr-fetch@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: r-lib/actions/setup-r@master
+      - name: Install styler
+        run: |
+          Rscript -e 'install.packages("styler")'
+      - name: run styler
+        shell: bash
+        env:
+          FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
+        run: |
+          for f in ${FILES}; do
+            if [[ "$f" == *.R || "$f" == *.Rmd ]]
+              then Rscript -e 'styler::style_file("'${f}'")'
+            fi
+          done
+      - name: commit
+        run: |
+          git add \*.R
+          git add \*.Rmd
+          if [ "$(git diff --name-only --cached)" != "" ]; then  git commit -m 'automated syle update' ; fi
+      - uses: r-lib/actions/pr-push@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  document:
+    if: (startsWith(github.event.comment.body, '/style') || startsWith(github.event.comment.body, '/document'))
+    runs-on: ubuntu-latest
+    container: pecan/depends:develop
+    steps:
+      - name: work around https://github.com/actions/checkout/issues/766
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v3
+        with:
+          set-safe-directory: false
+      - uses: r-lib/actions/pr-fetch@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: update dependency lists
+        run: Rscript scripts/generate_dependencies.R
+      - name: install any new dependencies
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        run: Rscript docker/depends/pecan.depends.R
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.4
+      - name : make
+        shell: bash
+        env:
+          FILES: ${{ join(fromJSON(steps.file_changes.outputs.files_modified), ' ') }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo ${FILES} \
+          | tr ' ' '\n' \
+          | grep -e base -e models -e modules \
+          | cut -d / -f 1-2 \
+          | sort \
+          | uniq \
+          | xargs -n1 -I{} make .doc/{}
+      - name: commit
+        run: |
+          git config --global user.email "pecan_bot@example.com"
+          git config --global user.name "PEcAn stylebot"
+          git add \*.Rd \*NAMESPACE Makefile.depends docker/depends/pecan.depends.R
+          if [ "$(git diff --name-only --cached)" != "" ]; then  git commit -m 'automated documentation update' ; fi
+      - uses: r-lib/actions/pr-push@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

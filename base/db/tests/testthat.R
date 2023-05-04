@@ -10,7 +10,12 @@ library(testthat)
 
 library(PEcAn.DB)
 library(RPostgreSQL)
-dbparms <- list(host = "localhost", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+dbparms <- get_postgres_envvars(
+	host = "localhost",
+	driver = "PostgreSQL",
+	user = "bety",
+	dbname = "bety",
+	password = "bety")
 
 if(db.exists(dbparms)){
   con <- db.open(dbparms)

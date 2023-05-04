@@ -1,0 +1,36 @@
+{
+  "name": "BASGRA_N",
+  "type": "BASGRA",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "A version of the BASic GRAssland model (BASGRA) that includes simulation of the N-cycle and digestibility.",
+  "creator": "Marcel van Oijen",
+  "contributors": ["Marcel van Oijen", "Mats Hoglind", "David Cameron"],
+  "links": [
+    {
+      "type": "git",
+      "description": "Source code to BASGRA_N",
+      "url": "https://github.com/MarcelVanOijen/BASGRA_N.git"
+    },
+    {
+      "type": "issues",
+      "description": "Issues related to the BASGRA_N model",
+      "url": "https://github.com/MarcelVanOijen/BASGRA_N/issues"
+    },
+    {
+      "type": "documentation",
+      "description": "Documentation of the BASGRA_N model",
+      "url": "https://github.com/MarcelVanOijen/BASGRA_N/blob/master/documentation/BASGRA_N_UserGuide.docx"
+    },
+    {
+      "type": "docker",
+      "description": "Docker image of the BASGRA_N model",
+      "url": "pecan/models-basgra"
+    }
+  ],
+  "inputs": {},
+  "bibtex": [
+    "Hoglind M, van Oijen M, Cameron D, Persson T (2016) Process-based simulation of growth and overwintering of grassland using the BASGRA model. Ecological Modelling 335:1-15.",
+    "Hoglind M, Cameron D, Persson T, Huang X, van Oijen M (2020) BASGRA_N: A model for grassland productivity, quality and greenhouse gas balance. Ecological Modelling, 417:108925."
+  ]
+}

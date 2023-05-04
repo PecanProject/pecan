@@ -1,0 +1,1 @@
+Rscript "/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/workflow.template.R"

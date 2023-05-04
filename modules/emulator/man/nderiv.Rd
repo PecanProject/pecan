@@ -6,8 +6,16 @@
 \usage{
 nderiv(x, y)
 }
+\arguments{
+\item{x}{Name of variable to plot on X axis}
+
+\item{y}{Name of variable to plot on Y axis}
+}
 \value{
 der
+}
+\description{
+nderiv
 }
 \author{
 Michael Dietze

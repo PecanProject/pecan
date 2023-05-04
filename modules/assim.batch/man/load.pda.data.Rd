@@ -3,17 +3,20 @@
 \name{load.pda.data}
 \alias{load.pda.data}
 \alias{load.L2Ameriflux.cf}
-\alias{load.pda.data}
 \title{Load Ameriflux L2 Data From NetCDF}
 \usage{
 load.L2Ameriflux.cf(file.in)
 
-load.pda.data(settings, bety)
+load.pda.data(settings, bety, external.formats = NULL)
 }
 \arguments{
 \item{file.in}{= the netcdf file of L2 data}
 
 \item{settings}{= PEcAn settings list}
+
+\item{bety}{database connection object}
+
+\item{external.formats}{formats list}
 }
 \value{
 A data frame of all variables in the netcdf

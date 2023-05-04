@@ -1,0 +1,10 @@
+#### BioCro {#inst-biocro}
+
+```r
+# Version 0.951
+echo 'devtools::install_github("ebimodeling/biocro@0.951")' | R --vanilla
+# Version 1.x 
+echo 'devtools::install_github("ebimodeling/biocro-dev@26e0125b")' | R --vanilla
+```
+
+_BioCro Developers:_ request access from [@dlebauer on GitHub](https://github.com/dlebauer)

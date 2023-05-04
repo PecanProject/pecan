@@ -1,5 +1,9 @@
-[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+[![GitHub Actions CI](https://github.com/PecanProject/pecan/workflows/CI/badge.svg)](https://github.com/PecanProject/pecan/actions)
+[![Slack](https://img.shields.io/badge/slack-login-green.svg)](https://pecanproject.slack.com/) 
+[![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ)
 [![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
+
+
 
 ## Our Vision
 #### Ecosystem science, policy, and management informed by the best available data and models
@@ -18,15 +22,28 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/) for full documentation of the PEcAn Project.
+Consult documentation of the PEcAn Project; either the [lastest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/master/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
 
 ## Getting Started
 
-See ["Getting Started"](https://pecanproject.github.io/pecan-documentation/getting-started.html) on the PEcAn.
+See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that provides self-guided tutorials, links to vignettes, and an overview presentation.
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/appendix.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of three methods:
+1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
+2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-docker). This is recommended, especially for development and production deployment.
+3. Install all of the PEcAn R packages on your own Linux or MacOS computer or server. This can be done by [installing from r-universe](https://pecanproject.github.io/pecan-documentation/develop/r-universe.html): 
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.all in R
+install.packages('PEcAn.all')
+
+``` 
+This, however, may have limited functionality without also installing other components of PEcAn, in particular [BETYdb](https://pecanproject.github.io/pecan-documentation/develop/osinstall.html#install-bety).
 
 ### Website
 
@@ -34,19 +51,21 @@ Visit our [webage](https://pecanproject.github.io) to keep up with latest news, 
 
 #### Web Interface demo
 The fastest way to begin modeling ecosystems is through the PEcAn web interface.  
-We have a [demo website](http://pecan.ncsa.illinois.edu/pecan) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
+We have a [demo website](http://pecan.ncsa.illinois.edu/pecan/01-introduction.php) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
 
 The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have set up the run it will execute on our server; depending on the number of people executing a model and the model selected this can take between a few seconds and a few minutes to finish. Once it's finished, you see the results of the execution and can plot the outputs of the model. Complete examples of a few executions can be found in our online [tutorials](http://pecanproject.github.io/tutorials.html).
 
 ## Publications
 
-* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, and M.C. Dietze (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](http://dx.doi.org/10.1890/12-0137.1)
-* Wang, D, D.S. LeBauer, and M.C. Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](http://dx.doi.org/10.1890/12-0854.1)
-* Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
+* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, and M.C. Dietze (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](https://doi.org/10.1890/12-0137.1)
+* Wang, D, D.S. LeBauer, and M.C. Dietze (2013). Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](https://doi.org/10.1890/12-0854.1)
+* Dietze, M.C., D.S LeBauer, and R. Kooper (2013). On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](https://doi.org/10.1111/pce.12043)
 * Dietze, Michael C., Shawn P. Serbin, Carl Davidson, Ankur R. Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper et al. "A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes." Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.
-* Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](http://dx.doi.org/10.1890/14-0497.1)
+* Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](https://doi.org/10.1890/14-0497.1)
 * Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
 * LeBauer, David, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P. Long, and Michael C. Dietze. "BETYdb: a yield, trait, and ecosystem service database applied to second‐generation bioenergy feedstock production." GCB Bioenergy (2017).
+
+A extensive list of publications that apply PEcAn or are informed by our work on [Google Scholar](https://scholar.google.com/citations?hl=en&user=HWhxBY4AAAAJ).
 
 ## Acknowledgements
 

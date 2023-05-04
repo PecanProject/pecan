@@ -1,20 +1,19 @@
 Package: PEcAn.emulator
 Type: Package
-Title: Gausian Process emulator
-Version: 1.5.2
-Date: 2017-12-04
-Author: Michael Dietze
-Maintainer: Michael Dietze <dietze@bu.edu>
-Depends:
-    mvtnorm,
-    mlegp,
-    MCMCpack
+Title: Gausian Process Emulator
+Version: 1.7.2.9000
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Imports:
-    PEcAn.logger,
+    methods,
+    mvtnorm,
     coda (>= 0.18),
-    methods
+    MCMCpack
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.
-License: FreeBSD + file LICENSE
-RoxygenNote: 6.0.1
+License: BSD_3_clause + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.2.3

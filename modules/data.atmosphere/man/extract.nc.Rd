@@ -4,8 +4,18 @@
 \alias{extract.nc}
 \title{extract.nc}
 \usage{
-extract.nc(in.path, in.prefix, outfolder, start_date, end_date, slat, slon,
-  overwrite = FALSE, verbose = FALSE, ...)
+extract.nc(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  slat,
+  slon,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}

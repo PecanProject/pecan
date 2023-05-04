@@ -16,7 +16,7 @@
 ##' @name write.config.MODEL
 ##' @title Write MODEL configuration files
 ##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
+##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for MODEL for given run
@@ -92,7 +92,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
       if (!is.null(settings$model$revision)) {
         filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.MODEL")
       } else {
-        model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
+        model <- PEcAn.DB::db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
         filename <- system.file(paste0("config.r", model$revision), package = "PEcAn.MODEL")
       }
     }
@@ -108,12 +108,12 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
   config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
   config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  config.text <- gsub("@START_MONTH@", format(startdate, "%m"), config.text)
-  config.text <- gsub("@START_DAY@", format(startdate, "%d"), config.text)
-  config.text <- gsub("@START_YEAR@", format(startdate, "%Y"), config.text)
-  config.text <- gsub("@END_MONTH@", format(enddate, "%m"), config.text)
-  config.text <- gsub("@END_DAY@", format(enddate, "%d"), config.text)
-  config.text <- gsub("@END_YEAR@", format(enddate, "%Y"), config.text)
+  config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
+  config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
+  config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
+  config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
+  config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
+  config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
   config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
   config.text <- gsub("@ENSNAME@", run.id, config.text)
   config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)

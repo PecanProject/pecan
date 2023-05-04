@@ -3,14 +3,16 @@
 ##' @name download.PalEON
 ##' @title download.PalEON
 ##' @export
-##' @param outfolder
-##' @param start_year
-##' @param end_year
+##'
+##' @param outfolder desired output location
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param sitename sitename
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param ... Other inputs
 ##' 
 ##' @author Betsy Cowdery
 download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
-  
-  library(PEcAn.utils)
   
   if (sitename == "Harvard Forest - Lyford Plots (PalEON PHA)") {
     site <- "PHA"

@@ -1,0 +1,72 @@
+### Documenting functions using `roxygen2` {#developer-roxygen}
+
+This is the standard method for documenting R functions in PEcAn.
+For detailed instructions, see one of the following resources:
+
+* `roxygen2` [pacakge documentation](https://roxygen2.r-lib.org/)
+  - [Formatting overview](https://roxygen2.r-lib.org/articles/rd.html)
+  - [Markdown formatting](https://blog.rstudio.com/2017/02/01/roxygen2-6-0-0/)
+  - [Namespaces](https://roxygen2.r-lib.org/articles/namespace.html) (e.g. when to use `@export`)
+* From "R packages" by Hadley Wickham:
+  - [Object Documentation](http://r-pkgs.had.co.nz/man.html)
+  - [Package Metadata](http://r-pkgs.had.co.nz/description.html) 
+  
+Below is a complete template for a Roxygen documentation block.
+Note that roxygen lines start with `#'`:
+
+```r
+#' Function title, in a few words
+#'
+#' Function description, in 2-3 sentences.
+#'
+#' (Optional) Package details.
+#'
+#' @param argument_1 A description of the argument
+#' @param argument_2 Another argument to the function
+#' @return A description of what the function returns.
+#'
+#' @author Your name <your_email@email.com>
+#' @examples
+#' \dontrun{
+#'   # This example will NOT be run by R CMD check.
+#'   # Useful for long-running functions, or functions that
+#'   # depend on files or values that may not be accessible to R CMD check.
+#'   my_function("~/user/my_file")
+#'}
+# # This example WILL be run by R CMD check
+#' my_function(1:10, argument_2 = 5)
+## ^^ A few examples of the function's usage
+#' @export
+# ^^ Whether or not the function will be "exported" (made available) to the user.
+# If omitted, the function can only be used inside the package.
+my_function <- function(argument_1, argument_2) {...}
+```
+  
+Here is a complete example from the `PEcAn.utils::days_in_year()` function:
+
+```r
+#' Number of days in a year
+#'
+#' Calculate number of days in a year based on whether it is a leap year or not.
+#'
+#' @param year Numeric year (can be a vector)
+#' @param leap_year Default = TRUE. If set to FALSE will always return 365
+#'
+#' @author Alexey Shiklomanov
+#' @return integer vector, all either 365 or 366
+#' @export
+#' @examples
+#' days_in_year(2010)  # Not a leap year -- returns 365
+#' days_in_year(2012)  # Leap year -- returns 366
+#' days_in_year(2000:2008)  # Function is vectorized over years
+days_in_year <- function(year, leap_year = TRUE) {...}
+```
+
+To update documentation throughout PEcAn, run `make document` in the PEcAn root directory.
+_Make sure you do this before opening a pull request_ --
+PEcAn's automated testing (Travis) will check if any documentation is out of date and will throw an error like the following if it is:
+
+```
+These files were changed by the build process:
+{...}
+```

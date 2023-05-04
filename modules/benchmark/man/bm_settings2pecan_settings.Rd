@@ -9,6 +9,9 @@ bm_settings2pecan_settings(bm.settings)
 \arguments{
 \item{bm.settings}{settings or multisettings object}
 }
+\description{
+Move benchmarking settings back in to original pecan settings object
+}
 \author{
 Betsy Cowdery
 }

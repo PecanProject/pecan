@@ -48,7 +48,7 @@ calculate.growth.L <- function(yearly, growth, error, years) {
             warnings("negative growth")
           }
           # squares <- c(squares, (modeled.growth - observed.growth)^2)
-          logL <- dnorm((observed.growth), (modeled.growth), error, log = TRUE)
+          logL <- stats::dnorm((observed.growth), (modeled.growth), error, log = TRUE)
           if (any(is.infinite(logL))) {
             stop("Infinite likelihood")  #AKA really large value
           }
@@ -70,7 +70,7 @@ get.da.data.growth <- function() {
   
   out.dir <- "./pecan/Toolik/growth/"
   
-  buds <- read.csv("./toolik/validation/Survey/ToolikVegSurvey.csv", sep = "\t")
+  buds <- utils::read.csv("./toolik/validation/Survey/ToolikVegSurvey.csv", sep = "\t")
   buds <- buds[!is.na(buds$length), ]
   buds <- buds[buds$pft != "graminoid", ]
   heights <- buds[, c("length", paste0("X", 2010:2003))]
@@ -87,7 +87,7 @@ get.da.data.growth <- function() {
   
   # ENSEMBLE
   omitted <- c(87)
-  ensemble.run.ids <- get.run.id("ENS", left.pad.zeros((1:ensemble.size)[-omitted]))
+  ensemble.run.ids <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros((1:ensemble.size)[-omitted]))
   ensemble.x <- do.call(cbind, ensemble.samples[pfts])[(1:ensemble.size)[-omitted], ]
   
   # SENSITIVITY ANALYSIS
@@ -100,7 +100,7 @@ get.da.data.growth <- function() {
       median.samples[[i]] <- sa.samples[[i]][MEDIAN, ]
     }
     names(median.samples) <- names(sa.samples)
-    run.id <- get.run.id("SA", "median")
+    run.id <- PEcAn.utils::get.run.id("SA", "median")
     sa.x[[run.id]] <- do.call(cbind, trait.samples)
     ## loop over pfts
     for (i in seq(names(sa.samples))) {
@@ -115,7 +115,7 @@ get.da.data.growth <- function() {
             quantile <- as.numeric(quantile.str) / 100
             trait.samples <- median.samples
             trait.samples[[i]][trait] <- sa.samples[[i]][quantile.str, trait]
-            run.id <- get.run.id("SA", round(quantile, 3), 
+            run.id <- PEcAn.utils::get.run.id("SA", round(quantile, 3),
                                  trait = trait, 
                                  pft.name = names(trait.samples)[i])
             sa.x[[run.id]] <- do.call(cbind, trait.samples)
@@ -149,7 +149,7 @@ get.da.data.growth <- function() {
         yearly <-paste(run.id, '-E-(((', 
             paste(paste('(', 2003:2010, ')', sep=''), collapse='|'), ')-01)|(2011-07))', 
             sep='')
-        yearly <- read.output.type(out.dir, 
+        yearly <- read.output.type(out.dir,
             outname=yearly, pattern='-E-')
         if(length(yearly) <= 0){
           return(NA)

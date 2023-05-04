@@ -1,6 +1,6 @@
 ##' @name met.process
 ##' @title met.process
-##' @export
+##' 
 ##'
 ##' @param site Site info from settings file
 ##' @param input_met Which data source to process. 
@@ -13,6 +13,7 @@
 ##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
 ##' 
+##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
 ##'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
@@ -20,18 +21,23 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
-##'
-##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
+##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
 
+ 
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
       PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
-      return(input_met$path)
+      
+      # Additional layer of list depth added for consistancy with other return statements.
+      temp_path = input_met$path
+      input_met$path <- list()
+      input_met$path$path1 <- temp_path
+      return(input_met)
     }else {
      PEcAn.logger::logger.warn("No met source specified")
       if(!is.null(input_met$id) & !is.null(input_met$path)){
@@ -74,29 +80,27 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if (i < length(overwrite.check) && 
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
-      print(overwrite)
-     PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
+      PEcAn.logger::logger.debug(overwrite)
+      PEcAn.logger::logger.error(
+        "If overwriting any stage of met.process, ",
+        "all subsequent stages need to be overwritten too. Please correct.")
     }
   }
   
   # set up connection and host information
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                       host     = dbparms$host, 
-                       user     = dbparms$user, 
-                       password = dbparms$password)
-  
-  con <- bety$con
-  on.exit(db.close(con))
+  con <- PEcAn.DB::db.open(dbparms)
+
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   # special case Brown Dog
   if (!is.null(browndog)) {
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
     
     if (is.data.frame(result)) {
-      dbfile.input.insert(in.path = dirname(result$file), 
+      dbentry = PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
                           in.prefix = result$dbfile.name,
                           siteid = site$id, 
                           startdate = start_date, enddate = end_date,
@@ -104,27 +108,47 @@ met.process <- function(site, input_met, start_date, end_date, model,
                           formatname = result$formatname, 
                           parentid = NA, 
                           con = con, hostname = result$host)
-      return(invisible(result$file))
+      
+      # Additonal list depth added for consistancy with other return statements.
+      input_met$path <- list()
+      input_met$path$path1 <- result$file
+      input_met$id <- list()
+      input_met$id$id1 <- dbentry$input.id
+      
+      return(invisible(input_met))
     }
   }
-  
+
   # read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register     <- read.register(register.xml, con)
-  
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
+    format.vars <- PEcAn.DB::query.format.vars(bety = con, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
-    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
+    format.vars <- PEcAn.DB::query.format.vars(bety = con, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
-    assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
+    assign(stage$id.name,
+           list(
+             input.id = input_met$id,
+             dbfile.id = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
+                                                 con)$id
+           ))
   }
-  print(stage)
+  #--- If the met source is local then there is no need for download
+  if (!is.null(register$Local)){
+    if (as.logical(register$Local)) {
+      stage$download.raw <- FALSE
+      stage$local <- TRUE
+    }
+  }else{
+    stage$local <- FALSE
+  }
+  
+  PEcAn.logger::logger.debug(stage)
   
   if(is.null(model)){
     stage$model <- FALSE
@@ -150,33 +174,88 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (is.null(format.vars$site)) {
     format.vars$site <- new.site$id
   }
-  
+ 
   #--------------------------------------------------------------------------------------------------#
+  # Or met source is either downloadable or it's local .
   # Download raw met
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
+    str_ns_download <- ifelse(is.null(register$siteid), str_ns, register$siteid)
+
+    raw.id <- .download.raw.met.module(
+      dir = dir,
+      met = met,
+      register = register,
+      machine = machine,
+      start_date = start_date,
+      end_date = end_date,
+      str_ns = str_ns_download,
+      con = con,
+      input_met = input_met,
+      site.id = raw.data.site.id,
+      lat.in = new.site$lat,
+      lon.in = new.site$lon,
+      host = host,
+      overwrite = overwrite$download,
+      site = site,
+      username = username,
+      dbparms=dbparms
+    )
     
-    raw.id <- .download.raw.met.module(dir = dir,
-                                       met = met, 
-                                       register = register, 
-                                       machine = machine, 
-                                       start_date = start_date, end_date = end_date,
-                                       str_ns =str_ns, con = con, 
-                                       input_met = input_met, 
-                                       site.id = raw.data.site.id, 
-                                       lat.in = new.site$lat, lon.in = new.site$lon, 
-                                       host = host, 
-                                       overwrite = overwrite$download,
-                                       site = site, username = username)
-    if (met %in% c("CRUNCEP", "GFDL")) {
+    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS", "MERRA")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
+    } 
+  }else if (stage$local){ # In parallel to download met module this needs to check if the files are already downloaded or not 
+
+    db.file <- PEcAn.DB::dbfile.input.check(
+      siteid=new.site$id %>% as.character(),
+      startdate = start_date %>% as.Date,
+      enddate = end_date  %>% as.Date,
+      parentid = NA,
+      mimetype="application/x-netcdf",
+      formatname="CF Meteorology",
+      con,
+      hostname = PEcAn.remote::fqdn(),
+      exact.dates = TRUE,
+#      pattern = met,
+      return.all=TRUE
+    ) 
+    # If we already had the met downloaded for this site  
+    if (nrow(db.file) >0 ){
+      cf.id <- raw.id <- db.file
+    }else{ 
+      # I did this bc dbfile.input.check does not cover the between two time periods situation
+      mimetypeid <- get.id(table = "mimetypes", colnames = "type_string", 
+                           values = "application/x-netcdf", con = con)
+
+      formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"),
+                         values = c(mimetypeid, "CF Meteorology"), con = con)
+      
+      machine.id <- get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
+      # Fidning the tiles.
+      raw.tiles <- tbl(con, "inputs") %>%
+        filter(
+          site_id == register$ParentSite,
+          start_date >= start_date,
+          end_date <= end_date,
+          format_id == formatid
+        ) %>%
+        filter(grepl(met, "name")) %>%
+        inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
+        filter(machine_id == machine.id) %>%
+        collect()
+      
+      cf.id <- raw.id <- list(input.id = raw.tiles$id.x, dbfile.id = raw.tiles$id.y)
     }
+    
+    stage$met2cf <- FALSE 
+    stage$standardize <- TRUE
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
   if (stage$met2cf) {
@@ -194,43 +273,61 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             con = con, host = host, 
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars,
-                            bety = bety)
+                            bety = con)
   } else {
-    cf.id = input_met$id
+   if (! met %in% c("ERA5", "FieldObservatory")) cf.id = input_met$id
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
-    if (register$scale == "regional") {
-      #### Site extraction
-      ready.id <- .extract.nc.module(cf.id = cf.id, 
-                                     register = register, 
-                                     dir = dir, 
-                                     met = met, 
-                                     str_ns = str_ns, 
-                                     site = site, new.site = new.site, 
-                                     con = con, 
-                                     start_date = start_date, end_date = end_date, 
-                                     host = host, 
-                                     overwrite = overwrite$standardize)
-    } else if (register$scale == "site") {
-      ##### Site Level Processing
-      ready.id <- .metgapfill.module(cf.id = cf.id, 
-                                     register = register,
-                                     dir = dir,
-                                     met = met, 
-                                     str_ns = str_ns, 
-                                     site = site, new.site = new.site, 
-                                     con = con, 
-                                     start_date = start_date, end_date = end_date,
-                                     host = host, 
-                                     overwrite = overwrite$standardize)
+    standardize_result <- list()
+    
+    for (i in seq_along(cf.id[[1]])) {
+
+      if (register$scale == "regional") {
+        #### Site extraction
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+                                                                   dbfile.id = cf.id$id[i]), 
+                                       register = register, 
+                                       dir = dir, 
+                                       met = met, 
+                                       str_ns = str_ns, 
+                                       site = site,
+                                       new.site = new.site, 
+                                       con = con, 
+                                       start_date = start_date,
+                                       end_date = end_date, 
+                                       host = host, 
+                                       overwrite = overwrite$standardize)
+                                       # Expand to support ensemble names in the future
+      } else if (register$scale == "site") {
+        ##### Site Level Processing
+        standardize_result[[i]] <- .metgapfill.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
+                                       register = register,
+                                       dir = dir,
+                                       met = met, 
+                                       str_ns = str_ns, 
+                                       site = site, new.site = new.site, 
+                                       con = con, 
+                                       start_date = start_date, end_date = end_date,
+                                       host = host, 
+                                       overwrite = overwrite$standardize,
+                                       ensemble_name = i)
+      }
+      
+    } # End for loop
+    ready.id <- list(input.id = NULL, dbfile.id = NULL)
+
+    for (i in seq_along(standardize_result)) {
+      ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
+      ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
     }
+    
   } else {
-    ready.id = input_met$id
+    ready.id <- input_met$id
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
@@ -239,55 +336,82 @@ met.process <- function(site, input_met, start_date, end_date, model,
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
-    met2model.result <- .met2model.module(ready.id = ready.id, 
-                                          model = model, 
-                                          con = con,
-                                          host = host, 
-                                          dir = dir, 
-                                          met = met, 
-                                          str_ns = str_ns,
-                                          site = site, 
-                                          start_date = start_date, end_date = end_date, 
-                                          browndog = browndog, 
-                                          new.site = new.site,
-                                          overwrite = overwrite$met2model,
-                                          exact.dates = reg.model$exact.dates,
-                                          spin = spin)
+      met2model.result = list()
+    for (i in seq_along(ready.id[[1]])) {
+      met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
+                                    model = model, 
+                                    con = con,
+                                    host = host, 
+                                    dir = dir, 
+                                    met = met, 
+                                    str_ns = str_ns,
+                                    site = site, 
+                                    start_date = start_date,
+                                    end_date = end_date, 
+                                    browndog = browndog, 
+                                    new.site = new.site,
+                                    overwrite = overwrite$met2model,
+                                    exact.dates = reg.model$exact.dates,
+                                    spin = spin,
+                                    register = register,
+                                    ensemble_name = i)
+      }
+
+    model.id <- list()
+    model.file.info <- list()
+    model.file <- list()
+
+    for (i in seq_along(met2model.result)) {
+      model.id[[i]]  <- met2model.result[[i]]$model.id
+      model.file.info[[i]] <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id[[i]]$dbfile.id), con)
+      model.file[[i]] <- file.path(model.file.info[[i]]$file_path, model.file.info[[i]]$file_name)
+    }
     
-    model.id  <- met2model.result$model.id
-    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
-    model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+  
+    
+    # met.process now returns the entire $met portion of settings, updated with parellel lists containing
+    # the model-specific data files and their input ids.
+    
+    input_met$id <- list()
+    input_met$path <- list()
+
+    for (i in seq_along(model.id)) {
+      input_met$id[[paste0("id", i)]] <- model.id[[i]]$input.id
+      input_met$path[[as.character(paste0("path", i))]] <- model.file[[i]]
+    }
+    
     
   } else {
+    # Because current ensemble data cannot reach this else statement, it only supports single source data.
     PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
-    model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
-    if(is.null(model.id)|length(model.id)==0){
-      model.file <- input_met$path
-    }else{
+    model.id  <- PEcAn.DB::dbfile.check("Input", ready.id, con, hostname=machine.host)
+    if(!(is.null(model.id)|length(model.id)==0)) {
       model.id$dbfile.id  <- model.id$id 
-      model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
-      model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+      model.file.info <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+      model.file <- file.path(model.file.info$file_path, model.file.info$file_name)
+    } else {
+      PEcAn.logger::logger.severe("Missing model id.")
     }
-    #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
+    
+    input_met$path <- list() # for consistancy with the code in the if to this else.
+    input_met$path$path1 <- model.file
+    input_met$id <- model.id$container_id # This is the input id, whereas $id is the dbfile id.
     PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
-  
-
     
-  return(model.file)
+  return(input_met) # Returns an updated $met entry for the settings object.
 } # met.process
 
 ################################################################################################################################# 
 
-##' @name db.site.lat.lon
-##' @title db.site.lat.lon
+##' Look up lat/lon from siteid
+##'
 ##' @export
-##' @param site.id
-##' @param con
-##' @importFrom PEcAn.DB db.query
+##' @param site.id BeTY ID of site to look up
+##' @param con database connection
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
-  site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
+  site <- PEcAn.DB::db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
                          site.id), con)
   if (nrow(site) == 0) {
    PEcAn.logger::logger.error("Site not found")
@@ -303,20 +427,19 @@ db.site.lat.lon <- function(site.id, con) {
 ################################################################################################################################# 
 
 
-##' @name browndog.met
-##' @description Use browndog to get the met data for a specific model
-##' @title get met data from browndog
+##' Use browndog to get the met data for a specific model
+##'
 ##' @export
-##' @param browndog, list with url, username and password to connect to browndog
-##' @param source, the source of the met data, currently only NARR an Ameriflux is supported
-##' @param site, site information should have id, lat, lon and name (ameriflux id)
-##' @param start_date, start date for result
-##' @param end_date, end date for result
-##' @param model, model to convert the met data to
-##' @param dir, folder where results are stored (in subfolder)
-##' @param username, used when downloading data from Ameriflux like sites
-##' @param con, database connection
-## 
+##' @param browndog list with url, username and password to connect to browndog
+##' @param source the source of the met data, currently only NARR an Ameriflux is supported
+##' @param site site information should have id, lat, lon and name (ameriflux id)
+##' @param start_date start date for result
+##' @param end_date end date for result
+##' @param model model to convert the met data to
+##' @param dir folder where results are stored (in subfolder)
+##' @param username used when downloading data from Ameriflux like sites
+##' @param con database connection
+##'
 ##' @author Rob Kooper
 browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username, con) {
   folder <- tempfile("BD-", dir)
@@ -373,7 +496,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
   } else if (model == "BIOCRO") {
-    metinfo <- db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
+    metinfo <- PEcAn.DB::db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
                                " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
                                " and tag='met' and modeltypes.name='", model, "'"), con)
 
@@ -404,15 +527,21 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- postForm(paste0(browndog$url, formatname, "/"), 
-                     fileData = fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+  
+  result <- httr::POST(
+    url = paste0(browndog$url, formatname, "/"),
+    config = do.call(httr::config, curloptions),
+    httr::content_type("text/xml"),
+    body = xmldata)
+  httr::warn_for_status(result)
+  result_txt <- httr::content(result, "text")
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
-  downloadedfile <- download.url(url, outputfile, 600, curloptions)
+  downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
   
   # fix returned data
   if (model == "ED2") {
-    unzip(downloadedfile, exdir = folder)
+    utils::unzip(downloadedfile, exdir = folder)
     # fix ED_MET_DRIVER_HEADER
     x <- readLines(results$file)
     x[3] <- ifelse(grepl("/$", folder), folder, paste0(folder, "/"))

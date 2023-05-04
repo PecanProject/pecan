@@ -8,7 +8,7 @@
 #source('./code/R/model.specific.R')
 
 dlaplace <- function(x, mean, shape, ...) {
-  dexp(abs(mean - x), shape, ...)
+  stats::dexp(abs(mean - x), shape, ...)
 } # dlaplace
 
 
@@ -18,7 +18,7 @@ calculate.nee.L <- function(yeardoytime, model.i.nee, observed.flux, be, bu) {
                            model.i.nee = model.i.nee)
   all.fluxes <- merge(observed.flux, model.flux, by = "yeardoytime")
 
-  sigma <- with(all.fluxes, coef(lm(abs(model.i.nee - FC) ~ abs(model.i.nee))))
+  sigma <- with(all.fluxes, stats::coef(stats::lm(abs(model.i.nee - FC) ~ abs(model.i.nee))))
 
   ## calculate likelihood
   logL <- rep(NA, sum(all.fluxes$model.i.nee != 0))
@@ -31,8 +31,8 @@ calculate.nee.L <- function(yeardoytime, model.i.nee, observed.flux, be, bu) {
   logL[uptake] <- with(all.fluxes[uptake, ],
                        dlaplace(FC, model.i.nee, 1/(bu[1] + bu[2] * abs(model.i.nee)), log = TRUE))
 
-  # NEE.acf <- acf(all.fluxes$model.i.nee, 100, plot=FALSE)
-  ar.coef <- ar(model.i.nee, FALSE, 1)$ar
+  # NEE.acf <- stats::acf(all.fluxes$model.i.nee, 100, plot=FALSE)
+  ar.coef <- stats::ar(model.i.nee, FALSE, 1)$ar
   weight <- (1 - ar.coef) / (1 + ar.coef)
   print(weight)
   nlogL <- -sum(logL, na.rm = TRUE) * weight
@@ -48,7 +48,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
 
   # OBSERVED
   observed <- lapply(years, function(year) {
-    read.ameriflux.L2(paste(ameriflux.dir, year, "L2.csv", sep = "_"), year)
+    PEcAn.uncertainty::read.ameriflux.L2(paste(ameriflux.dir, year, "L2.csv", sep = "_"), year)
   })
   observed <- do.call(rbind, observed)
   observed$yeardoytime <- observed$time
@@ -58,7 +58,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
   stopifnot(all(abs(observed$FC) <= 500, na.rm = TRUE))
 
   # ENSEMBLE
-  ensemble.run.ids <- get.run.id("ENS", left.pad.zeros(1:ensemble.size))
+  ensemble.run.ids <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(1:ensemble.size))
   ensemble.x <- do.call(cbind, ensemble.samples[pfts])[1:ensemble.size, ]
 
   # SENSITIVITY ANALYSIS
@@ -74,7 +74,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
       median.samples[[i]] <- sa.samples[[i]][MEDIAN, ]
     }
     names(median.samples) <- names(sa.samples)
-    run.id <- get.run.id("SA", "median")
+    run.id <- PEcAn.utils::get.run.id("SA", "median")
     sa.x[[run.id]] <- do.call(cbind, trait.samples)
     ## loop over pfts
     for (i in seq(names(sa.samples))) {
@@ -89,7 +89,7 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 1
             quantile <- as.numeric(quantile.str) / 100
             trait.samples <- median.samples
             trait.samples[[i]][trait] <- sa.samples[[i]][quantile.str, trait]
-            run.id <- get.run.id("SA", round(quantile, 3),
+            run.id <- PEcAn.utils::get.run.id("SA", round(quantile, 3),
                                  trait = trait,
                                  pft.name = names(trait.samples)[i])
             sa.x[[run.id]] <- do.call(cbind, trait.samples)

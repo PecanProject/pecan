@@ -17,6 +17,9 @@ In the second case, must be passable to match_species_id.}
 \value{
 \code{boolean}
 }
+\description{
+check_if_species_list
+}
 \details{
 Checks if format contains a species list in a known format, or a declared custom format.
 }

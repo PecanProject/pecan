@@ -47,4 +47,13 @@
     '4' => "",
     );
 
+  // always require user to be logged in.
+  include '../common.php';
+  open_database();
+  if (!check_login()) {
+    header( "Location: ../login.php");
+    close_database();
+    exit;
+  }
+  close_database();
 ?>

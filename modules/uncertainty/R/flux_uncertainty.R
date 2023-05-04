@@ -16,7 +16,7 @@
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 read.ameriflux.L2 <- function(file.name, year) {
-  data <- as.data.frame(read.table(file.name, header = TRUE, sep = ",", 
+  data <- as.data.frame(utils::read.table(file.name, header = TRUE, sep = ",", 
                                    na.strings = c("-9999", "-6999"), 
                                    stringsAsFactors = FALSE))
   # data$time <- year + (data$DTIME / 366.0)
@@ -53,7 +53,7 @@ get.change <- function(measurement) {
 ##' @param bin.num = number of bins (default = 10)
 ##' @param transform = transformation of magnitude (default = identity)
 ##' @param minBin = minimum number of points allowed in a bin
-##' @return List of parameters from the fitted uncertainty model
+##' @return return.list List of parameters from the fitted uncertainty model
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10, 
@@ -92,7 +92,7 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
     
     if (nBin[k] > minBin) {
       ## && sum(!is.na(change[use])) > 50) {
-      errBin[k] <- sd(indErr[use], na.rm = TRUE)
+      errBin[k] <- stats::sd(indErr[use], na.rm = TRUE)
       biasBin[k] <- mean(indErr[use], na.rm = TRUE)
       print(paste(length(magnitude[use]), sum(!is.na(change[use])), 
                   magBin[k], errBin[k]))
@@ -115,19 +115,27 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
   ## would be better to fit a two line model with a common intercept, but this
   ## is quicker to implement for the time being
   E2 <- errBin - errBin[zero]
-  mp <- lm(E2[pos] ~ magBin[pos] - 1)
-  mn <- lm(E2[neg] ~ magBin[neg] - 1)
+  E2 <- errBin - errBin[zero]
   intercept <- errBin[zero]
-  slopeP <- mp$coefficients[1]
-  slopeN <- mn$coefficients[1]
   
-  return(list(mag = magBin, 
-              err = errBin, 
-              bias = biasBin, 
-              n = nBin, 
-              intercept = intercept, 
-              slopeP = slopeP,
-              slopeN = slopeN))
+  return.list <- list(mag = magBin, 
+                      err = errBin, 
+                      bias = biasBin, 
+                      n = nBin,
+                      intercept = intercept)
+  
+  if(!all(is.na(E2[pos]))){
+    mp <- stats::lm(E2[pos] ~ magBin[pos] - 1)
+    return.list$slopeP <- mp$coefficients[1]
+  } 
+  if(!all(is.na(E2[neg]))){
+    mn <- stats::lm(E2[neg] ~ magBin[neg] - 1)
+    return.list$slopeN <- mn$coefficients[1]
+  }else{
+    return.list$slopeN <- mp$coefficients[1]
+  }
+  
+  return(return.list)
 } # flux.uncertainty
 
 
@@ -141,11 +149,11 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 plot_flux_uncertainty <- function(f, ...) {
-  plot(f$mag, f$err, ...)
+  graphics::plot(f$mag, f$err, ...)
   big <- 10000
-  lines(c(0, big), c(f$intercept, f$slopeP * big))
-  lines(c(0, -big), c(f$intercept, -f$slopeN * big))
-  legend("bottomleft", legend = c("intercept", f$intercept,
+  graphics::lines(c(0, big), c(f$intercept, f$slopeP * big))
+  graphics::lines(c(0, -big), c(f$intercept, -f$slopeN * big))
+  graphics::legend("bottomleft", legend = c("intercept", f$intercept,
                                   "slopeP", f$slopeP, 
                                   "slopeN", f$slopeN))
 } # plot_flux_uncertainty
@@ -190,7 +198,7 @@ tundra.flux.uncertainty <- function() {
     file <- paste0(year, "%20ITEX")
     file <- dir(folder, pattern = file, full.names = TRUE)
     print(file)
-    data <- as.data.frame(read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
+    data <- as.data.frame(utils::read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
     columns <- c("UTC", "ATZ", "location", "site", "treatment", "plot",
                  "year", "julian", "month", "hour")
     colnames(data)[1:length(columns)] <- columns

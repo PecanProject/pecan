@@ -4,8 +4,19 @@
 \alias{met2CF.csv}
 \title{met2CF.csv}
 \usage{
-met2CF.csv(in.path, in.prefix, outfolder, start_date, end_date, format,
-  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE, ...)
+met2CF.csv(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  format,
+  lat = NULL,
+  lon = NULL,
+  nc_verbose = FALSE,
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{format}{data frame or list with elements as described below
@@ -27,11 +38,14 @@ Units for datetime field are the lubridate function that will be used to parse t
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
 }
+\description{
+met2CF.csv
+}
 \examples{
 \dontrun{
-bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
-con <- PEcAn.DB::db.open(bety)
-bety$con <- con
+con <- PEcAn.DB::db.open(
+  list(user='bety', password='bety', host='localhost',
+  dbname='bety', driver='PostgreSQL',write=TRUE))
 start_date <- lubridate::ymd_hm('200401010000')
 end_date <- lubridate::ymd_hm('200412312330')
 file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
@@ -43,7 +57,10 @@ format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
 format$lon <- -92.0
 format$lat <- 45.0
 format$time_zone <- "America/Chicago"
-results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
+results <- PEcAn.data.atmosphere::met2CF.csv(
+  in.path, in.prefix, outfolder,
+  start_date, end_date, format,
+  overwrite=TRUE)
 }
 }
 \author{

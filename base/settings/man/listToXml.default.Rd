@@ -7,7 +7,8 @@
 \method{listToXml}{default}(item, tag)
 }
 \arguments{
-\item{item}{object to be converted. Despite the function name, need not actually be a list}
+\item{item}{object to be converted.
+Despite the function name, need not actually be a list}
 
 \item{tag}{xml tag}
 }

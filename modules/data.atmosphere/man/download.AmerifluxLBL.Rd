@@ -4,10 +4,25 @@
 \alias{download.AmerifluxLBL}
 \title{Download Ameriflux LBL CSV files}
 \usage{
-download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...)
+download.AmerifluxLBL(
+  sitename,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  username = "pecan",
+  method,
+  useremail = "@",
+  data_product = "BASE-BADM",
+  data_policy = "CCBY4.0",
+  ...
+)
 }
 \arguments{
+\item{sitename}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+
 \item{outfolder}{location on disk where outputs will be stored}
 
 \item{start_date}{the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)}
@@ -20,21 +35,29 @@ download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
 
 \item{username}{Ameriflux username}
 
-\item{method}{Optional. download.file() function option.  Use this to set custom programs such as ncftp}
+\item{method}{Optional. download_file() function option.  Use this to set custom programs such as ncftp}
 
-\item{site}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
-The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+\item{useremail}{Used email, should include 'address sign' for code to be functional}
+
+\item{data_product}{AmeriFlux data product}
+
+\item{data_policy}{Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'}
 }
 \description{
-download.AmerifluxLBL
+download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package
+to download a zip-file of data. The zip-file is extracted to a csv-file that is stored
+to the given outfolder. Details about amf_download_base function can be found here:
+https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
 }
 \details{
 Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 }
 \examples{
+\dontrun{
 result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+}
 
 }
 \author{
-Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
+Ankur Desai, Henri Kajasilta based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
 }

@@ -6,6 +6,13 @@
 \usage{
 pda.generate.sf(n.knot, sf, prior.list)
 }
+\arguments{
+\item{n.knot}{number of knots}
+
+\item{sf}{scaling factor}
+
+\item{prior.list}{list of prior dataframes}
+}
 \description{
 Generate scaling factor knots for PDA Emulator
 }

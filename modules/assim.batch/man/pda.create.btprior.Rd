@@ -7,7 +7,7 @@
 pda.create.btprior(prior.sel)
 }
 \arguments{
-\item{prior.sel}{`data.frame` containing prior distributions of the selected parameters}
+\item{prior.sel}{\code{data.frame} containing prior distributions of the selected parameters}
 }
 \value{
 out Prior class object for BayesianTools package
@@ -16,14 +16,18 @@ out Prior class object for BayesianTools package
 Helper function for creating log-priors compatible with BayesianTools package
 }
 \details{
-`prior.sel` must contain the following columns:
-  * `distn` -- String describing a distribution; e.g. `norm` for `dnorm`, `rnorm`, etc.
-  * `parama`, `paramb` -- First and second parameters, respectively, of the corresponding distribution
+\code{prior.sel} must contain the following columns:
+\itemize{
+\item \code{distn} -- String describing a distribution; e.g. \code{norm} for \code{dnorm}, \code{rnorm}, etc.
+\item \code{parama}, \code{paramb} -- First and second parameters, respectively, of the corresponding distribution
+}
 
-Optionally, `prior.sel` may also contain the following columns:
-  * `param_name` -- Parameter name, which will be carried through to the prior object and sampler
-  * `lower`, `upper` -- Lower and upper bounds, respectively. These can be leveraged by the BayesianTools samplers.
-  * `best` -- Best guess for a parameter estimate. BayesianTools can also use this, though I'm not sure how...
+Optionally, \code{prior.sel} may also contain the following columns:
+\itemize{
+\item \code{param_name} -- Parameter name, which will be carried through to the prior object and sampler
+\item \code{lower}, \code{upper} -- Lower and upper bounds, respectively. These can be leveraged by the BayesianTools samplers.
+\item \code{best} -- Best guess for a parameter estimate. BayesianTools can also use this, though I'm not sure how...
+}
 }
 \author{
 Istem Fer, Alexey Shiklomanov

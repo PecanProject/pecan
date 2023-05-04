@@ -1,0 +1,7 @@
+^Dockerfile$
+^model_info\.json$
+^scripts$
+^data-raw$
+^.*\.Rproj$
+^\.Rproj\.user$
+vignettes/ed_run_data/

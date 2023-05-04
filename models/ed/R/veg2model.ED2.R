@@ -1,10 +1,16 @@
 #' Writes ED specific IC files
-#'
+#' 
+#' @param veg_info object passed from write_ic includes pft matches
+#' @param start_date "YYYY-MM-DD" passed from write_ic
+#' @param new_site object passed from write_ic includes site id, lat, lon, and sitename
+#' @param source object passed from write_ic
 #' @param outfolder where to write files
+#' @param ens number of ensemble members
+#'
 #' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens){
   
 
   lat       <- as.numeric(as.character(new_site$lat))
@@ -17,7 +23,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste(source, start_year,
+  file.prefix <- paste(source, start_year, ens,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
 
   
@@ -39,12 +45,37 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   
   # for FIA these steps are unnecessary, it already has the pss info
   if(source != "FIA"){
-    time    <- ifelse(!is.null(pss$time), pss$time, start_year)
-    n.patch <- ifelse(!is.null(pss$n.patch), pss$n.patch, 1)
-    trk     <- ifelse(!is.null(pss$trk), pss$trk, 1)
-    age     <- ifelse(!is.null(pss$age), pss$age, 100)
+    if(!is.null(pss$time)){
+      time <- as.numeric(pss$time)
+    }else{
+      PEcAn.logger::logger.info("No year info passed via metadata, using start year: ", start_year)
+      time <- start_year
+    }
+    if(!is.null(pss$n.patch)){
+      n.patch <- as.numeric(pss$n.patch)
+    }else{
+      PEcAn.logger::logger.info("No patch number info passed via metadata, assuming 1 patch.")
+      n.patch <- 1
+    }
+    if(!is.null(pss$trk)){
+      trk <- as.numeric(pss$trk)
+    }else{
+      PEcAn.logger::logger.info("No trk info passed via metadata, assuming 1.")
+      trk <- 1
+    }
+    if(!is.null(pss$age)){
+      age <- as.numeric(pss$age)
+    }else{
+      PEcAn.logger::logger.info("No stand age info passed via metadata, assuming 100.")
+      age <- 100
+    }
+    if(!is.null(pss$area)){
+      area <- as.numeric(pss$area)
+    }else{
+      PEcAn.logger::logger.severe("No area info passed via metadata, please provide area of your plot in m2 under 'settings$run$inputs$css$metadata$area'.")
+    }
     
-    pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
+    pss <- data.frame(time = rep(time, n.patch), patch = seq_len(n.patch), trk = rep(trk, n.patch), age = rep(age, n.patch))
     
     PEcAn.logger::logger.info(paste0("Values used in the patch file - time:", 
                                     pss$time, ", patch:", pss$patch, ", trk:", 
@@ -52,8 +83,6 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     
     # TODO : soils can also be here, passed from settings
   }
-  
-  n.patch   <- nrow(pss)
   
   ## fill missing data w/ defaults
   pss$site  <- 1
@@ -63,7 +92,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Reorder columns
   pss <- pss[, c("site", "time", "patch", "trk", "age", "area", "water")]
   
-  # Add soil data
+  # Add soil data: Currently uses default values, will soil_process overwrite it afterwards?
   soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)
   soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
   names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
@@ -80,7 +109,9 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # might further need removing dead trees by mortality status
   # css <- remove_dead_trees()
 
-  if(is.null(css$patch)){
+  if(!is.null(css$Subplot)){
+    css$patch  <- css$Subplot
+  }else{
     css$patch  <- 1
   }
 
@@ -94,13 +125,12 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
 
     
   if(is.null(css$n)){ 
-    # will get back to giving sensical values
-    css$n <- 0.001
+    css$n <- 1/area
   }
   
   if(is.null(css$cohort)){ 
-    # will get back to giving sensical values
-    css$cohort <- 1:nrow(css)
+    # every tree is its own cohort, ED2 will fuse them or simulate them individually depending on max.cohort
+    css$cohort <-  do.call("c", lapply(seq_len(n.patch), function(x) 1:sum(css$patch==x))) 
   }
   
   inv.years <- as.numeric(unique(css$year))
@@ -110,6 +140,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     PEcAn.logger::logger.severe("No available years found in the data.")
   }
   css$time <- max(av.years)
+  
   # filter out other years
   css <- css[css$year == css$time, ]
   
@@ -119,7 +150,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   
   
   # Convert PFT names to ED2 Numbers
-  data(pftmapping, package = "PEcAn.ED2")
+  pftmapping <- PEcAn.ED2::pftmapping
   css$pft.number <- NA
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
@@ -128,13 +159,11 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     }
   }
   
-    
   # --- Continue work formatting css 
-  n.cohort                      <- nrow(css)
-  css$time[is.na(css$time)]     <- 1
+  css$time[is.na(css$time)]     <- start_year
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)]       <- 1  # assign nominal small dbh to missing
-  density.median                <- median(css$n[which(css$n > 0)])
+  density.median                <- stats::median(css$n[which(css$n > 0)])
   css$n[is.na(css$n) | css$n == 0]    <- density.median
   css$hite <- css$bdead <- css$balive <- css$lai <- 0
     
@@ -148,10 +177,10 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Write files
   
   # css
-  write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
+  utils::write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
   
   # pss
-  write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
+  utils::write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
   
   # site
   # hardcoded per fia2ED implemention
@@ -165,8 +194,8 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-  # convert.input inserts only 1 file anyway
-  return(list(filepath = filenames_full[1], filename = filenames[1], 
+  # convert_input inserts only 1 file anyway
+  return(list(file = filenames_full[1], dbfile.name = filenames[1], 
               mimetype = "text/plain", formatname = "ED2.cohort"))
 
 }

@@ -48,15 +48,15 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     }
 
     met.nc <- ncdf4::nc_open(ncfile)
-    on.exit(ncdf4::nc_close(met.nc))
+    on.exit(close_nc_if_open(met.nc), add = FALSE)
+      # add = FALSE because any previous file was closed at end of prev. loop
 
-    dt <- mean(diff(udunits2::ud.convert(
+    dt <- mean(diff(PEcAn.utils::ud_convert(
       met.nc$dim$time$vals,
       met.nc$dim$time$units,
       "hours since 1700-01-01 00:00:00")))
     if (dt < 1) {
       # More than one obs/hour. Write upscaled hourly file and reload.
-      on.exit()
       ncdf4::nc_close(met.nc)
 
       upscale_result <- PEcAn.data.atmosphere::upscale_met(
@@ -65,12 +65,16 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
         overwrite = overwrite)
 
       met.nc <- ncdf4::nc_open(upscale_result$file)
-      on.exit(ncdf4::nc_close(met.nc))
     }
 
     tmp.met <- PEcAn.data.atmosphere::load.cfmet(
       met.nc, lat = lat, lon = lon,
       start.date = yrstart, end.date = yrend)
+
+    # NB we need this nc_close even though on.exit is set:
+    # close here to avoid leaking filehandle at end of loop iteration,
+    # close in on.exit to avoid leaking at early function exit.
+    ncdf4::nc_close(met.nc)
 
     if (dt > 1) {
       # Data have fewer than 1 obs/hour. Need to downscale.
@@ -139,15 +143,15 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
 
   if ((!is.null(longitude)) & zulu2solarnoon) {
-    solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
+    solarnoon_offset <- PEcAn.utils::ud_convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = met$date + lubridate::minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
       rh <- PEcAn.data.atmosphere::qair2rh(
         qair = met$specific_humidity,
-        temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
-        press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
+        temp = PEcAn.utils::ud_convert(met$air_temperature, "Kelvin", "Celsius"),
+        press = PEcAn.utils::ud_convert(met$air_pressure, "Pa", "hPa"))
       met[, `:=`(relative_humidity = rh)]
     } else {
       PEcAn.logger::logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
@@ -156,7 +160,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   if (!"ppfd" %in% colnames(met)) {
     if ("surface_downwelling_photosynthetic_photon_flux_in_air" %in% colnames(met)) {
-      ppfd <- udunits2::ud.convert(met$surface_downwelling_photosynthetic_photon_flux_in_air, "mol", "umol")
+      ppfd <- PEcAn.utils::ud_convert(met$surface_downwelling_photosynthetic_photon_flux_in_air, "mol", "umol")
     } else if ("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)) {
       par <- PEcAn.data.atmosphere::sw2par(met$surface_downwelling_shortwave_flux_in_air)
       ppfd <- PEcAn.data.atmosphere::par2ppfd(par)
@@ -179,11 +183,11 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   newmet <- met[, list(year = lubridate::year(met$date),
                        doy = lubridate::yday(met$date),
                        hour = round(lubridate::hour(met$date) + lubridate::minute(met$date) / 60, 0),
-                       SolarR = ppfd, 
-                       Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+                       solar = ppfd,
+                       Temp = PEcAn.utils::ud_convert(met$air_temperature, "Kelvin", "Celsius"),
                        RH = met$relative_humidity,
-                       WS = wind_speed,
-                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))]
+                       windspeed = wind_speed,
+                       precip = PEcAn.utils::ud_convert(met$precipitation_flux, "s-1", "h-1"))]
   newmet <- newmet[newmet$hour <= 23,]
   return(as.data.frame(newmet))
 }  # cf2biocro

@@ -9,6 +9,9 @@ metric_Frechet(metric_dat, ...)
 \arguments{
 \item{metric_dat}{dataframe}
 }
+\description{
+Frechet Distance
+}
 \author{
 Betsy Cowdery
 }

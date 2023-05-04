@@ -1,0 +1,19 @@
+{
+  "name": "BIOCRO",
+  "type": "BIOCRO",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "BioCro is a model that predicts plant growth over time given climate as input.",
+  "creator": "David LeBauer",
+  "contributors": ["Deepak Jaiswal", "Christopher Black"],
+  "links": {
+    "source": "https://github.com/ebimodeling/biocro@0.951",
+    "issues": "https://github.com/ebimodeling/biocro/issues"
+  },
+  "inputs": {},
+  "bibtex": [
+    "Humphries S and Long SP (1995) WIMOVAC - a software package for modeling the dynamics of the plant leaf and canopy photosynthesis. Computer Applications in the Bioscience 11(4):361-371.",
+    "Miguez FE, Zhu XG, Humphries S, Bollero GA, Long SP (2009) A semimechanistic model predicting the growth and production of the bioenergy crop Miscanthus × giganteus: description, parameterization and validation. Global Change Biology Bioenergy 1: 282-296.",
+    "Wang D, Jaiswal D, Lebauer DS, Wertin TM, Bollero GA, Leakey ADB, Long SP (2015) A physiological and biophysical model of coppice willow (Salix spp.) production yields for the contiguous USA in current and future climate scenarios. Plant, cell & environment, 38(9), 1850-1865."
+  ]
+}

@@ -6,3 +6,6 @@
 \usage{
 from.Tag(x)
 }
+\description{
+from.Tag
+}

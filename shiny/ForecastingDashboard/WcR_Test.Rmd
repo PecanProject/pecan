@@ -1,0 +1,413 @@
+---
+title: "Willow Creek Dashboard"
+output:
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+    theme: "cosmo"
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(gganimate)
+library(plotly)
+library(tidyverse)
+library(rpart)
+library(rattle)
+#source("/fs/data3/kzarada/NEFI/Willow_Creek/animated_WCr_graphs.R")
+#source("/fs/data3/kzarada/pecan/modules/assim.sequential/inst/WillowCreek/download_WCr_met.R")
+load("/fs/data3/kzarada/NEFI/Willow_Creek/wcr.RData")
+nee.met$error <- (nee.met$NEE - nee.met$Predicted)
+
+nee.data$error = nee.data$NEE - nee.data$Predicted
+le.data$error = le.data$LE - le.data$Predicted
+
+```
+
+Forecast
+=======================================================================
+
+### NEE
+```{r}
+ ggplot.nee<-ggplotly(p, tooltip = c("Time", "y", "Lower", "Upper")) %>%
+    animation_opts(frame = 1200, easing = 'linear-in', transition = 0, redraw = F, mode = "next") %>%
+    animation_slider(x = 0, y = -0.1, visible = T, currentvalue = list(prefix = "Forecast Date:", font = list(color = 'black'))) %>%
+    animation_button(x = 0, xanchor = "left", y = 1.5, yanchor= "top") %>%
+    layout(legend = list(orientation = "h", x = 0.25, y = 1.1)) %>%
+    layout(showlegend = T, margin = c(30,50,30,50))
+
+  ggplot.nee$x$data[[1]]$name <-"95% Confidence Interval"
+  ggplot.nee$x$data[[2]]$name <- "Observed Data"
+  ggplot.nee$x$data[[3]]$name <- "Predicted Mean"
+
+  ggplot.nee
+```
+
+### LE
+```{r}
+  ggplot.le <- ggplotly(q, tooltip = c("Time", "y", "Lower", "Upper")) %>%
+    animation_opts(frame = 1200, easing = 'linear-in', transition = 0, redraw = F, mode = "next") %>%
+    animation_slider(x = 0, y = -0.1, visible = T, currentvalue = list(prefix = "Forecast Date:", font = list(color = 'black'))) %>%
+    animation_button(x = 0, xanchor = "left", y = 1.5, yanchor= "top") %>%
+    layout(legend = list(orientation = "h", x = 0.25, y = 1.1)) %>%
+    layout(showlegend = T, margin = c(30,50,30,50))
+
+  ggplot.le$x$data[[1]]$name <-"95% Confidence Interval"
+  ggplot.le$x$data[[2]]$name <- "Observed Data"
+  ggplot.le$x$data[[3]]$name <- "Predicted Mean"
+
+  ggplot.le
+```
+
+###PhenoCam
+
+See the Willow Creek site live [here](https://phenocam.sr.unh.edu/webcam/sites/willowcreek/)
+
+
+### Email
+
+Want daily email updates of the Willow Creek Forecast?
+
+```{r}
+textInput('email', "Email:")
+actionButton('submit', "Submit", class = 'btn-primary')
+```
+
+
+
+```{r}
+emails <- read.csv('/fs/data3/kzarada/NEFI/Willow_Creek/emails.csv', header = TRUE, stringsAsFactors = FALSE)
+
+saveData <- function(input){
+ emails <- rbind(emails, input)
+  write.csv(emails, '/fs/data3/kzarada/NEFI/Willow_Creek/emails.csv', row.names = FALSE)
+}
+
+resetForm <- function(session){
+  updateTextInput(session, "email", value = "Your Email has been added!")
+}
+
+observeEvent(input$submit, {
+saveData(input$email)
+resetForm(session)
+})
+
+
+```
+
+Model Performance
+=======================================================================
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput("var", "MET Variable:",
+            choices = c("Air Temp" = 'Tair', "Relative Humidity" = 'rH',
+                        "Soil Temp" = "Tsoil"), multiple = TRUE)
+
+selectInput(inputId = "fdate", label="Forecast Horizon Date:", choices = c(rev(ctime[5:10])))
+```
+
+Row
+-----------------------------------------------------------------------
+###Regression Tree of Error
+
+```{r}
+
+renderPlot({
+
+  index <- which(names(nee.met) %in% input$var)
+
+
+ if(length(index) == 1){
+  tree.df <- nee.met[,c(index, 13)]
+  mod <- rpart(error ~ ., data = tree.df, method = 'anova')
+  fancyRpartPlot(mod, sub = "")}
+
+if(length(index) == 2){
+  tree.df <- nee.met[,c(index, 13)]
+  mod <- rpart(error ~ ., data = tree.df, method = 'anova')
+  fancyRpartPlot(mod, sub = "")}
+
+if(length(index) == 3){
+  tree.df <- nee.met[,c(index, 13)]
+  mod <- rpart(error ~ ., data = tree.df, method = 'anova')
+  fancyRpartPlot(mod, sub = "")}
+})
+
+```
+
+### Forecast Horizon
+```{r}
+renderPlot({
+sub.nee <- subset(nee.data, nee.data$Time == paste0(input$fdate, "_12"))
+
+x.breaks = sub.nee$start_date
+labels = rev(seq(from = 1, to = length(x.breaks), by = 1))
+
+
+ggplot(sub.nee, aes(group = 1)) +
+  geom_ribbon(aes(x = start_date, ymin = Lower, ymax = Upper, fill="95% Confidence Interval"), alpha = 0.4) +
+  geom_line(aes(x = start_date, y = Predicted, color = "Predicted")) +
+  geom_line(aes(x = start_date, y = NEE, color = "Observed Data"), size = 1) +  
+  ggtitle(paste0("Forecast Horizon for ", input$fdate)) +
+  scale_color_manual(name = "Legend", labels = c("Observed Data", "Predicted"), values=c("Observed Data" = "firebrick4", "Predicted" = "skyblue1")) +
+  scale_fill_manual(labels = c("95% Confidence Interval"), values=c("95% Confidence Interval" = "blue1")) +
+  scale_y_continuous(name="NEE (kg C m-2 s-1)") +
+  scale_x_discrete(name = "Days from Observed Date", breaks = x.breaks, labels = labels) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 12), legend.title = element_blank(), legend.text = element_text(size = 10), axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 11), axis.title.y = element_text(size = 12))
+
+})
+```
+
+
+
+
+Model by Start Date
+=======================================================================
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput(inputId = "date", label="Forecast Date:", choices = c(ctime[-c((length(ctime)-1),length(ctime))]))
+
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Predictions vs Observed Data Time Series for NEE
+
+```{r}
+
+renderPlot({
+
+  #subset data by start date    
+  sub.nee <- subset(nee.data, nee.data$start_date == input$date)
+  sub.nee <- sub.nee %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+
+  x.breaks <- unique(sub.nee$Time[seq(1, length(sub.nee$Time), by = 4)])
+  lab <- seq(from = as.Date(input$date), to = Sys.Date(), by = "day")
+#lab <- seq(from = as.Date(ctime[1]), to = as.Date(ctime[1]) + lubridate::days(16), by = "day")
+
+  ggplot(sub.nee, aes(group = 1)) +
+  geom_ribbon(aes(x = Time, ymin=Lower, ymax=Upper, fill="95% Confidence Interval"), alpha = 0.4)  +
+  geom_line(aes(x = Time, y = Predicted, color = "Predicted"), size = 1) +
+  geom_line(aes(x = Time, y = NEE, color = "Observed")) +
+  ggtitle(paste0("NEE from ", input$date, " forecast")) +
+  scale_color_manual(labels = c("Observed", "Predicted"), values=c("Observed" = "firebrick4", "Predicted" = "skyblue1")) +
+  scale_fill_manual(labels = c("95% Confidence Interval"), values=c("95% Confidence Interval" = "blue1")) +
+  scale_y_continuous(name="NEE (kg C m-2 s-1)") +
+  scale_x_discrete(name = "Time", breaks = x.breaks, labels = format(lab[-length(lab)], "%m-%d")) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_blank(), legend.text = element_text(size = 12), axis.text.x = element_text(size = 12, angle = 45), axis.text.y = element_text(size = 13), axis.title.y = element_text(size = 16))
+})  
+
+```
+
+
+### Predictions vs Observed Scatter for NEE
+
+```{r}
+
+renderPlot({
+
+    #subset data by start date    
+  sub.nee <- subset(nee.data, nee.data$start_date == input$date)
+  sub.nee <- sub.nee %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+
+E = sub.nee$Predicted
+O = sub.nee$NEE
+all = c(E, O)
+RMSE = sqrt(mean((E-O)^2, na.rm = T))
+Bias = mean(E-O, na.rm = T)
+
+#Predicted vs Observed Scatter + 1:1 line + regression
+par(pty="s")
+plot(E, O, pch = 19, cex = 0.7,  ylab = "Observed", xlab = "Predicted",
+     xlim = c(min(all, na.rm = T), max(all, na.rm = T)),
+     ylim = c(min(all, na.rm = T), max(all, na.rm = T)),
+     main = paste0(unique(sub.nee$start_date), " forecast"), asp = 1)
+abline(0,1, col = 'darkgrey', lwd = 3)
+#abline(NEE.fit, col = "lightgrey", lwd = 2, lty = 2)
+legend("bottomleft",legend=c('obs','1:1'),col= c('black', "darkgrey"),lwd=3, cex = 0.8)
+mtext(text = paste0("RMSE = ", formatC(RMSE, format = "e", digits = 2)),
+      side = 3, line = 0, adj = -0.01, cex = 0.8)
+
+
+  })
+
+```
+
+### NEE Error by days from forecast day to observed day
+
+```{r}
+renderPlot({
+sub.nee <- subset(nee.data, nee.data$start_date == input$date)
+sub.nee <- sub.nee %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+sub.nee$Hour <- sapply(strsplit(as.character(sub.nee$Time), split = "_"), "[", 2)
+
+
+breaks = seq(from = unique(sub.nee$time)[1], to = unique(sub.nee$time)[length(unique(sub.nee$time))], by = 24)[-round(length(unique(sub.nee$time))/4)]
+days = seq(from = 1, to = length(unique(sub.nee$time))/4, by = 1)
+
+
+ggplot(sub.nee, aes(x = time, y = error, group = 1)) +
+  geom_point(aes(color = Hour), size = 3) +
+  geom_hline(yintercept = 0, color = "black") +
+  scale_x_continuous(name = "Days from Forecast Date", breaks = breaks, labels = days) +
+  scale_y_continuous(name = "NEE Error (kg C m-2 s-1)") +
+  scale_color_discrete(name = "Hour", breaks = c("0", "6", "12", "18"), labels = c("0", "6", "12", "18")) +
+  theme_minimal() +
+  theme(axis.title.x = element_text(size = 14), axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), axis.title.y = element_text(size = 14), legend.title = element_text(size = 14), legend.text = element_text(size = 12))
+
+})  
+
+```
+
+
+### Predictions vs Observed Data Time Series for LE
+
+```{r}
+
+renderPlot({
+
+  #subset data by start date    
+  sub.le <- subset(le.data, le.data$start_date == input$date)
+  sub.le <- sub.le %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+
+  x.breaks <- unique(sub.le$Time[seq(1, length(sub.le$Time), by = 4)])
+  lab <- seq(from = as.Date(input$date), to = Sys.Date(), by = "day")
+#lab <- seq(from = as.Date(ctime[1]), to = as.Date(ctime[1]) + lubridate::days(16), by = "day")
+
+  ggplot(sub.le, aes(group = 1)) +
+  geom_ribbon(aes(x = Time, ymin=Lower, ymax=Upper, fill="95% Confidence Interval"), alpha = 0.4)  +
+  geom_line(aes(x = Time, y = Predicted, color = "Predicted"), size = 1) +
+  geom_line(aes(x = Time, y = LE, color = "Observed")) +
+  ggtitle(paste0("LE from ", input$date, " forecast")) +
+  scale_color_manual(labels = c("Observed", "Predicted"), values=c("Observed" = "firebrick4", "Predicted" = "skyblue1")) +
+  scale_fill_manual(labels = c("95% Confidence Interval"), values=c("95% Confidence Interval" = "blue1")) +
+  scale_y_continuous(name="LE (W m-2 s-1)") +
+  scale_x_discrete(name = "Time", breaks = x.breaks, labels = format(lab[-length(lab)], "%m-%d")) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.title = element_blank(), legend.text = element_text(size = 12), axis.text.x = element_text(size = 12, angle = 45), axis.text.y = element_text(size = 13), axis.title.y = element_text(size = 16))
+})  
+
+```
+
+
+
+### Predictions vs Observed Scatter for LE
+
+```{r}
+
+renderPlot({
+
+#subset data by start date    
+sub.le <- subset(le.data, le.data$start_date == as.factor(ctime)[1])
+sub.le <- sub.le %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+
+E = sub.le$Predicted
+O = sub.le$LE
+all = c(E, O)
+RMSE = sqrt(mean((E-O)^2, na.rm = T))
+Bias = mean(E-O, na.rm = T)
+
+#Predicted vs Observed Scatter + 1:1 line + regression
+par(pty="s")
+plot(E, O, pch = 19, cex = 0.7,  ylab = "Observed", xlab = "Predicted",
+     xlim = c(min(all, na.rm = T),30),
+     ylim = c(min(all, na.rm = T), 30),
+     main = paste0(unique(sub.le$start_date), " forecast"), asp = 1)
+abline(0,1, col = 'darkgrey', lwd = 3)
+#abline(NEE.fit, col = "lightgrey", lwd = 2, lty = 2)
+legend("topright",legend=c('obs','1:1'),col= c('black', "darkgrey"),lwd=3, cex = 0.8)
+mtext(text = paste0("RMSE = ", formatC(RMSE, format = "e", digits = 2)),
+      side = 3, line = 0, adj = -0.01, cex = 0.8)
+
+  })
+
+```
+
+### LE Error by days from forecast day to observed day
+
+```{r}
+renderPlot({
+sub.le <- subset(le.data, le.data$start_date == input$date)
+sub.le <- sub.le %>% filter(date < Sys.Date()) %>% mutate(Time = as.factor(Time))
+sub.le$Hour <- sapply(strsplit(as.character(sub.le$Time), split = "_"), "[", 2)
+
+
+breaks = seq(from = unique(sub.le$time)[1], to = unique(sub.le$time)[length(unique(sub.le$time))], by = 24)[-round(length(unique(sub.le$time))/4)]
+days = seq(from = 1, to = length(unique(sub.le$time))/4, by = 1)
+
+
+ggplot(sub.le, aes(x = time, y = error, group = 1)) +
+  geom_point(aes(color = Hour), size = 3) +
+  geom_hline(yintercept = 0, color = "black") +
+  scale_x_continuous(name = "Days from Forecast Date", breaks = breaks, labels = days) +
+  scale_y_continuous(name = "LE Error (kg C m-2 s-1)") +
+    scale_color_discrete(name = "Hour", breaks = c("0", "6", "12", "18"), labels = c("0", "6", "12", "18")) +
+  theme_minimal() +
+  theme(axis.title.x = element_text(size = 14), axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12), axis.title.y = element_text(size = 14), legend.title = element_text(size = 14), legend.text = element_text(size = 12))
+
+})  
+
+```
+
+Data Download
+=======================================================================
+
+Download Forecast data:
+
+```{r, echo = FALSE}
+shiny::HTML('<iframe src = "/output/" width = "100%" height = "800" frameborder=0>
+         Sorry your browser does not support inline frames.
+      </iframe>')
+
+```
+
+
+
+PEcAN
+=======================================================================
+
+Inputs {.topbar}
+-----------------------------------------------------------------------
+
+Look at specific forecasts on PEcAn by choosing a start date below:
+```{r}
+
+selectInput(inputId = "date", label="Forecast Date:", choices = c(ctime[-length(ctime)]))
+
+```
+
+Paste the url from below in your browser to look at model results on PEcAn:
+```{r}
+reactive({
+  start_date <- input$date
+  start_date <- as.POSIXct(start_date)
+
+  # Set up database connection
+  dbparms = list(
+    dbname = "bety",
+    host = "128.197.168.114",
+    user = "bety",
+    password = "bety",
+    driver = "Postgres")
+  con <- PEcAn.DB::db.open(dbparms)
+
+  # Identify the workflow with the proper information
+
+  workflows <- PEcAn.DB::db.query(paste0("SELECT * FROM workflows WHERE start_date='", format(start_date, "%Y-%m-%d"),
+                                         "' ORDER BY id"), con)
+  workflows <- workflows[which(workflows$site_id == 676),]
+
+  url = paste0("http://pecan2.bu.edu/pecan/08-finished.php?workflowid=", workflows$id)
+  cat(noquote(url))
+})
+```

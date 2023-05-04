@@ -1,11 +1,14 @@
 ##' Download Ameriflux LBL CSV files
 ##'
-##' download.AmerifluxLBL
+##' download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package
+##' to download a zip-file of data. The zip-file is extracted to a csv-file that is stored
+##' to the given outfolder. Details about amf_download_base function can be found here:
+##' https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
 ##' 
 ##' Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
 ##' 
 ##' @export
-##' @param site the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the Ameriflux ID of the site to be downloaded, used as file name prefix. 
 ##' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -13,49 +16,80 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param username Ameriflux username
-##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
+##' @param method Optional. download_file() function option.  Use this to set custom programs such as ncftp
+##' @param useremail Used email, should include 'address sign' for code to be functional
+##' @param data_product AmeriFlux data product
+##' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'
 ##'
 ##' @examples
+##' \dontrun{
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+##' }
 ##' 
-##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
-download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, 
-                                  overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...) {
+##' @author Ankur Desai, Henri Kajasilta based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
+
+
+download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
+                                  overwrite = FALSE, verbose = FALSE, username = "pecan", method,
+                                  useremail = "@", data_product = "BASE-BADM", data_policy = "CCBY4.0", ...) {
+  
+  # Initial set-ups for amerifluxr packages
   # get start/end year code works on whole years only
-  
-  
-  site <- sub(".* \\((.*)\\)", "\\1", sitename)
-  
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
+  
+  site <- sub(".* \\((.*)\\)", "\\1", sitename)
+  
+  
+  
+  
+  
   # make sure output folder exists
   if (!file.exists(outfolder)) {
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
-  # need to query to get full file name #this is Ameriflux version
-  url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
-  json_query <- paste0("{\"username\":\"", username, "\",\"siteList\":[\"", site, "\"],\"intendedUse\":\"Research - Land model/Earth system model\",\"description\":\"PEcAn download\"}")
-  result <- httr::POST(url, body = json_query, encode = "json", httr::add_headers(`Content-Type` = "application/json"))
-  link <- httr::content(result)
   
-  ftplink <- NULL
-  if (length(link$dataURLsList) > 0) {
-    ftplink <- link$dataURLsList[[1]]$URL
+
+  repeat {
+    tout <- options("timeout")
+    zip_file <- try(amerifluxr::amf_download_base(user_id = username,
+                                                  user_email = useremail,
+                                                  site_id = site,
+                                                  data_product = data_product,
+                                                  data_policy = data_policy,
+                                                  agree_policy = TRUE,
+                                                  intended_use = "model",
+                                                  intended_use_text = "PEcAn download",
+                                                  verbose = verbose,
+                                                  out_dir = outfolder)
+    )
+    if (!inherits(zip_file, "try-error")){
+      break
+    }else if(tout$timeout > 250 ){
+      PEcAn.logger::logger.severe("Download takes too long, check your connection.")
+      break
+    }
+    PEcAn.logger::logger.info("Added 100 seconds before the download timeouts")
+    options(timeout = tout$timeout + 100)
   }
   
-  # test to see that we got back a FTP
-  if (is.null(ftplink)) {
-    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an AmerifluxLBL site?")
+  
+  
+  
+  # Path to created zip-file
+  ftplink <- zip_file
+  if(!grepl(".zip", ftplink)){
+    PEcAn.logger::logger.info("Not able to download a zip-file. Check download.AmerifluxLBL inputs")
   }
+  
   # get zip and csv filenames
   outfname <- strsplit(ftplink, "/")
   outfname <- outfname[[1]][length(outfname[[1]])]
-  
   output_zip_file <- file.path(outfolder, outfname)
   file_timestep_hh <- "HH"
   file_timestep_hr <- "HR"
@@ -63,7 +97,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   endname <- strsplit(outfname, "_")
   endname <- endname[[1]][length(endname[[1]])]
-  endname <- substr(endname, 1, nchar(endname) - 4)
+  endname <- gsub("\\..*", "", endname) 
   outcsvname <- paste0(substr(outfname, 1, 15), "_", file_timestep_hh, "_", endname, ".csv")
   output_csv_file <- file.path(outfolder, outcsvname)
   outcsvname_hr <- paste0(substr(outfname, 1, 15), "_", file_timestep_hr, "_", endname, ".csv")
@@ -93,13 +127,13 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   if (download_file_flag) {
     extract_file_flag <- TRUE
-    PEcAn.utils::download.file(ftplink, output_zip_file, method)
+    PEcAn.utils::download_file(ftplink, output_zip_file, method)
     if (!file.exists(output_zip_file)) {
       PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
   }
   if (extract_file_flag) {
-    avail_file <- unzip(output_zip_file, list = TRUE)
+    avail_file <- utils::unzip(output_zip_file, list = TRUE)
     if (length(grep("HH", avail_file)) > 0) {
       file_timestep <- "HH"
     } else {
@@ -111,7 +145,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
         PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
-    unzip(output_zip_file, outcsvname, exdir = outfolder)
+    utils::unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
       PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }
@@ -156,7 +190,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                         enddate = character(rows), 
                         dbfile.name = dbfilename, 
                         stringsAsFactors = FALSE)
-
+  
   results$file[rows]       <- output_csv_file
   results$host[rows]       <- PEcAn.remote::fqdn()
   results$startdate[rows]  <- firstdate_st
@@ -165,6 +199,5 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   results$formatname[rows] <- "AMERIFLUX_BASE_HH"
   
   # return list of files downloaded
-
   return(results)
 } # download.AmerifluxLBL

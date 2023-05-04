@@ -7,7 +7,14 @@
 summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 }
 \arguments{
-\item{txt_file}{}
+\item{gp}{Gaussian Process}
+
+\item{pdf_file}{filename you want figures written out to}
+
+\item{txt_file}{filename you want figures written out to}
+}
+\description{
+summarize.GP
 }
 \author{
 Michael Dietze

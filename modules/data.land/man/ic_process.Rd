@@ -9,10 +9,15 @@ ic_process(settings, input, dir, overwrite = FALSE)
 \arguments{
 \item{settings}{pecan settings list}
 
-\item{overwrite}{whether to force ic_process to proceed}
+\item{input}{Taken from settings$run$inputs. This should include id, path, and source}
 
-\item{dbfiles}{where to write files}
+\item{dir}{settings$database$dbfiles}
+
+\item{overwrite}{Default = FALSE. whether to force ic_process to proceed}
+}
+\description{
+ic_process
 }
 \author{
-Istem Fer
+Istem Fer, Hamze Dokoohaki
 }

@@ -4,15 +4,20 @@
 \alias{priorfig}
 \title{Prior Figure}
 \usage{
-priorfig(priordata = NA, priordensity = NA, trait = "", xlim = "auto",
-  fontsize = 18)
+priorfig(
+  priordata = NA,
+  priordensity = NA,
+  trait = NA,
+  xlim = "auto",
+  fontsize = 18
+)
 }
 \arguments{
 \item{priordata}{observations to be plotted as points}
 
 \item{priordensity}{density of prior distribution, calculated by \code{\link{prior.density}}}
 
-\item{trait}{name of trait}
+\item{trait}{dataframe with id, figid and units of the trait}
 
 \item{xlim}{limits for x axis}
 }

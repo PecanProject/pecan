@@ -2,7 +2,7 @@
 checkAndDownload<-function(packageNames) {
   for(packageName in packageNames) {
     if(!isInstalled(packageName)) {
-      install.packages(packageName,repos="http://lib.stat.cmu.edu/R/CRAN") 
+      install.packages(packageName)
     } 
     library(packageName,character.only=TRUE,quietly=TRUE,verbose=FALSE)
   }

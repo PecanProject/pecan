@@ -4,8 +4,16 @@
 \alias{met2model.GDAY}
 \title{met2model.GDAY}
 \usage{
-met2model.GDAY(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+met2model.GDAY(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
@@ -24,7 +32,18 @@ the year part of the date)}
 
 \item{verbose}{should the function be very verbose}
 }
+\value{
+generates GDAY formatted met file as a side affect, returns file metadata
+that will be inserted into database
+}
 \description{
+Function to convert NetCDF met files in PEcAn-CF format into GDAY met driver files.
+This function is an R wrapper to the python script "generate_forcing_data.py" 
+in the inst/ folder. The python script supports arguments to generate sub-daily (30 min) 
+weather data as well as soil temperature from 6 day running mean. These arguments are 
+hard-coded in this function to generate daily GDAY files without soil temperature.
+}
+\details{
 met2model for GDAY
 }
 \author{

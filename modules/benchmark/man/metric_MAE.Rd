@@ -9,6 +9,9 @@ metric_MAE(dat, ...)
 \arguments{
 \item{dat}{dataframe}
 }
+\description{
+Mean Absolute Error
+}
 \author{
 Betsy Cowdery
 }

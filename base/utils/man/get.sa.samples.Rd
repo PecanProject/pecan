@@ -2,14 +2,15 @@
 % Please edit documentation in R/write.config.utils.R
 \name{get.sa.samples}
 \alias{get.sa.samples}
-\title{get sensitivity analysis samples}
+\title{Get sensitivity analysis samples}
 \usage{
 get.sa.samples(samples, quantiles)
 }
 \arguments{
 \item{samples}{random samples from trait distribution}
 
-\item{quantiles}{list of quantiles to at which to sample, set in settings file}
+\item{quantiles}{list of quantiles to at which to sample,
+set in settings file}
 }
 \value{
 a list of lists representing quantile values of trait distributions
@@ -18,9 +19,11 @@ a list of lists representing quantile values of trait distributions
 Samples parameters for a model run at specified quantiles.
 }
 \details{
-Samples from long (>2000) vectors that represent random samples from a trait distribution.
-Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
-the closed-form distribution of the parameter probability distribution function.
+Samples from long (>2000) vectors that represent random samples from a
+trait distribution.
+Samples are either the MCMC chains output from the Bayesian meta-analysis
+or are randomly sampled from the closed-form distribution of the
+parameter probability distribution function.
 The list is indexed first by trait, then by quantile.
 }
 \author{

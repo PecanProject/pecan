@@ -4,10 +4,13 @@
 \alias{metric_RAE}
 \title{Relative Absolute Error}
 \usage{
-metric_RAE(dat, ...)
+metric_RAE(metric_dat, ...)
 }
 \arguments{
-\item{dat}{dataframe}
+\item{metric_dat}{dataframe}
+}
+\description{
+Relative Absolute Error
 }
 \author{
 Betsy Cowdery

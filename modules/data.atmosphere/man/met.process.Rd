@@ -4,8 +4,19 @@
 \alias{met.process}
 \title{met.process}
 \usage{
-met.process(site, input_met, start_date, end_date, model, host = "localhost",
-  dbparms, dir, browndog = NULL, spin = NULL, overwrite = FALSE)
+met.process(
+  site,
+  input_met,
+  start_date,
+  end_date,
+  model,
+  host = "localhost",
+  dbparms,
+  dir,
+  browndog = NULL,
+  spin = NULL,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{site}{Site info from settings file}
@@ -28,6 +39,7 @@ met.process(site, input_met, start_date, end_date, model, host = "localhost",
 
 \item{overwrite}{Whether to force met.process to proceed.
 
+
        `overwrite` may be a list with individual components corresponding to 
        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
@@ -35,6 +47,9 @@ met.process(site, input_met, start_date, end_date, model, host = "localhost",
        *except* raw met downloads. I.e., it corresponds to:
 
        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+}
+\description{
+met.process
 }
 \author{
 Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly

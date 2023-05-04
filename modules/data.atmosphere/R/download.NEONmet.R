@@ -5,15 +5,17 @@
 ##' Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
 ##' 
 ##' @export
-##' @param site the NEON ID of the site to be downloaded, used as file name prefix. 
+##' @param sitename the NEON ID of the site to be downloaded, used as file name prefix. 
 ##' The 4-letter SITE code  in \href{http://www.neonscience.org/science-design/field-sites/list}{list of NEON sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
 ##' @param overwrite should existing files be overwritten
-##' @examples 
-##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
 ##' @param verbose makes the function output more text
+##' @examples 
+##' \dontrun{
+##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+##' }
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {
 
@@ -309,7 +311,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                                 units=c("degrees", "degrees"))      
       
       ncdf4::ncvar_put(nc, varid = WDir.var, vals = ncdata_dir)     
-      wdir_rad <- udunits2::ud.convert(ncdata_dir,"degrees","radians")
+      wdir_rad <- PEcAn.utils::ud_convert(ncdata_dir,"degrees","radians")
       ncdata_e <- ncdata_spd * cos(wdir_rad)
       ncdata_n <- ncdata_spd * sin(wdir_rad)
       ncdf4::ncvar_put(nc, varid = Ewind.var, vals = ncdata_e)
@@ -369,9 +371,9 @@ neonmet.getVals <- function(dates,product,site,datetime,
       #Extract and read 30 minute data from the highest vertical level among files returned
       #If belowground, then take top most level (lowest value)
       if (belowground==TRUE) {
-        url30 <- head(sort(urls[grep(urlstring,urls)]),1)        
+        url30 <- utils::head(sort(urls[grep(urlstring,urls)]),1)
       } else {
-        url30 <- tail(sort(urls[grep(urlstring,urls)]),1)        
+        url30 <- utils::tail(sort(urls[grep(urlstring,urls)]),1)
       }
       if (length(url30)!=0) {
         csvData <- nneo::nneo_file(product_code = product, site_code = site, year_month = mon, filename = url30) 
@@ -384,7 +386,7 @@ neonmet.getVals <- function(dates,product,site,datetime,
           csvVar[which(csvQF!=QF)] <- NA 
         }
         if ((length(units)=2)&&(units[1]!=units[2])) {
-          csvVar <- udunits2::ud.convert(csvVar,units[1], units[2])
+          csvVar <- PEcAn.utils::ud_convert(csvVar,units[1], units[2])
           #need a correction for precip or rate conversion /1800
         }
         ncdata[arrLoc] <- csvVar

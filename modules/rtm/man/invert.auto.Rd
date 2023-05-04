@@ -4,9 +4,16 @@
 \alias{invert.auto}
 \title{Inversion with automatic convergence checking}
 \usage{
-invert.auto(observed, invert.options, return.samples = TRUE,
-  save.samples = NULL, quiet = FALSE, parallel = TRUE,
-  parallel.cores = NULL, parallel.output = "/dev/null")
+invert.auto(
+  observed,
+  invert.options,
+  return.samples = TRUE,
+  save.samples = NULL,
+  quiet = FALSE,
+  parallel = TRUE,
+  parallel.cores = NULL,
+  parallel.output = "/dev/null"
+)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of

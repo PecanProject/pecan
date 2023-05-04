@@ -9,3 +9,6 @@ check.run.settings(settings, dbcon = NULL)
 \arguments{
 \item{settings}{settings file}
 }
+\description{
+Check Run Settings
+}

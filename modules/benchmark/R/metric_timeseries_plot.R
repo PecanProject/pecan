@@ -13,7 +13,7 @@ metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = i
   
   # Attempt at getting around the fact that time can be annual and thus as.Date won't work
   date.time <- try(as.Date(metric_dat$time), silent = TRUE)
-  if (class(date.time) == "try-error"){
+  if (inherits(date.time, "try-error")) {
     PEcAn.logger::logger.warn("Can't coerce time column to Date format, attempting plot anyway")
   }else{
     metric_dat$time <- date.time

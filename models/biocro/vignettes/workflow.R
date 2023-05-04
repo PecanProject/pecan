@@ -20,13 +20,13 @@ settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$dat
   settings$database$bety, settings$meta.analysis$update)
 
 # Run the PEcAn meta.analysis
-run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, 
+run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects$on, 
   settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
 
 ## @knitr , echo=FALSE,warning=FALSE,cache=TRUE
 run.write.configs(model)  # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
-PEcAn.remote::start.model.runs(model)  # Start ecosystem model runs
+PEcAn.workflow::start_model_runs(model)  # Start ecosystem model runs
 read.outputs(settings$model$type, settings)
 # read.outputs(model, settings) #, variables = 'StemBiom')
 

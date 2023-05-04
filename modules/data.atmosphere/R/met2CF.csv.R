@@ -26,9 +26,9 @@
 ##' @author Mike Dietze, David LeBauer, Ankur Desai
 ##' @examples
 ##' \dontrun{
-##' bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
-##' con <- PEcAn.DB::db.open(bety)
-##' bety$con <- con
+##' con <- PEcAn.DB::db.open(
+##'   list(user='bety', password='bety', host='localhost',
+##'   dbname='bety', driver='PostgreSQL',write=TRUE))
 ##' start_date <- lubridate::ymd_hm('200401010000')
 ##' end_date <- lubridate::ymd_hm('200412312330')
 ##' file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
@@ -40,7 +40,10 @@
 ##' format$lon <- -92.0
 ##' format$lat <- 45.0
 ##' format$time_zone <- "America/Chicago"
-##' results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
+##' results <- PEcAn.data.atmosphere::met2CF.csv(
+##'   in.path, in.prefix, outfolder,
+##'   start_date, end_date, format,
+##'   overwrite=TRUE)
 ##' }
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE,...) {
@@ -48,7 +51,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
-    dir.create(outfolder)
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
   ## set up results output to return
@@ -128,7 +131,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       skiplog <- TRUE
       skiprows <- c(1:header - 1)
     }
-    alldat <- read.csv(files, 
+    alldat <- utils::read.csv(files, 
                        header = header,
                        skip = format$skip, 
                        na.strings = format$na.strings,
@@ -240,7 +243,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ### create time dimension
       days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00")
       t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-      timestep <- as.numeric(mean(udunits2::ud.convert(diff(days_since_1700), "d", "s")))
+      timestep <- as.numeric(mean(PEcAn.utils::ud_convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
       x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
@@ -504,10 +507,10 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           rain <- rain / timestep
           "Mg m-2 s-1"
         }, `in` = {
-          rain <- udunits2::ud.convert(rain / timestep, "in", "mm")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "in", "mm")
           "kg m-2 s-1"
         }, `mm h-1` = {
-          rain <- udunits2::ud.convert(rain / timestep, "h", "s")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
         },
         'kg m-2 (30 minute)-1' = {
@@ -653,9 +656,9 @@ met.conv <- function(x, orig, bety, CF) {
   if (nchar(orig) == 0) {
     orig <- bety  ## if units not provided, default is that they were the same units as bety
   }
-  if (udunits2::ud.is.parseable(orig)) {
-    if (udunits2::ud.are.convertible(orig, bety)) {
-      return(udunits2::ud.convert(udunits2::ud.convert(x, orig, bety), bety, CF))
+  if (PEcAn.utils::unit_is_parseable(orig)) {
+    if (units::ud_are_convertible(orig, bety)) {
+      return(PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(x, orig, bety), bety, CF))
     } else {
       PEcAn.logger::logger.error(paste("met.conv could not convert", orig, bety, CF))
     }

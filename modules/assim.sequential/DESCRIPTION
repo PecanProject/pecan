@@ -1,8 +1,8 @@
-Package: PEcAn.assim.sequential
+Package: PEcAnAssimSequential
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.5.2
-Date: 2017-12-04
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
+Version: 1.7.2
+Date: 2021-10-04
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -11,15 +11,51 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
 Imports:
+    coda,
+    dplyr,
+    furrr,
+    future,
+    ggplot2,
+    lubridate (>= 1.6.0),
+    magrittr,
+    Matrix,
+    mvtnorm,
+    ncdf4,
+    nimble,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
-    plyr (>= 1.8.4),
+    PEcAn.settings,
+    PEcAn.uncertainty,
+    PEcAn.workflow,
+    purrr,
+    rlang,
+    stringr
+Suggests:
+    corrplot,
+    DBI,
+    ggrepel,
+    emdbook,
+    glue,
+    gridExtra,
     magic (>= 1.5.0),
-    lubridate (>= 1.6.0),
+    methods,
+    PEcAn.benchmark,
+    PEcAn.data.remote,
+    plotrix,
+    plyr (>= 1.8.4),
+    raster,
     reshape2 (>= 1.4.2),
-    nimble
-License: FreeBSD + file LICENSE
+    rlist,
+    sf,
+    stats,
+    testthat,
+    tictoc,
+    tidyr,
+    sp,
+    utils,
+    XML
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
-LazyLoad: yes
-LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 7.2.3

@@ -11,6 +11,7 @@
       <dbname>bety</dbname>
       <write>FALSE</write>
     </bety>
+    <dbfiles>pecan/dbfiles</dbfiles>
   </database>
 
   <pfts>
@@ -41,6 +42,7 @@
   <model>
     <type>BIOCRO</type>
     <binary>/home/carya/pecan/models/biocro/inst/biocro.Rscript</binary>
+    <revision>0.95</revision>
   </model>
 
   <run>
@@ -58,6 +60,5 @@
     <host>
       <name>localhost</name>
     </host>
-    <dbfiles>pecan/dbfiles</dbfiles>
   </run>
 </pecan>

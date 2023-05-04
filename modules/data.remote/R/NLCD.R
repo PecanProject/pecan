@@ -38,7 +38,7 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
     ## Download the data
     dir.create(outdir, showWarnings = FALSE)
     destfile <- file.path(outdir, paste0("nlcd", year, ".zip"))
-    download.file(url, destfile = destfile)
+    utils::download.file(url, destfile = destfile)
     status <- system(paste("(cd", outdir, "; unzip", destfile, ")"))
     # unzip(destfile,exdir = outdir) ## unzip command produced corrupted file!
     file.remove(destfile)  ## clean up raw zip file

@@ -3,6 +3,6 @@ test_that("plot_sensitivity.analysis works",{
   sa.splinefun <- splinefun(1:10,10:1)
   trait <- "foo"
   sa.plot <- plot_sensitivity(sa.sample, sa.splinefun, trait)
-  expect_true("ggplot" %in% class(sa.plot))
+  expect_true(inherits(sa.plot, "ggplot"))
   
 })

@@ -28,7 +28,7 @@ settings <- PEcAn.settings::read.settings(settings.file)
 input_id <- 1000011171
 ## 4) Edit Input to associate File
 ## 5) Verify that PEcAn is able to find and load file
-input <- PEcAn.DB::query.file.path(input_id,host_name = "localhost",con = bety$con)
+input <- PEcAn.DB::query.file.path(input_id,host_name = "localhost",con = bety)
 format <- PEcAn.DB::query.format.vars(bety,input_id)
 field <- PEcAn.benchmark::load_data(input,format)
 ## 6) Look up variable_id in database

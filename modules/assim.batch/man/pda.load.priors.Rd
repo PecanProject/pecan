@@ -7,7 +7,11 @@
 pda.load.priors(settings, con, extension.check = FALSE)
 }
 \arguments{
-\item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
+\item{settings}{a PEcAn settings list}
+
+\item{con}{database connection}
+
+\item{extension.check}{check if this is another round or longer run}
 }
 \value{
 A previously-generated posterior distribution, to be used as the prior for PDA.

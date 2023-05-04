@@ -4,8 +4,13 @@
 \name{params.prospect5}
 \alias{params.prospect5}
 \title{PROSPECT 5 parameters}
-\format{An object of class \code{character} of length 5.}
+\format{
+An object of class \code{character} of length 5.
+}
 \usage{
 params.prospect5
+}
+\description{
+PROSPECT 5 parameters
 }
 \keyword{datasets}

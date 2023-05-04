@@ -1,0 +1,218 @@
+## Models using Docker {#model-docker}
+
+This section will discuss how to add new models to PEcAn docker. To be able to add a new model to PEcAn when using docker is as simple as starting a new container. The model will come online and let the PEcAn framework know there is a new model available, there is no need to go through the process of registering this model with PEcAn. Users will be able to select this new model from web interface and run with this model selected.
+
+For this process to work a docker image of the model will need to be created as well as small json file that is used to announce this new model. A separate service in PEcAn ([`monitor`](#pecan-dc-monitor)) will use this json file to keep track of all models available as well as register these models with PEcAn.
+
+[Model information](#model-docker-json-file)
+[Model build](#model-docker-Dockerfile)
+[Common problems](#common-docker-problems)
+
+
+### Model information {#model-docker-json-file}
+
+Each model will have a small json file called model_info.json that is used to describe the model and used by the monitor service to register the model with PEcAn. This file will contain information about the model that is send as part of the heartbeat of the container to the monitor service. Below is an example of this file for the ED model. The required fields are `name`, `type`, `version` and `binary`. The fields `type` and `version` are used by PEcAn to send the messages to RabbitMQ. There is no need to specify the queue name explicitly. The queue name will be created by combining these two fields with an underscore. The field `binary` is used to point to the actual binary in the docker container.
+
+There are 2 special values that can be used, `@VERSION@` which will be replaced by the version that is passed in when building the container, and `@BINARY@` which will be replaced by the binary when building the docker image. 
+
+```json
+{
+  "name": "ED2.2",
+  "type": "ED2",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "The Ecosystem Demography Biosphere Model (ED2) is an integrated terrestrial biosphere model incorporating hydrology, land-surface biophysics, vegetation dynamics, and soil carbon and nitrogen biogeochemistry",
+  "author": "Mike Dietze",
+  "contributors": ["David LeBauer", "Xiaohui Feng", "Dan Wang", "Carl Davidson", "Rob Kooper", "Shawn Serbin", "Alexey Shiklomanov"],
+  "links": {
+    "source": "https://github.com/EDmodel/ED2",
+    "issues": "https://github.com/EDmodel/ED2/issues"
+  },
+  "inputs": {},
+  "citation": ["Medvigy D., Wofsy S. C., Munger J. W., Hollinger D. Y., Moorcroft P. R. 2009. Mechanistic scaling of ecosystem function and dynamics in space and time: Ecosystem Demography model version 2. J. Geophys. Res. 114 (doi:10.1029/2008JG000812)"]
+}
+```
+
+Other fields that are recommended, but currently not used yet, are:
+
+- `description` : a longer description of the model.
+- `creator` : contact person about this docker image.
+- `contribuor` : other people that have contributed to this docker image.
+- `links` : addtional links to help people when using this docker image, for example values that can be used are `source` to link to the source code, `issues` to link to issue tracking system, and `documentation` to link to model specific documentation.
+- `citation` : how the model should be cited in publications.
+
+
+### Model build {#model-docker-Dockerfile}
+
+
+In general we try to minimize the size of the images. To be able to do this we split the process of creating the building of the model images into two pieces (or leverage of an image that exists from the original model developers). If you look at the example Dockerfile you will see that there are 2 sections, the first section will build the model binary, the second section will build the actual PEcAn model, which copies the binary from the first section.
+
+This is an example of how the ED2 model is build. This will install all the packages needed to build ED2 model, gets the latest version from GitHub and builds the model.
+
+The second section will create the actual model runner. This will leverage the PEcAn model image that has PEcAn already installed as well as the python code to listen for messages and run the actual model code. This will install some additional packages needed by the model binary (more about that below), copy the model_info.json file and change the `@VERSION@` and `@BINARY@` placeholders.
+
+It is important values for `type` and `version` are set correct. The PEcAn code will use these to register the model with the BETY database, which is then used by PEcAn to send out a message to a specfic worker queue, if you do not set these variables correctly your model executor will pick up messages for the wrong model.
+
+To build the docker image, we use a Dockerfile (see example below) and run the following command. This command will expect the Dockerfile to live in the model specific folder and the command is executed in the root pecan folder. It will copy the content of the pecan folder and make it available to the build process (in this example we do not need any additional files). 
+
+Since we can have multiple different versions of a model be available for PEcAn we ar using the following naming schema `pecan/model-<modeltype>-<version>:<pecan version`. For example the image below will be named pecan/model-ed2-git, since we do not specify the exact version it will be atomically be named `pecan/model-ed2-git:latest`.
+
+````bash
+docker build \
+	--tag pecan/model-ed2-git \
+	--file models/ed/Dockerfile \
+	.
+````
+
+Example of a Dockerfile, in this case to build the ED2 model.
+
+```dockerfile
+# ----------------------------------------------------------------------
+# BUILD MODEL BINARY
+# ----------------------------------------------------------------------
+FROM debian:stretch as model-binary
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
+
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       build-essential \
+       curl \
+       gfortran \
+       git \
+       libhdf5-dev \
+       libopenmpi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# download, unzip and build ed2
+WORKDIR /src
+RUN git -c http.sslVerify=false clone https://github.com/EDmodel/ED2.git \
+    && cd ED2/ED/build \
+    && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.Linux \
+    && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
+    && ./install.sh -g -p VM
+
+########################################################################
+
+# ----------------------------------------------------------------------
+# BUILD PECAN FOR MODEL
+# ----------------------------------------------------------------------
+FROM pecan/models:latest
+
+# ----------------------------------------------------------------------
+# INSTALL MODEL SPECIFIC PIECES
+# ----------------------------------------------------------------------
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       libgfortran3 \
+       libopenmpi2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------------------------------------
+# SETUP FOR SPECIFIC MODEL
+# ----------------------------------------------------------------------
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
+
+# Setup model_info file
+COPY models/ed/model_info.json /work/model.json
+RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
+           -e "s#@BINARY@#/usr/local/bin/ed2.${MODEL_VERSION}#g" /work/model.json
+
+# COPY model binary
+COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
+```
+
+**WARNING**: Dockerfile environment variables set via `ENV` are assigned _all at once_; _they do not evaluate successively, left to right_.
+Consider the following block:
+
+```dockerfile
+# Don't do this!
+ENV MODEL_TYPE="SIPNET" \
+    MODEL_VERSION=136 \
+    MODEL_TYPE_VERSION=${MODEL_TYPE}_${MODEL_VERSION}   # <- Doesn't know about MODEL_TYPE or MODEL_VERSION!
+```
+
+In this block, the expansion for setting `MODEL_TYPE_VERSION` _is not aware_ of the current values of `MODEL_TYPE` or `MODEL_VERSION`, and will therefore be set incorrectly to just `_` (unless they have been set previously, in which case it will be aware only of their earlier values).
+As such, **variables depending on other variables must be set in a separate, subsequent `ENV` statement than the variables they depend on**.
+
+Once the model has build and is working we can add it to the PEcAn stack and be able to use this model in the web interface. There are two methods to start this new model. First, we can add it to the `docker-compose.yml` file and start the container using `docker-compose -p pecan -d up`.
+
+```yaml
+  sipnet:
+    image: pecan/model-ed2-git
+    networks:
+      - pecan
+    volumes:
+      - pecan:/data
+    depends_on:
+       - rabbitmq
+    restart: unless-stopped
+```
+
+Alternatively we can start the container manually using the following command.
+
+```bash
+docker run \
+	--detach \
+	--rm \
+	--name pecan-ed2-git \
+	--networks pecan_pecan \
+	--volume pecan_pecan:/data
+	pecan/model-ed2-git
+```
+
+### Common problems {#common-docker-problems}
+
+Following are some solutions for common problems that you might encounter when building the docker images for a model.
+
+### Debugging missing libraries
+
+When building the model binary it might require specific libraries to be installed. In the second stage the model binary is copied into a new image, which could result in the binary missing specific libraries. In the case of the ED2 model the following was used to find the libraries that are needed to be installed (libgfortran5 and libopenmpi3).
+
+The first step is to build the model using the Dockerfile (in this case the ap-get install was missing in the second stage).
+
+
+```
+Step 5/9 : RUN git clone https://github.com/EDmodel/ED2.git     && cd ED2/ED/build     && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi     && ./install.sh -g -p VM
+... LOTS OF OUTPUT ...
+make[1]: Leaving directory '/src/ED2/ED/build/bin-opt-E'
+Installation Complete.
+Removing intermediate container a53eba9a8fc1
+ ---> 7f23c6302130
+Step 6/9 : FROM pecan/executor:latest
+ ---> f19d81b739f5
+... MORE OUTPUT ...
+Step 9/9 : COPY --from=model-binary /src/ED2/ED/build/ed_2.1-opt /usr/local/bin/ed2.${MODEL_VERSION}
+ ---> 07ac841be457
+Successfully built 07ac841be457
+Successfully tagged pecan/pecan-ed2:latest
+```
+
+At this point we have created a docker image with the binary and all PEcAn code that is needed to run the model. Some models (especially those build as native code) might be missing additional packages that need to be installed in the docker image. To see if all libraries are installed for the binary.
+
+```bash
+> docker run -ti --rm pecan/pecan-ed2 /bin/bash
+root@8a95ee8b6b47:/work# ldd /usr/local/bin/ed2.git  | grep "not found"
+    libmpi_usempif08.so.40 => not found
+    libmpi_usempi_ignore_tkr.so.40 => not found
+    libmpi_mpifh.so.40 => not found
+    libmpi.so.40 => not found
+    libgfortran.so.5 => not found
+```
+
+Start the build container again (this is the number before the line FROM pecan/executor:latest, 7f23c6302130 in the example), and find the missing libraries listed above (for example libmpi_usempif08.so.40):
+
+```bash
+> docker run --rm -ti 7f23c6302130
+root@e716c63c031f:/src# dpkg -S libmpi_usempif08.so.40
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_usempif08.so.40.10.1
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40.10.1
+libopenmpi3:amd64: /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40
+```
+
+This shows the pages is libopenmpi3 that needs to be installed, do this for all missing packages, modify the Dockerfile and rebuild. Next time you run the ldd command there should be no more packages being listed.

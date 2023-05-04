@@ -9,3 +9,6 @@
 \arguments{
 \item{jmp}{jump parameter}
 }
+\description{
+p.mvjump
+}

@@ -6,6 +6,7 @@
 #' @inheritParams remote.execute.cmd
 #' @param src local file/dir to copy
 #' @param dst remote file/dir to copy to
+#' @param options additional arguments to be passed to rsync command
 #' @param delete in case of local dir should all non-existent files be removed
 #' @return output of command executed
 #'
@@ -16,14 +17,20 @@
 #'   host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
 #'   remote.copy.to(host, '/tmp/kooper', '/tmp/kooper', delete=TRUE)
 #' }
-remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
-  args <- c("-a", "-q")
+remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stderr = FALSE) {
+  args <- c("-a", "-q", options)
   if (as.logical(delete)) {
     args <- c(args, "--delete")
+  }
+  if (is.null(host)) {
+    PEcAn.logger::logger.severe("`host` object passed to the function is NULL : Try passing a valid host object")
   }
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
+    if (is.null(host$name) || host$name == "") {
+      PEcAn.logger::logger.severe("`name` parameter in the `host` object is NULL or empty : Try passing a valid host object")
+    }
     tunnel <- host$tunnel
     if (!is.null(host$data_tunnel)) {
       tunnel <- host$data_tunnel
@@ -46,5 +53,11 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
     }
   }
   PEcAn.logger::logger.debug("rsync", shQuote(args))
-  system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
+  out <- 
+    system2("rsync", shQuote(args), stdout = "", stderr = as.logical(stderr))
+  if (out != 0) {
+    PEcAn.logger::logger.severe(paste0("rsync status: ", out))
+  } else {
+    PEcAn.logger::logger.info("rsync status: success!")
+  }
 } # remote.copy.to

@@ -4,9 +4,17 @@
 \alias{download.Geostreams}
 \title{Download Geostreams data from Clowder API}
 \usage{
-download.Geostreams(outfolder, sitename, start_date, end_date,
+download.Geostreams(
+  outfolder,
+  sitename,
+  start_date,
+  end_date,
   url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams",
-  key = NULL, user = NULL, pass = NULL, ...)
+  key = NULL,
+  user = NULL,
+  pass = NULL,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{directory in which to save json result. Will be created if necessary}
@@ -36,7 +44,7 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
  file and must contain a \code{<clowder>} key that specifies hostname, user, and
  password for your Clowder server:
 
-\code{\preformatted{
+\preformatted{
   <?xml version="1.0"?>
   <pecan>
     <clowder>
@@ -45,7 +53,7 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
       <password>superSecretPassw0rd</password>
     </clowder>
   </pecan>
-}}
+}
 }
 \examples{
 \dontrun{

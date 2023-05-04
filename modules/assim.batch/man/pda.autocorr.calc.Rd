@@ -14,6 +14,9 @@ pda.autocorr.calc(input, model = "heteroskedastic.laplacian")
 \value{
 rho AR(1)
 }
+\description{
+autocorrelation correction
+}
 \author{
 Istem Fer
 }

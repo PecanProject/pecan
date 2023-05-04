@@ -1,0 +1,3 @@
+# Installation details
+
+This chapter contains details about installing and maintaining the uncontainerized version of PEcAn on a virtual machine or a server. If you are running PEcAn inside of Docker, many of the particulars will be different and you should refer to the [docker](#docker-index) chapter instead of this one.

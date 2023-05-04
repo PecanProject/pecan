@@ -4,43 +4,79 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat,
-  lon, size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
-  sd_band = NA, verbose = TRUE)
+call_MODIS(
+  var,
+  product,
+  band,
+  site_info,
+  product_dates,
+  outdir = NULL,
+  run_parallel = FALSE,
+  ncores = NULL,
+  package_method = "MODISTools",
+  QC_filter = FALSE,
+  progress = FALSE
+)
 }
 \arguments{
-\item{outfolder}{where the output file will be stored}
+\item{var}{the simple name of the modis dataset variable (e.g. lai)}
 
-\item{fname}{name of netcdf file to output}
+\item{product}{string value for MODIS product number}
 
-\item{start_date}{beginning of date range for LAI download in unambiguous date format}
+\item{band}{string value for which measurement to extract}
 
-\item{end_date}{end of date range for LAI download in unambiguous date format}
+\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+lon, time_zone)}
 
-\item{lat}{Latitude of the pixel}
+\item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 
-\item{lon}{Longitude of the pixel}
+\item{outdir}{where the output file will be stored. Default is NULL and in this case only values are returned. When path is provided values are returned and written to disk.}
 
-\item{size}{NS and WE distance in km to be included}
+\item{run_parallel}{optional method to download data paralleize. Only works if more than 1 
+site is needed and there are >1 CPUs available.}
 
-\item{product}{MODIS product number}
+\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+number of CPU's available, enter NULL.}
 
-\item{band}{which measurement to extract}
+\item{package_method}{string value to inform function of which package method to use to download 
+modis data. Either "MODISTools" or "reticulate" (optional)}
 
-\item{qc_band}{which quality control band (optional)}
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good 
+(as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+parameter to work. Default is False. Only MODISTools option.}
 
-\item{sd_band}{which standard deviation band (optional)}
+\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download 
+progress bar. Default is TRUE. Only MODISTools option.
 
-\item{verbose}{tell python whether or not to print debug statements (all or nothing)
-
-depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
+Requires Python3 for reticulate method option. There are a number of required python libraries. 
+sudo -H pip install numpy suds netCDF4 json
+depends on the MODISTools package version 1.1.0}
 }
 \description{
 Get MODIS data by date and location
 }
 \examples{
 \dontrun{
-test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
+site_info <- list(
+  site_id = 1,
+  site_name = "test",
+  lat = 44,
+  lon = 90,
+  time_zone = "UTC")
+test_modistools <- call_MODIS(
+  var = "lai",
+  product = "MOD15A2H",
+  band = "Lai_500m",
+  site_info = site_info,
+  product_dates = c("2001150", "2001365"),
+  outdir = NULL,
+  run_parallel = TRUE,
+  ncores = NULL,
+  package_method = "MODISTools",
+  QC_filter = TRUE,
+  progress = FALSE)
 }
-
+}
+\author{
+Bailey Morrison
 }

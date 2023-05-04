@@ -4,13 +4,20 @@
 \alias{mpot2smoist}
 \title{Convert a matric potential to a soil moisture}
 \usage{
-mpot2smoist(mpot, soil_water_potential_at_saturation, soil_hydraulic_b,
-  volume_fraction_of_water_in_soil_at_saturation)
+mpot2smoist(
+  mpot,
+  soil_water_potential_at_saturation,
+  soil_hydraulic_b,
+  volume_fraction_of_water_in_soil_at_saturation
+)
 }
 \arguments{
 \item{mpot}{water potential}
 
 \item{mysoil}{soil property list}
+}
+\value{
+volumetric soil water content
 }
 \description{
 Convert a matric potential to a soil moisture

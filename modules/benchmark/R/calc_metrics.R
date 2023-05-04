@@ -12,8 +12,12 @@
 ##' @author Betsy Cowdery
 calc_metrics <- function(model.calc, obvs.calc, var, metrics, ensemble.id, bm_dir) {
   
-  dat <- align_data(model.calc, obvs.calc, var, align_method = "mean_over_larger_timestep")
+  model.calc <- zoo::na.trim(model.calc, sides = "both", is.na = "any")
+  obvs.calc <- zoo::na.trim(obvs.calc, sides = "both", is.na = "any")
   
+  # Remove leading and trailing NA's (not the same as na.omit)
+  dat <- align_data(model.calc, obvs.calc, var, align_method = "mean_over_larger_timestep")
+
   # Make sure that anything that comes through align.data as NA doesn't get included. This is because there may be missing data. We may not want to do this automatically but rather have this as an option. 
   # dat <- dat[apply(dat,1, function(x) all(!is.na(x))),]
   
@@ -30,7 +34,7 @@ calc_metrics <- function(model.calc, obvs.calc, var, metrics, ensemble.id, bm_di
     results[m,"metric"] <- metrics$name[m]
     results[m,"variable"] <- var
     
-    if (tail(unlist(strsplit(fcn, "_")), 1) == "plot") {
+    if (utils::tail(unlist(strsplit(fcn, "_")), 1) == "plot") {
       filename <- file.path(bm_dir, 
                             paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
       do.call(fcn, args <- list(metric_dat, var, filename))

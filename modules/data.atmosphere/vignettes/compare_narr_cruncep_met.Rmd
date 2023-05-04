@@ -33,6 +33,7 @@ TODO: clean up figure titles, labels, write explanations
 ```{r loading-libraries}
 library(PEcAn.data.atmosphere)
 library(data.table)
+library(ggplot2)
 theme_set(theme_bw())
 data(narr_cruncep_ebifarm)
 
@@ -98,15 +99,14 @@ cruncep$source <- "cruncep"
 narr$source <- "narr"
 narr3h$source <- "narr3h"
 ebifarm$source <- "ebifarm"
+```
 
+```{r reorder-met}
 met <- rbind(cruncep[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
              narr[,list(source, date, temp = Temp, RH, wind = WS, precip, solar = SolarR)],
              narr3h[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
              ebifarm[,list(source, date, temp = Temp, RH = RH/100, wind, precip, solar = solar)])
 
-```
-
-```{r reorder-met}
 met$source <- factor(met$source,
          levels = c("ebifarm", "narr3h", "narr", "cruncep"))
 ```

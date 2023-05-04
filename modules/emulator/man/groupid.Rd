@@ -6,6 +6,12 @@
 \usage{
 groupid(x)
 }
+\arguments{
+\item{x}{matrix of parameter values}
+}
+\description{
+groupid
+}
 \author{
 Michael Dietze
 }

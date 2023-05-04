@@ -10,6 +10,8 @@ zero.bounded.density(x, bw = "SJ", n = 1001)
 \item{x}{data, as a numeric vector}
 
 \item{bw}{The smoothing bandwidth to be used. See 'bw.nrd'}
+
+\item{n}{number of points to use in kernel density estimate. See \code{\link[stats]{density}}}
 }
 \value{
 data frame with back-transformed log density estimate
@@ -27,5 +29,5 @@ One useful approach is to transform to logs, estimate the density using KDE, and
 M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 }
 \author{
-\href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
+\href{https://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 }

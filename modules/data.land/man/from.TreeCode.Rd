@@ -6,3 +6,6 @@
 \usage{
 from.TreeCode(x)
 }
+\description{
+from.TreeCode
+}

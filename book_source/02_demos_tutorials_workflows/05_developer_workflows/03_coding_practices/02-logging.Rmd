@@ -1,0 +1,16 @@
+### Logging {#developer-logging}
+
+During development we often add many print statements to check to see how the code is doing, what is happening, what intermediate results there are etc. When done with the development it would be nice to turn this additional code off, but have the ability to quickly turn it back on if we discover a problem. This is where logging comes into play. Logging allows us to use "rules" to say what information should be shown. For example when I am working on the code to create graphs, I do not have to see any debugging information about the SQL command being sent, however trying to figure out what goes wrong during a SQL statement it would be nice to show the SQL statements without adding any additional code.
+
+PEcAn provides a set of `logger.*` functions that should be used in place of base R's `stop`, `warn`, `print`, and similar functions. The `logger` functions make it easier to print to a system log file, and to control the level of output produced by PEcAn.
+
+* The file [test.logger.R](https://github.com/PecanProject/pecan/blob/develop/base/logger/tests/testthat/test.logger.R) provides descriptive examples
+* This query provides an current overview of [functions that use logging](https://github.com/PecanProject/pecan/search?q=logger&ref=cmdform)
+* Logger functions and their corresponding levels (in order of increasing level):
+ * `logger.debug` (`"DEBUG"`) -- Low-level diagnostic messages that are hidden by default. Good examples of this are expanded file paths and raw results from database queries or other analyses.
+ * `logger.info` (`"INFO"`) -- Informational messages that regular users may want to see, but which do not indicate anything unexpected. Good examples of this are progress updates updates for long-running processes, or brief summaries of queries or analyses.
+ * `logger.warn` (`"WARN"`) -- Warning messages about issues that may lead to unexpected but valid results. Good examples of this are interactions between arguments that lead to some arguments being ignored or removal of missing or extreme values.
+ * `logger.error` (`"ERROR"`) -- Error messages from which PEcAn has some capacity to recover. Unless you have a very good reason, we recommend avoiding this in favor of either `logger.severe` to actually stop execution or `logger.warn` to more explicitly indicate that the problem is not fatal.
+ * `logger.severe` -- Catastrophic errors that warrant immediate termination of the workflow. This is the only function that actually stops R's execution (via `stop`).
+* The `logger.setLevel` function sets the level at which a message will be printed. For instance, `logger.setLevel("WARN")` will suppress `logger.info` and `logger.debug` messages, but will print `logger.warn` and `logger.error` messages. `logger.setLevel("OFF")` suppresses all logger messages.
+* To print all messages to console, use `logger.setUseConsole(TRUE)`

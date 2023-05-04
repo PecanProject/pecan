@@ -5,11 +5,12 @@
 #' @param start_date  
 #' @param end_date 
 #' @param merge.file  path of file to be merged in
-#' @param overwrite 
-#' @param verbose 
+#' @param overwrite logical: replace output file if it already exists? 
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+#'   print debugging information as they run? 
 #' @param ... 
 #'
-#' @return
+#' @return Currently nothing. TODO: Return a data frame summarizing the merged files.
 #' @export
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
@@ -47,9 +48,8 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   merge.time.attr <- ncdf4::ncatt_get(merge.nc,"time")
   merge.data <- ncdf4::ncvar_get(merge.nc,varid = merge.vars[1])
   
-  udunits2::ud.is.parseable(merge.time.attr$units)
   origin <- "1970-01-01 00:00:00 UTC"
-  merge.time.std <- udunits2::ud.convert(merge.time,
+  merge.time.std <- PEcAn.utils::ud_convert(merge.time,
                                          merge.time.attr$units,
                                          paste0("seconds since ",origin))
   
@@ -62,8 +62,8 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     ncdf4::nc_close(merge.nc)
     return(NULL)
   }
-  if(lubridate::year(tail(merge.time.std,1)) < end_year){
-    PEcAn.logger::logger.error("merge.time < end_year", tail(merge.time.std,1),end_date)
+  if(lubridate::year(utils::tail(merge.time.std,1)) < end_year){
+    PEcAn.logger::logger.error("merge.time < end_year", utils::tail(merge.time.std,1),end_date)
     ncdf4::nc_close(merge.nc)
     return(NULL)
   }
@@ -81,7 +81,7 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   ## name and variable conversions
   if(toupper(merge.vars[1]) == "CO2"){
     merge.vars[1] <- "mole_fraction_of_carbon_dioxide_in_air"
-    merge.data <- udunits2::ud.convert(merge.data,merge.attr$units,"mol/mol")
+    merge.data <- PEcAn.utils::ud_convert(merge.data, merge.attr$units, "mol/mol")
     merge.attr$units = "mol/mol"
   }
   
@@ -116,14 +116,14 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     ##extract target time
     target.time <- ncdf4::ncvar_get(nc,"time")
     target.time.attr <- ncdf4::ncatt_get(nc,"time")
-    target.time.std <- udunits2::ud.convert(target.time,
+    target.time.std <- PEcAn.utils::ud_convert(target.time,
                                            target.time.attr$units,
                                            paste0("seconds since ",origin))
     target.time.std <- as.POSIXct(target.time.std,tz = "UTC",origin=origin) 
     
     
     ## interpolate merged data to target time
-    merge.interp <- approx(merge.sub$time,merge.sub$data, xout = target.time.std, 
+    merge.interp <- stats::approx(merge.sub$time,merge.sub$data, xout = target.time.std,
                            rule = 2, method = "linear", ties = mean)
     
     ## insert new variable

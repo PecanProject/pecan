@@ -16,6 +16,9 @@ align_data(model.calc, obvs.calc, var, align_method = "match_timestep")
 \value{
 dat
 }
+\description{
+Align timeseries data
+}
 \author{
 Betsy Cowdery
 }

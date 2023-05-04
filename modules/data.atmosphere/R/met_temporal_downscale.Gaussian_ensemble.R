@@ -10,22 +10,24 @@ substrRight <- function(x, n) {
 ##' @export
 ##' @param in.path 
 ##' @param in.prefix 
-##' @param outfolder
+##' @param outfolder path to directory in which to store output. Will be created if it does not exist
 ##' @param input_met - the source dataset that will temporally downscaled by the train_met dataset
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
 ##' @param site.id
-##' @param overwrite 
-##' @param verbose
+##' @param overwrite logical: replace output file if it already exists? 
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
+##'   print debugging information as they run?
 ##' @param swdn_method - Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")
 ##' @param n_ens - numeric value with the number of ensembles to run
 ##' @param w_len - numeric value that is the window length in days  
 ##' @param utc_diff - numeric value in HOURS that is local standard time difference from UTC time. CST is -6
+##' @param ... further arguments, currently ignored
 ##' @author James Simkins
 
 
 met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfolder, 
-                                                     input_met, train_met, site_id, overwrite = FALSE, verbose = FALSE, 
+                                                     input_met, train_met, overwrite = FALSE, verbose = FALSE, 
                                                      swdn_method = "sine", n_ens = 10, w_len = 20, utc_diff = -6, ... ) {
 
   sub_str <- substrRight(input_met, 7)
@@ -298,15 +300,16 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     # matches our observations (1 significantly undervalues SW downwelling flux)
     if (swdn_method == "Waichler") {
       inter <- paste0(reso, " hour")
-      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00")), 
-                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00")), 
+      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00"),tz="UTC"), 
+                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00"),tz="UTC"), 
                   by = inter)
-      
-      Z <- RAtmosphere::SZA(days, lat_train, lon_train)
-      I <- 1000 * aspace::cos_d(Z)
+      days.doy <- as.numeric(format(days,"%j"))
+      days.hour <- lubridate::hour(days) + lubridate::minute(days) / 60 + lubridate::second(days) / 3600
+      cosZ <- PEcAn.data.atmosphere::cos_solar_zenith_angle(days.doy, lat_train, lon_train, inter, days.hour)
+      I <- 1000 * cosZ
       m <- vector()
       for (i in seq_len(12)) {
-        m[i] <- Hmisc::monthDays(as.Date(paste0(year, "-", i, "-01")))
+        m[i] <- lubridate::days_in_month(as.Date(paste0(year, "-", i, "-01")))
       }
       bmlist <- vector()
       

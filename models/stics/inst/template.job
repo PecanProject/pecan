@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# see if application needs running
+if [ ! -e "@OUTDIR@/@MODFILE@" ]; then
+  
+  cd "@RUNDIR@"
+  
+  @CMD_GENERATE@
+  @CMD_RUN@
+  
+  # copy log
+  mv "@RUNDIR@/stics_errors.log" "@OUTDIR@"
+  
+  STATUS=$?
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+    exit $STATUS
+  fi
+
+  # copy output
+  mv @RUNDIR@/*.sti @OUTDIR@
+
+  # convert to MsTMIP
+  echo "library (PEcAn.STICS)
+model2netcdf.STICS('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
+fi
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
+
+# all done
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

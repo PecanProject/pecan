@@ -11,8 +11,8 @@ trait.lookup(traits = NULL)
 }
 \value{
 a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated
-    name used for files; figid, the parameter name written out as best known in english for figures
-    and tables.
+name used for files; figid, the parameter name written out as best known in english for figures
+and tables.
 }
 \description{
 Dictionary of terms used to identify traits in ed, filenames, and figures

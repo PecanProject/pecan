@@ -1,8 +1,12 @@
 Package: PEcAn.DALEC
 Type: Package
-Title: PEcAn package for integration of the DALEC model
-Version: 1.5.2
-Date: 2017-12-04
+Title: PEcAn Package for Integration of the DALEC Model
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("Tristan", "Quaife", role = c("aut")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
@@ -11,14 +15,14 @@ Imports:
     PEcAn.remote,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11),
     PEcAn.utils
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: dalec
 OS_type: unix
-License: FreeBSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 7.2.3

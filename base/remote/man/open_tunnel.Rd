@@ -4,9 +4,14 @@
 \alias{open_tunnel}
 \title{Open an SSH tunnel, prompting for passwords as needed}
 \usage{
-open_tunnel(remote_host, user = NULL, password = NULL,
-  tunnel_dir = "~/.pecan/tunnel/", wait.time = 15,
-  tunnel_script = "~/pecan/web/sshtunnel.sh")
+open_tunnel(
+  remote_host,
+  user = NULL,
+  password = NULL,
+  tunnel_dir = "~/.pecan/tunnel/",
+  wait.time = 15,
+  tunnel_script = "~/pecan/web/sshtunnel.sh"
+)
 }
 \arguments{
 \item{remote_host}{name of remote server to connect to (e.g. geo.bu.edu)}

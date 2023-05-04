@@ -7,13 +7,16 @@
 autoburnin(jags_out, return.burnin = FALSE, ...)
 }
 \arguments{
-\item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
+\item{jags_out}{JAGS output}
 
-\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to 
+\item{return.burnin}{Logical. If \code{TRUE}, return burnin value in addition to
 samples (as list). Default = FALSE.}
 
-\item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
+\item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw},
 and \code{gelman.diag}.}
+}
+\description{
+Automatically calculate and apply burnin value
 }
 \examples{
      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))

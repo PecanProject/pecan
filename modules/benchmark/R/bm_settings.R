@@ -1,37 +1,36 @@
 ## Functions for bulding benchmarking settings
 
 ##------------------------------------------------------------------------------------------------##
-##' For each benchmark entry in a (multi)settings object, get run settings using reference run id 
+##' For each benchmark entry in a (multi)settings object, get run settings using reference run id
 ##' and add to the settings object
-##'  
+##'
 ##' @name read_settings_BRR
 ##' @title Read settings from database using reference run id
 ##' @param settings settings or multisettings object
 ##' @importFrom dplyr tbl filter rename collect select
-##' @export 
-##' @author Betsy Cowdery 
+##' @export
+##' @author Betsy Cowdery
 
 read_settings_BRR <- function(settings){
-  
+
   # Check database connection
   if (is.null(settings$database$bety)) {
-    PEcAn.logger::logger.info("No databasse connection, can't get run information.")
+    PEcAn.logger::logger.info("No database settings, can't get run information.")
     return (settings)
   }
-  
-  bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
-                              host     = settings$database$bety$host,
-                              user     = settings$database$bety$user,
-                              password = settings$database$bety$password)
-  BRR <- tbl(bety,"reference_runs") %>% 
-    filter(id == settings$benchmarking$reference_run_id) %>% 
+
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
+
+  BRR <- tbl(con,"reference_runs") %>%
+    filter(.data$id == settings$benchmarking$reference_run_id) %>%
     collect()
-  
+
   BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
-    xmlToList(.,"pecan") 
-  
+    xmlToList(.,"pecan")
+
   PEcAn.logger::logger.debug(names(BRR.settings))
-  
+
   settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
   invisible(settings)
 }
@@ -45,34 +44,34 @@ read_settings_BRR <- function(settings){
 
 clean_settings_BRR <- function(inputfile){
   clean <- PEcAn.settings::clean.settings(inputfile,write=FALSE)
-  if (is.MultiSettings(clean)) {
-    logger.error("Cannot run clean settings for a mutlisettings object") # For now
+  if (PEcAn.settings::is.MultiSettings(clean)) {
+    PEcAn.logger::logger.error("Cannot run clean settings for a mutlisettings object") # For now
   }
-  
+
   # Remove database & host information
-  clean$database <- NULL 
+  clean$database <- NULL
   clean$host <- NULL
   clean$info <- NULL
   clean$outdir <- NULL
-  
+
   # Remove sections that should not be in benchmark refence runs
   clean$meta.analysis <- NULL
   clean$ensemble <- NULL
   clean$assim.batch <- NULL
   clean$state.data.assimilation <- NULL
-  
+
   # Remove machine specific information, leaving only database ids
   # This probably needs to be more generalized
-  
+
   clean$model$binary <- NULL
-  # Remove all file paths  
+  # Remove all file paths
   for(input in names(clean$run$inputs)){
     if("path" %in% names(clean$run$inputs[[input]])){
       clean$run$inputs[[input]][["path"]] <- NULL
     }
   }
-  
-  
+
+
   return(clean)
 }
 
@@ -82,18 +81,19 @@ clean_settings_BRR <- function(inputfile){
 ##' @title Add workflow specific info to settings list for benchmarking
 ##' @param settings settings or multisettings object
 ##' @param bety connection to the database
-##' @export 
-##' @author Betsy Cowdery 
+##' @importFrom rlang .data
+##' @export
+##' @author Betsy Cowdery
 
 add_workflow_info <- function(settings, bety){
   if (is.MultiSettings(settings)) {
     return(papply(settings, add_workflow_id))
   }
   if(!as.logical(settings$benchmarking$new_run)){
-    settings$workflow$id <- tbl(bety,"ensembles") %>% 
-      filter(id == settings$benchmarking$ensemble_id) %>% 
-      dplyr::select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
+    settings$workflow$id <- tbl(bety,"ensembles") %>%
+      dplyr::filter(.data$id == settings$benchmarking$ensemble_id) %>%
+      dplyr::select("workflow_id") %>% dplyr::collect %>% .[[1]]
+    wf <- tbl(bety, 'workflows') %>% dplyr::filter(.data$id == settings$workflow$id) %>% collect()
     settings$rundir <- file.path(wf$folder, "run")
     settings$modeloutdir <- file.path(wf$folder, "out")
     settings$outdir <- wf$folder
@@ -105,8 +105,8 @@ add_workflow_info <- function(settings, bety){
 ##' @name bm_settings2pecan_settings
 ##' @title Move benchmarking settings back in to original pecan settings object
 ##' @param bm.settings settings or multisettings object
-##' @export 
-##' @author Betsy Cowdery 
+##' @export
+##' @author Betsy Cowdery
 
 bm_settings2pecan_settings <- function(bm.settings){
   if (is.MultiSettings(bm.settings)) {
@@ -118,7 +118,7 @@ bm_settings2pecan_settings <- function(bm.settings){
     out <- append(out, list(benchmark_id = bm.settings[i]$benchmark$benchmark_id))
   }
   return(out)
-} 
+}
 
 ##------------------------------------------------------------------------------------------------##
 ##' @name check_BRR
@@ -133,7 +133,7 @@ check_BRR <- function(settings_xml, con){
   # This is NOT a good way to find matching reference run records
   # Other options include comparing lists (slow)
   # more spohisticated PSQL queries
-  # changing the settings field to jsonb 
-  ref_run <- tbl(con, "reference_runs") %>% filter(settings == settings_xml) %>% collect
+  # changing the settings field to jsonb
+  ref_run <- tbl(con, "reference_runs") %>% filter(.data$settings == settings_xml) %>% collect
   return(ref_run)
 }

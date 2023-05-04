@@ -14,7 +14,7 @@ The easiest way to install this package is via `install_github` from the `devtoo
 ```{r, eval=FALSE}
 install.packages("devtools")
 library(devtools)
-install_github("ashiklom/pecan", subdir="modules/rtm")
+install_github("ashiklom/pecan", subdir = "modules/rtm")
 # Defaults to branch 'master'. 
 # For custom branches, add `ref = "branchname"`
 ```
@@ -36,34 +36,52 @@ The PROSPECT family of models returns the reflectance (column 1) and transmittan
 ```{r}
 library(PEcAnRTM)
 wl <- 400:2500
-params <- c("N"=1.4, "Cab"=40, "Car"=15,
-            "Cbrown"=0.5, "Cw"=0.002, "Cm"=0.004)
+params <- c(
+  "N" = 1.4, "Cab" = 40, "Car" = 15,
+  "Cbrown" = 0.5, "Cw" = 0.002, "Cm" = 0.004
+)
 
-p4 <- prospect(params[c(-3,-4)], version=4)
-p5 <- prospect(params[-4], version=5)
-p5b <- prospect(params, version="5B")
-
-plot(wl, p4[,1], type='l', xlab="Wavelength (nm)", ylab="Value", ylim=c(0,1))
-lines(wl, 1-p4[,2], col=2)
-lines(wl, p5[,1], lty=2, col=1)
-lines(wl, 1-p5[,2], lty=2, col=2)
-lines(wl, p5b[,1], lty=3, col=1)
-lines(wl, 1-p5b[,2], lty=3, col=2)
-legend("topright", c("Reflectance", "Transmittance"), col=c(1,2), lty=1)
-legend("top", c("4", "5", "5B"), lty = c(1,2,3))
+p4 <- prospect(params[c(-3, -4)], version = 4)
+p4
 ```
 
-The SAIL family of models returns the bidirectional (1), hemispherical directional (2), directional hemispherical (3), and bidirectional hemispherical (4) reflectance factors for a canopy with a given set of approximately 20 parameters. It is often coupled to the PROSPECT model as PRO4SAIL. 
+Notice only the first and last few lines of the spectra are printed, and the wavelength is annotated on the side.
+This is is because all RTM simulations in this package are of a special matrix class `spectra`.
+
+```{r}
+class(p4)
+```
+
+This class allows traditional subsetting via index with single brackets (`[]`), as well as subsetting by wavelength with double brackets.
+
+```{r}
+p4[1:50, 1]
+p4[[500:520, 2]]
+```
+
+The package also provides special plotting (`plot`, `matplot`) and combining (`cbind`) methods. Note that the `cbind` method automatically matches wavelengths, which facilitates working with spectra with different wavelengths.
+
+```{r}
+p5 <- prospect(params[-4], version = 5)
+p5b <- prospect(params, version = "5B")
+p_multi <- cbind(p4, p5, p5b)
+matplot(p_multi[, c(1, 3, 5)], lty = 1:3, col = 2, ylim = c(0, 1))
+matplot(1 - p_multi[, c(2, 4, 6)], lty = 1:3, col = 3,  add = TRUE)
+legend("topright", c("Reflectance", "Transmittance"), col=c(2, 3), lty = 1)
+legend("top", c("4", "5", "5B"), lty = 1:3)
+```
+
+The SAIL family of models returns the bidirectional (1), hemispherical directional (2), directional hemispherical (3), and bidirectional hemispherical (4) reflectance factors for a canopy with a given set of approximately 20 parameters. It is often coupled to the PROSPECT model as PRO4SAIL. (Again, note that the return type is a `spectra`, which leads `matplot` to automatically put wavelengths on the x axis.)
 
 ```{r}
 sail.params <- defparam("pro4sail")
 print(sail.params)
 p4s <- pro4sail(sail.params)
-matplot(x = wl, y = p4s, type='l', xlab="Wavelength (nm)", ylab="Reflectance")
+matplot(p4s, xlab="Wavelength (nm)", ylab="Reflectance")
 legend("topright", as.character(1:4), col=1:4, lty=1:4)
 ```
 
-The above example illustrates the use of `defparam` to get the default parameters for a particular model. Similarly, `model.list` is a `data.table` containing all currently available models.
+The above example illustrates the use of `defparam` to get the default parameters for a particular model. Similarly, `model.list` is a `data.frame` containing all currently available models.
 
 ```{r}
 print(model.list)

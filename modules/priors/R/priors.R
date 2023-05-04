@@ -19,33 +19,33 @@
 fit.dist <- function(trait.data, trait = colnames(trait.data), 
                      dists = c("weibull", "lognormal", "gamma"), n = NULL) {
   
-  if (class(trait.data) == "data.frame") {
+  if (inherits(trait.data, "data.frame")) {
     trait.data <- trait.data[, 1]
   }
   ## warning(immediate. = TRUE)
   nostart.dists <- dists[dists %in% c("weibull", "lognormal", "gamma", "normal")]
-  a <- lapply(nostart.dists, function(x) suppressWarnings(fitdistr(trait.data, x)))
+  a <- lapply(nostart.dists, function(x) suppressWarnings(MASS::fitdistr(trait.data, x)))
   names(a) <- nostart.dists
   if ("f" %in% dists) {
     print(trait)
     if (trait == "tt") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 100, df2 = 200)))
     } else if (trait == "sla") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 6, df2 = 1)))
     } else if (trait == "rrr") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 6, df2 = 1)))
     } else if (trait == "q") {
-      a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
+      a[["f"]] <- suppressWarnings(MASS::fitdistr(trait.data, "f", 
                                             start = list(df1 = 1, df2 = 2)))
     } else {
       PEcAn.logger::logger.severe(paste(trait, "not supported!"))
     }
   }
   if ("beta" %in% dists) {
-    a[["beta"]] <- suppressWarnings(fitdistr(trait.data, "beta", 
+    a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta", 
                                              start = list(shape1 = 2, shape2 = 1)))
   }
   aicvalues <- lapply(a, AIC)
@@ -72,7 +72,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @title prior.fn 
 ##' @param parms target for optimization
 ##' @param x vector with c(lcl, ucl, ct) lcl / ucl = confidence limits, ct = entral tendency 
-##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95% CI, alpha = 0.5)
+##' @param alpha quantile at which lcl/ucl are estimated (e.g. for a 95\% CI, alpha = 0.5)
 ##' @param distn named distribution, one of 'lnorm', 'gamma', 'weibull', 'beta'; support for other distributions not currently implemented 
 ##' @param central.tendency one of 'mode', 'median', and 'mean' 
 ##' @param trait name of trait, can be used for exceptions (currently used for trait == 'q')
@@ -80,12 +80,15 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 ##' @return parms
 ##' @author David LeBauer
 ##' @examples
-##' DEoptim(fn = prior.fn, 
-##'                 lower = c(0, 0), 
-##'                 upper = c(1000, 1000), 
-##'                 x=c(2, 6, 3.3), 
-##'                 alpha = 0.05, 
-##'                 distn = 'lnorm')$optim$bestmem
+##' \dontrun{
+##'   DEoptim(fn = prior.fn,
+##'           lower = c(0, 0),
+##'           upper = c(1000, 1000),
+##'           x=c(2, 6, 3.3),
+##'           alpha = 0.05,
+##'           distn = 'lnorm')$optim$bestmem
+##' }
+##'
 prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NULL) {
   if (!distn %in% c("lnorm", "gamma", "weibull", "beta")) {
     stop(paste(distn, "not currently supported by prior.fn"))
@@ -179,14 +182,37 @@ pr.samp <- function(distn, parama, paramb, n) {
 #--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'
-##' Like pr.samp, with prior as a single input
+##' Similar to the prior sample function \link{pr.samp}, except 1) it takes the prior as a named dataframe
+##' or list and it can return either a random sample of length n OR a sample from a quantile specified as p
 ##' @title Get Samples
-##' @param prior data.frame with distn, parama, paramb
-##' @param n number of samples to return
+##' @param prior data.frame with distn, parama, and optionally paramb.
+##' @param n number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)
+##' @param p vector of quantiles from which to sample the distribution; typically pre-generated upstream
+##' in the workflow to be used by the qdistn family of functions (e.g. qnorm)
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
+##' @examples
+##' \dontrun{
+##' # return 1st through 99th quantile of standard normal distribution:
+##' PEcAn.priors::get.sample(
+##'    prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+##'    p = 1:99/100)
+##' # return 100 random samples from standard normal distribution:
+##' PEcAn.priors::get.sample(
+##'    prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+##'    n = 100)
+##' }
 ##' @export
-get.sample <- function(prior, n) {
+get.sample <- function(prior, n = NULL, p = NULL) {
+  if(!is.null(p)){
+    if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
+      ## one parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama)))
+    } else {
+      ## two parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama, prior$paramb)))
+    }
+  }
   if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
     ## one parameter distributions
     return(do.call(paste0("r", prior$distn), list(n, prior$parama)))

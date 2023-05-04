@@ -2,22 +2,34 @@
 % Please edit documentation in R/utils_db.R
 \name{db.open}
 \alias{db.open}
-\title{Open database connection}
+\title{Open a database connection}
 \usage{
 db.open(params)
 }
 \arguments{
-\item{params}{database connection information}
+\item{params}{Named list of database connection options. See details}
 }
 \value{
-connection to database
+Database connection object
 }
 \description{
-Generic function to open a database connection
+Create a connection to a database using the specified parameters.
+The `params` list will be passed as arguments to [DBI::dbConnect()].
 }
 \details{
-Create a connection to a database usign the specified parameters. If the paramters contain
-driver element it will be used as the database driver, otherwise it will use PostgreSQL.
+Typical arguments are as follows:
+- `driver` -- The name of the database driver. Only `"PostgreSQL"`
+and `"Postgres"` are supported. If no driver is specified, default
+to `"PostgreSQL"`.
+- `user` -- The database username. For local instances of PEcAn,
+this is usually `"bety"`.
+- `password` -- The database password. For local instances of
+PEcAn, this is usually `"bety"`.
+- `host` -- The database hostname. For local instances of PEcAn,
+this is usually `"localhost"`. Inside the PEcAn Docker stack, this
+may be `"postgres"`.
+- `port` (optional) -- The port for accessing the database. If
+omitted, this will use the PostgreSQL default (5432).
 }
 \examples{
 \dontrun{

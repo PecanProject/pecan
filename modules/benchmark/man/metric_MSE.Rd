@@ -9,6 +9,9 @@ metric_MSE(dat, ...)
 \arguments{
 \item{dat}{dataframe}
 }
+\description{
+Mean Square Error
+}
 \author{
 Betsy Cowdery
 }

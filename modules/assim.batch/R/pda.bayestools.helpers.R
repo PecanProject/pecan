@@ -85,7 +85,7 @@ pda.create.btprior <- function(prior.sel) {
 ##' @title Apply settings for BayesianTools
 ##' @param settings PEcAn settings
 ##'
-##' @return bt.settings list of runMCMC{BayesianTools} settings
+##' @return bt.settings list of BayesianTools::runMCMC settings
 ##'
 ##' @author Istem Fer
 ##' @export
@@ -94,43 +94,56 @@ pda.settings.bt <- function(settings) {
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
-  iterations <- as.numeric(settings$assim.batch$bt.settings$iter)
+  iterations <- ifelse(!is.null(settings$assim.batch$bt.settings$iterations), 
+                  as.numeric(settings$assim.batch$bt.settings$iterations),
+                  1000)
+
+  chain <- ifelse(!is.null(settings$assim.batch$bt.settings$chain), 
+                  as.numeric(settings$assim.batch$bt.settings$chain),
+                  2)
+  
   optimize <- ifelse(!is.null(settings$assim.batch$bt.settings$optimize), 
                      settings$assim.batch$bt.settings$optimize, 
                      TRUE)
-  # consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates),
-  # as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  
   adapt <- ifelse(!is.null(settings$assim.batch$bt.settings$adapt), 
                   settings$assim.batch$bt.settings$adapt, 
                   TRUE)
+  
   adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval),
                               as.numeric(settings$assim.batch$bt.settings$adaptationInverval),
                               max(round(iterations/100*5),100))
+  
   adaptationNotBefore <- ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 adaptationInverval)
+  
   DRlevels <- ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels),
                      as.numeric(settings$assim.batch$bt.settings$DRlevels), 
                      1)
+  
   if (!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) {
     gibbsProbabilities <- as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
   } else {
     gibbsProbabilities <- NULL
   }
-  
+
+  # parallel always FALSE because currently we parallelize over whole chains using parLapply
   if (sampler == "Metropolis") {
-    bt.settings <- list(iterations = iterations,
-                        optimize = optimize, 
-                        DRlevels = DRlevels, 
-                        adapt = adapt, 
+    bt.settings <- list(iterations          = iterations,
+                        nrChains            = chain,
+                        optimize            = optimize, 
+                        DRlevels            = DRlevels, 
+                        adapt               = adapt, 
                         adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities)
+                        gibbsProbabilities  = gibbsProbabilities,
+                        parallel = FALSE)
   } else if (sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings <- list(iterations = iterations, startValue = "prior")
+    bt.settings <- list(iterations = iterations, startValue = "prior", parallel = FALSE)
   } else if (sampler %in% c("DE", "DEzs", "DREAM", "DREAMzs", "Twalk")) {
-    bt.settings <- list(iterations = iterations)
+    bt.settings <- list(iterations = iterations, nrChains = chain, parallel = FALSE)
   } else if (sampler == "SMC") {
-    bt.settings <- list(initialParticles = list("prior", iterations))
+    bt.settings <- list(initialParticles = list("prior", iterations), parallel = FALSE)
   } else {
     PEcAn.logger::logger.error(paste0(sampler, " sampler not found!"))
   }
@@ -146,59 +159,59 @@ pda.settings.bt <- function(settings) {
 #' @param density type of plot to do
 #' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
 #' @param method method for calculating correlations
-#' @import IDPmisc
-#' @import ellipse
+#' @param whichParameters all params or some
 #' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 #' @export
 #' 
 correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pearson", whichParameters = NULL) {
   
   if (inherits(mat, "bayesianOutput")) {
-    mat <- getSample(mat, thin = thin, whichParameters = whichParameters, ...)
+    mat <- BayesianTools::getSample(mat, thin = thin, whichParameters = whichParameters)
   }
   
   numPars <- ncol(mat)
   names <- colnames(mat)
   
   panel.hist.dens <- function(x, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    h <- hist(x, plot = FALSE)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr), add = TRUE)
+    graphics::par(usr = c(usr[1:2], 0, 1.5))
+    h <- graphics::hist(x, plot = FALSE)
     breaks <- h$breaks
     nB <- length(breaks)
     y <- h$counts
     y <- y/max(y)
-    rect(breaks[-nB], 0, breaks[-1], y, col = "blue4", ...)
+    graphics::rect(breaks[-nB], 0, breaks[-1], y, col = "blue4", ...)
   } # panel.hist.dens
   
   # replaced by spearman
   panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(0, 1, 0, 1))
-    r <- cor(x, y, use = "complete.obs", method = method)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr), add = TRUE)
+    graphics::par(usr = c(0, 1, 0, 1))
+    r <- stats::cor(x, y, use = "complete.obs", method = method)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
     txt <- paste0(prefix, txt)
     if (missing(cex.cor)) {
-      cex.cor <- 0.8/strwidth(txt)
+      cex.cor <- 0.8 / graphics::strwidth(txt)
     }
-    text(0.5, 0.5, txt, cex = cex.cor * abs(r))
+    graphics::text(0.5, 0.5, txt, cex = cex.cor * abs(r))
   } # panel.cor
   
   plotEllipse <- function(x, y) {
-    usr <- par("usr")
-    on.exit(par(usr))
-    par(usr = c(usr[1:2], 0, 1.5))
-    cor <- cor(x, y)
+    usr <- graphics::par("usr")
+    on.exit(graphics::par(usr), add = TRUE)
+    graphics::par(usr = c(usr[1:2], 0, 1.5))
+    cor <- stats::cor(x, y)
     el <- ellipse::ellipse(cor)
-    polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
+    graphics::polygon(el[, 1] + mean(x), el[, 2] + mean(y), col = "red")
   } # plotEllipse
   
   correlationEllipse <- function(x) {
-    cor <- cor(x)
+
+    cor <- stats::cor(x)
     ToRGB <- function(x) {
-      rgb(x[1] / 255, x[2] / 255, x[3] / 255)
+      grDevices::rgb(x[1] / 255, x[2] / 255, x[3] / 255)
     }
     C1 <- ToRGB(c(178, 24, 43))
     C2 <- ToRGB(c(214, 96, 77))
@@ -209,7 +222,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
     C7 <- ToRGB(c(146, 197, 222))
     C8 <- ToRGB(c(67, 147, 195))
     C9 <- ToRGB(c(33, 102, 172))
-    CustomPalette <- colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
+    CustomPalette <- grDevices::colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
     ord <- order(cor[1, ])
     xc <- cor[ord, ord]
     colors <- unlist(CustomPalette(100))
@@ -217,16 +230,16 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   } # correlationEllipse
   
   if (density == "smooth") {
-    pairs(mat, lower.panel = function(...) {
-      par(new = TRUE)
+    ellipse::pairs(mat, lower.panel = function(...) {
+      graphics::par(new = TRUE)
       IDPmisc::ipanel.smooth(...)
     }, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "corellipseCor") {
-    pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = plotEllipse, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else if (density == "ellipse") {
     correlationEllipse(mat)
   } else if (density == F) {
-    pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
+    ellipse::pairs(mat, lower.panel = panel.cor, diag.panel = panel.hist.dens, upper.panel = panel.cor)
   } else stop("wrong sensity argument")
   
   # The if block above is generating return values

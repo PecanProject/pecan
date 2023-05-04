@@ -4,20 +4,54 @@
 \alias{run.sensitivity.analysis}
 \title{run sensitivity.analysis}
 \usage{
-run.sensitivity.analysis(settings, plot = TRUE, ensemble.id = NULL,
-  variable = NULL, start.year = NULL, end.year = NULL, ...)
+run.sensitivity.analysis(
+  settings,
+  plot = TRUE,
+  ensemble.id = NULL,
+  variable = NULL,
+  start.year = NULL,
+  end.year = NULL,
+  pfts = NULL,
+  ...
+)
 }
 \arguments{
+\item{settings}{a PEcAn settings object}
+
 \item{plot}{logical. Option to generate sensitivity analysis and variance
 decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).}
+
+\item{ensemble.id}{ensemble ID}
+
+\item{variable}{which varibable(s) to do sensitivity analysis for. Defaults
+to all specified in `settings`}
+
+\item{start.year}{defaults to what is specified in `settings`}
+
+\item{end.year}{defaults to what is specified in `settings`}
+
+\item{pfts}{a vector of PFT names found in `settings` to run sensitivity
+analysis on}
+
+\item{...}{currently unused}
 }
 \value{
-nothing, saves \code{sensitivity.results} as sensitivity.results.Rdata,
-sensitivity plots as sensitivityanalysis.pdf, and variance decomposition 'popsicle plot'
-as variancedecomposition.pdf a side effect (OPTIONAL)
+nothing, saves \code{sensitivity.results} as
+  sensitivity.results.Rdata, sensitivity plots as sensitivityanalysis.pdf,
+  and variance decomposition 'popsicle plot' as variancedecomposition.pdf a
+  side effect (OPTIONAL)
 }
 \description{
-run sensitivity.analysis
+Runs the sensitivity analysis module on a finished run
+}
+\examples{
+\dontrun{
+library(PEcAn.settings)
+library(PEcAn.uncertainty)
+settings <- read.settings("path/to/pecan.xml")
+run.sensitivity.analysis(settings)
+}
+
 }
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly

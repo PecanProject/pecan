@@ -10,10 +10,10 @@
             mask    mask
          </variableNames>
          <filePath>
-            @INDIR@/atm/datm7
+            @INDIR@/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
          </filePath>
          <fileNames>
-            domain.T62.050609.nc
+            domain.lnd.360x720_gswp3.0v1.c170606.nc
          </fileNames>
       </domainInfo>
       <fieldInfo>

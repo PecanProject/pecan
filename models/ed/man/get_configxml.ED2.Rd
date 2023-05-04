@@ -11,6 +11,9 @@ get_configxml.ED2(rundir, runid)
 
 \item{runid}{PEcAn run ID}
 }
+\description{
+Get ED2 config.xml file
+}
 \author{
 Alexey Shiklomanov
 }

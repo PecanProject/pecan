@@ -12,6 +12,8 @@ met2model.MODEL(in.path, in.prefix, outfolder, overwrite = FALSE)
 \item{in.prefix}{prefix for each file}
 
 \item{outfolder}{location where model specific output is written.}
+
+\item{overwrite}{logical: replace output files if they already exist?}
 }
 \value{
 OK if everything was succesful.

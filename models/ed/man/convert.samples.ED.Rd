@@ -2,22 +2,20 @@
 % Please edit documentation in R/write.configs.ed.R
 \name{convert.samples.ED}
 \alias{convert.samples.ED}
-\title{Convert samples for ed}
+\title{Convert parameters from PEcAn database default units to ED defaults}
 \usage{
 convert.samples.ED(trait.samples)
 }
 \arguments{
-\item{trait.samples}{a matrix or dataframe of samples from the trait distribution}
+\item{trait.samples}{a matrix or dataframe of samples from the trait
+distribution}
 }
 \value{
 matrix or dataframe with values transformed
 }
 \description{
-convert parameters from PEcAn database default units to ED defaults
-}
-\details{
-Performs model specific unit conversions on a a list of trait values,
-such as those provided to write.config
+Performs model specific unit conversions on a a list of trait values, such
+as those provided to write.config
 }
 \author{
 Shawn Serbin, David LeBauer, Carl Davidson, Ryan Kelly

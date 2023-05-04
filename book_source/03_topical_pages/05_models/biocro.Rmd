@@ -1,0 +1,52 @@
+## BioCro {#models-biocro}
+
+| Model Information |                                                                   |
+| --                | --                                                                |
+| Home Page         | https://github.com/ebimodeling/biocro/blob/0.951/README.md                              |
+| Source Code       | https://github.com/ebimodeling/biocro/tree/0.951                             |
+| License           | [University of Illinois/NCSA Open Source License](https://github.com/ebimodeling/biocro/blob/master/LICENSE)                                                                  |
+| Authors           | Fernando E. Miguez, Deepak Jaiswal, Justin McGrath, David LeBauer, Scott Rohde, Dan Wang |
+| PEcAn Integration | David LeBauer, Chris Black, Kristina Riemer |
+
+### Introduction
+
+BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosystem levels and determines plant biomass allocation and crop yields, using underlying physiological and ecological processes to do so. 
+
+### PEcAn configuration file additions
+
+The following sections of the PEcAn XML are relevant to the BioCro model: 
+
+- `model`
+  - `revision` -- Model version number
+- `run`
+  - `site/id` -- ID associated with desired site from BETYdb site entry
+  - `inputs`
+    - `met/output` -- Set as BIOCRO
+    - `met/path` -- Path to file containing meteorological data
+
+### Model specific input files
+
+List of inputs required by model, such as met, etc.
+
+### Model configuration files
+
+Genus-specific parameter files are secretly required. These are stored in the PEcAn.BIOCRO package and looked up under the hood. 
+
+`write.configs.BIOCRO` looks for defaults in this order: first any file at a path specified by `settings$pft$constants$file`, next by matching the genus name in datasets exported by the BioCro package, and last by matching the genus name in PEcAn.BIOCRO's extdata/defaults directory.
+
+When adding a new genus, it is necessary to provide a new default parameter file in PEcAn.BIOCRO [`inst/extdata/defaults`](https://github.com/PecanProject/pecan/tree/develop/models/biocro/inst/extdata/defaults) and also (for v<1.0) update the `call_biocro()` function.
+
+BioCro uses a config.xml file similar to ED2. At this time, no other template files are required.
+
+### Installation notes
+
+BioCro can be run standalone using the model's R package. Instructions for installing and using the package are in the GitHub repo's [README file](https://github.com/ebimodeling/biocro/blob/0.951/README.md). 
+
+PEcAn works with v. 0.9x and 1.x. Support for v 2.x is not implemented. Support for v 0.9x is most robust and tested. 
+
+To install, use 
+
+```r
+remotes::install_github('ebimodeling/biocro@0.951')
+```
+

@@ -2,16 +2,20 @@
 ##' @name download.MsTMIP_NARR
 ##' @title download.MsTMIP_NARR
 ##' @export
-##' @param outfolder
+##'
+##' @param outfolder location where output is stored
 ##' @param start_date YYYY-MM-DD
+##' @param site_id BETY site id
+##' @param lat.in latitude of site
+##' @param lon.in longitude of site
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param verbose Default is FALSE, used in ncdf4::ncvar_def
+##' @param ... Other inputs
 ##' @param end_date YYYY-MM-DD
-##' @param lat decimal degrees [-90, 90]
-##' @param lon decimal degrees [-180, 180]
 ##'
 ##' @author James Simkins
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                                  overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -49,7 +53,7 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   for (i in seq_len(rows)) {
     year <- ylist[i]
 
-    ntime <- udunits2::ud.convert(PEcAn.utils::days_in_year(year), "days", "hours") / 3 - 1 # Number of 3 hour timesteps in one year
+    ntime <- PEcAn.utils::ud_convert(PEcAn.utils::days_in_year(year), "days", "hours") / 3 - 1 # Number of 3 hour timesteps in one year
 
     loc.file <- file.path(outfolder, paste("MsTMIP_NARR", year, "nc", sep = "."))
 

@@ -1,0 +1,90 @@
+---
+title: "Documentation for the Visualization and Benchmarking Shiny App"
+output: 
+  html_document:
+    theme: united
+---
+
+## App Documentation
+
+This is the shiny app for:
+
+- Visualizing model output data alongside external data
+- Registering Reference Runs
+- Calculating Benchmarks
+
+Do you have ideas for new features? 
+
+[Add your comments here!](https://github.com/PecanProject/pecan/issues/1894)
+
+--------------------------------------------------------------------------------
+
+## Setup page
+
+For now this is just a place to see some information about the run you just loaded. 
+
+--------------------------------------------------------------------------------
+
+## Exploratory Plots
+
+All our plots are made with [plotly](https://plot.ly/).
+
+They are interactive and packed full of features. All plotly plots have a toolbar with the following features:
+
+![](plotly_bar.png)
+
+- Download plot as a png
+- Zoom
+- Pan
+- Box select
+- Lasso select
+- Zoom in
+- Zoom out
+- Autoscale
+- Reset axes
+- Toggle spike lines
+- Show closest data on hover
+- Compare data on hover
+- Collaborate
+
+--------------------------------------------------------------------------------
+
+## Benchmarking
+
+[See additional documentation on benchmarking](https://pecanproject.github.io/pecan-documentation/develop/settings-configured-analyses.html#Benchmarking)
+
+### Settings
+
+All benchmarks that are calcualted are automatcally registered in to the database.
+
+#### Setup Reference Run
+
+You need to register a run before performing benchmarks. 
+
+[See documentation on reference runs](https://pecanproject.github.io/pecan-documentation/develop/reference-runs.html)
+
+#### Setup Benchmarks
+
+**Variables**
+
+These are the variables that the model and data have in common.
+
+**Metrics**
+
+Warning: Don't use Frechet for large datasets, it is not efficient at all. I should probably remove it if data dimensions are too large.
+
+**Plots**
+
+These plots will be saved as PDFs in the model output directory. You can also load them interactively in Benchmarking > Plots. 
+
+### Scores
+
+A table of all outputs of the selected metrics. 
+- For numerical metrics, the score is printed.
+- For visual metrics, the path to the PDF is printed. Eventually it might be nice to have a download button. For now, you can navigate back to rstudio and download from there. 
+
+### Plots
+
+More interactive ploty plots!
+
+--------------------------------------------------------------------------------

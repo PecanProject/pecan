@@ -7,6 +7,7 @@
 #' "moving.window" (default) or "gelman.plot".
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence 
 #' interval for Gelman Diagnostic. If FALSE, use the point estimate.
+#' @param plotfile path
 #' @param ... Other parameters to methods
 #' 
 #' @details 
@@ -33,7 +34,7 @@ getBurnin <- function(jags_out,
   } else {
     stop("Unknown method: ", method)
   }
-  if (class(GBR) == "try-error") {
+  if (inherits(GBR, "try-error")) {
     message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
     return(1)
   }
@@ -44,9 +45,9 @@ getBurnin <- function(jags_out,
     # Chains converged instantly -- no burnin required
     burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
   } else {
-    index <- tail(which(rowSums(gbr_exceed) > 0), 1) + 1
+    index <- utils::tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
-              class(index) %in% c("numeric", "integer"))
+               inherits(index, c("numeric", "integer")))
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {
@@ -59,7 +60,7 @@ getBurnin <- function(jags_out,
     colnames(mvals) <- colnames(gbr_values)
     mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
     colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
-    print(cbind(tail(mvals), tail(mex)))
+    print(cbind(utils::tail(mvals), utils::tail(mex)))
     burnin <- 1
   }
   return(burnin)
@@ -68,6 +69,7 @@ getBurnin <- function(jags_out,
 #' @title Automatically calculate and apply burnin value
 #'
 #' @author Michael Dietze, Alexey Shiklomanov
+#' @param jags_out JAGS output
 #' @param return.burnin Logical. If `TRUE`, return burnin value in addition to 
 #' samples (as list). Default = FALSE.
 #' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
@@ -84,7 +86,7 @@ autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
   if (burnin == 1) {
     samples <- jags_out
   } else if (burnin > 1) {
-    samples <- window(jags_out, start = burnin)
+    samples <- stats::window(jags_out, start = burnin)
   } else {
     stop("Bad return value for burnin: \n",
          burnin)

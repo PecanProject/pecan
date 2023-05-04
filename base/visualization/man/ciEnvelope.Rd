@@ -12,6 +12,8 @@ ciEnvelope(x, ylo, yhi, ...)
 \item{ylo}{Vector defining bottom of CI envelope}
 
 \item{yhi}{Vector defining top of CI envelope}
+
+\item{...}{Further arguments passed on to \code{graphics::polygon}}
 }
 \description{
 plots a confidence interval around an x-y plot (e.g. a timeseries)

@@ -1,5 +1,5 @@
 stop <- function(...) {
-  if (requireNamespace("PEcAn.utils")) {
+  if (requireNamespace("PEcAn.logger", quietly = TRUE)) {
     PEcAn.logger::logger.severe(...)
   } else {
     stop(...)
@@ -7,7 +7,7 @@ stop <- function(...) {
 }
 
 warning <- function(...) {
-  if (requireNamespace("PEcAn.utils")) {
+  if (requireNamespace("PEcAn.logger", quietly = TRUE)) {
     PEcAn.logger::logger.warn(...)
   } else {
     warning(...)
@@ -15,7 +15,7 @@ warning <- function(...) {
 }
 
 message <- function(...) {
-  if (requireNamespace("PEcAn.utils")) {
+  if (requireNamespace("PEcAn.logger", quietly = TRUE)) {
     PEcAn.logger::logger.info(...)
   } else {
     message(...)

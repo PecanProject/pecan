@@ -6,6 +6,14 @@
 \usage{
 calcSpatialCov(x, ...)
 }
+\arguments{
+\item{x}{either a spatial distance matrix or a list of component spatial distance matrices}
+
+\item{...}{Additional arguments}
+}
+\description{
+calcSpatialCov
+}
 \author{
 Michael Dietze
 }

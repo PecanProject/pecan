@@ -1,0 +1,218 @@
+* using log directory ‘/home/tanishq010/pecan/models/PEcAn.LINKAGES.Rcheck’
+* using R version 4.2.1 (2022-06-23)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --as-cran’
+* checking for file ‘PEcAn.LINKAGES/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PEcAn.LINKAGES’ version ‘1.7.2’
+* package encoding: UTF-8
+* checking CRAN incoming feasibility ... WARNING
+Maintainer: ‘Ann Raiho <araiho@nd.edu>’
+
+New submission
+
+License components with restrictions and base license permitting such:
+  BSD_3_clause + file LICENSE
+File 'LICENSE':
+  ## This is the master copy of the PEcAn License
+
+  University of Illinois/NCSA Open Source License
+
+  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
+
+  PEcAn project
+  www.pecanproject.org
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal with the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimers.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
+  - Neither the names of University of Illinois, NCSA, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+Unknown, possibly misspelled, fields in DESCRIPTION:
+  ‘Remotes’
+
+Strong dependencies not in mainstream repositories:
+  PEcAn.utils, PEcAn.data.atmosphere, PEcAn.logger, PEcAn.remote
+Suggests or Enhances not in mainstream repositories:
+  linkages
+
+The Date field is over a month old.
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PEcAn.LINKAGES’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Author field differs from that derived from Authors@R
+  Author:    ‘Ann Raiho, Mike Dietze’
+  Authors@R: ‘Mike Dietze [aut], Ann Raiho [aut, cre], University of Illinois, NCSA [cph]’
+
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' import not declared from: ‘PEcAn.data.land’
+'library' or 'require' call not declared from: ‘PEcAn.data.atmosphere’
+'library' or 'require' call to ‘PEcAn.utils’ which was already attached by Depends.
+  Please remove these calls from your code.
+'library' or 'require' calls in package code:
+  ‘PEcAn.data.atmosphere’ ‘linkages’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+Namespace in Imports field not imported from: ‘PEcAn.data.atmosphere’
+  All declared Imports should be used.
+Package in Depends field not imported from: ‘PEcAn.utils’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+met2model.LINKAGES: no visible global function definition for
+  ‘flush.console’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘ag.biomass’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘total.soil.carbon’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘leaf.litter’
+model2netcdf.LINKAGES: no visible binding for global variable ‘area’
+model2netcdf.LINKAGES: no visible binding for global variable ‘ag.npp’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘hetero.resp’
+model2netcdf.LINKAGES: no visible binding for global variable ‘nee’
+model2netcdf.LINKAGES: no visible binding for global variable ‘et’
+model2netcdf.LINKAGES: no visible binding for global variable ‘agb.pft’
+model2netcdf.LINKAGES: no visible binding for global variable ‘f.comp’
+model2netcdf.LINKAGES: no visible binding for global variable ‘water’
+model2netcdf.LINKAGES: no visible binding for global variable
+  ‘abvgroundwood.biomass’
+read_restart.LINKAGES: no visible global function definition for
+  ‘read.output’
+sample.IC.LINKAGES: no visible global function definition for ‘runif’
+write.config.LINKAGES: no visible global function definition for
+  ‘read.csv’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.open’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.close’
+write.config.LINKAGES: no visible global function definition for
+  ‘db.query’
+write_restart.LINKAGES: no visible global function definition for
+  ‘read.csv’
+write_restart.LINKAGES: no visible global function definition for
+  ‘logger.severe’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘ntrees.kill’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘nogro.save’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘iage.save’
+write_restart.LINKAGES: no visible binding for global variable
+  ‘dbh.save’
+write_restart.LINKAGES: no visible global function definition for
+  ‘aggregate’
+write_restart.LINKAGES: no visible global function definition for
+  ‘runif’
+write_restart.LINKAGES: no visible global function definition for
+  ‘optimize’
+write_restart.LINKAGES: no visible global function definition for
+  ‘year’
+Undefined global functions or variables:
+  abvgroundwood.biomass ag.biomass ag.npp agb.pft aggregate area
+  db.close db.open db.query dbh.save et f.comp flush.console
+  hetero.resp iage.save leaf.litter logger.severe nee nogro.save
+  ntrees.kill optimize read.csv read.output runif total.soil.carbon
+  water year
+Consider adding
+  importFrom("stats", "aggregate", "optimize", "runif")
+  importFrom("utils", "flush.console", "read.csv")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'met2model.LINKAGES'
+  ‘start_date’ ‘end_date’ ‘overwrite’ ‘verbose’ ‘...’
+
+Undocumented arguments in documentation object 'model2netcdf.LINKAGES'
+  ‘pft_names’
+
+Undocumented arguments in documentation object 'read_restart.LINKAGES'
+  ‘settings’ ‘params’
+Documented arguments not in \usage in documentation object 'read_restart.LINKAGES':
+  ‘multi.settings’
+
+Undocumented arguments in documentation object 'split_inputs.LINKAGES'
+  ‘settings’ ‘start.time’ ‘stop.time’ ‘inputs’
+
+Undocumented arguments in documentation object 'write.config.LINKAGES'
+  ‘trait.values’ ‘restart’ ‘spinup’ ‘inputs’ ‘IC’
+Documented arguments not in \usage in documentation object 'write.config.LINKAGES':
+  ‘trait.samples’
+
+Undocumented arguments in documentation object 'write_restart.LINKAGES'
+  ‘start.time’ ‘stop.time’ ‘new.params’ ‘inputs’
+Documented arguments not in \usage in documentation object 'write_restart.LINKAGES':
+  ‘trait.values’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'write_restart.LINKAGES':
+  ‘trait.values’
+
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+
+Status: 4 WARNINGs, 2 NOTEs

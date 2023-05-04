@@ -2,6 +2,7 @@
 
 export(met2model.LPJGUESS)
 export(model2netcdf.LPJGUESS)
+export(pecan2lpjguess)
 export(readStateBinary)
 export(write.config.LPJGUESS)
 export(write.insfile.LPJGUESS)

@@ -23,13 +23,14 @@ $node = $dom->createElement("workflows");
 $parnode = $dom->appendChild($node);
 
 // get run information
-$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
+$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, attributes.value," .
          "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
          "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
          "FROM workflows " .
          "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
          "LEFT OUTER JOIN models on workflows.model_id=models.id " .
-         "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id ";
+         "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
+         "LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' ";
 
 $where = "";
 
@@ -72,12 +73,18 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   $rows++;
   $status = "";
   $url = "";
+  $hostname = '';
+  if ($row['value'] != '') {
+    $params = json_decode($row['value'], true);
+  } else {
+    $params = eval("return ${row['params']};");
+  }
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $statusfile=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
     foreach ($statusfile as $line) {
       $data = explode("\t", $line);
       if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-        $url="08-finished.php?workflowid=" . $row['id'];
+        $url = "08-finished.php?workflowid=" . $row['id'];
         $status = "ERROR";
       }
     }
@@ -86,18 +93,21 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       continue;
     }
     if (file_exists($row['folder'])) {
-      $url="08-finished.php?workflowid=" . $row['id'];
+      $url = "08-finished.php?workflowid=" . $row['id'];
     }
     $status = "UNKNOWN";
   }
   if (($status == "") && ($row['finished_at'] == "")) {
-    $url="05-running.php?workflowid=" . $row['id'];
+    $url = "05-running.php?workflowid=" . $row['id'];
+    if (isset($params['hostname'])) {
+      $url .= "&hostname=${params['hostname']}";
+    }
     $status = "RUNNING";
   }
   if ($status == "") {
-    $url="08-finished.php?workflowid=" . $row['id'];
+    $url = "08-finished.php?workflowid=" . $row['id'];
     $status = "DONE";
-  }
+  } 
 
   $node = $dom->createElement("workflow");
   $newnode = $parnode->appendChild($node);   

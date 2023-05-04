@@ -4,13 +4,22 @@
 \alias{met2model.SIPNET}
 \title{met2model.SIPNET}
 \usage{
-met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+met2model.SIPNET(
+  in.path,
+  in.prefix,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  verbose = FALSE,
+  year.fragment = FALSE,
+  ...
+)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
 
-\item{in.prefix}{prefix of input and output files}
+\item{in.prefix}{prefix of input and output files OR the full file name if year.fragment = TRUE}
 
 \item{outfolder}{location on disk where outputs will be stored}
 
@@ -21,7 +30,12 @@ met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date,
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{year.fragment}{the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).}
 }
 \description{
 met2model wrapper for SIPNET
+}
+\author{
+Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 }

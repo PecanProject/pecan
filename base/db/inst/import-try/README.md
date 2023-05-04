@@ -1,7 +1,12 @@
 ---
-title: "Import TRY database into BETY""
+title: "Import TRY database into BETY"
 Author: "Alexey Shiklomanov"
 ---
+
+# Workflow
+
+1. `01_try_sqlite.R` -- Read TRY data files (huge tab-delimited text files) and convert them to an SQLite database, which is much faster and easier to work with.
+2. `02_citations.R` -- Add DOIs to TRY references, if possible.
 
 # Package dependencies
 1. `data.table` -- Makes it remotely possible to work with the TRY database. Requires an up-to-date version, so if parts of the workflow break, try re-installing this.
@@ -74,7 +79,5 @@ With a recent-enough R version (> 3.2), we can bring in the following:
           date_day --> ^^
           time_hour --> from measurement time
           time_minute --> ^^
-          created_at --> NOW()
-          updated_at --> NOW()
         2. Store ID at every time step -- match with ObsDataID of TRY? Not perfect because miss time, etc., but may help later.
       

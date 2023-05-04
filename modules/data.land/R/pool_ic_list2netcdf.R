@@ -5,10 +5,12 @@
 ##'
 ##' @param input list with two elements: list of netcdf dimensions (dims, with named values) and list of variables (vals, with named values)
 ##' @param outdir directory to write netcdf file
+##' @param ens Default is NA. Ensemble members.
 ##' @param siteid site id
+##'
 ##' @author Anne Thomas
 
-pool_ic_list2netcdf <- function(input, outdir, siteid){
+pool_ic_list2netcdf <- function(input, outdir, siteid, ens=NA){
   if(is.null(input$vals) || length(input$vals) == 0){
     PEcAn.logger::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
   }
@@ -31,7 +33,12 @@ pool_ic_list2netcdf <- function(input, outdir, siteid){
   
   #create nc file
   str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
-  basefile <- paste0("IC_site_", str_ns)
+
+  if (is.na(ens)){
+    basefile <- paste0("IC_site_", str_ns)
+  } else{
+    basefile <- paste0("IC_site_", str_ns,"_",ens)
+  }
   outfile <- file.path(outdir, paste0(basefile,".nc"))
   nc  <- ncdf4::nc_create(outfile, ncvars)
   

@@ -9,3 +9,6 @@ get.EDR.output(path = getwd())
 \arguments{
 \item{path}{Path to directory containing \code{albedo_par/nir.dat} files}
 }
+\description{
+Read EDR output
+}

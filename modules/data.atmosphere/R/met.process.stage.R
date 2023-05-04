@@ -4,11 +4,12 @@
 ##'
 ##' @param input.id
 ##' @param raw.id
+##' @param con database connection
 ##'
 ##' @author Elizabeth Cowdery
 met.process.stage <- function(input.id, raw.id, con) {
   
-  format.id <- db.query(paste("SELECT format_id from inputs where id =", input.id), con)[[1]]
+  format.id <- PEcAn.DB::db.query(paste("SELECT format_id from inputs where id =", input.id), con)[[1]]
   cf.id     <- 33
   
   if (format.id == raw.id && format.id != cf.id) {

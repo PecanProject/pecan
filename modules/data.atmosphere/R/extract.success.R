@@ -1,7 +1,5 @@
 extract.success <- function(in.path, in.prefix, outfolder) {
   
-  library(PEcAn.utils)
-  
   in.path   <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
   outfolder <- as.character(outfolder)

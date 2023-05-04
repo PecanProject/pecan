@@ -4,7 +4,7 @@
 \alias{calc_benchmark}
 \title{Calculate benchmarking statistics}
 \usage{
-calc_benchmark(settings, bety)
+calc_benchmark(settings, bety, start_year = NA, end_year = NA)
 }
 \arguments{
 \item{bety}{database connection}

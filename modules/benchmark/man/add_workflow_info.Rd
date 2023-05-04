@@ -11,6 +11,9 @@ add_workflow_info(settings, bety)
 
 \item{bety}{connection to the database}
 }
+\description{
+Add workflow specific info to settings list for benchmarking
+}
 \author{
 Betsy Cowdery
 }

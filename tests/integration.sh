@@ -2,9 +2,10 @@
 
 NAME=${1:-$HOSTNAME}
 
+set -o pipefail
+
 cd $( dirname $0 )
 for f in ${NAME}.*.xml; do
-    echo -en 'travis_fold:start:TEST $f\r'
     rm -rf pecan output.log
     Rscript --vanilla ../web/workflow.R --settings $f 2>&1 | tee output.log
     if [ $? -ne 0 ]; then
@@ -24,5 +25,4 @@ for f in ${NAME}.*.xml; do
         echo "----------------------------------------------------------------------"
     fi
     rm -rf output.log pecan
-    echo -en 'travis_fold:end:TEST $f\r'
 done

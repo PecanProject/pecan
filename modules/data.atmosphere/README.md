@@ -10,7 +10,9 @@ Current list of input meteorological formats supported, functions are named `dow
 * Ameriflux
 * FACE
 * ALMA
-* arbitrary csv files 
+* NOAA GEFS
+* arbitrary csv files
+* ICOS
 
 
 ## Installation

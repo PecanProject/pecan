@@ -1,0 +1,34 @@
+---
+title: "Documentation for the Visualization and Benchmarking Shiny App"
+output: 
+  html_document:
+    theme: united
+---
+
+[See additional documentation on benchmarking](https://pecanproject.github.io/pecan-documentation/develop/intermediate-user.html#benchmarking)
+
+
+All benchmarks that are calcualted are automatcally registered in to the database.
+
+#### Setup Reference Run
+
+You need to register a run before performing benchmarks. 
+
+[See documentation on reference runs](https://pecanproject.github.io/pecan-documentation/develop/reference-runs.html)
+
+#### Setup Benchmarks
+
+**Variables**
+
+These are the variables that the model and data have in common.
+
+**Metrics**
+
+Warning: Don't use Frechet for large datasets, it is not efficient at all. I should probably remove it if data dimensions are too large.
+
+**Plots**
+
+These plots will be saved as PDFs in the model output directory. You can also load them interactively in Benchmarking > Plots. 
+
+
+

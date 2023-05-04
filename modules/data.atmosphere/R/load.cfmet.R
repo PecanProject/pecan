@@ -15,9 +15,6 @@
 ##' @author David LeBauer
 load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
-  library(data.table)
-  library(PEcAn.utils)
-  
   ## Lat and Lon
   Lat <- ncdf4::ncvar_get(met.nc, "latitude")
   Lon <- ncdf4::ncvar_get(met.nc, "longitude")
@@ -47,20 +44,20 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   ## convert to days
   if (!base.units == "days") {
-    time.idx <- udunits2::ud.convert(time.idx, basetime.string, paste("days since ", base.date))
+    time.idx <- PEcAn.utils::ud_convert(time.idx, basetime.string, paste("days since ", base.date))
   }
-  time.idx <- udunits2::ud.convert(time.idx, "days", "seconds")
+  time.idx <- PEcAn.utils::ud_convert(time.idx, "days", "seconds")
   date <- as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
 
   ## data table warns not to use POSIXlt, which is induced by round() 
   ## but POSIXlt moves times off by a second
-  suppressWarnings(all.dates <- data.table(index = seq(time.idx), date = round(date)))
+  suppressWarnings(all.dates <- data.table::data.table(index = seq(time.idx), date = round(date)))
   
   if (start.date + lubridate::days(1) < min(all.dates$date)) {
-   PEcAn.logger::logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
+   PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
   }
   if (end.date > max(all.dates$date)) {
-   PEcAn.logger::logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
+   PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
   run.dates <- all.dates[date >= start.date & date <= end.date,
@@ -74,10 +71,9 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   results <- list()
 
-  utils::data(mstmip_vars, package = "PEcAn.utils", envir = environment())
 
   ## pressure naming hack pending https://github.com/ebimodeling/model-drivers/issues/2
-  standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
+  standard_names <- append(as.character(PEcAn.utils::standard_vars$standard_name), "surface_pressure")
   variables <- as.character(standard_names[standard_names %in% 
                                              c("surface_pressure", attributes(met.nc$var)$names)])
   
@@ -87,5 +83,5 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   names(vars) <- gsub("surface_pressure", "air_pressure", variables)
 
-  return(cbind(run.dates, as.data.table(vars[!sapply(vars, is.null)])))
+  return(cbind(run.dates, data.table::as.data.table(vars[!sapply(vars, is.null)])))
 } # load.cfmet

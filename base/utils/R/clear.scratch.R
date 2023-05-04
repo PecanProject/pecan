@@ -12,6 +12,7 @@
 ##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
 ##' @name clear.scratch
 ##' @author Shawn Serbin
+##' @param settings list of PEcAn settings. Only \code{settings$host$name} is used
 ##' @return nothing
 ##' @export
 ##' @examples

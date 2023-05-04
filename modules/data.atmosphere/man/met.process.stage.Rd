@@ -7,7 +7,10 @@
 met.process.stage(input.id, raw.id, con)
 }
 \arguments{
-\item{raw.id}{}
+\item{con}{database connection}
+}
+\description{
+met.process.stage
 }
 \author{
 Elizabeth Cowdery

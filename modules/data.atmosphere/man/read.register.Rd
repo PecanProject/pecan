@@ -11,6 +11,9 @@ read.register(register.xml, con)
 
 \item{con}{betydb connection}
 }
+\description{
+read.register
+}
 \author{
 Betsy Cowdery
 }

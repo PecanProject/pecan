@@ -1,0 +1,16 @@
+---
+title: "app domumentation"
+output: 
+  html_document:
+    theme: united
+---
+
+This is the shiny app for:
+
+- Visualizing model output data alongside external data
+- Registering Reference Runs
+- Calculating Benchmarks
+
+Do you have ideas for new features? 
+
+[Add your comments here!](https://github.com/PecanProject/pecan/issues/1894)

@@ -6,6 +6,9 @@
 \usage{
 site_from_tag(sitename, tag)
 }
+\description{
+site_from_tag
+}
 \author{
 Betsy Cowdery
 

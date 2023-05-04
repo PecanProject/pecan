@@ -1,17 +1,20 @@
-##' Match model PFTs
 ##' 
-##' Matches BETYdb species IDs to model-specific PFTs
+##' @name match_pft
+##' @title match_pft
+##' @description Matches BETYdb species IDs to model-specific PFTs
 ##' 
 ##' @param bety_species_id  vector of BETYdb species IDs
 ##' @param pfts             settings$pfts.  List of pfts with database matching based on name
 ##' @param con              database connection, if NULL use traits package
 ##' @param allow_missing    flag to indicate that settings file does not need to match exactly
+##' @param query Default is NULL. query to BETY db.
+##' @param model Default is NULL. This is the BETY model ID for matching pfts to the correct model.
 ##' 
 ##' @author Mike Dietze, Istem Fer
 ##' @return table of BETYdb PFT IDs matched to species IDs
 ##' 
 ##' @export
-match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_missing = FALSE){
+match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_missing = FALSE, model = NULL){
   
   ### get species to PFT mappting
   if(!is.null(con)){
@@ -25,7 +28,11 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
         query <- paste0(query, " OR bp.name = '", pft$name, "'")
       }
     }
-    translation <- db.query(query, con = con)
+    if(!is.null(model)){
+      modeltype <- PEcAn.DB::db.query(paste0("SELECT * from modeltypes WHERE name = '",model,"'"),con=con)
+      query <- paste0(query," AND bp.modeltype_id = ",modeltype$id)
+    }
+    translation <- PEcAn.DB::db.query(query, con = con)
     
     
   }else{ # use traits package
@@ -34,10 +41,10 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
     
     for (pft in pfts) {
       # query pft id
-      bety_pft <- traits::betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
+      bety_pft <- traits::betydb_query(name = pft$name, modeltype_id = model$id, table = 'pfts', user = 'bety', pwd = 'bety')
       # query species id
       bety_species <- traits::betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
-      bety_list[[pft$name]] <- bety_species$pfts_species.specie_id
+      bety_list[[pft$name]] <- bety_species$specie_id
     }
     tmp <- lapply(seq_along(bety_list), function(x){
         data.frame(pft = rep(names(bety_list)[x], length(bety_list[[x]])),
@@ -69,7 +76,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       # Coerce id back into species names. Makes a more readable warning.
       if(!is.na(ubad[i])){
         if(!is.null(con)){
-          latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
+          latin <- PEcAn.DB::db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
         }else{ # use traits package
           bety_latin <- traits::betydb_query(id = ubad[i], table = 'species', user = 'bety', pwd = 'bety')
           latin      <- bety_latin$scientificname

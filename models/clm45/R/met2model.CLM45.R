@@ -23,6 +23,8 @@
 ##' @param verbose should the function be very verbosefor(year in start_year:end_year)
 met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, lst=0,lat,lon,..., overwrite=FALSE,verbose=FALSE){
 
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
+
   #General Structure- CLM Uses Netcdf so for now just need to rename vars.(Many not is CF standard. Need to Check that out)
   #Get Met file from inpath.
   #Loop over years (Open nc.file,rename vars,change dimensions as needed,close/save .nc file)
@@ -53,7 +55,7 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #
 #       ## convert time to seconds
 #       sec   <- nc$dim$time$vals
-#       sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
+#       sec = PEcAn.utils::ud_convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
 #
 #
 #

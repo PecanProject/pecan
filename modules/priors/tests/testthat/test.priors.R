@@ -40,6 +40,6 @@ test_that("get.quantiles.from.density works", {
   expect_equal(dim(test.q), c(3,2))
 })
 
-test_that("plot.prior.density returns ggplot object",{
-  expect_is(plot.prior.density(pr.dens('norm', 0, 1)), "ggplot")
+test_that("plot_prior.density returns ggplot object",{
+  expect_is(plot_prior.density(pr.dens('norm', 0, 1)), "ggplot")
 })

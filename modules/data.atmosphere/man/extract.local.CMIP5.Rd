@@ -2,11 +2,25 @@
 % Please edit documentation in R/extract_local_CMIP5.R
 \name{extract.local.CMIP5}
 \alias{extract.local.CMIP5}
-\title{extract.local.CMIP5}
+\title{Extract NLDAS from local download
+Extract NLDAS meteorology for a point from a local download of the full grid}
 \usage{
-extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
-  lon.in, model, scenario, ensemble_member = "r1i1p1", date.origin = NULL,
-  no.leap = NULL, overwrite = FALSE, verbose = FALSE, ...)
+extract.local.CMIP5(
+  outfolder,
+  in.path,
+  start_date,
+  end_date,
+  lat.in,
+  lon.in,
+  model,
+  scenario,
+  ensemble_member = "r1i1p1",
+  date.origin = NULL,
+  adjust.pr = 1,
+  overwrite = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outfolder}{- directory where output files will be stored}
@@ -16,8 +30,6 @@ extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
 \item{start_date}{- first day for which you want to extract met (yyyy-mm-dd)}
 
 \item{end_date}{- last day for which you want to extract met (yyyy-mm-dd)}
-
-\item{site_id}{name to associate with extracted files}
 
 \item{lat.in}{site latitude in decimal degrees}
 
@@ -33,9 +45,7 @@ extract.local.CMIP5(outfolder, in.path, start_date, end_date, site_id, lat.in,
 If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
 850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD}
 
-\item{no.leap}{(optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
-otherwise the code will automatically determine if leap year is missing and if it should be 
-added in.}
+\item{adjust.pr}{- adjustment factor fore preciptiation when the extracted values seem off}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 
@@ -50,10 +60,6 @@ This function extracts CMIP5 data from grids that have been downloaded and store
              give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files 
              are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
 }
-\details{
-Extract NLDAS from local download
-Extract NLDAS meteorology for a poimt from a local download of the full grid
-}
 \author{
-Christy Rollinson,
+Christy Rollinson
 }

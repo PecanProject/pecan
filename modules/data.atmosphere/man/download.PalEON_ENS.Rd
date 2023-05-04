@@ -4,11 +4,30 @@
 \alias{download.PalEON_ENS}
 \title{Download PalEON met ensemble files}
 \usage{
-download.PalEON_ENS(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, ...)
+download.PalEON_ENS(
+  sitename,
+  outfolder,
+  start_date,
+  end_date,
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
-\item{end_year}{}
+\item{sitename}{sitename}
+
+\item{outfolder}{desired output folder}
+
+\item{start_date}{desired start date YYYY-MM-DD}
+
+\item{end_date}{desired end date YYYY-MM-DD}
+
+\item{overwrite}{overwrite existing files? Default is FALSE}
+
+\item{...}{Other inputs}
+}
+\description{
+Download PalEON met ensemble files
 }
 \author{
 Betsy Cowdery, Mike Dietze

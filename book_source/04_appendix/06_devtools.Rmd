@@ -1,0 +1,44 @@
+# `devtools` package {#developer-devtools}
+
+Provides functions to simplify development
+
+Documentation:
+[The R devtools package](https://devtools.r-lib.org/)
+
+```r
+load_all("pkg")
+document("pkg")
+test("pkg")
+install("pkg")
+build("pkg")
+```
+other tips for devtools (from the documentation):
+
+* Adding the following to your `~/.Rprofile` will load devtools when
+running R in interactive mode:
+```r
+# load devtools by default
+if (interactive()) {
+  suppressMessages(require(devtools))
+}
+``` 
+* Adding the following to your .Rpackages will allow devtools to recognize package by folder name, rather than directory path
+```r
+# in this example, devhome is the pecan trunk directory 
+devhome <- "/home/dlebauer/R-dev/pecandev/"
+list(
+    default = function(x) {
+      file.path(devhome, x, x)
+    }, 
+  "utils" = paste(devhome, "pecandev/utils", sep = "")
+  "common" = paste(devhome, "pecandev/common", sep = "")
+  "all" = paste(devhome, "pecandev/all", sep = "")
+  "ed" = paste(devhome, "pecandev/models/ed", sep = "")
+  "uncertainty" = paste(devhome, "modules/uncertainty", sep = "")
+  "meta.analysis" = paste(devhome, "modules/meta.analysis", sep = "")
+  "db" = paste(devhome, "db", sep = "")
+)
+```
+
+Now, devtools can take `pkg` as an argument instead of `/path/to/pkg/`,
+e.g. so you can use `build("pkg")` instead of `build("/path/to/pkg/")`

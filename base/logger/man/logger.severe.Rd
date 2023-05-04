@@ -4,19 +4,23 @@
 \alias{logger.severe}
 \title{Prints an severe message and stops execution.}
 \usage{
-logger.severe(msg, ...)
+logger.severe(msg, ..., wrap = TRUE)
 }
 \arguments{
 \item{msg}{the message that should be printed.}
 
 \item{...}{any additional text that should be printed.}
+
+\item{wrap}{Whether or not to wrap long messages (default =
+\code{TRUE}). If \code{FALSE}, preserve format of original string. Useful
+for specifically formatted error messages.}
 }
 \description{
 This function will print a message and stop execution of the code. This
 should only be used if the application should terminate.
 }
 \details{
-set \code{\link{logger.setQuitOnSevere(FALSE)}}. To avoid terminating
+set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
 the session. This is set by default to TRUE if interactive or running
 inside Rstudio.
 }

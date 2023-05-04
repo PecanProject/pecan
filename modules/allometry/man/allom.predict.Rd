@@ -4,8 +4,16 @@
 \alias{allom.predict}
 \title{allom.predict}
 \usage{
-allom.predict(object, dbh, pft = NULL, component = NULL, n = NULL,
-  use = "Bg", interval = "prediction", single.tree = FALSE)
+allom.predict(
+  object,
+  dbh,
+  pft = NULL,
+  component = NULL,
+  n = NULL,
+  use = "Bg",
+  interval = "prediction",
+  single.tree = FALSE
+)
 }
 \arguments{
 \item{object}{Allometry model object. Option includes
@@ -40,7 +48,7 @@ from allometric equations estimated from the PEcAn allometry module
   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
   dbh = seq(10,50,by=5)
   mass = allom.predict(object,dbh,n=100)
-  
+
 }
 
 }
