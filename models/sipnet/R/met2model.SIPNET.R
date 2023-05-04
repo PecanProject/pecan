@@ -318,7 +318,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   if (!is.null(out)) {
     
     ## write output
-    write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+    utils::write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
     return(invisible(results))
   } else {
     PEcAn.logger::logger.info("NO MET TO OUTPUT")

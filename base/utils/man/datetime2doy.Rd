@@ -35,6 +35,4 @@ cf2doy(5, "days since 2010-01-01") # 6
 }
 \author{
 Alexey Shiklomanov
-
-Alexey Shiklomanov
 }

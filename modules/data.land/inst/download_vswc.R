@@ -14,7 +14,7 @@
 download_vswc <- function(outdir, site_ID) {
 
 # reading in terrestrial targets data at daily level
-PEcAn.utils::download.file("https://data.ecoforecast.org/targets/terrestrial/terrestrial_daily-targets.csv.gz",
+PEcAn.utils::download_file("https://data.ecoforecast.org/targets/terrestrial/terrestrial_daily-targets.csv.gz",
               "terrestrial_daily-targets.csv.gz")
 
 terr_daily <- read.csv(file.path(outdir, "terrestrial_daily-targets.csv.gz"),

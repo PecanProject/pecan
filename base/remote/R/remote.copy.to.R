@@ -22,9 +22,15 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }
+  if (is.null(host)) {
+    PEcAn.logger::logger.severe("`host` object passed to the function is NULL : Try passing a valid host object")
+  }
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
+    if (is.null(host$name) || host$name == "") {
+      PEcAn.logger::logger.severe("`name` parameter in the `host` object is NULL or empty : Try passing a valid host object")
+    }
     tunnel <- host$tunnel
     if (!is.null(host$data_tunnel)) {
       tunnel <- host$data_tunnel
@@ -47,5 +53,11 @@ remote.copy.to <- function(host, src, dst, options = NULL, delete = FALSE, stder
     }
   }
   PEcAn.logger::logger.debug("rsync", shQuote(args))
-  system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
+  out <- 
+    system2("rsync", shQuote(args), stdout = "", stderr = as.logical(stderr))
+  if (out != 0) {
+    PEcAn.logger::logger.severe(paste0("rsync status: ", out))
+  } else {
+    PEcAn.logger::logger.info("rsync status: success!")
+  }
 } # remote.copy.to

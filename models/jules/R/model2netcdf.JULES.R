@@ -26,7 +26,7 @@ model2netcdf.JULES <- function(outdir) {
     print(fname)
     nc <- ncdf4::nc_open(fname, write = TRUE)
     ## extract variable and long names
-    write.table(sapply(nc$var, function(x) { x$longname }), 
+    utils::write.table(sapply(nc$var, function(x) { x$longname }), 
                 file = paste0(fname, ".var"), 
                 col.names = FALSE, 
                 row.names = TRUE,

@@ -3,6 +3,9 @@ title: "Fitting Hierarchical Bayes photosynthetic response curves"
 author: "Mike Dietze"
 date: "June 25, 2015"
 output: html_document
+vignette: >
+  %\VignetteIndexEntry{Fitting Hierarchical Bayes photosynthetic response curves}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ## Introduction
@@ -39,18 +42,24 @@ The hierarchical version of this model is equivalent to the standard model excep
 
 ## Install package from Github
 
-You should only have to do this once, and you only have to do this if you are downloading just this package separate from the rest of PEcAn
+If you have all of PEcAn installed, skip this -- PEcAn.photosynthesis is already installed!
 
-```{r}
-if (!require("PEcAn.photosynthesis", character.only = TRUE)) {
-  devtools::install_github("PecanProject/pecan/modules/photosynthesis") 
-}
-knitr::opts_chunk$set(cache = TRUE)
+To install only the PEcAn.photosynthesis package, separately from the rest of PEcAn, run the following in R:
+
 ```
+remotes::install_github("PecanProject/pecan/modules/photosynthesis")
+```
+
+You should only have to do this once.
 
 ## Load library and example data
 
 In this example we are using a set of files that are built into the package, but you could easily replace _filenames_ with vector of your own filenames, for example using _list.files_ to look up all the files in a directory
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 7, fig.height = 5.5, out.width = '100%')
+
+```
 
 ```{r}
 library(PEcAn.photosynthesis)
@@ -137,28 +146,36 @@ writeLines(fit$model)
 ```
 Note that the lines beginning with # are comments. Some of these comments are followed by specific tags, such as RLEAF.V and RLEAF.A, which are bits of code that will get turned on when we specify leaf random effects (see below).
 
-The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can do standard MCMC diagnositics on. 
+The 'params' mcmc.list contains the parameter estimate MCMC chains, which we can do standard MCMC diagnositics on.
 
-```{r}
-par(mfrow = c(2, 1))
+(Note: It is OK to ignore the `par(mfrow = ..., mar = ...)` calls that appear here and elsewhere. We use them in this vignette to cram all the subplots together as compactly as possible, but for everyday use of the package is is perfectly fine to leave these parameters at their default values.)
+
+```{r, fig.height = 7}
+par(mfrow = c(6, 2), mar = c(4, 2, 2, 1))
 plot(fit$params, auto.layout = FALSE)    ## MCMC diagnostic plots
 summary(fit$params) ## parameter estimates  
-gelman.plot(fit$params, auto.layout = FALSE)
-gelman.diag(fit$params)
+```
+
+```{r, fig.height = 5}
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
+coda::gelman.plot(fit$params, auto.layout = FALSE)
+coda::gelman.diag(fit$params)
 ```
 
 
-The 'predict' object can be used to perform standard predictive diagnostics and to construct CI around curves
+The 'predict' object can be used to perform standard predictive diagnostics and to construct CI around curves.
 
-```{r}
+```{r, fig.height = 4, fig.width = 4, out.width = '50%'}
 ## predicted vs observed plot
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 2, 1))
 mstats <- summary(fit$predict)
 pmean <- mstats$statistics[grep("pmean", rownames(mstats$statistics)), 1]
 plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0, 1, col = 2, lwd = 2)
-  
-##   
+```
+
+```{r, fig.height = 7, fig.width = 10}
+par(mfrow = c(3, 4), mar = c(4, 4, 2, 1))
 plot_photo(dat, fit)
 
 ```
@@ -178,7 +195,7 @@ In this list a refers to $\alpha$ and V refers to $V_\textrm{cmax}$. Fixed refer
 
 Once the model is specified, the fitting and diagnostics are the same as before.
 
-```{r}
+```{r, fig.height = 9}
 if(file.exists("fitI.RData")){
   load("fitI.RData")
 } else{
@@ -186,19 +203,27 @@ if(file.exists("fitI.RData")){
   save(fitI, file="fitI.RData")
 }
 
-par(mfrow = c(2, 1))
+par(mfrow = c(8, 2), mar = c(4, 4, 2, 1))
 plot(fitI$params, auto.layout = FALSE)    ## MCMC diagnostic plotssummary
-gelman.plot(fitI$params)
-gelman.diag(fitI$params)
+```
 
+```{r}
+par(mfrow = c(4, 2), mar = c(4, 4, 2, 1))
+coda::gelman.plot(fitI$params, auto.layout = FALSE)
+coda::gelman.diag(fitI$params)
+```
+
+```{r, fig.height = 4, fig.width = 4, out.width = '50%'}
 ## predicted vs observed plot
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 2, 1))
 mstats <- summary(fitI$predict)
 pmean <- mstats$statistics[grep("pmean",rownames(mstats$statistics)),1]
 plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
-  
-##   
+```
+
+```{r, fig.height = 7, fig.width = 10}
+par(mfrow = c(3, 4), mar = c(4, 4, 2, 1))
 plot_photo(dat,fitI)
 
 ```
@@ -233,21 +258,31 @@ if(file.exists("fitC.RData")){
   fitC <- fitA(dat,cov.data,model = C.model)
   save(fitC,file="fitC.RData")
 }
+```
 
-par(mfrow=c(2,1))
+```{r, fig.height = 9, fig.width = 7}
+par(mfrow = c(8, 2), mar = c(4, 4, 2, 1))
 plot(fitC$params,auto.layout = FALSE)    ## MCMC diagnostic plots
-summary(fitC$params) ## parameter estimates  
-gelman.plot(fitC$params)
-gelman.diag(fitC$params)
+```
 
+```{r}
+par(mfrow = c(4, 2), mar = c(4, 4, 2, 1))
+summary(fitC$params) ## parameter estimates  
+coda::gelman.plot(fitC$params, auto.layout = FALSE)
+coda::gelman.diag(fitC$params)
+```
+
+```{r, fig.height = 4, fig.width = 4, out.width = '50%'}
 ## predicted vs observed plot
-par(mfrow=c(1,1))
+par(mfrow = c(1, 1),  mar = c(4, 4, 2, 1))
 mstats <- summary(fitC$predict)
 pmean <- mstats$statistics[grep("pmean", rownames(mstats$statistics)), 1]
 plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
-  
-##   
+```
+
+```{r, fig.height = 7, fig.width = 10}
+par(mfrow = c(3, 4), mar = c(4, 4, 2, 1))
 plot_photo(dat, fitC)
 
 ```

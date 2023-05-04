@@ -84,7 +84,8 @@ post.analysis.multisite.ggplot(
   ANALYSIS,
   plot.title = NULL,
   facetg = FALSE,
-  readsFF = NULL
+  readsFF = NULL,
+  Add_Map = FALSE
 )
 }
 \arguments{
@@ -105,6 +106,8 @@ post.analysis.multisite.ggplot(
 \item{ANALYSIS}{vector of mean of state variable after analysis}
 
 \item{plot.title}{character giving the title for post visualization ggplots}
+
+\item{Add_Map}{Bool variable decide if we want to export the GIS map of Ecoregion.}
 
 \item{obs.time}{vector of dates of measurements}
 }

@@ -4,6 +4,8 @@ testdir <- tempfile()
 dir.create(testdir)
 withr::defer(unlink(testdir, recursive = TRUE))
 unzip("data/outdir.zip", exdir = testdir)
+#for interactive use:
+# unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
 settings <-
   PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
 settings$outdir <- file.path(testdir, "outdir")

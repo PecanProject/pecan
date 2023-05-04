@@ -23,22 +23,23 @@ test_that("read E files without ED2 pft number", {
       name = 'ebifarm.c3grass'
     )
   )
+  settings2<-settings
+  settings2$pfts <- pfts_without_number
   result <-
     read_E_files(
       yr = 2004,
       yfiles = 2004,
       h5_files =  e_file,
       outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
-      pfts = pfts_without_number,
       settings = settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 8) #TODO: expectation of number of variables will have to change
+  expect_equal(length(result), 7) #TODO: expectation of number of variables will have to change
   #TODO: better test would be to check for specific variables in output
 })
 
 test_that("read E files without settings arg and with ED2 pft number", {
-  pft_with_number <- list(pft = list(name = "SetariaWT", ed2_pft_number = "1"))
+  pft_with_number <- c("SetariaWT" = 1)
   result <-
     read_E_files(
       yr = 2004,
@@ -47,10 +48,10 @@ test_that("read E files without settings arg and with ED2 pft number", {
       outdir = file.path(settings$outdir, "out", "ENS-00001-76"),
       start_date = "2004/07/01",
       end_date = "2004/08/01",
-      pfts =  pft_with_number
+      pfts = pft_with_number
     )
   expect_type(result, "list")
-  expect_equal(length(result), 8)
+  expect_equal(length(result), 7)
 })
 
 test_that("read E files without only settings arg", {
@@ -65,7 +66,7 @@ test_that("read E files without only settings arg", {
       settings = settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 8)
+  expect_equal(length(result), 7)
 })
 
 
