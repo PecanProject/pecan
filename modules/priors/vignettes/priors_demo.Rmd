@@ -305,7 +305,7 @@ vcmax.data <- vcmax.data[,c('ft', 'mean', 'se')]
 
 prior.figures[['Vcmax']] <- 
   priorfig(priordensity = vcmax.density, 
-                                     trait = 'Vcmax', 
+                                     trait = dataframe(id = 'Vcmax', figid = 'Vcmax', units = 'umol CO2 m-2 s-1'), 
                                      xlim = range(c(0, max(vcmax.data$mean)))) + 
   geom_point(data = subset(vcmax.data, ft != 2), 
              aes(x=mean, y = (sum(vcmax.c4) + 1:sum(!vcmax.c4))/3000), color = 'grey60') +

@@ -27,24 +27,21 @@ SDA_OBS_Assembler <- function(settings){
       #conversion from string to number
       site.list$lat <- as.numeric(site.list$lat)
       site.list$lon <- as.numeric(site.list$lon)
-      list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, name=site.list$name)
+      list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
     })%>% 
     dplyr::bind_rows() %>% 
     as.list()
   
   #convert from timestep to time points
   if (length(Obs_Prep$timestep)>0){
-    time_points <- PEcAnAssimSequential::obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, Obs_Prep$timestep)
-    if (time_points) return(0)
     diff_dates <- FALSE
   }else{
     diff_dates <- TRUE
   }
   
   #The order of obs.mean and obs.cov objects are relying on the order of how you organize the Obs_Prep section.
-  OBS <- timestep <- list()
-  var <- c()
-  if (diff_dates) time_points_all <- list()
+  OBS <- timestep <- time_points_all <- list()
+  var_ind <- var <- c()
   #test for loop
   for (i in seq_along(Obs_Prep)) {
     #detect if current section is for different variable preparation function or not.
@@ -52,6 +49,7 @@ SDA_OBS_Assembler <- function(settings){
       next
     }else{
       fun_name <- names(Obs_Prep)[i]
+      var_ind <- c(var_ind, i)
     }
     
     #if we are dealing with different timestep for different variables.
@@ -61,6 +59,9 @@ SDA_OBS_Assembler <- function(settings){
         PEcAn.logger::logger.error(paste0("Please provide timestep under each variable if you didn't provide timestep under Obs_Prep section!"))
         return(0)
       }
+      time_points <- obs_timestep2timepoint(Obs_Prep[[i]]$start.date, Obs_Prep[[i]]$end.date, timestep[[i]])
+    }else{
+      timestep[[i]] <- Obs_Prep$timestep
       time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep[[i]])
     }
     #Search function inside the data.remote package
@@ -127,9 +128,7 @@ SDA_OBS_Assembler <- function(settings){
   }
   
   #combine different time points from different variables together
-  if (diff_dates){
-    time_points <- sort(unique(do.call("c", time_points_all)))
-  }
+  time_points <- sort(unique(do.call("c", time_points_all)))
   
   #Create obs.mean and obs.cov
   obs.mean <- obs.cov <- list()
@@ -173,11 +172,21 @@ SDA_OBS_Assembler <- function(settings){
   for (i in seq_along(obs.mean)) {
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
-        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-which(is.na(obs.mean[[i]][[j]]))]
-        obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-which(is.na(rowSums(obs.cov[[i]][[j]]))), -which(is.na(colSums(obs.cov[[i]][[j]])))]
+        na_ind <- which(is.na(obs.mean[[i]][[j]]))
+        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
+        if(length(obs.mean[[i]][[j]]) == 1){
+          obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind]
+        }else{
+          obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind, -na_ind]
+        }
       }
-      if (names(obs.mean[[i]][[j]]) == "TotSoilCarb"){
-        obs.cov[[i]][[j]] <- obs.cov[[i]][[j]] * Soilgrids_multiplier
+      SoilC_ind <- which(names(obs.mean[[i]][[j]]) == "TotSoilCarb")
+      if (length(SoilC_ind) > 0){
+        if(length(obs.mean[[i]][[j]]) > 1){
+          diag(obs.cov[[i]][[j]])[SoilC_ind] <- diag(obs.cov[[i]][[j]])[SoilC_ind] * Soilgrids_multiplier
+        }else{
+          obs.cov[[i]][[j]][SoilC_ind] <- obs.cov[[i]][[j]][SoilC_ind] * Soilgrids_multiplier
+        }
       }
     }
   }
@@ -185,21 +194,45 @@ SDA_OBS_Assembler <- function(settings){
   #fill in empty element within obs.mean and obs.cov lists.
   #if time steps for all obs are the same
   if(length(unique(unlist(timestep))) == 2){
-    timepoints_fill <- timestep %>% 
-      purrr::map(function(var_timestep){
-        obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, var_timestep)
-      }) %>% 
-      purrr::map(function(all_timepoints){
-        all_timepoints[which(!all_timepoints %in% time_points)]
-      }) %>% 
-      do.call(what = "c") %>% 
-      unique()
+    if(diff_dates){
+      timepoints_fill <-
+        purrr::pmap(list(timestep, 
+                         Obs_Prep[var_ind] %>% purrr::map(~.x$start.date), 
+                         Obs_Prep[var_ind] %>% purrr::map(~.x$end.date)),
+                    function(var_timestep, var_start_date, var_end_date){
+          obs_timestep2timepoint(var_start_date, var_end_date, var_timestep)
+        }) %>% 
+        purrr::map(function(all_timepoints){
+          all_timepoints[which(!all_timepoints %in% time_points)]
+        }) %>% 
+        do.call(what = "c") %>% 
+        unique()
+    }else{
+      timepoints_fill <- timestep %>% 
+        purrr::map(function(var_timestep){
+          obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, var_timestep)
+        }) %>% 
+        purrr::map(function(all_timepoints){
+          all_timepoints[which(!all_timepoints %in% time_points)]
+        }) %>% 
+        do.call(what = "c") %>% 
+        unique()
+    }
+    
     if(length(timepoints_fill)>0){
-      for (i in seq_along(timepoints_fill)) {
-        obs.mean <- rlist::list.append(obs.mean, NULL)
-        obs.cov <- rlist::list.append(obs.cov, NULL)
-        names(obs.mean)[length(obs.mean)] <- names(obs.cov)[length(obs.cov)] <- as.character(timepoints_fill[i])
+      obs_mean_fill <- obs_cov_fill <- list()
+      time_points_start_end <- sort(c(timepoints_fill, time_points))
+      for (i in seq_along(time_points_start_end)) {
+        if(time_points_start_end[i] %in% timepoints_fill){
+          obs_mean_fill[[as.character(time_points_start_end[i])]] <- list(NULL)
+          obs_cov_fill[[as.character(time_points_start_end[i])]] <- list(NULL)
+        }else{
+          obs_mean_fill[[as.character(time_points_start_end[i])]] <- obs.mean[[as.character(time_points_start_end[i])]]
+          obs_cov_fill[[as.character(time_points_start_end[i])]] <- obs.cov[[as.character(time_points_start_end[i])]]
+        }
       }
+      obs.mean <- obs_mean_fill
+      obs.cov <- obs_cov_fill
     }
   }
   

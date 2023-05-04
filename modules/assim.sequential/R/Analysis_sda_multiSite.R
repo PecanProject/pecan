@@ -5,7 +5,7 @@
 ##' @param settings  pecan standard settings list.  
 ##' @param Forecast A list containing the forecasts variables including Q (process variance) and X (a dataframe of forecasts state variables for different ensemble)
 ##' @param Observed A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)
-##' @param H is a mtrix of 1's and 0's specifying which observations go with which state variables.
+##' @param H is a matrix of 1's and 0's specifying which observations go with which state variables.
 ##' @param extraArg This argument is NOT used inside this function but it is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list.
 ##' @param ... Extra argument sent to the analysis function.
 ##' @details This function is different than `EnKF` function in terms of how it creates the Pf matrix.
@@ -15,11 +15,12 @@
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
+EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   #------------------------------Setup
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
+  site.ids <- settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist()
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
@@ -53,7 +54,6 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
     Pf <- Pf + Q
   }
   
-  
   if (length(Y) > 1) {
     PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
     diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
@@ -72,7 +72,7 @@ EnKF.MultiSite <-function(setting, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
+GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
@@ -96,7 +96,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   if(!is.null(extraArg$Pf)){
     Pf <- extraArg$Pf
   }else{
-    Pf <- cov(X) # Cov Forecast - This is used as an initial condition
+    Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
   }
   mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
@@ -108,11 +108,12 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   #----------------------------------- GEF-----------------------------------------------------
+  interval <- NULL
+  #added this line in case you don't need to do censoring.
+  X.new <- NULL
   # Reading the extra arguments
-  if(!is.null(extraArg$aqq) && !is.null(extraArg$bqq)){
-    aqq <- extraArg$aqq
-    bqq <- extraArg$bqq
-  }
+  aqq <- extraArg$aqq
+  bqq <- extraArg$bqq
   wts <- extraArg$wts/sum(extraArg$wts)
   if(any(is.na(wts))){
     PEcAn.logger::logger.warn(
@@ -262,7 +263,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
-  if (exists('blocked.dis')){
+  if (exists('blocked.dis') & is.null(extraArg$Pf)){
     Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 
@@ -279,10 +280,10 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
         }
       } else if(q.type == pft.q){ # if we wanna estimate a q per PFT
         site.pfts <- settings %>%
-          map( ~ .x[['run']]) %>%
-          map('site') %>%
-          map('site.pft') %>%
-          map('pft.name') %>%
+          purrr::map( ~ .x[['run']]) %>%
+          purrr::map('site') %>%
+          purrr::map('site.pft') %>%
+          purrr::map('pft.name') %>%
           modify(as.factor) %>%
           modify(as.numeric) %>%
           modify_if(function(x) {
@@ -484,7 +485,7 @@ GEF.MultiSite<-function(setting, Forecast, Observed, H, extraArg,...){
   ## update parameters
   iX   <- grep("Xall[", colnames(dat), fixed = TRUE)
   mu.a <- colMeans(dat[, iX])
-  Pa   <- cov(dat[, iX])
+  Pa   <- stats::cov(dat[, iX])
   Pa[is.na(Pa)] <- 0
   mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean),

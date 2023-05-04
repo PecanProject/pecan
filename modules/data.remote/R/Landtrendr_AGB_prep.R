@@ -1,6 +1,6 @@
 #' Prepare Landtrendr AGB data for the SDA workflow.
 #'
-#' @param site_info Bety list of site info including site_id, lon, and lat.
+#' @param site_info Bety list of site info including site_id, site_name, lon, and lat.
 #' @param start_date Start date of SDA workflow.
 #' @param end_date End date of SDA workflow.
 #' @param time_points A vector contains each time point within the start and end date.
@@ -46,60 +46,72 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
-  if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logical(skip_buffer)){
-    Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
-    AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
-    AGB_Output$site_id <- site_info$site_id
-    
-    #Calculate AGB for each time step and site.
-    #loop over time and site
-    for (i in seq_along(time_points)) {
-      t <- time_points[i]
-      for (id in site_info$site_id) {
-        site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
-        if(length(site_AGB$agb[which(site_AGB$date == lubridate::year(t))])==1){
-          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
-          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == lubridate::year(t))]
+  if(!is.null(outdir)){
+    if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logical(skip_buffer)){
+      Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
+      AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
+        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
+      AGB_Output$site_id <- site_info$site_id
+      
+      #Calculate AGB for each time step and site.
+      #loop over time and site
+      for (i in seq_along(time_points)) {
+        t <- time_points[i]
+        for (id in site_info$site_id) {
+          site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
+          if(length(site_AGB$agb[which(site_AGB$date == lubridate::year(t))])==1){
+            AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
+            AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == lubridate::year(t))]
+          }
         }
       }
     }
-  }else{#we don't have any previous downloaded CSV file.
-    AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
-    AGB_Output$site_id <- site_info$site_id
   }
   
   #only Site that has NA for any time points need to be downloaded.
+  if(!exists("AGB_Output")){
+    AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
+      `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
+    AGB_Output$site_id <- site_info$site_id
+    AGB_Output_temp <- AGB_Output
+  }
   new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(AGB_Output)])
-  
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
     if(is.null(buffer) | as.logical(skip_buffer)){
       #extracting AGB data
-      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
-                                                                "median", 
+      med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                                dataset = "median", 
                                                                 fun = "mean", 
-                                                                AGB_indir, 
-                                                                product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
-                                                                              dplyr::select(-2) %>%
-                                                                              `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
-      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, 
-                                                                 "stdv", 
+                                                                data_dir = AGB_indir, 
+                                                                product_dates = lubridate::year(time_points))[[1]] %>% dplyr::select(-2) %>%
+        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
+      sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                                 dataset = "stdv", 
                                                                  fun = "mean", 
-                                                                 AGB_indir, 
-                                                                 product_dates=lubridate::year(start_date):lubridate::year(end_date))[[1]] %>% 
-                                                                               dplyr::select(-c(1:2)) %>%
-                                                                               `colnames<-`(c(paste0(time_points, "_SD")))
+                                                                 data_dir = AGB_indir, 
+                                                                 product_dates = lubridate::year(time_points))[[1]] %>% dplyr::select(-c(1:2)) %>%
+        `colnames<-`(c(paste0(time_points, "_SD")))
       #Handle data
       AGB_Output <- cbind(med_agb_data, sdev_agb_data)
     }else{#buffer is not empty
       #extracting AGB data
-      med <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "median", buffer = buffer, fun = "mean", 
-                                                                AGB_indir, product_dates=lubridate::year(start_date):lubridate::year(end_date))
-      sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(new_site_info, "stdv", buffer = buffer, fun = "mean", 
-                                                                 AGB_indir, product_dates=lubridate::year(start_date):lubridate::year(end_date))
+      med <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                       dataset = "median", 
+                                                       buffer = buffer, 
+                                                       fun = "mean", 
+                                                       data_dir = AGB_indir, 
+                                                       product_dates = lubridate::year(time_points))[[1]] %>% dplyr::select(-2) %>%
+        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
+      sdev <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
+                                                        dataset = "stdv", 
+                                                        buffer = buffer, 
+                                                        fun = "mean", 
+                                                        data_dir = AGB_indir, 
+                                                        product_dates = lubridate::year(time_points))[[1]] %>% dplyr::select(-c(1:2)) %>%
+        `colnames<-`(c(paste0(time_points, "_SD")))
       sdev_agb_data <- med_agb_data <- c()
+      #searching for the min variance.
       for (i in seq_along(new_site_info$site_id)) {
         temp_var <- rowSums(sdev[[i]])
         min_var_Ind <- which.min(temp_var)
@@ -107,11 +119,10 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
         sdev_agb_data <- rbind(sdev_agb_data, sdev[[i]][min_var_Ind,])
         med_agb_data <- rbind(med_agb_data, med[[i]][min_var_Ind,])
       }
-      colnames(med_agb_data) <- paste0(time_points, "_AbvGrndWood")
-      colnames(sdev_agb_data) <- paste0(time_points, "_SD")
       #Handle data
-      AGB_Output <- cbind(med_agb_data, sdev_agb_data) %>% as.data.frame
-      AGB_Output$site_id <- site_info$site_id
+      AGB_Output <- cbind(med$site_id, med_agb_data, sdev_agb_data) %>% 
+        as.data.frame%>%
+        `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD")))
     }
     
     #prepare CSV from AGB_Output
@@ -139,6 +150,20 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
         utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
       }else{
         utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
+      }
+    }
+    
+    #write current csv into AGB_Output data frame.
+    #recreate the AGB_Output object
+    AGB_Output <- AGB_Output_temp
+    
+    #loop over time and site
+    for (i in seq_along(time_points)) {
+      t <- time_points[i]#otherwise the t will be number instead of date.
+      for (id in site_info$site_id) {
+        site_AGB <- Current_CSV[which(Current_CSV$site_id == id),]
+        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB[which(site_AGB$date == lubridate::year(t)), "agb"]
+        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB[which(site_AGB$date == lubridate::year(t)), "sd"]
       }
     }
   }

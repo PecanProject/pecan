@@ -24,18 +24,18 @@
 #'    - `flag` -- Variable flags.
 #'    - `flag_description` -- Description of variable flag
 #'
-#' The formatting of a meteorlogy header file is as follows (from the [ED 
+#' The formatting of a meteorology header file is as follows (from the [ED
 #' GitHub Wiki][https://github.com/EDmodel/ED2/wiki/Drivers]):
 #'
-#'```
-#'<number of file formats>    # Repeat lines below this number of times
-#'<path and prefix of files>
-#'<nlon>, <nlat>, <dx>, <dy>, <xmin>, <ymin>
-#'<number of variables>
-#'<list of variable names>
-#'<list of update frequencies (seconds) or scalar values if flag=4>
-#'<list of variable flags>
-#'```
+#' ```
+#' <number of file formats>    # Repeat lines below this number of times
+#' <path and prefix of files>
+#' <nlon>, <nlat>, <dx>, <dy>, <xmin>, <ymin>
+#' <number of variables>
+#' <list of variable names>
+#' <list of update frequencies (seconds) or scalar values if flag=4>
+#' <list of variable flags>
+#' ```
 #'
 #' The variables in the third row are defined as follows:
 #' @param filename File name (including path) of met driver header file, as 
@@ -83,10 +83,10 @@ read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
         PEcAn.logger::logger.warn(msg)
       }
     }
-    metadata <- unlist(read.table(text = sub_file[2]))
+    metadata <- unlist(utils::read.table(text = sub_file[2]))
     names(metadata) <- c("nlon", "nlat", "dx", "dy", "xmin", "ymin")
     nvars <- as.numeric(sub_file[3])
-    variables_raw <- read.table(text = sub_file[4:6], header = TRUE)
+    variables_raw <- utils::read.table(text = sub_file[4:6], header = TRUE)
     variables_raw$value_type <- c("update_frequency", "flag")
     variables_table <- variables_raw %>%
       tidyr::gather("variable", "value", -.data$value_type) %>%

@@ -17,8 +17,11 @@ list.files.nodir <- function(path, ...) {
 
 
 #' Function translating pecan vars to ED vars
+#' @param varnames character; variable names to translate
+#' @export
+#' @examples
 #' var.names <- c("DBH", "AGB", "AbvGrndWood")
-#' @export 
+#' translate_vars_ed(var.names)
 translate_vars_ed <- function(varnames) {
   
   var.list <- add.list <- list()
