@@ -18,11 +18,12 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"ed.dtd\">\n"
 ##-------------------------------------------------------------------------------------------------#
 
 ##-------------------------------------------------------------------------------------------------#
-##' convert parameters from PEcAn database default units to ED defaults
-##' 
-##' Performs model specific unit conversions on a a list of trait values,
-##' such as those provided to write.config
-##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' Convert parameters from PEcAn database default units to ED defaults
+##'
+##' Performs model specific unit conversions on a a list of trait values, such
+##' as those provided to write.config
+##' @param trait.samples a matrix or dataframe of samples from the trait
+##'   distribution
 ##' @return matrix or dataframe with values transformed
 ##' @author Shawn Serbin, David LeBauer, Carl Davidson, Ryan Kelly
 convert.samples.ED <- function(trait.samples) {
@@ -30,7 +31,8 @@ convert.samples.ED <- function(trait.samples) {
   DEFAULT.MAINTENANCE.RESPIRATION <- 1 / 2
   ## convert SLA from m2 / kg leaf to m2 / kg C
   
-  # IF: trait.samples not being a list throws an error later in the write.config.xml.ED2
+  # IF: trait.samples not being a list throws an error later in the
+  # write.config.xml.ED2
   trait.samples <- as.list(trait.samples)
   
   if ("SLA" %in% names(trait.samples)) {
@@ -73,15 +75,20 @@ convert.samples.ED <- function(trait.samples) {
       # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
       trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
-      ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
-      trait.samples[["dark_respiration_factor"]] <- 
+      ## Calculate dark_resp_factor -- Will be depreciated when moving from
+      ## older versions of ED2
+      trait.samples[["dark_respiration_factor"]] <-
         trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
       
       
     }  ## End dark_respiration_factor loop
   }  ## End Vcmax  
-  # for debugging conversions save(trait.samples, file = file.path(settings$outdir,
-  # 'trait.samples.Rdata'))
+  
+  if ("plant_min_temp" %in% names(trait.samples)) {
+    trait.samples[["plant_min_temp"]] <- PEcAn.utils::ud_convert(trait.samples[["plant_min_temp"]], "degC", "K")
+  }
+  # for debugging conversions save(trait.samples, file =
+  # file.path(settings$outdir, 'trait.samples.Rdata'))
   
   # return converted samples
   return(trait.samples)
@@ -130,8 +137,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## Edit ED2IN file for runs
   revision <- settings$model$revision
   if (is.null(revision)) {
-    model <- db.query(paste("SELECT * FROM models WHERE id =", settings$model$id), params = settings$database$bety)
-    revision <- model$revision
+    PEcAn.logger::logger.severe("ED2 model `revision` not specified in PEcAn settings file.")
   }
   revision <- gsub("^r", "", revision)
 
@@ -248,7 +254,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     
     # Overwrite defaults with values from settings$model$ed2in_tags list
     if(!is.null(settings$model$ed2in_tags)){
-      sda_tags <- modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
+      sda_tags <- utils::modifyList(sda_tags, settings$model$ed2in_tags[names(sda_tags)])
     }
     ed2in.text <- modify_ed2in(ed2in.text, .dots = sda_tags, add_if_missing = TRUE, check_paths = check)
   }
@@ -513,12 +519,12 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       }
 
       if (grepl("soil", pft)) {
-        data(soil, package = "PEcAn.ED2", envir = environment())
+        utils::data(soil, package = "PEcAn.ED2", envir = environment())
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
 
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
-        vals <- modifyList(vals, converted.trait.values)
+        vals <- utils::modifyList(vals, converted.trait.values)
 
         decompositon.xml <- PEcAn.settings::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
@@ -541,14 +547,14 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
 
         ## Selectively replace defaults with trait values
-        vals <- modifyList(vals, converted.trait.values)
+        vals <- utils::modifyList(vals, converted.trait.values)
 
         ## Convert settings constants to ED units
         converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
 
         ## Selectively replace defaults and trait values with constants from settings
         if (!is.null(converted.defaults)){
-          vals <- modifyList(vals, converted.defaults)
+          vals <- utils::modifyList(vals, converted.defaults)
         }
         
         ## Make sure that include_pft is set to 1

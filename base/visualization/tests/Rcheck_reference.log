@@ -92,23 +92,7 @@ Namespaces in Imports field not imported from:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-map.output: no visible binding for global variable ‘long’
-map.output: no visible binding for global variable ‘lat’
-map.output: no visible binding for global variable ‘group’
-map.output: no visible binding for global variable ‘lon’
-vwReg: no visible binding for global variable ‘x’
-vwReg: no visible binding for global variable ‘y’
-vwReg: no visible binding for global variable ‘dens.scaled’
-vwReg: no visible binding for global variable ‘alpha.factor’
-vwReg: no visible binding for global variable ‘value’
-vwReg: no visible binding for global variable ‘group’
-vwReg: no visible binding for global variable ‘M’
-vwReg: no visible binding for global variable ‘w3’
-vwReg: no visible binding for global variable ‘UL’
-vwReg: no visible binding for global variable ‘LL’
-Undefined global functions or variables:
-  LL M UL alpha.factor dens.scaled group lat lon long value w3 x y
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -140,4 +124,4 @@ vwReg 13.392  0.212  13.641
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 3 WARNINGs, 3 NOTEs
+Status: 3 WARNINGs, 2 NOTEs

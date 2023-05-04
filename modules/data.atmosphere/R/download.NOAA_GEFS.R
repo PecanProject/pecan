@@ -2,7 +2,7 @@
 ##' 
 ##' @section Information on Units:
 ##' Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, 
-##' but is converted at the station and downlaoded in Kelvin.
+##' but is converted at the station and downloaded in Kelvin.
 ##' @references https://www.ncdc.noaa.gov/crn/measurements.html
 ##' 
 ##' @section NOAA_GEFS General Information:
@@ -19,7 +19,7 @@
 ##' 
 ##' @section Data Save Format:
 ##' Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+##' NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble number 3 at willow creek on
 ##' June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 ##' 
 ##' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each

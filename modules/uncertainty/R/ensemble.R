@@ -196,6 +196,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 ##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
@@ -209,7 +210,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE,restart=NULL) {
+                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE) {
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -457,7 +458,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
-                           RENAME = FALSE)#for restart from previous model runs, not sharing the same outdir
+                           RENAME = rename)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params

@@ -83,15 +83,7 @@ Author field differs from that derived from Authors@R
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-model2netcdf.FATES: no visible global function definition for ‘head’
-model2netcdf.FATES: no visible global function definition for
-  ‘write.table’
-Undefined global functions or variables:
-  head write.table
-Consider adding
-  importFrom("utils", "head", "write.table")
-to your NAMESPACE file.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -116,4 +108,4 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 2 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTEs

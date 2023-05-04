@@ -32,11 +32,17 @@ met2model.ED2(
 
 \item{lst}{timezone offset to GMT in hours}
 
+\item{lat}{latitude; if not provide the function will attempt to discover it in input files}
+
+\item{lon}{longitude; if not provide the function will attempt to discover it in input files}
+
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
 
 \item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. If set to false, will require all years to have 365 days. Default = TRUE.}
+
+\item{...}{currently unused}
 }
 \description{
 If files already exist in 'Outfolder', the default function is NOT to

@@ -46,7 +46,7 @@ VignetteBuilder: knitr
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 X-schema.org-keywords: R, Predictive Ecosystem Analyzer,meta analysis, plant traits, Bayesian
 X-schema.org-isPartOf: https://pecanproject.org
