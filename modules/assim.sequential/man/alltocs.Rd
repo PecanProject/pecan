@@ -15,3 +15,15 @@ This function writes down a csv file with three columns: 1- message sepecified i
 \description{
 This function finds all the tic functions called before and estimates the time elapsed for each one saves/appends it to a csv file.
 }
+\examples{
+ 
+\dontrun{
+ library(tictoc)
+ tic("Analysis")
+ Sys.sleep(5)
+ testfunc()
+ tic("Adjustment")
+ Sys.sleep(4)
+ alltocs("timing.csv")  
+}
+}

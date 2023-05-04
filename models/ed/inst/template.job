@@ -1,5 +1,11 @@
 #!/bin/bash -l
 
+# Parsed by PEcAn.ED2::write.config.jobsh.ED2() to generate job.sh files
+
+# create output folder
+mkdir -p "@OUTDIR@"
+@SCRATCH_MKDIR@
+
 # redirect output
 exec 3>&1
 exec &>> "@OUTDIR@/logfile.txt"
@@ -9,10 +15,6 @@ echo "Logging on "$TIMESTAMP
 
 # host specific setup
 @HOST_SETUP@
-
-# create output folder
-mkdir -p "@OUTDIR@"
-@SCRATCH_MKDIR@
 
 # @REMOVE_HISTXML@ : tag to remove "history.xml" on remote for restarts, commented out on purpose
 
@@ -47,9 +49,16 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.ED2)
-model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)
-" | R --vanilla
+  Rscript \
+    -e "library(PEcAn.ED2)" \
+    -e "model2netcdf.ED2('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @PFT_NAMES@)"
+  STATUS=$?
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN model2netcdf.ED2\nLogfile is located at '@OUTDIR@'/logfile.txt"
+  	echo "************************************************* End Log $TIMESTAMP"
+    echo ""
+    exit $STATUS
+  fi
 fi
 
 # copy readme with specs to output

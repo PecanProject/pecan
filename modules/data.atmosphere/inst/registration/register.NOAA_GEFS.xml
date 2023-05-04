@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <NOAA_GEFS>
   <scale>site</scale>
-  <ensemble>21</ensemble>
+  <ensemble>31</ensemble>
   <forecast>TRUE</forecast>
   <format>
     <id>33</id>

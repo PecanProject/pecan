@@ -75,7 +75,7 @@ sda_rewind <- function(settings,run.id,time_to_rewind){
     ANALYSIS[t] <- NULL
     enkf.params[t] <- NULL
     
-    for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[t]][,i]
+    for(i in 1:length(new.state)) new.state[[i]] <- ANALYSIS[[t-1]][,i] #not sure if this should be t or t-1
     
     t = t-1
     

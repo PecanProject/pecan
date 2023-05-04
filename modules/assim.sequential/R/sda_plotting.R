@@ -1,7 +1,7 @@
 #' @title generate_colors_sda
 #' @name  generate_colors_sda
 #' @author Ann Raiho 
-#' @description This function generates a series of colors in its parents enviroment. This is mainly used in assim.sequential package.
+#' @description This function generates a series of colors in its parents enviroment. This is mainly used in AssimSequential package.
 #' @export
 generate_colors_sda <-function(){
   pink       <<- col2rgb("deeppink")
@@ -28,9 +28,17 @@ generate_colors_sda <-function(){
 ##' @param FORECAST dataframe of state variables for each ensemble
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
+##' @param Add_Map Bool variable decide if we want to export the GIS map of Ecoregion.
 ##' @export
 
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAnAssimSequential::interactive.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
   generate_colors_sda()
@@ -122,11 +130,16 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
 
 postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
 
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAnAssimSequential::postana.timeser.plotting.sda()`.",
+      "Please install it and try again.")
+  }
+
   #Defining some colors
   generate_colors_sda()
   t1 <- 1
-  ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
-                              function(x) { x })[2, ], use.names = FALSE)
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
@@ -142,16 +155,17 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
   Y.order <- sapply(colnames(FORECAST[[t]]),agrep,x=colnames(Ybar),max=2,USE.NAMES = F)%>%unlist
   Ybar <- Ybar[,Y.order]
   YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
-    if (is.null(x)) {
+    if (is.na(x)) {
       rep(NA, length(names.y))
-    }
+    } else {
     sqrt(diag(x))
+    }
   })))
   
   Ybar[is.na(Ybar)]<-0
   YCI[is.na(YCI)]<-0
   
-  YCI <- YCI[,Y.order]
+  YCI <- YCI[,c(Y.order)]
   
   
   
@@ -184,12 +198,12 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
          ylim = range(c(XaCI, Xci,Ybar[, 1]), na.rm = TRUE),
          type = "n", 
          xlab = "Year", 
-         ylab = ylab.names[grep(colnames(X)[i], var.names)],
+         #ylab = ylab.names[grep(colnames(X)[i], var.names)],
          main = colnames(X)[i])
     
     # observation / data
     if (i<=ncol(X)) { #
-      ciEnvelope(as.Date(obs.times[t1:t]), 
+     ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
                  col = alphagreen)
@@ -218,6 +232,13 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
 ##' @export
 
 postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAnAssimSequential::postana.bias.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
   generate_colors_sda()
@@ -269,7 +290,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
-    ciEnvelope(rev(t1:t), 
+  ciEnvelope(rev(t1:t), 
                rev(Xbar - XaCI[, 1]), 
                rev(Xbar - XaCI[, 2]), 
                col = alphapurple)
@@ -293,14 +314,13 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   generate_colors_sda()
 
   #---
-  library(corrplot)
   pdf('SDA/process.var.plots.pdf')
   
   cor.mat <- cov2cor(aqq[t,,] / bqq[t])
   colnames(cor.mat) <- colnames(X)
   rownames(cor.mat) <- colnames(X)
   par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-  corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
+  corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
   
   par(mfrow=c(1,1))   
   plot(as.Date(obs.times[t1:t]), bqq[t1:t],
@@ -394,7 +414,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
 
       p<-ready.to.plot%>%
-        ggplot(aes(x=Date))+
+        ggplot2::ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
         geom_point(aes(y=means, color=Type),size=3,alpha=0.75)+
@@ -451,7 +471,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
     setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
-      purrr::map2_df(sqrt(diag(one.day.data$covs)), one.day.data$means,
+      purrr::map2_df(sqrt(one.day.data$covs %>% purrr::map( ~ diag(.x)) %>% unlist), one.day.data$means,
                      function(sd,mean){
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
@@ -483,7 +503,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
       p<-ready.FA%>%
 #        filter(Variables==vari)%>%
-        ggplot(aes(Date,Value))+
+        ggplot2::ggplot(aes(Date,Value))+
         geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
         geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
@@ -509,7 +529,14 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL, Add_Map=FALSE){
+
+  if (!requireNamespace("ggrepel", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Package `ggrepel` not found, but needed by",
+      "PEcAnAssimSequential::post.analysis.multisite.ggplot.",
+      "Please install it and try again.")
+  }
   
   # fix obs.mean/obs.cov for multivariable plotting issues when there is NA data. When more than 1 data set is assimilated, but there are missing data
   # for some sites/years/etc. the plotting will fail and crash the SDA because the numbers of columns are not consistent across all sublists within obs.mean
@@ -525,36 +552,38 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   }
   observed_vars = unique(observed_vars)
   
-  for (name in names(obs.mean))
-  {
-    data_mean = obs.mean[name]
-    data_cov = obs.cov[name]
-    sites = names(data_mean[[1]])
-    for (site in sites)
-    {
-      d_mean = data_mean[[1]][[site]]
-      d_cov = data_cov[[1]][[site]]
-      colnames = names(d_mean)
-      if (length(colnames) < length(observed_vars))
-      {
-        missing = which(!(observed_vars %in% colnames))
-        missing_mean = as.data.frame(NA)
-        colnames(missing_mean) = observed_vars[missing]
-        d_mean = cbind(d_mean, missing_mean)
-        
-        missing_cov = matrix(0, nrow = length(observed_vars), ncol = length(observed_vars))
-        diag(missing_cov) = c(diag(d_cov), NA)
-        d_cov = missing_cov
-      }
-      data_mean[[1]][[site]] = d_mean
-      data_cov[[1]][[site]] = d_cov
+  #new diag function: fixed the bug when length==1 then it will return 0x0 matrix
+  diag_fix <- function(vector){
+    if (length(vector)>1){
+      return(diag(vector))
+    }else if (length(vector)==1){
+      return(vector)
     }
-    obs.mean[name] = data_mean
-    obs.cov[name] = data_cov
   }
-  
-
-  if (!('ggrepel' %in% installed.packages()[,1])) devtools::install_github("slowkow/ggrepel")
+  #bug fixing: detailed commends
+  for (name in names(obs.mean)){
+    for (site in names(obs.mean[[1]])){
+      obs_mean <- obs.mean[[name]][[site]]
+      obs_cov <- obs.cov[[name]][[site]]
+      if(length(names(obs_mean))<length(observed_vars)){
+        missing <- which(!(observed_vars %in% names(obs_mean)))
+        not_missing <- which((observed_vars %in% names(obs_mean)))
+        
+        new_obs_mean <- rep(NA, length(observed_vars))
+        new_obs_mean[not_missing] <- obs_mean
+        names(new_obs_mean) <- observed_vars
+        
+        new_obs_cov <- diag(rep(NA, length(new_obs_mean)))
+        diag(new_obs_cov)[not_missing] <- diag_fix(obs_cov)
+        
+        obs.mean[[name]][[site]] <- new_obs_mean
+        obs.cov[[name]][[site]] <- new_obs_cov
+        next
+      }
+      obs.mean[[name]][[site]] <- obs_mean
+      obs.cov[[name]][[site]] <- obs_cov
+    }
+  }
 
   #Defining some colors
   t1 <- 1
@@ -599,7 +628,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     })
       
 
-  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% names()
   #Observed data
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
@@ -612,7 +641,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         mutate(Site=names(one.day.data$means)) %>% 
         tidyr::gather(Variable,Means,-c(Site)) %>%
         right_join(one.day.data$covs %>% 
-                     map_dfr(~ t(sqrt(as.numeric(diag(.x)))) %>% 
+                     map_dfr(~ t(sqrt(as.numeric(diag_fix(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
                      mutate(Site=names(one.day.data$covs)) %>% 
                      tidyr::gather(Variable,Sd,-c(Site)),
@@ -681,7 +710,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -714,7 +743,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Variable==vari, Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -730,79 +759,87 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       })
   }
 
+  if(Add_Map){
+    #------------------------------------------------ map
+    site.locs <- settings %>% 
+      purrr::map(~.x[['run']] ) %>% 
+      purrr::map('site') %>% 
+      purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>%
+                as.numeric)%>% 
+      t %>%
+      as.data.frame()%>%
+      `colnames<-`(c("Lon","Lat")) %>%
+      dplyr::mutate(Site=site.ids %>% unique(),
+             Name=site.names)
+    
+    suppressMessages({
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
+    })
+    
+    #transform site locs into new projection - UTM 2163
+    site.locs.sp<-site.locs
+    coordinates(site.locs.sp) <- c("Lon", "Lat")
+    proj4string(site.locs.sp) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
+    res <- sp::spTransform(site.locs.sp, sp::CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
+    site.locs[,c(1,2)] <-res@coords
+    
+    #finding site with data
+    sites.w.data <-
+      obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
+    #adding the column to site
+    site.locs <- site.locs %>%
+      dplyr::mutate(Data = Site %in% sites.w.data)
+    
+    #plotting
+    map.plot<- ggplot2::ggplot() + 
+      geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
+      geom_point(data = site.locs,
+                 aes(x = Lon, y = Lat),
+                 size = 2) +
+      ggrepel::geom_label_repel(
+        data = site.locs,
+        aes(
+          x = Lon,
+          y = Lat,
+          label = paste0(Site, "\n", Name),
+          color = Data,
+        ),
+        vjust = 1.2,
+        fontface = "bold",
+        size = 3.5
+      ) + 
+      #coord_sf(datum = sf::st_crs(2163),default = F)+
+      scale_fill_manual(values = c("#a6cee3",
+                                   "#1f78b4","#b2df8a",
+                                   "#33a02c","#fb9a99",
+                                   "#e31a1c","#fdbf6f",
+                                   "#ff7f00","#cab2d6",
+                                   "#6a3d9a","#ffff99",
+                                   "#b15928","#fccde5",
+                                   "#d9d9d9","#66c2a5",
+                                   "#ffd92f","#8dd3c7",
+                                   "#80b1d3","#d9d9d9",
+                                   "#fdbf6f"),name="Eco-Region")+
+      scale_color_manual(values= c("#e31a1c","#33a02c"))+
+      theme_minimal()+
+      theme(axis.text = element_blank())
+    
+    #----- Reordering the plots
+    all.plots.print <-list(map.plot)
+    for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
+    
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots.print %>% purrr::map(~print(.x))
+    dev.off()
+  }else{
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots %>% purrr::map(~print(.x))
+    dev.off()
+  }
   
-  #------------------------------------------------ map
-  site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
-    t %>%
-    as.data.frame()%>%
-    `colnames<-`(c("Lon","Lat")) %>%
-    mutate(Site=site.ids %>% unique(),
-           Name=site.names)
-  
-
-  suppressMessages({
-      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAn.assim.sequential"))
-  })
-  
-  #transform site locs into new projection - UTM 2163
-  site.locs.sp<-site.locs
-  coordinates(site.locs.sp) <- c("Lon", "Lat")
-  proj4string(site.locs.sp) <- CRS("+proj=longlat +datum=WGS84")  ## for example
-  res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
-  site.locs[,c(1,2)] <-res@coords
-  
-  
-  #finding site with data
-  sites.w.data <-
-    obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
-  #adding the column to site
-  site.locs <- site.locs %>%
-    mutate(Data = Site %in% sites.w.data)
-
-  #plotting
-  map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
-    geom_point(data = site.locs,
-               aes(x = Lon, y = Lat),
-               size = 2) +
-    ggrepel::geom_label_repel(
-      data = site.locs,
-      aes(
-        x = Lon,
-        y = Lat,
-        label = paste0(Site, "\n", Name),
-        color = Data,
-      ),
-      vjust = 1.2,
-      fontface = "bold",
-      size = 3.5
-    ) + 
-    #coord_sf(datum = sf::st_crs(2163),default = F)+
-    scale_fill_manual(values = c("#a6cee3",
-      "#1f78b4","#b2df8a",
-      "#33a02c","#fb9a99",
-      "#e31a1c","#fdbf6f",
-      "#ff7f00","#cab2d6",
-      "#6a3d9a","#ffff99",
-      "#b15928","#fccde5",
-      "#d9d9d9","#66c2a5",
-      "#ffd92f","#8dd3c7",
-      "#80b1d3","#d9d9d9",
-      "#fdbf6f"),name="Eco-Region")+
-    scale_color_manual(values= c("#e31a1c","#33a02c"))+
-    theme_minimal()+
-    theme(axis.text = element_blank())
-
-  #----- Reordering the plots
-  all.plots.print <-list(map.plot)
-  for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
-  
-  pdf("SDA/SDA.pdf",width = filew, height = fileh)
-  all.plots.print %>% purrr::map(~print(.x))
-  dev.off()
   
   #saving plot data
-  save(all.plots, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
+  save(all.plots, ready.to.plot, file = file.path(settings$outdir, "timeseries.plot.data.Rdata"))
   
   
 }

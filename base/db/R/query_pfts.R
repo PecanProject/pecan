@@ -1,6 +1,9 @@
 #' Retrieve PFT ID, name, and type from BETY
 #'
 #' @param dbcon Database connection object
+#' @param strict (Logical) If `TRUE`, throw an error if any of the
+#'   input `pft_names/ids` or `traits` are missing from the output. If
+#'   `FALSE` (default), only throw a warning.
 #' @param pft_names character vector of PFT names
 #' @param modeltype character.
 #'   If specified, only returns PFTs matching this modeltype.
@@ -11,14 +14,14 @@
 #' @export
 query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
   pftres <- (dplyr::tbl(dbcon, "pfts")
-    %>% dplyr::filter(name %in% !!pft_names))
+    %>% dplyr::filter(.data$name %in% !!pft_names))
   if (!is.null(modeltype)) {
     pftres <- (pftres %>% dplyr::semi_join(
-    (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(name == !!modeltype)),
+    (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(.data$name == !!modeltype)),
     by = c("modeltype_id" = "id")))
   }
   result <- (pftres
-    %>% dplyr::select(.data$id, .data$pft_type, .data$name)
+    %>% dplyr::select("id", "pft_type", "name")
     %>% dplyr::collect()
     # Arrange in order of inputs
     %>% dplyr::slice(match(.data$name, pft_names)))

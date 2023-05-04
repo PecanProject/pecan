@@ -1,5 +1,7 @@
-#' parse the RabbiMQ URI. This will parse the uri into smaller pieces that can
-#' be used to talk to the rest endpoint for RabbitMQ.
+#' parse the RabbiMQ URI.
+#'
+#' This will parse the uri into smaller pieces that can be used to talk to the
+#' rest endpoint for RabbitMQ.
 #'
 #' @param uri the amqp URI
 #' @param prefix the prefix that the RabbitMQ managmenet interface uses
@@ -44,18 +46,25 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
   return(list(url=url, vhost=vhost, username=upw[[1]], password=upw[[2]]))
 }
 
-#' Send a message to RabbitMQ rest API. It will check the resulting status code
-#' and print a message in case something goes wrong.
+#' Send a message to RabbitMQ rest API.
+#'
+#' It will check the resulting status code and print a message in case
+#' something goes wrong.
 #'
 #' @param url the full endpoint rest url
 #' @param auth authentication for rabbitmq in httr:auth
 #' @param body the actual body to send, this is a rabbitmq message.
 #' @param action the rest action to perform
+#' @param silent boolean to indicate if logging should be performed.
 #' @return will return NA if message failed, otherwise it will either
 #'    return the resulting message, or if not availble an empty string "".
-rabbitmq_send_message <- function(url, auth, body, action="POST") {
+rabbitmq_send_message <- function(url, auth, body, action = "POST", silent = FALSE) {
   if (action == "GET") {
-    result <- httr::GET(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
+    if (is.na(body)) {
+      result <- httr::GET(url, auth)
+    } else {
+      result <- httr::GET(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
+    }
   } else if (action == "PUT") {
     result <- httr::PUT(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
   } else if (action == "DELETE") {
@@ -63,11 +72,13 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
   } else if (action == "POST") {
     result <- httr::POST(url, auth, body = jsonlite::toJSON(body, auto_unbox = TRUE))
   } else {
-    PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
+    if (!silent) {
+      PEcAn.logger::logger.error(paste("error sending message to rabbitmq, uknown action", action))
+    }
     return(NA)
   }
 
-  if (result$status_code >= 200 && result$status_code < 300) {
+  if (result$status_code >= 200 && result$status_code <= 299) {
     content <- httr::content(result)
     if (length(content) == 0) {
       return("")
@@ -78,19 +89,56 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
     PEcAn.logger::logger.error("error sending message to rabbitmq, make sure username/password is correct")
     return(NA)
   } else {
-    output <- httr::content(result)
-    if ("reason" %in% names(output)) {
-      PEcAn.logger::logger.error(paste("error sending message to rabbitmq,", output$reason))
-    } else {
-      PEcAn.logger::logger.error("error sending message to rabbitmq")
+    if (!silent) {
+      output <- httr::content(result)
+      if ("reason" %in% names(output)) {
+        PEcAn.logger::logger.error(paste0("error sending message to rabbitmq [", result$status_code, "], ", output$reason))
+      } else {
+        PEcAn.logger::logger.error("error sending message to rabbitmq [", result$status_code, "]")
+      }
     }
     return(NA)
   }
 }
 
-#' Post message to RabbitMQ. This will submit a message to RabbitMQ, if the
-#' queue does not exist it will be created. The message will be converted to
-#' a json message that is submitted.
+#' Create a queue in RabbitMQ.
+#'
+#' This will first check to see if the queue already exists in RabbitMQ, if not
+#' it will create the queue. If the queue exists, or is created it will return
+#' TRUE, it will return FALSE otherwise.
+#'
+#' @param url parsed RabbitMQ URL.
+#' @param auth the httr authentication object to use.
+#' @param vhost the vhost where to create the queue.
+#' @param queue the queue that should be checked/created.
+#' @param auto_delete should the queue be deleted afterwards (FALSE is default)
+#' @param durable should the messages exists after a server restart (TRUE is default)
+#' @return TRUE if the queue now exists, FALSE otherwise.
+#' @author Rob Kooper
+rabbitmq_create_queue <- function(url, auth, vhost, queue, auto_delete = FALSE, durable = TRUE) {
+  resturl <- paste0(url, "api/queues/", vhost, "/", queue)
+
+  # check if queue exists
+  result <- rabbitmq_send_message(resturl, auth, NA, "GET", silent = TRUE)
+  if (length(result) > 1 || !is.na(result)) {
+    return(TRUE)
+  }
+
+  # create the queue
+  PEcAn.logger::logger.info("creating queue", queue, "in rabbitmq")
+  body <- list(
+    auto_delete = auto_delete,
+    durable = durable
+  )
+  result <- rabbitmq_send_message(resturl, auth, body, "PUT")
+  return(length(result) > 1 || !is.na(result))
+}
+
+#' Post message to RabbitMQ.
+#'
+#' This will submit a message to RabbitMQ, if the queue does not exist it will
+#' be created. The message will be converted to a json message that is
+#' submitted.
 #'
 #' @param uri RabbitMQ URI or URL to rest endpoint
 #' @param queue the queue the message is submitted to
@@ -100,7 +148,7 @@ rabbitmq_send_message <- function(url, auth, body, action="POST") {
 #' @return the result of the post if message was send, or NA if it failed.
 #' @author Alexey Shiklomanov, Rob Kooper
 #' @export
-rabbitmq_post <- function(uri, queue, message, prefix="", port=15672) {
+rabbitmq_post_message <- function(uri, queue, message, prefix="", port=15672) {
   # parse rabbitmq URI
   rabbitmq <- rabbitmq_parse_uri(uri, prefix, port)
   if (length(rabbitmq) != 4) {
@@ -110,13 +158,8 @@ rabbitmq_post <- function(uri, queue, message, prefix="", port=15672) {
   # create authentication
   auth <- httr::authenticate(rabbitmq$username, rabbitmq$password)
 
-  # create message to be send to create the queue
-  body <- list(
-    auto_delete = FALSE,
-    durable = FALSE
-  )
-  url <- paste0(rabbitmq$url, "api/queues/", rabbitmq$vhost, "/", queue)
-  if (is.na(rabbitmq_send_message(url, auth, body, "PUT"))) {
+  # make sure the queue exists
+  if (!rabbitmq_create_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
     return(NA)
   }
 
@@ -131,9 +174,10 @@ rabbitmq_post <- function(uri, queue, message, prefix="", port=15672) {
   return(rabbitmq_send_message(url, auth, body, "POST"))
 }
 
-#' Get message from RabbitMQ. This will get a message from RabbitMQ, if the
-#' queue does not exist it will be created. The message will be converted to
-#' a json message that is returned.
+#' Get message from RabbitMQ.
+#'
+#' This will get a message from RabbitMQ, if the queue does not exist it will
+#' be created. The message will be converted to a json message that is returned.
 #'
 #' @param uri RabbitMQ URI or URL to rest endpoint
 #' @param queue the queue the message is received from.
@@ -143,7 +187,7 @@ rabbitmq_post <- function(uri, queue, message, prefix="", port=15672) {
 #' @return NA if no message was retrieved, or a list of the messages payload.
 #' @author Alexey Shiklomanov, Rob Kooper
 #' @export
-rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
+rabbitmq_get_message <- function(uri, queue, count=1, prefix="", port=15672) {
   # parse rabbitmq URI
   rabbitmq <- rabbitmq_parse_uri(uri, prefix, port)
   if (length(rabbitmq) != 4) {
@@ -153,13 +197,8 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
   # create authentication
   auth <- httr::authenticate(rabbitmq$username, rabbitmq$password)
 
-  # create message to be send to create the queue
-  body <- list(
-    auto_delete = FALSE,
-    durable = FALSE
-  )
-  url <- paste0(rabbitmq$url, "api/queues/", rabbitmq$vhost, "/", queue)
-  if (is.na(rabbitmq_send_message(url, auth, body, "PUT"))) {
+  # make sure the queue exists
+  if (!rabbitmq_create_queue(rabbitmq$url, auth, rabbitmq$vhost, queue)) {
     return(NA)
   }
 
@@ -174,6 +213,10 @@ rabbitmq_get <- function(uri, queue, count=1, prefix="", port=15672) {
   if (length(result) == 1 && is.na(result)) {
     return(NA)
   } else {
-    return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
+    if (length(result) == 1 && result == "") {
+      return(c())
+    } else {
+      return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
+    }
   }
 }

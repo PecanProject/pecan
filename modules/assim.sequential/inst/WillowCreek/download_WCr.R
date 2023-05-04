@@ -28,8 +28,14 @@ download_US_WCr_met <- function(start_date, end_date) {
     mutate_all(funs(as.numeric))
   
   #Constructing the date based on the columns we have
-  raw.data$date <-as.POSIXct(paste0(raw.data$V1,"/",raw.data$V2,"/",raw.data$V3," ", raw.data$V4 %>% as.integer(), ":",(raw.data$V4-as.integer(raw.data$V4))*60),
-                             format="%Y/%m/%d %H:%M", tz="UTC")
+  #Converting the WCR data from CST to UTC 
+  raw.data$date <-lubridate::with_tz(as.POSIXct(paste0(raw.data$V1,"/",raw.data$V2,"/",raw.data$V3," ", raw.data$V4 %>% as.integer(), ":",(raw.data$V4-as.integer(raw.data$V4))*60),
+                                                format="%Y/%m/%d %H:%M", tz="US/Central"), tz = "UTC")
+  
+  
+  
+  start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = "UTC")
+  end_date <- as.POSIXct(end_date, format = "%Y-%m-%d", tz = "UTC")
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
     dplyr::select(V1,V2,V3,V4,V5, V6, V26, V35, V40, V59, date) %>%
@@ -37,7 +43,7 @@ download_US_WCr_met <- function(start_date, end_date) {
   
   #Colnames changed
   colnames(raw.data) <- c("Year", "Month", "Day", "Hour", "DoY", "FjDay", "Tair", "rH", "Tsoil", "Rg", "date")
-
+  
   return(raw.data)
 }
 
@@ -73,11 +79,14 @@ download_US_WCr_flux <- function(start_date, end_date) {
   #Constructing the date based on the columns we have
   raw.data$date <-as.POSIXct(paste0(raw.data$V1,"/",raw.data$V2,"/",raw.data$V3," ", raw.data$V4 %>% as.integer(), ":",(raw.data$V4-as.integer(raw.data$V4))*60),
                              format="%Y/%m/%d %H:%M", tz="UTC")
+  
+  start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = "UTC")
+  end_date <- as.POSIXct(end_date, format = "%Y-%m-%d", tz = "UTC")
+  
   # Some cleaning and filtering 
   raw.data <- raw.data %>% 
     # select(-V5, -V6) %>%
-    filter(date >= start_date & date <=end_date)
-  
+    dplyr::filter(date >= start_date & date <=end_date) 
   #Colnames changed
   colnames(raw.data) <- c("Year", "Month", "Day", "Hour", "DoY", "FjDay", "SC", "FC", "NEE", "LE", "H", "Ustar", "Flag", "date")
   

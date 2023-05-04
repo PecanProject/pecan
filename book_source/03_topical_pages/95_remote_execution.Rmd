@@ -166,7 +166,7 @@ For additional functions related to remote file operations and other stuff, see 
 
 ## Remote model execution with PEcAn
 
-The workhorse of remote model execution is the `PEcAn.remote::start.model.runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
+The workhorse of remote model execution is the `PEcAn.workflow::start_model_runs` function, which distributes execution of each run in a list of runs (e.g. multiple runs in an ensemble) to the local machine or a remote based on the configuration in the PEcAn settings.
 
 Broadly, there are three major types of model execution:
 
@@ -308,8 +308,7 @@ will fall back on the older versions install site-library
 
 ```
 install.packages(c('udunits2', 'lubridate'), 
-   configure.args=c(udunits2='--with-udunits2-lib=/project/earth/packages/udunits-2.1.24/lib --with-udunits2-include=/project/earth/packages/udunits-2.1.24/include'),
-   repos='http://cran.us.r-project.org')
+   configure.args=c(udunits2='--with-udunits2-lib=/project/earth/packages/udunits-2.1.24/lib --with-udunits2-include=/project/earth/packages/udunits-2.1.24/include'))
 ```
 
 Finally to install support for both ED and SIPNET:

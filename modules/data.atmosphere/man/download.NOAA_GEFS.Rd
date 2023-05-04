@@ -5,33 +5,41 @@
 \title{Download NOAA GEFS Weather Data}
 \usage{
 download.NOAA_GEFS(
-  outfolder,
+  site_id,
+  sitename = NULL,
+  username = "pecan",
   lat.in,
   lon.in,
-  sitename,
-  start_date = Sys.time(),
-  end_date = (as.POSIXct(start_date, tz = "UTC") + lubridate::days(16)),
+  outfolder,
+  start_date = Sys.Date(),
+  end_date = start_date + lubridate::days(16),
+  downscale = TRUE,
   overwrite = FALSE,
-  verbose = FALSE,
   ...
 )
 }
 \arguments{
+\item{site_id}{The unique ID given to each site. This is used as part of the file name.}
+
+\item{sitename}{Site name}
+
+\item{username}{username from pecan workflow}
+
+\item{lat.in}{site latitude in decimal degrees}
+
+\item{lon.in}{site longitude in decimal degrees}
+
 \item{outfolder}{Directory where results should be written}
 
-\item{sitename}{The unique ID given to each site. This is used as part of the file name.}
+\item{start_date, }{Range of dates/times to be downloaded (default assumed to be time that function is run)}
 
-\item{start_date, }{end_date Range of dates/times to be downloaded (default assumed time of day is 0:00, midnight)}
+\item{end_date, }{end date for range of dates to be downloaded (default 16 days from start_date)}
+
+\item{downscale}{logical, assumed True. Indicated whether data should be downscaled to hourly}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 
-\item{verbose}{logical.  Print additional debug information.  Passed on to functions in the netcdf4 package to provide debugging info.}
-
-\item{...}{Other arguments, currently ignored}
-
-\item{lat}{site latitude in decimal degrees}
-
-\item{lon}{site longitude in decimal degrees}
+\item{...}{Additional optional parameters}
 }
 \value{
 A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
@@ -42,14 +50,15 @@ Download NOAA GEFS Weather Data
 }
 \section{Information on Units}{
 
-Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, but is converted at the station and downlaoded
-in Kelvin.
+Information on NOAA weather units can be found below. Note that the temperature is measured in degrees C, 
+but is converted at the station and downloaded in Kelvin.
 }
 
 \section{NOAA_GEFS General Information}{
 
-This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  A 16 day forecast is avaliable
-every 6 hours.  Each forecast includes information on a total of 8 variables.  These are transformed from the NOAA standard to the internal PEcAn
+This function downloads NOAA GEFS weather data.  GEFS is an ensemble of 21 different weather forecast models.  
+A 16 day forecast is avaliable every 6 hours.  Each forecast includes information on a total of 8 variables.  
+These are transformed from the NOAA standard to the internal PEcAn
 standard.
 }
 
@@ -64,13 +73,16 @@ back two hours (approximately the amount of time it takes to post the data) to m
 \section{Data Save Format}{
 
 Data is saved in the netcdf format to the specified directory.  File names reflect the precision of the data to the given range of days.
-NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble nubmer 3 at willow creek on
+NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble number 3 at willow creek on
 June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 }
 
 \examples{
 \dontrun{
- download.NOAA_GEFS(outfolder="~/Working/results", lat.in= 45.805925, lon.in = -90.07961, sitename="US-WCr")
+ download.NOAA_GEFS(outfolder="~/Working/results", 
+    lat.in= 45.805925, 
+    lon.in = -90.07961, 
+    site_id = 676)
 }
 
 }
@@ -78,5 +90,5 @@ June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 https://www.ncdc.noaa.gov/crn/measurements.html
 }
 \author{
-Luke Dramko
+Quinn Thomas, modified by K Zarada
 }

@@ -3,10 +3,10 @@ module environment
 use parameters_site
 use parameters_plant
 implicit none
-integer, parameter :: NMAXDAYS = 10000
-real :: GR, TMMN, TMMX, VP, WN
+integer, parameter :: NMAXDAYS = 365000
+real :: GR, TMMN, TMMX, VP, WN, CO2A
 real :: YEARI(NMAXDAYS), DOYI(NMAXDAYS) , RAINI(NMAXDAYS), GRI(NMAXDAYS)
-real :: TMMNI(NMAXDAYS), TMMXI(NMAXDAYS), VPI(NMAXDAYS)  , WNI(NMAXDAYS)
+real :: TMMNI(NMAXDAYS), TMMXI(NMAXDAYS), VPI(NMAXDAYS)  , WNI(NMAXDAYS), CO2(NMAXDAYS)
 
 #ifdef weathergen
 real :: PETI(NMAXDAYS)
@@ -48,6 +48,7 @@ Contains
     TMMX   = TMMXI(day) ! maximum (or average) temperature (degrees Celsius)
     VP     = VPI(day)   ! vapour pressure (kPa)
     WN     = WNI(day)   ! mean wind speed (m s-1)
+    CO2A   = CO2(day)
     DAVTMP = (TMMN + TMMX)/2.0
     DTR    = GR * exp(-KSNOW*DRYSTOR)
     PAR    = 0.5*4.56*DTR

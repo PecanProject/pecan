@@ -30,7 +30,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   THA_2_KG_M2 <- TONNES_PER_HA_TO_G_M2 * 0.001
   
   ### Read in model output in GDAY format
-  GDAY.output <- read.csv(file.path(outdir, "gday_out.csv"), header = TRUE, sep = ",", skip = 1)
+  GDAY.output <- utils::read.csv(file.path(outdir, "gday_out.csv"), header = TRUE, sep = ",", skip = 1)
   GDAY.output.dims <- dim(GDAY.output)
   
   ### Determine number of years and output timestep
@@ -87,41 +87,41 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     dims <- list(lon = lon, lat = lat, time = t)
     
-    var <- list()
+    nc_var <- list()
     ## C-Fluxes
-    var[[1]] <- PEcAn.utils::to_ncvar("AutoResp",dims)
-    var[[2]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
-    var[[3]] <- PEcAn.utils::to_ncvar("TotalResp",dims)
-    var[[4]] <- PEcAn.utils::to_ncvar("GPP", dims)
-    var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
-    var[[6]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[1]] <- PEcAn.utils::to_ncvar("AutoResp",dims)
+    nc_var[[2]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    nc_var[[3]] <- PEcAn.utils::to_ncvar("TotalResp",dims)
+    nc_var[[4]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[6]] <- PEcAn.utils::to_ncvar("NPP", dims)
     
     ## C-State
-    var[[7]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
-    var[[8]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[9]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[7]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
+    nc_var[[8]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[9]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     ## Water fluxes
-    var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
-    var[[11]] <- PEcAn.utils::to_ncvar("TVeg", dims)
+    nc_var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
+    nc_var[[11]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
-    #var[[6]]  <- PEcAn.utils::to_ncvar("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999 )
-    #var[[7]]  <- PEcAn.utils::to_ncvar("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
-    #var[[8]]  <- PEcAn.utils::to_ncvar("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
-    #var[[9]]  <- PEcAn.utils::to_ncvar("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[10]]  <- PEcAn.utils::to_ncvar("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[11]]  <- PEcAn.utils::to_ncvar("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[12]]  <- PEcAn.utils::to_ncvar("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[13]]  <- PEcAn.utils::to_ncvar("SoilC", "kgC/m2", list(lon,lat,t), -999)
+    #nc_var[[6]]  <- PEcAn.utils::to_ncvar("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999 )
+    #nc_var[[7]]  <- PEcAn.utils::to_ncvar("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #nc_var[[8]]  <- PEcAn.utils::to_ncvar("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #nc_var[[9]]  <- PEcAn.utils::to_ncvar("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #nc_var[[10]]  <- PEcAn.utils::to_ncvar("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #nc_var[[11]]  <- PEcAn.utils::to_ncvar("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #nc_var[[12]]  <- PEcAn.utils::to_ncvar("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #nc_var[[13]]  <- PEcAn.utils::to_ncvar("SoilC", "kgC/m2", list(lon,lat,t), -999)
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
-      ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    for (i in seq_along(nc_var)) {
+      ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     nc_close(nc)

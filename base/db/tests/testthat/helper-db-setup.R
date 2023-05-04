@@ -3,7 +3,7 @@ get_db_params <- function() {
   # Set these options by adding something like the following to
   # `~/.Rprofile`:
   # ```r
-  # options(pecan.db.params = list(driver = "PostgreSQL",
+  # options(pecan.db.params = list(driver = "Postgres",
   #                                dbname = "bety",
   #                                user = "bety",
   #                                password = "bety",
@@ -35,7 +35,7 @@ get_db_params <- function() {
     } else {
       return(get_postgres_envvars(
         host = "localhost",
-        driver = "PostgreSQL",
+        driver = "Postgres",
         user = "bety",
         dbname = "bety",
         password = "bety"))

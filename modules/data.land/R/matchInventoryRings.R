@@ -13,7 +13,7 @@ matchInventoryRings <- function(trees, rings, extractor = "TreeCode", nyears = 3
   ## build tree ring codes
   if (is.list(rings)) {
     ring.file <- rep(names(rings), times = sapply(rings, ncol))
-    rings     <- combine.rwl(rings)
+    rings     <- dplR::combine.rwl(rings)
   }
   ring.ID    <- names(rings)
   id.extract <- function(x) {

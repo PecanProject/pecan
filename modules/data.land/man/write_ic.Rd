@@ -15,8 +15,37 @@ write_ic(
   pfts,
   source = input_veg$source,
   overwrite = FALSE,
+  n.ensemble,
+  host.inputargs,
   ...
 )
+}
+\arguments{
+\item{in.path}{file path to rds file with IC data}
+
+\item{in.name}{file name of IC data}
+
+\item{start_date}{YYYY-MM-DD}
+
+\item{end_date}{YYYY-MM-DD}
+
+\item{outfolder}{Location to store function outputs}
+
+\item{model}{BETY model ID}
+
+\item{new_site}{Site info including lat, lon, and BETT site ID}
+
+\item{pfts}{list settings$pfts.}
+
+\item{source}{Data source as saved in the BETY db}
+
+\item{overwrite}{DEfault is FALSE. Option to overwrite existing files.}
+
+\item{n.ensemble}{number of ensemble members}
+
+\item{host.inputargs}{host info taken from settings object}
+
+\item{...}{Additional parameters}
 }
 \description{
 write_ic

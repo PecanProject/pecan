@@ -1,6 +1,6 @@
 
 bayes.curve.fit<-function(outpath,coord.set,fia,n.reps,n.chain){
-  
+
 library(rjags)
 library(R2HTML)
 
@@ -191,28 +191,28 @@ sd<-1/sqrt(tau)
 mod.names<-c("MM","H3","H4","Ri","Log","MM.yint","H3.yint","H4.yint","Ri.yint","Log.yint")
 
 #Initial conditions for HH pol band
-MM.HH.init      = list(b1=4, b0=0.1,     tau = 2/var(y)) #for MM
-H4.HH.init      = list(a=0.1,b=50,  c=2, tau = 2/var(y)) #for H4
-H3.HH.init      = list(a=0.1,b=100,      tau = 2/var(y)) #for H3
-Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/var(y)) #for Ri
-Log.HH.init     = list(a=0.6,b=1,        tau = 2/var(y)) #for Log
-MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/var(y)) #for MM.yint
-H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/var(y)) #for H3.yint
-H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/var(y)) #for H4.yint
-Ri.yint.HH.init = list(a=0.5,  b=0.5,   yint=0.1, tau = 2/var(y)) #for Ri.yint
-Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/var(y)) #for Log.yint
+MM.HH.init      = list(b1=4, b0=0.1,     tau = 2/stats::var(y)) #for MM
+H4.HH.init      = list(a=0.1,b=50,  c=2, tau = 2/stats::var(y)) #for H4
+H3.HH.init      = list(a=0.1,b=100,      tau = 2/stats::var(y)) #for H3
+Ri.HH.init      = list(a=0.5,b=0.5,      tau = 2/stats::var(y)) #for Ri
+Log.HH.init     = list(a=0.6,b=1,        tau = 2/stats::var(y)) #for Log
+MM.yint.HH.init = list(b1=4, b0=0.1,     yint=0.1, tau = 2/stats::var(y)) #for MM.yint
+H3.yint.HH.init = list(a=0.1,b=100,      yint=0.1, tau = 2/stats::var(y)) #for H3.yint
+H4.yint.HH.init = list(a=0.1,b=50,  c=2, yint=0.1, tau = 2/stats::var(y)) #for H4.yint
+Ri.yint.HH.init = list(a=0.5,  b=0.5,   yint=0.1, tau = 2/stats::var(y)) #for Ri.yint
+Log.yint.HH.init= list(a=0.6,b=1,        yint=0.1, tau = 2/stats::var(y)) #for Log.yint
 
 #Initial conditions for HV pol band
-MM.HV.init      = list(b1=8,   b0=0.04,     tau = 2/var(y)) #for MM
-H3.HV.init      = list(a=0.02, b=100,       tau = 2/var(y)) #for H3
-H4.HV.init      = list(a=0.03, b=0.01, c=2, tau = 2/var(y)) #for H4
-Ri.HV.init      = list(a=0,    b=0,         tau = 2/var(y)) #for Ri
-Log.HV.init     = list(a=0.6,  b=1,         tau = 2/var(y)) #for Log
-MM.yint.HV.init = list(b1=8,   b0=0.04,      yint=0.04,tau = 2/var(y)) #for MM.yint
-H3.yint.HV.init = list(a=0.02, b=100,        yint=0.04, tau = 2/var(y)) #for H3.yint
-H4.yint.HV.init = list(a=0.03, b=0.01, c=2,  yint=0.04, tau = 2/var(y)) #for H4.yint
-Ri.yint.HV.init = list(a=0.5,  b=0.5,        yint=0.04, tau = 2/var(y)) #for Ri.yint
-Log.yint.HV.init= list(a=0.6,  b=1,          yint=0.04, tau = 2/var(y)) #for Log.yint
+MM.HV.init      = list(b1=8,   b0=0.04,     tau = 2/stats::var(y)) #for MM
+H3.HV.init      = list(a=0.02, b=100,       tau = 2/stats::var(y)) #for H3
+H4.HV.init      = list(a=0.03, b=0.01, c=2, tau = 2/stats::var(y)) #for H4
+Ri.HV.init      = list(a=0,    b=0,         tau = 2/stats::var(y)) #for Ri
+Log.HV.init     = list(a=0.6,  b=1,         tau = 2/stats::var(y)) #for Log
+MM.yint.HV.init = list(b1=8,   b0=0.04,      yint=0.04,tau = 2/stats::var(y)) #for MM.yint
+H3.yint.HV.init = list(a=0.02, b=100,        yint=0.04, tau = 2/stats::var(y)) #for H3.yint
+H4.yint.HV.init = list(a=0.03, b=0.01, c=2,  yint=0.04, tau = 2/stats::var(y)) #for H4.yint
+Ri.yint.HV.init = list(a=0.5,  b=0.5,        yint=0.04, tau = 2/stats::var(y)) #for Ri.yint
+Log.yint.HV.init= list(a=0.6,  b=1,          yint=0.04, tau = 2/stats::var(y)) #for Log.yint
 
 MM.var.names<-c("b0","b1","sd") #for MM
 H3.var.names<-c("a","b","sd") #for H3
@@ -239,8 +239,8 @@ Log.yint.lines<-"lines(xseq,(parm[1]/(1+exp(parm[1]-parm[2]*xseq)))+parm[4],col=
 MM.mod.eqn<-"(out[k,1]*xseq)/(out[k,2]+xseq)"
 H3.mod.eqn<-"(out[k,1]*xseq^2)/(out[k,2]^2+xseq^2)"
 H4.mod.eqn<-"(out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2)"
-Ri.mod.eqn<-"out[k,1]*xseq*exp(-out[k,2]*xseq)"                               
-Log.mod.eqn<-"out[k,1]/(1+exp(out[k,1]-out[k,2]*xseq))"    
+Ri.mod.eqn<-"out[k,1]*xseq*exp(-out[k,2]*xseq)"
+Log.mod.eqn<-"out[k,1]/(1+exp(out[k,1]-out[k,2]*xseq))"
 MM.yint.mod.eqn<-"((out[k,1]*xseq)/(out[k,2]+xseq))+out[k,4]"
 H3.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]^2+xseq^2))+out[k,4]"
 H4.yint.mod.eqn<-"((out[k,1]*xseq^2)/(out[k,2]+out[k,3]*xseq+xseq^2))+out[k,5]"
@@ -281,7 +281,7 @@ HV.init <-list(MM.HV.init,
                H3.yint.HV.init,
                H4.yint.HV.init,
                Ri.yint.HV.init,
-               Log.yint.HV.init) 
+               Log.yint.HV.init)
 
 init<-c("HH.init","HV.init")
 
@@ -321,45 +321,45 @@ mod.eqns <-list(MM.mod.eqn,
 ################
 for(i in 1:length(yvars)){ #loop over HH and HV pol bands
   y<-eval(parse(text=yvars[i]))
-  
+
   if(length(y[is.na(y)]>0)){ #to get rid of NAs
     drop = which(is.na(y))
-    data = list(x=x[-drop],y=y[-drop],n=length(x)-length(drop)) 
+    data = list(x=x[-drop],y=y[-drop],n=length(x)-length(drop))
   } else{
-    data = list(x=x,y=y,n=length(x)) 
+    data = list(x=x,y=y,n=length(x))
   }
-  
+
   for(j in 1:length(models)){#looping over models
     ##Create dir for output from each model x polband x site combination
     dir.create(file.path(outpath1,coord.set[fia+1]))
           outpath2<-file.path(outpath1,coord.set[fia+1])
     dir.create(file.path(outpath2,substr(yvars[i],7,8)))
           outpath3<-file.path(outpath2,substr(yvars[i],7,8))
-    dir.create(file.path(outpath3,mod.names[j]))       
-          outpath4<-file.path(outpath3,mod.names[j])   
-               
+    dir.create(file.path(outpath3,mod.names[j]))
+          outpath4<-file.path(outpath3,mod.names[j])
+
     ##Do JAGS stuff
     j1 = jags.model(file=textConnection(models[j]),
                     data = data,
                     inits = unlist(eval(parse(text=init[i]))[j],recursive=FALSE),
                     n.chains=n.chain,
                     n.adapt=min(0.1*n.reps,1000))
-    
+
     jags.out = coda.samples(model=j1,
                             variable.names<-var.names[j][[1]],
-                            n.iter = n.reps) 
+                            n.iter = n.reps)
     out <- as.matrix(jags.out)
-    
+
     #Save MCMC output
     write.csv(out,file.path(outpath4,
                             paste("MCMC_out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
               row.names=FALSE)
-    
+
     #Save xy pairs
     write.csv(cbind(x,y),file.path(outpath4,
                                    paste("xy_pairs",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".csv",sep="_")),
               row.names=FALSE)
-    
+
     coda::gelman.diag(jags.out)
     summary(jags.out)
     ##Save model output summary
@@ -367,18 +367,18 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
                                              paste("Jags_Out",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
     saveRDS(coda::gelman.diag(jags.out),file=file.path(outpath4,
                                                  paste("Gelman_Diag",coord.set[fia+1],substr(yvars[i],7,8),mod.names[j],".Rdata",sep="_")))
-    
-    
+
+
     #Generate pdf of curve fits
     pdf(paste(paste(outpath4,"/","curve_fit_",coord.set[fia+1],sep=""),substr(yvars[i],7,8),mod.names[j],".pdf",sep="_"),width = 6, height = 6, paper='special')
-    
-    par(mar = rep(2, 4))    
+
+    par(mar = rep(2, 4))
     plot(jags.out)
     pairs(out)
-    
+
     #coda::autocorr.plot(jags.out)
     coda::gelman.plot(jags.out)
-    
+
     #plot data
     par(mfrow=c(1,1))
     parm = apply(out,2,mean)
@@ -386,7 +386,7 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
     lines(loess.smooth(x,y), col="grey", lty=1, lwd=1)
     xseq = seq(0,300,length=3000)
     eval(parse(text=model.fits[j])) #plot fitted curve line
-    
+
     npred = 10
     ypred = matrix(NA,npred,length(xseq))
     samp = sample(1:nrow(out),npred)
@@ -399,9 +399,9 @@ for(i in 1:length(yvars)){ #loop over HH and HV pol bands
     lines(xseq,yci[1,],col=3)
     lines(xseq,yci[3,],col=3)
     legend("topright",lty=c(1,1,1),col=c("grey",2,3),legend=c("Loess","Curve Fit","95% C.I."),bty="n")
-    
+
     dev.off()
-    
+
     print(yvars[i])
     print(mod.names[j])
   }#looping over models

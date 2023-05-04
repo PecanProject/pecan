@@ -1,14 +1,19 @@
 Package: PEcAn.data.atmosphere
 Type: Package
-Title: PEcAn functions used for managing climate driver data
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze", role = "aut"),
-             person("David","LeBauer", role = c("aut", "cre"),
-                email = "dlebauer@illinois.edu"),
-             person("Carl", "Davidson", role = "aut"),
-             person("Rob","Kooper", role = "aut"),
-             person("Deepak", "Jaiswal", role = "aut"))
+Title: PEcAn Functions Used for Managing Climate Driver Data
+Version: 1.7.2
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut", "cre"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Deepak", "Jaiswal", role = c("aut"),
+                     email = "djaiswal@djaiswal.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The PECAn.data.atmosphere
@@ -19,6 +24,8 @@ Depends:
     methods
 Imports:
     abind (>= 1.4.5),
+    amerifluxr,
+    curl,
     data.table,
     dplyr,
     geonames (> 0.998),
@@ -39,18 +46,18 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    RCurl,
     REddyProc,
     reshape2,
     rgdal,
-    rnoaa,
+    rlang (>= 0.2.0),
     sp,
     stringr (>= 1.1.0),
     testthat (>= 2.0.0),
     tibble,
     tidyr,
+    tidyselect,
     truncnorm,
-    udunits2 (>= 0.11),
+    units,
     XML (>= 3.98-1.4),
     xts,
     zoo
@@ -59,9 +66,9 @@ Suggests:
     foreach,
     parallel,
     progress,
-    reticulate,
-    rlang (>= 0.2.0)
+    reticulate
 Remotes:
+    github::chuhousen/amerifluxr,
     github::ropensci/geonames,
     github::ropensci/nneo
 License: BSD_3_clause + file LICENSE
@@ -69,4 +76,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.2.3

@@ -7,12 +7,12 @@
 p.point.in.prior(point, prior)
 }
 \arguments{
-\item{point}{}
+\item{point}{quantile of given prior to return}
 
 \item{prior}{list of distn, parama, paramb}
 }
 \value{
-result of p<distn>(point, parama, paramb)
+result of \verb{p<distn>(point, parama, paramb)}
 }
 \description{
 compare point to prior distribution

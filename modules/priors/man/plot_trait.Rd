@@ -17,13 +17,15 @@ plot_trait(
 )
 }
 \arguments{
-\item{trait}{character, name of trait to be plotted}
+\item{trait}{dataframe with id, figid and units of the trait to be plotted}
 
 \item{prior}{named distribution with parameters}
 
-\item{posterior.sample}{}
+\item{posterior.sample}{samples from posterior distribution
+whose density should be plotted}
 
-\item{trait.df}{}
+\item{trait.df}{data to be plotted, in a format accepted by
+\code{\link[PEcAn.MA]{jagify}}}
 
 \item{fontsize, x.lim, y.lim, logx}{passed on to ggplot}
 }
@@ -39,7 +41,8 @@ prior1 <- data.frame(distn = 'norm',
                      parama = 20,
                      paramb = 5)
 data1  <- data.frame(Y = c(19, 21), se = c(1,1))
-plot_trait(trait = 'Vcmax',
+trait1 <- data.frame(id = 'Vcmax', figid = 'Vcmax', units = 'umol CO2 m-2 s-1')
+plot_trait(trait = trait1,
           prior = prior1,
           trait.df = data1)
 }

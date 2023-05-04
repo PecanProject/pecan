@@ -7,7 +7,7 @@ services:
 
   # mount PEcAn web folder into web server, this allows for
   # editing code in PHP and immediatly test the new code.
-  web:
+  pecan:
     volumes:
       - ${HOME}/git/pecan/web:/var/www/html/pecan
       - ${HOME}/git/pecan/docker/config.docker.php:/var/www/html/pecan/config.php

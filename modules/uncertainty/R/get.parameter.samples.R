@@ -37,7 +37,7 @@ get.parameter.samples <- function(settings,
     if(!is.null(settings$pfts[[i.pft]]$outdir)){
       outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     } else { 
-      outdirs[i.pft] <- unique(dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
+      outdirs[i.pft] <- unique(PEcAn.DB::dbfile.check(type = "Posterior",container.id = settings$pfts[[i.pft]]$posteriorid,con=con)$file_path)
     }
     
   }  ### End of for loop to extract pft names
@@ -52,6 +52,7 @@ get.parameter.samples <- function(settings,
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
+    
     rm(prior.distns, post.distns, trait.mcmc)
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
@@ -129,11 +130,30 @@ get.parameter.samples <- function(settings,
     }
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
+    if (ens.sample.method == "halton") {
+      q_samples <- randtoolbox::halton(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "sobol") {
+      q_samples <- randtoolbox::sobol(n = samples.num, dim = length(priors), scrambling = 3)
+    } else if (ens.sample.method == "torus") {
+      q_samples <- randtoolbox::torus(n = samples.num, dim = length(priors))
+    } else if (ens.sample.method == "lhc") {
+      q_samples <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(priors), nrow = 2)), samples.num)
+    } else if (ens.sample.method == "uniform") {
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                               samples.num, 
+                               length(priors))
+    } else {
+      PEcAn.logger::logger.info("Method ", ens.sample.method, " has not been implemented yet, using uniform random sampling")
+      # uniform random
+      q_samples <- matrix(stats::runif(samples.num * length(priors)),
+                          samples.num, 
+                          length(priors))
+    }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
         samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } else {
-        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
+        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
@@ -148,21 +168,21 @@ get.parameter.samples <- function(settings,
   if ("sensitivity.analysis" %in% names(settings)) {
     
     ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
+    quantiles <- PEcAn.utils::get.quantiles(settings$sensitivity.analysis$quantiles)
     ### Get info on the years to run the sensitivity analysis (if requested)
     sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                            sa.end = settings$sensitivity.analysis$end.year)
     
-    PEcAn.logger::logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
+    PEcAn.logger::logger.info("\n Selected Quantiles: ", PEcAn.utils::vecpaste(round(quantiles, 3)))
     
     ### Generate list of sample quantiles for SA run
-    sa.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 
+    sa.samples <- PEcAn.utils::get.sa.sample.list(pft = trait.samples, env = env.samples, 
                                      quantiles = quantiles)
   }
   if ("ensemble" %in% names(settings)) {
     if (settings$ensemble$size == 1) {
       ## run at median if only one run in ensemble
-      ensemble.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 
+      ensemble.samples <- PEcAn.utils::get.sa.sample.list(pft = trait.samples, env = env.samples, 
                                              quantiles = 0.5)
       #if it's not there it's one probably
       if (is.null(settings$ensemble$size)) settings$ensemble$size<-1

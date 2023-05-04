@@ -111,7 +111,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
-      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, ...)
+      random.samples <- randtoolbox::sobol(n = ensemble.size, dim = total.sample.num, scrambling = 3, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
@@ -146,12 +146,22 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
       
       # meaning we want to keep MCMC samples together
       if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
-        # TODO: for now we are sampling row numbers uniformly
-        # stop if other methods were requested 
-        if(method != "uniform"){
-          PEcAn.logger::logger.severe("Only uniform sampling is available for joint sampling at the moment. Other approaches are not implemented yet.")
+        if (method == "halton") {
+          same.i <- round(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "sobol") {
+          same.i <- round(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "torus") {
+          same.i <- round(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+        } else if (method == "lhc") {
+          same.i <- round(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))
+        } else if (method == "uniform") {
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        } else {
+          PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+          # uniform random
+          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
         }
-        same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        
       }
       
       for (trait.i in seq(pft.samples[[pft.i]])) {
@@ -186,6 +196,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 ##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
@@ -195,10 +206,11 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##'
 ##' @importFrom dplyr %>%
+##' @importFrom rlang .data
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE,restart=NULL) {
+                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE) {
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -250,15 +262,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     } else {
       ensemble.id <- NA
     }
-    #-------------------------generating met/param/soil/veg/... for all ensumbles----
+    #-------------------------generating met/param/soil/veg/... for all ensembles----
     if (!is.null(con)){
       #-- lets first find out what tags are required for this model
       required_tags <- dplyr::tbl(con, 'models') %>%
-        dplyr::filter(id == !!as.numeric(settings$model$id)) %>%
+        dplyr::filter(.data$id == !!as.numeric(settings$model$id)) %>%
         dplyr::inner_join(dplyr::tbl(con, "modeltypes_formats"), by = c('modeltype_id')) %>%
         dplyr::collect() %>%
-        dplyr::filter(required == TRUE) %>%
-        dplyr::pull(tag)
+        dplyr::filter(.data$required == TRUE) %>%
+        dplyr::pull("tag")
       
     }else{
       required_tags<-c("met","parameters")
@@ -292,22 +304,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
       })
     
-
-    # Let's find the PFT based on site location, if it was found I will subset the ensemble.samples otherwise we're not affecting anything    
-    if(!is.null(con)){
-      Pft_Site_df <- dplyr::tbl(con, "sites_cultivars")%>%
-        dplyr::filter(site_id == !!settings$run$site$id) %>%
-        dplyr::inner_join(dplyr::tbl(con, "cultivars_pfts"), by = "cultivar_id") %>%
-        dplyr::inner_join(dplyr::tbl(con, "pfts"), by = c("pft_id" = "id")) %>%
-        dplyr::collect() 
-      
-      site_pfts_names <- Pft_Site_df$name %>% unlist() %>% as.character()
-      
-      PEcAn.logger::logger.info(paste("The most suitable pfts for your site are the followings:",site_pfts_names))
-      #-- if there is enough info to connect the site to pft
-      #if ( nrow(Pft_Site_df) > 0 & all(site_pfts_names %in% names(ensemble.samples)) ) ensemble.samples <- ensemble.samples [Pft_Site$name %>% unlist() %>% as.character()]
-    }
-
     # Reading the site.pft specific tags from xml
     site.pfts.vec <- settings$run$site$site.pft %>% unlist %>% as.character
     
@@ -436,13 +432,20 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       defined.pfts <- settings$pfts %>% purrr::map('name') %>% unlist %>% as.character
       # subset ensemble samples based on the pfts that are specified in the site and they are also sampled from.
       if (length(which(site.pfts.vec %in% defined.pfts)) > 0 )
-        new.params <- new.params %>% map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
+        new.params <- new.params %>% purrr::map(~list(.x[[which(site.pfts.vec %in% defined.pfts)]],restart=.x$restart))
       # warn if there is a pft specified in the site but it's not defined in the pecan xml.
       if (length(which(!(site.pfts.vec %in% defined.pfts)))>0) 
         PEcAn.logger::logger.warn(paste0("The following pfts are specified for the siteid ", settings$run$site$id ," but they are not defined as a pft in pecan.xml:",
                                          site.pfts.vec[which(!(site.pfts.vec %in% defined.pfts))]))
     }
     
+    #if ensemble folders do not exist create them
+    for(j in 1:length(run.id)){
+      if(!file.exists(file.path(settings$rundir, run.id[[j]]))){
+        dir.create(file.path(settings$rundir, run.id[[j]]))
+      }
+      
+    }
     
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
@@ -453,9 +456,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            stop.time =restart$stop.time, 
                            settings = settings,
                            new.state = new.state[i, ], 
-                           new.params = new.params[[i]], 
+                           new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
-                           RENAME = TRUE)
+                           RENAME = rename)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params

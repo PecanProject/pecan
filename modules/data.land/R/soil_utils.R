@@ -118,7 +118,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     mysoil$soil_water_potential_at_saturation[z]  <- -0.01 * (10.^(2.17 - 0.63*mysoil$fraction_of_clay_in_soil[z] - 1.58*mysoil$fraction_of_sand_in_soil[z]))
     
     # Hydraulic conductivity at saturation [ m/s ]
-    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$fraction_of_sand_in_soil[z] - 0.64*mysoil$fraction_of_clay_in_soil[z]),
+    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- PEcAn.utils::ud_convert(10.^(-0.60 + 1.26*mysoil$fraction_of_sand_in_soil[z] - 0.64*mysoil$fraction_of_clay_in_soil[z]),
                                            "inch/hour","meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
@@ -212,10 +212,10 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
   
   ## drop variables that are only meaningful internally
-  mysoil$slpotcp <- NULL
-  mysoil$slpotwp <- NULL
-  mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
-  mysoil$slcpd <- NULL
+  #mysoil$slpotcp <- NULL
+  #mysoil$slpotwp <- NULL
+  #mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
+  #mysoil$slcpd <- NULL
   
   return(mysoil)
   }#end function
@@ -313,7 +313,7 @@ sclass <- function(sandfrac,clayfrac){
 #' @return volumetric soil water content
 #' @export
 #'
-#' @examples
+#' 
 mpot2smoist <- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b,volume_fraction_of_water_in_soil_at_saturation){
   smfrac = ( mpot / soil_water_potential_at_saturation) ^ (-1. / soil_hydraulic_b)
   smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation

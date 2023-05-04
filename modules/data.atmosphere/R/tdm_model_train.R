@@ -65,10 +65,8 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
     # Precip needs to be a bit different.  We're going to calculate the
     # fraction of precip occuring in each hour we're going to estimate the
     # probability distribution of rain occuring in a given hour
-    dat.subset$rain.prop <- dat.subset$precipitation_flux/(dat.subset$precipitation_flux.day * 
-                                                             length(unique(dat.subset$hour)))
-    mod.doy <- lm(rain.prop ~ as.ordered(hour) * precipitation_flux.day - 
-                    1 - as.ordered(hour) - precipitation_flux.day, data = dat.subset)
+    dat.subset$rain.prop <- dat.subset$precipitation_flux/(dat.subset$precipitation_flux.day)
+    mod.doy <- lm(rain.prop ~ as.ordered(hour) - 1 , data = dat.subset)
   }
   
   if (v == "air_pressure") {
@@ -105,10 +103,15 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
   # ----- Each variable must do this Generate a bunch of random
   # coefficients that we can pull from without needing to do this step
   # every day
-  mod.coef <- coef(mod.doy)
-  mod.cov <- vcov(mod.doy)
-  piv <- as.numeric(which(!is.na(mod.coef)))
-  Rbeta <- MASS::mvrnorm(n = n.beta, mod.coef[piv], mod.cov)
+  if(n.beta>1){
+    mod.coef <- coef(mod.doy)
+    mod.cov <- vcov(mod.doy)
+    piv <- as.numeric(which(!is.na(mod.coef)))
+    Rbeta <- MASS::mvrnorm(n = n.beta, mod.coef[piv], mod.cov[piv,piv])
+  } else {
+    Rbeta <- matrix(coef(mod.doy), nrow=1)
+    colnames(Rbeta) <- names(coef(mod.doy))
+  }
   
   list.out <- list(model = mod.doy, betas = Rbeta)
   
@@ -165,12 +168,17 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
                           1, data = dat.subset[, ])
     }
     
-    res.coef <- coef(resid.model)
-    res.cov <- vcov(resid.model)
-    res.piv <- as.numeric(which(!is.na(res.coef)))
-    
-    beta.resid <- MASS::mvrnorm(n = n.beta, res.coef[res.piv], 
-                                res.cov)
+    if(n.beta>1){
+      res.coef <- coef(resid.model)
+      res.cov <- vcov(resid.model)
+      res.piv <- as.numeric(which(!is.na(res.coef)))
+      
+      beta.resid <- MASS::mvrnorm(n = n.beta, res.coef[res.piv], res.cov)      
+    } else {
+      beta.resid <- matrix(coef(resid.model), nrow=1)
+      colnames(beta.resid) <- names(coef(mod.doy))
+    }
+
     
     list.out[["model.resid"]] <- resid.model
     list.out[["betas.resid"]] <- beta.resid

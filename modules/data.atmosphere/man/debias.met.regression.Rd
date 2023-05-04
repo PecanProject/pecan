@@ -21,6 +21,7 @@ debias.met.regression(
   ens.mems = NULL,
   force.sanity = TRUE,
   sanity.tries = 25,
+  sanity.sd = 8,
   lat.in,
   lon.in,
   save.diagnostics = TRUE,
@@ -40,15 +41,15 @@ debias.met.regression(
 
 \item{vars.debias}{- which met variables should be debiased? if NULL, all variables in train.data}
 
-\item{CRUNCEP}{- flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for 
+\item{CRUNCEP}{- flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for
 met variables that have been naively gapfilled for certain time periods}
 
 \item{pair.anoms}{- logical stating whether anomalies from the same year should be matched or not}
 
-\item{pair.ens}{- logical stating whether ensembles from train and source data need to be paired together 
+\item{pair.ens}{- logical stating whether ensembles from train and source data need to be paired together
 (for uncertainty propogation)}
 
-\item{uncert.prop}{- method for error propogation if only 1 ensemble member; options=c(random, mean); *Not Implemented yet}
+\item{uncert.prop}{- method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1}
 
 \item{resids}{- logical stating whether to pass on residual data or not *Not implemented yet}
 
@@ -60,12 +61,14 @@ met variables that have been naively gapfilled for certain time periods}
 
 \item{ens.name}{- what is the name that should be attached to the debiased ensemble}
 
-\item{ens.mems}{- what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles 
+\item{ens.mems}{- what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles
 without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
 
 \item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
+
+\item{sanity.sd}{- how many standard deviations from the mean should be used to determine sane outliers (default 8)}
 
 \item{lat.in}{- latitude of site}
 
@@ -85,8 +88,8 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 functions print debugging information as they run?}
 }
 \description{
-This script debiases one dataset (e.g. GCM, re-analysis product) given another higher 
-             resolution product or empirical observations. It assumes input are in annual CF standard 
+This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
+             resolution product or empirical observations. It assumes input are in annual CF standard
              files that are generate from the pecan extract or download funcitons.
 }
 \details{

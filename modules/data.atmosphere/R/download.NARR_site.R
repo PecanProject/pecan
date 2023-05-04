@@ -8,15 +8,15 @@
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
 #' @param parallel Download in parallel? Default = TRUE
-#' @param ncores Number of cores for parallel download. Default is 
+#' @param ncores Number of cores for parallel download. Default is
 #' `parallel::detectCores()`
 #'
 #' @examples
-#' 
+#'
 #' \dontrun{
 #' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' }
-#' 
+#'
 #'
 #' @export
 #'
@@ -44,13 +44,13 @@ download.NARR_site <- function(outfolder,
 
   narr_byyear <- narr_data %>%
     dplyr::mutate(year = lubridate::year(datetime)) %>%
-    dplyr::group_by(year) %>%
+    dplyr::group_by(.data$year) %>%
     tidyr::nest()
 
   # Prepare result data frame
   result_full <- narr_byyear %>%
     dplyr::mutate(
-      file = file.path(outfolder, paste("NARR", year, "nc", sep = ".")),
+      file = file.path(outfolder, paste("NARR", .data$year, "nc", sep = ".")),
       host = PEcAn.remote::fqdn(),
       start_date = date_limits_chr[1],
       end_date = date_limits_chr[2],
@@ -73,10 +73,10 @@ download.NARR_site <- function(outfolder,
 
   narr_proc <- result_full %>%
     dplyr::mutate(
-      data_nc = purrr::map2(data, file, prepare_narr_year, lat = lat, lon = lon)
+      data_nc = purrr::map2(.data$data, .data$file, prepare_narr_year, lat = lat, lon = lon)
     )
 
-  results <- dplyr::select(result_full, -data)
+  results <- dplyr::select(result_full, -"data")
   return(invisible(results))
 } # download.NARR_site
 
@@ -86,15 +86,15 @@ download.NARR_site <- function(outfolder,
 #' @param file Full path to target file
 #' @param lat_nc `ncdim` object for latitude
 #' @param lon_nc `ncdim` object for longitude
-#' @param verbose 
-#' @return List of NetCDF variables in data. Creates NetCDF file containing 
+#' @param verbose logical: ask`ncdf4` functions to be very chatty while they work?
+#' @return List of NetCDF variables in data. Creates NetCDF file containing
 #' data as a side effect
 prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
   starttime <- min(dat$datetime)
   starttime_f <- strftime(starttime, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
   time <- difftime(dat$datetime, starttime) %>%
     as.numeric() %>%
-    udunits2::ud.convert("seconds", "hours")
+    PEcAn.utils::ud_convert("seconds", "hours")
   time_nc <- ncdf4::ncdim_def(
     name = "time",
     units = paste0("hours since ", starttime_f),
@@ -117,11 +117,11 @@ prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
 #' Create `ncvar` object from variable name
 #'
 #' @param variable CF variable name
-#' @param dims List of NetCDF dimension objects (passed to 
+#' @param dims List of NetCDF dimension objects (passed to
 #' `ncdf4::ncvar_def(..., dim)`)
 #' @return `ncvar` object (from `ncvar_def`)
 col2ncvar <- function(variable, dims) {
-  var_info <- narr_all_vars %>% dplyr::filter(CF_name == variable)
+  var_info <- narr_all_vars %>% dplyr::filter(.data$CF_name == variable)
   ncdf4::ncvar_def(
     name = variable,
     units = var_info$units,
@@ -136,9 +136,9 @@ col2ncvar <- function(variable, dims) {
 #' @param end_date End date for meteorology
 #' @param lat.in Latitude coordinate
 #' @param lon.in Longitude coordinate
-#' @param progress Whether or not to show a progress bar (default = `TRUE`).  
+#' @param progress Whether or not to show a progress bar (default = `TRUE`).
 #' Requires the `progress` package to be installed.
-#' @param drop_outside Whether or not to drop dates outside of `start_date` to 
+#' @param drop_outside Whether or not to drop dates outside of `start_date` to
 #' `end_date` range (default = `TRUE`).
 #' @inheritParams download.NARR_site
 #' @return `tibble` containing time series of NARR data for the given site
@@ -208,7 +208,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   sfc_df <- generate_narr_url(dates, FALSE)
 
   # Load dimensions, etc. from first netCDF file
-  nc1 <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
+  nc1 <- PEcAn.utils::robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
   on.exit(ncdf4::nc_close(nc1), add = TRUE)
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
@@ -228,16 +228,17 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     get_dfs <- dplyr::bind_rows(flx_df, sfc_df)
     cl <- parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl)
+    flx <- NULL
     get_dfs$data <- foreach::`%dopar%`(
       foreach::foreach(
         url = get_dfs$url, flx = get_dfs$flx,
         .packages = c("PEcAn.data.atmosphere", "magrittr"),
         .export = c("get_narr_url", "robustly")
       ),
-        robustly(get_narr_url)(url, xy = xy, flx = flx)
+        PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)
     )
-    flx_data_raw <- dplyr::filter(get_dfs, flx)
-    sfc_data_raw <- dplyr::filter(get_dfs, !flx)
+    flx_data_raw <- dplyr::filter(get_dfs, .data$flx)
+    sfc_data_raw <- dplyr::filter(get_dfs, !.data$flx)
   } else {
 
     # Retrieve remaining variables by iterating over URLs
@@ -256,7 +257,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = TRUE,
           pb = pb
@@ -267,7 +268,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = FALSE,
           pb = pb
@@ -294,21 +295,21 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
 #' @param dat Nested `tibble` from mapped call to [get_narr_url]
 post_process <- function(dat) {
   dat %>%
-    tidyr::unnest(data) %>%
+    tidyr::unnest(.data$data) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(datetime = startdate + lubridate::dhours(dhours)) %>%
-    dplyr::select(-startdate, -dhours) %>%
-    dplyr::select(datetime, dplyr::everything()) %>%
-    dplyr::select(-url, url)
+    dplyr::mutate(datetime = .data$startdate + lubridate::dhours(.data$dhours)) %>%
+    dplyr::select(-"startdate", -"dhours") %>%
+    dplyr::select("datetime", dplyr::everything()) %>%
+    dplyr::select(-"url", "url")
 }
 
 #' Generate NARR url from a vector of dates
 #'
-#' Figures out file names for the given dates, based on NARR's convoluted and 
+#' Figures out file names for the given dates, based on NARR's convoluted and
 #' inconsistent naming scheme.
 #'
 #' @param dates Vector of dates for which to generate URL
-#' @param flx (Logical) If `TRUE`, format for `flx` variables. Otherwise, 
+#' @param flx (Logical) If `TRUE`, format for `flx` variables. Otherwise,
 #' format for `sfc` variables. See [narr_flx_vars].
 #' @author Alexey Shiklomanov
 generate_narr_url <- function(dates, flx) {
@@ -322,25 +323,25 @@ generate_narr_url <- function(dates, flx) {
   )
   tibble::tibble(date = dates) %>%
     dplyr::mutate(
-      year = lubridate::year(date),
-      month = lubridate::month(date),
-      daygroup = daygroup(date, flx)
+      year = lubridate::year(.data$date),
+      month = lubridate::month(.data$date),
+      daygroup = daygroup(.data$date, flx)
     ) %>%
-    dplyr::group_by(year, month, daygroup) %>%
+    dplyr::group_by(.data$year, .data$month, .data$daygroup) %>%
     dplyr::summarize(
-      startdate = min(date),
+      startdate = min(.data$date),
       url = sprintf(
         "%s/%d/NARR%s_%d%02d_%s.tar",
         base_url,
-        unique(year),
+        unique(.data$year),
         tag,
-        unique(year),
-        unique(month),
-        unique(daygroup)
+        unique(.data$year),
+        unique(.data$month),
+        unique(.data$daygroup)
       )
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(startdate, url)
+    dplyr::select("startdate", "url")
 }
 
 #' Assign daygroup tag for a given date
@@ -382,7 +383,7 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   if (dhours[1] == 3) dhours <- dhours - 3
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
-    narr_vars %>% dplyr::select(variable = NARR_name, unit = units),
+    narr_vars %>% dplyr::select(variable = "NARR_name", unit = "units"),
     read_narr_var,
     nc = nc, xy = xy, flx = flx, pb = pb
   )
@@ -413,9 +414,9 @@ read_narr_var <- function(nc, xy, variable, unit, flx, pb = NULL) {
   # So, divide by seconds in 3 hours and change unit accordingly
   if (variable == "Total_precipitation_surface_3_Hour_Accumulation") {
     nc_unit <- paste0(nc_unit, "/s")
-    out <- out / udunits2::ud.convert(3, "hours", "seconds")
+    out <- out / PEcAn.utils::ud_convert(3, "hours", "seconds")
   }
-  final <- udunits2::ud.convert(out, nc_unit, unit)
+  final <- PEcAn.utils::ud_convert(out, nc_unit, unit)
   if (!is.null(pb)) pb$tick()
   final
 }
@@ -445,7 +446,7 @@ narr_all_vars <- dplyr::bind_rows(narr_flx_vars, narr_sfc_vars)
 #'
 #' @inheritParams read_narr_var
 #' @inheritParams get_NARR_thredds
-#' @return Vector length 2 containing NARR `x` and `y` indices, which can be 
+#' @return Vector length 2 containing NARR `x` and `y` indices, which can be
 #' used in `ncdf4::ncvar_get` `start` argument.
 #' @author Alexey Shiklomanov
 latlon2narr <- function(nc, lat.in, lon.in) {
@@ -457,11 +458,11 @@ latlon2narr <- function(nc, lat.in, lon.in) {
   c(x = x_ind, y = y_ind)
 }
 
-#' Convert latitude and longitude to x-y coordinates (in km) in Lambert 
+#' Convert latitude and longitude to x-y coordinates (in km) in Lambert
 #' conformal conic projection (used by NARR)
 #'
 #' @inheritParams get_NARR_thredds
-#' @return `sp::SpatialPoints` object containing transformed x and y 
+#' @return `sp::SpatialPoints` object containing transformed x and y
 #' coordinates, in km, which should match NARR coordinates
 #' @importFrom rgdal checkCRSArgs
   # ^not used directly here, but needed by sp::CRS.

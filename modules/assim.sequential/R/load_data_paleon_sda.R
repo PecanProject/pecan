@@ -24,14 +24,25 @@ load_data_paleon_sda <- function(settings){
     return(obs.list)
   }
   
-  library(plyr) #need to load to use .fnc below
+  suggests_avail <- c(
+    reshape2 = requireNamespace("reshape2", quietly = TRUE),
+    plyr = requireNamespace("plyr", quietly = TRUE))
+  suggests_missing <- paste(
+    sQuote(names(suggests_avail)[!suggests_avail], q = FALSE),
+    collapse = ", ")
+  if (!all(suggests_avail)) {
+    PEcAn.logger::logger.error(
+      "Can't find package(s)", suggests_missing,
+      ", needed by `PEcAnAssimSequential::load_data_paleon_sda()`.",
+      "Please install these and try again.")
+  }
   
-  d <- settings$database$bety[c("dbname", "password", "host", "user")]
-  bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
+  d <- settings$database$bety
+  con <- PEcAn.DB::db.open(d)
   
   if(settings$host$name != 'localhost') PEcAn.logger::logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
-  site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
+  site <- PEcAn.DB::query.site(settings$run$site$id, con)
   format_id <- settings$state.data.assimilation$data$format_id
 
   input.list <- list()
@@ -57,11 +68,15 @@ load_data_paleon_sda <- function(settings){
   biomass2carbon <- 0.48
   
   for(i in seq_along(format_id)){
-    input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), bety$con)
+    input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), con)
     input.id[[i]] <- input.list[[i]]$id
     
-    data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
-    format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
+    data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, con)
+    format_full <- format <- PEcAn.DB::query.format.vars(
+      bety = con,
+      input.id = input.id[[i]],
+      format.id = NA,
+      var.ids=NA)
     
 
     ### Tree Ring Data Product
@@ -90,17 +105,22 @@ load_data_paleon_sda <- function(settings){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
       if(!is.null(obvs[[i]]$AbvGrndWood))obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon #* kgm2Mgha 
       if(!is.null(obvs[[i]]$GWBI)) obvs[[i]]$GWBI <- obvs[[i]]$GWBI * biomass2carbon  #* kgms2Mghayr 
-      arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
-      arguments2 <- list(.(year), .(variable))
-      arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
-      
+      arguments <- list(
+        plyr::.(year, MCMC_iteration, site_id),
+        plyr::.(variable))
+      arguments2 <- list(plyr::.(year), plyr::.(variable))
+      arguments3 <- list(
+        plyr::.(MCMC_iteration),
+        plyr::.(variable),
+        plyr::.(year))
+
       dataset <- obvs[[i]]
       
       ### Map species to model specific PFTs
       if(any(var.names == 'AGB.pft')){
-        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
+        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda', con)
         pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
-                             con = bety$con, allow_missing = TRUE)
+                             con = con, allow_missing = TRUE)
         
         x <- paste0('AGB.pft.', pft_mat$pft)
         names(x) <- spp_id$input_code
@@ -110,11 +130,16 @@ load_data_paleon_sda <- function(settings){
         dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
         
         variable <- c('AbvGrndWood')
-        arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
-        arguments2 <- list(.(year, pft.cat), .(variable))
-        arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
-      } 
-      
+        arguments <- list(
+          plyr::.(year, MCMC_iteration, site_id, pft.cat),
+          plyr::.(variable))
+        arguments2 <- list(plyr::.(year, pft.cat), plyr::.(variable))
+        arguments3 <- list(
+          plyr::.(MCMC_iteration),
+          plyr::.(pft.cat, variable),
+          plyr::.(year))
+      }
+
       PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
       melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
       melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)

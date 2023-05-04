@@ -13,6 +13,9 @@ sample_ic(
   n.ensemble,
   machine_host,
   source,
+  bin_var = "DBH",
+  bin_size = 10,
+  bin_herb_soil = TRUE,
   ...
 )
 }
@@ -32,6 +35,14 @@ sample_ic(
 \item{machine_host}{localhost name, e.g. "pecan2.bu.edu"}
 
 \item{source}{string to appear in file names, e.g. "PalEON"}
+
+\item{bin_var}{variable you would like to sample by, DEFAULT is DBH}
+
+\item{bin_size}{bin size for sampling, DEFAULT is 10}
+
+\item{bin_herb_soil}{if we want to use bin size for both herb and soil sampling}
+
+\item{...}{Other inputs}
 }
 \description{
 sample_ic

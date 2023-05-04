@@ -3,8 +3,8 @@
 \docType{package}
 \name{PEcAn}
 \alias{PEcAn}
-\alias{PECAn,}
-\alias{pecan,}
+\alias{PECAn}
+\alias{pecan}
 \alias{package-pecan}
 \title{R package to support PEcAn, the Predictive Ecosystem Analyzer}
 \description{

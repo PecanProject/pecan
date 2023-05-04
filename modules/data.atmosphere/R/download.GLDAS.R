@@ -3,12 +3,16 @@
 ##' Download and convert single grid point GLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
 ##'
 ##' @export
-##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param site_id
-##' @param lat.in
-##' @param lon.in
+##'
+##' @param outfolder location where output is stored
+##' @param start_date desired start date
+##' @param end_date desired end date
+##' @param site_id desired site id
+##' @param lat.in latitude of site
+##' @param lon.in longistude of site
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param verbose Default is FALSE, used as input for ncdf4::ncvar_def
+##' @param ... other inputs
 ##'
 ##' @author Christy Rollinson
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
@@ -124,7 +128,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         dap_file <- paste0(dap_base, "/", year, "/", doy, "/", dap.log[h, 1], ".ascii?")
 
         # Query lat/lon
-        latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
+        latlon <- curl::curl_download(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
         lats <- as.vector(utils::read.table(
@@ -149,7 +153,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         }
         dap_query <- substr(dap_query, 2, nchar(dap_query))
 
-        dap.out <- RCurl::getURL(paste0(dap_file, dap_query))
+        dap.out <- curl::curl_download(paste0(dap_file, dap_query))
         for (v in seq_len(nrow(var))) {
           var.now <- var$DAP.name[v]
           ind.1 <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)

@@ -14,7 +14,7 @@ latlon2narr(nc, lat.in, lon.in)
 \item{lon.in}{Longitude coordinate}
 }
 \value{
-Vector length 2 containing NARR `x` and `y` indices, which can be 
+Vector length 2 containing NARR `x` and `y` indices, which can be
 used in `ncdf4::ncvar_get` `start` argument.
 }
 \description{

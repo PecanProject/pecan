@@ -3,11 +3,11 @@ library(dplyr)
 #* Obtain the encrypted password for a user
 #* @param username Username, which is also the 'salt'
 #* @param password Unencrypted password
-#* @param secretkey Secret Key, which if null, is set to 'notasecret'
+#* @param secretkey Secret Key, which if NA, is set to 'notasecret'
 #* @return Encrypted password
 #* @author Tezan Sahu
-get_crypt_pass <- function(username, password, secretkey = NULL) {
-  secretkey <- if(is.null(secretkey)) "notasecret" else secretkey
+get_crypt_pass <- function(username, password, secretkey = NA) {
+  secretkey <- if(is.na(secretkey)) "notasecret" else secretkey
   dig <- secretkey
   salt <- username
   for (i in 1:10) {
@@ -29,21 +29,32 @@ get_crypt_pass <- function(username, password, secretkey = NULL) {
 #* @author Tezan Sahu
 validate_crypt_pass <- function(username, crypt_pass) {
 
-  dbcon <- PEcAn.DB::betyConnect()
-  
-  res <- tbl(dbcon, "users") %>%
+  res <- tbl(global_db_pool, "users") %>%
     filter(login == username,
            crypted_password == crypt_pass) %>%
-    count() %>%
     collect()
 
-  PEcAn.DB::db.close(dbcon)
-  
-  if (res == 1) {
-    return(TRUE)
+  if (nrow(res) == 1) {
+    return(res$id)
   }
   
-  return(FALSE)
+  return(NA)
+}
+
+#* Check if the API key exists
+#* @param api_key API Key
+#* @return user details if apikey exists, else Invalid API Key
+#* @author Nihar Sanda
+validate_api_key <- function(api_key) {
+  res <- tbl(global_db_pool, "users") %>%
+    filter(apikey == api_key) %>%
+    collect()
+  
+  if (nrow(res) == 1) {
+    return(res)
+  }
+  
+  return(NA) 
 }
 
 #* Filter to authenticate a user calling the PEcAn API
@@ -52,13 +63,19 @@ validate_crypt_pass <- function(username, crypt_pass) {
 #* @return Appropriate response
 #* @author Tezan Sahu
 authenticate_user <- function(req, res) {
+  # Fix CORS issues
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  
   # If the API endpoint that do not require authentication
   if (
+    Sys.getenv("AUTH_REQ") == FALSE ||
     grepl("swagger", req$PATH_INFO, ignore.case = TRUE) || 
     grepl("openapi.json", req$PATH_INFO, fixed = TRUE) ||
-    grepl("ping", req$PATH_INFO, ignore.case = TRUE) ||
-    grepl("status", req$PATH_INFO, ignore.case = TRUE))
+    grepl("/api/ping", req$PATH_INFO, ignore.case = TRUE) ||
+    grepl("/api/status", req$PATH_INFO, ignore.case = TRUE))
   {
+    req$user$userid <- NA
+    req$user$username <- ""
     return(plumber::forward())
   }
   
@@ -70,10 +87,30 @@ authenticate_user <- function(req, res) {
     password <- auth_details[2]
     crypt_pass <- get_crypt_pass(username, password)
     
-    if(validate_crypt_pass(username, crypt_pass)){
+    userid <- validate_crypt_pass(username, crypt_pass)
+    
+    if(! is.na(userid)){
+      req$user$userid <- userid
+      req$user$username <- username
       return(plumber::forward())
     }
     
+  }
+  
+  if(!is.null(req$HTTP_X_API_KEY)) {
+    key <- req$HTTP_X_API_KEY
+    # HTTP_X_API_KEY is of the form "api_key"
+    user <- validate_api_key(key)
+    userid <- user$id
+    username <- user$login
+    print(userid)
+    print(username)
+      
+    if(! is.na(userid)){
+      req$user$userid <- userid
+      req$user$username <- username
+      return(plumber::forward())
+    }
   }
   
   res$status <- 401 # Unauthorized

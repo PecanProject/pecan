@@ -1,4 +1,4 @@
-##' @export get_table_column_names
+##' get_table_column_names
 ##' @author Tempest McCabe
 ##' 
 ##' @param table a table that is output from one of the find_* functions, 
@@ -11,6 +11,7 @@
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
+##' @export
 get_table_column_names<-function(table, con){
   
   if(is.data.frame(table)){

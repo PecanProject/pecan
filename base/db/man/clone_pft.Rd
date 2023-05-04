@@ -21,8 +21,8 @@ ID of the newly created pft in database, creates new PFT as a side effect
 \description{
 Creates a new pft that is a duplicate of an existing pft,
 including relationships with priors, species, and cultivars (if any) of the existing pft.
-This function mimics the 'clone pft' button in the PFTs record view page in the 
-BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to 
+This function mimics the 'clone pft' button in the PFTs record view page in the
+BETYdb web interface for PFTs that aggregate >=1 species, but adds the ability to
 clone the cultivar associations.
 }
 \examples{

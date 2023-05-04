@@ -1,3 +1,33 @@
+#' @name download.raw.met.module
+#' @title download.raw.met.module
+#' 
+#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
+#' data frame contains information about one file.
+#'
+#' @param dir directory to write outputs to
+#' @param met source included in input_met
+#' @param register register.xml, provided by met.process
+#' @param machine machine associated with hostname, provided by met.process
+#' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+#' @param str_ns substitute for site_id if not provided, provided by met.process
+#' @param con database connection based on dbparms in met.process
+#' @param input_met Which data source to process
+#' @param site.id site id
+#' @param lat.in site latitude, provided by met.process
+#' @param lon.in site longitude, provided by met.process
+#' @param host host info from settings file
+#' @param site site info from settings file
+#' @param username database username
+#' @param overwrite whether to force download.raw.met.module to proceed
+#' @param dbparms database settings from settings file
+#' @param Ens.Flag default set to FALSE 
+#'
+#' 
+#' @export
+#'
+#'
+
 .download.raw.met.module <-
   function(dir,
            met,
@@ -37,7 +67,7 @@
   }
   
   if (register$scale == "regional") {
-    raw.id <- PEcAn.utils::convert.input(
+    raw.id <- PEcAn.DB::convert_input(
       input.id = NA,
       outfolder = outfolder,
       formatname = register$format$name,
@@ -66,7 +96,7 @@
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- PEcAn.utils::convert.input(
+    raw.id <- PEcAn.DB::convert_input(
       input.id = NA,
       outfolder = outfolder,
       formatname = register$format$name,
@@ -87,7 +117,9 @@
       username = username,
       lat.in = lat.in,
       lon.in = lon.in,
-      pattern = met
+      pattern = met, 
+      site_id = site.id,
+      product = input_met$product
     )
     
   } else {

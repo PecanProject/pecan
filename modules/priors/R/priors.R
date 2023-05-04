@@ -182,14 +182,37 @@ pr.samp <- function(distn, parama, paramb, n) {
 #--------------------------------------------------------------------------------------------------#
 ##' Take n random samples from prior
 ##'
-##' Like pr.samp, with prior as a single input
+##' Similar to the prior sample function \link{pr.samp}, except 1) it takes the prior as a named dataframe
+##' or list and it can return either a random sample of length n OR a sample from a quantile specified as p
 ##' @title Get Samples
-##' @param prior data.frame with distn, parama, paramb
-##' @param n number of samples to return
+##' @param prior data.frame with distn, parama, and optionally paramb.
+##' @param n number of samples to return from a random sample of the rdistn family of functions (e.g. rnorm)
+##' @param p vector of quantiles from which to sample the distribution; typically pre-generated upstream
+##' in the workflow to be used by the qdistn family of functions (e.g. qnorm)
 ##' @return vector with n random samples from prior
 ##' @seealso \link{pr.samp}
+##' @examples
+##' \dontrun{
+##' # return 1st through 99th quantile of standard normal distribution:
+##' PEcAn.priors::get.sample(
+##'    prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+##'    p = 1:99/100)
+##' # return 100 random samples from standard normal distribution:
+##' PEcAn.priors::get.sample(
+##'    prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+##'    n = 100)
+##' }
 ##' @export
-get.sample <- function(prior, n) {
+get.sample <- function(prior, n = NULL, p = NULL) {
+  if(!is.null(p)){
+    if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
+      ## one parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama)))
+    } else {
+      ## two parameter distributions
+      return(do.call(paste0("q", prior$distn), list(p, prior$parama, prior$paramb)))
+    }
+  }
   if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
     ## one parameter distributions
     return(do.call(paste0("r", prior$distn), list(n, prior$parama)))

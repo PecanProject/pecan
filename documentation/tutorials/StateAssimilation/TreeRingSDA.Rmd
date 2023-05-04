@@ -96,21 +96,21 @@ Perform a site-level SIPNET run using the following settings
   </state.data.assimilation>
 ```
 
-* Delete the ```<pfts>`` block from the settings
+* Delete the `<pfts>` block from the settings
 
-* In the PEcAn History, go to your PDA run and open ```pecan.pda[UNIQUEID].xml``` (the one PEcAn saved for you AFTER you finished the PDA)
+* In the PEcAn History, go to your PDA run and open `pecan.pda[UNIQUEID].xml` (the one PEcAn saved for you AFTER you finished the PDA)
 
-* Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
+* Cut-and-paste the PDA `<pfts>` block into the SDA settings file
 
-* Save the file as ```pecan.SDA.xml```
+* Save the file as `pecan.SDA.xml`
 
 #### Loading data
 
 * If you have not done so already, clone (new) or pull (update) the PalEON Camp2016 repository
  + Open a shell under Tools > Shell
- + ```cd`` to go to your home directory
- + To clone: ```git clone git@github.com:PalEON-Project/Camp2016.git```
- + To pull: ```cd Camp2016; git pull https://github.com/PalEON-Project/Camp2016.git master```
+ + `cd` to go to your home directory
+ + To clone: `git clone git@github.com:PalEON-Project/Camp2016.git`
+ + To pull: `cd Camp2016; git pull https://github.com/PalEON-Project/Camp2016.git master`
 
 * Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
 
@@ -158,7 +158,7 @@ $$\tau_{r} \sim Gamma(a_r,r_r)$$
 
 This model is encapsulated in the PEcAn function:
 
-``````{r echo= TRUE, eval=FALSE}
+```{r echo = TRUE, eval = FALSE}
 InventoryGrowthFusion(combined,n,iter)
 ```
 
@@ -188,7 +188,7 @@ The function `sda.enkf` will run SIPNET in Ensemble Kalman Filter mode. The outp
 * ANALYSIS will be the updated ensemble sample given the NPP observations
 * enkf.params contains the prior and posterior mean vector and covariance matrix for each time step.
 
-If you look within this function you will find that much of the format is similar to the pda.mcmc function, but in general is much simpler. The function begins by setting parameters, opening a database connection, and generating workflow and ensemble ID's. Next we split the SIPNET clim meteorology file up into individual annual files since we will be running SIPNET for a year at a time between updates. Next we perform an initial set of runs starting from the initial states and parameters we described above. In doing so we create the run and output directories, the README file, and the runs.txt file that is read by start.model.runs. Worth noting is that the README and runs.txt don't need to be updated within the forecast loop. Given this initial run we then enter the forecast loop. Within this loop over years we perform four basic steps. First, we read the output from the latest runs. Second, we calculate the updated posterior state estimates based on the model ensemble prior and observation likelihood. Third, we resample the state estimates based on these posterior parameters. Finally, we start a new set of runs based on this sample. The sda.enfk function then ends by saving the outputs and generating some diagnostic figures. The first set of these shows the data, forecast, analysis. The second set shows pairs plots of the covariance structure for the Forecast and Analysis steps. The final set shows the time-series plots for the Analysis of the over state variables produced by SIPNET.
+If you look within this function you will find that much of the format is similar to the pda.mcmc function, but in general is much simpler. The function begins by setting parameters, opening a database connection, and generating workflow and ensemble ID's. Next we split the SIPNET clim meteorology file up into individual annual files since we will be running SIPNET for a year at a time between updates. Next we perform an initial set of runs starting from the initial states and parameters we described above. In doing so we create the run and output directories, the README file, and the runs.txt file that is read by start_model_runs. Worth noting is that the README and runs.txt don't need to be updated within the forecast loop. Given this initial run we then enter the forecast loop. Within this loop over years we perform four basic steps. First, we read the output from the latest runs. Second, we calculate the updated posterior state estimates based on the model ensemble prior and observation likelihood. Third, we resample the state estimates based on these posterior parameters. Finally, we start a new set of runs based on this sample. The sda.enfk function then ends by saving the outputs and generating some diagnostic figures. The first set of these shows the data, forecast, analysis. The second set shows pairs plots of the covariance structure for the Forecast and Analysis steps. The final set shows the time-series plots for the Analysis of the over state variables produced by SIPNET.
 
 #### Finishing up
 

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ICOS>
+  <scale>site</scale>
+  <format>
+    <id>1000000136</id>
+    <name>ICOS_ECOSYSTEM_HH</name>
+    <mimetype>text/csv</mimetype>
+    <inputtype>csv</inputtype>
+  </format>
+</ICOS>

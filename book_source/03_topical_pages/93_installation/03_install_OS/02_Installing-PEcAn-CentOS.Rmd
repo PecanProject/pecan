@@ -37,7 +37,7 @@ firewall-cmd --reload
 #apt-get -y install texinfo texlive-latex-base texlive-latex-extra texlive-fonts-recommended
 
 # install devtools
-echo 'install.packages("devtools", repos="http://cran.rstudio.com/")' | R --vanilla
+echo 'install.packages("devtools")' | R --vanilla
 
 # done as root
 exit

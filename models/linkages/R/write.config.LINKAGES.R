@@ -104,8 +104,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     load(climate_file) 
   }
   
-  temp.mat <- matrix(temp.mat[which(rownames(temp.mat)%in%start.year:end.year),])
-  precip.mat <- matrix(precip.mat[which(rownames(precip.mat)%in%start.year:end.year),])
+  temp.mat <- matrix(temp.mat[which(rownames(temp.mat)%in%start.year:end.year),],ncol=12,byrow=F)
+  precip.mat <- matrix(precip.mat[which(rownames(precip.mat)%in%start.year:end.year),],ncol=12,byrow=F)
   
   basesc <- 74
   basesn <- 1.64
@@ -137,7 +137,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           }
           
           if ("SLA" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FWT <- (1/vals$SLA)*1000
+            sla_use <- (1/vals$SLA)*1000
+            sla_use[sla_use>5000] <- stats::rnorm(1,4000,100)
+            spp.params[spp.params$Spp_Name == group, ]$FWT <- sla_use
             ## If change here need to change in write_restart as well
             }
           

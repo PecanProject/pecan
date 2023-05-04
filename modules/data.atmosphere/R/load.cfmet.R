@@ -44,9 +44,9 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   ## convert to days
   if (!base.units == "days") {
-    time.idx <- udunits2::ud.convert(time.idx, basetime.string, paste("days since ", base.date))
+    time.idx <- PEcAn.utils::ud_convert(time.idx, basetime.string, paste("days since ", base.date))
   }
-  time.idx <- udunits2::ud.convert(time.idx, "days", "seconds")
+  time.idx <- PEcAn.utils::ud_convert(time.idx, "days", "seconds")
   date <- as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
 
   ## data table warns not to use POSIXlt, which is induced by round() 
@@ -71,10 +71,9 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   results <- list()
 
-  utils::data(mstmip_vars, package = "PEcAn.utils", envir = environment())
 
   ## pressure naming hack pending https://github.com/ebimodeling/model-drivers/issues/2
-  standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
+  standard_names <- append(as.character(PEcAn.utils::standard_vars$standard_name), "surface_pressure")
   variables <- as.character(standard_names[standard_names %in% 
                                              c("surface_pressure", attributes(met.nc$var)$names)])
   

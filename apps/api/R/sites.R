@@ -7,23 +7,24 @@ library(dplyr)
 #* @get /<site_id>
 getSite <- function(site_id, res){
   
-  dbcon <- PEcAn.DB::betyConnect()
-  
-  site <- tbl(dbcon, "sites") %>%
+  site <- tbl(global_db_pool, "sites") %>%
     select(-created_at, -updated_at, -user_id, -geometry) %>%
     filter(id == !!site_id)
   
   
   qry_res <- site %>% collect()
   
-  PEcAn.DB::db.close(dbcon)
-  
   if (nrow(qry_res) == 0) {
     res$status <- 404
     return(list(error="Site not found"))
   }
   else {
-    return(qry_res)
+    # Convert the response from tibble to list
+    response <- list()
+    for(colname in colnames(qry_res)){
+      response[colname] <- qry_res[colname]
+    }
+    return(response)
   }
 }
 
@@ -36,17 +37,15 @@ getSite <- function(site_id, res){
 #' @author Tezan Sahu
 #* @get /
 searchSite <- function(sitename="", ignore_case=TRUE, res){
-  dbcon <- PEcAn.DB::betyConnect()
+  sitename <- URLdecode(sitename)
   
-  sites <- tbl(dbcon, "sites") %>%
+  sites <- tbl(global_db_pool, "sites") %>%
     select(id, sitename) %>%
     filter(grepl(!!sitename, sitename, ignore.case=ignore_case)) %>%
     arrange(id)
   
   
   qry_res <- sites %>% collect()
-  
-  PEcAn.DB::db.close(dbcon)
   
   if (nrow(qry_res) == 0) {
     res$status <- 404

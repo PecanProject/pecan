@@ -14,6 +14,7 @@ predict_subdaily_met(
   yrs.predict = NULL,
   ens.labs = 1:3,
   resids = FALSE,
+  adjust.pr = 1,
   force.sanity = TRUE,
   sanity.tries = 25,
   overwrite = FALSE,
@@ -45,6 +46,8 @@ For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory wit
 ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
+
+\item{adjust.pr}{- adjustment factor fore preciptiation when the extracted values seem off}
 
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
 

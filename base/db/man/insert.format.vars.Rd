@@ -39,17 +39,17 @@ format_id
 Insert Format and Format-Variable Records
 }
 \details{
-The formats_variables argument must be a 'tibble' and be structured in a specific format so that the SQL query functions properly. All arguments should be passed as vectors so that each entry will correspond with a specific row. All empty values should be specified as NA.  
+The formats_variables argument must be a 'tibble' and be structured in a specific format so that the SQL query functions properly. All arguments should be passed as vectors so that each entry will correspond with a specific row. All empty values should be specified as NA.
 \describe{
 \item{variable_id}{(Required) Vector of integers.}
-\item{name}{(Optional) Vector of character strings. The variable name in the imported data need only be specified if it differs from the BETY variable name.} 
+\item{name}{(Optional) Vector of character strings. The variable name in the imported data need only be specified if it differs from the BETY variable name.}
 \item{unit}{(Optional) Vector of type character string. Should be in a format parseable by the udunits library and need only be secified if the units of the data in the file differ from the BETY standard.}
 \item{storage_type}{(Optional) Vector of character strings. Storage type need only be specified if the variable is stored in a format other than would be expected (e.g. if numeric values are stored as quoted character strings). Additionally, storage_type stores POSIX codes that are used to store any time variables (e.g. a column with a 4-digit year would be \%Y). See also \code{[base::strptime]}}
 \item{column_number}{Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.}}
 }
 \examples{
 \dontrun{
-bety <- PEcAn.DB::betyConnect()
+con <- PEcAn.DB::betyConnect()
 
 formats_variables_tibble <- tibble::tibble(
   variable_id = c(411, 135, 382),
@@ -59,7 +59,7 @@ formats_variables_tibble <- tibble::tibble(
   column_number = c(2, NA, 4))
 
 insert.format.vars(
-  con = bety$con,
+  con = con,
   format_name = "LTER-HFR-103",
   mimetype_id = 1090,
   notes = "NPP from Harvard Forest.",

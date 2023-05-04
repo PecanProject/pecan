@@ -22,13 +22,13 @@
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   runid <- basename(outdir)
-  DALEC.configs <- read.table(file.path(gsub(pattern = "/out/",
+  DALEC.configs <- utils::read.table(file.path(gsub(pattern = "/out/",
                                              replacement = "/run/", x = outdir),
                                         paste0("CONFIG.", runid)),
                               stringsAsFactors = FALSE)
   
   ### Read in model output in DALEC format
-  DALEC.output      <- read.table(file.path(outdir, "out.txt"),
+  DALEC.output      <- utils::read.table(file.path(outdir, "out.txt"),
                                   header = FALSE, sep = "")
   DALEC.output.dims <- dim(DALEC.output)
   

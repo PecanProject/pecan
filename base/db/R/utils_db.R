@@ -256,7 +256,7 @@ db.close <- function(con, showWarnings = TRUE) {
 
   id <- attr(con, "pecanid")
   if (showWarnings && is.null(id)) {
-    PEcAn.logger::logger.warn("Connection created outside of PEcAn.DB package")
+    PEcAn.logger::logger.warn("Closing connection created outside of PEcAn.DB package")
   } else {
     deleteme <- which(.db.utils$connections$id == id)
     if (showWarnings && length(deleteme) == 0) {
@@ -322,7 +322,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
   }
 
   #check table's privilege about read and write permission
-  user.permission <<- tryCatch({
+  user.permission <- tryCatch({
     invisible(db.query(
       paste0("SELECT privilege_type FROM information_schema.role_table_grants ",
              "WHERE grantee='", params$user,

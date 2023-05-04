@@ -1,11 +1,25 @@
 #' @title Write ED2 restart file from SDA results
 #' 
+#' @param outdir output directory
+#' @param runid run id
+#' @param start.time Time of current assimilation step
+#' @param stop.time Time of next assimilation step
+#' @param settings pecan settings list
+#' @param new.state Analysis state matrix returned by `sda.enkf`
+#' @param RENAME flag to either rename output file or not
+#' @param new.params optional, additional params to pass `write.configs` that
+#'   are deterministically related to the parameters updated by the analysis
+#' @param inputs new input paths updated by the SDA workflow, will be passed to
+#'   `write.configs`
+#'   
 #' @author Alexey Shiklomanov, Istem Fer
-#' @inheritParams PEcAn.ModelName::write_restart.ModelName
 #' @return TRUE if successful
 #' @export
 write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
                               settings, new.state, RENAME = TRUE, new.params, inputs) {
+  
+  var.names <- settings$state.data.assimilation$state.variables %>%
+    purrr::map('variable.name')
   
   restart <- new.params$restart
   
@@ -76,7 +90,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
       # none is provided in `new.state`.
       
       new_tmp <- new.state[grep(var_name, names(new.state))]
-      new_tmp <- udunits2::ud.convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
+      new_tmp <- PEcAn.utils::ud_convert(new_tmp, "Mg/ha/yr", "kg/m^2/yr")
       
       agb_co <- restart$AGB_CO
       # reaggregate old state
@@ -214,7 +228,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   
   # copy the history file with new states and new timestamp to remote 
   # it's OK, because we backed up the original above
-  PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
+  #PEcAn.remote::remote.copy.to(settings$host, histfile, remote_histfile)
   
   ##### Modify ED2IN
   ed2in_path <- file.path(rundir, runid, "ED2IN")

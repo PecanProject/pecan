@@ -2,9 +2,13 @@
 % Please edit documentation in R/Nimble_codes.R
 \name{load_nimble}
 \alias{load_nimble}
+\alias{y_star_create}
 \title{load_nimble}
 \usage{
-load_nimble()
+y_star_create(X)
+}
+\arguments{
+\item{X}{state var}
 }
 \description{
 This functions is internally used to register a series of nimble functions inside GEF analysis function.

@@ -14,7 +14,7 @@ function get_footer() {
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), 
     Department of Defense, the Arizona Experiment Station, the Energy Biosciences Institute, 
     and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.7.1</span>";
+    <span style=\"float:right\">PEcAn Version 1.7.2</span>";
 }
 
 function whoami() {
@@ -76,6 +76,7 @@ function toXML($string) {
 # ----------------------------------------------------------------------
 function open_database() {
   global $db_bety_hostname;
+  global $db_bety_port;
   global $db_bety_username;
   global $db_bety_password;
   global $db_bety_database;
@@ -83,7 +84,7 @@ function open_database() {
   global $pdo;
 
   try {
-    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database};port=${db_bety_port}", $db_bety_username, $db_bety_password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   } catch (PDOException $e) {
     // handler to input database configurations manually

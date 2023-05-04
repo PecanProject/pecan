@@ -3,9 +3,13 @@
 ##' @name download.PalEON
 ##' @title download.PalEON
 ##' @export
-##' @param outfolder
-##' @param start_date
-##' @param end_date
+##'
+##' @param outfolder desired output location
+##' @param start_date desired start date YYYY-MM-DD
+##' @param end_date desired end date YYYY-MM-DD
+##' @param sitename sitename
+##' @param overwrite overwrite existing files? Default is FALSE
+##' @param ... Other inputs
 ##' 
 ##' @author Betsy Cowdery
 download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {

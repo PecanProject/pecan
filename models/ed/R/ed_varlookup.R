@@ -1,5 +1,6 @@
 #' Lookup function for translating commonly used ED variables
 #' returns out list, readvar variables to read from file, expr if any derivation is needed
+#' @param varname character; variable name to read from file
 #' @export
 ed.var <- function(varname) {
   if(varname == "AGB") {
@@ -23,6 +24,11 @@ ed.var <- function(varname) {
                drelated = NULL,
                expr    = "DBH")                                                    
   } else if(varname == "AbvGrndWood") {
+    out = list(readvar =  c("AGB_CO"), #until I change BLEAF keeper to be annual work with total AGB
+               type = 'co', units = "kgC/plant", 
+               drelated = NULL, 
+               expr    = "AGB_CO")                                           
+  } else if(varname == "AGB.pft") {
     out = list(readvar =  c("AGB_CO"), #until I change BLEAF keeper to be annual work with total AGB
                type = 'co', units = "kgC/plant", 
                drelated = NULL, 

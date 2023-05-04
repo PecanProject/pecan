@@ -39,7 +39,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <-  paste0("met2CF.",fcn.data)
 write     <-  TRUE
 
-cf.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con) # doesn't update existing record
+cf.id <- convert_input(input.id,outfolder,pkg,fcn,write,username,con) # doesn't update existing record
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -53,7 +53,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "permute.nc"
 write     <-  TRUE
 
-perm.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con)
+perm.id <- convert_input(input.id,outfolder,pkg,fcn,write,username,con)
 }
 
 
@@ -69,7 +69,7 @@ pkg       <- "PEcAn.data.atmosphere"
 fcn       <- "extract.nc"
 write     <- TRUE
 
-extract.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,newsite = newsite)
+extract.id <- convert_input(input.id,outfolder,pkg,fcn,write,username,con,newsite = newsite)
 }
 
 #--------------------------------------------------------------------------------------------------#
@@ -90,7 +90,7 @@ fcn       <- paste0("met2model.",model)
 write     <- TRUE
 overwrite <- ""
 
-model.id <- convert.input(input.id,outfolder,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
+model.id <- convert_input(input.id,outfolder,pkg,fcn,write,username,con,lst=lst,overwrite=overwrite)
 }
 
 #--------------------------------------------------------------------------------------------------#

@@ -7,9 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-library(PEcAn.utils)
-library(PEcAn.DB)
-
 ##' convert x into a table
 ##'
 ##' @title fia.to.psscss
@@ -37,14 +34,14 @@ fia.to.psscss <- function(settings,
   lonmin <- lon - gridres
   
   ## connect to database
-  con <- db.open(settings$database$bety)
-  on.exit(db.close(con), add = TRUE)
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   # Check whether inputs exist already
   if(!overwrite) {
     existing.files <- list()
     for(format in formatnames) {
-      existing.files[[format]] <- dbfile.input.check(
+      existing.files[[format]] <- PEcAn.DB::dbfile.input.check(
         siteid     = settings$run$site$id,
         startdate  = startdate,
         enddate    = enddate,
@@ -82,7 +79,7 @@ fia.to.psscss <- function(settings,
       query <- paste0(query, " OR bp.name = '", pft$name, "'")
     }
   }
-  pfts <- db.query(query, con = con)
+  pfts <- PEcAn.DB::db.query(query, con = con)
   
   # Convert PFT names to ED2 Numbers
   data(pftmapping)
@@ -109,7 +106,7 @@ fia.to.psscss <- function(settings,
   bad <- pfts$spcd[duplicated(pfts$spcd)]
   if (length(bad) > 0) {
     # Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
-    symbol.table <- db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
+    symbol.table <- PEcAn.DB::db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
     names(symbol.table) <- tolower(names(symbol.table))
     
     # grab the names where we have bad spcds in the symbol.table, exclude NAs
@@ -121,8 +118,8 @@ fia.to.psscss <- function(settings,
   }
   
   ## connect to database
-  fia.con <- db.open(settings$database$fia)
-  on.exit(db.close(fia.con), add = TRUE)
+  fia.con <- PEcAn.DB::db.open(settings$database$fia)
+  on.exit(PEcAn.DB::db.close(fia.con), add = TRUE)
   
   ##################
   ##              ##
@@ -137,7 +134,7 @@ fia.to.psscss <- function(settings,
                  " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                  " AND p.measyear <= ", max.year, " GROUP BY p.cn")
   
-  pss <- db.query(query, con = fia.con)
+  pss <- PEcAn.DB::db.query(query, con = fia.con)
   if (nrow(pss) == 0) {
     PEcAn.logger::logger.severe("No pss data found.")
   }
@@ -195,7 +192,7 @@ fia.to.psscss <- function(settings,
                   " and p.lon < ", lonmax, 
                   " and p.lat >= ", latmin,
                   " and p.lat < ", latmax)
-  css <- db.query(query, con = fia.con)
+  css <- PEcAn.DB::db.query(query, con = fia.con)
   names(css) <- tolower(names(css))
   if (nrow(css) == 0) {
     PEcAn.logger::logger.severe("No FIA data found.")
@@ -232,7 +229,7 @@ fia.to.psscss <- function(settings,
   
   if (length(pft.only) > 0) {
     if (!exists("symbol.table")) {
-      symbol.table <- db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
+      symbol.table <- PEcAn.DB::db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
       names(symbol.table) <- tolower(names(symbol.table))
     }
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only])
@@ -247,7 +244,7 @@ fia.to.psscss <- function(settings,
   
   if (length(fia.only) > 0) {
     if (!exists("symbol.table")) {
-      symbol.table <- db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
+      symbol.table <- PEcAn.DB::db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
       names(symbol.table) <- tolower(names(symbol.table))
     }
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])

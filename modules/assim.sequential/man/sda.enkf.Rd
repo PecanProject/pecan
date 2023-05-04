@@ -42,7 +42,7 @@ sda.enkf(
 \item{restart}{Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.}
 
 \item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examinign the variables inside the function.}
+TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.}
 }
 \value{
 NONE
@@ -55,7 +55,5 @@ State Variable Data Assimilation: Ensemble Kalman Filter
 State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 }
 \author{
-Michael Dietze and Ann Raiho \email{dietze@bu.edu}
-
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}
 }

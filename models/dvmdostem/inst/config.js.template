@@ -11,6 +11,7 @@
     "drainage_file":      "@INPUT_DATA_DIR@/drainage.nc",
     "soil_texture_file":  "@INPUT_DATA_DIR@/soil-texture.nc",
     "co2_file":           "@MET_DRIVER_DIR@/co2.nc",
+    "proj_co2_file":      "@MET_DRIVER_DIR@/projected-co2.nc",
     "runmask_file":       "@CUSTOM_RUN_MASK@/run-mask.nc",
     "topo_file":          "@INPUT_DATA_DIR@/topo.nc",
     "fri_fire_file":      "@INPUT_DATA_DIR@/fri-fire.nc",
@@ -20,7 +21,8 @@
     "output_dir":         "@MODEL_OUTPUT_DIR@/",
     "output_spec_file":   "@CUSTOM_OUTSPEC@",
     "output_monthly":     0, //JSON specific
-    "output_nc_eq":       0,
+    "nc_output_last_n_eq":@NC_OUTPUT_LAST_N_EQ@,
+    "output_nc_eq":       @EQ_NC_OUTPUT@,
     "output_nc_sp":       0,
     "output_nc_tr":       1,
     "output_nc_sc":       1 

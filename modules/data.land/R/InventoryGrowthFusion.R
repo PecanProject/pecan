@@ -13,7 +13,6 @@
 ##' @return an mcmc.list object
 ##' @export
 InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE,restart = NULL) {
-  library(rjags)
   
   # baseline variables to monitor
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
@@ -30,7 +29,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   }
   max.chunks <- ceiling(n.iter/n.chunk)
   if(max.chunks < k_restart){
-    PEcAn.utils::logger.warn("MCMC already complete",max.chunks,k_restart)
+    PEcAn.logger::logger.warn("MCMC already complete",max.chunks,k_restart)
     return(NULL)
   }
   avail.chunks <- k_restart:ceiling(n.iter/n.chunk)
@@ -413,7 +412,7 @@ model{
     for (i in seq_len(nchain)) {
       y.samp <- sample(data$y, length(data$y), replace = TRUE)
       init[[i]] <- list(x = z0, 
-                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_add = stats::runif(1, 1, 5) / stats::var(diff(y.samp), na.rm = TRUE),
                         tau_dbh = 1, 
                         tau_inc = 1500,
                         tau_ind = 50, 
@@ -426,11 +425,11 @@ model{
   
   
   PEcAn.logger::logger.info("COMPILE JAGS MODEL")
-  j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
+  j.model <- rjags::jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
   
   if(n.burn > 0){
     PEcAn.logger::logger.info("BURN IN")
-    jags.out <- coda.samples(model = j.model, 
+    jags.out <- rjags::coda.samples(model = j.model, 
                              variable.names = burnin.variables, 
                              n.iter = n.burn)
     if (burnin_plot) {
@@ -450,7 +449,7 @@ model{
     }
     
     ## sample chunk
-    jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    jags.out <- rjags::coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
     
     ## save chunk
     ofile <- paste("IGF",model,k,"RData",sep=".")

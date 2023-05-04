@@ -8,11 +8,10 @@
 #' @author Liam P Burke, \email{lpburke@@bu.edu}
 #' @description This function is for formatting purposes. It simply inserts the doi or id that the user wishes to query into Solr format so that it is compatible with the dataoneR query functionality in the PEcAn function 
 #' 
-#' @examples 
+#' 
 format_identifier = function(id){ 
   doi.template <- 'id:"_"' # solr format
-  doi1 <<- base::gsub("_", id, doi.template) # replace "_" with the doi or id and store in global environment
-  return(doi1) 
+  base::gsub("_", id, doi.template) # replace "_" with the doi or id
 } # end function
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -27,9 +26,9 @@ format_identifier = function(id){
 #' @return returns message indicating wether or not the id resolves to data in the DataONE federation and information about said data. 
 #' @export
 #'
-#' @examples
+#' 
 id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
-  format_identifier(id) # reformat the id in solr format
+  doi1 <- format_identifier(id) # reformat the id in solr format
   
   cn <- dataone::CNode(CNode) 
   queryParams <- list(q=doi1, rows="5") 
@@ -58,17 +57,17 @@ id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 #' @return return the resource_map or a message indicating that there is no corresponding resource_map for the given id
 #' @export
 #'
-#' @examples
+#' 
 get_resource_map = function(id, CNode = "PROD"){
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
-  mnId <<- locations$data[1,"nodeIdentifier"] # store mnId in global environment
-  mn <<- dataone::getMNode(cn, mnId) # store mn in global environment
+  mnId <- locations$data[1, "nodeIdentifier"]
+  mn <- dataone::getMNode(cn, mnId)
   
-  format_identifier(id) # format the identifier in solr Query format
+  doi1 <- format_identifier(id) # format the identifier in solr Query format
   queryParamList <- list(q=doi1, fl="resourceMap") # custom query for the resourceMap
   resource_map_df <- dataone::query(cn, solrQuery = queryParamList, as="data.frame") 
-  resource_map <<- resource_map_df[1,1] # store resource map in global env. resource map is always in resource_map_df[1,1]
+  resource_map <- resource_map_df[1,1]
   
   if (is.null(resource_map_df[1,1])){ # inform user if id/ doi has a corresponding resource_map or if this needs to be found manually
     print("doi does not resolve a resource_map. Please manually search for the resource_map in DataONE search: https://search.DataONE.org/#data")
@@ -92,19 +91,19 @@ get_resource_map = function(id, CNode = "PROD"){
 #' @return results of download
 #' @export
 #'
-#' @examples
+#' 
 download_package_rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
                                overwrite_directory = TRUE){
   # Finding the mnId (query)
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = resource_map) 
-  mnId <<- locations$data[1,"nodeIdentifier"]
+  mnId <- locations$data[1,"nodeIdentifier"]
   
   # download the bagitFile 
-  mn <<- dataone::getMNode(cn, mnId)
-  bagitFile <<- dataone::getPackage(mn, id = resource_map, format = download_format)
+  mn <- dataone::getMNode(cn, mnId)
+  bagitFile <- dataone::getPackage(mn, id = resource_map, format = download_format)
   
-  zip_contents <<- utils::unzip(bagitFile, files = NULL, list = FALSE, overwrite = overwrite_directory, # Unzip the bagitFile and store in directory specified under exdir
+  zip_contents <- utils::unzip(bagitFile, files = NULL, list = FALSE, overwrite = overwrite_directory, # Unzip the bagitFile and store in directory specified under exdir
         junkpaths = FALSE, exdir = directory, unzip = "internal",
         setTimes = FALSE)
   return(zip_contents)

@@ -1,4 +1,4 @@
-ARG R_VERSION="3.5"
+ARG R_VERSION="4.0.2"
 
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
@@ -21,8 +21,12 @@ RUN if [ "$(lsb_release -s -c)" = "stretch" ]; then \
 # ----------------------------------------------------------------------
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+       cmake \
+       curl \
        jags \
        time \
+       openssh-client \
+       rsync \
        libgdal-dev \
        libglpk-dev \
        librdf0-dev \
@@ -35,9 +39,11 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
-COPY pecan.depends /
-RUN  Rscript -e "install.packages(c('devtools'), repos = 'http://cran.rstudio.com')" \
-  && Rscript -e "devtools::install_version('roxygen2', '7.0.2', repos = 'http://cran.rstudio.com')" \
-  && bash /pecan.depends \
+COPY pecan.depends.R /
+RUN  --mount=type=secret,id=github_token \
+  export GITHUB_PAT=`cat /run/secrets/github_token` \
+  && Rscript -e "install.packages(c('devtools'))" \
+  && Rscript -e "devtools::install_version('roxygen2', '7.2.3', repos = 'cran.r-project.org')" \
+  && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 

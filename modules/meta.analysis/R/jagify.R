@@ -19,11 +19,11 @@
 ##' @author David LeBauer
 jagify <- function(result, use_ghs = TRUE) {
   
-
-  ## Rename 'name' column from 'treatment' table to trt_id.  Remove NAs. Assign treatments.
+  
+  ## Create new column "trt_id" from column 'name'.  Remove NAs. Assign treatments.
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
   r <- result[!is.na(result$mean), ]
-  colnames(r)[colnames(r) == "name"] <- "trt_id"
+  r$trt_id <- r$name
   r <- transform.nas(r)
   
   # exclude greenhouse data unless requested otherwise
@@ -33,14 +33,24 @@ jagify <- function(result, use_ghs = TRUE) {
   
   r <- PEcAn.DB::assign.treatments(r)
   r <- PEcAn.utils::summarize.result(r)
-  r <- subset(transform(r, 
-                        stat = as.numeric(stat), 
-                        n = as.numeric(n), 
-                        site_id = as.integer(factor(site_id, unique(site_id))), 
-                        greenhouse = as.integer(factor(greenhouse, unique(greenhouse))),
-                        mean = mean, 
-                        citation_id = citation_id), 
-              select = c("stat", "n", "site_id", "trt_id", "mean", "citation_id", "greenhouse"))
+  r$stat <- as.numeric(r$stat)
+  r$n <- as.numeric(r$n)
+  r$site_id <- as.integer(factor(r$site_id, unique(r$site_id)))
+  r$greenhouse <- as.integer(factor(r$greenhouse, unique(r$greenhouse)))
+  r$ghs <- r$greenhouse
+  r$site <- r$site_id
+  r$trt_name <- r$name
+  
+  r <- r[, c("stat", "n", "site_id", "trt_id", "mean", "citation_id", "greenhouse", 
+             "ghs", "treatment_id", "site", "trt_name")]
+  
+  #order by site_id and trt_id, but make sure "control" is the first trt of each site
+  uniq <- setdiff(unique(r$trt_id), "control")
+  r$trt_id <- factor(r$trt_id, levels = c("control", uniq[order(uniq)]))
+  r <- r[order(r$site_id, r$trt_id), ]
+  
+  #add beta.trt index associated with each trt_id (performed in single.MA, replicated here for matching purposes)
+  r$trt_num <- as.integer(factor(r$trt_id, levels = unique(r$trt_id)))
   
   if (length(r$stat[!is.na(r$stat) & r$stat <= 0]) > 0) {
     varswithbadstats <- unique(result$vname[which(r$stat <= 0)])
@@ -53,7 +63,7 @@ jagify <- function(result, use_ghs = TRUE) {
     r$stat[r$stat <= 0] <- NA
   }
   
-  PEcAn.DB::rename_jags_columns(r)
+  rename_jags_columns(r)
 } # jagify
 # ==================================================================================================#
 

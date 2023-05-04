@@ -17,20 +17,24 @@ real :: NSOURCE, NSINK
 Contains
 
 Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV, &
-                             GSTUB,HARVLA,HARVLV,HARVPH,HARVRE,HARVST,HARVTILG2)
+                             GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2)
   integer :: doy,year
-  integer,dimension(100,2) :: DAYS_HARVEST
+  integer,dimension(300,3) :: DAYS_HARVEST
   real    :: CLV, CRES, CST, LAI, PHEN, TILG1, TILG2, TILV
-  real    :: GSTUB, HARVLV, HARVLA, HARVRE, HARVTILG2, HARVST, HARVPH
-  real    :: CLAI, HARVFR, TV1
-  integer :: HARV,i
+  real    :: GSTUB, HARVLV, HARVLVP, HARVLA, HARVRE, HARVREP, HARVTILG2, HARVST, HARVSTP, HARVPH
+  real    :: CLAIV, CLAI, HARVFR, TV1
+  integer :: HARV, HARVP, TEMPOP, i
  
+  HARVP  = 1 
   HARV   = 0
   NOHARV = 1
-  do i=1,100    
+  CLAIV  = 0.5  
+  do i=1,300    
     if ( (year==DAYS_HARVEST(i,1)) .and. (doy==DAYS_HARVEST(i,2)) ) then
       HARV   = 1
       NOHARV = 0	
+      TEMPOP  = DAYS_HARVEST(i,3) 
+      CLAIV = TEMPOP * 0.1
 	end if
   end do
   FRACTV = (TILV+TILG1) / (TILV+TILG1+TILG2)
@@ -42,10 +46,13 @@ Subroutine Harvest(CLV,CRES,CST,year,doy,DAYS_HARVEST,LAI,PHEN,TILG1,TILG2,TILV,
   end if
   HARVLA    = (HARV   * LAI * HARVFR) / DELT
   HARVLV    = (HARV   * CLV * HARVFR) / DELT
+  HARVLVP   = (HARVP  * CLV * HARVFR) / DELT
   HARVPH    = (HARV   * PHEN        ) / DELT
   TV1       = (HARVFR * FRACTV) + (1-FRACTV)*HAGERE
   HARVRE    = (HARV   * TV1 * CRES  ) / DELT
+  HARVREP   = (HARVP  * TV1 * CRES  ) / DELT
   HARVST    = (HARV   * CST         ) / DELT
+  HARVSTP   = (HARVP  * CST         ) / DELT
   GSTUB     =  HARVST * (1-HAGERE)
   HARVTILG2 = (HARV   * TILG2       ) / DELT
 end Subroutine Harvest
@@ -167,7 +174,7 @@ Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
   GLVSI    = GLVSI  * fNgrowth
   GSTSI    = GSTSI  * fNgrowth
 
-  call Allocation(ALLOTOT,GRESSI, GRES,GRT,GLV,GST)
+  call Allocation(ALLOTOT,GRESSI,GRES,GRT,GLV,GST)
 end Subroutine Growth
 
    Subroutine Allocation(ALLOTOT,GRESSI, GRES,GRT,GLV,GST)
@@ -182,7 +189,6 @@ end Subroutine Growth
        ! Calculate amount of assimilates allocated to reserves    
        GRES   = min( ALLOTOT - ALLOSH, GRESSI)
      else
-     ! Situation 2: Storage has priority over shoot (autumn)
        ! Calculate amount of assimilates allocated to reserves
        GRES   = min( ALLOTOT, GRESSI )
        ! Calculate amount of assimilates allocated to shoot

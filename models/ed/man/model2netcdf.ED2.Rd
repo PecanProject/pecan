@@ -10,11 +10,13 @@ model2netcdf.ED2(
   sitelon,
   start_date,
   end_date,
-  pft_names = NULL
+  pfts,
+  settings = NULL,
+  process_partial = FALSE
 )
 }
 \arguments{
-\item{outdir}{Location of ED model output}
+\item{outdir}{Location of ED model output (e.g. a path to a single ensemble output)}
 
 \item{sitelat}{Latitude of the site}
 
@@ -24,10 +26,22 @@ model2netcdf.ED2(
 
 \item{end_date}{End time of the simulation}
 
-\item{pft_names}{Names of PFTs used in the run, vector}
+\item{pfts}{a named vector of PFT numbers where the names are PFT names}
+
+\item{settings}{pecan settings object}
+
+\item{process_partial}{should failed runs be processed? Defaults to \code{FALSE}.
+\code{TRUE} will generate .nc files for runs that have generated some, but not
+all, of the expected outputs}
 }
 \description{
-Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
+Modified from code to convert ED2's HDF5 output into the NACP
+Intercomparison format (ALMA using netCDF)
+}
+\details{
+if \code{settings} is provided, then values for missing arguments
+\code{sitelat}, \code{sitelon}, \code{start_date}, \code{end_date}, and \code{pfts} will be taken
+from it
 }
 \author{
 Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer

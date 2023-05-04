@@ -1,7 +1,7 @@
 ##'@title prep.data.assim
 ##'@section purpose:
 ##'This function finds flux uncertainty and finds mean and cov
-##'for a call to PEcAn.assim.sequential::sda.enkf() 
+##'for a call to PEcAnAssimSequential::sda.enkf() 
 ##'
 ##'@param settings the PEcAn settings object (a collection of nested lists)
 ##'@param numvals number of simulated data points for each time point
@@ -10,35 +10,33 @@
 ##'@return None
 ##'@export
 ##'@author Luke Dramko and K. Zarada and Hamze Dokoohaki
-prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) {
-  
-  data.len = data.len *2 #turn hour time steps into half hour
+prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 3, sda.start) {
   
   Date.vec <-NULL
-
-  gapfilled.vars <- vars %>%
-      purrr::map_dfc(function(var) {
-     
-        field_data <- gapfill_WCr(start_date, end_date, var)
   
-        PEcAn.logger::logger.info(paste(var, " is done"))
-        #I'm sending the date out to use it later on 
-        return(field_data)
+  gapfilled.vars <- vars %>%
+    purrr::map_dfc(function(var) {
+      
+      field_data <- gapfill_WCr(start_date, end_date, var)
+      
+      PEcAn.logger::logger.info(paste(var, " is done"))
+      #I'm sending the date out to use it later on 
+      return(field_data)
     })
-
-
+  
+  #gapfilled.vars$NEE_f = PEcAn.utils::misc.convert(gapfilled.vars$NEE_f, "kg C m-2 s-1", "umol C m-2 s-1")
+  
   #Reading the columns we need
   cols <- grep(paste0("_*_f$"), colnames(gapfilled.vars), value = TRUE)
-  gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date, Flag,cols)
-
- #Creating NEE and LE filled output 
+  gapfilled.vars <- gapfilled.vars %>% dplyr::select(Date=date...11, Flag = Flag...10,cols)
+  
+  #Creating NEE and LE filled output 
   gapfilled.vars.out <- gapfilled.vars %>% dplyr::select(-Flag) %>% 
-                            tail(data.len)
-
- #Pecan Flux Uncertainty 
+    filter(Date >= (sda.start - lubridate::days(data.len)) & Date < sda.start)
+  
+  #Pecan Flux Uncertainty 
   processed.flux <- 3:(3+length(vars)-1) %>%
     purrr::map(function(col.num) {
-
       field_data <- gapfilled.vars[,c(1,2,col.num)]
       
       uncertainty_vals <- list()
@@ -53,7 +51,7 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
       # Create proxy row for rbinding
       random_mat = NULL
       new_col = rep(0, dim(field_data)[1])
-        
+      
       # Create a new column
       # i: the particular variable being worked with; j: the column number; k: the row number
       for (j in 1:numvals) {
@@ -70,53 +68,53 @@ prep.data.assim <- function(start_date, end_date, numvals, vars, data.len = 48) 
         
         random_multiplier <- sample(c(-1, 1), length(res), replace = TRUE)
         simulated <- obs + (random_multiplier * res)
-
-        random_mat = cbind(random_mat, simulated)
-        } # end j
         
-        obs.mean <- c(obs.mean, mean(field_data[, 3], na.rm = TRUE))
-        # this keeps the mean of each day for the whole time series and all variables
-        sums = c(sums, list(random_mat))
-   
-        data.frame(Date=field_data$Date,sums)
+        random_mat = cbind(random_mat, simulated)
+      } # end j
+      
+      obs.mean <- c(obs.mean, mean(field_data[, 3], na.rm = TRUE))
+      # this keeps the mean of each day for the whole time series and all variables
+      sums = c(sums, list(random_mat))
+      
+      data.frame(Date=field_data$Date[!is.na(field_data[, 3])],sums)
     }) # end of map
-
- #I'm sending mixing up simulations of vars to aggregate them first and then estimate their var/cov
+  
+  
+  #I'm sending mixing up simulations of vars to aggregate them first and then estimate their var/cov
   outlist<-processed.flux %>%
-       map2_dfc(vars, function(x, xnames) {
-         names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
- 
-         x %>%
-           tail(data.len) %>%
-           mutate(Interval = lubridate::round_date(Date, "6 hour")) %>%
-           dplyr::select(-Date)
-       }) %>%
-         split(.$Interval) %>%
-           map(function(row) {
-         
-            #fidning the interval cols / taking them out 
-             colsDates <- grep(paste0("Interval"), colnames(row), value = FALSE)
-             Date1 <- row[, colsDates[1]]
-             row <- row[, -c(colsDates)]
-             # finding the order of columns in dataframe
-              var.order <- split(1:ncol(row),
-                                 ceiling(seq_along(1:ncol(row))/(ncol(row)/length(vars))))
-              
-              #combine all the numbers for this time interval
-              alldata <- var.order %>% 
-               map_dfc(~row[,.x] %>% unlist %>% as.numeric) %>%
-               setNames(vars) 
-              # mean and the cov between all the state variables is estimated here 
-              return(list(
-                Date = Date1 %>% unique(),
-                covs = cov(alldata),
-                means = apply(alldata, 2, mean)
-              ))
-           })
+    map2_dfc(vars, function(x, xnames) {
+      names(x)[2:numvals] <- paste0(names(x)[2:numvals], xnames)
+      
+      x %>%
+        filter(Date >= (sda.start - lubridate::hours(data.len)) & Date < sda.start) %>%
+        mutate(Interval = lubridate::round_date(Date, "1 hour")) %>%
+        dplyr::select(-Date)
+    }) %>%
+    split(.$Interval...202) %>%
+    map(function(row) {
+      
+      #fidning the interval cols / taking them out 
+      colsDates <- grep(paste0("Interval"), colnames(row), value = FALSE)
+      Date1 <- row[, colsDates[1]]
+      row <- row[, -c(colsDates)]
+      # finding the order of columns in dataframe
+      var.order <- split(1:ncol(row),
+                         ceiling(seq_along(1:ncol(row))/(ncol(row)/length(vars))))
+      
+      #combine all the numbers for this time interval
+      alldata <- var.order %>% 
+        map_dfc(~row[,.x] %>% unlist %>% as.numeric) %>%
+        setNames(vars) 
+      # mean and the cov between all the state variables is estimated here 
+      return(list(
+        Date = Date1 %>% unique(),
+        covs = cov(alldata),
+        means = apply(alldata, 2, mean)
+      ))
+    })
   
   outlist <- list(obs=outlist, rawobs=gapfilled.vars.out )
   
   return(outlist)
-
+  
 } # prep.data.assim
-

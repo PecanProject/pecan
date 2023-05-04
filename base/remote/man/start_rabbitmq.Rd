@@ -6,8 +6,16 @@
 \usage{
 start_rabbitmq(folder, rabbitmq_uri, rabbitmq_queue)
 }
+\arguments{
+\item{folder}{Directory containing jobs to be started}
+
+\item{rabbitmq_uri}{RabbitMQ uri where messages should be posted}
+
+\item{rabbitmq_queue}{Queue to which messages are submitted}
+}
 \value{
-Output of execution command, as a character (see \code{\link[=remote.execute.cmd]{remote.execute.cmd()}}).
+Output of execution command, as a character
+(see \code{\link[=rabbitmq_post_message]{rabbitmq_post_message()}}).
 }
 \description{
 Start model execution using rabbitmq

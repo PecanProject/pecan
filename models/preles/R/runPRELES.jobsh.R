@@ -30,7 +30,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
-  timestep.s <- udunits2::ud.convert(1, "day", "seconds")  # Number of seconds in a day
+  timestep.s <- PEcAn.utils::ud_convert(1, "day", "seconds")  # Number of seconds in a day
   
   ## Build met
   met <- NULL
@@ -45,7 +45,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       ## build day and year
       
@@ -80,12 +80,12 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       
       ## Get PPFD from SW
       PPFD <- PEcAn.data.atmosphere::sw2ppfd(SW)  # PPFD in umol/m2/s
-      PPFD <- udunits2::ud.convert(PPFD, "umol m-2 s-1", "mol m-2 s-1")
+      PPFD <- PEcAn.utils::ud_convert(PPFD, "umol m-2 s-1", "mol m-2 s-1")
       
       ## Format/convert inputs
       ppfd   <- tapply(PPFD, doy, mean, na.rm = TRUE)  # Find the mean for the day
-      tair   <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "kelvin", "celsius")  # Convert Kelvin to Celcius
-      vpd    <- udunits2::ud.convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
+      tair   <- PEcAn.utils::ud_convert(tapply(Tair, doy, mean, na.rm = TRUE), "kelvin", "celsius")  # Convert Kelvin to Celcius
+      vpd    <- PEcAn.utils::ud_convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
       precip <- tapply(Precip, doy, sum, na.rm = TRUE)  # Sum to daily precipitation
       co2    <- tapply(CO2, doy, mean)  # need daily average, so sum up day
       co2    <- co2 * 1e+06  # convert to ppm
@@ -152,7 +152,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     sub.PRELES.output.dims <- dim(sub.PRELES.output)
     
     output <- list()
-    output[[1]] <- udunits2::ud.convert(sub.PRELES.output[, 1], 'g m-2 day-1', 'kg m-2 sec-1')  #GPP - gC/m2day to kgC/m2s1
+    output[[1]] <- PEcAn.utils::ud_convert(sub.PRELES.output[, 1], 'g m-2 day-1', 'kg m-2 sec-1')  #GPP - gC/m2day to kgC/m2s1
     output[[2]] <- (sub.PRELES.output[, 2])/timestep.s  #Evapotranspiration - mm =kg/m2
     output[[3]] <- (sub.PRELES.output[, 3])/timestep.s  #Soilmoisture - mm = kg/m2
     output[[6]] <- (sub.PRELES.output[, 6])/timestep.s  #Evaporation - mm = kg/m2
@@ -174,18 +174,18 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     
     dims <- list(lon = lon, lat = lat, time = t)
     
-    var      <- list()
-    var[[1]] <- PEcAn.utils::to_ncvar("GPP",dims)
-    var[[2]] <- ncdf4::ncvar_def("Evapotranspiration", "kg/m2s1", list(lon, lat, t), -999)
-    var[[3]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
-    var[[4]] <- PEcAn.utils::to_ncvar("Evap", dims)
-    var[[5]] <- PEcAn.utils::to_ncvar("TVeg", dims)
+    nc_var      <- list()
+    nc_var[[1]] <- PEcAn.utils::to_ncvar("GPP",dims)
+    nc_var[[2]] <- ncdf4::ncvar_def("Evapotranspiration", "kg/m2s1", list(lon, lat, t), -999)
+    nc_var[[3]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
+    nc_var[[4]] <- PEcAn.utils::to_ncvar("Evap", dims)
+    nc_var[[5]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    for (i in seq_along(nc_var)) {
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

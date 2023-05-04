@@ -4,7 +4,7 @@
 \alias{write.config.BASGRA}
 \title{Write BASGRA configuration files}
 \usage{
-write.config.BASGRA(defaults, trait.values, settings, run.id)
+write.config.BASGRA(defaults, trait.values, settings, run.id, IC = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
@@ -14,6 +14,8 @@ write.config.BASGRA(defaults, trait.values, settings, run.id)
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
+
+\item{IC}{initial conditions list}
 }
 \value{
 configuration file for BASGRA for given run

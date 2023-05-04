@@ -11,7 +11,7 @@ cd $(dirname $0)
 # Can set the following variables
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
-R_VERSION=${R_VERSION:-"3.5"}
+R_VERSION=${R_VERSION:-"4.1"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -45,7 +45,7 @@ while getopts dfhi:r: opt; do
         ;;
     h)
         cat << EOF
-$0 [-dfh] [-i <IMAGE_VERSION>] [-r <R VERSION]
+$0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION]
 
 The following script can be used to create all docker images. Without any
 options this will build all images and tag them based on the branch you
@@ -73,6 +73,12 @@ You can use the FROM_IMAGE environment variable to also specify what
 image should be used when building the base image. You can for example
 use the previous base image which will speed up the compile process of
 PEcAn.
+  -d : debug more, do not run, print out commands
+  -f : force a build of the depends image
+  -h : this help message
+  -i : tag to use for the build images
+  -n : debug more, do not run, print out commands
+  -r : R version to use, unless -f it will try and use depends image
 EOF
         exit 1
         ;;
@@ -84,10 +90,14 @@ EOF
         ;;
     r)
         R_VERSION="$OPTARG"
-        DEPEND="build"
         ;;
     esac
 done
+
+# pass github workflow
+if [ -n "$GITHUB_WORKFLOW" ]; then
+    GITHUB_WORKFLOW_ARG="--build-arg GITHUB_WORKFLOW=${GITHUB_WORKFLOW}"
+fi
 
 # information for user before we build things
 echo "# ----------------------------------------------------------------------"
@@ -111,17 +121,16 @@ echo "# ----------------------------------------------------------------------"
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
         --pull \
-        --build-arg R_VERSION=${R_VERSION} \
+        --secret id=github_token,env=GITHUB_PAT \
+        --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
 else
     if [ "$( docker image ls -q pecan/depends:${IMAGE_VERSION} )" == "" ]; then
         if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
-            if [ "$( docker image ls -q pecan/depends:develop )" == "" ]; then
-                ${DEBUG} docker pull pecan/depends:develop
-            fi
+            ${DEBUG} docker pull pecan/depends:R${R_VERSION}
             if [ "${IMAGE_VERSION}" != "develop" ]; then
-                ${DEBUG} docker tag pecan/depends:develop pecan/depends:${IMAGE_VERSION}
+                ${DEBUG} docker tag pecan/depends:R${R_VERSION} pecan/depends:${IMAGE_VERSION}
             fi
         else
             if [ "$( docker image ls -q pecan/depends:latest )" == "" ]; then
@@ -138,9 +147,10 @@ echo ""
 # require all of PEcAn to build
 for x in base web docs; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
@@ -150,10 +160,10 @@ for x in base web docs; do
 done
 
 # all files in subfolder
-for x in models executor data thredds monitor rstudio-nginx check; do
+for x in models executor data monitor rstudio-nginx; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         docker/$x
 done
 
@@ -161,7 +171,7 @@ done
 for x in dbsync; do
     ${DEBUG} docker build \
         --tag pecan/shiny-$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         shiny/$x
 done
 
@@ -174,7 +184,7 @@ for version in BASGRA_N_v1.0; do
     ${DEBUG} docker build \
         --tag pecan/model-basgra-$(echo $version | tr '[A-Z]' '[a-z]'):${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/basgra
 done
 
@@ -183,16 +193,16 @@ for version in 0.95; do
     ${DEBUG} docker build \
         --tag pecan/model-biocro-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/biocro
 done
 
 # build ed2
-for version in 2.2.0; do
+for version in 2.2.0 git; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg BINARY_VERSION="2.2" \
         models/ed
 done
@@ -202,16 +212,16 @@ for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-maespa-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/maespa
 done
 
 # build sipnet
-for version in git r136; do
+for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         models/sipnet
 done
 
@@ -219,14 +229,16 @@ done
 # PEcAn Apps
 # --------------------------------------------------------------------------------
 
-# build API
+# build apps
 for x in api; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
-        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+        --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
         --build-arg PECAN_GIT_CHECKSUM="${PECAN_GIT_CHECKSUM}" \
         --build-arg PECAN_GIT_DATE="${PECAN_GIT_DATE}" \
         apps/$x/
-done        
+done
+

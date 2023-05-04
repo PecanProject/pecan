@@ -4,7 +4,7 @@ ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM debian:stretch as model-binary
+FROM pecan/models:${IMAGE_VERSION} as model-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION="2.2.0"
@@ -31,7 +31,7 @@ RUN git -c http.sslVerify=false clone https://github.com/EDmodel/ED2.git \
     && curl -o make/include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s` \
     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout "v.${MODEL_VERSION}"; fi \
     && ./install.sh -g -p VM \
-    && mv /src/ED2/ED/build/ed_${BINARY_VERSION}-opt /src/ED2/ED/build/ed
+    && mv /src/ED2/ED/build/ed_${BINARY_VERSION}-opt /src/ED2/ED/build/ed 
 
 ########################################################################
 
@@ -46,8 +46,7 @@ FROM pecan/models:${IMAGE_VERSION}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       libgfortran3 \
-       libopenmpi2 \
+       libopenmpi3 \
     && rm -rf /var/lib/apt/lists/*
 
 # INSTALL PEcAn.ED2

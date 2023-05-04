@@ -27,12 +27,12 @@ get_NARR_thredds(
 \item{progress}{Whether or not to show a progress bar (default = `TRUE`).
 Requires the `progress` package to be installed.}
 
-\item{drop_outside}{Whether or not to drop dates outside of `start_date` to 
+\item{drop_outside}{Whether or not to drop dates outside of `start_date` to
 `end_date` range (default = `TRUE`).}
 
 \item{parallel}{Download in parallel? Default = TRUE}
 
-\item{ncores}{Number of cores for parallel download. Default is 
+\item{ncores}{Number of cores for parallel download. Default is
 `parallel::detectCores()`}
 }
 \value{

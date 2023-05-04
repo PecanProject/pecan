@@ -1,0 +1,19 @@
+# model run
+nohup Rscript workflow.R > workflow.log 2>&1 &
+nohup Rscript workflow.R --settings pecan_US-CZ3_CRUNCEP.xml > workflow.log 2>&1 &
+
+
+# SDA
+# interactive qsub, keep enviroment, 3 hours, 1 node 15 CPUs
+##qsub -IV -l walltime=03:00:00,nodes=1:ppn=15
+cd /data/bmorrison/sda/
+nohup Rscript Multisite-3sites.R > SDA_workflow.log 2>&1 &
+
+nohup Rscript Multisite-4sites.R > SDA_workflow.log 2>&1 &
+
+nohup Rscript Multisite_SDA_BNL.R > SDA_workflow.log 2>&1 &
+
+
+qstat -f
+
+qstat -ext

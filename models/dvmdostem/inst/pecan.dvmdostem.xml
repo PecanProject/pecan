@@ -82,9 +82,19 @@
     <dvmdostem_transient>109</dvmdostem_transient>
     <dvmdostem_scenerio>91</dvmdostem_scenerio>
 
-    <!--Set the log level verbosity for dvmdostem.
+    <!-- Set the log level verbosity for dvmdostem.
     It is not reccomended to use anything more verbose than 'warn'. -->
     <dvmdostem_loglevel>err</dvmdostem_loglevel>
+
+    <!-- Useful to enable all calibration variables at once, takes 
+    precedence over  dvmdostem_pecan_outputs. String, must be one of: 
+    [yes, YES, Yes] -->
+    <dvmdostem_calibration>yes</dvmdostem_calibration> 
+
+    <!-- reccomended for calibration runs where qcal.py needs to run
+    over the tail end of the eq stage, but it is prohibitive to save
+    all the eq stage data. Requires dvmdsotem >v0.5.0 -->
+    <dvmdostem_nc_output_last_n_eq>10</dvmdostem_nc_output_last_n_eq>
 
     <!-- Comma separated string of output variables, using PEcAn names. -->
     <dvmdostem_pecan_outputs></dvmdostem_pecan_outputs> 

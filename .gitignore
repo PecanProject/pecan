@@ -70,6 +70,7 @@ afshin.pecan.xml
 pecan
 pecan_ED_online.xml
 pecan.xml
+!base/settings/tests/testthat/pecan.xml
 pecan.sublime-workspace
 FACE.sublime-workspace
 pecan.sublime-project
@@ -102,3 +103,9 @@ contrib/modellauncher/modellauncher
 
 # don't checkin renv
 /renv/
+
+# don't checkin python venv used by CodeSpaces
+/.venv*
+
+# don't track project level .Rprofile
+.Rprofile

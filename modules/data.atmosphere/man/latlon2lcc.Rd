@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.NARR_site.R
 \name{latlon2lcc}
 \alias{latlon2lcc}
-\title{Convert latitude and longitude to x-y coordinates (in km) in Lambert 
+\title{Convert latitude and longitude to x-y coordinates (in km) in Lambert
 conformal conic projection (used by NARR)}
 \usage{
 latlon2lcc(lat.in, lon.in)
@@ -13,11 +13,11 @@ latlon2lcc(lat.in, lon.in)
 \item{lon.in}{Longitude coordinate}
 }
 \value{
-`sp::SpatialPoints` object containing transformed x and y 
+`sp::SpatialPoints` object containing transformed x and y
 coordinates, in km, which should match NARR coordinates
 }
 \description{
-Convert latitude and longitude to x-y coordinates (in km) in Lambert 
+Convert latitude and longitude to x-y coordinates (in km) in Lambert
 conformal conic projection (used by NARR)
 }
 \author{

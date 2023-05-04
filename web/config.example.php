@@ -24,6 +24,10 @@ $browndog_password="";
 # R binary
 $Rbinary="/usr/bin/R";
 
+# plotting endpoint, leave blank to use php code
+#$api_url="/api/";
+$api_url="";
+
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
@@ -78,7 +82,7 @@ $hostlist=array($fqdn => array(),
                           "qstat"       => "qstat -j @JOBID@ || echo DONE",
                           "prerun"      => "module load udunits R/R-3.0.0_gnu-4.4.6",
                           "postrun"     => "sleep 60",
-                          "models"      => 
+                          "models"      =>
                               array("ED2" =>
                                         array("prerun"  => "module load hdf5"),
                                     "ED2 (r82)" =>
@@ -104,20 +108,7 @@ $dbfiles_folder=$output_folder . "/dbfiles";
 # of BETYDB
 $betydb="/bety";
 
-# ----------------------------------------------------------------------
-# SIMPLE EDITING OF BETY DATABSE
-# ----------------------------------------------------------------------
-# Number of items to show on a page
-$pagesize = 30;
-
-# Location where logs should be written
-$logfile = "/home/carya/output/betydb.log";
-
-# uncomment the following variable to enable the simple interface
-#$simpleBETY = TRUE;
-
 # syncing details
-
 $server_url="192.168.0.5";    // local test server
 $client_sceret="";
 $server_auth_token="";

@@ -1,6 +1,6 @@
 ##' @name met.process
 ##' @title met.process
-##' @export
+##' 
 ##'
 ##' @param site Site info from settings file
 ##' @param input_met Which data source to process. 
@@ -13,6 +13,7 @@
 ##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
 ##' 
+##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
 ##'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
@@ -20,7 +21,7 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
-##'
+##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
@@ -132,8 +133,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     # I'm assuming not right now
     assign(stage$id.name,
            list(
-             inputid = input_met$id,
-             dbfileid = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
+             input.id = input_met$id,
+             dbfile.id = PEcAn.DB::dbfile.check("Input", input_met$id, hostname = machine.host, con =
                                                  con)$id
            ))
   }
@@ -201,17 +202,13 @@ met.process <- function(site, input_met, start_date, end_date, model,
       dbparms=dbparms
     )
     
-    if (met %in% c("CRUNCEP", "GFDL","NOAA_GEFS_downscale")) {
+    if (met %in% c("CRUNCEP", "GFDL", "NOAA_GEFS", "MERRA")) {
       ready.id <- raw.id
       # input_met$id overwrites ready.id below, needs to be populated here
       input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
-    } else if (met %in% c("NOAA_GEFS")) { # Can sometimes have missing values, so the gapfilling step is required.
-      cf.id <- raw.id
-      input_met$id <-raw.id
-      stage$met2cf <- FALSE
-    }
+    } 
   }else if (stage$local){ # In parallel to download met module this needs to check if the files are already downloaded or not 
 
     db.file <- PEcAn.DB::dbfile.input.check(
@@ -224,7 +221,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
       con,
       hostname = PEcAn.remote::fqdn(),
       exact.dates = TRUE,
-      pattern = met,
+#      pattern = met,
       return.all=TRUE
     ) 
     # If we already had the met downloaded for this site  
@@ -247,7 +244,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
           end_date <= end_date,
           format_id == formatid
         ) %>%
-        filter(grepl(met, name)) %>%
+        filter(grepl(met, "name")) %>%
         inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
         filter(machine_id == machine.id) %>%
         collect()
@@ -278,7 +275,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             format.vars = format.vars,
                             bety = con)
   } else {
-   if (! met %in% c("ERA5")) cf.id = input_met$id
+   if (! met %in% c("ERA5", "FieldObservatory")) cf.id = input_met$id
   }
 
   #--------------------------------------------------------------------------------------------------#
@@ -290,8 +287,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$input.id[i],
-                                                                   dbfile.id = cf.id$dbfile.id[i]), 
+        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+                                                                   dbfile.id = cf.id$id[i]), 
                                        register = register, 
                                        dir = dir, 
                                        met = met, 
@@ -530,8 +527,14 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   
   userpass <- paste(browndog$username, browndog$password, sep = ":")
   curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  result <- RCurl::postForm(paste0(browndog$url, formatname, "/"),
-                     fileData = RCurl::fileUpload("pecan.xml", xmldata, "text/xml"), .opts = curloptions)
+  
+  result <- httr::POST(
+    url = paste0(browndog$url, formatname, "/"),
+    config = do.call(httr::config, curloptions),
+    httr::content_type("text/xml"),
+    body = xmldata)
+  httr::warn_for_status(result)
+  result_txt <- httr::content(result, "text")
   url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
   PEcAn.logger::logger.info("browndog download url :", url)
   downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)

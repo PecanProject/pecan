@@ -1,51 +1,72 @@
 Package: PEcAn.data.land
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.1
-Date: 2019-09-05
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Xiaohui", "Feng"),
-             person("Dan"," Wang"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Alexey", "Shiklomanov"))
-Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
-    Carl Davidson, Rob Kooper, Alexey Shiklomanov
-Maintainer: Mike Dietze <dietze@bu.edu>, David LeBauer <dlebauer@illinois.edu>
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
+Version: 1.7.2.9000
+Date: 2021-10-04
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("ctb"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("ctb")),
+             person("Carl", "Davidson", role = c("ctb"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("ctb"),
+                     email = "kooper@illinois.edu"),
+             person("Alexey", "Shiklomanov", role = c("ctb"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends:
-    datapack,
-    dataone,
-    PEcAn.DB,
-    PEcAn.utils,
-    redland,
-    sirt,
-    sf
 Imports:
+    coda,
+    curl,
+    datapack,
     dplyr,
+    dplR,
+    fs,
+    httr,
+    lubridate,
     magrittr,
+    mvtnorm,
     ncdf4 (>= 1.15),
+    neonUtilities,
+    neonstore,
+    swfscMisc,
+    PEcAn.benchmark,
+    PEcAn.data.atmosphere,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
+    PEcAn.visualization,
     purrr,
+    rjags,
     rlang,
-    sp,
     sf,
-    XML (>= 3.98-1.4)
+    sirt,
+    sp,
+    stringr,
+    terra,
+    tidyr,
+    tidyselect,
+    traits,
+    XML (>= 3.98-1.4)      
 Suggests:
-    fields,
+    dataone,
     PEcAn.settings,
+    redland,
+    raster,
     rgdal,
     RPostgreSQL,
-    testthat (>= 1.0.2),
+    testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.2.3
