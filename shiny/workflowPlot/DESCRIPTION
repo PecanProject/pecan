@@ -26,4 +26,4 @@ Imports:
 	shinyjs,
 	shinythemes,
 	tidyr,
-	udunits2
+	units

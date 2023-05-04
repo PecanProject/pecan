@@ -47,7 +47,7 @@
     }
 
     
-    model.id <- PEcAn.utils::convert.input(input.id = input.id,
+    model.id <- PEcAn.DB::convert_input(input.id = input.id,
                               outfolder = outfolder,
                               formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 

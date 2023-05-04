@@ -121,6 +121,7 @@ echo "# ----------------------------------------------------------------------"
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
         --pull \
+        --secret id=github_token,env=GITHUB_PAT \
         --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
@@ -146,6 +147,7 @@ echo ""
 # require all of PEcAn to build
 for x in base web docs; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -158,7 +160,7 @@ for x in base web docs; do
 done
 
 # all files in subfolder
-for x in models executor data thredds monitor rstudio-nginx; do
+for x in models executor data monitor rstudio-nginx; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -196,7 +198,7 @@ for version in 0.95; do
 done
 
 # build ed2
-for version in 2.2.0; do
+for version in 2.2.0 git; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
@@ -215,7 +217,7 @@ for version in git; do
 done
 
 # build sipnet
-for version in git r136; do
+for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
@@ -230,6 +232,7 @@ done
 # build apps
 for x in api; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \

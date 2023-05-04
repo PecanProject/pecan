@@ -2,9 +2,9 @@
 ##' @title summarize.GP
 ##' @export
 ##' 
-##' @param gp
-##' @param pdf_file
-##' @param txt_file
+##' @param gp Gaussian Process
+##' @param pdf_file filename you want figures written out to
+##' @param txt_file filename you want figures written out to
 ##' 
 ##' @author Michael Dietze
 summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
@@ -13,9 +13,9 @@ summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
   d         <- gp$d
   samp      <- gp$samp
   if (is.null(pdf_file)) {
-    par(ask = TRUE)
+    graphics::par(ask = TRUE)
   } else {
-    pdf(pdf_file)
+    grDevices::pdf(pdf_file)
   }
   if (!is.null(txt_file)) {
     sink(txt_file)
@@ -48,14 +48,14 @@ summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
   print(summary(mu))
   ## par(ask=TRUE)
   plot(tauw)
-  title("TAUW")
+  graphics::title("TAUW")
   plot(psi)
-  title("PSI")
+  graphics::title("PSI")
   plot(mu)
-  title("MU")
+  graphics::title("MU")
   
   ## plot ACF
-  par(mfrow = c(1, 1))
+  graphics::par(mfrow = c(1, 1))
   if (isotropic) {
     xseq <- seq(0, max(d) / 2, length = 100)
     plot(xseq, mean(tauw) * exp(-mean(psi) * xseq ^ 2), type = "l")
@@ -74,12 +74,12 @@ summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
          ylim = c(0, max(acorr)), xlab = "Parameter Distance", 
          ylab = "Correlation")
     for (k in seq_len(dim)) {
-      lines(xseq, acorr[, k], col = k)
+      graphics::lines(xseq, acorr[, k], col = k)
     }
   }
-  par(ask = FALSE)
+  graphics::par(ask = FALSE)
   if (!is.null(pdf_file)) {
-    dev.off()
+    grDevices::dev.off()
   }
   if (!is.null(txt_file)) {
     sink()

@@ -19,10 +19,10 @@ Sets the main output directory and nulls out the others
 }
 \details{
 Sets the main output directory (\code{settings$outdir}) to \code{outDir},
-  and sets numerous others (\code{settings$modeloutdir},
-  \code{settings$host$rundir}, \code{settings$host$outdir},
-  \code{settings$host$modeloutdir}) to NULL so they will revert to defaults
-  when \code{\link{check.settings}} is run.
+and sets numerous others (\code{settings$modeloutdir},
+\code{settings$host$rundir}, \code{settings$host$outdir},
+\code{settings$host$modeloutdir}) to NULL so they will revert to defaults
+when \code{\link{check.settings}} is run.
 }
 \author{
 Ryan Kelly

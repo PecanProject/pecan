@@ -23,7 +23,7 @@ Analysis.sda(
 
 \item{Observed}{A list containing the observed variables including R (cov of observed state variables) and Y (vector of estimated mean of observed state variables)}
 
-\item{H}{is a mtrix of 1's and 0's specifying which observations go with which variables.}
+\item{H}{is a matrix of 1's and 0's specifying which observations go with which variables.}
 
 \item{extraArg}{This argument is a list containing aqq, bqq and t. The aqq and bqq are shape parameters estimated over time for the proccess covariance and t gives the time in terms of index of obs.list. See Details.}
 
@@ -33,7 +33,7 @@ Analysis.sda(
 Returns whatever the FUN is returning. In case of EnKF and GEF, this function returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 }
 \description{
-This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAn.assim.sequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
+This functions uses the FUN to perform the analysis. EnKF function is developed inside the PEcAnAssimSequential package which can be sent to this function to perform the Ensemble Kalman Filter. 
 The other option is GEF function inside the same package allowing to perform Generalized Ensemble kalman Filter.
 
 If you're using an arbitrary function you can use the ... to send any other variables to your desired analysis function.

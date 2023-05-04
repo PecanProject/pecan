@@ -18,10 +18,7 @@ download.MERRA(
 \arguments{
 \item{outfolder}{Directory where results should be written}
 
-\item{start_date}{Range of years to retrieve. Format is YYYY-MM-DD,
-but only the year portion is used and the resulting files always contain a full year of data.}
-
-\item{end_date}{Range of years to retrieve. Format is YYYY-MM-DD,
+\item{start_date, end_date}{Range of years to retrieve. Format is YYYY-MM-DD,
 but only the year portion is used and the resulting files always contain a full year of data.}
 
 \item{lat.in}{site latitude in decimal degrees}
@@ -33,7 +30,7 @@ but only the year portion is used and the resulting files always contain a full 
 \item{verbose}{logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 to control printing of debug info}
 
-\item{...}{Not used -- silently soak up extra arguments from `convert.input`, etc.}
+\item{...}{Not used -- silently soak up extra arguments from `convert_input`, etc.}
 }
 \value{
 `data.frame` of meteorology data metadata

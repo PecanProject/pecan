@@ -17,6 +17,9 @@
 ##' converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.
 ##'
 ##' @param trait is the trait name used in the database, stored in variables.name
+##' @param con database connection object
+##' @param update.check.only if TRUE, returns results but does not print summaries
+##' @param ... unused currently
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##' @param ids_are_cultivars if TRUE, the IDs in spstr are cultivar IDs, otherwise they are species IDs. Passed on to \code{\link{query.data}}
 ##'

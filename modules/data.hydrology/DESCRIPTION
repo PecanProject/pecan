@@ -1,6 +1,6 @@
 Package: PEcAn.data.hydrology
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
@@ -34,4 +34,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

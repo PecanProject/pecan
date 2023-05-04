@@ -165,7 +165,7 @@ for(p in 1:19){
       wt.df[p,s,,1] <- wt.mean
       wt.df[p,s,,2] <- wt.mean - mean(param.hist[p,s,])
       wt.df[p,s,,3] <- wt.var
-      wt.df[p,s,,4] <- wt.var - var(param.hist[p,s,])
+      wt.df[p,s,,4] <- wt.var - stats::var(param.hist[p,s,])
       
       #plot weighted mean
       plot(wt.mean[2:9],type='l',ylab='Weighted Mean',xlab='Time')
@@ -186,7 +186,7 @@ for(p in 1:19){
       #Plot weighted variance
       plot(wt.var,type='l',ylab='Weighted Variance',xlab='Time')
       points(wt.var, pch=19,cex=.5)
-      abline(h=var(param.hist[p,s,]))
+      abline(h= stats::var(param.hist[p,s,]))
       title(main = list(paste(pft,'\n',param.plot), cex = .5))
       
       hist(param.hist[p,s,], freq = FALSE, col= 'lightgrey', main = paste(pft,'\n',param.plot))

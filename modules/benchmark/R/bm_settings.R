@@ -23,7 +23,7 @@ read_settings_BRR <- function(settings){
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   BRR <- tbl(con,"reference_runs") %>%
-    filter(id == settings$benchmarking$reference_run_id) %>%
+    filter(.data$id == settings$benchmarking$reference_run_id) %>%
     collect()
 
   BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
@@ -44,8 +44,8 @@ read_settings_BRR <- function(settings){
 
 clean_settings_BRR <- function(inputfile){
   clean <- PEcAn.settings::clean.settings(inputfile,write=FALSE)
-  if (is.MultiSettings(clean)) {
-    logger.error("Cannot run clean settings for a mutlisettings object") # For now
+  if (PEcAn.settings::is.MultiSettings(clean)) {
+    PEcAn.logger::logger.error("Cannot run clean settings for a mutlisettings object") # For now
   }
 
   # Remove database & host information
@@ -81,6 +81,7 @@ clean_settings_BRR <- function(inputfile){
 ##' @title Add workflow specific info to settings list for benchmarking
 ##' @param settings settings or multisettings object
 ##' @param bety connection to the database
+##' @importFrom rlang .data
 ##' @export
 ##' @author Betsy Cowdery
 
@@ -90,9 +91,9 @@ add_workflow_info <- function(settings, bety){
   }
   if(!as.logical(settings$benchmarking$new_run)){
     settings$workflow$id <- tbl(bety,"ensembles") %>%
-      filter(id == settings$benchmarking$ensemble_id) %>%
-      dplyr::select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
+      dplyr::filter(.data$id == settings$benchmarking$ensemble_id) %>%
+      dplyr::select("workflow_id") %>% dplyr::collect %>% .[[1]]
+    wf <- tbl(bety, 'workflows') %>% dplyr::filter(.data$id == settings$workflow$id) %>% collect()
     settings$rundir <- file.path(wf$folder, "run")
     settings$modeloutdir <- file.path(wf$folder, "out")
     settings$outdir <- wf$folder
@@ -133,6 +134,6 @@ check_BRR <- function(settings_xml, con){
   # Other options include comparing lists (slow)
   # more spohisticated PSQL queries
   # changing the settings field to jsonb
-  ref_run <- tbl(con, "reference_runs") %>% filter(settings == settings_xml) %>% collect
+  ref_run <- tbl(con, "reference_runs") %>% filter(.data$settings == settings_xml) %>% collect
   return(ref_run)
 }

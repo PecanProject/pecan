@@ -44,7 +44,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
     dat$mid_time <- dat$start_time + (dat$end_time - dat$start_time)/2
     dat <- dat[dat$start_time >= start_date & dat$end_time <= end_date,]
     secs_elapsed <- unclass(dat$mid_time) - unclass(start_date)
-    days_elapsed <- udunits2::ud.convert(secs_elapsed, "sec", "days")
+    days_elapsed <- PEcAn.utils::ud_convert(secs_elapsed, "sec", "days")
     
     ref_time_str <- strftime(start_date, format = "%FT%TZ")
     time <- ncdf4::ncdim_def(name = "time", units = paste("days since", ref_time_str),

@@ -33,5 +33,5 @@
 ##'
 ##' @docType package
 ##' @name PEcAn
-##' @aliases PECAn, pecan, package-pecan
+##' @aliases PECAn pecan package-pecan
 NULL

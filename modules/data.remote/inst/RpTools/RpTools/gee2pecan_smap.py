@@ -33,8 +33,6 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
     start (str) -- starting date of the data request in the form YYYY-MM-dd
 
     end (str) -- ending date areaof the data request in the form YYYY-MM-dd
-
-    siteid (str) -- shortform of siteid, None by default
   
     Returns
     -------
@@ -155,10 +153,10 @@ def gee2pecan_smap(geofile, outdir, filename, start, end):
         datadf, coords=coords, attrs={"site_name": site_name, "AOI": AOI,},
     )
 
-    if siteid is None:
-        sitedid = site_name
+    # if siteid is None:
+    #     sitedid = site_name
 
-    # # if specified output path does not exist create it
+    # if specified output path does not exist create it
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
 

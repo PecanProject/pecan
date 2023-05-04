@@ -3,7 +3,7 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				lpjguess maat maespa preles sibcasa sipnet stics template
+				ldndc lpjguess maat maespa preles sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -44,8 +44,13 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-SETROPTIONS = "options(Ncpus = ${NCPUS})"
+SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
+EXPECTED_ROXYGEN_VERSION := 7.2.3
+INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
+	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
+	-e   "cat(as.character(packageVersion('roxygen2')))" \
+	-e "}")
 
 ### Macros
 
@@ -63,14 +68,10 @@ drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
-# circular dependencies in utils pkg.
-# When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" \
-	./scripts/confirm_deps.R ${1} \
-	$(if $(or \
-			$(findstring base/utils,$(1)), \
-			$(findstring modules/benchmark,$(1))) \
-		,NA,TRUE)
+# a circular dependency between benchmark and data.land.
+# When this is fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
+	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
 	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
@@ -80,10 +81,15 @@ test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "stop_on_failure = TRUE," \
 	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
-doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript \
-	-e "roxver <- packageVersion('roxygen2')" \
-	-e "if (roxver != '7.1.2') stop('Roxygen2 version is ', roxver, ', but PEcAn package documentation must be built with exactly version 7.1.2')" \
-	-e "devtools::document('"$(strip $(1))"')"
+doc_R_pkg = \
+	$(if \
+		$(filter ${EXPECTED_ROXYGEN_VERSION},${INSTALLED_ROXYGEN_VERSION}), \
+		./scripts/time.sh "document ${1}" \
+			Rscript -e "devtools::document('"$(strip $(1))"')", \
+		$(error Roxygen2 version is ${INSTALLED_ROXYGEN_VERSION}, \
+			but PEcAn package documentation must be built with exactly \
+			version ${EXPECTED_ROXYGEN_VERSION}))
+
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
@@ -135,7 +141,12 @@ clean:
 	echo `date` > $@
 
 .install/roxygen2: | .install .install/devtools
-	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) devtools::install_version('roxygen2', '7.1.2')"
+	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
+		-e "    || packageVersion('roxygen2') != '7.2.3') {" \
+		-e "  devtools::install_github('r-lib/roxygen2@v7.2.3')" \
+		-e "}"
+	$(eval INSTALLED_ROXYGEN_VERSION := 7.2.3)
 	echo `date` > $@
 
 .install/testthat: | .install

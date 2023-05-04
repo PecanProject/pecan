@@ -230,10 +230,10 @@ source(paste0("/fs/data3/kzarada/NEFI/US_", site.abv, "/download_", site.abv,"_m
 met = do.call(paste0("download_US_", site.abv,"_met"), list(frame_start, Sys.Date()))
 
 if("Tsoil" %in% names(met)){
-met <- as_tibble(met) %>% mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair,Tsoil, rH)
-}else{met <- as_tibble(met) %>% mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair, rH)}
+met <- as_tibble(met) %>% dplyr::mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair,Tsoil, rH)
+}else{met <- as_tibble(met) %>% dplyr::mutate(Time = as.POSIXct(date)) %>% dplyr::select(Time, Tair, rH)}
 
-nee.met <- nee.data %>% inner_join(met,nee.data,  by = c("Time"))
+nee.met <- nee.data %>% dplyr::inner_join(met,nee.data,  by = c("Time"))
 
 #Calculate Error 
 nee.met$error <- (nee.met$NEE - nee.met$Predicted)
@@ -272,14 +272,14 @@ for(i in 1:21){
   setwd(dir.index[i])
   nc <- nc_open(nc.files[[i]][1])
   sec <- nc$dim$time$vals
-  sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+  sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
   dt <- mean(diff(sec), na.rm=TRUE)
   tstep <- round(86400 / dt)
   dt <- 86400 / tstep
   
   
   Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-  Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+  Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
   Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
   ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
   if (!is.numeric(ws)) {

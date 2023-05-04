@@ -42,10 +42,10 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE, drop = TRU
   )
   values_sub <- values[, use_cols]
   # Load one row to get column types
-  sql_row <- dplyr::tbl(con, table) %>% head(1) %>% dplyr::collect()
+  sql_row <- dplyr::tbl(con, table) %>% utils::head(1) %>% dplyr::collect()
   sql_types <- purrr::map(sql_row, class) %>%
-    purrr::map_chr(1) %>%
-    .[use_cols]
+    purrr::map_chr(1) 
+  sql_types <- sql_types[use_cols]
   values_types <- purrr::map(values_sub, class) %>% purrr::map_chr(1)
   type_mismatch <- sql_types != values_types
   if (sum(type_mismatch) > 0) {
@@ -69,7 +69,7 @@ match_dbcols <- function(values, table, con, coerce_col_class = TRUE, drop = TRU
         "Coercing local column types to match SQL."
       )
       # Coerce values data frame to these types
-      values_fixed <- purrr::map2_dfc(values_sub, sql_types, as)
+      values_fixed <- purrr::map2_dfc(values_sub, sql_types, methods::as)
     }
   } else {
     values_fixed <- values_sub

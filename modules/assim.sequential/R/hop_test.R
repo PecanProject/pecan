@@ -22,7 +22,7 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   if(is.null(ens.runid)){
     run.write.configs(settings, write = settings$database$bety$write)
     
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     
     ens.runid <- read.table(file.path(settings$rundir,'runs.txt'))
   }
@@ -43,7 +43,7 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   ##### 
   ##### Run in SDA code with no data -- HOP Run
   ##### 
-  PEcAn.assim.sequential::sda.enkf(settings = settings, obs.mean = obs.mean, obs.cov = obs.cov)
+  PEcAnAssimSequential::sda.enkf(settings = settings, obs.mean = obs.mean, obs.cov = obs.cov)
   
   hop.runid <- read.table(file.path(settings$rundir,'runs.txt'))
   hop.ens <- read.output(runid = hop.runid, 

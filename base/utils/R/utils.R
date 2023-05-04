@@ -27,44 +27,48 @@
 ##' @param silent logical: suppress log messages about missing variables?
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
+mstmipvar <- function(name, lat = NULL, lon = NULL, time = NULL, nsoil = NULL, silent = FALSE) {
   nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
-  dims <- list()
   
   if (nrow(nc_var) == 0) {
     if (!silent) {
       PEcAn.logger::logger.info("Don't know about variable", name, " in standard_vars in PEcAn.utils")
     }
-    if (is.na(time)) {
-      time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
-                        vals = 1:365, calendar = "standard", unlim = TRUE)
+    if (is.null(time)) {
+      time <-
+        ncdf4::ncdim_def(
+          name = "time",
+          units = "days since 1900-01-01 00:00:00",
+          vals = 1:365,
+          calendar = "standard",
+          unlim = TRUE
+        )
     }
     return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
-  for (i in 1:4) {
-    vd <- nc_var[[paste0("dim", i)]]
-    if (vd == "lon" && !is.na(lon)) {
-      dims[[length(dims) + 1]] <- lon
-    } else if (vd == "lat" && !is.na(lat)) {
-      dims[[length(dims) + 1]] <- lat
-    } else if (vd == "time" && !is.na(time)) {
-      dims[[length(dims) + 1]] <- time
-    } else if (vd == "nsoil" && !is.na(nsoil)) {
-      dims[[length(dims) + 1]] <- nsoil
-    } else if (is.na(vd)) {
-      # skip
-    } else {
-      if (!silent) {
-        PEcAn.logger::logger.info("Don't know dimension for", vd, "for variable", name)
-      }
+  
+  var_dims <- nc_var[paste0("dim", 1:4)]
+  pos_dims <- c("lon", "lat", "time", "nsoil")
+  
+  #check for missing dimensions
+  no_dims <- pos_dims[!var_dims %in% pos_dims]
+  if (!silent) {
+    if (length(no_dims) > 0) {
+      PEcAn.logger::logger.info("Don't know dimension(s)", no_dims, "for variable", name)
     }
   }
+  
+  #replace dim names with values
+  var_dims <- var_dims[var_dims %in% pos_dims]
+  var_dims <- lapply(var_dims, function(x) eval(str2lang(x))) #converts character values in `var_dims` to corresponding R objects
+  dims <- var_dims[!sapply(var_dims, is.null)] #get rid of NULL elements
+  
   ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
   if (nc_var$Long.name != "na") {
     ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
-} # mstimipvar
+} 
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -201,6 +205,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @export summarize.result
 ##' @usage summarize.result(result)
 ##' @importFrom rlang .data
+##' @importFrom magrittr %>%
 ##' @author David LeBauer, Alexey Shiklomanov
 summarize.result <- function(result) {
   ans1 <- result %>%
@@ -389,8 +394,8 @@ tabnum <- function(x, n = 3) {
 ##' @export
 ##' @author unknown
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
-  new.temp.K <- udunits2::ud.convert(new.temp, "degC", "K")
-  old.temp.K <- udunits2::ud.convert(old.temp, "degC", "K")
+  new.temp.K <- ud_convert(new.temp, "degC", "K")
+  old.temp.K <- ud_convert(old.temp, "degC", "K")
   return(observed.value / exp(3000 * (1 / (new.temp.K) - 1 / (old.temp.K))))
 } # arrhenius.scaling
 #--------------------------------------------------------------------------------------------------#
@@ -409,7 +414,7 @@ capitalize <- function(x) {
   return(paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "", collapse = " "))
 } # capitalize
 
-isFALSE <- function(x) !isTRUE(x)
+# isFALSE <- function(x) !isTRUE(x)
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -558,21 +563,21 @@ misc.convert <- function(x, u1, u2) {
   mmH2O <- 18.01528 # molar mass of H2O, g/mol
   
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "ug", "kg") * amC
+    val <- ud_convert(x, "ug", "kg") * amC
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "ug") / amC
+    val <- ud_convert(x, "kg", "ug") / amC
   } else if (u1 == "mol H2O m-2 s-1" & u2 == "kg H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "g", "kg") * mmH2O
+    val <- ud_convert(x, "g", "kg") * mmH2O
   } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "g") / mmH2O
+    val <- ud_convert(x, "kg", "g") / mmH2O
   } else if (u1 == "Mg ha-1" & u2 == "kg C m-2") {
-    val <- x * udunits2::ud.convert(1, "Mg", "kg") * udunits2::ud.convert(1, "ha-1", "m-2")
+    val <- x * ud_convert(1, "Mg", "kg") * ud_convert(1, "ha-1", "m-2")
   } else if (u1 == "kg C m-2" & u2 == "Mg ha-1") {
-    val <- x * udunits2::ud.convert(1, "kg", "Mg") * udunits2::ud.convert(1, "m-2", "ha-1")
+    val <- x * ud_convert(1, "kg", "Mg") * ud_convert(1, "m-2", "ha-1")
   } else {
     u1 <- gsub("gC","g*12",u1)
     u2 <- gsub("gC","g*12",u2)
-    val <- udunits2::ud.convert(x,u1,u2)
+    val <- ud_convert(x,u1,u2)
     
     
     #    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
@@ -644,7 +649,7 @@ convert.expr <- function(expression) {
 ##' Simple function to use ncftpget for FTP downloads behind a firewall.
 ##' Requires ncftpget and a properly formatted config file in the users
 ##' home directory
-##' @title download.file
+##' @title download_file
 ##' @param url complete URL for file download
 ##' @param filename destination file name
 ##' @param method Method of file retrieval. Can set this using the `options(download.ftp.method=[method])` in your Rprofile.
@@ -652,9 +657,9 @@ convert.expr <- function(expression) {
 ##'
 ##' @examples
 ##' \dontrun{
-##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+##' download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
 ##'
-##' download.file("
+##' download_file("
 ##'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
 ##'   "~/pres.sfc.2000.nc")
 ##' }
@@ -662,7 +667,7 @@ convert.expr <- function(expression) {
 ##' @export
 ##'
 ##' @author Shawn Serbin, Rob Kooper
-download.file <- function(url, filename, method) {
+download_file <- function(url, filename, method) {
   if (startsWith(url, "ftp://")) {
     method <- if (missing(method)) getOption("download.ftp.method", default = "auto")
     if (method == "ncftpget") {
@@ -727,6 +732,42 @@ retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), max
     retval = try(eval(expr))
   }
   return(retval)
+}
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+##' Adverb to try calling a function `n` times before giving up
+##'
+##' @param .f Function to call.
+##' @param n Number of attempts to try
+##' @param timeout Timeout between attempts, in seconds
+##' @param silent Silence error messages?
+##' @return Modified version of input function
+##' @examples
+##' rlog <- robustly(log, timeout = 0.3)
+##' try(rlog("fail"))
+##' \dontrun{
+##'  nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
+##'  nc <- nc_openr(url)
+##'  # ...or just call the function directly
+##'  nc <- robustly(ncdf4::nc_open, n = 20)(url)
+##'  # Useful in `purrr` maps
+##'  many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
+##' }
+##' @export
+robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
+  .f <- purrr::as_mapper(.f)
+  function(...) {
+    attempt <- 1
+    while (attempt <= n) {
+      result <- try(.f(...), silent = silent)
+      if (!inherits(result, "try-error")) return(result)
+      attempt <- attempt + 1
+      if (!silent) PEcAn.logger::logger.info("Trying attempt ", attempt, " of ", n)
+    }
+    PEcAn.logger::logger.severe("Failed after", n, "attempts.")
+  }
 }
 #--------------------------------------------------------------------------------------------------#
 

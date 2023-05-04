@@ -21,7 +21,7 @@ run_ed_singularity(
 
 \item{singularity_args}{Additional arguments to be passed to \verb{singularity run} (before)}
 
-\item{Additional}{arguments to \link[base:system2]{base::system2}}
+\item{...}{Additional arguments to \link[base:system2]{base::system2}}
 }
 \description{
 Uses \link[base:system2]{base::system2} to run ED or EDR via a Singularity container.
@@ -29,9 +29,11 @@ Uses \link[base:system2]{base::system2} to run ED or EDR via a Singularity conta
 \details{
 On some systems, to run Singularity properly, you will need to bind
 additional paths. To do this, pass the arguments as a character vector to
-\code{singularity_args}. For instance:\preformatted{bindpaths <- c("/scratch", "/data")
+\code{singularity_args}. For instance:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bindpaths <- c("/scratch", "/data")
 run_ed_singularity(..., singularity_args = paste("--bind", bindpaths))
-}
+}\if{html}{\out{</div>}}
 
 By default, \link[base:system2]{base::system2} prints the output to the console. To store
 standard ED output in a variable as a character vector, set \code{stdout = TRUE}.

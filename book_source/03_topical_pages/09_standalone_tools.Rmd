@@ -135,29 +135,30 @@ input.id = tbl(bety,"inputs") %>% filter(name == input_name) %>% pull(id)
 ```
 
 ## Remote data module
-Remote data module retrieves remote sensing data from MODISTools, Google Earth Engine and AppEEARS. The downloaded data can be used while performing further analysis in PEcAn.
+Remote data module retrieves remote sensing data from MODISTools, Google Earth Engine and AppEEARS, as well as from the NASA's Land Processes Distributed Active Archive Center (LP DAAC) data server. For currently available R functions see [here](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/R), and for the Python functions see [RpTools](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/RpTools/RpTools). The downloaded data can be used while performing further analyses in PEcAn.
 
 #### Google Earth Engine 
 [Google Earth Engine](https://earthengine.google.com/) is a cloud-based platform for performing analysis on satellite data. It provides access to a [large data catalog](https://developers.google.com/earth-engine/datasets) through an online JavaScript code editor and a Python API.
 
 Datasets currently available for use in PEcAn via Google Earth Engine are,
 
-* [Sentinel-2 MSI](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) [`gee2pecan_s2()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_s2.py)
+* [Sentinel-2 MSI](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) [`gee2pecan_s2()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_s2.py). It is possible to estimate Leaf Area Index (LAI) from Sentinel-2 data using the [ESA SNAP algorithm](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/biophys_xarray.py).
 * [SMAP Global Soil Moisture Data](https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture) [`gee2pecan_smap()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_smap.py)
 * [Landsat 8 Surface Reflectance](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR) [`gee2pecan_l8()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_l8.py)
+* [Global Forest Canopy Height, 2019](https://glad.umd.edu/dataset/gedi) [`gee2pecan_gedi()`]()
 
 #### AppEEARS
 [AppEEARS (Application for Extracting and Exploring Analysis Ready Samples)](https://lpdaacsvc.cr.usgs.gov/appeears/) is an online tool which provides an easy to use interface for downloading analysis ready remote sensing data. [Products available on AppEEARS.](https://lpdaacsvc.cr.usgs.gov/appeears/products) Note: AppEEARS uses a task based system for processing the data request, it is possible for a task to run for long hours before it gets completed. The module checks the task status after every 60 seconds and saves the files when the task gets completed.
 
-#### Processing functions currently available are,
+#### LP DAAC Data Pool
+[LP DAAC (Land Processes Distributed Active Archive Center) Data Pool](https://e4ftl01.cr.usgs.gov/?_ga=2.115816526.913836401.1640174993-1625967605.1640174993) is a NASA Earthdata login-enabled server located at the USGS Earth Resources Observation and Science (EROS) Center that archives and distributes land data products. Similar to AppEEARS, using this source also requires an Earthdata account (see below). Currently [this pipeline](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/RpTools/RpTools/lpdaacdatapool2pecan.py) is implemented and tested only for the GEDI dataset. For more information about the data you are downloading, including documentation and how to properly cite the data, please visit https://lpdaac.usgs.gov/.
 
-* [SNAP](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/satellitetools/biophys_xarray.py)
 
 #### Set-Up instructions (first time and one time only):
 
 1. **Sign up for the Google Earth Engine**. Follow the instructions [here](https://earthengine.google.com/new_signup/) to sign up for using GEE. You need to have your own GEE account for using the GEE download functions in this module.
 
-2. **Sign up for NASA Earthdata**. Using AppEEARS requires an Earthdata account visit this [page](https://urs.earthdata.nasa.gov/users/new) to create your own account.
+2. **Sign up for NASA Earthdata**. Using AppEEARS and LP DAAC Data Pool requires an Earthdata account visit this [page](https://urs.earthdata.nasa.gov/users/new) to create your own account.
 
 3. **Install the RpTools package**. Python codes required by this module are stored in a Python package named "RpTools" using this requires Python3 and the package manager pip3 to be installed in your system. 
    To install the package,
@@ -182,7 +183,7 @@ import ee
 ee.Authenticate()
 ```
 
-5. **Save the Earthdata credentials**. If you wish to use AppEEARS you will have to store your username and password inside a JSON file and then pass its file path as an argument in `remote_process` 
+5. **Save the Earthdata credentials**. If you wish to use AppEEARS or LP DAAC data pool you will have to store your username and password inside a JSON file and then pass its file path as an argument in `remote_process` 
 
 #### Usage guide:
 This module is accesible using the R function `remote_process` which uses the Python package "RpTools" (located at `data.remote/inst/RpTools`) for downloading and processing data. RpTools has a function named `rp_control` which controls two other functions,
@@ -222,11 +223,20 @@ This module is accesible using the R function `remote_process` which uses the Py
 * `qc`: (optional) quality control parameter, required for some gee collections
 * `overwrite`: (optional) if TRUE database checks will be skipped and existing data of same type will be replaced entirely. When processed data is requested, the raw data required   for creating it will also be replaced. By default FALSE
 
-These tags are only required if processed data is requested:
+If you don't want to enter your Earthdata credentials everytime you use AppEEARS or LP DAAC use the following tag too:
+
+* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required when using AppEEARS and LP DAAC data pool. The contents of this file could be as simple as the following:
+```
+{
+  "username": "yourEARTHDATAusername",
+  "password": "yourEARTHDATApassword"
+}
+```
+These tags are only required if processed data (i.e. further processing after downloading the data) is requested:
 
 * `out_process_data`: (optional) type of processed output requested, e.g, lai
 * `algorithm`: (optional) algorithm used for processing data, currently only SNAP is implemented to estimate LAI from Sentinel-2 bands
-* `credfile`: (optional) absolute path to JSON file containing Earthdata username and password, only required for AppEEARS
+
 
 Additional information are taken from the registration files located at [pecan/modules/data.remote/inst/registration](https://github.com/PecanProject/pecan/tree/develop/modules/data.remote/inst/registration), each source has its own registration file. This is so because there isn't a standardized way to retrieve all image collections from GEE and each image collection may require its own way of performing quality checks, etc whereas all of the products available on AppEEARS can be retrieved using its API in a standardized way.
 
@@ -248,7 +258,7 @@ GEE registration file (register.GEE.xml) :
    * `name` name of the format
    * `mimetype` MIME type
    
-AppEEARS registarion file (registrer.APPEEARS.xml) :
+AppEEARS and LP DAAC Data Pool registration files (register.APPEEARS.xml and register.LPDAACDATAPOOL.xml) :
 
 * `coord`
   * `coord_type` coordinate type supported by the product 
@@ -354,6 +364,22 @@ PEcAn.data.remote::remote_process(settings)
 ```
 
 The output netCDF file will be saved at outdir and its record would be kept in the inputs table of BETYdb.
+
+#### Example use GEDI (LP DAAC data pool)
+```xml
+  <remotedata>
+  <out_get_data>gedi</out_get_data>
+  <source>lpdaacdatapool</source>
+  <collection>GEDI02_B.002</collection>
+  <credfile>path/to/jsonfile/containingcredentials</credfile>
+  </remotedata>
+```
+
+2. Store the contents of `pecan.xml` in a variable named `settings` and pass it to `remote_process`.
+
+```
+PEcAn.data.remote::remote_process(settings)
+```
 
 
 #### Adding new GEE image collections

@@ -243,7 +243,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ### create time dimension
       days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00")
       t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-      timestep <- as.numeric(mean(udunits2::ud.convert(diff(days_since_1700), "d", "s")))
+      timestep <- as.numeric(mean(PEcAn.utils::ud_convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
       x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
@@ -507,10 +507,10 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           rain <- rain / timestep
           "Mg m-2 s-1"
         }, `in` = {
-          rain <- udunits2::ud.convert(rain / timestep, "in", "mm")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "in", "mm")
           "kg m-2 s-1"
         }, `mm h-1` = {
-          rain <- udunits2::ud.convert(rain / timestep, "h", "s")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
         },
         'kg m-2 (30 minute)-1' = {
@@ -656,9 +656,9 @@ met.conv <- function(x, orig, bety, CF) {
   if (nchar(orig) == 0) {
     orig <- bety  ## if units not provided, default is that they were the same units as bety
   }
-  if (udunits2::ud.is.parseable(orig)) {
-    if (udunits2::ud.are.convertible(orig, bety)) {
-      return(udunits2::ud.convert(udunits2::ud.convert(x, orig, bety), bety, CF))
+  if (PEcAn.utils::unit_is_parseable(orig)) {
+    if (units::ud_are_convertible(orig, bety)) {
+      return(PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(x, orig, bety), bety, CF))
     } else {
       PEcAn.logger::logger.error(paste("met.conv could not convert", orig, bety, CF))
     }

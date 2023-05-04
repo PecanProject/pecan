@@ -19,8 +19,8 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
 
 #   if("specific_humidity" %in% colnames(cfmet) & (!"relative_humidity" %in% colnames(cfmet))){
 #     cfmet$relative_humidity <- cfmet[,list(qair2rh(qair = specific_humidity,
-#                                                    temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"),
-#                                                    press = udunits2::ud.convert(air_pressure, "Pa", "millibar"))]
+#                                                    temp = PEcAn.utils::ud_convert(air_temperature, "Kelvin", "Celsius"),
+#                                                    press = PEcAn.utils::ud_convert(air_pressure, "Pa", "millibar"))]
 #   }
 
   if(dt_hr > output.dt & dt_hr <= 6) {
@@ -75,9 +75,9 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
   }
   downscaled.result[["wind_speed"]] <- rep(subdailymet$wind_speed, each = tint)
 
-  solarMJ <- udunits2::ud.convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", tint, "h"), "MJ" )
+  solarMJ <- PEcAn.utils::ud_convert(subdailymet$surface_downwelling_shortwave_flux_in_air, paste0("W ", tint, "h"), "MJ" )
   PAR <- 0.486 * solarMJ ## Cambell and Norman 1998 p 151, ch 10
-  subdailymet$ppfd <- udunits2::ud.convert(PAR, "mol s", "micromol h")
+  subdailymet$ppfd <- PEcAn.utils::ud_convert(PAR, "mol s", "micromol h")
   downscaled.result[["ppfd"]] <- subdailymet$ppfd
 
   downscaled.result[["surface_downwelling_shortwave_flux_in_air"]] <- subdailymet$surface_downwelling_shortwave_flux_in_air
@@ -149,7 +149,7 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   qair <- dailymet[, list(year, doy, tmin, tmax, air_pressure, air_temperature, qmin = rh2qair(rh = relative_humidity/100, 
                                                                                                T = tmin), qmax = rh2qair(rh = relative_humidity/100, T = tmax))]
   
-  a <- qair[, list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = udunits2::ud.convert(air_pressure, 
+  a <- qair[, list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = PEcAn.utils::ud_convert(air_pressure, 
                                                                                              "Pa", "millibar"))][, list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure), rhmax = qair2rh(qmax, 
                                                                                                                                                                                                      air_temperature, pressure))]
   rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
@@ -176,7 +176,7 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   ## Hour
   time <- dailymet[, list(hour = tseq), by = c("year", "doy")]
   
-  ans <- data.table::data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = udunits2::ud.convert(Temp, 
+  ans <- data.table::data.table(time, downwelling_photosynthetic_photon_flux = SolarR, air_temperature = PEcAn.utils::ud_convert(Temp, 
                                                                                                         "kelvin", "celsius"), relative_humidity = RH, wind = wind_speed, precipitation_flux = precip)
   return(ans)
 } # cfmet.downscale.daily
@@ -222,7 +222,7 @@ get.ncvector <- function(var, lati = lati, loni = loni, run.dates = run.dates, m
     precip_units <- gsub("kg m-2", "mm", precip_units)
     precip_units <- gsub("kg/m2", "mm", precip_units)
     precip_units <- gsub("kg/m\\^2", "mm", precip_units)
-    ans <- udunits2::ud.convert(ans, precip_units, "mm s-1")
+    ans <- PEcAn.utils::ud_convert(ans, precip_units, "mm s-1")
   }
   return(ans)
 } # cfmet.downscale.time

@@ -20,6 +20,13 @@
 ##' @export
 ##' 
 sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE, restart=NULL) {
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'plyr',",
+      "needed by `PEcAnAssimSequential::sda.enkf.original()`.",
+      "Please install it and try again.")
+  }
   
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
@@ -309,7 +316,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   
   ## start model runs
   if(is.null(restart)){
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   }
 
   ###-------------------------------------------------------------------###
@@ -366,7 +373,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   rownames(state.interval) <- var.names
   
   wish.df <- function(Om, X, i, j, col) {
-    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
+    (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
   }
   
   sampler_toggle <- nimble::nimbleFunction(
@@ -1122,7 +1129,7 @@ for(t in seq_len(nt)) { #
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
       print(paste("Running Model for Year", as.Date(obs.times[t]) + 1))
-      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+      PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     }
     
     ###-------------------------------------------------------------------###

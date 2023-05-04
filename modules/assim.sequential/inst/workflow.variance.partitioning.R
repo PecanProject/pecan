@@ -4,7 +4,7 @@
 ##### This is the workflow template for doing a variance partitioning run
 ##### It probably will take you two days to rerun. The longest runs are the full SDA and process variance runs.
 ##### Basically I'm altering the pecan.SDA.xml to run the runs with data constrained initial conditions
-##### For the spin up runs I'm altering the pecan.CONFIGS.xml to just use start.model.runs()
+##### For the spin up runs I'm altering the pecan.CONFIGS.xml to just use start_model_runs()
 #####
 
 
@@ -13,11 +13,11 @@ library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
 library(PEcAn.visualization)
 library(PEcAn.ED2)
-library(PEcAn.assim.sequential)
+library(PEcAnAssimSequential)
 library(nimble)
 library(lubridate)
 library(PEcAn.visualization)
-#PEcAn.assim.sequential::
+#PEcAnAssimSequential::
 library(rgdal) # need to put in assim.sequential
 library(ncdf4) # need to put in assim.sequential
 
@@ -67,7 +67,7 @@ outconfig <- write.ensemble.configs(defaults = settings$pfts,
                                     model = settings$model$type, 
                                     write.to.db = settings$database$bety$write,
                                     restart = NULL)
-PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = FALSE)
+PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 file.rename('out','out_default')
 file.rename('run','run_default')
@@ -116,7 +116,7 @@ file.rename('SDA','SDA_default_ic')
 #running with sampled params
 settings <- read.settings('pecan.DEFAULT.xml')
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
-PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = FALSE)
+PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 file.rename('out','out_param')
 file.rename('run','run_param')
@@ -163,7 +163,7 @@ file.rename('run','run_param_ic')
 #running with sampled params
 settings <- read.settings('pecan.SAMP.MET.xml')
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
-PEcAn.remote::runModule.start.model.runs(settings, stop.on.error = FALSE)
+PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 file.rename('out','out_met')
 file.rename('run','run_met')
