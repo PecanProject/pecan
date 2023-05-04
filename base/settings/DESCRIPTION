@@ -28,5 +28,5 @@ Suggests:
     testthat (>= 2.0.0),
     withr
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
