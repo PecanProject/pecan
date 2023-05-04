@@ -9,7 +9,7 @@
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 ##'   to control printing of debug info
-##' @param maxErrors Maximum times to re-try folloing an error accessing netCDF data through THREDDS
+##' @param maxErrors Maximum times to re-try following an error accessing netCDF data through THREDDS
 ##' @param sleep Wait time between attempts following a THREDDS or other error
 ##' @param method (string) Data access method. `opendap` (default)
 ##'   attempts to directly access files via OpenDAP. `ncss` (NetCDF

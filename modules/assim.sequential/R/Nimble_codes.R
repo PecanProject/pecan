@@ -201,10 +201,13 @@ GEF.MultiSite.Nimble <-  nimbleCode({
   
   # #puting the ones that they don't have q in Xall - They come from X.model
   # # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
-  for (j in 1:nNotH) {
-    tmpXmod[j]  <- X.mod[NotH[j]]
-    Xall[NotH[j]] <- tmpXmod[j]
+  if(nNotH > 0){
+    for (j in 1:nNotH) {
+      tmpXmod[j]  <- X.mod[NotH[j]]
+      Xall[NotH[j]] <- tmpXmod[j]
+    }
   }
+  
   #These are the one that they have data and their q can be estimated.
   for (i in 1:nH) {
     tmpXH[i]  <- X[i]

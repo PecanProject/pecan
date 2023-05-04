@@ -160,7 +160,7 @@ for x in base web docs; do
 done
 
 # all files in subfolder
-for x in models executor data thredds monitor rstudio-nginx; do
+for x in models executor data monitor rstudio-nginx; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -217,7 +217,7 @@ for version in git; do
 done
 
 # build sipnet
-for version in git r136; do
+for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \

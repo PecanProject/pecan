@@ -60,20 +60,6 @@ Non-standard file/directory found at top level:
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-dataone_download: no visible binding for '<<-' assignment to
-  ‘newdir_D1’
-dataone_download: no visible binding for global variable ‘newdir_D1’
-download_package_rm: no visible binding for '<<-' assignment to ‘mnId’
-download_package_rm: no visible binding for '<<-' assignment to ‘mn’
-download_package_rm: no visible binding for global variable ‘mnId’
-download_package_rm: no visible binding for '<<-' assignment to
-  ‘bagitFile’
-download_package_rm: no visible binding for global variable ‘mn’
-download_package_rm: no visible binding for '<<-' assignment to
-  ‘zip_contents’
-download_package_rm: no visible binding for global variable ‘bagitFile’
-download_package_rm: no visible binding for global variable
-  ‘zip_contents’
 ens_veg_module: no visible global function definition for ‘db.close’
 ens_veg_module: no visible global function definition for ‘db.query’
 ens_veg_module: no visible global function definition for
@@ -111,15 +97,6 @@ fia.to.psscss: no visible global function definition for ‘median’
 fia.to.psscss: no visible global function definition for ‘write.table’
 fia.to.psscss: no visible global function definition for
   ‘dbfile.input.insert’
-format_identifier: no visible binding for '<<-' assignment to ‘doi1’
-format_identifier: no visible binding for global variable ‘doi1’
-get_resource_map: no visible binding for '<<-' assignment to ‘mnId’
-get_resource_map: no visible binding for '<<-' assignment to ‘mn’
-get_resource_map: no visible binding for global variable ‘mnId’
-get_resource_map: no visible binding for global variable ‘doi1’
-get_resource_map: no visible binding for '<<-' assignment to
-  ‘resource_map’
-get_resource_map: no visible binding for global variable ‘resource_map’
 get_veg_module: no visible global function definition for
   ‘convert.input’
 get_veg_module: no visible binding for global variable ‘input’

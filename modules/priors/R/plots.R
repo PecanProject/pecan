@@ -48,13 +48,13 @@ plot_posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @title Prior Figure
 ##' @param priordata observations to be plotted as points
 ##' @param priordensity density of prior distribution, calculated by \code{\link{prior.density}}
-##' @param trait name of trait
+##' @param trait dataframe with id, figid and units of the trait
 ##' @param xlim limits for x axis
 ##' @author David LeBauer
 ##' @return plot / grob of prior distribution with data used to inform the distribution
 ##' @export
 ##' @importFrom ggplot2 ggplot aes theme_bw scale_x_continuous scale_y_continuous element_blank element_text geom_rug geom_line geom_point
-priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto", fontsize = 18) {
+priorfig <- function(priordata = NA, priordensity = NA, trait = NA, xlim = "auto", fontsize = 18) {
   if (is.data.frame(priordata)) {
     colnames(priordata) <- "x"
   }
@@ -68,9 +68,9 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
   }
 
   priorfigure <- ggplot() + theme_bw() +
-    scale_x_continuous(limits = xlim, breaks = x.breaks, name = PEcAn.utils::trait.lookup(trait)$units) +
+    scale_x_continuous(limits = xlim, breaks = x.breaks, name = trait$units) +
     scale_y_continuous(breaks = NULL) +
-    labs(title = PEcAn.utils::trait.lookup(trait)$figid) +
+    labs(title = trait$figid) +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text.y = element_blank(),    ## hide y axis label
@@ -83,7 +83,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
     priordata   <- subset(priordata, subset = !is.na(x))
     dx          <- with(priordata, min(abs(diff(x)[diff(x) != 0])))
     ## add jitter to separate equal values
-    priordata   <- transform(priordata, x = x + runif(length(x), -dx / 2, dx / 2))
+    priordata$x <- priordata$x + runif(length(priordata$x), -dx / 2, dx / 2)
     rug         <- geom_rug(data = priordata, aes(x))
     priorfigure <- priorfigure + rug
   }
@@ -100,7 +100,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot trait density and data
 ##'
-##' @param trait character, name of trait to be plotted
+##' @param trait dataframe with id, figid and units of the trait to be plotted
 ##' @param prior named distribution with parameters
 ##' @param posterior.sample samples from posterior distribution
 ##'   whose density should be plotted
@@ -119,7 +119,8 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##'                      parama = 20,
 ##'                      paramb = 5)
 ##' data1  <- data.frame(Y = c(19, 21), se = c(1,1))
-##' plot_trait(trait = 'Vcmax',
+##' trait1 <- data.frame(id = 'Vcmax', figid = 'Vcmax', units = 'umol CO2 m-2 s-1')
+##' plot_trait(trait = trait1,
 ##'           prior = prior1,
 ##'           trait.df = data1)
 ##' }
@@ -142,9 +143,6 @@ plot_trait <- function(trait,
   plot_posterior <- !is.null(posterior.sample)
   plot_prior     <- !is.null(prior)
   plot_data      <- !is.null(trait.df)
-
-  ## get units for plot title
-  units <- PEcAn.utils::trait.lookup(trait)$units
 
   if(plot_data)  trait.df <- PEcAn.MA::jagify(trait.df)
 
@@ -189,8 +187,8 @@ plot_trait <- function(trait,
 
   trait.plot <- base.plot +
     geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) +
-    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, name = PEcAn.utils::trait.lookup(trait)$units) +
-    labs(title = PEcAn.utils::trait.lookup(trait)$figid) +
+    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, name = trait$units) +
+    labs(title = trait$figid) +
     theme(axis.text.x = element_text(size = fontsize$axis),
           axis.text.y = element_blank(),
           axis.title.x = element_text(size = fontsize$axis),
