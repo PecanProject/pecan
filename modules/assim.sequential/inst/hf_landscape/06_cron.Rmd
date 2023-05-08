@@ -14,3 +14,11 @@ cron_ls()
 
 ```
 
+## SMAP DATA DOWNLOAD
+```{r}
+cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/07_SMAP.R")
+cronR::cron_add(command = cmd, frequency = 'daily', at='11PM', id = 'SMAP', description = "SMAP download")
+cronR::cron_njobs()
+cronR::cron_ls()
+```
+
