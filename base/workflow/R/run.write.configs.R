@@ -55,7 +55,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       ## otherwise leave NA and get.parameter.samples will look for local
     } else {
       ## does posterior.files point to a directory instead of a file?
-      if(file_test("-d",posterior.files[i])){
+      if(utils::file_test("-d",posterior.files[i])){
         pfiles = dir(posterior.files[i],pattern = "post.distns.*Rdata",full.names = TRUE)
         if(length(pfiles)>1){
           pid = grep("post.distns.Rdata",pfiles)
