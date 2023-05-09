@@ -347,7 +347,7 @@ sda.enkf.multisite <- function(settings,
       #sample met ensemble members
       #TODO: incorporate Phyllis's restart work
       #      sample all inputs specified in the settings$ensemble not just met
-      inputs <- PEcAn.workflow::papply(conf.settings,function(setting) {
+      inputs <- PEcAn.settings::papply(conf.settings,function(setting) {
         PEcAn.uncertainty::input.ens.gen(
           settings = setting,
           input = "met",
