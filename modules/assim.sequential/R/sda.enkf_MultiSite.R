@@ -125,9 +125,9 @@ sda.enkf.multisite <- function(settings,
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
-    site.ids <- conf.settings$run %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+    site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings$run %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
+    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% base::as.numeric)%>% 
       t %>%
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
@@ -347,7 +347,7 @@ sda.enkf.multisite <- function(settings,
       #sample met ensemble members
       #TODO: incorporate Phyllis's restart work
       #      sample all inputs specified in the settings$ensemble not just met
-      inputs <- papply(conf.settings,function(setting) {
+      inputs <- PEcAn.workflow::papply(conf.settings,function(setting) {
         PEcAn.uncertainty::input.ens.gen(
           settings = setting,
           input = "met",
