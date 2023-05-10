@@ -20,6 +20,7 @@ This document contains the code for the initial prep of a landscape-scale run
 ```{r}
 grain = 30
 tower_latlon = c(42.53691, -72.17265)
+tower_lonlat = rev(tower_latlon)
 tower_utm    = c(732183.98,4713266.18)
 nclass = 10
 ```
@@ -32,15 +33,57 @@ NEON AOP mosaic data are provided in tiles with UTM coordinates in each file nam
 
 NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2022. https://doi.org/10.48443/ys43-cb22. Dataset accessed from https://data.neonscience.org on December 21, 2022
 
-First download only got one tile, went back for more!
-NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2023. https://doi.org/10.48443/7x5a-mn68. Dataset accessed from https://data.neonscience.org on March 22, 2023
-
 ```{r}
 ## load data
 laifile = "NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20221221T142516Z.RELEASE-2022/NEON_D01_HARV_DP3_732000_4713000_LAI.tif"
 lairaw <- rast(laifile)
 laie <- rast("NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20221221T142516Z.RELEASE-2022/NEON_D01_HARV_DP3_732000_4713000_LAI_Error.tif")
 ```
+
+First download only got one tile, went back for more!
+NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2023. https://doi.org/10.48443/7x5a-mn68. Dataset accessed from https://data.neonscience.org on March 22, 2023
+
+Need to mosaic together: https://www.neonscience.org/resources/learning-hub/tutorials/merge-aop-raster-data
+using code https://raw.githubusercontent.com/NEONScience/NEON-Data-Skills/main/tutorials/R/AOP/AOP-L3-rasters/aop_merge_raster_functions.R
+```{r}
+source("~/pecan/modules/assim.sequential/inst/hf_landscape/aop_merge_raster_functions.R")
+lai_folder = "/projectnb/dietzelab/dietze/hf_landscape_SDA/NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20230322T174312Z.RELEASE-2023/"
+
+#get the list of dataTiles for each data directory and extension
+dataTiles <- getDataTilesByExt(lai_folder,dataExts = getDataExts("DP3.30012.001"))
+
+cat('Creating full site mosaics\n')
+fullMosaics <- list()
+fullMosaicNames <- list()
+for (i in 1:length(dataTiles)) {
+  fullMosaics[[i]] <- mergeDataTiles(dataTiles[[i]])
+  dataDirSplit <- unlist(strsplit(dataTiles[[i]][1],.Platform$file.sep))
+  tileNameSplit <- unlist(strsplit(dataTiles[[i]][1],'_'))
+  if (tail(tileNameSplit,1)=='error.tif') {
+    fullMosaicNames[[i]] <- paste0(dataDirSplit[9],'_',tail(tileNameSplit,n=2)[1],'_error.tif')} 
+  else {
+    fullMosaicNames[[i]] <- paste0(dataDirSplit[9],'_',tail(tileNameSplit,n=1))}
+}
+
+cat('Writing full mosaics to Geotiffs and Cloud-Optimized Geotiffs\n')
+outFileDir = file.path(dirname(lai_folder),"mosaic")
+makeDir(outFileDir)
+for (i in 1:length(fullMosaics)) {
+  outFileTif <- fullMosaicNames[[i]]
+  cat(paste0('Generating ',outFileTif,'\n'))
+  writeFullMosaicTif(fullMosaics[[i]],outFileDir,outFileTif)
+  # name the COG file the same as tif but with COG suffix
+  outFileCog <- gsub(".tif", "_COG.tif", outFileTif) 
+  cat(paste0('Generating ',outFileCog,'\n'))
+  convertTif2Cog(outFileDir,outFileTif,outFileCog)
+}
+dir(outFileDir)
+
+## load file
+laifile = data.frame(file=dir(outFileDir,full.names = TRUE)) %>% dplyr::filter(!(grepl("Error",file) | grepl("COG",file)))
+lairaw <- rast(laifile$file)
+```
+
 
 ## regrid
 ```{r}
@@ -72,7 +115,7 @@ nlcd_full = rast(url)
 
 ```{r}
 ## move NLCD and LAI to same grain and extent
-lairp = project(lairaw,crs(nlcd_full))
+lairp = project(lairaw2,crs(nlcd_full))
 nlcd = crop(nlcd_full,lairp)
 lai <- exactextractr::exact_resample(lairp, nlcd, 'mean')
 
@@ -111,6 +154,10 @@ rare = names(n_nlcd)[which(n_nlcd*nclass < 0.5)]
 last = names(which.min(n_nlcd))
 if(last %in% c(72:82,95)) nlcd[nlcd == as.numeric(last)] = 71 ## merge herbaceous
 if(last %in% c(52)) nlcd[nlcd == as.numeric(last)] = 43       ## merge scrub
+
+writeRaster(nlcd, "nlcd_crop.tif", overwrite=TRUE)
+writeRaster(lai, "lai_crop.tif", overwrite=TRUE)
+writeRaster(agb, "agb_crop.tif", overwrite=TRUE)
 
 ```
 
@@ -153,8 +200,10 @@ for(i in seq_along(common)){
   k = kmeans(df, centers = reps[names(reps) == common[i]], nstart = 25)
   plot(df,col=k$cluster)
   
-  nlcd[nlcd == common[i]] = common[i] + k$cluster/nclass
+#  nlcd[nlcd == common[i]] = common[i] + k$cluster/nclass
+  nlcd[abs(nlcd - common[i]) < 0.3] = common[i] + k$cluster/nclass
 }
+#nlcd = as.numeric(nlcd)
 table(as.vector(nlcd))
 
 nlcd[nlcd == 0] = NA
@@ -168,7 +217,7 @@ common = names(area)
 mylai = tapply(as.vector(lai),as.vector(nlcd),mean,na.rm=TRUE)
 myagb   = tapply(as.vector(agb),as.vector(nlcd),mean,na.rm=TRUE)
 
-df = tibble(patch = seq_along(common),
+df = tibble::tibble(patch = seq_along(common),
             area  = area,
             nlcd  = floor(as.numeric(common)),
             lai = mylai,
@@ -194,6 +243,8 @@ writeRaster(nlcd, "patches.tif", overwrite=TRUE)
 
 ## compare patches to ground plots
 ```{r}
+library(dplyr)
+patches = df
 if(!exists("pmap")){
   patchMap <- terra::rast("patches.tif")
   pmap <- project(patchMap, "+proj=longlat",method="near")
