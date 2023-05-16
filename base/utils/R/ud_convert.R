@@ -11,7 +11,7 @@
 ##' @export
 ud_convert <- function(x, u1, u2) {
   stopifnot(units::ud_are_convertible(u1, u2))
-  if(inherits("difftime")) {
+  if(inherits(x, "difftime")) {
     x1 <- units::as_units(x)
   } else {
     x1 <- units::set_units(x, value = u1, mode = "standard")
