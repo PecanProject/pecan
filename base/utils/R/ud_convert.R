@@ -3,8 +3,10 @@
 ##' Unit conversion to replace the now-unmaintained `udunits2::ud.convert`
 ##' @author Chris Black
 ##' 
-##' @param x numeric vector
-##' @param u1 string parseable as the units in which `x` is provided
+##' @param x vector of class "numeric" or "difftime"
+##' @param u1 string parseable as the units in which `x` is provided.  If `x` is
+##'   class "difftime", then `u1` is not actually used.  However, it still needs
+##'   to be supplied and needs to be convertible to `u2` for consistency.
 ##' @param u2 string parseable as the units to convert to
 ##' 
 ##' @return numeric vector with values converted to units in `u2`
