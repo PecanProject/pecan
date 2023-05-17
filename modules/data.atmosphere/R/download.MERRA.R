@@ -13,7 +13,9 @@ download.MERRA <- function(outfolder, start_date, end_date,
 
   dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
 
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  if(!file.exists(outfolder)) {
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  }
 
   # Download all MERRA files first. This skips files that have already been downloaded.
   for (i in seq_along(dates)) {
@@ -101,7 +103,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
     ))
 
     ## Create output file
-    if (file.exists(loc.file)) {
+    if (file.exists(loc.file) && overwrite) {
       PEcAn.logger::logger.warn(
         "Target file ", loc.file, " already exists.",
         "It will be overwritten."
