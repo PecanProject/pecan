@@ -15,7 +15,7 @@ ud_convert <- function(x, u1, u2) {
   stopifnot(units::ud_are_convertible(u1, u2))
   if(inherits(x, "difftime")) {
     x1 <- units::as_units(x)
-    if(units::units(x1) != units::units(units::as_units(u1))) {
+    if(units(x1) != units(units::as_units(u1))) {
       warning("Units of `x` don't match `u1`, using '", units::deparse_unit(x1), "' instead")
     }
   } else {
