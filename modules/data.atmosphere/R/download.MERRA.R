@@ -121,6 +121,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
         end <- d * 24
         start <- end - 23
         mostfile <- file.path(outfolder, sprintf("merra-most-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", mostfile, " does not exist."), file.exists(mostfile))
         nc <- ncdf4::nc_open(mostfile)
         for (r in seq_len(nrow(merra_vars))) {
           x <- ncdf4::ncvar_get(nc, merra_vars[r,][["MERRA_name"]])
@@ -129,6 +130,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
         }
         ncdf4::nc_close(nc)
         presfile <- file.path(outfolder, sprintf("merra-pres-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", presfile, " does not exist."), file.exists(presfile))
         nc <- ncdf4::nc_open(presfile)
         for (r in seq_len(nrow(merra_pres_vars))) {
           x <- ncdf4::ncvar_get(nc, merra_pres_vars[r,][["MERRA_name"]])
@@ -137,6 +139,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
         }
         ncdf4::nc_close(nc)
         fluxfile <- file.path(outfolder, sprintf("merra-flux-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", fluxfile, " does not exist."), file.exists(fluxfile))
         nc <- ncdf4::nc_open(fluxfile)
         for (r in seq_len(nrow(merra_flux_vars))) {
           x <- ncdf4::ncvar_get(nc, merra_flux_vars[r,][["MERRA_name"]])
@@ -145,6 +148,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
         }
         ncdf4::nc_close(nc)
         lfofile <- file.path(outfolder, sprintf("merra-lfo-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", lfofile, " does not exist."), file.exists(lfofile))
         nc <- ncdf4::nc_open(lfofile)
         for (r in seq_len(nrow(merra_lfo_vars))) {
           x <- ncdf4::ncvar_get(nc, merra_lfo_vars[r,][["MERRA_name"]])
