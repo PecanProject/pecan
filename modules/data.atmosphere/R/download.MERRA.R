@@ -102,22 +102,17 @@ download.MERRA <- function(outfolder, start_date, end_date,
       )
     ))
 
-    ## Create output file
     if (overwrite || !file.exists(loc.file)) {
-
-      loc <- loc.file
       if (file.exists(loc.file)) {
         PEcAn.logger::logger.warn(
           "Target file ", loc.file, " already exists.",
           "It will be overwritten."
         )
-        loc <- ncdf4::nc_open(loc.file, write = TRUE)
-        on.exit(ncdf4::nc_close(loc), add = TRUE)
       }
-      else {
-        loc <- ncdf4::nc_create(loc.file, var_list)
-        on.exit(ncdf4::nc_close(loc), add = TRUE)
-      }
+      
+      ## Create output file
+      loc <- ncdf4::nc_create(loc.file, var_list)
+      on.exit(ncdf4::nc_close(loc), add = TRUE)
 
       # Populate output file
       dates_yr <- dates[lubridate::year(dates) == year]
