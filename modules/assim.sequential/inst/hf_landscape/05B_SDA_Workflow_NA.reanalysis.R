@@ -1,22 +1,22 @@
 ## Reanalysis helper script around 05_SDA_Workflow_NA
 ## original start date was 2022-05-17
-runDays <- seq(as.Date("2022-06-03"), as.Date("2022-06-23"), by="days")
+runDays <- seq(as.Date("2022-05-20"), as.Date("2023-05-11"), by="days")
 FORCE = FALSE  ## should we overwrite previously completed runs
 
 for (s in seq_along(runDays)) {
   ## did we do this run already?
-  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",runDays[s])
+  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FNA",runDays[s])
   print(now)
   this.out = dir(file.path(now,"out"),full.names = TRUE)
   if(length(this.out) > 0 & !FORCE) break
   
   ## find previous run
   yesterday = runDays[s] - lubridate::days(1)
-  NoMet = read.csv("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/NO_MET",header=FALSE)[,1]
+  NoMet = read.csv("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/NO_MET",header=FALSE)[,1]
   while(as.character(yesterday) %in% NoMet & yesterday - runDays[s] < lubridate::days(35) ){
     yesterday = yesterday - lubridate::days(1)
   }
-  prev = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",yesterday)
+  prev = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FNA",yesterday,"/")
   if(dir.exists(prev)){
     ## is there output there?
     prev.out = dir(file.path(prev,"out"),full.names = TRUE)
@@ -34,7 +34,7 @@ for (s in seq_along(runDays)) {
         
       }
     } else { break }
-  } else {mc("ls minio")
+  } else {
     ## previous run didn't occur
     break
   }
@@ -66,12 +66,13 @@ minio_uri_public <- function(...) {
   sprintf(template, minio_path(...), minio_host, ":", minio_port)
 }
 
-runDays <- seq(as.Date("2022-05-18"), as.Date("2022-06-05"), by="days")
+runDays <- seq(as.Date("2022-05-18"), as.Date("2023-05-11"), by="days")
 
 ## loop over dates
+FORCE = FALSE
 for (s in seq_along(runDays)) {
   ## did we do this run already?
-  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",runDays[s])
+  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FNA",runDays[s])
   print(now)
   this.out = dir(file.path(now,"out"),full.names = TRUE)
   if(length(this.out) == 0){
@@ -80,12 +81,14 @@ for (s in seq_along(runDays)) {
   } 
   
   ## did we write this run to minio already?
-  ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) %>% 
-    dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) %>%  
-    dplyr::distinct(parameter) %>% dplyr::collect()
-  if(length(ens$parameter)>0) {
-    print(paste("skipping",length(ens$parameter)))
-    next
+  if(!FORCE){  ## if not overwriting
+    ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) %>% 
+      dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) %>%  
+      dplyr::distinct(parameter) %>% dplyr::collect()
+    if(length(ens$parameter)>0) { ## already have output
+      print(paste("skipping",length(ens$parameter)))
+      next
+    }
   }
   
   ## identify runs in the output folder
@@ -101,6 +104,12 @@ for (s in seq_along(runDays)) {
                                    start_date = runDays[s])
   }
   out = dplyr::bind_rows(out)
+  if(!is.numeric(nrow(out)) | nrow(out) == 0) next  ## don't insert empty days into minio
+  out = out %>% relocate(parameter) %>% 
+    relocate(site_id) %>%
+    relocate(time_bounds) %>% rename(datetime=time_bounds) %>%
+    relocate(reference_datetime)
+  out = tidyr::pivot_longer(out,5:ncol(out),names_to = "variable",values_to = "prediction")
 
   ## push to container in parquet format
   out %>% dplyr::group_by(reference_datetime) %>% arrow::write_dataset(minio_uri(),format="parquet")

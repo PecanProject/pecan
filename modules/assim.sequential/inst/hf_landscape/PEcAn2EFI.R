@@ -85,12 +85,14 @@ PEcAn2EFI.ens <- function(outdir,run.id,start_date,end_date = NULL){
   PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
   ensemble.output <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables=NULL)
   
+  if(!is.numeric(nrow(ensemble.output))) return(NULL)
+  
   ## reprocess time_bounds
   doy = as.vector(ensemble.output$time_bounds[1,])  ## day of year
   years = c(which(doy < 0.00001),length(doy)+1) ## get breaks between years
   if(years[1] != 1) years = c(1,years) ## add current year if not start of year
   years = rep(lubridate::year(start_date):lubridate::year(end_date),times=diff(years)) ## convert to years
-  tod = lubridate::as_datetime(lubridate::seconds_to_period(floor((doy - floor(doy)) * 60 *60))) ## time of day
+  tod = lubridate::as_datetime(lubridate::seconds_to_period(floor((doy - floor(doy)) * 60 *60*24))) ## time of day
   lubridate::year(tod) <- years   
   lubridate::yday(tod) <- floor(doy)    
   ensemble.output$time_bounds = tod

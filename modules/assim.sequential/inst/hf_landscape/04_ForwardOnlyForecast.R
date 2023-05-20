@@ -9,9 +9,15 @@ args <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 #args$start.date = "2022-05-17"
 start.date = lubridate::as_date(args$start.date)
   
+#### grab & update default settings ####
+set = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/pecan.RDS")
+##start.date
+for(s in seq_along(set)){
+  set[[s]]$run$start.date = start.date
+  set[[s]]$run$end.date   = start.date + lubridate::days(35)
+}
 ## Find GEFS
-con <-PEcAn.DB::db.open(settings$database$bety)
-
+con <-PEcAn.DB::db.open(set$database$bety)
 input_check <- PEcAn.DB::dbfile.input.check(
   siteid = 646, #NEON 1000004945, #EMS 758,
   startdate = as.character(start.date),
@@ -27,14 +33,6 @@ input_check <- PEcAn.DB::dbfile.input.check(
 )
 metList = as.list(file.path(input_check$file_path,input_check$file_name))
 names(metList) = rep("path",length(metList))
-
-#### grab & update default settings ####
-set = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/pecan.RDS")
-##start.date
-for(s in seq_along(set)){
-  set[[s]]$run$start.date = start.date
-  set[[s]]$run$end.date   = start.date + lubridate::days(35)
-}
 ## met path
 for(s in seq_along(set)){
  set[[s]]$run$inputs$met$source = "GEFS" 
@@ -50,9 +48,21 @@ dir.create(set$rundir)
 dir.create(set$modeloutdir)
 dir.create(set$pfts$pft$outdir)
 ## job.sh
-set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/template.job"
+set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/template.job"
+
 
 set <- PEcAn.settings::prepare.settings(set, force = FALSE)
+
+## add soil pft to all sites
+soil.pft = grep(pattern = "soil",x=unlist(sapply(set$pfts,function(x){x$name})))
+for(i in seq_along(set)){
+  set$run[[i]]$site$site.pft[[2]] = set$pfts[[soil.pft]]$name
+  names(set$run[[i]]$site$site.pft)[2] = "pft.name"
+}
+
+## check PFTs
+pft.names = unlist(sapply(set$pfts,function(x){x$name}))
+set$pfts[[which(is.na(pft.names))]] = NULL
 
 ## run workflow
 set <- PEcAn.workflow::runModule.run.write.configs(set)

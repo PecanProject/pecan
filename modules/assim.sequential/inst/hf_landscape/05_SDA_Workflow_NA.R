@@ -32,12 +32,12 @@ option_list = list(optparse::make_option("--start.date",
                                          default = Sys.Date(),
                                          type="character"),
                    optparse::make_option("--prev",
-                                         default = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",Sys.Date()-lubridate::days(1)),
+                                         default = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FNA",Sys.Date()-lubridate::days(1)),
                                          type="character")
                    )
 args <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 #args$start.date = "2022-05-18 00:00:00"
-#args$prev = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FOF2022-05-17/"
+#args$prev = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FOF2022-05-17/"
 start.date = lubridate::as_date(args$start.date)
 
 #------------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ start.date = lubridate::as_date(args$start.date)
 #------------------------------------------------------------------------------------------------
 restart <- list()
 restart$filepath <- args$prev
-set = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/pecan.RDS")
+set = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/pecan.RDS")
 
 #set met.start & met.end
 end.date <- start.date + lubridate::days(35)
@@ -122,7 +122,7 @@ next.oldir <- paste0(format(Sys.time(), "%Y-%m-%d-%H-%M"))
 ## TODO: make sure settings are prepared; for remote, make sure to set host directories
 
 ## outdirs
-set$outdir = file.path(set$outdir,paste0("FNA",start.date))
+set$outdir = file.path(set$outdir,paste0("FNA",start.date,"/"))
 set$rundir = file.path(set$outdir,"run")
 set$modeloutdir = file.path(set$outdir,"out")
 set$pfts$pft$outdir = file.path(set$outdir,"pft")
@@ -162,10 +162,10 @@ for(s in seq_along(set)){
 }
 
 ## job.sh
-set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/template.job"
+set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/template.job"
 
 #save restart object
-save(restart, next.oldir, file = file.path(set$outdir, "restart.Rdata"))
+save(restart, next.oldir, args, file = file.path(set$outdir, "restart.Rdata"))
 #run sda function
 sda.enkf.multisite(settings = set, 
                    obs.mean = obs.mean, 
