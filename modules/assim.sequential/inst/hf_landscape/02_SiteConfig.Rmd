@@ -25,7 +25,7 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dietze/hf_landscape_SDA/test01"
+outdir <- "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02"
 SDA_run_dir <- file.path(outdir,"run")
 SDA_out_dir <- file.path(outdir,"out")
 
@@ -50,9 +50,9 @@ LAI_export_csv <- TRUE
 run_parallel <- TRUE
 
 #SMP
-SMP_outdir <- file.path(outdir,"obs")
+SMP_outdir <- "/projectnb/dietzelab/dietze/hf_landscape_SDA/SMAP_data" #file.path(outdir,"obs")
 SMP_search_window <- 30
-SMP_timestep <- list(unit="day", num=3)
+SMP_timestep <- list(unit="day", num=1)
 SMP_export_csv <- TRUE
 update_csv <- FALSE
 
@@ -170,7 +170,11 @@ template <- PEcAn.settings::Settings(list(
            constants = structure(list(num = "1")),
            posteriorid = "1000016525",
            posterior.files = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/GrassA/semiarid.grassland"
-      ))
+      )),
+    pft = structure(
+      list(name = "soil",
+           posterior.files = "/projectnb/dietzelab/ahelgeso/copy_posteriorsoil/soil.HPDA/trait.mcmc.pda.soil.HPDA_som_respiration_rate_correction.Rdata")
+    )
   )),
   
   ############################################################################
@@ -371,8 +375,8 @@ for (i in 1:length(settings)) {
 }
 
 #query site info
-con = db.open(list(user="bety",password="bety",host="128.197.168.114"))
-site_info = db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+con = PEcAn.DB::db.open(list(user="bety",password="bety",host="128.197.168.114"))
+site_info = PEcAn.DB::db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                       ST_Y(ST_CENTROID(geometry)) AS lat 
                            FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
 
@@ -434,7 +438,7 @@ for(i in seq_along(site_ID)){
   ## save output
   outfolder = file.path(settings$outdir,"IC")
   if(!dir.exists(outfolder)) dir.create(outfolder)
-  veg_config[[i]] = veg2model.SIPNET(outfolder, poolinfo, site_ID[i], 1)
+  veg_config[[i]] = PEcAn.SIPNET::veg2model.SIPNET(outfolder, poolinfo, site_ID[i], 1)
   
   ## add to settings
   settings[[i]]$run$inputs$poolinitcond <- list(path=veg_config[[i]]$file)
