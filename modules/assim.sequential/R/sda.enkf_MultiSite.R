@@ -127,7 +127,7 @@ sda.enkf.multisite <- function(settings,
     conf.settings<-settings
     site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% base::as.numeric)%>% 
+    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
@@ -263,7 +263,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
-      if(is.null(ensemble.samples)){
+      if(!exists("ensemble.samples") || is.null(ensemble.samples)){
         load(file.path(old.dir, "samples.Rdata"))
       }
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
@@ -300,7 +300,7 @@ sda.enkf.multisite <- function(settings,
                        new.params = new.params, 
                        nens = nens, 
                        read_restart_times = read_restart_times, 
-                       outdir = paste0(old.dir, "out/"), 
+                       outdir = file.path(old.dir, "out/"), 
                        t = 1, 
                        var.names = var.names, 
                        my.read_restart = my.read_restart,
