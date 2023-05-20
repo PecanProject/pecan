@@ -125,6 +125,8 @@ ave_smp <- function(sm_raster){
 ## Determine dates to be processed
 smap_dates = Sys.Date()
 smap_dates = as.Date(seq(Sys.Date(),Sys.Date()-lubridate::days(5),by="-1 day"))
+## NOTE: to grab data from the past, just set smap_dates to the date range you need
+
 
 ## Determine dates already downloaded
 prev_download  = dir(smap_download_dir,"h5$")
