@@ -68,6 +68,9 @@ test_that("logger prints right messages, responds correctly to logger.setLevel",
   expect_silent(logger.info("message"))
   expect_silent(logger.warn("message"))
   expect_silent(logger.error("message"))
+
+  logger.setQuitOnSevere(FALSE)
+  expect_error(logger.severe("message"), "message")
 })
 
 test_that("logger message labels match enclosing function", {

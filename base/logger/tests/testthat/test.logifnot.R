@@ -60,4 +60,7 @@ test_that( "logifnot prints right message based on the conditions passed, respon
     expect_silent(infoifnot("message", FALSE))
     expect_silent(warnifnot("message", FALSE))
     expect_silent(errorifnot("message", FALSE))
+    
+    logger.setQuitOnSevere(FALSE)
+    expect_error(severeifnot("message", FALSE), "message")
 })
