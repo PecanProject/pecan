@@ -25,23 +25,26 @@ use plant
 use yasso
 use set_params_mod
 implicit none
-
-integer, dimension(300,2) :: DAYS_HARVEST
-real, dimension(300,2)    :: HARVEST_PARAMS ! (day, 1=CLAIV, 2={if > 0, cut only})
-real                      :: PARAMS(NPARAMS)
 #ifdef weathergen  
   integer, parameter      :: NWEATHER =  7
 #else
   integer, parameter      :: NWEATHER =  9
 #endif
-real                      :: MATRIX_WEATHER(NMAXDAYS,NWEATHER)
-real   , dimension(300,7) :: CALENDAR_FERT, CALENDAR_NDEP
+real, intent(in)                      :: PARAMS(NPARAMS)
+real, intent(in)                      :: MATRIX_WEATHER(NMAXDAYS,NWEATHER)
+real, intent(in)                      :: CALENDAR_FERT(300, 6)
+real, intent(in)                      :: CALENDAR_NDEP(300, 3)
+integer, intent(in)                   :: DAYS_HARVEST(300, 2)
+real, intent(in)                      :: HARVEST_PARAMS(300, 2) ! (day, 1=CLAIV, 2={if > 0, cut only})
+integer, intent(in)                   :: NPARAMS, NDAYS, NOUT
+real, intent(out)                     :: y(NDAYS,NOUT)
+
+
 integer, dimension(300,2) :: DAYS_FERT    , DAYS_NDEP
 real   , dimension(300,4) :: NFERTV ! (day,[mineral-N, organic-N, soluble-C, compost-C])
 real   , dimension(300)   :: NDEPV
 
-integer                   :: day, doy, i, NDAYS, NOUT, year, NPARAMS
-real                      :: y(NDAYS,NOUT)
+integer                   :: day, doy, i, year
 
 ! State variables plants
 real    :: CLV, CLVD, CRES, CRT, CST, CSTUB, LAI, LT50, PHEN
@@ -94,7 +97,7 @@ real :: yasso_param(num_params_y20)
 real :: org_n_to_yasso
 
 if (NOUT < 118) then
-   print *, 'NOUT < 117 too small:', NOUT
+   print *, 'NOUT < 118 too small:', NOUT
    error stop
 end if
 
@@ -196,7 +199,6 @@ WAS        = WASI
 WETSTOR    = WETSTORI
 
 do day = 1, NDAYS
-
   ! Environment
   call set_weather_day(day,DRYSTOR,                    year,doy)
   call DDAYL          (doy)
