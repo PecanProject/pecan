@@ -257,18 +257,11 @@ do day = 1, NDAYS
 
   if (use_yasso) then
      call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
-     call inputs_to_fractions(&
-          leaf = DSTUB + DLV + harv_c_to_litt, &
-          root = DRT, &
-          soluble = input_soluble_c, &
-          compost = input_compost_c, &
-          fract = cflux_to_yasso)
-     org_n_to_yasso = DNSH + DNRT + input_org_n + harv_n_to_litt
      call decompose(&
           yasso_param, &
           DELT, & ! timestep
-          cflux_to_yasso, & ! segregated by the AWENH fraction
-          org_n_to_yasso, & ! total organic N input
+!          cflux_to_yasso, & ! segregated by the AWENH fraction
+!          org_n_to_yasso, & ! total organic N input
           yasso_met(1), &! 30-day temperature
           yasso_met(2), &! 30-day precip,
           yasso_cstate, &
@@ -286,7 +279,6 @@ do day = 1, NDAYS
           NMIN, &
           nupt_max, & 
           yasso_ntend, &
-          org_n_to_yasso, &
           nupt_max_adj, &
           nmin_immob_yasso = Nmineralisation)
      call Allocation(&
@@ -294,7 +286,7 @@ do day = 1, NDAYS
           nupt_max_adj + NSHmob, & ! NSOURCE
           NSINK, GRES, GRT, GLV, GST)
      call CNSoil_stub(ROOTD, RWA, WFPS, WAL, GRT, yasso_cstate, yasso_nstate, NMIN, runoff_cstate)
-     Rsoil = -(sum(yasso_ctend) - sum(cflux_to_yasso))
+     Rsoil = -(sum(yasso_ctend))
      
   else
      call adjust_nmin_fluxes(&
@@ -302,7 +294,6 @@ do day = 1, NDAYS
           NMIN, &
           nupt_max, & 
           yasso_ntend, &
-          org_n_to_yasso = -1e35, &
           nupt_max_adj = nupt_max_adj)
      call Allocation(&
           use_nitrogen, ALLOTOT, GRESSI, &
@@ -386,8 +377,15 @@ do day = 1, NDAYS
   
   ! State equations soil
   if (use_yasso) then
-     yasso_cstate = yasso_cstate + yasso_ctend - runoff_cstate
-     yasso_nstate = yasso_nstate + yasso_ntend - rNSOMF
+     call inputs_to_fractions(&
+          leaf = DSTUB + DLV + harv_c_to_litt, &
+          root = DRT, &
+          soluble = input_soluble_c, &
+          compost = input_compost_c, &
+          fract = cflux_to_yasso)
+     org_n_to_yasso = DNSH + DNRT + input_org_n + harv_n_to_litt
+     yasso_cstate = yasso_cstate + yasso_ctend + cflux_to_yasso - runoff_cstate
+     yasso_nstate = yasso_nstate + yasso_ntend + org_n_to_yasso - rNSOMF
   else
      CLITT   = CLITT + DLV + DSTUB + harv_c_to_litt               - rCLITT - dCLITT
      CSOMF   = CSOMF + DRT         + dCLITTsomf - rCSOMF - dCSOMF

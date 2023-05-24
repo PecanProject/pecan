@@ -179,12 +179,10 @@ contains
     
   end subroutine inputs_to_fractions
   
-  subroutine decompose(param, timestep_days, c_input_awenh_day, nitr_input_day, tempr_c, &
+  subroutine decompose(param, timestep_days, tempr_c, &
        precip_day, cstate, nstate, ctend, ntend)
     real, intent(in) :: param(:) ! parameter vector
     real, intent(in) :: timestep_days
-    real, intent(in) :: c_input_awenh_day(statesize_yasso)
-    real, intent(in) :: nitr_input_day  ! organic nitrogen input per day
     real, intent(in) :: tempr_c ! air temperature
     real, intent(in) :: precip_day ! precipitation mm / day
     real, intent(in) :: cstate(:) ! AWENH
@@ -193,7 +191,6 @@ contains
     real, intent(out) :: ntend ! nitrogen, single pool    
     
     real :: matrix(statesize_yasso, statesize_yasso)
-    real :: c_input_yr(statesize_yasso)
     real :: totc ! total C, step beginning
     real :: decomp_h ! C mineralization from the H pool
     real :: cue ! carbon use (growth) efficiency
@@ -207,7 +204,6 @@ contains
     real :: nc_h ! N:C of the H pool
     real :: resp ! heterotrophic respiration
     
-    c_input_yr = c_input_awenh_day * days_yr
     totc = sum(cstate)
 
     ! Carbon
@@ -217,14 +213,14 @@ contains
     ! exponential in yearly or longer steps, but here with a daily timestep this is not
     ! needed and explicit 1st order time stepping is used instead.
     timestep_yr = timestep_days / days_yr
-    ctend = c_input_yr*timestep_yr + matmul(matrix, cstate) * timestep_yr   ! (matmul(matrix, cstate) + c_input_yr) * timestep_yr
-    resp = sum(c_input_yr*timestep_yr - ctend)
+    ctend = matmul(matrix, cstate) * timestep_yr   ! (matmul(matrix, cstate) + c_input_yr) * timestep_yr
+    resp = sum(-ctend)
     
     ! Nitrogen
     !
     if (totc < 1e-6) then
        ! No SOM, no need for N dynamics
-       ntend = nitr_input_day
+       ntend = 0.0
     else
        decomp_h = matrix(5,5) * cstate(5) * timestep_yr
        if (cstate(5) * nc_h_max > nstate) then
@@ -243,7 +239,7 @@ contains
        growth_c = cue * cupt_awen
        ! The immobilization / mineralization is equal to the difference of nitrogen needed for
        ! microbial growth and the nitrogen released from the decomposed organic matter.
-       ntend = nc_mb * growth_c - nc_awen * cupt_awen - nc_h * decomp_h + nitr_input_day
+       ntend = nc_mb * growth_c - nc_awen * cupt_awen - nc_h * decomp_h
     end if
     
   end subroutine decompose

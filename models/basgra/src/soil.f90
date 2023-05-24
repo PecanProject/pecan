@@ -239,12 +239,11 @@ subroutine CNSoil_stub(ROOTD, RWA, WFPS, WAL, GCR, cstate_yasso, nstate_yasso, N
   NemissionNO     = Nemission * (1.-fN2O) 
 end subroutine CNSoil_stub
 
-subroutine adjust_nmin_fluxes(use_yasso, NMIN, nupt_max, yasso_ntend, org_n_to_yasso, nupt_max_adj, nmin_immob_yasso)
+subroutine adjust_nmin_fluxes(use_yasso, NMIN, nupt_max, yasso_ntend, nupt_max_adj, nmin_immob_yasso)
   logical, intent(in) :: use_yasso
   real, intent(in) :: NMIN ! current mineral N pool
   real, intent(in) :: nupt_max ! plant N need
   real, intent(in) :: yasso_ntend ! rate of change of the YASSO N pool
-  real, intent(in) :: org_n_to_yasso ! the organic N input (>= 0) to the YASSO N pool
   real, intent(out) :: nupt_max_adj ! plant uptake capacity after taking immobilisation into account
   real, intent(out), optional :: nmin_immob_yasso ! nitrogen mineralisation (> 0) or immobilisation (< 0) when use_yasso = .true.
   
@@ -260,7 +259,7 @@ subroutine adjust_nmin_fluxes(use_yasso, NMIN, nupt_max, yasso_ntend, org_n_to_y
      error stop 'nmin_immob_yasso must be present use use_yasso == .true.'
   end if
   
-  nmin_immob_pot = yasso_ntend - org_n_to_yasso
+  nmin_immob_pot = yasso_ntend
   if (nmin_immob_pot < 0.0) then
      ! net N mineralisation, no constraint on plant uptake
      nmin_immob_yasso = -nmin_immob_pot
