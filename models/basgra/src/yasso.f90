@@ -219,6 +219,7 @@ contains
     timestep_yr = timestep_days / days_yr
     ctend = c_input_yr*timestep_yr + matmul(matrix, cstate) * timestep_yr   ! (matmul(matrix, cstate) + c_input_yr) * timestep_yr
     resp = sum(c_input_yr*timestep_yr - ctend)
+    
     ! Nitrogen
     !
     if (totc < 1e-6) then

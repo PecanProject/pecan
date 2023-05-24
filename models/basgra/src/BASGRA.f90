@@ -68,9 +68,11 @@ real :: HARVLA, HARVLV, HARVLVP, HARVPH, HARVRE, HARVREP, HARVST, HARVSTP, HARVT
 real :: O2OUT, PackMelt, poolDrain, poolInfil, Psnow, reFreeze, RESMOB
 real :: RGRTVG1, RROOTD, SnowMelt, THAWPS, THAWS, TILVG1, TILG1G2, TRAN, Wremain
 real :: NCSHI, NCGSH, NCDSH, NCHARVSH, GNSH, DNSH, HARVNSH, GNRT, DNRT
+real :: ALLOTOT, GRESSI
 real :: NSHmob, NSHmobsoil, Nupt
 real :: input_soluble_c, input_compost_c ! from organic amendments/fertilizers
 real :: input_org_n
+real :: nupt_max, nupt_max_adj
 real :: Ndep, Nfert
 
 real :: F_DIGEST_DM, F_DIGEST_DMSH, F_DIGEST_LV, F_DIGEST_ST, F_DIGEST_WALL
@@ -89,8 +91,9 @@ real :: yasso_met(2) ! 30-day rolling tempr, precip
 integer :: yasso_met_ind ! counter for averaging the met variables
 real :: cflux_to_yasso(statesize_yasso)
 real :: yasso_param(num_params_y20)
+real :: org_n_to_yasso
 
-if (NOUT < 117) then
+if (NOUT < 118) then
    print *, 'NOUT < 117 too small:', NOUT
    error stop
 end if
@@ -150,10 +153,6 @@ if (use_yasso) then
    ! Yasso currently requires DELT = 1
    if (abs(DELT - 1.0) > 1e-6) then
       print *, 'Yasso soil model requires DELT = 1'
-      error stop
-   end if
-   if (use_nitrogen) then
-      print *, 'Nitroge-Yasso not yet fully implemented'
       error stop
    end if
    yasso_met_ind = 1
@@ -219,10 +218,17 @@ do day = 1, NDAYS
   call FRDRUNIR       (EVAP,Fdepth,Frate,INFIL,poolDRAIN,ROOTD,TRAN,WAL,WAS, &
                                                        FREEZEL,IRRIG,THAWS)
   call O2status       (O2,ROOTD)
+  
   ! Plant
   call Harvest        (CLV,CRES,CST,year,doy,DAYS_HARVEST,HARVEST_PARAMS, LAI,PHEN,TILG1,TILG2,TILV, &
        GSTUB,HARVLA,HARVLV,HARVLVP,HARVPH,HARVRE,HARVREP,HARVST,HARVSTP,HARVTILG2,if_cut_only)
-                                                       
+  if (if_cut_only) then
+     harv_c_to_litt = HARVLV + HARVST*HAGERE + HARVRE
+     harv_n_to_litt = HARVNSH
+  else
+     harv_c_to_litt = 0.0
+     harv_n_to_litt = 0.0
+  end if
       
   CLV     = CLV     - HARVLV
   CRES    = CRES    - HARVRE
@@ -237,25 +243,16 @@ do day = 1, NDAYS
   call Foliage1
   call LUECO2TM       (PARAV)
   call HardeningSink  (CLV,DAYL,doy,LT50,Tsurf)
-  call Growth         (LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
-                                                       GLV,GRES,GRT,GST,RESMOB,NSHmob, use_nitrogen)
-  call PlantRespiration(FO2,RESPHARD)
+  call Growth(LAI, NSH, NMIN, CLV, CRES, CST,&
+       PARINT,TILG1,TILG2,TILV,TRANRF, &
+       RESMOB, NSINK, NSHmob, nupt_max, &
+       ALLOTOT, GRESSI)
+  
   call Senescence     (CLV,CRT,CSTUB,LAI,LT50,PERMgas,TANAER,TILV,Tsurf, &
-                                                       DeHardRate,DLAI,DLV,DRT,DSTUB,dTANAER,DTILV,HardRate)
-  call Foliage2       (DAYL,GLV,LAI,TILV,TILG1,TRANRF,Tsurf,VERN, &
-                                                       GLAI,GTILV,TILVG1,TILG1G2)
-  ! Soil 2
-  call O2fluxes       (O2,PERMgas,ROOTD,RplantAer,     O2IN,O2OUT)
+       DeHardRate,DLAI,DLV,DRT,DSTUB,dTANAER,DTILV,HardRate)
+
   call N_fert         (year,doy,DAYS_FERT,NFERTV,      Nfert, input_soluble_c, input_compost_c, input_org_n)
-  call N_dep          (year,doy,DAYS_NDEP,NDEPV,       Ndep)
-  if (if_cut_only) then
-     harv_c_to_litt = HARVLV + HARVST*HAGERE + HARVRE
-     harv_n_to_litt = HARVNSH
-  else
-     harv_c_to_litt = 0.0
-     harv_n_to_litt = 0.0
-  end if
-     
+
   if (use_yasso) then
      call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
      call inputs_to_fractions(&
@@ -264,27 +261,66 @@ do day = 1, NDAYS
           soluble = input_soluble_c, &
           compost = input_compost_c, &
           fract = cflux_to_yasso)
+     org_n_to_yasso = DNSH + DNRT + input_org_n + harv_n_to_litt
      call decompose(&
           yasso_param, &
           DELT, & ! timestep
           cflux_to_yasso, & ! segregated by the AWENH fraction
-          DNSH + DNRT + input_org_n + harv_n_to_litt, & ! total organic N input
+          org_n_to_yasso, & ! total organic N input
           yasso_met(1), &! 30-day temperature
           yasso_met(2), &! 30-day precip,
           yasso_cstate, &
           yasso_nstate, &
           yasso_ctend, &
           yasso_ntend)
+     
+     ! The nitrogen-uptake-related fluxes:
+     ! NSINK = how much N the plant can potentially use for growth
+     ! NSHmob = how much N can be mobilized internally
+     ! NSOURCE_ADJ = how much N the plant can receive after accounting for microbial N immobilization
+     ! NSOURCE = how much N the plant is able to use, from all sources
+     call adjust_nmin_fluxes(&
+          use_yasso, &
+          NMIN, &
+          nupt_max, & 
+          yasso_ntend, &
+          org_n_to_yasso, &
+          nupt_max_adj, &
+          nmin_immob_yasso = Nmineralisation)
+     call Allocation(&
+          use_nitrogen, ALLOTOT, GRESSI, &
+          nupt_max_adj + NSHmob, & ! NSOURCE
+          NSINK, GRES, GRT, GLV, GST)
      call CNSoil_stub(ROOTD, RWA, WFPS, WAL, GRT, yasso_cstate, yasso_nstate, NMIN, runoff_cstate)
-     ! Diagnose C and N mineralisation from the tendencies.
-     Nmineralisation = -(yasso_ntend + DNSH + DNRT + input_org_n)
      Rsoil = -(sum(yasso_ctend) - sum(cflux_to_yasso))
+     
   else
+     call adjust_nmin_fluxes(&
+          use_yasso, &
+          NMIN, &
+          nupt_max, & 
+          yasso_ntend, &
+          org_n_to_yasso = -1e35, &
+          nupt_max_adj = nupt_max_adj)
+     call Allocation(&
+          use_nitrogen, ALLOTOT, GRESSI, &
+          nupt_max_adj + NSHmob, & ! NSOURCE
+          NSINK, GRES, GRT, GLV, GST)
      ! The inputs are zeroed because they are currently ignored when run without YASSO.
      input_soluble_c = 0.0
      input_compost_c = 0.0
-     call CNsoil         (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS)
+     call CNsoil      (ROOTD,RWA,WFPS,WAL,GRT,CLITT,CSOMF,NLITT,NSOMF,NSOMS,NMIN,CSOMS)
   end if
+  
+  call PlantRespiration(FO2,RESPHARD) ! must be after allocation
+  
+  call Foliage2       (DAYL,GLV,LAI,TILV,TILG1,TRANRF,Tsurf,VERN, &
+                                                       GLAI,GTILV,TILVG1,TILG1G2)
+  ! Soil 2
+  call O2fluxes       (O2,PERMgas,ROOTD,RplantAer,     O2IN,O2OUT)
+  call N_dep          (year,doy,DAYS_NDEP,NDEPV,       Ndep)
+  
+  
   call Nplant         (NSHmob,CLV,CRT,CST,DLAI,DLV,DRT,GLAI,GLV,GRT,GST, &
                                                        HARVLA,HARVLV,HARVST,LAI,NRT,NSH, &
                                                        DNRT,DNSH,GNRT,GNSH,HARVNSH, &

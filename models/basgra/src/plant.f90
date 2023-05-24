@@ -141,13 +141,20 @@ Subroutine HardeningSink(CLV,DAYL,doy,LT50,Tsurf)
   RESPHARDSI = RATEH * CLV * KRESPHARD * max(0.,min(1., RESNOR*5. ))
 end Subroutine HardeningSink
 
-Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
-                  GLV,GRES,GRT,GST,RESMOB,NSHmob, use_nitrogen)
-  real :: LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF
-  real :: GLV,GRES,GRT,GST,RESMOB,NSHmob
-  real :: ALLOTOT,CSTAV,GRESSI,SOURCE
+Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV, TRANRF, &
+     RESMOB, NSINK, NSHmob, nupt_max, ALLOTOT, GRESSI)
+  real, intent(in) :: LAI, NSH, NMIN, CLV, CRES, CST, PARINT, TILG1, TILG2
+  real, intent(in) :: TILV, TRANRF
+  real, intent(out) :: RESMOB
+  real, intent(out) :: NSINK
+  real, intent(out) :: NSHmob
+  real, intent(out) :: nupt_max
+  real, intent(out) :: ALLOTOT
+  real, intent(out) :: GRESSI
+  
+  real :: CSTAV,SOURCE
   real :: NSHEXCESS
-  logical, intent(in) :: use_nitrogen
+  
   PHOT     = PARINT * TRANRF * 12. * LUEMXQ * NOHARV
   RESMOB   = (CRES * NOHARV / TCRES) * max(0.,min( 1.,DAVTMP/5. ))
   SOURCE   = RESMOB + PHOT
@@ -172,48 +179,53 @@ Subroutine Growth(LAI,NSH,NMIN,CLV,CRES,CST,PARINT,TILG1,TILG2,TILV,TRANRF, &
   NSHEXCESS = max( 0., NSH-NSHK )
   NSHmob   = NOHARV * NSHEXCESS / TCNSHMOB
   NSINK    = max(0., (GLVSI+GSTSI)*NCSHMAX )
+  NUPT_MAX = min(NSINK-NSHmob, NMIN / TCNUPT)
+  
+end Subroutine Growth
+
+Subroutine Allocation(use_nitrogen, ALLOTOT, GRESSI, NSOURCE, NSINK, GRES,GRT,GLV,GST)
+  logical, intent(in) :: use_nitrogen
+  real, intent(in) :: ALLOTOT
+  real, intent(in) :: GRESSI
+  real, intent(in) :: NSOURCE ! N available for growth from reserves and soil
+  real, intent(in) :: NSINK ! N required for maximum (N-unlimited) growth
+  real, intent(out) :: GRES, GRT, GLV, GST
+  
+  real :: GSHSI, ALLOSH, ALLORT, ALLOLV, ALLOST
+
   if (use_nitrogen) then
-     NSOURCE  = NMIN/TCNUPT + NSHmob
+     fNgrowth = min( 1., NSOURCE / NSINK )
   else
-     NSOURCE = NSINK
+     fNgrowth = 1.0
   end if
-!  NSINK    = (GLVSI+GSTSI)*NCSHMAX
-  fNgrowth = min( 1., NSOURCE / NSINK )
   GLAISI   = GLAISI * fNgrowth
   GLVSI    = GLVSI  * fNgrowth
   GSTSI    = GSTSI  * fNgrowth
 
-  call Allocation(ALLOTOT,GRESSI,GRES,GRT,GLV,GST)
-end Subroutine Growth
-
-   Subroutine Allocation(ALLOTOT,GRESSI, GRES,GRT,GLV,GST)
-     real :: ALLOTOT, GRESSI
-     real :: GRES, GRT, GLV, GST
-     real :: GSHSI, ALLOSH, ALLORT, ALLOLV, ALLOST
-     GSHSI = GLVSI + GSTSI
-     if (DAYLGE >= 0.1) then
+  GSHSI = GLVSI + GSTSI
+  if (DAYLGE >= 0.1) then
      ! Situation 1: Growth has priority over storage (spring and growth period)
-       ! Calculate amount of assimilates allocated to shoot
-       ALLOSH = min( ALLOTOT, GSHSI )
-       ! Calculate amount of assimilates allocated to reserves    
-       GRES   = min( ALLOTOT - ALLOSH, GRESSI)
-     else
-       ! Calculate amount of assimilates allocated to reserves
-       GRES   = min( ALLOTOT, GRESSI )
-       ! Calculate amount of assimilates allocated to shoot
-       ALLOSH = min( ALLOTOT - GRES, GSHSI )
-     end if
-     ! All surplus carbohydrate goes to roots
-     ALLORT  = ALLOTOT - ALLOSH - GRES
-       if (GSHSI == 0.) GSHSI = 1
-     ALLOLV  = GLVSI * (ALLOSH / GSHSI)
-     ALLOST  = GSTSI * (ALLOSH / GSHSI)
-     GLV     = ALLOLV * YG
-     GST     = ALLOST * YG
-     GRT     = ALLORT * YG
-     RESPGSH = (ALLOLV + ALLOST) * (1-YG)
-     RESPGRT =  ALLORT           * (1-YG)
-   end Subroutine Allocation
+     ! Calculate amount of assimilates allocated to shoot
+     ALLOSH = min( ALLOTOT, GSHSI )
+     ! Calculate amount of assimilates allocated to reserves    
+     GRES   = min( ALLOTOT - ALLOSH, GRESSI)
+  else
+     ! Calculate amount of assimilates allocated to reserves
+     GRES   = min( ALLOTOT, GRESSI )
+     ! Calculate amount of assimilates allocated to shoot
+     ALLOSH = min( ALLOTOT - GRES, GSHSI )
+  end if
+  ! All surplus carbohydrate goes to roots
+  ALLORT  = ALLOTOT - ALLOSH - GRES
+  if (GSHSI == 0.) GSHSI = 1
+  ALLOLV  = GLVSI * (ALLOSH / GSHSI)
+  ALLOST  = GSTSI * (ALLOSH / GSHSI)
+  GLV     = ALLOLV * YG
+  GST     = ALLOST * YG
+  GRT     = ALLORT * YG
+  RESPGSH = (ALLOLV + ALLOST) * (1-YG)
+  RESPGRT =  ALLORT           * (1-YG)
+end Subroutine Allocation
     
 Subroutine PlantRespiration(FO2,RESPHARD)
   real :: FO2,RESPHARD
@@ -247,40 +259,40 @@ Subroutine Senescence(CLV,CRT,CSTUB,LAI,LT50,PERMgas,TANAER,TILV,Tsurf, &
 
 end Subroutine Senescence
 
-   Subroutine AnaerobicDamage(LT50,PERMgas,TANAER, dTANAER)
-     real :: LT50,PERMgas,TANAER
-     real :: dTANAER,LD50
-     if (PERMgas==0.) then
-       dTANAER = 1.
-     else
-       dTANAER = -TANAER / DELT
-     end if
-     LD50 = LDT50A + LDT50B * LT50
-     if (TANAER > 0.) then
-       RDRTOX = KRDRANAER / (1.+exp(-KRDRANAER*(TANAER-LD50)))
-     else
-       RDRTOX = 0.
-     end if
-     end Subroutine AnaerobicDamage
+Subroutine AnaerobicDamage(LT50,PERMgas,TANAER, dTANAER)
+  real :: LT50,PERMgas,TANAER
+  real :: dTANAER,LD50
+  if (PERMgas==0.) then
+     dTANAER = 1.
+  else
+     dTANAER = -TANAER / DELT
+  end if
+  LD50 = LDT50A + LDT50B * LT50
+  if (TANAER > 0.) then
+     RDRTOX = KRDRANAER / (1.+exp(-KRDRANAER*(TANAER-LD50)))
+  else
+     RDRTOX = 0.
+  end if
+end Subroutine AnaerobicDamage
 
-   Subroutine Hardening(CLV,LT50,Tsurf, DeHardRate,HardRate)
-     real :: CLV,LT50,Tsurf
-     real :: DeHardRate,HardRate
-     real :: RATED,RSR3H,RSRDAY
-     RSR3H      = 1. / (1.+exp(-KRSR3H*(Tsurf-LT50)))
-     ! RDRFROST should be less than 1 to avoid numerical problems
-     ! (loss of all biomass but keeping positive reserves). We cap it at 0.5.
-     RSRDAY     = RSR3H ! In previous versions we had RSRDAY = RSR3H^8 which understimated survival
-     RDRFROST   = min( 0.5, 1. - RSRDAY )
-     RATED      = min( Dparam*(LT50MX-LT50)*(Tsurf+TsurfDiff), (LT50MX-LT50)/DELT )
-     DeHardRate = max(0.,min( RATEDMX, RATED ))
-!     HardRate   = RESPHARD / (CLV * KRESPHARD)
-     if (CLV > 0.) then
-       HardRate   = RESPHARD / (CLV * KRESPHARD)
-     else
-       HardRate   = 0.
-     end if
-   end Subroutine Hardening
+Subroutine Hardening(CLV,LT50,Tsurf, DeHardRate,HardRate)
+  real :: CLV,LT50,Tsurf
+  real :: DeHardRate,HardRate
+  real :: RATED,RSR3H,RSRDAY
+  RSR3H      = 1. / (1.+exp(-KRSR3H*(Tsurf-LT50)))
+  ! RDRFROST should be less than 1 to avoid numerical problems
+  ! (loss of all biomass but keeping positive reserves). We cap it at 0.5.
+  RSRDAY     = RSR3H ! In previous versions we had RSRDAY = RSR3H^8 which understimated survival
+  RDRFROST   = min( 0.5, 1. - RSRDAY )
+  RATED      = min( Dparam*(LT50MX-LT50)*(Tsurf+TsurfDiff), (LT50MX-LT50)/DELT )
+  DeHardRate = max(0.,min( RATEDMX, RATED ))
+  !     HardRate   = RESPHARD / (CLV * KRESPHARD)
+  if (CLV > 0.) then
+     HardRate   = RESPHARD / (CLV * KRESPHARD)
+  else
+     HardRate   = 0.
+  end if
+end Subroutine Hardening
 
 Subroutine Foliage2(DAYL,GLV,LAI,TILV,TILG1,TRANRF,Tsurf,VERN, GLAI,GTILV,TILVG1,TILG1G2)
   real    :: DAYL,GLV,LAI,TILV,TILG1,TRANRF,Tsurf
