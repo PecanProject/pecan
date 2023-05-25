@@ -508,6 +508,39 @@ test_that('model produces reasonable yasso-specific output when use_yasso = 1 an
   expect_true(all(!is.na(output)))
 })
 
+test_that('NSH is positive', {
+  met_path <- 'test.met'
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 1
+  df_params[df_params[,1] == 'NMIN0', 2] <- 0.0
+  run_params <- setNames(df_params[,2], df_params[,1])
+  outfolder <- mktmpdir()
+
+  df_fertilize <- data.frame(
+    year = 2019,
+    doy = 128,
+    amount = 1e-6
+  )
+  no_fertilize_file <- file.path(outfolder, 'no-fertilize.csv')
+  write.csv(df_fertilize, no_fertilize_file, row.names=FALSE)
+
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, no_fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39 # match the test meteo data file
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  expect_true(all(output[, 'NSH'] > 0))
+})
+
+
 test_that('Netcdf output is consistent with the raw output for certain variables', {
   met_path <- 'test.met'
   df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
