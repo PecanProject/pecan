@@ -20,8 +20,8 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
                     start_date = met.start)
   
   weather = met %>% 
-    dplyr::filter(reference_datetime == as.POSIXct(met.start,tz="UTC"), site_id == site_id) |>
-    dplyr::collect() |>
+    dplyr::filter(reference_datetime == as.POSIXct(met.start,tz="UTC"), site_id == site_id) %>%
+    dplyr::collect() %>%
     dplyr::select(site_id, prediction, variable, horizon, parameter, datetime)
   
   PEcAn.logger::logger.info("Met Aquired for", site_id, "on", as.character(met.start))
