@@ -100,11 +100,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         ind <- rep(simdays, each = tstep)
         
         if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
-          #this should always be the case, but just in case
-          origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
-          ydays <- lubridate::yday(origin_dt + sec)
-
-        }else{
+          #this should always be the case, butorigin just in case
+          origin_dt <- as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC")
+          # below -dt means that midnights belong to the day that ends. This is consistent
+          # with data files which are exclusive of the 1 Jan midnight + dt till 1 Jan next year.
+          ydays <- lubridate::yday(origin_dt + sec - dt) 
+        } else {
           PEcAn.logger::logger.error("Check units of time in the weather data.")
         }
 
@@ -112,8 +113,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         # temporary hack, not sure if it will generalize with other data products
         # function might need a splitting arg
-        gr  <- gr[ydays %in% simdays] 
-        
+        gr  <- gr[ydays %in% simdays]
+        if (length(ind) > length(gr)) {
+          PEcAn.logger::logger.severe('The input does not cover the requested simulation period')
+        }
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
