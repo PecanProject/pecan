@@ -92,3 +92,19 @@ test_that("`logger.getLevelNumber` returns correct level number",{
   logger.setLevel("ERROR")
   expect_equal(logger.getLevelNumber("INVALID"), 20)
 })
+
+test_that("`setWidth` works for different specified number of chars per line",{
+  logger.setLevel("ALL")
+  
+  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
+                            "INFO   \\[.*\\] : \\n   A long error message that helps us understand what the error in the \\n   function is ")
+  
+  logger.setWidth(10)
+  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
+                            "INFO   \\[.*\\] : \\n   A long \\n   error \\n   message \\n   that \\n   helps \\n   us \\n   understand \\n   what \\n   the \\n   error \\n   in the \\n   function \\n   is ")
+  
+  
+  logger.setWidth(30)
+  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
+                            "INFO   \\[.*\\] : \\n   A long error message that \\n   helps us understand what \\n   the error in the function \\n   is ")
+})
