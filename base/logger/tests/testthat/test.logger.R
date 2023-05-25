@@ -79,3 +79,16 @@ test_that("logger message labels match enclosing function", {
   expect_output(identity(logger.info("message")), "[identity] : message", fixed = TRUE)
   expect_output(identity(PEcAn.logger::logger.info("message")), "[identity] : message", fixed = TRUE)
 })
+
+test_that("`logger.getLevelNumber` returns correct level number",{
+  expect_equal(logger.getLevelNumber("all"), 0)
+  expect_equal(logger.getLevelNumber("debug"), 10)
+  expect_equal(logger.getLevelNumber("info"), 20)
+  expect_equal(logger.getLevelNumber("warn"), 30)
+  expect_equal(logger.getLevelNumber("error"), 40)
+  expect_equal(logger.getLevelNumber("severe"), 40)
+  expect_equal(logger.getLevelNumber("off"), 60)
+  
+  logger.setLevel("ERROR")
+  expect_equal(logger.getLevelNumber("INVALID"), 20)
+})
