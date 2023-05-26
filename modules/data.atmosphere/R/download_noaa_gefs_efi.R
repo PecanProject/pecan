@@ -40,10 +40,10 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
     
     noaa_data[v] <- NULL
     #filter for met variable
-    curr_var <- filter(weather, variable == cf_var_names[v])
+    curr_var <- filter(weather, .data$variable == cf_var_names[v])
     #remove ensemble member 31 does not cover full timeseries
     #this is a HACK should add a generalized method for ensemble member outlier detection 
-    curr_var <- filter(curr_var, parameter <= 30)
+    curr_var <- filter(curr_var, .data$parameter <= 30)
     noaa_data[[v]] <- list(value = curr_var$prediction,
                            ensembles = curr_var$parameter,
                            forecast.date = curr_var$datetime)
@@ -84,7 +84,7 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
   for (ens in 1:length(unique(forecast_noaa$NOAA.member))) { # i is the ensemble number
     
     forecast_noaa_ens <- forecast_noaa %>%
-      dplyr::filter(NOAA.member == ens) %>%
+      dplyr::filter(.data$NOAA.member == ens) %>%
       dplyr::filter(!is.na(.data$air_temperature))
     
     end_date <- forecast_noaa_ens %>%
