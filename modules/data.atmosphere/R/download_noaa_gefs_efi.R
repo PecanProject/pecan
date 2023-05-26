@@ -1,8 +1,8 @@
 #' download_NOAA_GEFS_EFI
 #'
-#' @param met.start start date for met forecast
-#' @param site_id NEON site name
-#' @param base_dir filepath to save ensemble member .nc files
+#' @param start_date start date for met forecast
+#' @param sitename NEON site name
+#' @param outfolder filepath to save ensemble member .nc files
 #' @param site.lat site lat
 #' @param site.lon site lon
 #'
@@ -11,22 +11,22 @@
 #'
 #' @author Alexis Helgeson
 #' 
-download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.lon){
+download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, site.lon){
   #using the stage2 fcn mean that the met as already been downscaled and gapfilled to 1 hr intervals
-  met = noaa_stage2(cycle = 0, 
+  met = PEcAn.data.atmosphere::noaa_stage2(cycle = 0, 
                     version = "v12", 
                     endpoint = "data.ecoforecast.org", 
                     verbose = TRUE, 
-                    start_date = met.start)
+                    start_date = start_date)
   
   weather = met %>% 
-    dplyr::filter(.data$reference_datetime == as.POSIXct(met.start,tz="UTC"), site_id == site_id) %>%
+    dplyr::filter(.data$reference_datetime == as.POSIXct(start_date,tz="UTC"), sitename == sitename) %>%
     dplyr::collect() %>%
-    dplyr::select(.data$site_id, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
+    dplyr::select(.data$sitename, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
   
-  PEcAn.logger::logger.info("Met Aquired for", site_id, "on", as.character(met.start))
+  PEcAn.logger::logger.info("Met Aquired for", sitename, "on", as.character(start_date))
   #grab/calculate timestep, this might not be necessary b/c of the datetime column?
-  forecast_date = met.start
+  forecast_date = start_date
   cycle = 0
   hours_char <- unique(weather$horizon)
   forecast_times <- lubridate::as_datetime(forecast_date) + lubridate::hours(as.numeric(cycle)) + lubridate::hours(as.numeric(hours_char))
@@ -78,7 +78,7 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
   PEcAn.logger::logger.info("Met df complied including specific humidity and wind speed")
   
   #create directory to save ensemble member if one does not already exist
-  output_path = file.path(base_dir, "noaa/NOAAGEFS_1hr/", site_id, "/", forecast_date, "/00/")
+  output_path = file.path(outfolder, "noaa/NOAAGEFS_1hr/", sitename, "/", forecast_date, "/00/")
   if(!dir.exists(output_path)){dir.create(output_path, recursive = TRUE)}
   
   for (ens in 1:length(unique(forecast_noaa$NOAA.member))) { # i is the ensemble number
@@ -90,7 +90,7 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
     end_date <- forecast_noaa_ens %>%
       dplyr::summarise(max_time = max(.data$time))
     
-    identifier = paste("NOAA_GEFS", site_id, ens, format(as.POSIXct(forecast_date), "%Y-%m-%dT%H:%M"), 
+    identifier = paste("NOAA_GEFS", sitename, ens, format(as.POSIXct(forecast_date), "%Y-%m-%dT%H:%M"), 
                        format(end_date$max_time, "%Y-%m-%dT%H:%M"), sep="_")     
     
     fname <- paste0(identifier, ".nc")

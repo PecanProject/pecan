@@ -13,9 +13,9 @@ siteid <- 646
 clim_dir <- "/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/"
 
 #download met using EFI fcns
-download_NOAA_GEFS_EFI(met.start = startdate,
-                       site_id = sitename,
-                       base_dir = nc_dir,
+download_NOAA_GEFS_EFI(sitename = sitename,
+                       outfolder = nc_dir,
+                       start_date = startdate,
                        site.lat = site.lat,
                        site.lon = site.lon)
 #set up path for met2model

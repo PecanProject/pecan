@@ -4,14 +4,14 @@
 \alias{download_NOAA_GEFS_EFI}
 \title{download_NOAA_GEFS_EFI}
 \usage{
-download_NOAA_GEFS_EFI(met.start, site_id, base_dir, site.lat, site.lon)
+download_NOAA_GEFS_EFI(sitename, outfolder, start_date, site.lat, site.lon)
 }
 \arguments{
-\item{met.start}{start date for met forecast}
+\item{sitename}{NEON site name}
 
-\item{site_id}{NEON site name}
+\item{outfolder}{filepath to save ensemble member .nc files}
 
-\item{base_dir}{filepath to save ensemble member .nc files}
+\item{start_date}{start date for met forecast}
 
 \item{site.lat}{site lat}
 
