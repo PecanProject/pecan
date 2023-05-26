@@ -20,9 +20,9 @@ download_NOAA_GEFS_EFI <- function(met.start, site_id, base_dir, site.lat, site.
                     start_date = met.start)
   
   weather = met %>% 
-    dplyr::filter(reference_datetime == as.POSIXct(met.start,tz="UTC"), site_id == site_id) %>%
+    dplyr::filter(.data$reference_datetime == as.POSIXct(met.start,tz="UTC"), site_id == site_id) %>%
     dplyr::collect() %>%
-    dplyr::select(site_id, prediction, variable, horizon, parameter, datetime)
+    dplyr::select(.data$site_id, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
   
   PEcAn.logger::logger.info("Met Aquired for", site_id, "on", as.character(met.start))
   #grab/calculate timestep, this might not be necessary b/c of the datetime column?
