@@ -1,4 +1,16 @@
 #code taken from https://github.com/eco4cast/neon4cast/blob/main/R/noaa_gefs.R
+#' noaa_stage2
+#'
+#' @param cycle Hour at which forecast was made, as character string 
+#' (`"00"`, `"06"`, `"12"` or `"18"`). Only `"00"` (default) has 30 days horizon.
+#' @param version GEFS forecast version. Prior versions correspond to forecasts
+#' issued before 2020-09-25 which have different ensemble number and horizon,
+#' among other changes, and are not made available here. Leave as default.
+#' @param endpoint the EFI host address (leave as default)
+#' @param verbose logical, displays or hides messages
+#' @param start_date forecast start date yyyy-mm-dd format
+#'
+#' @author Alexis Helgeson (taken from neon4cast package)
 noaa_stage2 <- function(cycle = 0,
                         version = "v12",
                         endpoint = "data.ecoforecast.org",
