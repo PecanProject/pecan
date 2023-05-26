@@ -9,6 +9,8 @@
 #' @param endpoint the EFI host address (leave as default)
 #' @param verbose logical, displays or hides messages
 #' @param start_date forecast start date yyyy-mm-dd format
+#' 
+#' @import arrow
 #'
 #' @author Alexis Helgeson (taken from neon4cast package)
 noaa_stage2 <- function(cycle = 0,
