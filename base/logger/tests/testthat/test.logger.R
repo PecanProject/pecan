@@ -108,3 +108,12 @@ test_that("`setWidth` works for different specified number of chars per line",{
   expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
                             "INFO   \\[.*\\] : \\n   A long error message that \\n   helps us understand what \\n   the error in the function \\n   is ")
 })
+
+test_that("`logger.message` able to redirect logging information to file set by `logger.setOutputFile`", {
+  f <- withr::with_tempfile("tf", {
+    logger.setOutputFile(tf)
+    logger.message("WARN", "message")
+    readLines(tf)
+  })
+  expect_true(grepl(".*WARN   \\[.*\\] : message", f))
+})
