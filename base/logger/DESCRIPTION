@@ -27,7 +27,7 @@ Imports:
     stringi
 Suggests: 
     testthat,
-	withr
+    withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.2.3
