@@ -21,7 +21,11 @@ test_that("`check_conditions` handles multiple conditional statements correctly"
 
 test_that( "logifnot prints right message based on the conditions passed, responds correctly to logger.setLevel",{
   logger.setUseConsole(TRUE, FALSE)
-  logger.setLevel("ALL")
+  on.exit(logger.setUseConsole(TRUE, TRUE), add = TRUE)
+
+  old_settings <- logger.setLevel("ALL")
+  on.exit(logger.setLevel(old_settings), add = TRUE)
+
   expect_output(debugifnot("message", FALSE), "DEBUG  \\[.*\\] : message")
   expect_output(infoifnot("message", FALSE), "INFO   \\[.*\\] : message")
   expect_output(warnifnot("message", FALSE),  "WARN   \\[.*\\] : message")
@@ -62,5 +66,10 @@ test_that( "logifnot prints right message based on the conditions passed, respon
   expect_silent(errorifnot("message", FALSE))
     
   logger.setQuitOnSevere(FALSE)
+  on.exit(logger.setQuitOnSevere(TRUE), add = TRUE)
   expect_error(severeifnot("message", FALSE), "message")
 })
+
+
+
+
