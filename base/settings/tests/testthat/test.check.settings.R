@@ -1,6 +1,13 @@
+PEcAn.logger::logger.setQuitOnSevere(FALSE)
+PEcAn.logger::logger.setLevel("OFF")
+testdir <- tempfile()
+dir.create(testdir, showWarnings = FALSE)
+teardown(unlink(testdir, recursive = TRUE))
+
 # ANS: Many of these functions seem like they shouldn't require a
 # database connection, but `check.settings` throws an error when it
 # can't connect to the database.
+
 s <- .get.test.settings()
 skip_if_not(
   PEcAn.DB::db.exists(s[[c("database", "bety")]]),
