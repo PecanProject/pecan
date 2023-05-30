@@ -1,7 +1,7 @@
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 on.exit(PEcAn.logger::logger.setQuitOnSevere(TRUE))
 
-test_that("`test.clean.settings` works correctly for all types of inputs", {
+test_that("`test.clean.settings` works correctly for invalid and correct inputs", {
 
 	# Error if input file is NULL or does not exist
 	expect_error(
