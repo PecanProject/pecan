@@ -15,7 +15,7 @@ test_that("`test.clean.settings` works correctly for invalid and correct inputs"
 
   # Works if correct input file provided
   t <- withr::with_tempfile("tf", {
-    clean.settings(inputfile = "testinputcleanup.xml", outputfile = tf)
+    clean.settings(inputfile = "data/testinputcleanup.xml", outputfile = tf)
     readLines(tf)
   })
 

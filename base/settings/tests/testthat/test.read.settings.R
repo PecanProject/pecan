@@ -17,14 +17,25 @@ teardown(unlink(testdir, recursive = TRUE))
 
 
 test_that("read.settings() strips comments", {
-  s_comments <- read.settings("testsettings-comment.xml")
-  s <- read.settings("testsettings.xml")
+  s_comments <- read.settings("data/testsettings-comment.xml")
+  s <- read.settings("data/testsettings.xml")
   expect_equal(s_comments, s)
 })
 
 test_that("read.settings() warns if named input file doesn't exist (but pecan.xml does)", {
   old_setting <- PEcAn.logger::logger.setLevel("DEBUG")
   on.exit(PEcAn.logger::logger.setLevel(old_setting))
+  m <- mockery::mock(FALSE, FALSE, TRUE)
+  mockery::stub(read.settings, 'file.exists', m)
+  mockery::stub(
+    read.settings, 
+    'XML::xmlParse', 
+    "<pecan>
+      <model>
+        <site>test</site>
+      </model>
+    </pecan>")
+
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
   #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
