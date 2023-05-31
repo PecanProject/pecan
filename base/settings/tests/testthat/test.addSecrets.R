@@ -1,0 +1,65 @@
+test_that("`addSecrets` returns settings when `~/.pecan.xml` does not exist", {
+  settings <- list()
+  expect_equal(addSecrets(settings), settings)
+})
+
+test_that("`addSecrets` returns settings when force is FALSE and secrets have already been added", {
+  settings <- list(
+    settings.info = list(
+      secrets.added = TRUE
+    )
+  )
+  mockery::stub(addSecrets, 'file.exists', TRUE)
+  expect_equal(addSecrets(settings, force = FALSE), settings)
+})
+
+test_that("`addSecrets` adds secret settings when force is TRUE and secrets have already been added", {
+  settings <- list(
+    settings.info = list(
+      secrets.added = TRUE
+    )
+  )
+
+  m <- list(
+      database = list(
+        section = list(
+          name = "pecan",
+          password = "pecan"
+        )
+      )
+    )
+  mockery::stub(addSecrets, 'file.exists', TRUE)
+  mockery::stub(addSecrets, 'xmlToList', m)
+  updated_settings <- addSecrets(settings, force = TRUE)
+  expect_equal(updated_settings$database$section$name, "pecan")
+  expect_equal(updated_settings$database$section$password, "pecan")  
+})
+
+test_that("`addSecrets` adds secret settings when force is FALSE and secrets have not been added", {
+  settings <- list(
+    settings.info = list(
+      secrets.added = FALSE
+    ),
+    browndog = list()
+  )
+
+  m <- list(
+    database = list(
+      section = list(
+        name = "pecan",
+        password = "pecan"
+      )
+    ),
+    browndog = list(
+      section = list(
+        name = "pecan"
+      )
+    )
+  )
+  mockery::stub(addSecrets, 'file.exists', TRUE)
+  mockery::stub(addSecrets, 'xmlToList', m)
+  updated_settings <- addSecrets(settings, force = FALSE)
+  expect_equal(updated_settings$database$section$name, "pecan")
+  expect_equal(updated_settings$database$section$password, "pecan")
+  expect_equal(updated_settings$browndog$section$name, "pecan")
+})
