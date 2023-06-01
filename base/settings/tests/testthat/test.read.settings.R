@@ -15,6 +15,23 @@ testdir <- tempfile()
 dir.create(testdir, showWarnings = FALSE)
 teardown(unlink(testdir, recursive = TRUE))
 
+test_that("`strip_comments()` function removes comments from nested lists", {
+  nestedList <- list(
+    "run",
+    "outdir",
+    list(
+      "database",
+      list(
+        "user",
+        comment = "A comment"
+      )
+    ),
+    comment = "A comment"
+  )
+  stripped_list <- strip_comments(nestedList)
+  expect_false("comment" %in% names(stripped_list))
+  expect_false("comment" %in% names(stripped_list[[3]]))
+})
 
 test_that("read.settings() strips comments", {
   s_comments <- read.settings("data/testsettings-comment.xml")
@@ -45,6 +62,7 @@ test_that("read.settings() warns if named input file doesn't exist (but pecan.xm
     read.settings("blahblahblah.xml"),
     type = "message"
   )
+  expect_equal(length(mockery::mock_calls(m)), 3)
   expect_true(any(grepl("WARN", x)))
   expect_true(any(grepl("blahblahblah.xml not found", x)))
 })
