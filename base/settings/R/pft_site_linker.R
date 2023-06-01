@@ -61,12 +61,13 @@ site.pft.linkage <- function(settings, site.pft.links) {
         if (site.id %in% site.pft.links$site) {
           site.pft <- site.pft.links$pft[which(site.pft.links$site %in% site.id)]
         }
-      }
-      # if there was a pft associated with that
-      if (!is.null(site.pft)) {
-        site.setting[["run"]]$site$site.pft <- stats::setNames(
-          as.list(site.pft),
-          rep("pft.name", length(site.pft)))
+        # if there was a pft associated with that
+        if (!is.null(site.pft)) {
+          site.setting[["run"]]$site$site.pft <- stats::setNames(
+            as.list(site.pft),
+            rep("pft.name", length(site.pft))
+          )
+        }
       }
       return(site.setting)
     })

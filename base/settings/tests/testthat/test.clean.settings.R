@@ -14,22 +14,21 @@ test_that("`test.clean.settings` works correctly for invalid and correct inputs"
   )
 
   # Works if correct input file provided
-  t <- withr::with_tempfile("tf", {
+  withr::with_tempfile("tf", {
     clean.settings(inputfile = "data/testinputcleanup.xml", outputfile = tf)
-    readLines(tf)
-  })
-
-  t <- XML::xmlToList(XML::xmlParse(t))
+    test_xml <- readLines(tf)
+    t <- XML::xmlToList(XML::xmlParse(test_xml))
 	
-  # Check for updated settings after cleanup
-  expect_equal(t$outdir, "pecan")
-  expect_equal(t$rundir, NULL)
-  expect_equal(t$modeloutdir, NULL)
-  expect_equal(t$host$rundir, NULL)
-  expect_equal(t$host$outdir, NULL)
-  expect_equal(t$database$dbfiles, NULL)
-  expect_equal(t$workflow, NULL)
-  expect_equal(t$pfts[[1]]$pft$outdir, NULL)
-  expect_equal(t$pfts[[1]]$pft$posteriorid, NULL)
-  expect_equal(t$host, list(name = "localhost"))
+    # Check for updated settings after cleanup
+    expect_equal(t$outdir, "pecan")
+    expect_equal(t$rundir, NULL)
+    expect_equal(t$modeloutdir, NULL)
+    expect_equal(t$host$rundir, NULL)
+    expect_equal(t$host$outdir, NULL)
+    expect_equal(t$database$dbfiles, NULL)
+    expect_equal(t$workflow, NULL)
+    expect_equal(t$pfts[[1]]$pft$outdir, NULL)
+    expect_equal(t$pfts[[1]]$pft$posteriorid, NULL)
+    expect_equal(t$host, list(name = "localhost"))
+  })
 })

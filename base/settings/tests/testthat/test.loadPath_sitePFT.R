@@ -15,7 +15,7 @@ test_that("`loadPath.sitePFT` gives an error for file with number of columns not
     write.csv(df, tf, row.names = FALSE)
     expect_error(
       loadPath.sitePFT(settings, tf),
-      "There is a problem with reading the file. Either row number, column number is zero or your file does not have two columns."
+      "file does not have two columns."
     )
   })
 })

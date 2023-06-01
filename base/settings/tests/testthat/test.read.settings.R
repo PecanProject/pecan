@@ -25,6 +25,9 @@ test_that("read.settings() strips comments", {
 test_that("read.settings() warns if named input file doesn't exist (but pecan.xml does)", {
   old_setting <- PEcAn.logger::logger.setLevel("DEBUG")
   on.exit(PEcAn.logger::logger.setLevel(old_setting))
+
+  # this returns FALSE in the first call to the mock function,
+  # FALSE in the second call, and TRUE in the third call
   m <- mockery::mock(FALSE, FALSE, TRUE)
   mockery::stub(read.settings, 'file.exists', m)
   mockery::stub(
