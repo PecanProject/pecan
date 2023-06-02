@@ -14,9 +14,6 @@ merge_job_files(settings, jobs_per_file = 10, outdir = NULL)
 
 \item{outdir}{output directory of merged job files.}
 }
-\value{
-
-}
 \description{
 merge_job_files
 Merge multiple job.sh files into one larger file.
