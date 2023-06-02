@@ -19,6 +19,7 @@
 #'
 #'
 #' @export
+#' @importFrom rlang .data
 #'
 #' @author Alexey Shiklomanov
 download.NARR_site <- function(outfolder,
@@ -43,7 +44,7 @@ download.NARR_site <- function(outfolder,
   date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   narr_byyear <- narr_data %>%
-    dplyr::mutate(year = lubridate::year(datetime)) %>%
+    dplyr::mutate(year = lubridate::year(.data$datetime)) %>%
     dplyr::group_by(.data$year) %>%
     tidyr::nest()
 
@@ -276,15 +277,15 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       )
   }
   flx_data <- post_process(flx_data_raw) %>%
-    dplyr::select(datetime, narr_flx_vars$CF_name)
+    dplyr::select("datetime", narr_flx_vars$CF_name)
   sfc_data <- post_process(sfc_data_raw) %>%
-    dplyr::select(datetime, narr_sfc_vars$CF_name)
+    dplyr::select("datetime", narr_sfc_vars$CF_name)
   met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime") %>%
-    dplyr::arrange(datetime)
+    dplyr::arrange(.data$datetime)
 
   if (drop_outside) {
     met_data <- met_data %>%
-      dplyr::filter(datetime >= start_date, datetime < (end_date + lubridate::days(1)))
+      dplyr::filter(.data$datetime >= start_date, .data$datetime < (end_date + lubridate::days(1)))
   }
 
   met_data

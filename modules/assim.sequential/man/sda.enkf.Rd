@@ -21,8 +21,8 @@ sda.enkf(
   obs.cov,
   Q = NULL,
   restart = NULL,
-  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot = TRUE, BiasPlot
-    = FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
+  control = list(trace = TRUE, interactivePlot = TRUE, TimeseriesPlot = TRUE, BiasPlot =
+    FALSE, plot.title = NULL, debug = FALSE, pause = FALSE),
   ...
 )
 }
@@ -55,7 +55,5 @@ State Variable Data Assimilation: Ensemble Kalman Filter
 State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 }
 \author{
-Michael Dietze and Ann Raiho \email{dietze@bu.edu}
-
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}
 }

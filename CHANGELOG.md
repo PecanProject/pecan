@@ -76,9 +76,10 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
 - Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
-* Fixed a bug in `PEcAn.ED2::read_E_files()` affecting `PEcAn.ED2::model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
-* DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
-* The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
+- Fixed a bug in `PEcAn.ED2::read_E_files()` affecting `PEcAn.ED2::model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
+- DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
+- The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
+- Update Dockerfile for sipnet/maespa/template to use pecan/models:tag to build.
 
 ### Changed
 
@@ -105,6 +106,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 
 - the check image (used in kubernetes) is removed, please use ncsa/checks instead.
 - Unused (and apparently long-broken) function `PEcAn.data.land::find.land` has been removed.
+- No longer building r136 sipnet docker image.
 
 ## [1.7.2] - 2021-10-04
 
