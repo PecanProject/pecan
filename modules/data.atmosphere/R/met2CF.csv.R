@@ -642,12 +642,6 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
 } # met2CF.csv
 
 
-datetime <- function(list) {
-  date_string <- sapply(list, as.character)
-  datetime <- paste(list, "00")
-  return(lubridate::ymd_hms(datetime))
-} # datetime
-
 met.conv <- function(x, orig, bety, CF) {
   orig <- as.character(orig)
   bety <- as.character(bety)

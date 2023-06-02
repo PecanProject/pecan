@@ -62,7 +62,7 @@ sda.enkf.multisite <- function(settings,
     }
   }
   if (control$debug) browser()
-  tictoc::tic("Prepration")
+  tictoc::tic("Preparation")
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -125,9 +125,9 @@ sda.enkf.multisite <- function(settings,
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
-    site.ids <- conf.settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist() %>% as.character()
+    site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
@@ -208,7 +208,7 @@ sda.enkf.multisite <- function(settings,
     dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
   
-  conf.settings<-conf.settings %>%
+  conf.settings <-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
@@ -263,7 +263,7 @@ sda.enkf.multisite <- function(settings,
     }else{
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
-      if(is.null(ensemble.samples)){
+      if(!exists("ensemble.samples") || is.null(ensemble.samples)){
         load(file.path(old.dir, "samples.Rdata"))
       }
       #assuming that will only use previous unconstrained forecast runs for first run with SDA which means we are at t=1
@@ -276,6 +276,7 @@ sda.enkf.multisite <- function(settings,
       
       #build X using previous forecast output
       #out.configs object required to build X and restart.list object required for build X
+      #TODO: there should be an easier way to do this than to rerun write.ensemble.configs
       restart.list <- vector("list", length(conf.settings))
       out.configs <- conf.settings %>%
         `class<-`(c("list")) %>%
@@ -299,12 +300,12 @@ sda.enkf.multisite <- function(settings,
                        new.params = new.params, 
                        nens = nens, 
                        read_restart_times = read_restart_times, 
-                       outdir = paste0(old.dir, "out/"), 
+                       outdir = file.path(old.dir, "out/"), 
                        t = 1, 
                        var.names = var.names, 
                        my.read_restart = my.read_restart,
                        restart_flag = restart_flag)
-      
+    
       #let's read the parameters of each site/ens
       params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
       # Now let's read the state variables of site/ens
@@ -344,14 +345,16 @@ sda.enkf.multisite <- function(settings,
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
-      inputs <- conf.settings %>% purrr::map(function(setting) {
+      #TODO: incorporate Phyllis's restart work
+      #      sample all inputs specified in the settings$ensemble not just met
+      inputs <- PEcAn.settings::papply(conf.settings,function(setting) {
         PEcAn.uncertainty::input.ens.gen(
           settings = setting,
           input = "met",
           method = setting$ensemble$samplingspace$met$method,
           parent_ids = NULL 
         )
-    }) 
+       })
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
@@ -365,9 +368,9 @@ sda.enkf.multisite <- function(settings,
       if (t>1){
         #for next time step split the met if model requires
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-        inputs.split <- PEcAnAssimSequential::metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
+        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
         
-        #---------------- setting up the restart argument for each site separatly and keeping them in a list
+        #---------------- setting up the restart argument for each site separately and keeping them in a list
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
                              function(configs, settings, new.params, inputs) {
@@ -389,7 +392,7 @@ sda.enkf.multisite <- function(settings,
                                  ensemble.id = settings$ensemble$ensemble.id
                                )
                              })
-      } else {
+      } else { ## t == 1
         restart.list <- vector("list", length(conf.settings))
       }
       #add flag for restart t=1 to skip model runs
@@ -416,10 +419,12 @@ sda.enkf.multisite <- function(settings,
           }) %>%
           stats::setNames(site.ids)
         
-        #I'm rewrting the runs because when I use the parallel appraoch for wrting configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+        #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
         runs.tmp <- list.dirs(rundir, full.names = F)
         runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+        paste(file.path(rundir, 'runs.txt'))  ## testing
+        Sys.sleep(0.01)                       ## testing
         PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         
         #------------- Reading - every iteration and for SDA
@@ -455,12 +460,13 @@ sda.enkf.multisite <- function(settings,
         #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
         #[1,]  3.872521     37.2581  3.872521     37.2581
         # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-        if (multi.site.flag)
+        if (multi.site.flag){
           X <- X %>%
           purrr::map_dfc(~.x) %>% 
           as.matrix() %>%
           `colnames<-`(c(rep(var.names, length(X)))) %>%
           `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+        }
         
       }  ## end else from restart & t==1
       FORECAST[[obs.t]] <- X
@@ -468,7 +474,11 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.null(obs.mean[[t]][[1]])) {
+      if (!is.null(obs.mean[[t]][[1]])) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
+        # TODO: as currently configured, Analysis runs even if all obs are NA, 
+        #  which clearly should be triggering the `else` of this if, but the
+        #  `else` has not been invoked in a while an may need updating
+        
         if (control$debug) browser()
         #Making R and Y
         Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
@@ -486,6 +496,7 @@ sda.enkf.multisite <- function(settings,
         #Pass aqq and bqq.
         aqq <- NULL
         bqq <- numeric(nt + 1)
+        Pf  <- NULL
         #if t>1
         if(is.null(pre_enkf_params) && t>1){
           aqq <- enkf.params[[t-1]]$aqq
@@ -500,18 +511,10 @@ sda.enkf.multisite <- function(settings,
         if(!is.null(pre_enkf_params)){
           Pf <- pre_enkf_params[[t]]$Pf
         }
-        
-        if(!exists('Cmcmc_tobit2space')) {
-          recompileTobit = TRUE
-        }else{
-          recompileTobit = FALSE
-        }
-        
-        if(!exists('Cmcmc')) {
-          recompileGEF = TRUE
-        }else{
-          recompileGEF = FALSE
-        }
+
+        recompileTobit = !exists('Cmcmc_tobit2space')     
+        recompileGEF   = !exists('Cmcmc')
+
         #weight list
         # This reads ensemble weights generated by `get_ensemble_weights` function from assim.sequential package
         weight_list <- list()
@@ -644,7 +647,7 @@ sda.enkf.multisite <- function(settings,
       }
       
       ###-------------------------------------------------------------------###
-      ### adjustement/update state matrix                                   ###
+      ### adjust/update state matrix                                   ###
       ###-------------------------------------------------------------------###---- 
       tictoc::tic(paste0("Adjustment for cycle = ", t))
       if(adjustment == TRUE){
@@ -652,22 +655,18 @@ sda.enkf.multisite <- function(settings,
       } else {
         analysis <- as.data.frame(mvtnorm::rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
       }
-      analysis[analysis<0] <- 0
       colnames(analysis) <- colnames(X)
       ##### Mapping analysis vectors to be in bounds of state variables
-      if(processvar==TRUE){
-        for(i in 1:ncol(analysis)){
-          int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                                                      var.names)),]
-          analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-          analysis[analysis[,i] > int.save[2],i] <- int.save[2]
-        }
+      for(i in 1:ncol(analysis)){
+        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
+                                                    var.names)),]
+        analysis[analysis[,i] < int.save[1],i] <- int.save[1]
+        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
       ## in the future will have to be separated from analysis
       
       new.state  <- as.data.frame(analysis)
       ANALYSIS[[obs.t]] <- analysis
-      ANALYSIS <-ANALYSIS
       ens_weights[[obs.t]] <- PEcAnAssimSequential::sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
       ###-------------------------------------------------------------------###
       ### save outputs                                                      ###
@@ -702,14 +701,13 @@ sda.enkf.multisite <- function(settings,
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
     
     # remove files as SDA runs
-    if (!(keepNC))
-    {
+    if (!(keepNC)){
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     } 
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
-    if (keepNC && t == 1)
-    {
-      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-    }
+#    if (keepNC && t == 1){
+#      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+#    }
+      ## MCD: I commented the above "if" out because if you are restarting from a previous forecast, this might delete the files in that earlier folder
   } ### end loop over time
 } # sda.enkf
