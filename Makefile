@@ -104,6 +104,9 @@ all: install document
 
 check_base: $(BASE_C) 
 check_models: $(MODELS_C) 
+
+# Install base first as Modules has a circular dependency on base,
+# and then run a check on modules
 check_modules: $(BASE_I) $(MODULES_C) 
 
 document: $(ALL_PKGS_D) .doc/base/all
