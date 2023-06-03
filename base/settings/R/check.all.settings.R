@@ -1148,21 +1148,22 @@ check.ensemble.settings <- function(settings) {
       PEcAn.logger::logger.severe(
        "Start year of ensemble should come before the end year of the ensemble")
     }
-  }
-  # Old version of pecan xml files which they don't have a sampling space
-  # or it's just sampling space and nothing inside it.
-  if (is.null(settings$ensemble$samplingspace)
-      || !is.list(settings$ensemble$samplingspace)) {
-    PEcAn.logger::logger.info(
-      "We are updating the ensemble tag inside the xml file.")
-    # I try to put ensemble method in older versions into the parameter space -
-    # If I fail (when no method is defined) I just set it as uniform
-    settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
-      settings$ensemble$samplingspace$parameters$method <- "uniform"
+
+    # Old version of pecan xml files which they don't have a sampling space
+    # or it's just sampling space and nothing inside it.
+    if (is.null(settings$ensemble$samplingspace)
+        || !is.list(settings$ensemble$samplingspace)) {
+      PEcAn.logger::logger.info(
+        "We are updating the ensemble tag inside the xml file.")
+      # I try to put ensemble method in older versions into the parameter space -
+      # If I fail (when no method is defined) I just set it as uniform
+      settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
+      if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+        settings$ensemble$samplingspace$parameters$method <- "uniform"
+      }
+      #putting something simple in the met
+      settings$ensemble$samplingspace$met$method <- "sampling"
     }
-    #putting something simple in the met
-    settings$ensemble$samplingspace$met$method <- "sampling"
   }
   return(settings)
 }
