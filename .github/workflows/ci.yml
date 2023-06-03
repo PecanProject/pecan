@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - Reduce-Workflow-Time
 
     tags:
       - '*'
@@ -131,7 +132,7 @@ jobs:
 
     # run PEcAn checks
     - name: check
-      run: make -j1 -f Makefile.base check
+      run: make -j1 check_base
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
@@ -188,7 +189,7 @@ jobs:
 
     # run PEcAn checks
     - name: check
-      run: make -f Makefile.module check
+      run: make -j1 check_modules
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
@@ -245,7 +246,7 @@ jobs:
 
     # run PEcAn checks
     - name: check
-      run: make -j1 -f Makefile.model check
+      run: make -j1 check_models
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
