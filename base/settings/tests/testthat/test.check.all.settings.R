@@ -1,3 +1,82 @@
+test_that("`check.model.settings` able to update model parameters based on passed model id in settings", {
+  mockery::stub(
+    check.model.settings, 
+    'PEcAn.DB::db.query', 
+    data.frame(
+      id = 7,
+      revision = 82,
+      name = "ED2",
+      type = "ed"
+    )
+  )
+  mockery::stub(
+    check.model.settings, 
+    'PEcAn.DB::dbfile.file', 
+    "/usr/local/bin/ed2.r82"
+  )
+  settings <- list(
+    model = list(
+      id = 7
+    )
+  )  
+
+  updated_settings <- check.model.settings(settings, 1)
+  expect_equal(updated_settings$model$id, 7)
+  expect_equal(updated_settings$model$revision, 82)
+  expect_equal(updated_settings$model$type, "ed")
+  expect_equal(updated_settings$model$delete.raw, FALSE)
+  expect_equal(updated_settings$model$binary, "/usr/local/bin/ed2.r82")
+})
+
+test_that("`check.model.settings` able to update model parameters based on passed model type in settings", {
+  mockery::stub(
+    check.model.settings, 
+    'PEcAn.DB::db.query', 
+    data.frame(
+      id = 7,
+      revision = 82,
+      name = "ED2",
+      type = "ed"
+    )
+  )
+  mockery::stub(
+    check.model.settings, 
+    'PEcAn.DB::dbfile.file', 
+    "/usr/local/bin/ed2.r82"
+  )
+  settings <- list(
+    model = list(
+      type = "ed"
+    )
+  )  
+
+  updated_settings <- check.model.settings(settings, 1)
+  expect_equal(updated_settings$model$id, 7)
+  expect_equal(updated_settings$model$revision, 82)
+  expect_equal(updated_settings$model$type, "ed")
+  expect_equal(updated_settings$model$delete.raw, FALSE)
+  expect_equal(updated_settings$model$binary, "/usr/local/bin/ed2.r82")
+})
+
+test_that("`check.workflow.settings` able to set workflow defaults in case they are not specified", {
+  mockery::stub(check.workflow.settings, 'PEcAn.DB::db.query', list(id = 100))
+  mockery::stub(check.workflow.settings, 'file.exists', TRUE)
+
+  settings <- list(
+    database = list(
+      bety = list(
+        write = TRUE
+      )
+    ),
+    model = list(
+      id = 1
+    )
+  )
+  updated_settings <- check.workflow.settings(settings, 1)
+  expect_equal(updated_settings$workflow$id, 100)
+  expect_equal(updated_settings$outdir, file.path(getwd(), "PEcAn_100"))
+})
+
 test_that("`check.database` able to set the database object with defaults correctly if nothing specified", {
   rdriver <- paste0("R", "PostgreSQL") 
   withr::with_package(rdriver, {
