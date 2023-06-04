@@ -1,3 +1,57 @@
+test_that("`check.run.settings` throws error if start date greater than end date in run settings", {
+  settings <- list(
+    run = list(
+      start.date = "2010-01-01",
+      end.date = "2009-01-01"
+    )
+  )
+  expect_error(
+    check.run.settings(settings),
+    "Start date should come before the end date."
+  )
+})
+
+test_that("`check.run.settings` able to set sensitivity analysis parameters based on ensemble and run params", {
+  settings <- list(
+    sensitivity.analysis = list(),
+    ensemble = list(
+      variable = "GPP"
+    ),
+    run = list(
+      start.date = "2010-01-01",
+      end.date = "2015-01-01"
+    )
+  )
+  updated_settings <- check.run.settings(settings)
+  expect_equal(updated_settings$sensitivity.analysis$variable, "GPP")
+  expect_equal(updated_settings$sensitivity.analysis$start.year, 2010)
+  expect_equal(updated_settings$sensitivity.analysis$end.year, 2015)
+})
+
+test_that("`check.run.settings` able to update run site parameters based on site id passed", {
+  mockery::stub(
+    check.run.settings, 
+    'PEcAn.DB::db.query', 
+    data.frame(
+      sitename = "US-1",
+      lat = 45,
+      lon = -90
+    )
+  )
+  settings <- list(
+    run = list(
+      site = list(
+        id = 5
+      )
+    )
+  )
+  updated_settings <- check.run.settings(settings, 1)
+  expect_equal(updated_settings$run$site$id, 5)
+  expect_equal(updated_settings$run$site$name, "US-1")
+  expect_equal(updated_settings$run$site$lat, 45.0)
+  expect_equal(updated_settings$run$site$lon, -90.0)
+})
+
 test_that("`check.model.settings` able to update model parameters based on passed model id in settings", {
   mockery::stub(
     check.model.settings, 

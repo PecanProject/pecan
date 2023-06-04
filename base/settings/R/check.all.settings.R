@@ -727,6 +727,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
+      site <- NULL
       if (!is.null(dbcon)) {
         site <- PEcAn.DB::db.query(
           paste(
