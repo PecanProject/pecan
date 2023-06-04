@@ -1,3 +1,40 @@
+test_that("`check.inputs()` able to set dbfile path for inputs", {
+  mockery::stub(check.inputs, 'PEcAn.DB::db.open', TRUE)
+  mockery::stub(check.inputs, 'PEcAn.DB::db.close', TRUE)
+  mockery::stub(check.inputs, 'PEcAn.DB::dbfile.file', "test/path/to/file")
+
+  mocked_query_res = mockery::mock(
+    data.frame(
+      tag = "test",
+      format_id = 1,
+      required = TRUE
+    ),
+    data.frame(
+      format_id = 1
+    )
+  )
+  mockery::stub(check.inputs, 'PEcAn.DB::db.query', mocked_query_res)
+
+  settings <- list(
+    database = list(
+      bety = list()
+    ),
+    run = list(
+      inputs = list(
+        test = list(
+          id = 1
+        )
+      )
+    ),
+    model = list(
+      type = "ed"
+    )
+  )
+  
+  updated_settings <- check.inputs(settings)
+  expect_equal(updated_settings$run$inputs$test$path, "test/path/to/file")
+})
+
 test_that("`check.run.settings` throws error if start date greater than end date in run settings", {
   settings <- list(
     run = list(
