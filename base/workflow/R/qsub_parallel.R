@@ -85,7 +85,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   folders <- file.path(settings$host$outdir, run_list)
   while (length(folders) > 0) {
     Sys.sleep(10)
-    completed_folders <- foreach(folder = folders, settings = rep(settings, length(run_list))) %dopar% {
+    completed_folders <- foreach::foreach(folder = folders, settings = rep(settings, length(run_list))) %dopar% {
       if(file.exists(file.path(folder, prefix))){
         return(folder)
       }
