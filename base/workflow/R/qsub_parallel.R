@@ -9,6 +9,7 @@
 #'   qsub_parallel(settings)
 #' }
 #' @author Dongchen Zhang
+#' 
 #' @importFrom foreach %dopar%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   #declare variables within foreach section
