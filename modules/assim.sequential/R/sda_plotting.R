@@ -851,6 +851,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 ##' @param FORECAST Forecast object from the sda.output.Rdata.
 ##' @param obs.mean obs.mean
 ##' @param obs.cov obs.cov
+##' @param outdir physical path where the pdf will be stored.
 ##' @param pft.path Physical path of pft.csv file to allow by = pft option.
 ##' @param by arrange figures by var, pft, or site.
 ##' @param types data types that shown in the figure.

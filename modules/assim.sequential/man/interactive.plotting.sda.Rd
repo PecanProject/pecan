@@ -127,6 +127,8 @@ SDA_timeseries_plot(
 
 \item{Add_Map}{Bool variable decide if we want to export the GIS map of Ecoregion.}
 
+\item{outdir}{physical path where the pdf will be stored.}
+
 \item{pft.path}{Physical path of pft.csv file to allow by = pft option.}
 
 \item{by}{arrange figures by var, pft, or site.}
