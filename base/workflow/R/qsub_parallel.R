@@ -9,7 +9,6 @@
 #'   qsub_parallel(settings)
 #' }
 #' @author Dongchen Zhang
-#'
 #' @importFrom foreach %dopar%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   run_list <- readLines(con = file.path(settings$rundir, "runs.txt"))
