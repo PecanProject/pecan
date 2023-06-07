@@ -863,7 +863,6 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
   time_points <- names(FORECAST)
   site_ids <- attributes(FORECAST[[1]])$Site
   var_names <- attributes(FORECAST[[1]])$dimnames[[2]]
-  
   #new diag function: fixed the bug when length==1 then it will return 0x0 matrix
   diag_fix <- function(vector){
     if (length(vector)>1){
