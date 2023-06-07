@@ -847,6 +847,16 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
 
 ##' @rdname interactive.plotting.sda
+##' @param ANALYSIS Analysis object from the sda.output.Rdata.
+##' @param FORECAST Forecast object from the sda.output.Rdata.
+##' @param obs.mean obs.mean
+##' @param obs.cov obs.cov
+##' @param pft.path Physical path of pft.csv file to allow by = pft option.
+##' @param by arrange figures by var, pft, or site.
+##' @param types data types that shown in the figure.
+##' @param CI range of confidence interval.
+##' @param unit list of unit used for y axis label.
+##' @param style color option.
 ##' @export
 ##' @author Dongchen Zhang
 SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = NULL, outdir, pft.path = NULL, by = "site", types = c("FORECAST", "ANALYSIS", "OBS"), CI = c(0.025, 0.975), 

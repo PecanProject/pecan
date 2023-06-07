@@ -111,21 +111,33 @@ SDA_timeseries_plot(
 
 \item{t}{current time - int number giving the position of the current time in obs.time.}
 
-\item{obs.mean}{list of vectors of the means of observed data named by the measured date.}
+\item{obs.mean}{obs.mean}
 
-\item{obs.cov}{list of cov matrices of the observed data named by the measured date.}
+\item{obs.cov}{obs.cov}
 
 \item{obs}{list containing the mean and cov object}
 
 \item{X}{dataframe of state variables for each ensemble}
 
-\item{FORECAST}{dataframe of state variables for each ensemble}
+\item{FORECAST}{Forecast object from the sda.output.Rdata.}
 
-\item{ANALYSIS}{vector of mean of state variable after analysis}
+\item{ANALYSIS}{Analysis object from the sda.output.Rdata.}
 
 \item{plot.title}{character giving the title for post visualization ggplots}
 
 \item{Add_Map}{Bool variable decide if we want to export the GIS map of Ecoregion.}
+
+\item{pft.path}{Physical path of pft.csv file to allow by = pft option.}
+
+\item{by}{arrange figures by var, pft, or site.}
+
+\item{types}{data types that shown in the figure.}
+
+\item{CI}{range of confidence interval.}
+
+\item{unit}{list of unit used for y axis label.}
+
+\item{style}{color option.}
 
 \item{obs.time}{vector of dates of measurements}
 }
