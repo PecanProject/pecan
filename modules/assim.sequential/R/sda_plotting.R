@@ -875,7 +875,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
   }
   #read pft.csv file for the option by == pft.
   if(!is.null(pft.path)){
-    pft <- read.csv(pft.path)
+    pft <- utils::read.csv(pft.path)
   }
   #create database
   DB <- data.frame()
@@ -899,8 +899,8 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
             var_ind <- which(var_name == var_names)
             ind <- var_ind[which(var_ind %in% site_ind)]
             MEAN <- mean(temp_Dat[,ind])
-            MIN <- quantile(temp_Dat[,ind], CI[1])
-            MAX <- quantile(temp_Dat[,ind], CI[2])
+            MIN <- stats::quantile(temp_Dat[,ind], CI[1])
+            MAX <- stats::quantile(temp_Dat[,ind], CI[2])
           }
           if(MIN < 0) MIN <- 0
           DB <- rbind(DB, list(id = id, date = time_point, var_name = var_name, type = type, upper = MAX, lower = MIN, mean = MEAN))
@@ -919,13 +919,13 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
         site_p <- rlist::list.append(site_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
                                        dplyr::select(-c(id, var_name)) %>%
                                        dplyr::mutate(date = lubridate::ymd(date)) %>%
-                                       ggplot2::ggplot(aes(x=date)) +
-                                       geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
-                                       geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
-                                       geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                       scale_fill_manual(values = style$fill_color) +
-                                       scale_color_manual(values = style$general_color) +
-                                       ylab(paste0(var.name, " (", unit[var.name], ")")))
+                                       ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                       ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                       ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                       ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                       ggplot2::scale_fill_manual(values = style$fill_color) +
+                                       ggplot2::scale_color_manual(values = style$general_color) +
+                                       ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")))
       }
       p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
                                                          top = ggpubr::text_grob(site.id, color = style$title_color, face = "bold", size = 14)))
@@ -941,14 +941,14 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
         var_p <- rlist::list.append(var_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
                                       dplyr::select(-c(id, var_name)) %>%
                                       dplyr::mutate(date = lubridate::ymd(date)) %>%
-                                      ggplot2::ggplot(aes(x=date)) +
-                                      geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
-                                      geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
-                                      geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                      scale_fill_manual(values = style$fill_color) +
-                                      scale_color_manual(values = style$general_color) +
-                                      ylab(paste0(var.name, " (", unit[var.name], ")")) +
-                                      ggtitle(site.id))
+                                      ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                      ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                      ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                      ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                      ggplot2::scale_fill_manual(values = style$fill_color) +
+                                      ggplot2::scale_color_manual(values = style$general_color) +
+                                      ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")) +
+                                      ggplot2::ggtitle(site.id))
       }
       p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = var_p, common.legend = TRUE), 
                                                          top = ggpubr::text_grob(var.name, color = style$title_color, face = "bold", size = 14)))
@@ -971,14 +971,14 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
             site_p <- rlist::list.append(site_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
                                            dplyr::select(-c(id, var_name)) %>%
                                            dplyr::mutate(date = lubridate::ymd(date)) %>%
-                                           ggplot2::ggplot(aes(x=date)) +
-                                           geom_ribbon(aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
-                                           geom_line(aes(y=mean, color=type),lwd=0.5,linetype=2) +
-                                           geom_point(aes(y=mean, color=type), size=1.5, alpha=0.75) +
-                                           scale_fill_manual(values = style$fill_color) +
-                                           scale_color_manual(values = style$general_color) +
-                                           ylab(paste0(var.name, " (", unit[var.name], ")")) +
-                                           ggtitle(site.id))
+                                           ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                           ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                           ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                           ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                           ggplot2::scale_fill_manual(values = style$fill_color) +
+                                           ggplot2::scale_color_manual(values = style$general_color) +
+                                           ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")) +
+                                           ggplot2::ggtitle(site.id))
           }
           var_p <- rlist::list.append(var_p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
                                                                      top = ggpubr::text_grob(paste(PFT, var.name), color = style$title_color, face = "bold", size = 14)))
@@ -988,7 +988,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
     }
   }
   #print pdf
-  pdf(file.path(outdir, paste0("SDA_", by, ".pdf")),width = PDF_w, height = PDF_h)
+  grDevices::pdf(file.path(outdir, paste0("SDA_", by, ".pdf")),width = PDF_w, height = PDF_h)
   print(p)
-  dev.off()
+  grDevices::dev.off()
 }
