@@ -11,6 +11,9 @@
 #' @author Dongchen Zhang
 #' @importFrom foreach %dopar%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
+  #declare variables within foreach section
+  run <- NULL
+  folder <- NULL
   run_list <- readLines(con = file.path(settings$rundir, "runs.txt"))
   is_local <- PEcAn.remote::is.localhost(settings$host)
   # loop through runs and either call start run, or launch job on remote machine
