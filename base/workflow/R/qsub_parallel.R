@@ -10,22 +10,23 @@
 #' }
 #' @author Dongchen Zhang
 #'
+#' @importFrom foreach %dopar%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   run_list <- readLines(con = file.path(settings$rundir, "runs.txt"))
   is_local <- PEcAn.remote::is.localhost(settings$host)
   # loop through runs and either call start run, or launch job on remote machine
   #parallel submit jobs
   cores <- parallel::detectCores()
-  cl <- makeSOCKcluster(cores)
-  registerDoSNOW(cl)
+  cl <- parallel::makeCluster(cores)
+  doSNOW::registerDoSNOW(cl)
   #progress bar
-  pb <- txtProgressBar(min=1, max=ifelse(is.null(files), length(run_list), length(files)), style=3)
-  progress <- function(n) setTxtProgressBar(pb, n)
+  pb <- utils::txtProgressBar(min=1, max=ifelse(is.null(files), length(run_list), length(files)), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
   PEcAn.logger::logger.info("Submitting jobs!")
   # if we want to submit jobs separately.
   if(is.null(files)){
-    jobids <- foreach(run = run_list, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
+    jobids <- foreach::foreach(run = run_list, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
       run_id_string <- format(run, scientific = FALSE)
       qsub <- settings$host$qsub
       qsub <- gsub("@NAME@", paste0("PEcAn-", run_id_string), qsub)
@@ -37,7 +38,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
       if(PEcAn.remote::is.localhost(settings$host)){
         out <- system2(cmd, file.path(settings$host$rundir, run_id_string, "job.sh"), stdout = TRUE, stderr = TRUE)
       }else{
-        out <- remote.execute.cmd(host, cmd, file.path(settings$host$rundir, run_id_string, "job.sh"), stderr = TRUE)
+        out <- PEcAn.remote::remote.execute.cmd(settings$host, cmd, file.path(settings$host$rundir, run_id_string, "job.sh"), stderr = TRUE)
       }
       jobid <- PEcAn.remote::qsub_get_jobid(
         out = out[length(out)],
@@ -53,7 +54,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
     }else{
       unlink(list.files(std_out, recursive = T, full.names = T))
     }
-    jobids <- foreach(file = files, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
+    jobids <- foreach::foreach(file = files, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
       qsub <- settings$host$qsub
       base_name <- basename(file)
       num <- gsub("\\D", "", base_name)
@@ -66,7 +67,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
       if(PEcAn.remote::is.localhost(settings$host)){
         out <- system2(cmd, file, stdout = TRUE, stderr = TRUE)
       }else{
-        out <- remote.execute.cmd(host, cmd, file, stderr = TRUE)
+        out <- PEcAn.remote::remote.execute.cmd(settings$host, cmd, file, stderr = TRUE)
       }
       jobid <- PEcAn.remote::qsub_get_jobid(
         out = out[length(out)],
@@ -99,6 +100,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
     }
   }
   close(pb)
-  stopCluster(cl)
+  parallel::stopCluster(cl)
   PEcAn.logger::logger.info("Completed!")
 }
