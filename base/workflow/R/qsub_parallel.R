@@ -75,7 +75,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
       return(jobid)
     }
   }
-  
   PEcAn.logger::logger.info("Jobs submitted!")
   #check if jobs are completed
   PEcAn.logger::logger.info("Checking the qsub jobs status!")
