@@ -39,6 +39,7 @@ wanted <- c(
 'dbplyr',
 'devtools',
 'doParallel',
+'doSNOW',
 'dplR',
 'dplyr',
 'ellipse',
