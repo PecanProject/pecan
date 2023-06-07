@@ -855,8 +855,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
                                              fill_color = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey"),
                                              title_color = "red")){
   #Check package availability.
-  package.exists <- try(find.package("ggpubr"), silent = T)
-  if(is.character(package.exists)){
+  if("try-error" %in% class(try(find.package("ggpubr"), silent = T))){
     PEcAn.logger::logger.info("Package ggpubr is not installed! Please install it and rerun the function!")
     return(0)
   }
@@ -920,7 +919,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
                                        dplyr::select(-c(id, var_name)) %>%
                                        dplyr::mutate(date = lubridate::ymd(date)) %>%
                                        ggplot2::ggplot(ggplot2::aes(x=date)) +
-                                       ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                       ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
                                        ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                        ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
                                        ggplot2::scale_fill_manual(values = style$fill_color) +
@@ -942,7 +941,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
                                       dplyr::select(-c(id, var_name)) %>%
                                       dplyr::mutate(date = lubridate::ymd(date)) %>%
                                       ggplot2::ggplot(ggplot2::aes(x=date)) +
-                                      ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                      ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
                                       ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                       ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
                                       ggplot2::scale_fill_manual(values = style$fill_color) +
@@ -972,7 +971,7 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
                                            dplyr::select(-c(id, var_name)) %>%
                                            dplyr::mutate(date = lubridate::ymd(date)) %>%
                                            ggplot2::ggplot(ggplot2::aes(x=date)) +
-                                           ggplot2::geom_ribbon(ggplot2::aes(x = date, ymin = lower, ymax = upper, fill=type), inherit.aes = FALSE, alpha = 0.5) +
+                                           ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
                                            ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
                                            ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
                                            ggplot2::scale_fill_manual(values = style$fill_color) +
