@@ -80,6 +80,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
 - The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
 - Update Dockerfile for sipnet/maespa/template to use pecan/models:tag to build.
+- Fixed a bug in `PEcAn.utils::ud_convert()` where it failed with objects of class "difftime" introduced by refactoring to use the `units` package instead of `udunits` (#3012)
 
 ### Changed
 
