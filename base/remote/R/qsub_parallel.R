@@ -12,6 +12,10 @@
 #' 
 #' @importFrom foreach %dopar%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
+  if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
+    PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
+    return(0)
+  }
   #declare variables within foreach section
   run <- NULL
   folder <- NULL
