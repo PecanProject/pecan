@@ -32,8 +32,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
 License: BSD_3_clause + file LICENSE
 Imports:
   dplyr,
-  doSNOW,
-  foreach,
 	PEcAn.data.atmosphere,
 	PEcAn.data.land,
 	PEcAn.DB,
