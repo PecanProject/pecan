@@ -427,7 +427,7 @@ sda.enkf.multisite <- function(settings,
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
-        PEcAn.workflow::qsub_parallel(settings, files=PEcAn.workflow::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+        PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
         
         #------------- Reading - every iteration and for SDA
         
@@ -707,7 +707,11 @@ sda.enkf.multisite <- function(settings,
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
     }
     if(!is.null(control$send_email)){
-      PEcAn.utils::sendmail(control$send_email$from, control$send_email$to, "SDA progress report", paste("Time point:", obs.times[t], "has been completed!"))
+      sendmail <- Sys.which("sendmail")
+      mailfile <- tempfile("mail")
+      cat(paste0("From: ", control$send_email$from, "\n", "Subject: ", "SDA progress report", "\n", "To: ", control$send_email$to, "\n", "\n", paste("Time point:", obs.times[t], "has been completed!")), file = mailfile)
+      system2(sendmail, c("-f", paste0("\"", control$send_email$from, "\""), paste0("\"", control$send_email$to, "\""), "<", mailfile))
+      unlink(mailfile)
     }
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
 #    if (keepNC && t == 1){
