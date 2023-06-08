@@ -19,7 +19,6 @@ Description: This package contains utilities for communicating with and executin
 Imports:
     doSNOW,
     foreach,
-    parallel,
     PEcAn.logger,
     httr,
     jsonlite,
