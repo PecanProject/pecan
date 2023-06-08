@@ -12,6 +12,9 @@
 #' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
 #' @param run_parallel If allows to proceed under parallel mode, default is TRUE.
 #' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
+#' @param parallel_qsub Bool variable decide if you want to submit the bash jobs under the parallel mode, the default value is TRUE.
+#' @param free_run Bool variable decide if the run is a free run with no analysis been used, the default value is FALSE.
+#' @param send_email List object containing the "from", "to", and "body", the default value is NULL.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.
 #'
@@ -34,6 +37,9 @@ sda.enkf.multisite <- function(settings,
                                pre_enkf_params = NULL,
                                run_parallel = TRUE,
                                ensemble.samples = NULL,
+                               parallel_qsub = TRUE,
+                               free_run = FALSE,
+                               send_email = NULL,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -44,9 +50,7 @@ sda.enkf.multisite <- function(settings,
                                             debug = FALSE,
                                             pause = FALSE,
                                             Profiling = FALSE,
-                                            OutlierDetection=FALSE,
-                                            free_run = FALSE,
-                                            send_email = NULL),
+                                            OutlierDetection=FALSE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -427,7 +431,12 @@ sda.enkf.multisite <- function(settings,
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
-        PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+        if(parallel_qsub){
+          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+        }else{
+          PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        }
+        
         
         #------------- Reading - every iteration and for SDA
         
