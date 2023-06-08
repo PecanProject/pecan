@@ -442,16 +442,18 @@ sda.enkf.multisite <- function(settings,
         
         #put building of X into a function that gets called
         max_t <- 0
-        while (is.character(try(reads <- build_X(out.configs = out.configs, 
-                                                 settings = settings, 
-                                                 new.params = new.params, 
-                                                 nens = nens, 
-                                                 read_restart_times = read_restart_times, 
-                                                 outdir = outdir, 
-                                                 t = t, 
-                                                 var.names = var.names, 
-                                                 my.read_restart = my.read_restart,
-                                                 restart_flag = restart_flag), silent = T))) {
+        while("try-error" %in% class(
+          try(reads <- build_X(out.configs = out.configs, 
+                               settings = settings, 
+                               new.params = new.params, 
+                               nens = nens, 
+                               read_restart_times = read_restart_times, 
+                               outdir = outdir, 
+                               t = t, 
+                               var.names = var.names, 
+                               my.read_restart = my.read_restart,
+                               restart_flag = restart_flag), silent = T))
+        ){
           Sys.sleep(10)
           max_t <- max_t + 1
           if(max_t > 20){
