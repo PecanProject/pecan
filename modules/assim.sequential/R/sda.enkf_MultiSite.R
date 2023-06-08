@@ -44,7 +44,9 @@ sda.enkf.multisite <- function(settings,
                                             debug = FALSE,
                                             pause = FALSE,
                                             Profiling = FALSE,
-                                            OutlierDetection=FALSE),
+                                            OutlierDetection=FALSE,
+                                            free_run = FALSE,
+                                            send_email = NULL),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -425,21 +427,30 @@ sda.enkf.multisite <- function(settings,
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
-        PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        PEcAn.workflow::qsub_parallel(settings, files=PEcAn.workflow::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
         
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, 
-                         settings = settings, 
-                         new.params = new.params, 
-                         nens = nens, 
-                         read_restart_times = read_restart_times, 
-                         outdir = outdir, 
-                         t = t, 
-                         var.names = var.names, 
-                         my.read_restart = my.read_restart,
-                         restart_flag = restart_flag)
+        max_t <- 0
+        while (is.character(try(reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
+                                                                        settings = settings, 
+                                                                        new.params = new.params, 
+                                                                        nens = nens, 
+                                                                        read_restart_times = read_restart_times, 
+                                                                        outdir = outdir, 
+                                                                        t = t, 
+                                                                        var.names = var.names, 
+                                                                        my.read_restart = my.read_restart,
+                                                                        restart_flag = restart_flag), silent = T))) {
+          Sys.sleep(10)
+          max_t <- max_t + 1
+          if(max_t > 20){
+            PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
+            break
+          }
+          PEcAn.logger::logger.info("Empty folder, try again!")
+        }
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -474,7 +485,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.null(obs.mean[[t]][[1]])) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
+      if (!is.null(obs.mean[[t]][[1]]) & !control$free_run) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating
@@ -686,16 +697,7 @@ sda.enkf.multisite <- function(settings,
       
       #writing down the image - either you asked for it or nor :)
       if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot) & !is.null(obs.mean[[t]][[1]])){
-        post.analysis.multisite.ggplot(settings, 
-                                       t, 
-                                       obs.times, 
-                                       obs.mean, 
-                                       obs.cov, 
-                                       FORECAST, 
-                                       ANALYSIS ,
-                                       plot.title=control$plot.title, 
-                                       facetg=control$facet.plots, 
-                                       readsFF=readsFF)
+        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
       }   
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
@@ -703,7 +705,10 @@ sda.enkf.multisite <- function(settings,
     # remove files as SDA runs
     if (!(keepNC)){
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-    } 
+    }
+    if(!is.null(control$send_email)){
+      PEcAn.utils::sendmail(control$send_email$from, control$send_email$to, "SDA progress report", paste("Time point:", obs.times[t], "has been completed!"))
+    }
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
 #    if (keepNC && t == 1){
 #      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
