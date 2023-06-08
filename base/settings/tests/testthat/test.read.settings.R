@@ -15,25 +15,56 @@ testdir <- tempfile()
 dir.create(testdir, showWarnings = FALSE)
 teardown(unlink(testdir, recursive = TRUE))
 
+test_that("`strip_comments()` function removes comments from nested lists", {
+  nestedList <- list(
+    "run",
+    "outdir",
+    list(
+      "database",
+      list(
+        "user",
+        comment = "A comment"
+      )
+    ),
+    comment = "A comment"
+  )
+  stripped_list <- strip_comments(nestedList)
+  expect_false("comment" %in% names(stripped_list))
+  expect_false("comment" %in% names(stripped_list[[3]]))
+})
 
 test_that("read.settings() strips comments", {
-  s_comments <- read.settings("testsettings-comment.xml")
-  s <- read.settings("testsettings.xml")
+  s_comments <- read.settings("data/testsettings-comment.xml")
+  s <- read.settings("data/testsettings.xml")
   expect_equal(s_comments, s)
 })
 
 test_that("read.settings() warns if named input file doesn't exist (but pecan.xml does)", {
   old_setting <- PEcAn.logger::logger.setLevel("DEBUG")
+  on.exit(PEcAn.logger::logger.setLevel(old_setting))
+
+  # this returns FALSE in the first call to the mock function,
+  # FALSE in the second call, and TRUE in the third call
+  m <- mockery::mock(FALSE, FALSE, TRUE)
+  mockery::stub(read.settings, 'file.exists', m)
+  mockery::stub(
+    read.settings, 
+    'XML::xmlParse', 
+    "<pecan>
+      <model>
+        <site>test</site>
+      </model>
+    </pecan>")
+
   #hacky way to check for errors b/c PEcAn.logger errors are non-standard and
   #not captured by testthat::expect_message() or expect_error()
   x <- capture.output(
     read.settings("blahblahblah.xml"),
     type = "message"
   )
+  expect_equal(length(mockery::mock_calls(m)), 3)
   expect_true(any(grepl("WARN", x)))
   expect_true(any(grepl("blahblahblah.xml not found", x)))
-  
-  PEcAn.logger::logger.setLevel(old_setting)
 })
 
 test_that("read settings returns error if no settings file found (#1124)", {
