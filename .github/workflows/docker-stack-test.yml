@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - Docker-Stack-Testing
+
+
+    tags:
+      - '*'
+
+  pull_request:
+
+  merge_group:
+
+  issue_comment:
+    types:
+      - created
+
+env:
+  R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: en_US.UTF-8
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
+
+jobs:
+ 
+
+  # ----------------------------------------------------------------------
+  # SIPNET TESTS
+  # ----------------------------------------------------------------------
+  sipnet:
+    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    strategy:
+      fail-fast: false
+
+
+      
+
+
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    container: 
+      image: pecan/depends
+
+    steps:
+    # checkout source code
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
+
+    - name: Set up Docker Compose
+      run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
+    - name: Build and run containers
+      run: |
+        docker system prune --all --force
+        docker-compose up -d postgres
+        docker run --rm --network pecan_pecan pecan/db
+        
+        docker-compose run  bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+
+        
+        docker-compose run  bety user carya illinois "Carya Demo User" carya@example.com 1 1
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+
+        docker-compose up -d 
+
+
+
+    - name: Wait for services to start
+      run: |
+       
+        docker-compose ps
+        sleep 20 # Adjust the duration as needed
+        docker-compose ps
+        sleep 20
+        docker-compose ps
+        sleep 20
+
+      
+    
+    - name: Display running containers
+      run: |
+        docker-compose ps
+        docker network ls 
+        docker network inspect bridge
+
+
+    # run SIPNET test
+    # run SIPNET test
+    - name: Run cURL command
+      run: |
+        curl -v -L -X POST -H "Host: pecan.localhost" \
+            -F 'hostname=docker' \
+            -F 'modelid=1000000014' \
+            -F 'sitegroupid=1' \
+            -F 'siteid=679' \
+            -F 'sitename=Lost Creek LCR (US-Los)' \
+            -F 'pft[]=luquillo.late_tropical' \
+            -F 'start=2002/01/01' \
+            -F 'end=2005/12/31' \
+            -F 'input_met=lcr.clim' \
+            -F 'email=' \
+            -F 'notes=' \
+        'http://172.17.0.1/pecan/04-runpecan.php' 
+
+
+        sleep 120
+        curl -v -L -H "Host: pecan.localhost" \
+        'http://172.17.0.1/pecan/historylist.php'
+
+
