@@ -1,4 +1,4 @@
-name: CI
+name: Docker-Stack-Test
 
 on:
   push:
@@ -30,9 +30,9 @@ jobs:
  
 
   # ----------------------------------------------------------------------
-  # SIPNET TESTS
+  # DOCKER STACK TESTS
   # ----------------------------------------------------------------------
-  sipnet:
+  Stack-Test:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
     runs-on: ubuntu-latest
     env:
@@ -40,6 +40,19 @@ jobs:
 
     strategy:
       fail-fast: false
+      matrix:
+        name:
+            - sipnet_r136
+
+        include:
+          - name: sipnet_r136
+            modelID: "1000000014"
+            siteID: "772"
+            siteName: "Niwot Ridge Forest/LTER NWT1 (US-NR1)"
+            pftName: "temperate.coniferous"
+            metData: "AmerifluxLBL.SIPNET"
+
+    #Add more models below in the above format
 
 
       
@@ -110,14 +123,14 @@ jobs:
       run: |
         curl -v -L -X POST -H "Host: pecan.localhost" \
             -F 'hostname=docker' \
-            -F 'modelid=1000000014' \
+            -F 'modelid=${{ matrix.modelID }}' \
             -F 'sitegroupid=1' \
-            -F 'siteid=679' \
-            -F 'sitename=Lost Creek LCR (US-Los)' \
-            -F 'pft[]=luquillo.late_tropical' \
+            -F 'siteid=${{ matrix.siteID }}' \
+            -F 'sitename=${{ matrix.siteName }}' \
+            -F 'pft[]=${{ matrix.pftName }}' \
             -F 'start=2002/01/01' \
             -F 'end=2005/12/31' \
-            -F 'input_met=lcr.clim' \
+            -F 'input_met=${{ matrix.metData }}' \
             -F 'email=' \
             -F 'notes=' \
         'http://172.17.0.1/pecan/04-runpecan.php' 
@@ -128,3 +141,5 @@ jobs:
         'http://172.17.0.1/pecan/historylist.php'
 
 
+
+    
