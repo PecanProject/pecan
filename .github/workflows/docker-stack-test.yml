@@ -117,8 +117,8 @@ jobs:
         docker network inspect bridge
 
 
-    # run SIPNET test
-    # run SIPNET test
+   
+    # run tests against the full docker stack
     - name: Run cURL command
       run: |
         curl -v -L -X POST -H "Host: pecan.localhost" \
