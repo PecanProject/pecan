@@ -47,10 +47,12 @@ jobs:
         include:
           - name: sipnet_r136
             modelID: "1000000014"
-            siteID: "678"
+            siteID: "772"
             siteName: "Niwot Ridge Forest/LTER NWT1 (US-NR1)"
-            pftName: "luquillo.late_tropical"
-            metData: "5000000003"
+            pftName: "temperate.deciduous"
+            metData: "AmerifluxLBL"
+            startDate: "2004/01/01"
+            endDate: "2004/12/31"
 
     #Add more models below in the above format
 
@@ -128,8 +130,8 @@ jobs:
             -F 'siteid=${{ matrix.siteID }}' \
             -F 'sitename=${{ matrix.siteName }}' \
             -F 'pft[]=${{ matrix.pftName }}' \
-            -F 'start=2002/01/01' \
-            -F 'end=2005/12/31' \
+            -F 'start=${{ matrix.startDate }}' \
+            -F 'end=${{ matrix.endDate }}' \
             -F 'input_met=${{ matrix.metData }}' \
             -F 'email=' \
             -F 'notes=' \
@@ -142,7 +144,7 @@ jobs:
 
         sleep 200
         curl -v -L -H "Host: pecan.localhost" \
-        'http://172.17.0.1/pecan/08-finished.php?workflowid=99000000001&hostname=docker&loglines=100'
+        'http://172.17.0.1/pecan/08-finished.php?workflowid=99000000220&hostname=docker&loglines=100'
 
         curl -v -L -H "Host: pecan.localhost" \
         'http://172.17.0.1/pecan/dataset.php?workflowid=99000000001&type=file&name=out/99000000001/sipnet.out'
