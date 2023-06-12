@@ -34,13 +34,13 @@ The use of Docker in PEcAn is described in detail in the [PEcAn documentation](h
 ### Installing Docker
 
 To install Docker and docker-compose, see the docker documentation:
-- Docker Desktop in [Mac OSX](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
+- Docker Desktop in [MacOS](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
 - Docker (e.g. [Ubuntu](https://docs.docker.com/compose/install/)) and [docker-compose](https://docs.docker.com/compose/install/) on your linux operating system.
 
 _Note for Linux users:_ add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using
 ```sh
 # for linux users
-sudo adduser ${USER} docker`.
+sudo adduser ${USER} docker.
 ```
 
 ### Deploying PEcAn in Docker
