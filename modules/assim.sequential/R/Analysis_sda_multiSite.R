@@ -496,8 +496,9 @@ GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
   # Setting up the prior for the next step from the posterior of this step
   if (t < nt){
     if (q.type == single.q){ #if it's a gamma case
-      aqq[1, 1, t + 1] <- mean(mq)
-      bqq[t + 1] <- stats::var(mq  %>%  as.numeric())
+      qq <- dat[,  grep("qq", colnames(dat))]
+      aqq[1, 1, t + 1] <- (mean(qq))^2/stats::var(qq)
+      bqq[t + 1] <- mean(qq)/stats::var(qq)
     } else { # if it's a wish case
       col <- matrix(1:length(elements.W.Data) ^ 2,
                     length(elements.W.Data),
