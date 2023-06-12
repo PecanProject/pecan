@@ -143,4 +143,6 @@ jobs:
         sleep 200
         curl -v -L -H "Host: pecan.localhost" \
         'http://172.17.0.1/pecan/08-finished.php?workflowid=99000000001&hostname=docker&loglines=100'
-       
+
+        curl -v -L -H "Host: pecan.localhost" \
+        'http://172.17.0.1/pecan/dataset.php?workflowid=99000000001&type=file&name=out/99000000001/sipnet.out'
