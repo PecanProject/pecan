@@ -6,6 +6,7 @@ on:
       - master
       - develop
       - Docker-Stack-Testing
+      - new-branch-for-docker-testing
 
 
     tags:
@@ -33,32 +34,14 @@ jobs:
   # DOCKER STACK TESTS
   # ----------------------------------------------------------------------
   Stack-Test:
-    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
+
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
-      matrix:
-        name:
-            - sipnet_r136
-
-        include:
-          - name: sipnet_r136
-            modelID: "1000000014"
-            siteID: "772"
-            siteName: "Niwot Ridge Forest/LTER NWT1 (US-NR1)"
-            pftName: "temperate.deciduous"
-            metData: "AmerifluxLBL"
-            startDate: "2004/01/01"
-            endDate: "2004/12/31"
-
-    #Add more models below in the above format
-
-
-      
-
+  
 
     services:
       postgres:
@@ -83,21 +66,23 @@ jobs:
     - name: Build and run containers
       run: |
         docker system prune --all --force
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+        echo "UID=$(id -u)" >> .env
+        echo "GID=$(id -g)" >> .env
         docker-compose up -d postgres
         docker run --rm --network pecan_pecan pecan/db
         
         docker-compose run  bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
-
         
         docker-compose run  bety user carya illinois "Carya Demo User" carya@example.com 1 1
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
 
-        cp docker/env.example .env
-        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-        echo "PECAN_VERSION=develop" >> .env
+        docker run --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 
         docker-compose up -d 
-
 
 
     - name: Wait for services to start
@@ -109,7 +94,6 @@ jobs:
         sleep 20
         docker-compose ps
         sleep 20
-
       
     
     - name: Display running containers
@@ -117,34 +101,7 @@ jobs:
         docker-compose ps
         docker network ls 
         docker network inspect bridge
-
-
-   
+    
     # run tests against the full docker stack
-    - name: Run cURL command
-      run: |
-        curl -v -L -X POST -H "Host: pecan.localhost" \
-            -F 'hostname=docker' \
-            -F 'modelid=${{ matrix.modelID }}' \
-            -F 'sitegroupid=1' \
-            -F 'siteid=${{ matrix.siteID }}' \
-            -F 'sitename=${{ matrix.siteName }}' \
-            -F 'pft[]=${{ matrix.pftName }}' \
-            -F 'start=${{ matrix.startDate }}' \
-            -F 'end=${{ matrix.endDate }}' \
-            -F 'input_met=${{ matrix.metData }}' \
-            -F 'email=' \
-            -F 'notes=' \
-        'http://172.17.0.1/pecan/04-runpecan.php' 
-
-
-
-        curl -v -L -H "Host: pecan.localhost" \
-        'http://172.17.0.1/pecan/08-finished.php?workflowid=99000000001&hostname=docker&loglines=100'
-
-        sleep 200
-        curl -v -L -H "Host: pecan.localhost" \
-        'http://172.17.0.1/pecan/08-finished.php?workflowid=99000000001&hostname=docker&loglines=100'
-
-        curl -v -L -H "Host: pecan.localhost" \
-        'http://172.17.0.1/pecan/dataset.php?workflowid=99000000001&type=file&name=out/99000000001/sipnet.out'
+    - name: Run Integration Test
+      run: git update-index --chmod=+x ./tests/Docker-Stack-Test.sh
