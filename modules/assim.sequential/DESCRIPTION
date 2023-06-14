@@ -37,6 +37,7 @@ Suggests:
     ggrepel,
     emdbook,
     glue,
+    ggpubr,
     gridExtra,
     magic (>= 1.5.0),
     methods,
