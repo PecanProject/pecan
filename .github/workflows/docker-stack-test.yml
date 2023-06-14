@@ -105,6 +105,6 @@ jobs:
     # run tests against the full docker stack
     - name: Run Integration Test
       run: |
-          chmod +x /tests/Docker-Stack-Test.sh
+          chmod +x ./tests/Docker-Stack-Test.sh
           ./tests/Docker-Stack-Test.sh
       
