@@ -556,11 +556,6 @@ sda.enkf.multisite <- function(settings,
         if(processvar == FALSE){an.method<-EnKF}else{an.method<-GEF.MultiSite}
         
         #-analysis function
-        if(t>1){
-          pre_elements <- enkf.params[[t-1]]$elements.W.Data
-        }else{
-          pre_elements <- NULL
-        }
         enkf.params[[obs.t]] <- GEF.MultiSite(
           settings,
           FUN = an.method,
@@ -578,8 +573,7 @@ sda.enkf.multisite <- function(settings,
             censored.data = censored.data,
             recompileGEF = recompileGEF,
             recompileTobit = recompileTobit,
-            wts = wts,
-            pre_elements = pre_elements
+            wts = wts
           ),
           choose = choose,
           nt = nt,
