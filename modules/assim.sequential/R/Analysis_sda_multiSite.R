@@ -356,9 +356,9 @@ GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
                R = R,
                y.censored = y.censored,
                y.ind = y.ind,
-               nitr.GEF = 5e4,
-               nburnin = 1e4,
-               nthin = 10,
+               nitr.GEF = extraArg$nitr.GEF,
+               nburnin = extraArg$nburnin,
+               nthin = extraArg$nthin,
                monitors = c("Xall", "qq"))
   outputs <- furrr::future_map(lapply(rep("data", as.numeric(settings$state.data.assimilation$chains)), get), MCMC_function)
   dat <- do.call(rbind, outputs)
