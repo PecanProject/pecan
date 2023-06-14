@@ -1,24 +1,11 @@
 name: Docker-Stack-Test
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-      - Docker-Stack-Testing
-      - new-branch-for-docker-testing
+  #  every Monday at 4:30 AM
+  
+   schedule:
+    - cron: '30 4 * * 1'
 
-
-    tags:
-      - '*'
-
-  pull_request:
-
-  merge_group:
-
-  issue_comment:
-    types:
-      - created
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
