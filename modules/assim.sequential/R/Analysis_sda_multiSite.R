@@ -484,7 +484,7 @@ MCMC_function <- function(data){
   ## Adding X.mod,q,r as data for building model.
   conf <- nimble::configureMCMC(model_pred, print=TRUE)
   conf$setMonitors(data$monitors) 
-  samplerNumberOffset <<- length(conf$getSamplers())
+  samplerNumberOffset <- length(conf$getSamplers())
   
   for(i in 1:length(data$y.ind)) {
     node <- paste0('y.censored[',i,']')
