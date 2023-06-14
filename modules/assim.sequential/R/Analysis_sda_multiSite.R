@@ -462,11 +462,11 @@ MCMC_function <- function(data){
     constants.tobit$q.type <- NULL
     inits.pred <-
       list(
-        X.mod = as.vector(mu.f),
-        X = as.vector(mu.f)[elements.W.Data],
-        Xall = as.vector(mu.f),
-        Xs = as.vector(mu.f)[elements.W.Data],
-        q = diag(1, length(elements.W.Data), length(elements.W.Data))
+        X.mod = as.vector(data$mu.f),
+        X = as.vector(data$mu.f)[data$elements.W.Data],
+        Xall = as.vector(data$mu.f),
+        Xs = as.vector(data$mu.f)[data$elements.W.Data],
+        q = diag(1, length(data$elements.W.Data), length(data$elements.W.Data))
       )
     model_pred <- nimble::nimbleModel(GEF_singleobs_nimble,
                                       data = data.tobit,
@@ -486,7 +486,7 @@ MCMC_function <- function(data){
   conf$setMonitors(data$monitors) 
   samplerNumberOffset <<- length(conf$getSamplers())
   
-  for(i in 1:length(y.ind)) {
+  for(i in 1:length(data$y.ind)) {
     node <- paste0('y.censored[',i,']')
     conf$addSampler(node, 'toggle', control=list(type='RW'))
   }
@@ -496,15 +496,15 @@ MCMC_function <- function(data){
   conf$setSamplers(samplerLists)
   
   conf$printSamplers()
-  Rmcmc <<- buildMCMC(conf)
-  Cmodel <<- compileNimble(model_pred)
-  Cmcmc <<- compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
+  Rmcmc <- nimble::buildMCMC(conf)
+  Cmodel <- nimble::compileNimble(model_pred)
+  Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = TRUE)
   
-  for(i in 1:length(y.ind)) {
-    valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+  for(i in 1:length(data$y.ind)) {
+    valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-data$y.ind[i])
   }
   inits <- function(){
-    ind <- sample(seq_along(1:nrow(X)), 1)
+    ind <- sample(seq_along(1:nrow(data$X)), 1)
     init_muf <- data$X[ind,]
     list(X.mod = as.vector(init_muf), 
          X = as.vector(init_muf)[data$elements.W.Data], 
