@@ -104,4 +104,7 @@ jobs:
     
     # run tests against the full docker stack
     - name: Run Integration Test
-      run: git update-index --chmod=+x ./tests/Docker-Stack-Test.sh
+      run: |
+          chmod +x /tests/Docker-Stack-Test.sh
+          ./tests/Docker-Stack-Test.sh
+      
