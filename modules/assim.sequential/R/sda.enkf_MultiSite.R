@@ -12,6 +12,9 @@
 #' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
 #' @param run_parallel If allows to proceed under parallel mode, default is TRUE.
 #' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
+#' @param parallel_qsub Bool variable decide if you want to submit the bash jobs under the parallel mode, the default value is TRUE.
+#' @param free_run Bool variable decide if the run is a free run with no analysis been used, the default value is FALSE.
+#' @param send_email List object containing the "from", "to", and "body", the default value is NULL.
 #' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 #' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.
 #'
@@ -34,6 +37,9 @@ sda.enkf.multisite <- function(settings,
                                pre_enkf_params = NULL,
                                run_parallel = TRUE,
                                ensemble.samples = NULL,
+                               parallel_qsub = TRUE,
+                               free_run = FALSE,
+                               send_email = NULL,
                                control=list(trace = TRUE,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
@@ -425,21 +431,37 @@ sda.enkf.multisite <- function(settings,
         writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
-        PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        if(parallel_qsub){
+          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+        }else{
+          PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
+        }
+        
         
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        reads <- build_X(out.configs = out.configs, 
-                         settings = settings, 
-                         new.params = new.params, 
-                         nens = nens, 
-                         read_restart_times = read_restart_times, 
-                         outdir = outdir, 
-                         t = t, 
-                         var.names = var.names, 
-                         my.read_restart = my.read_restart,
-                         restart_flag = restart_flag)
+        max_t <- 0
+        while("try-error" %in% class(
+          try(reads <- build_X(out.configs = out.configs, 
+                               settings = settings, 
+                               new.params = new.params, 
+                               nens = nens, 
+                               read_restart_times = read_restart_times, 
+                               outdir = outdir, 
+                               t = t, 
+                               var.names = var.names, 
+                               my.read_restart = my.read_restart,
+                               restart_flag = restart_flag), silent = T))
+        ){
+          Sys.sleep(10)
+          max_t <- max_t + 1
+          if(max_t > 20){
+            PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
+            break
+          }
+          PEcAn.logger::logger.info("Empty folder, try again!")
+        }
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -474,7 +496,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.null(obs.mean[[t]][[1]])) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
+      if (!is.null(obs.mean[[t]][[1]]) & !control$free_run) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating
@@ -686,16 +708,7 @@ sda.enkf.multisite <- function(settings,
       
       #writing down the image - either you asked for it or nor :)
       if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot) & !is.null(obs.mean[[t]][[1]])){
-        post.analysis.multisite.ggplot(settings, 
-                                       t, 
-                                       obs.times, 
-                                       obs.mean, 
-                                       obs.cov, 
-                                       FORECAST, 
-                                       ANALYSIS ,
-                                       plot.title=control$plot.title, 
-                                       facetg=control$facet.plots, 
-                                       readsFF=readsFF)
+        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
       }   
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
@@ -703,7 +716,14 @@ sda.enkf.multisite <- function(settings,
     # remove files as SDA runs
     if (!(keepNC)){
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-    } 
+    }
+    if(!is.null(control$send_email)){
+      sendmail <- Sys.which("sendmail")
+      mailfile <- tempfile("mail")
+      cat(paste0("From: ", control$send_email$from, "\n", "Subject: ", "SDA progress report", "\n", "To: ", control$send_email$to, "\n", "\n", paste("Time point:", obs.times[t], "has been completed!")), file = mailfile)
+      system2(sendmail, c("-f", paste0("\"", control$send_email$from, "\""), paste0("\"", control$send_email$to, "\""), "<", mailfile))
+      unlink(mailfile)
+    }
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
 #    if (keepNC && t == 1){
 #      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
