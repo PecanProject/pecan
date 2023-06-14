@@ -43,7 +43,7 @@ see if you need to change any of these:
 - Added an optional `pfts` argument to `PEcAn.uncertainty::run.sensitivity.analysis()` so that sensitivity analysis and variance decomposition can be run on a subset of PFTs defined in `settings` if desired (#3155).
 - Added new features of the SDA function including: 1) allow user-defined free-run mode; 
 2) allow user-defined parallel mode for the qsub submission; 3) allow user-defined email option to report the progress.
-- The analysis function now supports the palatalization of multi-chain MCMC sampling with the fully randomized inits function.
+- The analysis function now supports the parallelization of multi-chain MCMC sampling with the fully randomized inits function.
 
 ### Fixed
 
