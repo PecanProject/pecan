@@ -82,7 +82,8 @@ X-Comment-Remotes:
     When building on a system that finds a new enough version on CRAN,
     OK to remove the Remotes line and this comment.
 Remotes:
-    github::rstudio/rmarkdown@v2.20
+    github::rstudio/rmarkdown@v2.20,
+    github::r-lib/mockery@v0.4.3
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr
 Copyright: Authors
