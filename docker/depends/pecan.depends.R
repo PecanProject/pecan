@@ -13,7 +13,7 @@ remotes::install_github(c(
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
-'r-lib/mockery@v0.4.3'
+'r-lib/mockery@v0.4.3',
 'r-lib/testthat@v3.1.6',
 'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
