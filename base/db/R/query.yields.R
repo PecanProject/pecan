@@ -45,7 +45,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns = '', con = NULL,
             left join variables on (yields.variable_id = variables.id)
           where ", member_column, " in (", spstr,");", sep = "")
   if(!trait == 'yield'){
-    query <- gsub(");", paste(") and variables.name in ('", trait,"');", sep = ""), query)
+    query <- gsub(";", paste(" and variables.name in ('", trait,"');", sep = ""), query)
   }
   
   return(fetch.stats2se(connection = con, query = query))
