@@ -7,9 +7,11 @@
 ud_convert(x, u1, u2)
 }
 \arguments{
-\item{x}{numeric vector}
+\item{x}{vector of class "numeric" or "difftime"}
 
-\item{u1}{string parseable as the units in which \code{x} is provided}
+\item{u1}{string parseable as the units in which \code{x} is provided.  If \code{x} is
+class "difftime", then \code{u1} is not actually used.  However, it still needs
+to be supplied and needs to be convertible to \code{u2} for consistency.}
 
 \item{u2}{string parseable as the units to convert to}
 }

@@ -24,6 +24,7 @@ remotes::install_github(c(
 wanted <- c(
 'abind',
 'amerifluxr',
+'arrow',
 'assertthat',
 'BayesianTools',
 'BioCro',
@@ -39,6 +40,7 @@ wanted <- c(
 'dbplyr',
 'devtools',
 'doParallel',
+'doSNOW',
 'dplR',
 'dplyr',
 'ellipse',
@@ -52,6 +54,7 @@ wanted <- c(
 'ggmap',
 'ggmcmc',
 'ggplot2',
+'ggpubr',
 'ggrepel',
 'glue',
 'graphics',
