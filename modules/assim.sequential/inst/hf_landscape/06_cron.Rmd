@@ -5,7 +5,21 @@ output: html_notebook
 
 ```{r}
 library(cronR)
+```
 
+
+## Hello World
+```{r}
+
+```
+
+## Met forecast (taking over for Alexis)
+```{r}
+
+```
+
+
+```{r}
 ### NO ASSIMILATION FORECAST
 cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/05C_SDA_Workflow_NA.forecast.R")
 cron_add(command = cmd, frequency = 'daily', at='4AM', id = 'HARV_FNA', description = "Harvard Forest landscape forecast, No Assimilated data")

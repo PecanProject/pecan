@@ -32,7 +32,8 @@ option_list = list(optparse::make_option("--start.date",
                                          default = Sys.Date(),
                                          type="character"),
                    optparse::make_option("--prev",
-                                         default = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FNA",Sys.Date()-lubridate::days(1)),
+                                         type="character"),
+                   optparse::make_option("--settings",
                                          type="character")
                    )
 args <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
@@ -45,18 +46,18 @@ start.date = lubridate::as_date(args$start.date)
 #------------------------------------------------------------------------------------------------
 restart <- list()
 restart$filepath <- args$prev
-set = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/pecan.RDS")
+set = readRDS(args$settings)
 
 #set met.start & met.end
 end.date <- start.date + lubridate::days(35)
 sda.start = start.date + lubridate::days(1)
+projectdir = set$outdir
 
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- NA DATA -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
 #initialize obs.mean/cov NAs
-## TODO: Alexis's version had two dates, need to take a closer list at what dates these should be set to
 site.ids <- papply(set,function(x)(x$run$site$id)) %>% unlist() %>% as.character()
 nsite = length(site.ids)
 
@@ -135,7 +136,9 @@ dir.create(set$modeloutdir)
 dir.create(set$pfts$pft$outdir)
 
 #manually add in clim files 
-met_paths <- list.files(path = file.path("/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV", start.date), full.names = TRUE, pattern = ".clim")
+path = "/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV/" ## hack
+met_paths <- list.files(path = file.path(path, start.date), full.names = TRUE, pattern = ".clim")
+#met_paths <- list.files(path = file.path(settings$run$settings.1$inputs$met$path, start.date), full.names = TRUE, pattern = ".clim")
 if(is_empty(met_paths)){
   print(paste("SKIPPING: NO MET FOR",start.date))
   cat(as.character(start.date),sep="\n",file=file.path(dirname(set$outdir),"NO_MET"),append=TRUE) ## add to list of dates missing met
@@ -162,7 +165,7 @@ for(s in seq_along(set)){
 }
 
 ## job.sh
-set$model$jobtemplate = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/template.job"
+if(is.null(set$model$jobtemplate)) set$model$jobtemplate = file.path(projectdir,"template.job")
 
 #save restart object
 save(restart, next.oldir, args, file = file.path(set$outdir, "restart.Rdata"))
