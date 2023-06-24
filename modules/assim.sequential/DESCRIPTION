@@ -37,6 +37,7 @@ Suggests:
     ggrepel,
     emdbook,
     glue,
+    ggpubr,
     gridExtra,
     magic (>= 1.5.0),
     methods,
@@ -58,5 +59,4 @@ Suggests:
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
-RoxygenNote: 7.1.2
-
+RoxygenNote: 7.2.3

@@ -82,7 +82,7 @@ get.parameter.samples <- function(settings,
       files <- PEcAn.DB::dbfile.check("Posterior",
                                       settings$pfts[[i]]$posteriorid, 
                                       con, settings$host$name, return.all = TRUE)
-      tid <- grep("trait.mcmc.*Rdata", files$file_name)
+      tid <-  grep("trait.mcmc.*Rdata", files$file_name)
       if (length(tid) > 0) {
         trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
         ma.results <- TRUE
@@ -116,7 +116,7 @@ get.parameter.samples <- function(settings,
       priors <- rownames(prior.distns)
     }
     #priors <- names(trait.mcmc)
-    
+  
     if (exists("trait.mcmc")) {
       param.names[[i]] <- names(trait.mcmc)
       names(param.names)[i] <- pft.name
@@ -139,6 +139,7 @@ get.parameter.samples <- function(settings,
       PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
                                 priors)
     }
+    if(is.null(priors)) priors = param.names[[i]]
     
     PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     if (ens.sample.method == "halton") {

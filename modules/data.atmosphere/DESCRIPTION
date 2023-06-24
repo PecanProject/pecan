@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    arrow,
     curl,
     data.table,
     dplyr,
@@ -76,4 +77,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

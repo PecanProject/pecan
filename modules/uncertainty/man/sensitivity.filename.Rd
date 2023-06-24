@@ -33,9 +33,7 @@ PFTs in run are used and does not add them to the filename}
 
 \item{variable}{variable(s) included in the ensemble.}
 
-\item{start.year}{first and last year simulated.}
-
-\item{end.year}{first and last year simulated.}
+\item{start.year, end.year}{first and last year simulated.}
 }
 \value{
 a filename
