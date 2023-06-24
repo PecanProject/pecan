@@ -75,3 +75,74 @@ test_that("`workflow()` able to get a workflow data by id", {
   result <- workflow(bety = 1, workflow_id = 3)
   expect_equal(result, data.frame(workflow_id = 3, workflow_name = "C"))
 })
+
+test_that("`runs()` is able to get table of runs for a corresponding workflow", {
+  mockery::stub(
+    runs, 
+    'workflow', 
+    data.frame(
+      workflow_id = c(1, 1),
+      folder = c("test_folder_1", "test_folder_2")
+    )
+  )
+  mocked_res <- mockery::mock(
+    data.frame(
+      id = c(1, 2, 3, 4, 5, 6),
+      workflow_id = c(1, 1, 3, 4, 5, 6)
+    ),
+    data.frame(
+      id = c(1, 2, 3),
+      ensemble_id = c(1, 1, 2)
+    )
+  )
+  mockery::stub(runs, 'dplyr::tbl', mocked_res)
+  result <- runs(bety = 1, workflow_id = 1)
+  expect_equal(result$run_id, c(1, 1, 2, 2, 3, 3))
+  expect_equal(result$folder, c("test_folder_1", "test_folder_2", "test_folder_1", "test_folder_2", "test_folder_1", "test_folder_2"))
+})
+
+test_that("`get_workflow_ids()` able to get a vector of unique workflow IDs", {
+  mockery::stub(
+    get_workflow_ids,
+    'workflows',
+    data.frame(
+      workflow_id = c(1, 2, 2, 3, 4, 4),
+      workflow_name = c("A", "B", "C", "D", "E", "F")
+    )
+  )
+  result <- get_workflow_ids(bety = 1, query = 1, all.ids = TRUE)
+  expect_equal(result, c(4, 3, 2, 1))
+})
+
+test_that("`get_users()` ", {
+  mockery::stub(get_users, 'dplyr::tbl', data.frame(id = c(20200101, 20200102, 20240103)))
+  mockery::stub(
+    get_users, 
+    'dbHostInfo',
+    data.frame(
+      start = 20190201,
+      end = 20230101
+    )
+  )
+  result <- get_users(bety = 1)
+  expect_equal(result, data.frame(id = c(20200101, 20200102)))
+})
+
+test_that("`get_run_ids()` able to get vector of run ids (in sorted order) for a given workflow ID", {
+  mockery::stub(
+    get_run_ids,
+    'runs',
+    data.frame(
+      run_id = c(3, 1, 2),
+      folder = c("test_folder_1", "test_folder_2", "test_folder_3")
+    )
+  )
+
+  result <- get_run_ids(bety = 1, workflow_id = 1)
+  expect_equal(result, c(1, 2, 3))
+
+  # if no run ids are found
+  mockery::stub(get_run_ids, 'runs', data.frame())
+  result <- get_run_ids(bety = 1, workflow_id = 1)
+  expect_equal(result, c("No runs found"))
+})
