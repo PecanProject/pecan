@@ -161,3 +161,15 @@ test_that("mstmipvar works with args specified", {
 #     "Don't know about variable banana in standard_vars in PEcAn.utils"
 #   )
 # })
+
+
+test_that("`left.pad.zeros()` able to add zeros to the left of a number based on `digits`", {
+  expect_equal(left.pad.zeros(123), "00123")
+  expect_equal(left.pad.zeros(42, digits = 3), "042")
+  expect_equal(left.pad.zeros(42, digits = 1), "42")
+})
+
+test_that("`zero.truncate()` able to truncate vector at zero", {
+  input <- c(1, NA, -3, NA, 5)
+  expect_equal(zero.truncate(input), c(1, 0, 0, 0, 5))
+})
