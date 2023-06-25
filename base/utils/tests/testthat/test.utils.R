@@ -173,3 +173,27 @@ test_that("`zero.truncate()` able to truncate vector at zero", {
   input <- c(1, NA, -3, NA, 5)
   expect_equal(zero.truncate(input), c(1, 0, 0, 0, 5))
 })
+
+test_that("`tabnum()` able to convert positive and negative numbers to `n` significant figures", {
+  
+  # case where n specified
+  x <- c(-2.345, 6.789)
+  result <- tabnum(x, 2)
+  expect_equal(result, c(-2.3, 6.8))
+
+  # case where n is default
+  result <- tabnum(3.5435)
+  expect_equal(result, 3.54)
+})
+
+test_that("`capitalize()` able to capitalize words in a sentence", {
+  # single word
+  expect_equal(capitalize("pecan"), "Pecan")
+
+  # sentence with leading and trailing spaces
+  expect_equal(capitalize("    pecan project    "), "    Pecan Project   ")
+})
+
+test_that("`bibtexify()` able to convert parameters passed to bibtex citation format", {
+  expect_equal(bibtexify("author", "1999", "Here Goes The Title"), "author1999HGTT")
+})
