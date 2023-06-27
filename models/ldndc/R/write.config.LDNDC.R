@@ -29,7 +29,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   # Create Schedule time
   if(!is.null(settings$run$start.date) & !is.null(settings$run$end.date)){
     
-    steps <- 24 # Hard-coded for now
+    steps <- 48 # Hard-coded for now
     ScheduleTime <- paste0(format(as.POSIXlt(settings$run$start.date), "%Y-%m-%d"), "/",
                            steps, " -> ", as.Date(format(as.POSIXlt(settings$run$end.date), "%Y-%m-%d"))+1)
                           # One extra day added to the end day of simulations, because the simulations will stop to
@@ -171,7 +171,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## Handle the setups, when working with grass, crop and forest fields
   # Available species for grass/crops: timothy, oat and barley
   # Available species for forest:      pipy(?)
-  pfts_grasscrops <- c("barley", "oats", "timothy")
+  pfts_grasscrops <- c("barley", "oat", "timothy", "meadow", "soil")
   pfts_forest <- c("pipy")
   pfts_run <- NULL
   for(pft_names in 1:length(settings$pfts)){
@@ -1772,20 +1772,20 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## INITIAL SOIL CONDITIONS
   soil_layer <- list()
   
-  # Set different layers, which will be used based on the soil data that is available
-  # For example, if we have soil data for top layer, then that will be used instead of soil_layer_1
-  soil_layer[1] <- '<layer depth="60" split="3" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
-  soil_layer[2] <- '<layer depth="90" split="2" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
-  soil_layer[3] <- '<layer depth="200" split="4" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.25"  scel="0.005" sks="0.003186" wmin="100" wcmax="380" />'
-  soil_layer[4] <- '<layer depth="200" split="4" bd="1.09"  clay="0.12" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.25"  scel="0.005" sks="0.003094" wmin="100" wcmax="380" />' 
-  soil_layer[5] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.003000" />'
-  soil_layer[6] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />'
-  soil_layer[7] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" />' 
-  
-  
   
   ## Soil layers, if not external files are given
   if(is.null(settings$run$inputs$poolinitcond$path)){
+    
+    # Set different layers, which will be used based on the soil data that is available
+    # For example, if we have soil data for top layer, then that will be used instead of soil_layer_1
+    soil_layer[1] <- '<layer depth="60" split="3" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+    soil_layer[2] <- '<layer depth="90" split="2" bd="1.68" clay="0.42" corg="0.04" norg="0.0032" ph="6.94" vangenuchten_n ="1.31" vangenuchten_alpha ="1.9" sand="0.3"  scel="0.005" sks="0.003886" wmin="100" wcmax="380"/>'
+    soil_layer[3] <- '<layer depth="200" split="4" bd="1.18"  clay="0.32" corg="0.0250"  norg="0.002219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9" sand="0.25"  scel="0.005" sks="0.003186" wmin="100" wcmax="380" />'
+    soil_layer[4] <- '<layer depth="200" split="4" bd="1.09"  clay="0.12" corg="0.0150"  norg="0.001219" ph="6.94" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.25"  scel="0.005" sks="0.003094" wmin="100" wcmax="380" />'
+    soil_layer[5] <- '<layer depth="200" split="4" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.003000" />'
+    soil_layer[6] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.001794" />'
+    soil_layer[7] <- '<layer depth="100" bd="1.00"  clay="0.02" corg="0.0050"  norg="0.000219" ph="7" vangenuchten_n ="1.3" vangenuchten_alpha ="1.9"  sand="0.05"  scel="0.005" sks="0.00004000" />'
+    
     soil_layer_values <- paste(soil_layer, collapse = "\n \t")
   }
   
@@ -1816,7 +1816,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Initial biomass in the field
     if(any(grepl("@InitialBiomass@", eventsfile))){
       if ("AGB" %in% names(soil_IC_list$vals)) {
-        initialbiomass <- ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1")
+        initialbiomass <- round( ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1"), 1 )
       }
       else{
         initialbiomass <- 100
@@ -1827,10 +1827,10 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Fractional cover of the plants
     if(any(grepl("@FractionalCover@", eventsfile))){
       if ("fractional_cover" %in% names(soil_IC_list$vals)) {
-        fractionalcover <- unlist(soil_IC_list$vals["fractional_cover"])[[1]]*100
+        fractionalcover <- unlist(soil_IC_list$vals["fractional_cover"])[[1]]
       }
       else{
-        fractionalcover <- 70
+        fractionalcover <- 0.5
       }
       # Fill in the value
       eventsfile <- gsub("@FractionalCover@", paste0("'", fractionalcover, "'"), eventsfile)
@@ -1855,7 +1855,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         soil_type <- unlist(soil_IC_list$vals["soil_type"])[[1]]
       }
       else{
-        soil_type <- "ORMA"
+        soil_type <- "CLLO"
       }
       sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
     }
@@ -1876,9 +1876,9 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Check how many depth layers is given and the depth of each
     depth <- soil_IC_list$dims$depth
     layer_count <- length(depth)
+    # Check what stratums is given for the layers
+    layer_div <- soil_IC_list$vals$stratum
     
-    # Divider for layers (block), check the next comment
-    layer_div <- 5
     
     for(depth_level in 1:layer_count){
       
@@ -1887,65 +1887,19 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       # sublayers are here called a block. In LDNDC it is not suggested to use too tight layers so still will be
       # divided to smaller layers that are not so thick.
       
+      
+      
       # For 1st level
       if(depth_level == 1){ 
-        disk <- depth[depth_level] * 1000 / layer_div
+        disk <- depth[depth_level] * 1000 / layer_div[depth_level]
       }
-      
-      # 2nd level
-      else if(depth_level == 2){
-        layer_div <- 5
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 3th level
-      else if(depth_level == 3){
-        layer_div <- 5
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 4th level
-      else if(depth_level == 4){
-        layer_div <- 2
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 5th level
-      else if(depth_level == 5){
-        layer_div <- 2
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 6th level
-      else if(depth_level == 6){
-        layer_div <- 3
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 7th level
-      else if(depth_level == 7){
-        layer_div <- 3
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 8th level
-      else if(depth_level == 8){
-        layer_div <- 4
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
-      # 9th level
-      else if(depth_level == 9){
-        layer_div <- 1
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
-      }
-      
+
       # For rest of layers, depth is informed as cumulative, but LDNDC uses thickness
       else{
-        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div
+        disk <- (depth[depth_level] - depth[depth_level-1]) * 1000 / layer_div[depth_level]
       }
       
-      for(disk_level in 1:layer_div){
+      for(disk_level in 1:layer_div[depth_level]){
         
         
         # Start creating a soil layer
@@ -1956,79 +1910,79 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         if("soil_bulk_density" %in% names(soil_IC_list$vals)){
           # Bulk density in a soil
           bd <- ud_convert(unlist(soil_IC_list$vals["soil_bulk_density"])[[depth_level]], "kg m-3", "kg dm-3")
-          soil_layer_values <- paste0(soil_layer_values, paste0("bd='", bd, "' "))
+          soil_layer_values <- ifelse(!is.na(bd), paste0(soil_layer_values, paste0("bd='", bd, "' ")), soil_layer_values)
         }
         
         if("soil_clay_content" %in% names(soil_IC_list$vals)){
           # Clay content value
           clay <- unlist(soil_IC_list$vals["soil_clay_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("clay='", clay, "' "))
+          soil_layer_values <- ifelse(!is.na(clay), paste0(soil_layer_values, paste0("clay='", clay, "' ")), soil_layer_values)
         }
         
         if("soil_sand_content" %in% names(soil_IC_list$vals)){
           # Sand content value
           sand <- unlist(soil_IC_list$vals["soil_sand_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("sand='", sand, "' "))
+          soil_layer_values <- ifelse(!is.na(sand), paste0(soil_layer_values, paste0("sand='", sand, "' ")), soil_layer_values)
         }
         
         if("soil_silt_content" %in% names(soil_IC_list$vals)){
           # Silt content value
           silt <- unlist(soil_IC_list$vals["soil_silt_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("silt='", silt, "' "))
+          soil_layer_values <- ifelse(!is.na(silt), paste0(soil_layer_values, paste0("silt='", silt, "' ")), soil_layer_values)
         }
         
         if("pH" %in% names(soil_IC_list$vals)){
           # pH value
           ph <- unlist(soil_IC_list$vals["pH"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("ph='", ph, "' "))
+          soil_layer_values <- ifelse(!is.na(ph), paste0(soil_layer_values, paste0("ph='", ph, "' ")), soil_layer_values)
         }
         
         if("soil_carbon_content" %in% names(soil_IC_list$vals)){
           # Total Carbon Content - kg N m-2 to kg N kg-1 ??
           corg <- unlist(soil_IC_list$vals["soil_carbon_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("corg='", corg, "' "))
+          soil_layer_values <- ifelse(!is.na(corg), paste0(soil_layer_values, paste0("corg='", corg, "' ")), soil_layer_values)
         }
         
         if("soil_nitrogen_content" %in% names(soil_IC_list$vals)){
           # Total Nitrogen Content - kg N m-2 to kg N kg-1 ??
           norg <- unlist(soil_IC_list$vals["soil_nitrogen_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("norg='", norg, "' "))
+          soil_layer_values <- ifelse(!is.na(norg), paste0(soil_layer_values, paste0("norg='", norg, "' ")), soil_layer_values)
         }
         
         if("soil_iron_content" %in% names(soil_IC_list$vals)){
           # Total Iron Content - kg Fe m-2 to kg Fe kg-1 ??
           iron <- unlist(soil_IC_list$vals["soil_iron_content"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("iron='", iron, "' "))
+          soil_layer_values <- ifelse(!is.na(iron), paste0(soil_layer_values, paste0("iron='", iron, "' ")), soil_layer_values)
         }
         
         if("vangenuchten_n" %in% names(soil_IC_list$vals)){
           # Vangenuchten_n - 
           vn <- unlist(soil_IC_list$vals["vangenuchten_n"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("vangenuchten_n='", vn, "' "))
+          soil_layer_values <- ifelse(!is.na(vn), paste0(soil_layer_values, paste0("vangenuchten_n='", vn, "' ")), soil_layer_values)
         }
         
         if("vangenuchten_alpha" %in% names(soil_IC_list$vals)){
           # Vangenuchten_alpha - 
           va <- unlist(soil_IC_list$vals["vangenuchten_alpha"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("vangenuchten_alpha='", va, "' "))
+          soil_layer_values <- ifelse(!is.na(va), paste0(soil_layer_values, paste0("vangenuchten_alpha='", va, "' ")), soil_layer_values)
         }
         
         if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
           # Field capacity - Change m3 m-3 to dm3 m-3
           wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[depth_level]] * 1000
-          soil_layer_values <- paste0(soil_layer_values, paste0("wcmax='", wcmax, "' "))
+          soil_layer_values <- ifelse(!is.na(wcmax), paste0(soil_layer_values, paste0("wcmax='", wcmax, "' ")), soil_layer_values)
         }
         
         if("water_concentration_at_wilting_point" %in% names(soil_IC_list$vals)){
           # Wilting point - Change m3 m-3 to dm3 m-3
           wcmin <- unlist(soil_IC_list$vals["water_concentration_at_wilting_point"])[[depth_level]] * 1000
-          soil_layer_values <- paste0(soil_layer_values, paste0("wcmin='", wcmin, "' "))
+          soil_layer_values <- ifelse(!is.na(wcmin), paste0(soil_layer_values, paste0("wcmin='", wcmin, "' ")), soil_layer_values)
         }
         
         if("soil_hydraulic_conductivity" %in% names(soil_IC_list$vals)){
           # Hydraulic conductivity - cm / min ???
           sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity"])[[depth_level]]
-          soil_layer_values <- paste0(soil_layer_values, paste0("sks='", sks, "' "))
+          soil_layer_values <- ifelse(!is.na(sks), paste0(soil_layer_values, paste0("sks='", sks, "' ")), soil_layer_values)
         }
         
         soil_layer_values <- paste(soil_layer_values, "/> \n")
@@ -2047,12 +2001,12 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
     
     # If there is less than seven layer blocks initialised, use the default ones for bottom
-    if(depth_level < 7){
-      soil_combine <- paste(soil_all_block, "\t\t", paste(soil_layer[-c(1:depth_level)], collapse = "\n \t\t"))
-    }
-    else{
-      soil_combine <- soil_all_block
-    }
+    # if(depth_level < 6){
+    #   soil_combine <- paste(soil_all_block, "\t\t", paste(soil_layer[-c(1:depth_level)], collapse = "\n \t\t"))
+    # }
+    # else{
+    soil_combine <- soil_all_block
+    #}
     
   }
   
@@ -2075,7 +2029,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                     "\t\t\t </species> \n\n")
     }
     # Oat
-    if(pftn == "oats"){
+    if(pftn == "oat"){
       speciesparfile_pfts <- paste0(speciesparfile_pfts,
                                     "\t\t\t <species mnemonic='oats'> \n",
                                     species_par_values["oat"][[1]],
@@ -2089,6 +2043,15 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
                                     species_par_values["timothy"][[1]],
                                     "\t\t\t </species> \n\n")
     }
+    
+    # Meadow
+    if(pftn == "meadow"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='mead'> \n",
+                                    species_par_values["meadow"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
+    
     ## Forest
     # Pipy, need to check a correct name for this wood species
     if(pftn == "pipy"){
