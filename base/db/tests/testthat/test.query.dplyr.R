@@ -146,3 +146,9 @@ test_that("`get_run_ids()` able to get vector of run ids (in sorted order) for a
   result <- get_run_ids(bety = 1, workflow_id = 1)
   expect_equal(result, c("No runs found"))
 })
+
+test_that("`var_names_all()` able get vector of variable names for a particular workflow and run ID removing variables not to be shown to user", {
+  mockery::stub(var_names_all, 'get_var_names', c('A', 'B', 'C', 'Year','FracJulianDay'))
+  result <- var_names_all(bety = 1, workflow_id = 1, run_id = 1)
+  expect_equal(result, c('A', 'B', 'C'))
+})
