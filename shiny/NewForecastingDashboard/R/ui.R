@@ -11,12 +11,15 @@ library(rattle)
 library(leaflet)
 library(htmltools)
 
+not_sel <- "Not Selected"
+
 ui <- dashboardPage( skin = "black",
                      dashboardHeader(title = "Flux Dashboard"),
 
                      dashboardSidebar(
-                       selectInput("site_id", h3("Select Site:"), choices = unique(data$site_id)),
-                       selectInput(inputId = "start_date", label="Forecast Horizon Date:", choices = unique(data$reference_datetime)),
+                       fileInput("csv_input", "Select CSV File to Import", accept = ".csv"),
+                       selectInput("site_id", h3("Select Site:"), choices = c(not_sel)),
+                       selectInput("start_date", label="Forecast Horizon Date:", choices = c(not_sel)),
                        sidebarMenu(
                          menuItem("NEE Forecast", tabName = "nee_ft", icon = icon("chart-area")),
                          menuItem("NEE Scatter", tabName = "nee_sct", icon = icon("tree")),
@@ -24,7 +27,9 @@ ui <- dashboardPage( skin = "black",
                          menuItem("LE Forecast", tabName = "le_ft", icon = icon("chart-area")),
                          menuItem("LE Scatter", tabName = "le_sct", icon = icon("tree")),
                          menuItem("LE Error", tabName = "le_err", icon = icon("tree"))
-                       )
+                       ),
+                       br(),
+                       actionButton("run_button", "Run Analysis", icon = icon("play"))
                      ),
 
                      dashboardBody(
