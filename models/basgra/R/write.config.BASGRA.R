@@ -38,7 +38,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   }
   run_params <- setNames(df_run_params[,2], df_run_params[,1])
   run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
-  
+
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
     
@@ -268,7 +268,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
   } #### End parameter update
   
-  
+  # if the default parameter file is set to force some parameter values, override the trait.values here:
+  if ('force' %in% colnames(df_run_params)) {
+    run_params[df_run_params$force] <- df_run_params$value[df_run_params$force]
+  }
   
   #### Update initial conditions
   if (!is.null(IC)) {

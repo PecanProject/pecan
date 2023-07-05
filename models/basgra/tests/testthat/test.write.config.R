@@ -102,3 +102,31 @@ test_that('write.config modifies some trait values', {
   expect_equal(param.vector['LFWIDV'], c(LFWIDV = 6.1e-3)) # in meters
 })
 
+test_that('the force column in defaulfs.csv keep the default parameters even if pecan provides trait values', {
+  jobtemplate <- create_job_template('@RUN_PARAMS@')
+  settings <- basesettings
+  settings$model$jobtemplate <- jobtemplate
+  trait.values = list(
+    list(
+      c2n_fineroot = 50.0,
+      leaf_width = 6.1
+    )
+  )
+  param_path <- file.path(outfolder, 'modified.defaults.csv')
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'), col.names=c('name', 'value'))
+  df_params$force = rep(FALSE, nrow(df_params))
+  df_params[df_params$name == 'LFWIDV', 'force'] <- TRUE
+  print(df_params)
+  leaf_width_value <- df_params[df_params$name=='LFWIDV', 'value']
+  print(leaf_width_value)
+  write.csv(df_params, param_path, row.names=FALSE)
+  settings$run$inputs$defaults$path <- param_path
+  run.id = 9998
+  write.config.BASGRA(defaults, trait.values, settings, run.id)
+  job.file <- file.path(outfolder, run.id, 'job.sh')
+  content <- paste(readLines(job.file), collapse='\n')
+  param.vector <- eval(parse(text=content))
+  print(names(param.vector))
+  expect_equal(param.vector['LFWIDV'], c(LFWIDV=leaf_width_value)) # deafult value
+  expect_equal(param.vector['NCR'], c(NCR=0.02)) # trait value
+})
