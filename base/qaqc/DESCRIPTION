@@ -21,6 +21,7 @@ Imports:
     stats
 Suggests:
     knitr,
+    mockery,
     mvbutils,
     PEcAn.BIOCRO,
     PEcAn.ED2,
