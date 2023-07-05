@@ -17,7 +17,7 @@ write_out_table <- function(table, table_name, outdir, relevant_table_columns) {
     relevant_table_columns <- c(relevant_table_columns, "id")
   }
   if (!"table_name" %in% relevant_table_columns) {
-    relevant_table_columns <- c(relevant_table_columns, "id", "table_name")
+    relevant_table_columns <- c(relevant_table_columns, "table_name")
   }
   if (!any(c("id", "table_name") %in% names(table))) {
     PEcAn.logger::logger.severe("table provided doesn't have a table_name or id column or both. ")
