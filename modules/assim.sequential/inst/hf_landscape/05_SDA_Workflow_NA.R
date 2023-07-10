@@ -4,7 +4,9 @@
 # ----------------------------------------------------------------------
 #------------------------------------------ Load required libraries-----
 # ----------------------------------------------------------------------
+.libPaths(c("/projectnb/dietzelab/dietze/test-pecan/R/library",.libPaths()))
 library("PEcAn.all")
+library("PEcAn.settings")
 library("PEcAn.utils")
 library("PEcAn.data.remote")
 library("PEcAnAssimSequential")
@@ -58,7 +60,7 @@ projectdir = set$outdir
 # --------------------------------------------------------------------------------------------------
 
 #initialize obs.mean/cov NAs
-site.ids <- papply(set,function(x)(x$run$site$id)) %>% unlist() %>% as.character()
+site.ids <- PEcAn.settings::papply(set,function(x)(x$run$site$id)) %>% unlist() %>% as.character()
 nsite = length(site.ids)
 
 NAdata = data.frame(date = c(rep(start.date,nsite),rep(sda.start,nsite)),
@@ -130,16 +132,16 @@ set$pfts$pft$outdir = file.path(set$outdir,"pft")
 set$host$rundir <- set$rundir
 set$host$outdir <- set$modeloutdir
 set$host$folder <- set$modeloutdir
-dir.create(set$outdir)
-dir.create(set$rundir)
-dir.create(set$modeloutdir)
-dir.create(set$pfts$pft$outdir)
+dir.create(set$outdir,showWarnings = FALSE)
+dir.create(set$rundir,showWarnings = FALSE)
+dir.create(set$modeloutdir,showWarnings = FALSE)
+dir.create(set$pfts$pft$outdir,showWarnings = FALSE)
 
 #manually add in clim files 
 path = "/projectnb/dietzelab/ahelgeso/NOAA_met_data_CH1/noaa_clim/HARV/" ## hack
 met_paths <- list.files(path = file.path(path, start.date), full.names = TRUE, pattern = ".clim")
 #met_paths <- list.files(path = file.path(settings$run$settings.1$inputs$met$path, start.date), full.names = TRUE, pattern = ".clim")
-if(is_empty(met_paths)){
+if(purrr::is_empty(met_paths)){
   print(paste("SKIPPING: NO MET FOR",start.date))
   cat(as.character(start.date),sep="\n",file=file.path(dirname(set$outdir),"NO_MET"),append=TRUE) ## add to list of dates missing met
   stop_quietly()
@@ -159,7 +161,7 @@ rownames(run_id) <- NULL
 run_id = as.data.frame(run_id) %>% mutate(folder=prev_run_ids,id = paste0("id",.data$ens)) %>% group_by(site)
 ###settings$runs$id = run_id
 for(s in seq_along(set)){
-  site_run_id = run_id %>% filter(site == set[[s]]$run$site$id)
+  site_run_id = run_id |> filter(site == as.list(set$run[[s]]$site$id)[[1]])
   set[[s]]$run$id =  as.list(site_run_id$folder)
   names(set[[s]]$run$id) = site_run_id$id
 }
@@ -177,6 +179,8 @@ sda.enkf.multisite(settings = set,
                    restart = restart, 
                    forceRun = TRUE, 
                    keepNC = TRUE, 
+                   run_parallel = FALSE,
+                   parallel_qsub = FALSE,
                    control = list(trace = TRUE,
                                   FF = FALSE,
                                   interactivePlot = FALSE,
@@ -187,7 +191,8 @@ sda.enkf.multisite(settings = set,
                                   debug = FALSE,
                                   pause = FALSE,
                                   Profiling = FALSE,
-                                  OutlierDetection=FALSE))
+                                  OutlierDetection=FALSE,
+                                  free_run = FALSE))  ## seems to be defined twice
 
 
 

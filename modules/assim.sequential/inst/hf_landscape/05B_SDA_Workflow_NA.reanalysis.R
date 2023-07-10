@@ -3,7 +3,7 @@
 ###########  CONFIGURATION ###################
 
 ## original start date was 2022-05-17
-runDays <- seq(as.Date("2023-05-30"), as.Date("2023-06-13"), by="days")
+runDays <- seq(as.Date("2023-07-06"), as.Date("2023-07-08"), by="days")
 FORCE = FALSE  ## should we overwrite previously completed runs
 
 ## forecast configuration
@@ -93,7 +93,7 @@ minio_uri_public <- function(...) {
   sprintf(template, minio_path(...), minio_host, ":", minio_port)
 }
 
-runDays <- seq(as.Date("2022-11-25"), as.Date("2023-06-13"), by="days")
+runDays <- seq(as.Date("2023-06-22"), as.Date("2023-07-10"), by="days")
 
 ## loop over dates
 FORCE = FALSE
@@ -146,4 +146,4 @@ for (s in seq_along(runDays)) {
 ## list set of uploaded dates
 submitted = arrow::open_dataset(minio_uri_public(), format = "parquet" ) %>% 
   dplyr::distinct(reference_datetime) %>% dplyr::collect() %>% as.vector()
-
+sort(submitted$reference_datetime)

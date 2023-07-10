@@ -1,4 +1,6 @@
+#!/usr/bin/env Rscript
 ## Forecast helper script around 05_SDA_Workflow_NA
+.libPaths(c("/projectnb/dietzelab/dietze/test-pecan/R/library",.libPaths()))
 
 ## forecast configuration
 projectdir = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/" ## main folder

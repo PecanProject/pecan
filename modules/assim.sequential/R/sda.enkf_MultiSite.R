@@ -82,12 +82,7 @@ sda.enkf.multisite <- function(settings,
   
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- settings$state.data.assimilation$process.variance
-  if(processvar=="TRUE"){
-    processvar <- TRUE
-  }else{
-    processvar <- FALSE
-  }
+  processvar <- as.logical(settings$state.data.assimilation$process.variance)
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
@@ -113,6 +108,7 @@ sda.enkf.multisite <- function(settings,
                         TRUE, 
                         settings$state.data.assimilation$censored.data %>% 
                           as.logical)
+  if(is.null(settings$state.data.assimilation$chains)) settings$state.data.assimilation$chains = 3
   #--------Initialization
   FORECAST    <- ANALYSIS <- ens_weights <- list()
   enkf.params <- list()
@@ -132,6 +128,11 @@ sda.enkf.multisite <- function(settings,
   if(multi.site.flag){
     conf.settings<-settings
     site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
+    if(length(site.ids)==0){   ### these hacks should not be nessisary
+      for(s in seq_along(conf.settings$run)){
+        site.ids[s] = conf.settings[[s]]$run[[s]]$site$id
+      }
+    }
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
     site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
