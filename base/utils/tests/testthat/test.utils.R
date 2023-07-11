@@ -197,3 +197,36 @@ test_that("`capitalize()` able to capitalize words in a sentence", {
 test_that("`bibtexify()` able to convert parameters passed to bibtex citation format", {
   expect_equal(bibtexify("author", "1999", "Here Goes The Title"), "author1999HGTT")
 })
+
+test_that("`rsync()` able to correctly make the command passed to `system` function", {
+  mocked_res <- mockery::mock(0)
+  mockery::stub(rsync, 'system', mocked_res)
+  rsync(args = '-avz', from = 'pecan:test_src', to = 'pecan:test_des')
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(args[[1]][[1]], "rsync -avz pecan:test_src pecan:test_des")
+})
+
+test_that("`ssh()` able to correctly make the command passed to `system` function", {
+  mocked_res <- mockery::mock(0)
+  mockery::stub(ssh, 'system', mocked_res)
+  ssh(host = 'pecan')
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(args[[1]][[1]], "ssh -T pecan \"\" ")
+})
+
+test_that("`misc.convert()` able to unit conversions for known and unknown units to the function", {
+
+  # units known to misc.convert
+  expect_equal(misc.convert(1, "kg C m-2 s-1", "umol C m-2 s-1"), 83259094)
+  # units not known to misc.convert
+  expect_equal(misc.convert(10, "kg", "g"), 10000)
+})
+
+test_that("`misc.are.convertible()` able to check if units are convertible by `misc.convert`", {
+  # units known to misc.convert
+  expect_true(misc.are.convertible("kg C m-2 s-1", "umol C m-2 s-1"))
+  # units known but not interconvertible
+  expect_false(misc.are.convertible("kg C m-2 s-1", "Mg ha-1"))
+  # units not known to misc.convert
+  expect_false(misc.are.convertible("kg", "g"))
+})
