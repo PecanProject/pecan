@@ -214,6 +214,10 @@ test_that("`ssh()` able to correctly make the command passed to `system` functio
   expect_equal(args[[1]][[1]], "ssh -T pecan \"\" ")
 })
 
+test_that("`temp.settings()` able to create a temporary settings file", {
+  expect_equal(temp.settings('<pecan></pecan>'), '<pecan></pecan>')
+})
+
 test_that("`misc.convert()` able to unit conversions for known and unknown units to the function", {
 
   # units known to misc.convert
@@ -229,4 +233,11 @@ test_that("`misc.are.convertible()` able to check if units are convertible by `m
   expect_false(misc.are.convertible("kg C m-2 s-1", "Mg ha-1"))
   # units not known to misc.convert
   expect_false(misc.are.convertible("kg", "g"))
+})
+
+test_that("`convert.expr()` able to convert expression to variable names", {
+  res <- convert.expr("a+b=c+d")
+  expect_equal(res$variable.drv, "a+b")
+  expect_equal(res$variable.eqn$variables, c("c", "d"))
+  expect_equal(res$variable.eqn$expression, "c+d")
 })
