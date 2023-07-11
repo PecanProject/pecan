@@ -9,7 +9,7 @@ on:
     tags:
       - '*'
 
-  pull_request: 
+  pull_request:
 
   merge_group:
 
