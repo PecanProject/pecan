@@ -5,11 +5,9 @@ on:
     branches:
       - master
       - develop
-      - optimiseCI
 
     tags:
       - '*'
-
 
   pull_request: 
 
@@ -133,6 +131,7 @@ jobs:
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
     # run PEcAn checks
+    # The package names of base, modules, and models are passed as matrix variables to avoid repeatability of code
     - name: check
       run: make -j1 ${{ matrix.package }}
       env:
