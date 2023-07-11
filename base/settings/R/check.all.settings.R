@@ -279,6 +279,7 @@ check.bety.version <- function(dbcon) {
 #' - pfts with at least one pft defined
 #' @title Check Settings
 #' @param settings settings file
+#' @param force Logical value indicating whether to force adding the secret settings even if they have been added previously.
 #' @return will return the updated settings values with defaults set.
 #' @author Rob Kooper, David LeBauer
 #' @export check.settings
@@ -614,6 +615,7 @@ check.settings <- function(settings, force = FALSE) {
 
 #' @title Check Run Settings
 #' @param settings settings file
+#' @param dbcon database connection.
 #' @export check.run.settings
 check.run.settings <- function(settings, dbcon = NULL) {
   scipen <- getOption("scipen")
@@ -805,6 +807,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
 
 #' @title Check Model Settings
 #' @param settings settings file
+#' @param dbcon database connection.
 #' @export check.model.settings
 check.model.settings <- function(settings, dbcon = NULL) {
   # check modelid with values
@@ -1077,6 +1080,15 @@ check.database.settings <- function(settings) {
 #' @param settings settings file
 #' @export check.ensemble.settings
 check.ensemble.settings <- function(settings) {
+  startdate <- lubridate::parse_date_time(
+    settings$run$start.date,
+    "ymd_HMS",
+    truncated = 3)
+  enddate <- lubridate::parse_date_time(
+    settings$run$end.date,
+    "ymd_HMS",
+    truncated = 3)
+  
   # check ensemble
   if (!is.null(settings$ensemble)) {
     if (is.null(settings$ensemble$variable)) {

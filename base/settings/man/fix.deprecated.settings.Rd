@@ -8,6 +8,8 @@ fix.deprecated.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings list}
+
+\item{force}{Logical value indicating whether to force adding the secret settings even if they have been added previously.}
 }
 \value{
 updated settings list

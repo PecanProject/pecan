@@ -4,7 +4,7 @@
 \alias{listToXml.default}
 \title{List to XML}
 \usage{
-\method{listToXml}{default}(item, tag)
+\method{listToXml}{default}(x, ...)
 }
 \arguments{
 \item{item}{object to be converted.

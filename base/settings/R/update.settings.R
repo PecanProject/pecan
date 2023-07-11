@@ -12,6 +12,7 @@
 #' @title Update Settings
 #' @name update.settings
 #' @param settings settings file
+#' @param force Logical value indicating whether to force adding the secret settings even if they have been added previously.
 #' @return will return the updated settings values
 #' @export update.settings
 #' @author Rob Kooper

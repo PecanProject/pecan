@@ -21,10 +21,10 @@ Start selected ecosystem model runs within PEcAn workflow
 }
 \section{Functions}{
 \itemize{
-\item \code{runModule_start_model_runs()}: A lightweight wrapper around `start_model_runs` that takes `write` from
+\item \code{runModule_start_model_runs}: A lightweight wrapper around `start_model_runs` that takes `write` from
 `settings` instead of as a separate argument.
-
 }}
+
 \examples{
 \dontrun{
   start_model_runs(settings)

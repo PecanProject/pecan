@@ -25,6 +25,17 @@
 run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  samples.file <- file.path(settings$outdir, "samples.Rdata")
+  if (file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = samples)
+    trait.samples <- samples$trait.samples
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+  }
+  
   tryCatch({
     con <- PEcAn.DB::db.open(settings$database$bety)
     on.exit(PEcAn.DB::db.close(con), add = TRUE)

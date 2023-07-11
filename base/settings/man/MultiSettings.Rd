@@ -25,11 +25,11 @@ Create a PEcAn MultiSettings object
 }
 \section{Functions}{
 \itemize{
-\item \code{as.MultiSettings()}: coerce an existing object to MultiSettings
+\item \code{as.MultiSettings}: coerce an existing object to MultiSettings
 
-\item \code{is.MultiSettings()}: test if an object is a MultiSettings
-
+\item \code{is.MultiSettings}: test if an object is a MultiSettings
 }}
+
 \author{
 Ryan Kelly
 }

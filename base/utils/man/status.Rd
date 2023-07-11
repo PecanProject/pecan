@@ -50,15 +50,15 @@ print to the console and \code{status.check} will simply return 0.
 }
 \section{Functions}{
 \itemize{
-\item \code{status.start()}: Record module start time
+\item \code{status.start}: Record module start time
 
-\item \code{status.end()}: Record module completion time and status
+\item \code{status.end}: Record module completion time and status
 
-\item \code{status.skip()}: Record that module was skipped
+\item \code{status.skip}: Record that module was skipped
 
-\item \code{status.check()}: Look up module status from file
-
+\item \code{status.check}: Look up module status from file
 }}
+
 \author{
 Rob Kooper
 }

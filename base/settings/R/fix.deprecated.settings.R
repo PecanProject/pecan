@@ -10,6 +10,7 @@
 #'
 #' @title Fix Deprecated Settings
 #' @param settings settings list
+#' @param force Logical value indicating whether to force adding the secret settings even if they have been added previously.
 #' @return updated settings list
 #' @author Ryan Kelly
 #' @export fix.deprecated.settings

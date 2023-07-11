@@ -9,7 +9,7 @@ get.sa.sample.list(pft, env, quantiles)
 \arguments{
 \item{pft}{Plant Functional Type}
 
-\item{env}{}
+\item{env}{environment to retrieve the sample list from.}
 
 \item{quantiles}{quantiles at which to obtain samples from parameter for
 sensitivity analysis}

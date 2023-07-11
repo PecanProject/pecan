@@ -8,6 +8,8 @@ check.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}
+
+\item{force}{Logical value indicating whether to force adding the secret settings even if they have been added previously.}
 }
 \value{
 will return the updated settings values with defaults set.

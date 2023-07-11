@@ -14,37 +14,44 @@ listToXml <- function(x, ...) {
 #' @return xmlNode
 #' @export
 #' @author David LeBauer, Carl Davidson, Rob Kooper
-listToXml.default <- function(item, tag) {
-
+listToXml.default <- function(x, ...) {
+  args <- list(...)
+  if (length(args) == 0) {
+    PEcAn.logger::logger.error("could not find passed arguments")
+  } else if ("tag" %in% names(args)) {
+    tag <- args$tag
+  } else {
+    tag <- args[[1]]
+  }
   # just a textnode, or empty node with attributes
-  if (typeof(item) != "list") {
-    if (length(item) > 1) {
+  if (typeof(x) != "list") {
+    if (length(x) > 1) {
       xml <- XML::xmlNode(tag)
-      for (name in names(item)) {
-        XML::xmlAttrs(xml)[[name]] <- item[[name]]
+      for (name in names(x)) {
+        XML::xmlAttrs(xml)[[name]] <- x[[name]]
       }
       return(xml)
     } else {
-      return(XML::xmlNode(tag, item))
+      return(XML::xmlNode(tag, x))
     }
   }
-
+  
   # create the node
-  if (identical(names(item), c("text", ".attrs"))) {
+  if (identical(names(x), c("text", ".attrs"))) {
     # special case a node with text and attributes
-    xml <- XML::xmlNode(tag, item[["text"]])
+    xml <- XML::xmlNode(tag, x[["text"]])
   } else {
     # node with child nodes
     xml <- XML::xmlNode(tag)
-    for (i in seq_along(item)) {
-      if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
+    for (i in seq_along(x)) {
+      if (is.null(names(x)) || names(x)[i] != ".attrs") {
+        xml <- XML::append.xmlNode(xml, listToXml(x[[i]], names(x)[i]))
       }
     }
   }
-
+  
   # add attributes to node
-  attrs <- item[[".attrs"]]
+  attrs <- x[[".attrs"]]
   for (name in names(attrs)) {
     XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
   }

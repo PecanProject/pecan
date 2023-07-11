@@ -41,7 +41,7 @@ get.quantiles <- function(quantiles.tag) {
 ##' get sensitivity samples as a list
 ##'
 ##' @param pft Plant Functional Type
-##' @param env 
+##' @param env environment to retrieve the sample list from.
 ##' @param quantiles quantiles at which to obtain samples from parameter for
 ##' sensitivity analysis
 ##' @export
