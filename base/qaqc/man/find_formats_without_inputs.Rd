@@ -22,7 +22,7 @@ find_formats_without_inputs(
 
 \item{updated_after}{Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.}
 
-\item{created_before}{Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.}
+\item{created_before}{Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a specific window. Date must be in form 'YYYY-MM-DD'.}
 
 \item{updated_before}{Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.}
 }

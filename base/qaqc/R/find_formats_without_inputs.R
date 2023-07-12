@@ -5,7 +5,7 @@
 ##' @param con database connection object
 ##' @param user_id_code  Optional parameter to search by user_id
 ##' @param created_after Optional parameter to search by creation date. Date must be in form 'YYYY-MM-DD'.
-##' @param created_before Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.
+##' @param created_before Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a specific window. Date must be in form 'YYYY-MM-DD'.
 ##' @param updated_after Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.
 ##' @param updated_before Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.
 ##' @param con connection the the bety database
