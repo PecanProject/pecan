@@ -1,13 +1,13 @@
 ##' write_out_table
 ##' @author Tempest McCabe
 ##'
-##' @param table a table that is output from one of the find_* fucntions
+##' @param table a table that is output from one of the find_* functions
 ##' @param table_name name of table
 ##' @param outdir path to folder into which the editable table will be written
 ##' @param relevant_table_columns a list of all columns to keep. ID and table name will be automatically included.
 ##'
 ##'
-##' @description This is a fucntion that returns a dataframe with all of the format entries that have no associated input records.
+##' @description This is a function that returns a dataframe with all of the format entries that have no associated input records.
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
