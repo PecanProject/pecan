@@ -140,6 +140,9 @@ names.MultiSettings <- function(x) {
 
 #' function that can retrieve or update the names of multi-settings.
 #' 
+#' @param multiSettings object for which to retrieve or set the names.
+#' @param settingNames  names to be set for the multi-settings object.
+#' 
 #' @export
 settingNames <- function(multiSettings, settingNames) {
   if (missing(settingNames)) {
@@ -162,6 +165,8 @@ print.MultiSettings <- function(x, printAll = FALSE, ...) {
 }
 
 #' generic function for printing contents of objects.
+#'
+#'@param x object to be printed.
 #'
 #' @export
 printAll <- function(x) {
@@ -201,6 +206,8 @@ listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
 } # listToXml.MultiSettings
 
 #'generic function for expanding multi-settings.
+#'
+#'@param x object to be expanded.
 #'
 #' @export
  expandMultiSettings <- function(x) {

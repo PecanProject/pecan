@@ -6,6 +6,9 @@
 \usage{
 printAll(x)
 }
+\arguments{
+\item{x}{object to be printed.}
+}
 \description{
 generic function for printing contents of objects.
 }

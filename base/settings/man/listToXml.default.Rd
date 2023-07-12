@@ -7,10 +7,8 @@
 \method{listToXml}{default}(x, ...)
 }
 \arguments{
-\item{item}{object to be converted.
+\item{x}{object to be converted.
 Despite the function name, need not actually be a list}
-
-\item{tag}{xml tag}
 }
 \value{
 xmlNode

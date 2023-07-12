@@ -6,6 +6,11 @@
 \usage{
 settingNames(multiSettings, settingNames)
 }
+\arguments{
+\item{multiSettings}{object for which to retrieve or set the names.}
+
+\item{settingNames}{names to be set for the multi-settings object.}
+}
 \description{
 function that can retrieve or update the names of multi-settings.
 }

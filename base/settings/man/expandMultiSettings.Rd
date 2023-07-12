@@ -6,6 +6,9 @@
 \usage{
 expandMultiSettings(x)
 }
+\arguments{
+\item{x}{object to be expanded.}
+}
 \description{
 generic function for expanding multi-settings.
 }
