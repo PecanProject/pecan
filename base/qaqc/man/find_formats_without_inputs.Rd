@@ -22,12 +22,12 @@ find_formats_without_inputs(
 
 \item{updated_after}{Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.}
 
-\item{created_before}{Optional parameter to search by creation date. Can be used in conjunciton with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.}
+\item{created_before}{Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.}
 
 \item{updated_before}{Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.}
 }
 \description{
-This is a fucntion that returns a dataframe with all of the format entries that have no associated input records.
+This is a function that returns a dataframe with all of the format entries that have no associated input records.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 or look at the README
