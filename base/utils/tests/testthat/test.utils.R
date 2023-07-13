@@ -241,3 +241,7 @@ test_that("`convert.expr()` able to convert expression to variable names", {
   expect_equal(res$variable.eqn$variables, c("c", "d"))
   expect_equal(res$variable.eqn$expression, "c+d")
 })
+
+test_that("`paste.stats()` able to print inputs to specific format(for building a Latex Table)", {
+  expect_equal(paste.stats(3.333333, 5.00001, 6.88888, n = 3), "$3.33(5,6.89)$")
+})
