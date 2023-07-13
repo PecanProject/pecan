@@ -15,7 +15,7 @@
 #'
 #' @title Add Users secrets
 #' @param settings settings file
-#' @param force Logical value indicating whether to force adding the secret settings even if they have been added previously.
+#' @param force Logical: add secrets even if they have been added previously?
 #' @return will return the updated settings values
 #' @author Rob Kooper
 #' @export addSecrets
