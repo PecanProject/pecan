@@ -166,7 +166,7 @@ print.MultiSettings <- function(x, printAll = FALSE, ...) {
 
 #' generic function for printing contents of objects.
 #'
-#'@param x object to be printed.
+#' @param x object to be printed.
 #'
 #' @export
 printAll <- function(x) {
