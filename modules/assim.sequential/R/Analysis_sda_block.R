@@ -15,7 +15,6 @@
 ##' @description This function provides the block-based MCMC sampling approach.
 ##' 
 ##' @return It returns the `build.block.xy` object and the analysis results.
-##' @importFrom foreach %dopar%
 ##' @importFrom dplyr %>%
 analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args) {
   #convert from vector values to block lists.
@@ -51,26 +50,16 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
     })
   
   #parallel for loop over each block.
-  #initialize parallel settings.
-  cores <- parallel::detectCores()
-  cl <- parallel::makeCluster(cores)
-  doSNOW::registerDoSNOW(cl)
-  
-  #progress bar
-  pb <- utils::txtProgressBar(min=1, max=length(block.list.all[[t]]), style=3)
-  progress <- function(n) utils::setTxtProgressBar(pb, n)
-  opts <- list(progress=progress)
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
-  
-  if ("try-error" %in% class(try(block.list.all[[t]] <- foreach::foreach(block = block.list.all[[t]], .packages="Kendall", .options.snow=opts) %dopar% {
-    library(nimble)
-    return(MCMC_block_function(block))
-  }))) {
+  if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
     PEcAn.logger::logger.error("Something wrong within the MCMC_block_function function.")
   }
+  PEcAn.logger::logger.info("Completed!")
   
   #convert from block lists to vector values.
-  V <- block.2.vector(block.list.all[[t]], X, H)
+  if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H)))) {
+    PEcAn.logger::logger.error("Something wrong within the block.2.vector function.")
+  }
   
   #return values
   return(list(block.list.all = block.list.all,

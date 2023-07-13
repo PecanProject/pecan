@@ -223,6 +223,7 @@ GEF.MultiSite.Nimble <-  nimbleCode({
 #GEF.Block.Nimble--This does the block-based SDA -------------------------------------
 #' block-based TWEnF
 #' @format TBD
+#' @export
 GEF.Block.Nimble <-  nimbleCode({
   #I think the blocked nimble has to be implemented and used instead of a long vector sampling.
   #1) due to the convergence of X.mod.
