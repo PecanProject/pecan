@@ -210,7 +210,7 @@ listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
 #' @param x object to be expanded.
 #'
 #' @export
- expandMultiSettings <- function(x) {
+expandMultiSettings <- function(x) {
   UseMethod("expandMultiSettings")
 }
 
