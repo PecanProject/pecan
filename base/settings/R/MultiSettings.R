@@ -205,9 +205,9 @@ listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
   NextMethod()
 } # listToXml.MultiSettings
 
-#'generic function for expanding multi-settings.
+#' generic function for expanding multi-settings.
 #'
-#'@param x object to be expanded.
+#' @param x object to be expanded.
 #'
 #' @export
  expandMultiSettings <- function(x) {
