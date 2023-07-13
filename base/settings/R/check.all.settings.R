@@ -279,7 +279,7 @@ check.bety.version <- function(dbcon) {
 #' - pfts with at least one pft defined
 #' @title Check Settings
 #' @param settings settings file
-#' @param force Logical value indicating whether to force adding the secret settings even if they have been added previously.
+#' @param force Logical: Rerun check even if these settings have been checked previously?
 #' @return will return the updated settings values with defaults set.
 #' @author Rob Kooper, David LeBauer
 #' @export check.settings
