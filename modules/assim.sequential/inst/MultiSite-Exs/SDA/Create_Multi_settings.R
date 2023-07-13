@@ -64,6 +64,7 @@ template <- PEcAn.settings::Settings(list(
     NC.Overwrite = FALSE,
     NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
+    by.site = FALSE,
     Localization.FUN = "Local.support",
     scalef = 1,
     chains = 5,
