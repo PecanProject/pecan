@@ -342,7 +342,7 @@ sda.enkf.multisite <- function(settings,
         load(file.path(settings$outdir, "samples.Rdata"))
       }
       #reformatting params
-      new.params <- PEcAnAssimSequential:::sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       #TODO: incorporate Phyllis's restart work
@@ -434,7 +434,7 @@ sda.enkf.multisite <- function(settings,
         #put building of X into a function that gets called
         max_t <- 0
         while("try-error" %in% class(
-          try(reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
+          try(reads <- build_X(out.configs = out.configs, 
                                settings = settings, 
                                new.params = new.params, 
                                nens = nens, 
@@ -514,7 +514,7 @@ sda.enkf.multisite <- function(settings,
                               nburnin = 1e4)
           }
           #running analysis function.
-          enkf.params[[obs.t]] <- PEcAnAssimSequential:::analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args)
+          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all
           #Forecast
