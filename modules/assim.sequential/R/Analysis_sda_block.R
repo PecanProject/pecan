@@ -180,7 +180,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     }
   } else {
     #find networks given TRUE/FALSE matrix representing sites' interactions.
-    block.vec <- PEcAn.utils::matrix_network(dis.matrix <= as.numeric(settings$state.data.assimilation$scalef))
+    block.vec <- matrix_network(dis.matrix <= as.numeric(settings$state.data.assimilation$scalef))
     block.list <- vector("list", length(block.vec))
     #loop over sites
     for (i in seq_along(block.vec)) {#i is site index
@@ -201,11 +201,11 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       }
       #fill in  mu.f and Pf
       block.list[[i]]$data$muf <- mu.f[f.ind]
-      block.list[[i]]$data$pf <- PEcAn.utils::GrabFillMatrix(Pf, f.ind)
+      block.list[[i]]$data$pf <- GrabFillMatrix(Pf, f.ind)
       
       #fill in y and R
       block.list[[i]]$data$y.censored <- y.censored[y.ind]
-      block.list[[i]]$data$r <- PEcAn.utils::GrabFillMatrix(solve(R), y.ind)
+      block.list[[i]]$data$r <- GrabFillMatrix(solve(R), y.ind)
       
       #fill in constants
       block.h <- Construct.H.multisite(site.ids[ids], var.names, obs.mean[[t]])
@@ -348,7 +348,7 @@ MCMC_block_function <- function(block) {
       bq <- block$constant$YN
     }
     aq <- solve(q.bar) * bq
-    block$aqq[,,block$t+1] <- PEcAn.utils::GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
+    block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
     block$bqq[block$t+1] <- bq
     
     # #if it's a wishart case
@@ -361,7 +361,7 @@ MCMC_block_function <- function(block) {
     #   }
     # }
     # #update aqq and bqq
-    # block$aqq[,,block$t+1] <- PEcAn.utils::GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
+    # block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
     # block$bqq[block$t+1] <- block$bqq[block$t]
   }
   #update mua and pa; mufa, and pfa
@@ -409,7 +409,7 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
           block.list[[i]]$aqq[,,t] <- toeplitz((nvar:1)/nvar)
           block.list[[i]]$bqq <- rep(nobs, nt)
           #update aq and bq based on aqq and bqq
-          block.list[[i]]$data$aq <- PEcAn.utils::GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)
+          block.list[[i]]$data$aq <- GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[t]
         }
       }
@@ -435,7 +435,7 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
             block.list[[i]]$bqq[t] <- block.list[[i]]$constant$YN
           }
           #update aq and bq based on aqq and bqq
-          block.list[[i]]$data$aq <- PEcAn.utils::GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)
+          block.list[[i]]$data$aq <- GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[t]
         }
       }
