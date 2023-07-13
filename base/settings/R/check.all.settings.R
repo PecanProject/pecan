@@ -1080,14 +1080,6 @@ check.database.settings <- function(settings) {
 #' @param settings settings file
 #' @export check.ensemble.settings
 check.ensemble.settings <- function(settings) {
-  startdate <- lubridate::parse_date_time(
-    settings$run$start.date,
-    "ymd_HMS",
-    truncated = 3)
-  enddate <- lubridate::parse_date_time(
-    settings$run$end.date,
-    "ymd_HMS",
-    truncated = 3)
   
   # check ensemble
   if (!is.null(settings$ensemble)) {
@@ -1109,6 +1101,10 @@ check.ensemble.settings <- function(settings) {
 
     if (is.null(settings$ensemble$start.year)) {
       if (!is.null(settings$run$start.date)) {
+        startdate <- lubridate::parse_date_time(
+          settings$run$start.date,
+          "ymd_HMS",
+          truncated = 3)
         settings$ensemble$start.year <- lubridate::year(
           settings$run$start.date)
         PEcAn.logger::logger.info(
@@ -1128,6 +1124,10 @@ check.ensemble.settings <- function(settings) {
 
     if (is.null(settings$ensemble$end.year)) {
       if (!is.null(settings$run$end.date)) {
+        enddate <- lubridate::parse_date_time(
+          settings$run$end.date,
+          "ymd_HMS",
+          truncated = 3)
         settings$ensemble$end.year <- lubridate::year(settings$run$end.date)
         PEcAn.logger::logger.info(
           "No end date passed to ensemble - using the run date (",
