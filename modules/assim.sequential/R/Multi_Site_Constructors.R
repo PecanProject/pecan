@@ -235,7 +235,7 @@ construct_nimble_H <- function(site.ids, var.names, obs.t, pft.path = NULL, by =
       Ind[which(total_site_id == site.ids[i])] <- i
     }
   } else if (by == "pft") {
-    pft <- read.csv(pft.path)
+    pft <- utils::read.csv(pft.path)
     rownames(pft) <- pft$site
     total_site_id <- rep(site.ids, each = length(var.names))
     total_pft <- pft[total_site_id, 2]
@@ -246,7 +246,7 @@ construct_nimble_H <- function(site.ids, var.names, obs.t, pft.path = NULL, by =
     }
   } else if (by == "block_pft_var") {
     #by pft
-    pft <- read.csv(pft.path)
+    pft <- utils::read.csv(pft.path)
     rownames(pft) <- pft$site
     total_site_id <- rep(site.ids, each = length(var.names))
     total_pft <- pft[total_site_id, 2]

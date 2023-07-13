@@ -121,6 +121,10 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
   Y <- Obs.cons$Y
   R <- Obs.cons$R
+  if (length(Y) > 1) {
+    PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+  }
   #create matrix the describes the support for each observed state variable at time t
   min_max <- settings$state.data.assimilation$state.variables %>% 
     purrr::map(function(state.variable){
@@ -231,6 +235,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
 ##' 
 ##' @return It returns the `block.list` object with initial conditions filled in.
 MCMC_Init <- function (block.list, X) {
+  var.names <- unique(attributes(X)$dimnames[[2]])
   #sample mu.f from X.
   sample.mu.f <- X[sample(seq_along(1:nrow(X)), 1),]
   for (i in seq_along(block.list)) {
@@ -251,14 +256,14 @@ MCMC_Init <- function (block.list, X) {
     #if we want the vector q.
     if (block.list[[i]]$constant$q.type == 1) {
       for (j in seq_along(block.list[[i]]$data$y.censored)) {
-        block.list[[i]]$Inits$q <- c(block.list[[i]]$Inits$q, rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j]))
+        block.list[[i]]$Inits$q <- c(block.list[[i]]$Inits$q, stats::rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j]))
       }
     } else if (block.list[[i]]$constant$q.type == 2) {
       #if we want the wishart Q.
       if ("try-error" %in% class(try(block.list[[i]]$Inits$q <- 
-                                     rWishart(1, df = block.list[[i]]$data$bq, Sigma = block.list[[i]]$data$aq)[,,1], silent = T))) {
+                                     stats::rWishart(1, df = block.list[[i]]$data$bq, Sigma = block.list[[i]]$data$aq)[,,1], silent = T))) {
         block.list[[i]]$Inits$q <- 
-          rWishart(1, df = block.list[[i]]$data$bq, Sigma = toeplitz((block.list[[i]]$constant$YN:1)/block.list[[i]]$constant$YN))[,,1]
+          stats::rWishart(1, df = block.list[[i]]$data$bq, Sigma = stats::toeplitz((block.list[[i]]$constant$YN:1)/block.list[[i]]$constant$YN))[,,1]
       }
     }
   }
@@ -406,7 +411,7 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
         } else if (block.list[[i]]$constant$q.type == 2) {
           #initialize aqq and bqq for nt
           block.list[[i]]$aqq <- array(1, dim = c(nvar, nvar, nt))
-          block.list[[i]]$aqq[,,t] <- toeplitz((nvar:1)/nvar)
+          block.list[[i]]$aqq[,,t] <- stats::toeplitz((nvar:1)/nvar)
           block.list[[i]]$bqq <- rep(nobs, nt)
           #update aq and bq based on aqq and bqq
           block.list[[i]]$data$aq <- GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)

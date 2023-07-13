@@ -532,6 +532,8 @@ sda.enkf.multisite <- function(settings,
             PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
             diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
           }
+          # making the mapping operator
+          H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
           #Pass aqq and bqq.
           aqq <- NULL
           bqq <- numeric(nt + 1)
