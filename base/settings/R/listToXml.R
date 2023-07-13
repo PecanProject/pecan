@@ -1,5 +1,7 @@
 #' A generic function to convert list to XML
 #'
+#' @param x list to be converted
+#' @param ... arguments passed to methods
 #' @export
 listToXml <- function(x, ...) {
   UseMethod("listToXml")
