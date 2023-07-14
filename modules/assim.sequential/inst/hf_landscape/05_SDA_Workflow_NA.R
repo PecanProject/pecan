@@ -41,7 +41,11 @@ option_list = list(optparse::make_option("--start.date",
 args <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 #args$start.date = "2022-05-18 00:00:00"
 #args$prev = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/FOF2022-05-17/"
+
+## set dates
 start.date = lubridate::as_date(args$start.date)
+prev.date  = basename(args$prev) |> substr(start=4,stop=13) |> lubridate::as_date()
+end.date <- start.date + lubridate::days(35)
 
 #------------------------------------------------------------------------------------------------
 #------------------------------------------ Preparing the pecan xml -----------------------------
@@ -49,21 +53,22 @@ start.date = lubridate::as_date(args$start.date)
 restart <- list()
 restart$filepath <- args$prev
 set = readRDS(args$settings)
-
-#set met.start & met.end
-end.date <- start.date + lubridate::days(35)
-sda.start = start.date + lubridate::days(1)
 projectdir = set$outdir
 
 # --------------------------------------------------------------------------------------------------
 #---------------------------------------------- NA DATA -------------------------------------
 # --------------------------------------------------------------------------------------------------
 
-#initialize obs.mean/cov NAs
+#initialize obs.mean/cov NAs & dates
+# note:
+#   for t=1: SDA doesn’t use metSplit, uses met.start, met.end
+#            for iterative forecast restart, this is PREV
+#   for t>1: metSplit uses obs.times t-1 -> t
 site.ids <- PEcAn.settings::papply(set,function(x)(x$run$site$id)) %>% unlist() %>% as.character()
 nsite = length(site.ids)
 
-NAdata = data.frame(date = c(rep(start.date,nsite),rep(sda.start,nsite)),
+NAdata = data.frame(date = c(rep(format(start.date, "%Y-%m-%d %H:%M:%S", tz = "GMT"),nsite),
+                             rep(format(end.date, "%Y-%m-%d %H:%M:%S", tz = "GMT"),nsite)), ##coerce to datetimes to avoid pumpkin rule
                     site_id = rep(site.ids,times=2),
                     data = rep(NA,nsite*2))
 obs.mean <- obs.cov <- split(NAdata, NAdata$date)
@@ -95,7 +100,7 @@ obs.cov <- purrr::map(
 ) %>% stats::setNames(date.obs)
 
 #add start.cut to restart list
-restart$start.cut <- start.date
+restart$start.cut <- as_datetime(start.date)
 restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "GMT")
 
 
@@ -106,8 +111,8 @@ restart$start.cut <- format(restart$start.cut, "%Y-%m-%d %H:%M:%S", tz = "GMT")
 for(s in seq_along(set)){
   set[[s]]$run$start.date = start.date
   set[[s]]$run$end.date   = end.date
-  set[[s]]$run$site$met.start = start.date
-  set[[s]]$run$site$met.end   = end.date
+  set[[s]]$run$site$met.start = prev.date  ## time period for t == 1, prev forecast
+  set[[s]]$run$site$met.end   = start.date   
 }
 
 # Setting dates in assimilation tags - This will help with preprocess split in SDA code
@@ -143,7 +148,8 @@ met_paths <- list.files(path = file.path(path, start.date), full.names = TRUE, p
 #met_paths <- list.files(path = file.path(settings$run$settings.1$inputs$met$path, start.date), full.names = TRUE, pattern = ".clim")
 if(purrr::is_empty(met_paths)){
   print(paste("SKIPPING: NO MET FOR",start.date))
-  cat(as.character(start.date),sep="\n",file=file.path(dirname(set$outdir),"NO_MET"),append=TRUE) ## add to list of dates missing met
+##  cat(as.character(start.date),sep="\n",file=file.path(dirname(set$outdir),"NO_MET"),append=TRUE) ## add to list of dates missing met
+## TODO: for forecast, don't update NO_MET as files may still arrive; only update for reanalysis
   stop_quietly()
 }
 met_paths = as.list(met_paths)
@@ -158,10 +164,12 @@ prev_run_ids = list.files(file.path(restart$filepath, "out"))
 run_id = as.data.frame(strsplit(prev_run_ids,"-")) %>% t()
 colnames(run_id) <- c("pre","ens","site")
 rownames(run_id) <- NULL
-run_id = as.data.frame(run_id) %>% mutate(folder=prev_run_ids,id = paste0("id",.data$ens)) %>% group_by(site)
+run_id = as.data.frame(run_id) %>% 
+  dplyr::mutate(folder=prev_run_ids,id = paste0("id",.data$ens)) %>% 
+  dplyr::group_by(site)
 ###settings$runs$id = run_id
 for(s in seq_along(set)){
-  site_run_id = run_id |> filter(site == as.list(set$run[[s]]$site$id)[[1]])
+  site_run_id = run_id |> dplyr::filter(site == as.list(set[[s]]$run$site$id)[[1]])
   set[[s]]$run$id =  as.list(site_run_id$folder)
   names(set[[s]]$run$id) = site_run_id$id
 }

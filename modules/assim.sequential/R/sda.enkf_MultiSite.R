@@ -117,7 +117,7 @@ sda.enkf.multisite <- function(settings,
   if(!dir.exists(settings$outdir)) dir.create(settings$outdir, showWarnings = FALSE)
   
   ##### Creating matrices that describe the bounds of the state variables
-  ##### interval is remade everytime depending on the data at time t
+  ##### interval is remade every time depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
@@ -128,11 +128,6 @@ sda.enkf.multisite <- function(settings,
   if(multi.site.flag){
     conf.settings<-settings
     site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
-    if(length(site.ids)==0){   ### these hacks should not be nessisary
-      for(s in seq_along(conf.settings$run)){
-        site.ids[s] = conf.settings[[s]]$run[[s]]$site$id
-      }
-    }
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
     site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
@@ -182,7 +177,7 @@ sda.enkf.multisite <- function(settings,
     }
   }
   obs.times <- obs.times.POSIX
-  read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times)
+  read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times) ## TODO: could cause an off-by-one error on iterative forecast if multiple obs times
   nt  <- length(obs.times) #sets length of for loop for Forecast/Analysis
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
 
@@ -217,33 +212,33 @@ sda.enkf.multisite <- function(settings,
   
   conf.settings <-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
-    furrr::future_map(function(settings) {
-      library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
+    furrr::future_map(function(my.settings) {
+      library(paste0("PEcAn.",my.settings$model$type), character.only = TRUE)#solved by including the model in the settings
       inputs.split <- list()
       if (!no_split) {
-        for (i in 1:length(settings$run$inputs$met$path)) {
+        for (i in 1:length(my.settings$run$inputs$met$path)) {
           #---------------- model specific split inputs
           ### model specific split inputs
-          settings$run$inputs$met$path[[i]] <- do.call(
+          my.settings$run$inputs$met$path[[i]] <- do.call(
             my.split_inputs,
             args = list(
-              settings = settings,
-              start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
-              stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
-              inputs =  settings$run$inputs$met$path[[i]],
-              outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
-              overwrite =F
+              settings = my.settings,
+              start.time = lubridate::ymd_hms(my.settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
+              stop.time = lubridate::ymd_hms(my.settings$run$site$met.end, truncated = 3),
+              inputs =  my.settings$run$inputs$met$path[[i]],
+              outpath = paste0(paste0(my.settings$outdir, "/Extracted_met/"), my.settings$run$site$id),
+              overwrite = FALSE 
             )
           )
           # changing the start and end date which will be used for model2netcdf.model
-          settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-          settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
+          my.settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
+          my.settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
           
         }
       } else{
         inputs.split <- inputs
       }
-      settings
+      my.settings
     })
   conf.settings<- PEcAn.settings::as.MultiSettings(conf.settings)
   ###-------------------------------------------------------------------###
@@ -375,7 +370,9 @@ sda.enkf.multisite <- function(settings,
       if (t>1){
         #for next time step split the met if model requires
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
+        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, 
+                                 obs.times, t, nens, restart_flag = FALSE, my.split_inputs,
+                                 outpath = paste0(settings$outdir, "/Extracted_met/"))
         
         #---------------- setting up the restart argument for each site separately and keeping them in a list
         restart.list <-

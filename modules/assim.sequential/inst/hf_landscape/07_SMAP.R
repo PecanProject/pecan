@@ -1,4 +1,6 @@
+#!/usr/bin/env Rscript
 ## SMAP data prep cron script
+.libPaths(c("/projectnb/dietzelab/dietze/test-pecan/R/library",.libPaths()))
 
 ####  Libraries and configs
 #BiocManager::install("rhdf5")
@@ -184,7 +186,7 @@ for(t in seq_along(status$date)){
   
   ## determine what sites have already been processed
   SMAP_done = SMAP_CSV[SMAP_CSV$site_id %in% site.id & SMAP_CSV$date == status$date[t],]
-  if(nrow(SMAP_done) > 0){
+  if(nrow(SMAP_done) > 0 & !all(is.na(SMAP_done))){
     site.todo = !(site.id %in% SMAP_done$site_id)
     if(all(!site.todo)){ next } ## done, skip to the next year
   } else {

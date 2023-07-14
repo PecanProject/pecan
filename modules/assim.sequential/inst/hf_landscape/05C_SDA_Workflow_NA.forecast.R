@@ -117,9 +117,10 @@ for (s in seq_along(runDays)) {
   
   ## did we write this run to minio already?
   if(!FORCE){  ## if not overwriting
-    ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) %>% 
-      dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) %>%  
-      dplyr::distinct(parameter) %>% dplyr::collect()
+    ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) |> 
+      dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) |>  
+      dplyr::distinct(parameter) |>
+      dplyr::collect()
     if(length(ens$parameter)>0) {
       print(paste("skipping",length(ens$parameter)))
       next
@@ -140,14 +141,15 @@ for (s in seq_along(runDays)) {
   }
   out = dplyr::bind_rows(out)
   if(!is.numeric(nrow(out)) | nrow(out) == 0) next  ## don't insert empty days into minio
-  out = out %>% relocate(parameter) %>% 
-    relocate(site_id) %>%
-    relocate(time_bounds) %>% rename(datetime=time_bounds) %>%
-    relocate(reference_datetime)
+  out = out %>% dplyr::relocate(parameter) |> 
+    dplyr::relocate(site_id) |>
+    dplyr::relocate(time_bounds) |> 
+    dplyr::rename(datetime=time_bounds) |>
+    dplyr::relocate(reference_datetime)
   out = tidyr::pivot_longer(out,5:ncol(out),names_to = "variable",values_to = "prediction")
   
   ## push to container in parquet format
-  out %>% dplyr::group_by(reference_datetime) %>% arrow::write_dataset(minio_uri(),format="parquet")
+  out |> dplyr::group_by(reference_datetime) |> arrow::write_dataset(minio_uri(),format="parquet")
   
 }
 
