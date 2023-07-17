@@ -103,7 +103,7 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
-                                overwrite = FALSE, conflict = FALSE) {
+                                overwrite = FALSE, conflict = TRUE) {
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
@@ -303,6 +303,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         files <- file.path(outdir, "current.nc")
       }
       mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      nc<- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")),write=TRUE)
+      nc<-ncdf4::ncvar_rename(nc,"time_bnds","time_bounds")
+      ncdf4::ncatt_put(nc, "time", "bounds","time_bounds", prec=NA)
+      ncdf4::nc_close(nc)
       unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

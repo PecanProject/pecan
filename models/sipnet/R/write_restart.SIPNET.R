@@ -109,7 +109,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
     if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("lai")
+   names(analysis.save[[length(analysis.save)]]) <- c("lai")
   }
   
   if (!is.null(analysis.save) && length(analysis.save)>0){

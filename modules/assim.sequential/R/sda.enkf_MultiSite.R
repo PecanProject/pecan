@@ -38,9 +38,9 @@ sda.enkf.multisite <- function(settings,
                                run_parallel = TRUE,
                                ensemble.samples = NULL,
                                parallel_qsub = TRUE,
-                               free_run = FALSE,
-                               send_email = NULL,
                                control=list(trace = TRUE,
+					    free_run = FALSE,
+					    send_email = NULL,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
                                             TimeseriesPlot = FALSE,
@@ -131,9 +131,9 @@ sda.enkf.multisite <- function(settings,
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
-    site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
+    site.ids <- conf.settings %>% map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+    site.locs <- conf.settings %>% map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
       t %>%
       `colnames<-`(c("Lon","Lat")) %>%
       `rownames<-`(site.ids)
@@ -441,9 +441,10 @@ sda.enkf.multisite <- function(settings,
         #------------- Reading - every iteration and for SDA
         
         #put building of X into a function that gets called
-        max_t <- 0
-        while("try-error" %in% class(
-          try(reads <- build_X(out.configs = out.configs, 
+        #max_t <- 0
+        #while("try-error" %in% class(
+         # try(
+	reads <-  build_X(out.configs = out.configs, 
                                settings = settings, 
                                new.params = new.params, 
                                nens = nens, 
@@ -452,16 +453,7 @@ sda.enkf.multisite <- function(settings,
                                t = t, 
                                var.names = var.names, 
                                my.read_restart = my.read_restart,
-                               restart_flag = restart_flag), silent = T))
-        ){
-          Sys.sleep(10)
-          max_t <- max_t + 1
-          if(max_t > 20){
-            PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
-            break
-          }
-          PEcAn.logger::logger.info("Empty folder, try again!")
-        }
+                               restart_flag = restart_flag)
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -721,9 +713,9 @@ sda.enkf.multisite <- function(settings,
       unlink(mailfile)
     }
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
-#    if (keepNC && t == 1){
-#      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-#    }
+   if (keepNC && t == 1){
+    unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+   }
       ## MCD: I commented the above "if" out because if you are restarting from a previous forecast, this might delete the files in that earlier folder
   } ### end loop over time
 } # sda.enkf
