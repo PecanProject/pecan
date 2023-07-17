@@ -403,16 +403,16 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
         nobs <- length(block.list[[i]]$data$y.censored)
         if (block.list[[i]]$constant$q.type == 1) {
           #initialize aqq and bqq for nt
-          block.list[[i]]$aqq <- array(1, dim = c(nvar, nt))
-          block.list[[i]]$bqq <- array(1, dim = c(nvar, nt))
+          block.list[[i]]$aqq <- array(1, dim = c(nvar, nt + 1))
+          block.list[[i]]$bqq <- array(1, dim = c(nvar, nt + 1))
           #update aq and bq based on aqq and bqq
           block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
         } else if (block.list[[i]]$constant$q.type == 2) {
           #initialize aqq and bqq for nt
-          block.list[[i]]$aqq <- array(1, dim = c(nvar, nvar, nt))
+          block.list[[i]]$aqq <- array(1, dim = c(nvar, nvar, nt + 1))
           block.list[[i]]$aqq[,,t] <- stats::toeplitz((nvar:1)/nvar)
-          block.list[[i]]$bqq <- rep(nobs, nt)
+          block.list[[i]]$bqq <- rep(nobs, nt + 1)
           #update aq and bq based on aqq and bqq
           block.list[[i]]$data$aq <- GrabFillMatrix(block.list[[i]]$aqq[,,t], block.list[[i]]$constant$H)
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[t]
