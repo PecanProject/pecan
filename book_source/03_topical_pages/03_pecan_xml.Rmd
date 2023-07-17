@@ -757,6 +757,7 @@ The following tags can be used for state data assimilation. More detailed inform
   <NC.Overwrite>FALSE</NC.Overwrite>
   <NC.Prefix>sipnet.out</NC.Prefix>
   <q.type>SINGLE</q.type>
+  <by.site>FALSE</by.site>
   <Localization.FUN>Local.support</Localization.FUN>
   <scalef>1</scalef>
   <chains>5</chains>
@@ -842,6 +843,7 @@ The following tags can be used for state data assimilation. More detailed inform
 * **NC.Overwrite** : [optional] Bool variable decide if you want to overwrite the previous netcdf file when there is a overlap in time, the default is FALSE.
 * **NC.Prefix** : [optional] The prefix for the generation of the full-year netcdf file, the default is sipnet.out.
 * **q.type** : [optional] The type of process variance that will be estimated, the default is SINGLE.
+* **by.site** : [optional] The flag, that is exclusively used by the `analysis_sda_block` function, decide if we want to consider the underlying networks between sites. The default is FALSE.
 * **Localization.FUN** : [optional] The localization function name for the localization operation, the default is Local.support.
 * **scalef** : [optional] The scale parameter used for the localization operation, the smaller the value is, the sites are more isolated.
 * **chains** : [optional] The number of chains needed to be estimated during the MCMC sampling process.

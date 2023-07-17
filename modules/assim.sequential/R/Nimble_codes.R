@@ -220,6 +220,43 @@ GEF.MultiSite.Nimble <-  nimbleCode({
   
 })
 
+#GEF.Block.Nimble--This does the block-based SDA -------------------------------------
+#' block-based TWEnF
+#' @format TBD
+#' @export
+GEF.Block.Nimble <-  nimbleCode({
+  #I think the blocked nimble has to be implemented and used instead of a long vector sampling.
+  #1) due to the convergence of X.mod.
+  #2) temporal efficiency. MVN sampling over a large cov matrix can be time consuming.
+  #4) this data structure design allows us to implement the MCMC sampling parallely.
+  
+  #sample X.mod from the forecast.
+  X.mod[1:N] ~ dmnorm(mean = muf[1:N], cov = pf[1:N, 1:N])
+  
+  #here we only consider vector Q and Wishart Q.
+  if (q.type == 1) {
+    for (i in 1:YN) {
+      #sample Q.
+      q[i] ~ dgamma(shape = aq[i], rate = bq[i])
+      #sample latent variable X.
+      X[i]  ~ dnorm(X.mod[H[i]], sd = 1/sqrt(q[i]))
+      #likelihood
+      y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))
+    }
+  } else if (q.type == 2) {
+    #if it's a Wishart Q.
+    #sample Q.
+    q[1:YN, 1:YN] ~ dwishart(R = aq[1:YN, 1:YN], df = bq)
+    #sample latent variable X.
+    for (i in 1:YN) {
+      Xs[i] <- X.mod[H[i]]
+    }
+    X[1:YN] ~ dmnorm(Xs[1:YN], prec = q[1:YN, 1:YN])
+    #likelihood
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN, 1:YN])
+  }
+})
+
 #sampler_toggle------------------------------------------------------------------------------------------------
 #' sampler toggling
 #' @export
