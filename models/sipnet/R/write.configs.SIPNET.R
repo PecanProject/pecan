@@ -441,7 +441,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
       # reconstruct total wood C
-      if(IC$abvGrndWoodFrac < 0.1){
+      if(IC$abvGrndWoodFrac < 0.05){
         wood_total_C <- 0
       }else{
         wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
