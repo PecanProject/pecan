@@ -447,7 +447,7 @@ sda.enkf.multisite <- function(settings,
         ){
           Sys.sleep(10)
           max_t <- max_t + 1
-          if(max_t > 20){
+          if(max_t > 100){
             PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
             break
           }
