@@ -6,6 +6,11 @@
 \usage{
 listToXml(x, ...)
 }
+\arguments{
+\item{x}{list to be converted}
+
+\item{...}{arguments passed to methods}
+}
 \description{
 A generic function to convert list to XML
 }

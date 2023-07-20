@@ -9,7 +9,7 @@
 \arguments{
 \item{settings}{settings file}
 
-\item{force}{Logical value indicating whether to force adding the secret settings even if they have been added previously.}
+\item{force}{Logical: update even if settings have previously been updated?.}
 }
 \value{
 will return the updated settings values
