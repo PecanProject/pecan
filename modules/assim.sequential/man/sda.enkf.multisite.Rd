@@ -15,6 +15,9 @@ sda.enkf.multisite(
   pre_enkf_params = NULL,
   run_parallel = TRUE,
   ensemble.samples = NULL,
+  parallel_qsub = TRUE,
+  free_run = FALSE,
+  send_email = NULL,
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
     FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
     = FALSE, Profiling = FALSE, OutlierDetection = FALSE),
@@ -41,6 +44,12 @@ sda.enkf.multisite(
 \item{run_parallel}{If allows to proceed under parallel mode, default is TRUE.}
 
 \item{ensemble.samples}{Pass ensemble.samples from outside to avoid GitHub check issues.}
+
+\item{parallel_qsub}{Bool variable decide if you want to submit the bash jobs under the parallel mode, the default value is TRUE.}
+
+\item{free_run}{Bool variable decide if the run is a free run with no analysis been used, the default value is FALSE.}
+
+\item{send_email}{List object containing the "from", "to", and "body", the default value is NULL.}
 
 \item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
 TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.}

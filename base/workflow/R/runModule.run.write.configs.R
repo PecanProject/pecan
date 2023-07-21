@@ -20,14 +20,14 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
     
    
     #check to see if there are posterior.files tags under pft
-    posterior.files.vec<-settings$pfts %>%
+    posterior.files <-settings$pfts %>%
       purrr::map(purrr::possibly('posterior.files', NA_character_)) %>%
       purrr::modify_depth(1, function(x) {
         ifelse(is.null(x), NA_character_, x)
       }) %>%
       unlist()
     
-    return(PEcAn.workflow::run.write.configs(settings, write, ens.sample.method, posterior.files = posterior.files.vec, overwrite = overwrite))
+    return(PEcAn.workflow::run.write.configs(settings, write, ens.sample.method, posterior.files = posterior.files, overwrite = overwrite))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }

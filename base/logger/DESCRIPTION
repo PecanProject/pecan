@@ -25,7 +25,9 @@ URL: https://pecanproject.github.io/
 Imports: 
     utils,
     stringi
-Suggests: testthat
+Suggests: 
+    testthat,
+    withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.2.3

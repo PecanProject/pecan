@@ -20,7 +20,7 @@
 build_X <- function(out.configs, settings, new.params, nens, read_restart_times, outdir, t = 1, var.names, my.read_restart, restart_flag = FALSE){
   if(t == 1 & restart_flag){
     reads <-
-      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,my_settings,siteparams) {
         # Loading the model package - this is required bc of the furrr
         #library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
         #source("~/pecan/models/sipnet/R/read_restart.SIPNET.R")
@@ -31,9 +31,9 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
           X_tmp[[i]] <- do.call( my.read_restart,
                                  args = list(
                                    outdir = outdir,
-                                   runid = settings$runs$id[i] %>% as.character(),
+                                   runid = my_settings$run$id[i] %>% as.character(),
                                    stop.time = read_restart_times[t+1],
-                                   settings = settings,
+                                   settings = my_settings,
                                    var.names = var.names,
                                    params = siteparams[[i]]
                                  )
@@ -45,7 +45,7 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
     
   }else{
     reads <-
-      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,settings,siteparams) {
+      furrr::future_pmap(list(out.configs %>% `class<-`(c("list")), settings, new.params),function(configs,my_settings,siteparams) {
         
         X_tmp <- vector("list", 2)
         
@@ -55,7 +55,6 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
                                    outdir = outdir,
                                    runid = configs$runs$id[i] %>% as.character(),
                                    stop.time = read_restart_times[t+1],
-                                   settings = settings,
                                    var.names = var.names,
                                    params = siteparams[[i]]
                                  )

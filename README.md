@@ -31,8 +31,8 @@ See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that p
 ### Installation
 
 Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of three methods:
-1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
-2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html#install-docker). This is recommended, especially for development and production deployment.
+1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/install-vm.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
+2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/install-docker.html#install-docker). This is recommended, especially for development and production deployment.
 3. Install all of the PEcAn R packages on your own Linux or MacOS computer or server. This can be done by [installing from r-universe](https://pecanproject.github.io/pecan-documentation/develop/r-universe.html): 
 ``` r
 # Enable repository from pecanproject
