@@ -55,10 +55,10 @@ function passvars($ignore) {
     if (!array_key_exists($key, $ignore)) {
       if (is_array($value)) {
         foreach($value as $v) {
-          echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
         }
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }
@@ -84,16 +84,15 @@ function open_database() {
   global $pdo;
 
   try {
-    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database};port=${db_bety_port}", $db_bety_username, $db_bety_password);
+    $pdo = new PDO("{$db_bety_type}:host={$db_bety_hostname};dbname={$db_bety_database};port={$db_bety_port}", $db_bety_username, $db_bety_password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   } catch (PDOException $e) {
     // handler to input database configurations manually
     $host  = $_SERVER['HTTP_HOST'];
-    header("Location: http://$host/setups/edit.php?key=database&message=1",TRUE,307);
-    //echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
+    echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
     die();
   }
-//  $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+//  $pdo = new PDO("{$db_bety_type}:host={$db_bety_hostname};dbname={$db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
 function close_database() {
