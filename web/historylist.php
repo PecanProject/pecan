@@ -48,7 +48,7 @@ if (isset($_REQUEST["search"])) {
 }
 
 if ($where != "") {
-  $query .= "WHERE ${where}";
+  $query .= "WHERE {$where}";
 }
 $query .= "ORDER BY workflows.id DESC";
 
@@ -77,7 +77,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   if ($row['value'] != '') {
     $params = json_decode($row['value'], true);
   } else {
-    $params = eval("return ${row['params']};");
+    $params = eval("return {$row['params']};");
   }
   if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
     $statusfile=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
@@ -100,7 +100,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
   if (($status == "") && ($row['finished_at'] == "")) {
     $url = "05-running.php?workflowid=" . $row['id'];
     if (isset($params['hostname'])) {
-      $url .= "&hostname=${params['hostname']}";
+      $url .= "&hostname={$params['hostname']}";
     }
     $status = "RUNNING";
   }

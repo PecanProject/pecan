@@ -34,7 +34,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 if (!array_key_exists($hostname, $hostlist)) {
-  die("${hostname} is not an approved host");
+  die("{$hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
 
@@ -79,7 +79,7 @@ foreach ($status as $line) {
     if (isset($params['email']) && ($params['email'] != "")) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
       $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
-      $url .= "?workflowid=${workflowid}&loglines=${loglines}&hostname=${hostname}";
+      $url .= "?workflowid={$workflowid}&loglines={$loglines}&hostname={$hostname}";
       if ($offline) {
         $url .= "&offline=offline";
       }
@@ -93,7 +93,7 @@ foreach ($status as $line) {
     $error = true;
   }
   if ($data[0] == "ADVANCED" && count($data) < 3) {
-    header( "Location: 06-edit.php?workflowid=${workflowid}&hostname=${hostname}${offline}");
+    header( "Location: 06-edit.php?workflowid={$workflowid}&hostname={$hostname}{$offline}");
     close_database();
     exit;
   }
@@ -186,22 +186,22 @@ foreach ($status as $line) {
   echo "    <tr>\n";
   if ($data[0] == "BrownDog") {
     echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
-    echo "${data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
+    echo "{$data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
   } else {
-    echo "      <td>${data[0]}</td>\n";    
+    echo "      <td>{$data[0]}</td>\n";    
   }
   if (count($data) >= 2) {
-    echo "      <td>${data[1]}</td>\n";
+    echo "      <td>{$data[1]}</td>\n";
   } else {
     echo "      <td></td>\n";    
   }
   if (count($data) >= 3) {
-    echo "      <td>${data[2]}</td>\n";
+    echo "      <td>{$data[2]}</td>\n";
   } else {
     echo "      <td></td>\n";    
   }
   if (count($data) >= 4) {
-    echo "      <td>${data[3]}</td>\n";
+    echo "      <td>{$data[3]}</td>\n";
   } else {
     $line = "RUNNING";
     if ($data[0] == "MODEL") {
@@ -211,7 +211,7 @@ foreach ($status as $line) {
         }
       }
     }
-    echo "      <td>${line}</td>\n";    
+    echo "      <td>{$line}</td>\n";    
   }
   echo "    <t/r>\n";
 }
@@ -230,9 +230,9 @@ foreach ($status as $line) {
 $lines=array(10, 20, 50, 100);
 foreach($lines as &$v) {
   if ($v == $loglines) {
-    echo "<option selected>${v}</option>";
+    echo "<option selected>{$v}</option>";
   } else {
-    echo "<option>${v}</option>";
+    echo "<option>{$v}</option>";
   }
 }
 ?>
