@@ -61,7 +61,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 if (!array_key_exists($hostname, $hostlist)) {
-  die("${hostname} is not an approved host");
+  die("{$hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
 
@@ -134,19 +134,19 @@ if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 	foreach($_REQUEST as $k => $v) {
 		if (is_array($v)) {
 			foreach($v as $x) {
-				$params .= "&${k}[]=$x";
+				$params .= "&{$k}[]=$x";
 			}
 		} else {
 		  if(strcmp($k, "notes") == 0) {
 			$str = htmlentities($v, ENT_QUOTES);
-			$params .= "&${k}=$str";
+			$params .= "&{$k}=$str";
 		  } else {
-			$params .= "&${k}=$v";
+			$params .= "&{$k}=$v";
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.  START: ${startdate} ${metstart2}   END: ${enddate} ${metend2}";
-	header("Location: checkfailed.php?${params}");
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.  START: {$startdate} {$metstart2}   END: {$enddate} {$metend2}";
+	header("Location: checkfailed.php?{$params}");
 	exit();
 }
 
@@ -189,7 +189,7 @@ if ($db_bety_type == 'pgsql') {
 
 # folders
 $folder = $output_folder . DIRECTORY_SEPARATOR . 'PEcAn_' . $workflowid;
-if ($pdo->query("UPDATE workflows SET folder='${folder}' WHERE id=${workflowid}") === FALSE) {
+if ($pdo->query("UPDATE workflows SET folder='{$folder}' WHERE id={$workflowid}") === FALSE) {
   die('Can\'t update workflow : ' . (error_database()));
 }
 
@@ -216,22 +216,22 @@ umask(0000);
 
 # create the folder(s)
 if (!mkdir($folder)) {
-    die("Can't create output folder [${folder}]");
+    die("Can't create output folder [{$folder}]");
 }
 if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
-    die("Can't create output folder [${dbfiles_folder}]");
+    die("Can't create output folder [{$dbfiles_folder}]");
 }
 if ($hostname != $fqdn) {
     $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
     if (!mkdir($tunnel_folder)) {
-        die("Can't create output folder [${tunnel_folder}]");
+        die("Can't create output folder [{$tunnel_folder}]");
     }
     
     ## data tunnel
     if(isset($hostoptions['data_hostname'])){
         $data_tunnel_folder = $tunnel_folder . DIRECTORY_SEPARATOR . "data"; 
         if (!mkdir($data_tunnel_folder)) {
-            die("Can't create output folder [${data_tunnel_folder}]");
+            die("Can't create output folder [{$data_tunnel_folder}]");
         }
     }
 }
@@ -245,34 +245,34 @@ fwrite($fh, "  <info>" . PHP_EOL);
 fwrite($fh, "    <notes>" . toXML($notes_xml) . "</notes>" . PHP_EOL);
 fwrite($fh, "    <userid>" . get_userid() . "</userid>" . PHP_EOL);
 fwrite($fh, "    <username>" . get_user_name() . "</username>" . PHP_EOL);
-fwrite($fh, "    <date>${runtime}</date>" . PHP_EOL);
+fwrite($fh, "    <date>{$runtime}</date>" . PHP_EOL);
 fwrite($fh, "  </info>" . PHP_EOL);
 
-fwrite($fh, "  <outdir>${folder}</outdir>" . PHP_EOL);
+fwrite($fh, "  <outdir>{$folder}</outdir>" . PHP_EOL);
 
 fwrite($fh, "  <database>" . PHP_EOL);
 
 fwrite($fh, "    <bety>" . PHP_EOL);
-fwrite($fh, "      <user>${db_bety_username}</user>" . PHP_EOL);
-fwrite($fh, "      <password>${db_bety_password}</password>" . PHP_EOL);
-fwrite($fh, "      <host>${db_bety_hostname}</host>" . PHP_EOL);
+fwrite($fh, "      <user>{$db_bety_username}</user>" . PHP_EOL);
+fwrite($fh, "      <password>{$db_bety_password}</password>" . PHP_EOL);
+fwrite($fh, "      <host>{$db_bety_hostname}</host>" . PHP_EOL);
 if (isset($db_bety_port)) {
-        fwrite($fh, "      <port>${db_bety_port}</port>" . PHP_EOL);
+        fwrite($fh, "      <port>{$db_bety_port}</port>" . PHP_EOL);
 }
-fwrite($fh, "      <dbname>${db_bety_database}</dbname>" . PHP_EOL);
+fwrite($fh, "      <dbname>{$db_bety_database}</dbname>" . PHP_EOL);
 fwrite($fh, "      <driver>PostgreSQL</driver>" . PHP_EOL);
 fwrite($fh, "      <write>true</write>" . PHP_EOL);
 fwrite($fh, "    </bety>" . PHP_EOL);
 
 if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "    <fia>" . PHP_EOL);
-	fwrite($fh, "      <user>${db_fia_username}</user>" . PHP_EOL);
-	fwrite($fh, "      <password>${db_fia_password}</password>" . PHP_EOL);
-	fwrite($fh, "      <host>${db_fia_hostname}</host>" . PHP_EOL);
+	fwrite($fh, "      <user>{$db_fia_username}</user>" . PHP_EOL);
+	fwrite($fh, "      <password>{$db_fia_password}</password>" . PHP_EOL);
+	fwrite($fh, "      <host>{$db_fia_hostname}</host>" . PHP_EOL);
         if (isset($db_fia_port)) {
-                fwrite($fh, "      <port>${db_fia_port}</port>" . PHP_EOL);
+                fwrite($fh, "      <port>{$db_fia_port}</port>" . PHP_EOL);
         }
-	fwrite($fh, "      <dbname>${db_fia_database}</dbname>" . PHP_EOL);
+	fwrite($fh, "      <dbname>{$db_fia_database}</dbname>" . PHP_EOL);
 	if ($db_fia_type == "mysql") {
 		fwrite($fh, "      <driver>MySQL</driver>" . PHP_EOL);
 	} else if ($db_fia_type = "pgsql") {
@@ -281,21 +281,21 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "    </fia>" . PHP_EOL);
 }
 
-fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
+fwrite($fh, "    <dbfiles>{$dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 if ($browndog) {
   fwrite($fh, "  <browndog>" . PHP_EOL);
-  fwrite($fh, "    <url>${browndog_url}</url>" . PHP_EOL);
-  fwrite($fh, "    <username>${browndog_username}</username>" . PHP_EOL);
-  fwrite($fh, "    <password>${browndog_password}</password>" . PHP_EOL);
+  fwrite($fh, "    <url>{$browndog_url}</url>" . PHP_EOL);
+  fwrite($fh, "    <username>{$browndog_username}</username>" . PHP_EOL);
+  fwrite($fh, "    <password>{$browndog_password}</password>" . PHP_EOL);
   fwrite($fh, "  </browndog>" . PHP_EOL);
 }
 
 fwrite($fh, "  <pfts>" . PHP_EOL);
 foreach($pft as $p) {
 	fwrite($fh, "    <pft>" . PHP_EOL);
-	fwrite($fh, "      <name>${p}</name> " . PHP_EOL);
+	fwrite($fh, "      <name>{$p}</name> " . PHP_EOL);
 	fwrite($fh, "    </pft>" . PHP_EOL);
 }
 fwrite($fh, "  </pfts>" . PHP_EOL);
@@ -310,11 +310,11 @@ fwrite($fh, "  </meta.analysis>" . PHP_EOL);
 
 if (!empty($runs)){
 	fwrite($fh, "  <ensemble>" . PHP_EOL);
-	fwrite($fh, "   <size>${runs}</size>" . PHP_EOL);
-	fwrite($fh, "   <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "   <size>{$runs}</size>" . PHP_EOL);
+	fwrite($fh, "   <variable>{$variables}</variable>" . PHP_EOL);
 	fwrite($fh, "   <samplingspace>" . PHP_EOL);
 	fwrite($fh, "   <parameters>" . PHP_EOL);
-	fwrite($fh, "    <method>${parm_method}</method>" . PHP_EOL);
+	fwrite($fh, "    <method>{$parm_method}</method>" . PHP_EOL);
 	fwrite($fh, "   </parameters>" . PHP_EOL);
 	fwrite($fh, "   <met>" . PHP_EOL);
 	fwrite($fh, "    <method>sampling</method>" . PHP_EOL);
@@ -340,17 +340,17 @@ if (!empty($sensitivity)) {
 	fwrite($fh, "  <sensitivity.analysis>" . PHP_EOL);
 	fwrite($fh, "    <quantiles>" . PHP_EOL);
 	foreach($sensitivity as $s) {
-		fwrite($fh, "      <sigma>${s}</sigma>" . PHP_EOL);
+		fwrite($fh, "      <sigma>{$s}</sigma>" . PHP_EOL);
 	}
 	fwrite($fh, "    </quantiles>" . PHP_EOL);
-	fwrite($fh, "    <variable>${variables}</variable>" . PHP_EOL);
+	fwrite($fh, "    <variable>{$variables}</variable>" . PHP_EOL);
 	fwrite($fh, "  </sensitivity.analysis>" . PHP_EOL);
 }
 
 fwrite($fh, "  <model>" . PHP_EOL);
-fwrite($fh, "    <id>${modelid}</id>" . PHP_EOL);
+fwrite($fh, "    <id>{$modelid}</id>" . PHP_EOL);
 if ($modeltype == "ED2") {
-  fwrite($fh, "    <edin>ED2IN.r${revision}</edin>" . PHP_EOL);
+  fwrite($fh, "    <edin>ED2IN.r{$revision}</edin>" . PHP_EOL);
 	fwrite($fh, "    <config.header>" . PHP_EOL);
 	fwrite($fh, "      <radiation>" . PHP_EOL);
 	fwrite($fh, "        <lai_min>0.01</lai_min>" . PHP_EOL);
@@ -362,9 +362,9 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
 if (isset($hostoptions['models'])) {
-  $model_version="${modeltype}";
-  if (isset($hostoptions['models']["${modeltype} (r${revision})"])) {
-    $model_version="${modeltype} (r${revision})";
+  $model_version="{$modeltype}";
+  if (isset($hostoptions['models']["{$modeltype} (r{$revision})"])) {
+    $model_version="{$modeltype} (r{$revision})";
   }
   if (isset($hostoptions['models'][$model_version])) {
     if (is_array($hostoptions['models'][$model_version])) {
@@ -385,42 +385,42 @@ fwrite($fh, "    <id>$workflowid</id>" . PHP_EOL);
 fwrite($fh, "  </workflow>" . PHP_EOL);
 fwrite($fh, "  <run>" . PHP_EOL);
 fwrite($fh, "    <site>" . PHP_EOL);
-fwrite($fh, "      <id>${siteid}</id>" . PHP_EOL);
-fwrite($fh, "      <met.start>${metstart}</met.start>" . PHP_EOL);
-fwrite($fh, "      <met.end>${metend}</met.end>" . PHP_EOL);
+fwrite($fh, "      <id>{$siteid}</id>" . PHP_EOL);
+fwrite($fh, "      <met.start>{$metstart}</met.start>" . PHP_EOL);
+fwrite($fh, "      <met.end>{$metend}</met.end>" . PHP_EOL);
 fwrite($fh, "    </site>" . PHP_EOL);
 fwrite($fh, "    <inputs>" . PHP_EOL);
 foreach($_REQUEST as $key => $val) {
   if (substr($key, 0, 6) != "input_") continue;
   if ($val == -1) continue;
   $tag=substr($key, 6);
-  fwrite($fh, "      <${tag}>" . PHP_EOL);
+  fwrite($fh, "      <{$tag}>" . PHP_EOL);
   if (is_numeric($val)) {
-    fwrite($fh, "        <id>${val}</id>" . PHP_EOL);
+    fwrite($fh, "        <id>{$val}</id>" . PHP_EOL);
   } else {
     $parts=explode(".", $val, 3);
-    fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
-    fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
-    fwrite($fh, "        <product>${parts[2]}</product>" . PHP_EOL);
+    fwrite($fh, "        <source>{$parts[0]}</source>" . PHP_EOL);
+    fwrite($fh, "        <output>{$parts[1]}</output>" . PHP_EOL);
+    fwrite($fh, "        <product>{$parts[2]}</product>" . PHP_EOL);
     if (isset($_REQUEST['fluxusername'])) {
-      fwrite($fh, "      <username>${_REQUEST['fluxusername']}</username>" . PHP_EOL);
+      fwrite($fh, "      <username>{$_REQUEST['fluxusername']}</username>" . PHP_EOL);
     }
   }
-  fwrite($fh, "      </${tag}>" . PHP_EOL);
+  fwrite($fh, "      </{$tag}>" . PHP_EOL);
 }
 fwrite($fh, "    </inputs>" . PHP_EOL);
-fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
-fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
+fwrite($fh, "    <start.date>{$startdate}</start.date>" . PHP_EOL);
+fwrite($fh, "    <end.date>{$enddate}</end.date>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
 
 fwrite($fh, "  <host>" . PHP_EOL);
 if ($hostname == $fqdn) {
   fwrite($fh, "    <name>localhost</name>" . PHP_EOL);
 } else {
-  fwrite($fh, "    <name>${hostname}</name>" . PHP_EOL);
+  fwrite($fh, "    <name>{$hostname}</name>" . PHP_EOL);
 }
 if ($tunnel_username != "") {
-  fwrite($fh, "    <user>${tunnel_username}</user>" . PHP_EOL);
+  fwrite($fh, "    <user>{$tunnel_username}</user>" . PHP_EOL);
 }
 if (isset($hostoptions['folder'])) {
   $remote = $hostoptions['folder'];
@@ -476,20 +476,20 @@ if ($email != "") {
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
 	$url .= str_replace("04-runpecan.php", "08-finished.php", $_SERVER["SCRIPT_NAME"]);
 	if ($offline) {
-		$url .= "?workflowid=${workflowid}&offline=offline";
+		$url .= "?workflowid={$workflowid}&offline=offline";
 	} else {
-		$url .= "?workflowid=${workflowid}";
+		$url .= "?workflowid={$workflowid}";
 	}
 	fwrite($fh, "  <email>" . PHP_EOL);
-  fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
-  fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
+  fwrite($fh, "    <to>{$email}</to>" . PHP_EOL);
+  fwrite($fh, "    <url>{$url}</url>" . PHP_EOL);
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh);
 
 # copy workflow
-copy("workflow.R", "${folder}/workflow.R");
+copy("workflow.R", "{$folder}/workflow.R");
 
 # create the tunnel
 if ($hostname != $fqdn) {
@@ -499,7 +499,7 @@ if ($hostname != $fqdn) {
     fclose($fh);
 
     # start tunnel
-    pclose(popen("${SSHtunnel} ${hostname} ${tunnel_username} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    pclose(popen("{$SSHtunnel} {$hostname} {$tunnel_username} {$tunnel_folder} > {$tunnel_folder}/log &", 'r'));
     
     ## data tunnel
     if(isset($hostoptions['data_hostname'])){
@@ -509,21 +509,21 @@ if ($hostname != $fqdn) {
         fclose($fh);
 
         # start tunnel
-        pclose(popen("${SSHtunnel} ${hostoptions['data_hostname']} ${tunnel_username} ${data_tunnel_folder} > ${data_tunnel_folder}/log &", 'r'));
+        pclose(popen("{$SSHtunnel} {$hostoptions['data_hostname']} {$tunnel_username} {$data_tunnel_folder} > {$data_tunnel_folder}/log &", 'r'));
     
     }
 }
 
 # redirect to the right location
 if ($pecan_edit) {
-  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit&hostname=${hostname}";
+  $path = "06-edit.php?workflowid=$workflowid&pecan_edit=pecan_edit&hostname={$hostname}";
   if ($model_edit) {
     $path .= "&model_edit=model_edit";
   }
   if ($offline) {
     $path .= "&offline=offline";
   }
-  header("Location: ${path}");
+  header("Location: {$path}");
 } else if (isset($hostoptions['rabbitmq_uri'])) {
   $rabbitmq_uri = $hostoptions['rabbitmq_uri'];
   if (isset($hostoptions['rabbitmq_queue'])) {
@@ -541,7 +541,7 @@ if ($pecan_edit) {
   send_rabbitmq_message($message, $rabbitmq_uri, $rabbitmq_queue);
 
   #done
-  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
+  $path = "05-running.php?workflowid=$workflowid&hostname={$hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }
@@ -551,7 +551,7 @@ if ($pecan_edit) {
   if ($offline) {
     $path .= "&offline=offline";
   }
-  header("Location: ${path}");
+  header("Location: {$path}");
 } else {
   # start the actual workflow
   chdir($folder);
@@ -563,7 +563,7 @@ if ($pecan_edit) {
   }
 
   #done
-  $path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
+  $path = "05-running.php?workflowid=$workflowid&hostname={$hostname}";
   if ($pecan_edit) {
     $path .= "&pecan_edit=pecan_edit";
   }
@@ -573,7 +573,7 @@ if ($pecan_edit) {
   if ($offline) {
     $path .= "&offline=offline";
   }
-  header("Location: ${path}");
+  header("Location: {$path}");
 }
 
 close_database();
