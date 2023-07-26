@@ -78,6 +78,27 @@ for (s in seq_along(runDays)) {
                       stderr="stderr.log")
         print(msg)
         
+        
+        ## check that model2netcdf was run
+        this.out = dir(file.path(now,"out"),full.names = TRUE)
+        for(i in seq_along(this.out)){
+          ## get files
+          ncf = dir(this.out[i],pattern = "*.nc$",full.names = TRUE)
+          out = dir(this.out[i],pattern = "*.out$",full.names = TRUE)
+          if(length(out) >= 1 & length(ncf) == 0){
+              PEcAn.SIPNET::model2netcdf.SIPNET(outdir = this.out[i],
+                                                sitelat=set[[1]]$run$site$lat,   ## works for HF but need to generalize this hard coding to match site
+                                                sitelon=set[[1]]$run$site$lat,
+                                                start_date = runDays[s],
+                                                end_date   = as.Date(runDays[s]) + lubridate::days(35),
+                                                revision   = "ssr",
+                                                delete.raw = FALSE,
+                                                conflict   = TRUE
+              )
+          }
+        }
+        
+        
       }
     } else { break }
   } else {

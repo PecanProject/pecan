@@ -334,29 +334,29 @@ sda.enkf.multisite <- function(settings,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   # Reading param samples------------------------------- 
-    #create params object using samples generated from TRAITS functions
-    if(restart_flag){
-      new.params <- new.params
-    }else{
-      if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
-      #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-      if(is.null(ensemble.samples)){
-        load(file.path(settings$outdir, "samples.Rdata"))
-      }
-      #reformatting params
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+  #create params object using samples generated from TRAITS functions
+  if(restart_flag){
+    new.params <- new.params
+  }else{
+    if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
+    #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+    if(is.null(ensemble.samples)){
+      load(file.path(settings$outdir, "samples.Rdata"))
     }
-      #sample met ensemble members
-      #TODO: incorporate Phyllis's restart work
-      #      sample all inputs specified in the settings$ensemble not just met
-      inputs <- PEcAn.settings::papply(conf.settings,function(setting) {
-        PEcAn.uncertainty::input.ens.gen(
-          settings = setting,
-          input = "met",
-          method = setting$ensemble$samplingspace$met$method,
-          parent_ids = NULL 
-        )
-       })
+    #reformatting params
+    new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+  }
+  #sample met ensemble members
+  #TODO: incorporate Phyllis's restart work
+  #      sample all inputs specified in the settings$ensemble not just met
+  inputs <- PEcAn.settings::papply(conf.settings,function(setting) {
+    PEcAn.uncertainty::input.ens.gen(
+      settings = setting,
+      input = "met",
+      method = setting$ensemble$samplingspace$met$method,
+      parent_ids = NULL 
+    )
+  })
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
