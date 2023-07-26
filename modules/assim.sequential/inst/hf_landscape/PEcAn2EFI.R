@@ -63,7 +63,7 @@ PEcAn2EFI <- function(outdir = NULL, ne = NULL, site_id = NULL, start_date=NULL,
     ensemble.output[[row]]$time_bounds = tod
     
     ## convert to data frame
-    ensemble.output[[row]]  = as.data.frame(ensemble.output[[row]]) %>% 
+    ensemble.output[[row]]  = as.data.frame(ensemble.output[[row]]) |> 
       dplyr::mutate(
         parameter = row,
         reference_datetime = lubridate::as_datetime(start_date),
@@ -99,7 +99,7 @@ PEcAn2EFI.ens <- function(outdir,run.id,start_date,end_date = NULL){
   ensemble.output$time_bounds = tod
   
   ## convert to data frame
-  ensemble.output  = as.data.frame(ensemble.output) %>% 
+  ensemble.output  = as.data.frame(ensemble.output) |> 
     dplyr::mutate(
       parameter = ens.id,
       reference_datetime = lubridate::as_datetime(start_date),
