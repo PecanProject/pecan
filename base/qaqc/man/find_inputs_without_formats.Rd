@@ -23,7 +23,7 @@ find_inputs_without_formats(
 \item{updated_before, updated_after}{Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'}
 }
 \description{
-This is a function that returns a dataframe with all of the input entries that have no assosiated format records.
+This is a function that returns a dataframe with all of the input entries that have no associated format records.
 This is very rare in the database.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
