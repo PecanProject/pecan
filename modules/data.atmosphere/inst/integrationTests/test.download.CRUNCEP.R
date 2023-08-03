@@ -2,9 +2,6 @@ library(testthat)
 library(ncdf4)
 library(lubridate)
 
-skip_on_ci()
-skip_if_offline()
-
 tmpdir <- tempfile(pattern = "CRUNCEPdata")
 dir.create(tmpdir)
 on.exit(teardown(unlink(tmpdir, recursive = TRUE)))
@@ -125,6 +122,7 @@ var <- tibble::tribble(
   "rain", "precipitation_flux", "kg/m2/s"
 )
 
+## NCSS
 for (i in seq_len(rows)) {
   year <- ylist[i]
   ntime <- 1464
@@ -243,4 +241,38 @@ test_that("All the required files are downloaded and stored at desired location"
   
   # CRUNCEP file
   expect_true(file.exists(paste0(tmpdir, "/CRUNCEP.2000.nc")))
+})
+
+test_that("All cruncep raw data files have the correct variable units", {
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-tair.nc"))
+  expect_equal(nc$var$tair$units, "K")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-lwdown.nc"))
+  expect_equal(nc$var$lwdown$units, "W/m2")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-press.nc"))
+  expect_equal(nc$var$press$units, "Pa")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-swdown.nc"))
+  expect_equal(nc$var$swdown$units, "W/m2")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-uwind.nc"))
+  expect_equal(nc$var$uwind$units, "m/s")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-vwind.nc"))
+  expect_equal(nc$var$vwind$units, "m/s")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-qair.nc"))
+  expect_equal(nc$var$qair$units, "g/g")
+  nc_close(nc)
+
+  nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-rain.nc"))
+  expect_equal(nc$var$rain$units, "mm/6h")
+  nc_close(nc)
 })
