@@ -101,14 +101,6 @@ end_year <- lubridate::year(end_date)
 # year - 2000
 ylist <- seq(start_year, end_year, by = 1)
 rows <- length(ylist)
-results <- data.frame(file = character(rows),
-                      host = character(rows),
-                      mimetype = character(rows),
-                      formatname = character(rows),
-                      startdate = character(rows),
-                      enddate = character(rows),
-                      dbfile.name = "CRUNCEP",
-                      stringsAsFactors = FALSE)
 
 var <- tibble::tribble(
   ~DAP.name, ~CF.name, ~units,
@@ -122,19 +114,12 @@ var <- tibble::tribble(
   "rain", "precipitation_flux", "kg/m2/s"
 )
 
-## NCSS
 for (i in seq_len(rows)) {
   year <- ylist[i]
   ntime <- 1464
   
   loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
-  results$file[i] <- loc.file
-  results$host[i] <- "localhost"
-  results$startdate[i] <- paste0(year, "-01-01 00:00:00")
-  results$enddate[i] <- paste0(year, "-12-31 23:59:59")
-  results$mimetype[i] <- "application/x-netcdf"
-  results$formatname[i] <- "CF Meteorology"
-  
+
   ## Create dimensions
   lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -149,7 +134,6 @@ for (i in seq_len(rows)) {
   dat.list <- list()
   
   file_name <- "mstmip_driver_global_hd_climate_%1$s_%2$d_v1.nc4"
-  ## get data off OpenDAP
   
   dap_base <- switch(
     method,
@@ -169,17 +153,13 @@ for (i in seq_len(rows)) {
         "var={current_var}&",
         "south={lat.in}&",
         "west={lon.in}&",
-        # Add tiny amount to latitude and longitude to satisfy
-        # non-point condition, but still be within grid cell.
         "north={lat.in + 5e-6}&",
         "east={lon.in + 5e-6}&",
-        # Year starts at 00:00:00 and ends at 21:00:00
         "time_start={year}-01-01T00:00:00Z&",
         "time_end={year}-12-31T21:00:00Z&",
         "accept=netcdf"
       )
-      # Cache raw CRUNCEP files so that later workflows don't have to download
-      # them (even if they do have to do some reprocessing).
+
       raw_file <- file.path(
         outfolder,
         glue::glue("cruncep-raw-{year}-{lat.in}-{lon.in}-{current_var}.nc")
@@ -188,7 +168,6 @@ for (i in seq_len(rows)) {
       dap <- ncdf4::nc_open(raw_file)
     }
     
-    # confirm that timestamps match
     if (dap$dim$time$len != ntime) {
       print(paste0("Expected", ntime, "observations, but", url,  "contained", dap$dim$time$len))
     }
@@ -274,5 +253,18 @@ test_that("All cruncep raw data files have the correct variable units", {
 
   nc <- nc_open(paste0(tmpdir, "/cruncep-raw-2000-40--88-rain.nc"))
   expect_equal(nc$var$rain$units, "mm/6h")
+  nc_close(nc)
+})
+
+test_that("Combined data file has the correct variable units", {
+  nc <- nc_open(paste0(tmpdir, "/CRUNCEP.2000.nc"))
+  expect_equal(nc$var$air_temperature$units, "Kelvin")
+  expect_equal(nc$var$surface_downwelling_longwave_flux_in_air$units, "W/m2")
+  expect_equal(nc$var$air_pressure$units, "Pascal")
+  expect_equal(nc$var$surface_downwelling_shortwave_flux_in_air$units, "W/m2")
+  expect_equal(nc$var$eastward_wind$units, "m/s")
+  expect_equal(nc$var$northward_wind$units, "m/s")
+  expect_equal(nc$var$specific_humidity$units, "g/g")
+  expect_equal(nc$var$precipitation_flux$units, "kg/m2/s")
   nc_close(nc)
 })
