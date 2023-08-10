@@ -245,16 +245,16 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
     } else {
-      out <- PEcAn.remote::start_serial(
-        run = run,
-        host = settings$host,
-        rundir = settings$rundir,
-        host_rundir = settings$host$rundir,
-        job_script = "launcher.sh")
-      
-      # check output to see if an error occurred during the model run
-      PEcAn.remote::check_model_run(out = out, stop.on.error = TRUE)
-      
+      for (run in job_modellauncher) {
+        out <- PEcAn.remote::start_serial(
+            run = run,
+            host = settings$host,
+            rundir = settings$rundir,
+            host_rundir = settings$host$rundir,
+            job_script = "launcher.sh")
+        # check output to see if an error occurred during the model run
+        PEcAn.remote::check_model_run(out = out, stop.on.error = TRUE)
+      }
       # write finished time to database
       for (run in run_list) {
         PEcAn.DB::stamp_finished(con = dbcon, run = run)
