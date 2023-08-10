@@ -600,6 +600,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
+  if (!is.null(settings$run$write.raw.output)) {
+    jobsh <- gsub("@WRITE_RAW_OUTPUT@", settings$run$write.raw.output, jobsh)
+  } else {
+    jobsh <- gsub("@WRITE_RAW_OUTPUT@", FALSE, jobsh)
+  }
   
   jobsh <- gsub(
     "@RUN_PARAMS@",

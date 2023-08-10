@@ -27,7 +27,7 @@
 ##-------------------------------------------------------------------------------------------------#
 
 run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_date, end_date, outdir, 
-                       sitelat, sitelon, co2_file = NULL){
+                       sitelat, sitelon, co2_file = NULL, write_raw_output = FALSE){
   
   start_date  <- as.POSIXlt(start_date, tz = "UTC")
   if(lubridate::hour(start_date) == 23){ 
@@ -75,8 +75,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       
       matrix_weather[ ,1] <- rep(year, NDAYS) # year
       matrix_weather[ ,2] <- simdays
-      
-      if(grepl(year, basename(file_path))){
+
+      if(endsWith(file_path, '.nc')){
         # we probably have a (near-term) forecast met
         old.file <- file_path
       }else{
@@ -104,7 +104,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
           origin_dt <- as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC")
           # below -dt means that midnights belong to the day that ends. This is consistent
           # with data files which are exclusive of the 1 Jan midnight + dt till 1 Jan next year.
-          ydays <- lubridate::yday(origin_dt + sec - dt) 
+          # ydays <- lubridate::yday(origin_dt + sec - dt)
+          ydays <- lubridate::yday(origin_dt + sec) 
         } else {
           PEcAn.logger::logger.error("Check units of time in the weather data.")
         }
@@ -175,7 +176,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         ncdf4::nc_close(nc)
       } else {
-        PEcAn.logger::logger.info("File for year", year, "not found. Skipping to next year")
+        PEcAn.logger::logger.info("File for year", year, old.file, "not found. Skipping to next year")
         next
       }
       
@@ -334,7 +335,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     PEcAn.logger::logger.severe(c('Bad column names in harvest file: ', colnames(df_harvest)))
   }
   days_harvest <- matrix(as.integer(-1), nrow= 300, ncol = 2)
-  days_harvest[1:n_events,1:2] <- as.matrix(df_harvest[,c('year', 'doy')])
+  if (n_events > 0) {
+    days_harvest[1:n_events,1:2] <- as.matrix(df_harvest[,c('year', 'doy')])
+  }
   if ('CLAIV' %in% colnames(df_harvest)) {
     harvest_params[1:n_events,1] <- df_harvest$CLAIV
   } else { # default
@@ -381,8 +384,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                      matrix(0, NDAYS, NOUT))[[10]]
   # for now a hack to write other states out
   # save(output, file = file.path(outdir, "output_basgra.Rdata"))
-  
-  write.csv(setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
+  if (write_raw_output) {
+    write.csv(setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
+  }
   last_vals <- output[nrow(output),]
   names(last_vals) <- outputNames
   save(last_vals, file = file.path(outdir, "last_vals_basgra.Rdata"))
