@@ -232,13 +232,6 @@ do day = 1, NDAYS
      harv_n_to_litt = 0.0
   end if
       
-  CLV     = CLV     - HARVLV
-  CRES    = CRES    - HARVRE
-  CST     = CST     - HARVST
-  LAI     = LAI     - HARVLA
-  PHEN    = min(1., PHEN - HARVPH)
-  TILG2   = TILG2   - HARVTILG2
-  NSH       = NSH   - HARVNSH 
   
   call Biomass        (CLV,CRES,CST)
   call Phenology      (DAYL,PHEN,                      DPHEN,GPHEN)
@@ -374,6 +367,15 @@ do day = 1, NDAYS
 
   Nfert_TOT = Nfert_TOT + Nfert
   DM_MAX    = max( DM, DM_MAX )
+
+  CLV     = CLV     - HARVLV
+  CRES    = CRES    - HARVRE
+  CST     = CST     - HARVST
+  LAI     = LAI     - HARVLA
+  PHEN    = min(1., PHEN - HARVPH)
+  TILG2   = TILG2   - HARVTILG2
+  NSH       = NSH   - HARVNSH 
+
   
   ! State equations soil
   if (use_yasso) then
