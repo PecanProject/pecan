@@ -296,7 +296,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
       )
     }
-    
+
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
@@ -497,7 +497,9 @@ input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NUL
   if (input == "parameters") return(NULL)
 
   #-- assing the sample ids based on different scenarios
-  input_path <- settings$run$inputs[[tolower(input)]]$path
+  # input_path <- settings$run$inputs[[tolower(input)]]$path
+  select_path_tags <- names(settings$run$inputs[[tolower(input)]]) == 'path'
+  input_path <- unlist(settings$run$inputs[[tolower(input)]])[select_path_tags]
   if (!is.null(parent_ids)) {
     samples$ids <- parent_ids$ids
     out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
