@@ -74,6 +74,7 @@ integer, parameter, public :: met_ind_init = 1
 public get_params
 public decompose
 public initialize
+public initialize_totc
 public average_met
 public partition_nitr
 public inputs_to_fractions
@@ -161,6 +162,52 @@ contains
     end do
     
   end subroutine initialize
+
+  subroutine initialize_totc(param, totc, totn, fract_root_input, fract_legacy_soc, &
+       tempr_c, precip_day, tempr_ampl, cstate, nstate)
+    ! Another, simpler initialization method which enforces the total C and N stocks
+    ! strictly and requires setting the fraction of "legacy" carbon explicitly. Given a
+    ! total C, the C pools are set as a weighted combination of an equilibrated
+    ! partitioning and a "legacy" partitioning where all C is assigned to the H pool. The
+    ! weighting is given by the fract_legacy_soc parameter.
+    ! 
+    real, intent(in) :: param(:) ! parameter vector
+    real, intent(in) :: totc ! total C pool
+    real, intent(in) :: totn ! total N pool
+    real, intent(in) :: fract_root_input ! fraction of input C with the fineroot composition
+    real, intent(in) :: fract_legacy_soc
+    real, intent(in) :: tempr_c
+    real, intent(in) :: tempr_ampl
+    real, intent(in) :: precip_day ! mm
+    real, intent(out) :: cstate(statesize_yasso)
+    real, intent(out) :: nstate ! nitrogen
+
+    real, parameter :: legacy_state(statesize_yasso) = (/0.0, 0.0, 0.0, 0.0, 1.0/)
+    real :: matrix(statesize_yasso, statesize_yasso)
+    real :: unit_input(statesize_yasso)
+    real :: tmpstate(statesize_yasso)
+    real :: eqstate(statesize_yasso)
+    real :: eqfac
+    
+    call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl,  matrix)
+    if (fract_root_input < 0.0 .or. fract_root_input > 1) then
+       print *, 'Bad fract_root_input:', fract_root_input
+       error stop
+    end if
+    if (fract_legacy_soc < 0.0 .or. fract_legacy_soc > 1) then
+       print *, 'Bad fract_legacy_soc:', fract_legacy_soc
+       error stop
+    end if
+    
+    unit_input = fract_root_input * awenh_fineroot + (1.0 - fract_root_input) * awenh_leaf
+    call solve(matrix, -unit_input, tmpstate)
+    eqfac = totc / sum(tmpstate)
+    eqstate = eqfac * tmpstate
+
+    cstate = fract_legacy_soc * legacy_state * totc + (1.0 - fract_legacy_soc) * eqstate
+    nstate = totn
+    
+  end subroutine initialize_totc
 
   subroutine inputs_to_fractions(leaf, root, soluble, compost, fract)
     ! Split C in various types of inputs into the (here hard-coded) YASSO fractions
