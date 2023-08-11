@@ -138,8 +138,8 @@
 "use_yasso",0
 "use_nitrogen",1
 "cn_h_min",10                                                                                                                       
-"totc_min_init",16000                                                                                                                   
-"hist_carbon_input",600.0
+"totc_init",16000                                                                                                                   
+"fract_legacy_c",0.0
 "hist_mean_tempr",5.0
 "hist_yearly_precip",600
 "hist_tempr_ampl",10

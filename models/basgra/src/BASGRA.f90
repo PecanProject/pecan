@@ -160,15 +160,28 @@ if (use_yasso) then
    end if
    yasso_met_ind = 1
    call get_params(param_y20_map, yasso_alpha_awen, yasso_beta12, yasso_decomp_pc, yasso_param)
-   call initialize(&
+   ! call initialize(&
+   !      yasso_param, &
+   !      0.3 * hist_carbon_input / 365.0, &
+   !      0.7 * hist_carbon_input / 365.0, &
+   !      hist_carbon_input * 0.02 / 365.0, & ! C:N 50 for carbon input
+   !      hist_mean_tempr, hist_yearly_precip / 365.0, hist_tempr_ampl, &
+   !      totc_min_init, &
+   !      yasso_cstate, &
+   !      yasso_nstate)
+
+   call initialize_totc(&
         yasso_param, &
-        0.3 * hist_carbon_input / 365.0, &
-        0.7 * hist_carbon_input / 365.0, &
-        hist_carbon_input * 0.02 / 365.0, & ! C:N 50 for carbon input
-        hist_mean_tempr, hist_yearly_precip / 365.0, hist_tempr_ampl, &
-        totc_min_init, &
-        yasso_cstate, &
-        yasso_nstate)
+        totc_init, &
+        cn_input = 50.0, &
+        fract_root_input = 0.7, &
+        fract_legacy_soc = fract_legacy_c, &
+        tempr_c = hist_mean_tempr, &
+        precip_day = hist_yearly_precip / 365.0, &
+        tempr_ampl = hist_tempr_ampl, &
+        cstate = yasso_cstate, nstate = yasso_nstate)
+   
+   
 else
    ! Initial constants for soil state variables
    CLITT      = CLITT0

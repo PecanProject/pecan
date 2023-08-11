@@ -178,8 +178,8 @@ contains
     use_yasso = pa(137) > 0
     use_nitrogen = pa(138) > 0
     cn_h_min = pa(139)
-    totc_min_init = pa(140)
-    hist_carbon_input = pa(141)
+    totc_init = pa(140)
+    fract_legacy_c = pa(141)
     hist_mean_tempr = pa(142)
     hist_yearly_precip = pa(143)
     hist_tempr_ampl = pa(144)

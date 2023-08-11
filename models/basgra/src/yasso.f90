@@ -122,16 +122,7 @@ contains
     real :: neg_c_input_yr(statesize_yasso)
     real :: matrix(statesize_yasso, statesize_yasso)
     real :: totc
-    real :: decomp_h
-    real :: cue
-    real :: cupt_awen
-    real :: nc_awen
-    real :: growth_c
-    real :: resp
-    integer :: cue_iter
-    real :: nc_som
 
-    integer, parameter :: max_cue_iter = 10
     
     ! Carbon
     ! 
@@ -148,32 +139,59 @@ contains
 
     ! Nitrogen
     !
+    call eval_steadystate_nitr(&
+         cstate, &
+         -sum(neg_c_input_yr), & ! respiration equal to C input in equilibrium
+         flux_nitr_day * days_yr, & 
+         matrix, &
+         nstate)
+    
+  end subroutine initialize
+
+  subroutine eval_steadystate_nitr(cstate, resp_yr, nitr_input_yr, matrix, nstate)
+    ! evaluate the steady state N pool based on the steady state C pools.
+    real, intent(in) :: cstate(statesize_yasso)
+    real, intent(in) :: resp_yr ! respiration in steady state == negative input
+    real, intent(in) :: nitr_input_yr ! nitrogen input
+    real, intent(in) :: matrix(statesize_yasso, statesize_yasso) ! the matrix used in steady state computation
+    real, intent(out) :: nstate ! steady state N
+
+    integer, parameter :: max_cue_iter = 10
+
+    real :: decomp_h
+    real :: cue
+    real :: cupt_awen
+    real :: nc_awen
+    real :: growth_c
+    integer :: cue_iter
+    real :: nc_som
+    
     decomp_h = matrix(5,5) * cstate(5)
     cue = 0.43 ! initially
-    resp = -sum(neg_c_input_yr) ! respiration equal to C input in equilibrium
+    
     do cue_iter = 1, max_cue_iter
-       cupt_awen = (resp - decomp_h) / (1.0 - cue)
+       cupt_awen = (resp_yr - decomp_h) / (1.0 - cue)
        growth_c = cue * cupt_awen
        ! Solve nc_awen from the state equation (below) such that nstate becomes stationary:
-       nc_awen = (1.0 / cupt_awen) * (nc_mb * cue * cupt_awen - nc_h_max*decomp_h + flux_nitr_day*days_yr)
+       nc_awen = (1.0 / cupt_awen) * (nc_mb * cue * cupt_awen - nc_h_max*decomp_h + nitr_input_yr)
        nstate = sum(cstate(1:4)) * nc_awen + nc_h_max * cstate(5)
        nc_som = nstate / sum(cstate)
        cue = max(min(0.43 * (nc_som / nc_mb) ** 0.6, 1.0), cue_min)
     end do
     
-  end subroutine initialize
-
-  subroutine initialize_totc(param, totc, totn, fract_root_input, fract_legacy_soc, &
+  end subroutine eval_steadystate_nitr
+  
+  subroutine initialize_totc(param, totc, cn_input, fract_root_input, fract_legacy_soc, &
        tempr_c, precip_day, tempr_ampl, cstate, nstate)
     ! Another, simpler initialization method which enforces the total C and N stocks
     ! strictly and requires setting the fraction of "legacy" carbon explicitly. Given a
     ! total C, the C pools are set as a weighted combination of an equilibrated
     ! partitioning and a "legacy" partitioning where all C is assigned to the H pool. The
-    ! weighting is given by the fract_legacy_soc parameter.
-    ! 
+    ! weighting is given by the fract_legacy_soc parameter. The N pool is set analoguously
+    ! with the equilibrium N depending on the given C:N ratio of input.
     real, intent(in) :: param(:) ! parameter vector
     real, intent(in) :: totc ! total C pool
-    real, intent(in) :: totn ! total N pool
+    real, intent(in) :: cn_input ! C:N ratio of the steady-state input 
     real, intent(in) :: fract_root_input ! fraction of input C with the fineroot composition
     real, intent(in) :: fract_legacy_soc
     real, intent(in) :: tempr_c
@@ -188,6 +206,7 @@ contains
     real :: tmpstate(statesize_yasso)
     real :: eqstate(statesize_yasso)
     real :: eqfac
+    real :: eqnitr
     
     call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl,  matrix)
     if (fract_root_input < 0.0 .or. fract_root_input > 1) then
@@ -203,9 +222,10 @@ contains
     call solve(matrix, -unit_input, tmpstate)
     eqfac = totc / sum(tmpstate)
     eqstate = eqfac * tmpstate
-
+    call eval_steadystate_nitr(eqstate, eqfac, eqfac / cn_input, matrix, eqnitr)
+    
     cstate = fract_legacy_soc * legacy_state * totc + (1.0 - fract_legacy_soc) * eqstate
-    nstate = totn
+    nstate = fract_legacy_soc * totc * nc_h_max + (1.0 - fract_legacy_soc) * eqnitr
     
   end subroutine initialize_totc
 
