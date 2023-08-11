@@ -208,7 +208,7 @@ contains
     real :: eqfac
     real :: eqnitr
     
-    call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl,  matrix)
+    call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl, matrix)
     if (fract_root_input < 0.0 .or. fract_root_input > 1) then
        print *, 'Bad fract_root_input:', fract_root_input
        error stop
@@ -226,7 +226,13 @@ contains
     
     cstate = fract_legacy_soc * legacy_state * totc + (1.0 - fract_legacy_soc) * eqstate
     nstate = fract_legacy_soc * totc * nc_h_max + (1.0 - fract_legacy_soc) * eqnitr
-    
+
+    print *, 'TOTC INITIALIZATION'
+    print *, 'CSTATE:', cstate
+    print *, 'C:N ratio:', sum(cstate)/nstate
+    print *, 'Equlibrium C input:', eqfac
+    print *, 'legacy fraction:', fract_legacy_soc
+    print *, 'equilibrium state:', eqstate
   end subroutine initialize_totc
 
   subroutine inputs_to_fractions(leaf, root, soluble, compost, fract)
