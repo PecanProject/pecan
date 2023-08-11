@@ -497,9 +497,7 @@ input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NUL
   if (input == "parameters") return(NULL)
 
   #-- assing the sample ids based on different scenarios
-  # input_path <- settings$run$inputs[[tolower(input)]]$path
-  select_path_tags <- names(settings$run$inputs[[tolower(input)]]) == 'path'
-  input_path <- unlist(settings$run$inputs[[tolower(input)]])[select_path_tags]
+  input_path <- settings$run$inputs[[tolower(input)]]$path
   if (!is.null(parent_ids)) {
     samples$ids <- parent_ids$ids
     out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
