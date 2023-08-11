@@ -88,7 +88,8 @@ test_that('two harvests yield more than one', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_one_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -106,7 +107,8 @@ test_that('two harvests yield more than one', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_two_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_gt(sum(output_two_harv$YIELD), sum(output_one_harv$YIELD))
@@ -135,7 +137,8 @@ test_that('harvest followed by cut yields same as only harvest but different mea
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_only_harv <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -155,7 +158,8 @@ test_that('harvest followed by cut yields same as only harvest but different mea
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE    
   )
   output_harv_cut <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -186,7 +190,8 @@ test_that('changing CLAIV changes LAI and yield', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_high <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -204,7 +209,8 @@ test_that('changing CLAIV changes LAI and yield', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_low <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   
@@ -256,7 +262,8 @@ test_that('model produces some output', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
@@ -281,7 +288,8 @@ test_that('Fertilizer C inputs are zeroed without Yasso', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_true(all(output$FSOILAMDC == 0.0))
@@ -306,7 +314,8 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE    
   )
   output_mineral <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -318,7 +327,8 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_soluble <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   
@@ -334,7 +344,8 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_compost <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   
@@ -386,7 +397,8 @@ test_that('new fertilization file format matches the old', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_old_fert <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   run_BASGRA(
@@ -395,7 +407,8 @@ test_that('new fertilization file format matches the old', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_mineral <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_equal(output_old_fert, output_mineral)  
@@ -418,7 +431,8 @@ test_that('model shows no nitrogen limitation when run with use_nitrogen = 0', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
@@ -474,7 +488,8 @@ test_that('model produces reasonable yasso-specific output when use_yasso = 1 an
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_true(all(output[,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')] > 0))
@@ -498,7 +513,8 @@ test_that('model produces reasonable yasso-specific output when use_yasso = 1 an
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_true(all(output[,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')] > 0))
@@ -534,7 +550,8 @@ test_that('NSH is positive', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   expect_true(all(output[, 'NSH'] > 0))
@@ -557,7 +574,8 @@ test_that('Netcdf output is consistent with the raw output for certain variables
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output.raw <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   nc <- ncdf4::nc_open(file.path(outfolder, '2019.nc'))
@@ -591,7 +609,8 @@ test_that('The yasso_rate_pc parameter has a reasonable effect', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
@@ -603,7 +622,8 @@ test_that('The yasso_rate_pc parameter has a reasonable effect', {
     end_date = '2019-12-31 23:00',
     outdir = outfolder,
     sitelat = 60.29,
-    sitelon = 22.39 # match the test meteo data file
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
   )
   output_mod <- read.csv(file.path(outfolder, 'output_basgra.csv'))
 
