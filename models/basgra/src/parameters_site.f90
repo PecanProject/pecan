@@ -63,10 +63,11 @@ real                  :: NFERTMULT
 logical               :: use_yasso
 logical               :: use_nitrogen
 real                  :: hist_carbon_input
+real                  :: fract_legacy_c
 real                  :: hist_mean_tempr
 real                  :: hist_yearly_precip
 real                  :: hist_tempr_ampl
-real                  :: totc_min_init ! used in initialization
+real                  :: totc_init ! used in initialization
 real                  :: yasso_alpha_awen(4) ! base decomposition rates for the faster-cycling pools
 real                  :: yasso_beta12(2)     ! temperature sensitivity parameters
 ! principal component parametrization for the decomposition rates and temperature sensitivity
