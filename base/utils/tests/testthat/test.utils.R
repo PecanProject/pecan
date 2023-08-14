@@ -245,3 +245,29 @@ test_that("`convert.expr()` able to convert expression to variable names", {
 test_that("`paste.stats()` able to print inputs to specific format(for building a Latex Table)", {
   expect_equal(paste.stats(3.333333, 5.00001, 6.88888, n = 3), "$3.33(5,6.89)$")
 })
+
+test_that("`zero.bounded.density()` returns output containing required components", {
+  res <- zero.bounded.density(c(1, 2, 3))
+  expect_true("x" %in% names(res))
+  expect_true("y" %in% names(res))
+})
+
+test_that("`pdf.stats()` able to calculate mean, variance statistics, and CI from a known distribution", {
+  expect_equal(
+    pdf.stats("beta", 1, 2), 
+    unlist(list(mean = 0.33333333, var = 0.05555556, lcl = 0.01257912, ucl = 0.84188612))
+  )
+})
+
+test_that("`newxtable()` generates correct xtable object", {
+  data <- data.frame(A = c(1, 2, 3), B = c(4, 5, 6))
+  expect_true(grepl("\\hline.*& A & B.*& 1.00 & 4.00.*& 2.00 & 5.00.*& 3.00 & 6.00", newxtable(data)))
+})
+
+test_that("`tryl()` able to check if a function gives an error when called", {
+  # case where function does not give an error
+  expect_true(tryl(1+1))
+
+  # case where function gives an error
+  expect_false(tryl(log("a")))
+})
