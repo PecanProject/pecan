@@ -271,3 +271,25 @@ test_that("`tryl()` able to check if a function gives an error when called", {
   # case where function gives an error
   expect_false(tryl(log("a")))
 })
+
+test_that("`download_file()` able to correctly construct the inputs command to system function", {
+  mocked_res <- mockery::mock(0)
+  mockery::stub(download_file, 'system', mocked_res)
+  download_file("ftp://testpecan.com", "test", "ncftpget")
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(args[[1]][[1]], "ncftpget -c ftp://testpecan.com > test")
+})
+
+test_that("`retry.func()` able to retry a function before returning an error", {
+  defaultW <- getOption("warn") 
+  options(warn = -1)
+  on.exit(options(warn = defaultW))
+  expect_error(
+    retry.func(ncdf4::nc_open("http://pecan"), maxErrors = 2, sleep = 2),
+    "retry: too many retries"
+  )
+
+  # case where function does not give an error
+  expect_equal(retry.func(1+1, maxErrors = 2, sleep = 2), 2)
+})
+
