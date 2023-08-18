@@ -1,3 +1,70 @@
+test_that("`dbfile.input.insert()` able to create correct sql queries to insert a file into dbfiles table", {
+
+  mocked_res <- mockery::mock(data.frame(), 1, data.frame(id = 2023))
+  mockery::stub(dbfile.input.insert, 'get.id', 1)
+  mockery::stub(dbfile.input.insert, 'db.query', mocked_res)
+  mockery::stub(
+    dbfile.input.insert, 
+    'dbfile.check', 
+    data.frame(id = 101, file_name = 'test-file', file_path = 'trait.data.Rdata')
+  )
+
+  res <- dbfile.input.insert(  
+    in.path = 'trait.data.Rdata',
+    in.prefix = 'test-file',
+    siteid = 'test-site',
+    startdate = '2021-01-01',
+    enddate = '2022-01-01',
+    mimetype = 'application/x-RData',
+    formatname = 'traits',
+    con = NULL
+  )
+  
+  expect_equal(res$dbfile.id, 101)
+  expect_equal(res$input.id, 2023)
+  args <- mockery::mock_args(mocked_res)
+
+  # finding appropriate input
+  expect_true(
+    grepl(
+      "WHERE site_id=test-site AND name= 'trait.data.Rdata' AND format_id=1;",
+      args[[1]]$query
+    )
+  )
+  
+  # parent == "" and startdate not NULL
+  expect_true(
+    grepl(
+      "VALUES \\(test-site, 1, '2021-01-01', '2022-01-01','trait.data.Rdata'\\)",
+      args[[2]]$query
+    )
+  )
+  
+  # startdate not NULL
+  expect_true(
+    grepl(
+      "WHERE site_id=test-site AND format_id=1 AND start_date='2021-01-01' AND end_date='2022-01-01'",
+      args[[3]]$query
+    )
+  )
+})
+
+test_that("`dbfile.input.check()` able to form the right query to check the dbfiles table to see if a file exists as an input", {
+
+  mocked_res <- mockery::mock(NULL)
+  mockery::stub(dbfile.input.check, 'get.id', 1)
+  mockery::stub(dbfile.input.check, 'db.query', mocked_res)
+
+  dbfile.input.check('US-Akn', '2021-01-01', '2022-01-01', 'application/x-RData', 'traits', con = NULL)
+  args <- mockery::mock_args(mocked_res)
+  expect_true(
+    grepl(
+      "WHERE site_id=US-Akn AND format_id=1",
+      args[[1]]$query 
+    )
+  )
+})
+
 test_that("`dbfile.posterior.insert()` able to make a correct query to insert a file into dbfiles table as a posterior", {
   mocked_res <- mockery::mock(NULL, NULL, data.frame(id = 10))
   mockery::stub(dbfile.posterior.insert, 'get.id', 1)
