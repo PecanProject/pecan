@@ -1,3 +1,43 @@
+test_that("`dbfile.posterior.insert()` able to make a correct query to insert a file into dbfiles table as a posterior", {
+  mocked_res <- mockery::mock(NULL, NULL, data.frame(id = 10))
+  mockery::stub(dbfile.posterior.insert, 'get.id', 1)
+  mockery::stub(dbfile.posterior.insert, 'dbfile.insert', 1010)
+  mockery::stub(dbfile.posterior.insert, 'db.query', mocked_res)
+
+  dbfile.posterior.insert('trait.data.Rdata', 'test-pft', 'application/x-RData', 'traits', con = NULL)
+  args <- mockery::mock_args(mocked_res)
+  expect_true(grepl("INSERT INTO posteriors \\(pft_id, format_id\\) VALUES \\(1, 1\\)", args[[2]]$query))
+
+})
+
+test_that("`dbfile.posterior.check()` able to form the correct query to retrieve correct posterior id to run further checks", {
+  mocked_res <- mockery::mock(data.frame(id = 2020))
+  mockery::stub(dbfile.posterior.check, 'get.id', 1)
+  mockery::stub(dbfile.posterior.check, 'db.query', mocked_res)
+  mockery::stub(dbfile.posterior.check, 'dbfile.check', data.frame(id = 1, filename = 'test_1', pathname = 'path_1'))
+
+  dbfile.posterior.check('testpft', 'application/x-RData', 'traits', con = NULL)
+
+  args <- mockery::mock_args(mocked_res)
+  expect_true(
+    grepl(
+      "SELECT id FROM posteriors WHERE pft_id=1 AND format_id=1", 
+      args[[1]]$query
+    )
+  )
+})
+
+test_that("`dbfile.insert()` able to add correct parameter values to the insert database query and return a file id", {
+  mocked_res <- mockery::mock(data.frame(), data.frame(id = 2020))
+  mockery::stub(dbfile.insert, 'get.id', 1)
+  mockery::stub(dbfile.insert, 'db.query', mocked_res)
+  
+  res <- dbfile.insert(in.path = '/test/file/path', in.prefix = 'testfile.txt', 'Input', 7, con = NULL)
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(res, 2020)
+  expect_true(grepl("VALUES \\('Input', 7, 'testfile.txt', '/test/file/path', 1\\) RETURNING id", args[[2]]$query))
+})
+
 test_that("`dbfile.check()` able to return the most recent entries from `dbfiles` table associated with a container and machine", {
   mockery::stub(dbfile.check, 'get.id', 1)
   mockery::stub(
@@ -41,4 +81,3 @@ test_that("`dbfile.id()` able to construct a correct database query to get id fo
     )
   )
 })
-
