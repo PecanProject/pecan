@@ -16,7 +16,7 @@
 ##' 
 ##' @return It returns the `build.block.xy` object and the analysis results.
 ##' @importFrom dplyr %>%
-analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args) {
+analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, block.list.all.pre = NULL) {
   #convert from vector values to block lists.
   if ("try-error" %in% class(try(block.results <- build.block.xy(settings = settings, 
                                                                  block.list.all = block.list.all, 
@@ -25,6 +25,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                                  obs.cov = obs.cov, 
                                                                  t = t)))) {
     PEcAn.logger::logger.error("Something wrong within the build.block.xy function.")
+    return(0)
   }
   #grab block.list and H from the results.
   block.list.all <- block.results[[1]]
@@ -33,13 +34,18 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   R <- block.results[[4]]
   
   #update q.
-  if ("try-error" %in% class(try(block.list.all <- update_q(block.list.all, t, nt)))) {
+  if ("try-error" %in% class(try(block.list.all <- update_q(block.list.all, t, nt, aqq.Init = as.numeric(settings$state.data.assimilation$aqq.Init),
+                                                            bqq.Init = as.numeric(settings$state.data.assimilation$bqq.Init),
+                                                            MCMC_dat = NULL,
+                                                            block.list.all.pre)))) {
     PEcAn.logger::logger.error("Something wrong within the update_q function.")
+    return(0)
   }
   
   #add initial conditions.
   if ("try-error" %in% class(try(block.list.all[[t]] <- MCMC_Init(block.list.all[[t]], X)))) {
     PEcAn.logger::logger.error("Something wrong within the MCMC_Init function.")
+    return(0)
   }
   
   #update MCMC args.
@@ -53,12 +59,14 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
     PEcAn.logger::logger.error("Something wrong within the MCMC_block_function function.")
+    return(0)
   }
   PEcAn.logger::logger.info("Completed!")
   
   #convert from block lists to vector values.
   if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H)))) {
     PEcAn.logger::logger.error("Something wrong within the block.2.vector function.")
+    return(0)
   }
   
   #return values
@@ -118,39 +126,47 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #Handle observation
-  Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
-  Y <- Obs.cons$Y
-  R <- Obs.cons$R
-  if (length(Y) > 1) {
-    PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-  }
-  #create matrix the describes the support for each observed state variable at time t
-  min_max <- settings$state.data.assimilation$state.variables %>% 
-    purrr::map(function(state.variable){
-      c(as.numeric(state.variable$min_value),
-        as.numeric(state.variable$max_value))
-    }) %>% unlist() %>% as.vector() %>% 
-    matrix(length(settings$state.data.assimilation$state.variables), 2, byrow = T) %>%
-    `rownames<-`(var.names)
-  #Create y.censored and y.ind
-  #describing if the obs are within the defined range.
-  y.ind <- y.censored <- c()
-  for (i in seq_along(Y)) {
-    if (Y[i] > min_max[names(Y[i]), 1]) {
-      y.ind[i] = 1; y.censored[i] = Y[i]
-    } else {y.ind[i] <- y.censored[i] <- 0}
+  if (as.logical(settings$state.data.assimilation$free.run)) {
+    obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
+    obs.cov[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
+    H <- list(ind = seq_along(rep(var.names, length(site.ids))))
+    Y <- rep(NA, length(H$ind))
+    R <- diag(1, length(H$ind))
+  } else {
+    Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
+    Y <- Obs.cons$Y
+    R <- Obs.cons$R
+    if (length(Y) > 1) {
+      PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+      diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+    }
+    #create matrix the describes the support for each observed state variable at time t
+    min_max <- settings$state.data.assimilation$state.variables %>% 
+      purrr::map(function(state.variable){
+        c(as.numeric(state.variable$min_value),
+          as.numeric(state.variable$max_value))
+      }) %>% unlist() %>% as.vector() %>% 
+      matrix(length(settings$state.data.assimilation$state.variables), 2, byrow = T) %>%
+      `rownames<-`(var.names)
+    #Create y.censored and y.ind
+    #describing if the obs are within the defined range.
+    y.ind <- y.censored <- c()
+    for (i in seq_along(Y)) {
+      if (Y[i] > min_max[names(Y[i]), 1]) {
+        y.ind[i] = 1; y.censored[i] = Y[i]
+      } else {y.ind[i] <- y.censored[i] <- 0}
+    }
+    #create H
+    H <- construct_nimble_H(site.ids = site.ids,
+                            var.names = var.names,
+                            obs.t = obs.mean[[t]],
+                            pft.path = settings[[1]]$run$inputs$pft.site$path,
+                            by = "block_pft_var")
   }
   #observation number per site
   obs_per_site <- obs.mean[[t]] %>% 
     purrr::map(function(site.obs){length(site.obs)}) %>% 
     unlist()
-  #create H
-  H <- construct_nimble_H(site.ids = site.ids,
-                          var.names = var.names,
-                          obs.t = obs.mean[[t]],
-                          pft.path = settings[[1]]$run$inputs$pft.site$path,
-                          by = "block_pft_var")
   
   #start the blocking process
   #should we consider interactions between sites?
@@ -170,21 +186,40 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
       
       #fill in y and r
-      y.start <- obs_per_site[i] * (i - 1) + 1
-      y.end <- obs_per_site[i] * i
-      block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
-      block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
+      if (obs_per_site[i] == 0) {
+        y.start <- 1
+        y.end <- length(var.names)
+        block.list[[i]]$data$y.censored <- rep(NA, length(var.names))
+        block.list[[i]]$data$r <- diag(1, length(var.names))
+        block.h <- matrix(1, 1, length(var.names))
+      } else {
+        y.start <- obs_per_site[i] * (i - 1) + 1
+        y.end <- obs_per_site[i] * i
+        block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
+        block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
+        block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
+      }
       
       #fill in constants.
-      block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
+      block.list[[i]]$H <- block.h
       block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
       block.list[[i]]$constant$N <- length(f.start:f.end)
       block.list[[i]]$constant$YN <- length(y.start:y.end)
       block.list[[i]]$constant$q.type <- q.type
     }
+    names(block.list) <- site.ids
   } else {
     #find networks given TRUE/FALSE matrix representing sites' interactions.
     block.vec <- matrix_network(dis.matrix <= as.numeric(settings$state.data.assimilation$scalef))
+    #check if the matrix_network function is working correctly.
+    #check if the blocks are calculated correctly.
+    if (block.vec %>% 
+        purrr::map(function(l){length(l)}) %>%
+        unlist %>%
+        sum() != length(site.ids)) {
+      PEcAn.logger::logger.error("Block calculation failed, please check the matrix_network function!")
+      return(0)
+    }
     block.list <- vector("list", length(block.vec))
     #loop over sites
     for (i in seq_along(block.vec)) {#i is site index
@@ -213,6 +248,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       
       #fill in constants
       block.h <- Construct.H.multisite(site.ids[ids], var.names, obs.mean[[t]])
+      block.list[[i]]$H <- block.h
       block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
       block.list[[i]]$constant$N <- length(f.ind)
       block.list[[i]]$constant$YN <- length(y.ind)
@@ -237,7 +273,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
 MCMC_Init <- function (block.list, X) {
   var.names <- unique(attributes(X)$dimnames[[2]])
   #sample mu.f from X.
-  sample.mu.f <- X[sample(seq_along(1:nrow(X)), 1),]
+  sample.mu.f <- colMeans(X)
   for (i in seq_along(block.list)) {
     #number of observations.
     num.obs <- length(block.list[[i]]$data$y.censored)
@@ -248,7 +284,7 @@ MCMC_Init <- function (block.list, X) {
       end <- (block.list[[i]]$sites.per.block[j]) * length(var.names)
       block.list[[i]]$Inits$X.mod <- c(block.list[[i]]$Inits$X.mod, sample.mu.f[start:end])
       #initialize X
-      block.list[[i]]$Inits$X <- block.list[[i]]$Inits$X.mod[block.list[[i]]$constant$H]
+      block.list[[i]]$Inits$X <- block.list[[i]]$data$y.censored
       #initialize Xs
       block.list[[i]]$Inits$Xs <- block.list[[i]]$Inits$X.mod[block.list[[i]]$constant$H]
     }
@@ -293,6 +329,7 @@ MCMC_block_function <- function(block) {
   #hear we change the RW_block sampler to the ess sampler 
   #because it has a better performance of MVN sampling
   samplerLists <- conf$getSamplers()
+  samplerNumberOffset <- length(samplerLists)
   if (block$constant$q.type == 1) {
     #if we have vector q
     #only X.mod should be sampled with ess sampler.
@@ -305,10 +342,23 @@ MCMC_block_function <- function(block) {
   }
   conf$setSamplers(samplerLists)
   
+  #add toggle Y sampler.
+  for (i in 1:block$constant$YN) {
+    conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
+  }
+  conf$printSamplers()
   #compile MCMC
   Rmcmc <- nimble::buildMCMC(conf)
   Cmodel <- nimble::compileNimble(model_pred)
   Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
+  
+  #if we don't have any NA in the Y.
+  if (!any(is.na(block$data$y.censored))) {
+    #add toggle Y sampler.
+    for(i in 1:block$constant$YN) {
+      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+    }
+  }
   
   #run MCMC
   dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
@@ -355,27 +405,25 @@ MCMC_block_function <- function(block) {
     aq <- solve(q.bar) * bq
     block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
     block$bqq[block$t+1] <- bq
-    
-    # #if it's a wishart case
-    # bq <- block$data$bq
-    # aq <- block$data$aq
-    # for (i in 1:dim(aq)[1]) {
-    #   CHAR <- paste0("[", i, "]")
-    #   for (j in 1:dim(aq)[2]) {
-    #     aq[i, j] <- M[paste0("q[", i, ", ", j, "]")]/bq
-    #   }
-    # }
-    # #update aqq and bqq
-    # block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
-    # block$bqq[block$t+1] <- block$bqq[block$t]
   }
   #update mua and pa; mufa, and pfa
   iX <- grep("X[", colnames(dat), fixed = TRUE)
   iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
-  mua <- colMeans(dat[, iX])
-  pa <- stats::cov(dat[, iX])
-  mufa <- colMeans(dat[, iX.mod])
-  pfa <- stats::cov(dat[, iX.mod])
+  if (length(iX) == 1) {
+    mua <- mean(dat[, iX])
+    pa <- var(dat[, iX])
+  } else {
+    mua <- colMeans(dat[, iX])
+    pa <- stats::cov(dat[, iX])
+  }
+  
+  if (length(iX.mod) == 1) {
+    mufa <- mean(dat[, iX.mod])
+    pfa <- var(dat[, iX.mod])
+  } else {
+    mufa <- colMeans(dat[, iX.mod])
+    pfa <- stats::cov(dat[, iX.mod])
+  }
   
   #return values.
   block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, mufa = mufa, pfa = pfa)
@@ -392,7 +440,7 @@ MCMC_block_function <- function(block) {
 ##' @param MCMC_dat data frame of MCMC samples, the default it NULL.
 ##' 
 ##' @return It returns the `block.list.all` object with initialized/updated Q filled in.
-update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
+update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, MCMC_dat = NULL, block.list.all.pre = NULL) {
   block.list <- block.list.all[[t]]
   #if it's an update.
   if (is.null(MCMC_dat)) {
@@ -403,8 +451,13 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
         nobs <- length(block.list[[i]]$data$y.censored)
         if (block.list[[i]]$constant$q.type == 1) {
           #initialize aqq and bqq for nt
-          block.list[[i]]$aqq <- array(1, dim = c(nvar, nt + 1))
-          block.list[[i]]$bqq <- array(1, dim = c(nvar, nt + 1))
+          if (!is.null(aqq.Init) && !is.null(bqq.Init)) {
+            block.list[[i]]$aqq <- array(aqq.Init, dim = c(nvar, nt + 1))
+            block.list[[i]]$bqq <- array(bqq.Init, dim = c(nvar, nt + 1))
+          } else {
+            block.list[[i]]$aqq <- array(1, dim = c(nvar, nt + 1))
+            block.list[[i]]$bqq <- array(1, dim = c(nvar, nt + 1))
+          }
           #update aq and bq based on aqq and bqq
           block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
@@ -419,8 +472,12 @@ update_q <- function (block.list.all, t, nt, MCMC_dat = NULL) {
         }
       }
     } else if (t > 1) {
-      #if we want to update q from previous SDA runs.
-      block.list.pre <- block.list.all[[t - 1]]
+      if (!is.null(block.list.all.pre)) {
+        block.list.pre <- block.list.all.pre[[t - 1]]
+      } else {
+        #if we want to update q from previous SDA runs.
+        block.list.pre <- block.list.all[[t - 1]]
+      }
       for (i in seq_along(block.list)) {
         nvar <- length(block.list[[i]]$data$muf)
         nobs <- length(block.list[[i]]$data$y.censored)
