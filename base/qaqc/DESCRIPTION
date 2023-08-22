@@ -21,6 +21,7 @@ Imports:
     stats
 Suggests:
     knitr,
+    mockery,
     mvbutils,
     PEcAn.BIOCRO,
     PEcAn.ED2,
@@ -28,7 +29,8 @@ Suggests:
     PEcAn.utils,
     rmarkdown,
     testthat (>= 3.0.4),
-    vdiffr (>= 1.0.2)
+    vdiffr (>= 1.0.2),
+    withr
 X-Comment-Remotes:
     Installing vdiffr from GitHub because as of 2021-09-23, this is the
     easiest way to get version >= 1.0.2 onto Docker images that use older

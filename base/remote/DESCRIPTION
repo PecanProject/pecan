@@ -25,6 +25,7 @@ Imports:
 Suggests:
     doSNOW,
     getPass,
+    mockery,
     testthat,
     tools,
     withr
