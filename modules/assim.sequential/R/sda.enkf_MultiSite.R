@@ -40,7 +40,6 @@ sda.enkf.multisite <- function(settings,
                                             Profiling = FALSE,
                                             OutlierDetection=FALSE,
                                             parallel_qsub = TRUE,
-                                            free_run = FALSE,
                                             send_email = NULL,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
@@ -356,7 +355,7 @@ sda.enkf.multisite <- function(settings,
         )
        })
   ###------------------------------------------------------------------------------------------------###
-  ### loop over time                                                                                 ###
+  ### w over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
       obs.t <- as.character(lubridate::date(obs.times[t]))
@@ -426,7 +425,7 @@ sda.enkf.multisite <- function(settings,
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
         if(control$parallel_qsub){
-          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
         }else{
           PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         }
@@ -447,9 +446,10 @@ sda.enkf.multisite <- function(settings,
         ){
           Sys.sleep(10)
           max_t <- max_t + 1
-          if(max_t > 100){
+          if(max_t > 3){
             PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
             break
+            return(0)
           }
           PEcAn.logger::logger.info("Empty folder, try again!")
         }
@@ -487,7 +487,9 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.null(obs.mean[[t]][[1]]) & !control$free_run) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
+      #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
+      #Then specify the settings$state.data.assimilation$by.site as TRUE, and finally 
+      if (!is.null(obs.mean[[t]][[1]]) & as.logical(settings$state.data.assimilation$free.run) | control$forceRun) {
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating
@@ -503,7 +505,7 @@ sda.enkf.multisite <- function(settings,
         #decide if we want the block analysis function or multi-site analysis function.
         if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("vector", "wishart")) {
           #initialize block.list.all.
-          if (t == 1) {
+          if (t == 1 | !exists("block.list.all")) {
             block.list.all <- obs.mean %>% purrr::map(function(l){NULL})
           }
           #initialize MCMC arguments.
@@ -511,10 +513,10 @@ sda.enkf.multisite <- function(settings,
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
                               nchain = 1,
-                              nburnin = 1e4)
+                              nburnin = 5e4)
           }
           #running analysis function.
-          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args)
+          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all
           #Forecast
@@ -663,11 +665,12 @@ sda.enkf.multisite <- function(settings,
           #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
           #Pa <- Pf + solve(q.bar)
           #hack have Pa = Pf for now
-          if(!is.null(pre_enkf_params)){
-            Pf <- pre_enkf_params[[t]]$Pf
-          }else{
-            Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
-          }
+          # if(!is.null(pre_enkf_params)){
+          #   Pf <- pre_enkf_params[[t]]$Pf
+          # }else{
+          #   Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
+          # }
+          Pf <- stats::cov(X)
           Pa <- Pf
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
@@ -712,9 +715,13 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot) & !is.null(obs.mean[[t]][[1]])){
-        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
-      }   
+      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+        if (as.logical(settings$state.data.assimilation$free.run)) {
+          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS"))
+        } else {
+          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
+        }
+      }
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
     
