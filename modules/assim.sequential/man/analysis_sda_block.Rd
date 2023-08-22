@@ -12,7 +12,8 @@ analysis_sda_block(
   obs.cov,
   t,
   nt,
-  MCMC.args
+  MCMC.args,
+  block.list.all.pre = NULL
 )
 }
 \arguments{
