@@ -10,6 +10,7 @@
 ##' @param t time point.
 ##' @param nt total length of time steps.
 ##' @param MCMC.args arguments for the MCMC sampling.
+##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.
 ##' @details This function will add data and constants into each block that are needed for the MCMC sampling.
 ##'  
 ##' @description This function provides the block-based MCMC sampling approach.
@@ -437,7 +438,10 @@ MCMC_block_function <- function(block) {
 ##' @param block.list.all  each block within the `block.list` lists.
 ##' @param t time point.
 ##' @param nt total length of time steps.
+##' @param aqq.Init the initial values of aqq, the default is NULL.
+##' @param bqq.Init the initial values of bqq, the default is NULL.
 ##' @param MCMC_dat data frame of MCMC samples, the default it NULL.
+##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.
 ##' 
 ##' @return It returns the `block.list.all` object with initialized/updated Q filled in.
 update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, MCMC_dat = NULL, block.list.all.pre = NULL) {

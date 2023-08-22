@@ -32,6 +32,8 @@ analysis_sda_block(
 \item{nt}{total length of time steps.}
 
 \item{MCMC.args}{arguments for the MCMC sampling.}
+
+\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.}
 }
 \value{
 It returns the `build.block.xy` object and the analysis results.
