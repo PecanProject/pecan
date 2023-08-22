@@ -4,7 +4,15 @@
 \alias{update_q}
 \title{update_q}
 \usage{
-update_q(block.list.all, t, nt, MCMC_dat = NULL)
+update_q(
+  block.list.all,
+  t,
+  nt,
+  aqq.Init = NULL,
+  bqq.Init = NULL,
+  MCMC_dat = NULL,
+  block.list.all.pre = NULL
+)
 }
 \arguments{
 \item{block.list.all}{each block within the `block.list` lists.}
