@@ -412,7 +412,7 @@ MCMC_block_function <- function(block) {
   iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
   if (length(iX) == 1) {
     mua <- mean(dat[, iX])
-    pa <- var(dat[, iX])
+    pa <- stats::var(dat[, iX])
   } else {
     mua <- colMeans(dat[, iX])
     pa <- stats::cov(dat[, iX])
@@ -420,7 +420,7 @@ MCMC_block_function <- function(block) {
   
   if (length(iX.mod) == 1) {
     mufa <- mean(dat[, iX.mod])
-    pfa <- var(dat[, iX.mod])
+    pfa <- stats::var(dat[, iX.mod])
   } else {
     mufa <- colMeans(dat[, iX.mod])
     pfa <- stats::cov(dat[, iX.mod])
