@@ -29,8 +29,6 @@ sda.enkf.multisite <- function(settings,
                                pre_enkf_params = NULL,
                                ensemble.samples = NULL,
                                control=list(trace = TRUE,
-					    free_run = FALSE,
-					    send_email = NULL,
                                             FF = FALSE,
                                             interactivePlot = FALSE,
                                             TimeseriesPlot = FALSE,
@@ -46,7 +44,8 @@ sda.enkf.multisite <- function(settings,
                                             send_email = NULL,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
-                                            run_parallel = TRUE),
+                                            run_parallel = TRUE,
+					    update_phenology = FALSE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -416,7 +415,10 @@ sda.enkf.multisite <- function(settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
-              rename = TRUE
+              rename = TRUE,
+	      obs.mean = obs.mean,
+	      time=t,
+              update_phenology=control$update_phenology
             )
           }) %>%
           stats::setNames(site.ids)
@@ -428,16 +430,15 @@ sda.enkf.multisite <- function(settings,
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
         if(control$parallel_qsub){
-          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, 10), prefix = paste0(obs.year, ".nc"))
+          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
         }else{
           PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         }
         #------------- Reading - every iteration and for SDA
         #put building of X into a function that gets called
-        #max_t <- 0
-        #while("try-error" %in% class(
-         # try(
-	reads <-  build_X(out.configs = out.configs, 
+        max_t <- 0
+        while("try-error" %in% class(
+          try(reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
                                settings = settings, 
                                new.params = new.params, 
                                nens = nens, 
@@ -446,7 +447,16 @@ sda.enkf.multisite <- function(settings,
                                t = t, 
                                var.names = var.names, 
                                my.read_restart = my.read_restart,
-                               restart_flag = restart_flag)
+                               restart_flag = restart_flag), silent = T))
+        ){
+          Sys.sleep(10)
+          max_t <- max_t + 1
+          if(max_t > 1000){
+            PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
+            break
+          }
+          PEcAn.logger::logger.info("Empty folder, try again!")
+        }
         
         if (control$debug) browser()
         #let's read the parameters of each site/ens
@@ -497,7 +507,7 @@ sda.enkf.multisite <- function(settings,
         #decide if we want the block analysis function or multi-site analysis function.
         if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("vector", "wishart")) {
           #initialize block.list.all.
-          if (t == 1) {
+          if (t == 1 | !exists("block.list.all")) {
             block.list.all <- obs.mean %>% purrr::map(function(l){NULL})
           }
           #initialize MCMC arguments.
@@ -505,10 +515,13 @@ sda.enkf.multisite <- function(settings,
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
                               nchain = 1,
-                              nburnin = 1e4)
+                              nburnin = 5e4)
           }
           #running analysis function.
-          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args)
+	  save(X,file = file.path(settings$outdir,"X.Rdata"))
+          PEcAn.logger::logger.info("The total number of time is:")
+	  print(nt)
+          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all
           #Forecast
@@ -546,7 +559,7 @@ sda.enkf.multisite <- function(settings,
           if(!is.null(pre_enkf_params)){
             Pf <- pre_enkf_params[[t]]$Pf
           }
-          recompileTobit = !exists('Cmcmc_tobit2space')
+          recompileTobit = !exists('Cmcmc_tobit2space')     
           recompileGEF   = !exists('Cmcmc')
           #weight list
           # This reads ensemble weights generated by `get_ensemble_weights` function from assim.sequential package
@@ -657,11 +670,12 @@ sda.enkf.multisite <- function(settings,
           #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
           #Pa <- Pf + solve(q.bar)
           #hack have Pa = Pf for now
-          if(!is.null(pre_enkf_params)){
-            Pf <- pre_enkf_params[[t]]$Pf
-          }else{
-            Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
-          }
+          # if(!is.null(pre_enkf_params)){
+          #   Pf <- pre_enkf_params[[t]]$Pf
+          # }else{
+          #   Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
+          # }
+          Pf <- stats::cov(X)
           Pa <- Pf
         }
         enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
@@ -724,9 +738,9 @@ sda.enkf.multisite <- function(settings,
       unlink(mailfile)
     }
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
-   if (keepNC && t == 1){
-    unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-   }
+#    if (keepNC && t == 1){
+#      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
+#    }
       ## MCD: I commented the above "if" out because if you are restarting from a previous forecast, this might delete the files in that earlier folder
   } ### end loop over time
 } # sda.enkf

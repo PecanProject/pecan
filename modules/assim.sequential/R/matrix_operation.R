@@ -59,7 +59,7 @@ matrix_network <- function (mat) {
         Inits <- c(Inits, which(mat[init,]))
       }
       Inits <- Inits[which(!Inits %in% vec)]
-      vec <- c(vec, Inits)
+      vec <- sort(unique(c(vec, Inits)))
       #if we don't have any new site that belongs to this network.
       if (length(Inits) == 0) {
         #then stop.

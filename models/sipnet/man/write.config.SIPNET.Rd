@@ -12,7 +12,10 @@ write.config.SIPNET(
   inputs = NULL,
   IC = NULL,
   restart = NULL,
-  spinup = NULL
+  spinup = NULL,
+  obs.mean = NULL,
+  time_t = NULL,
+  update_phenology = NULL
 )
 }
 \description{

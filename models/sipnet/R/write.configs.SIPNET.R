@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
-                                restart = NULL, spinup = NULL) {
+                                restart = NULL, spinup = NULL,obs.mean=NULL,time_t=NULL,update_phenology=NULL) {
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
@@ -417,6 +417,27 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("leafGrowth" %in% pft.names) {
       param[which(param[, 1] == "leafGrowth"), 2] <- pft.traits[which(pft.names == "leafGrowth")]
     }
+    if (update_phenology){
+    #update LeafOnday
+      PEcAn.logger::logger.warn("time_t")
+      print(time_t)
+      obs.times<-names(obs.mean)
+      if (time_t>1){
+	  tracker <- 1
+          print((obs.mean[[time_t]][[settings$run$site$id]][["LAI"]]-obs.mean[[time_t-1]][[settings$run$site$id]][["LAI"]])/obs.mean[[time_t-1]][[settings$run$site$id]][["LAI"]])
+      if (((obs.mean[[time_t]][[settings$run$site$id]][["LAI"]]-obs.mean[[time_t-1]][[settings$run$site$id]])[["LAI"]]/obs.mean[[time_t-1]][[settings$run$site$id]][["LAI"]])>1){
+          leafOnDay<-lubridate::yday(obs.times[[time_t]])
+          param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+	  tracker <- 0
+      }
+      if (tracker){
+          param_leafonday<-utils::read.table(file.path(settings$rundir, run.id, "sipnet.param")) #read from previous sipnet.param
+          param[which(param[, 1] == "leafOnDay"), 2] <- param_leafonday[which(param_leafonday[, 1] == "leafOnDay"), 2]
+       }
+      }
+      PEcAn.logger::logger.warn("leafonday after")
+      print(param[which(param[, 1] == "leafOnDay"), 2])
+    }
   }  ## end loop over PFTS
   ####### end parameter update
   #working on reading soil file (only working for 1 soil file)
@@ -545,6 +566,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.na(leafOnDay) && is.numeric(leafOnDay)) {
         param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
       }
+
       ## leafOffDay
       leafOffDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_senescence"),silent = TRUE)
       if (!is.na(leafOffDay) && is.numeric(leafOffDay)) {

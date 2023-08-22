@@ -210,7 +210,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE) {
+                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE,obs.mean=NULL,time=NULL,update_phenology=NULL) {
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -408,7 +408,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
                                             settings = settings, 
-                                            run.id = run.id
+                                            run.id = run.id,
+					    obs.mean = obs.mean,
+					    time_t=time,
+					    update_phenology=update_phenology
       )
       )
       cat(format(run.id, scientific = FALSE), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
@@ -458,7 +461,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
-                           RENAME = rename)#for restart from previous model runs, not sharing the same outdir
+                           RENAME = rename,
+			   obs.mean=obs.mean,
+			   time=time,
+			   update_phenology=update_phenology)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params

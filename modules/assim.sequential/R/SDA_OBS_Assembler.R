@@ -173,12 +173,13 @@ SDA_OBS_Assembler <- function(settings){
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
         na_ind <- which(is.na(obs.mean[[i]][[j]]))
-        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
+        #obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
         if(length(obs.mean[[i]][[j]]) == 1){
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind]
         }else{
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind, -na_ind]
         }
+	obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
       }
       SoilC_ind <- which(names(obs.mean[[i]][[j]]) == "TotSoilCarb")
       if (length(SoilC_ind) > 0){

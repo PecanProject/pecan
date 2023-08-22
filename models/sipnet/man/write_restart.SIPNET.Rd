@@ -13,7 +13,10 @@ write_restart.SIPNET(
   new.state,
   RENAME = TRUE,
   new.params = FALSE,
-  inputs
+  inputs,
+  obs.mean = NULL,
+  time = NULL,
+  update_phenology = NULL
 )
 }
 \arguments{

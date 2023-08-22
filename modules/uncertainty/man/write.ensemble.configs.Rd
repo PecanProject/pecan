@@ -12,7 +12,10 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  rename = FALSE
+  rename = FALSE,
+  obs.mean = NULL,
+  time = NULL,
+  update_phenology = NULL
 )
 }
 \arguments{

@@ -91,19 +91,15 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   pb <- utils::txtProgressBar(min = 0, max = length(unlist(run_list)), style = 3)
   pbi <- 0
   folders <- file.path(settings$host$outdir, run_list)
-  while (length(folders) > 0) {
-    Sys.sleep(10)
-    completed_folders <- foreach::foreach(folder = folders, settings = rep(settings, length(run_list))) %dopar% {
+  completed_folders <- c()
+  while (length(completed_folders) < length(folders)) {
+    completed_folders <- foreach::foreach(folder = folders) %dopar% {
       if(file.exists(file.path(folder, prefix))){
         return(folder)
       }
-    }
-    if(length(unlist(completed_folders)) > 0){
-      Ind <- which(unlist(completed_folders) %in% folders)
-      folders <- folders[-Ind]
-      pbi <- pbi + length(completed_folders)
-      utils::setTxtProgressBar(pb, pbi)
-    }
+    } %>% unlist
+    pbi <- length(completed_folders)
+    utils::setTxtProgressBar(pb, pbi)
   }
   close(pb)
   parallel::stopCluster(cl)
