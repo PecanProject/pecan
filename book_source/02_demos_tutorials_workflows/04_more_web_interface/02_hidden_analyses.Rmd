@@ -327,7 +327,6 @@ control=list(trace = TRUE,
              Profiling = FALSE,
              OutlierDetection=FALSE,
              parallel_qsub = TRUE,
-             free_run = FALSE,
              send_email = NULL,
              keepNC = TRUE,
              run_parallel = TRUE)
@@ -396,6 +395,8 @@ MCMC.args <- list(niter = 1e5,
 <pecan.multi>
  <state.data.assimilation>
 	<process.variance>TRUE</process.variance>
+	<aqq.Init>1</aqq.Init>
+	<bqq.Init>1</bqq.Init>
   <sample.parameters>FALSE</sample.parameters>
   <adjustment>TRUE</adjustment>
   <censored.data>FALSE</censored.data>
@@ -403,6 +404,7 @@ MCMC.args <- list(niter = 1e5,
   <NC.Overwrite>FALSE</NC.Overwrite>
   <NC.Prefix>sipnet.out</NC.Prefix>
   <q.type>SINGLE</q.type>
+  <free.run>FALSE</free.run>
   <by.site>FALSE</by.site>
   <Localization.FUN>Local.support</Localization.FUN>
   <scalef>1</scalef>
