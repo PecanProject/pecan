@@ -97,7 +97,8 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
       if(file.exists(file.path(folder, prefix))){
         return(folder)
       }
-    } %>% unlist
+    }
+    completed_folders <- unlist(completed_folders)
     pbi <- length(completed_folders)
     utils::setTxtProgressBar(pb, pbi)
   }

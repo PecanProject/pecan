@@ -330,7 +330,6 @@ control=list(trace = TRUE,
              free_run = FALSE,
              send_email = NULL,
              keepNC = TRUE,
-             forceRun = TRUE,
              run_parallel = TRUE)
 ```
 
@@ -366,7 +365,15 @@ $`2010/12/31`$`1000000651`
 [2,]  0.1213583 0.001162113
 ```
 #### Anlysis SDA workflow
-Before running the SDA analysis functions, the ensemble forecast results have to be generated, and arguments such as H matrix, MCMC arguments, and multi-site Y and R (by `Construct.R` function) have to be generated as well.
+Before running the SDA analysis functions, the ensemble forecast results have to be generated, and arguments such as H matrix, MCMC arguments, and multi-site Y and R (by `Construct.R` function) have to be generated as well. If you want to proceed the block-based SDA workflow for a free run (estimate the process error to the free run), you need to first specify the `state.data.assimilation` as follows. Beyond that, if any of your sites has zero observation, you should flag the `by.site` as TRUE.
+```
+<state.data.assimilation>
+  <by.site>TRUE</by.site>
+  <free.run>TRUE</free.run>
+</state.data.assimilation>
+```
+
+Here are the workflows for three types of SDA analysis functions that we are currently used.
 
 * Decide which analysis function to be used. Here we have three options: 1) traditional ensemble Kalman Filter (`EnKF.MultiSite`) with analytical solution; 2) generalized ensemble Kalman Filter (`GEF.MultiSite`); and 3) block-based generalized ensemble Kalman Filter (`analysis_sda_block`). The latter two methods support the process variance across space and time. To choose the analysis method 1, we need to set the `process.variance` as FALSE. Otherwise, if we set the `process.variance` as TRUE and provide the `q.type` as either `SINGLE` or `SITE` the 2 method will be used, and if we provide the `q.type` as either `vector` or `wishart` the 3 method will be used.
 

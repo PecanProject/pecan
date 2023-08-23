@@ -21,7 +21,13 @@ update_q(
 
 \item{nt}{total length of time steps.}
 
+\item{aqq.Init}{the initial values of aqq, the default is NULL.}
+
+\item{bqq.Init}{the initial values of bqq, the default is NULL.}
+
 \item{MCMC_dat}{data frame of MCMC samples, the default it NULL.}
+
+\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.}
 }
 \value{
 It returns the `block.list.all` object with initialized/updated Q filled in.

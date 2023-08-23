@@ -20,6 +20,8 @@ pool_ic_netcdf2list <- function(nc.path){
     for(varname in names(vals)){
       vals[[varname]] <- ncdf4::ncvar_get(IC.nc,varname)
     }
+    ncdf4::nc_close(IC.nc)
+    on.exit()
     return(list(dims = dims, vals = vals))
   }
   else{

@@ -10,6 +10,7 @@
 ##' @param t time point.
 ##' @param nt total length of time steps.
 ##' @param MCMC.args arguments for the MCMC sampling.
+##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.
 ##' @details This function will add data and constants into each block that are needed for the MCMC sampling.
 ##'  
 ##' @description This function provides the block-based MCMC sampling approach.
@@ -25,6 +26,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                                  obs.cov = obs.cov, 
                                                                  t = t)))) {
     PEcAn.logger::logger.error("Something wrong within the build.block.xy function.")
+    return(0)
   }
   #grab block.list and H from the results.
   block.list.all <- block.results[[1]]
@@ -38,11 +40,13 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                             MCMC_dat = NULL,
                                                             block.list.all.pre)))) {
     PEcAn.logger::logger.error("Something wrong within the update_q function.")
+    return(0)
   }
   
   #add initial conditions.
   if ("try-error" %in% class(try(block.list.all[[t]] <- MCMC_Init(block.list.all[[t]], X)))) {
     PEcAn.logger::logger.error("Something wrong within the MCMC_Init function.")
+    return(0)
   }
   
   #update MCMC args.
@@ -56,6 +60,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
  # if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
  #  PEcAn.logger::logger.error("Something wrong within the MCMC_block_function function.")
+  # return(0)
  # }
 
   if  (length(block.list.all[[t]]) >1){
@@ -80,6 +85,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   #convert from block lists to vector values.
   if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H)))) {
     PEcAn.logger::logger.error("Something wrong within the block.2.vector function.")
+    return(0)
   }
   
   #return values
@@ -139,39 +145,47 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #Handle observation
-  Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
-  Y <- Obs.cons$Y
-  R <- Obs.cons$R
-  if (length(Y) > 1) {
-    PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-    diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-  }
-  #create matrix the describes the support for each observed state variable at time t
-  min_max <- settings$state.data.assimilation$state.variables %>% 
-    purrr::map(function(state.variable){
-      c(as.numeric(state.variable$min_value),
-        as.numeric(state.variable$max_value))
-    }) %>% unlist() %>% as.vector() %>% 
-    matrix(length(settings$state.data.assimilation$state.variables), 2, byrow = T) %>%
-    `rownames<-`(var.names)
-  #Create y.censored and y.ind
-  #describing if the obs are within the defined range.
-  y.ind <- y.censored <- c()
-  for (i in seq_along(Y)) {
-    if (Y[i] > min_max[names(Y[i]), 1]) {
-      y.ind[i] = 1; y.censored[i] = Y[i]
-    } else {y.ind[i] <- y.censored[i] <- 0}
+  if (as.logical(settings$state.data.assimilation$free.run)) {
+    obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
+    obs.cov[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
+    H <- list(ind = seq_along(rep(var.names, length(site.ids))))
+    Y <- rep(NA, length(H$ind))
+    R <- diag(1, length(H$ind))
+  } else {
+    Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
+    Y <- Obs.cons$Y
+    R <- Obs.cons$R
+    if (length(Y) > 1) {
+      PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+      diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+    }
+    #create matrix the describes the support for each observed state variable at time t
+    min_max <- settings$state.data.assimilation$state.variables %>%
+      purrr::map(function(state.variable){
+        c(as.numeric(state.variable$min_value),
+          as.numeric(state.variable$max_value))
+      }) %>% unlist() %>% as.vector() %>%
+      matrix(length(settings$state.data.assimilation$state.variables), 2, byrow = T) %>%
+      `rownames<-`(var.names)
+    #Create y.censored and y.ind
+    #describing if the obs are within the defined range.
+    y.ind <- y.censored <- c()
+    for (i in seq_along(Y)) {
+      if (Y[i] > min_max[names(Y[i]), 1]) {
+        y.ind[i] = 1; y.censored[i] = Y[i]
+      } else {y.ind[i] <- y.censored[i] <- 0}
+    }
+    #create H
+    H <- construct_nimble_H(site.ids = site.ids,
+                            var.names = var.names,
+                            obs.t = obs.mean[[t]],
+                            pft.path = settings[[1]]$run$inputs$pft.site$path,
+                            by = "block_pft_var")
   }
   #observation number per site
   obs_per_site <- obs.mean[[t]] %>% 
     purrr::map(function(site.obs){length(site.obs)}) %>% 
     unlist()
-  #create H
-  H <- construct_nimble_H(site.ids = site.ids,
-                          var.names = var.names,
-                          obs.t = obs.mean[[t]],
-                          pft.path = settings[[1]]$run$inputs$pft.site$path,
-                          by = "block_pft_var")
   
   #start the blocking process
   #should we consider interactions between sites?
@@ -191,13 +205,21 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
       
       #fill in y and r
-      y.start <- obs_per_site[i] * (i - 1) + 1
-      y.end <- obs_per_site[i] * i
-      block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
-      block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
+      if (obs_per_site[i] == 0) {
+        y.start <- 1
+        y.end <- length(var.names)
+        block.list[[i]]$data$y.censored <- rep(NA, length(var.names))
+        block.list[[i]]$data$r <- diag(1, length(var.names))
+        block.h <- matrix(1, 1, length(var.names))
+      } else {
+        y.start <- obs_per_site[i] * (i - 1) + 1
+        y.end <- obs_per_site[i] * i
+        block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
+        block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
+        block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
+      }
       
       #fill in constants.
-      block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
       block.list[[i]]$H <- block.h
       block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
       block.list[[i]]$constant$N <- length(f.start:f.end)
@@ -349,9 +371,12 @@ MCMC_block_function <- function(block) {
   Cmodel <- nimble::compileNimble(model_pred)
   Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
   
-  #add toggle Y sampler.
-  for(i in 1:block$constant$YN) {
-    valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+  #if we don't have any NA in the Y.
+  if (!any(is.na(block$data$y.censored))) {
+    #add toggle Y sampler.
+    for(i in 1:block$constant$YN) {
+      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+    }
   }
   
   #run MCMC
@@ -405,7 +430,7 @@ MCMC_block_function <- function(block) {
   iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
   if (length(iX) == 1) {
     mua <- mean(dat[, iX])
-    pa <- var(dat[, iX])
+    pa <- stats::var(dat[, iX])
   } else {
     mua <- colMeans(dat[, iX])
     pa <- stats::cov(dat[, iX])
@@ -413,21 +438,11 @@ MCMC_block_function <- function(block) {
   
   if (length(iX.mod) == 1) {
     mufa <- mean(dat[, iX.mod])
-    pfa <- var(dat[, iX.mod])
+    pfa <- stats::var(dat[, iX.mod])
   } else {
     mufa <- colMeans(dat[, iX.mod])
     pfa <- stats::cov(dat[, iX.mod])
   }
-  
-  #
-  # if (length(iX) == 1) {
-  #   K <- pfa %*% t(block$H) %*% solve(1/block$data$r + block$H %*% pfa %*% t(block$H))
-  # } else {
-  #   K <- pfa %*% t(block$H) %*% solve((diag(1/diag(block$data$r)) + block$H %*% pfa %*% t(block$H)))
-  # }
-  # 
-  # pfa <- (diag(block$constant$N) - K %*% block$H) %*% pfa
-  # pa <- GrabFillMatrix(kf.pa, block$constant$H)
   
   #return values.
   block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, mufa = mufa, pfa = pfa)
@@ -441,7 +456,10 @@ MCMC_block_function <- function(block) {
 ##' @param block.list.all  each block within the `block.list` lists.
 ##' @param t time point.
 ##' @param nt total length of time steps.
+##' @param aqq.Init the initial values of aqq, the default is NULL.
+##' @param bqq.Init the initial values of bqq, the default is NULL.
 ##' @param MCMC_dat data frame of MCMC samples, the default it NULL.
+##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.
 ##' 
 ##' @return It returns the `block.list.all` object with initialized/updated Q filled in.
 update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, MCMC_dat = NULL, block.list.all.pre = NULL) {

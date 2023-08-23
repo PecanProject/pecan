@@ -238,11 +238,11 @@ GEF.Block.Nimble <-  nimbleCode({
     for (i in 1:YN) {
       #sample Q.
       q[i] ~ dgamma(shape = aq[i], rate = bq[i])
-      if (length(H) == 1){
-        X[i] ~ dnorm(X.mod[H], sd = 1/sqrt(q[i]))
-      } else{
-      #sample latent variable X.
-      X[i]  ~ dnorm(X.mod[H[i]], sd = 1/sqrt(q[i]))
+      if (length(H) == 1) {
+        X[i]  ~ dnorm(X.mod[H], sd = 1/sqrt(q[i]))
+      } else {
+        #sample latent variable X.
+        X[i]  ~ dnorm(X.mod[H[i]], sd = 1/sqrt(q[i]))
       }
       #likelihood
       y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))

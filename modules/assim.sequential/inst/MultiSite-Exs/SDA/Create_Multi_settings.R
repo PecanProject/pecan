@@ -60,6 +60,7 @@ template <- PEcAn.settings::Settings(list(
     process.variance = TRUE,
     adjustment = TRUE,
     censored.data = FALSE,
+    free.run = FALSE,
     FullYearNC = TRUE,
     NC.Overwrite = FALSE,
     NC.Prefix = "sipnet.out",

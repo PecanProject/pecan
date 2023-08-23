@@ -7,14 +7,14 @@
 get_table_column_names(table, con)
 }
 \arguments{
-\item{table}{a table that is output from one of the find_* functions, 
+\item{table}{a table that is output from one of the find_* functions,
 or a data.frame containing the output from multiple find_* functions. Could also be a vector of table names.}
 
 \item{con}{a connection to the bety database.}
 }
 \description{
-This function will return a vector of the column names for a given table(s) in the bety database. 
-Useful for choseing which columns to include in the written-out table. 
+This function will return a vector of the column names for a given table(s) in the bety database.
+Useful for choosing which columns to include in the written-out table.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 or look at the README

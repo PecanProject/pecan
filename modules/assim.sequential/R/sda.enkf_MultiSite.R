@@ -40,7 +40,6 @@ sda.enkf.multisite <- function(settings,
                                             Profiling = FALSE,
                                             OutlierDetection=FALSE,
                                             parallel_qsub = TRUE,
-                                            free_run = FALSE,
                                             send_email = NULL,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
@@ -357,7 +356,7 @@ sda.enkf.multisite <- function(settings,
         )
        })
   ###------------------------------------------------------------------------------------------------###
-  ### loop over time                                                                                 ###
+  ### w over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
       obs.t <- as.character(lubridate::date(obs.times[t]))
@@ -451,9 +450,10 @@ sda.enkf.multisite <- function(settings,
         ){
           Sys.sleep(10)
           max_t <- max_t + 1
-          if(max_t > 1000){
+          if(max_t > 3){
             PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
             break
+            return(0)
           }
           PEcAn.logger::logger.info("Empty folder, try again!")
         }
@@ -491,7 +491,9 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
-      if (!is.null(obs.mean[[t]][[1]]) & !control$free_run) { ## | any(sapply(obs.mean[[t]],function(x){any(!is.na(x))}))
+      #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
+      #Then specify the settings$state.data.assimilation$by.site as TRUE, and finally
+      if (!is.null(obs.mean[[t]][[1]]) & as.logical(settings$state.data.assimilation$free.run) | control$forceRun) {
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating
@@ -518,9 +520,12 @@ sda.enkf.multisite <- function(settings,
                               nburnin = 5e4)
           }
           #running analysis function.
+
+      #Qianyu's diag
 	  save(X,file = file.path(settings$outdir,"X.Rdata"))
           PEcAn.logger::logger.info("The total number of time is:")
 	  print(nt)
+      #Qianyu's diag
           enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all
@@ -720,9 +725,13 @@ sda.enkf.multisite <- function(settings,
       tictoc::tic(paste0("Visulization for cycle = ", t))
       
       #writing down the image - either you asked for it or nor :)
-      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot) & !is.null(obs.mean[[t]][[1]])){
-        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
-      }   
+      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+        if (as.logical(settings$state.data.assimilation$free.run)) {
+          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS"))
+        } else {
+          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
+        }
+      }
       #Saving the profiling result
       if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
     
