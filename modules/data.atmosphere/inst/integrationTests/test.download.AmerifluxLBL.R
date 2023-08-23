@@ -32,6 +32,11 @@ test_download_AmerifluxLBL <- function(start_date, end_date, sitename, lat.in, l
       sitename = sitename
     )
   })
+  
+  # checking if the file is downloaded
+  test_that("Downloaded files are present in the desired location", {
+    expect_true(file.exists(paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")))
+  })
 }
 
 test_download_AmerifluxLBL(
