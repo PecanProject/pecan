@@ -69,14 +69,14 @@ $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
       if(strcmp($key, "notes") == 0) {
         $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }
@@ -92,14 +92,14 @@ $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
       if(strcmp($key, "notes") == 0) {
         $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }

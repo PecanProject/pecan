@@ -152,10 +152,10 @@ if (isset($modelinfo['revision'])) {
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
-      echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
     }
   }
 ?>
@@ -166,10 +166,10 @@ if (isset($modelinfo['revision'])) {
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
-      echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+      echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
     }
   }
 ?>
