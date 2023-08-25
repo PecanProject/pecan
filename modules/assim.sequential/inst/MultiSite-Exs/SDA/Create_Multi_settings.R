@@ -58,6 +58,8 @@ template <- PEcAn.settings::Settings(list(
   ############################################################################
   state.data.assimilation = structure(list(
     process.variance = TRUE,
+    aqq.Init = 1,
+    bqq.Init = 1,
     adjustment = TRUE,
     censored.data = FALSE,
     free.run = FALSE,

@@ -145,7 +145,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #Handle observation
-  if (as.logical(settings$state.data.assimilation$free.run)) {
+  #if we do free run or the current obs.mean are all NULL.
+  if (as.logical(settings$state.data.assimilation$free.run) | all(is.null(unlist(obs.mean[[t]])))) {
     obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
     obs.cov[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
     H <- list(ind = seq_along(rep(var.names, length(site.ids))))

@@ -25,7 +25,7 @@ temporal.downscale.functions(
 \item{day.window}{- number of days surrounding current day we want to pull
 statistics from}
 
-\item{resids}{- whether or not to propogate residuals, set to FALSE}
+\item{resids}{- whether or not to propagate residuals, set to FALSE}
 
 \item{parallel}{- whether or not to run in parallel. this is a feature
 still being worked on, set to FALSE}

@@ -7,7 +7,7 @@
 ##' @description This function extracts NLDAS data from grids that have been downloaded and stored locally.
 ##'              Once upon a time, you could query these files directly from the internet, but now they're 
 ##'              behind a tricky authentication wall. Files are saved as a netCDF file in CF conventions. 
-##'              These files are ready to be used in the general PEcAn workflow or fed into the downscalign 
+##'              These files are ready to be used in the general PEcAn workflow or fed into the downscaling 
 ##'              workflow.
 # ----------------------------------- 
 # Parameters
