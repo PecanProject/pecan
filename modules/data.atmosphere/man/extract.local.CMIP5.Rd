@@ -45,7 +45,7 @@ extract.local.CMIP5(
 If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
 850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD}
 
-\item{adjust.pr}{- adjustment factor fore preciptiation when the extracted values seem off}
+\item{adjust.pr}{- adjustment factor fore precipitation when the extracted values seem off}
 
 \item{overwrite}{logical. Download a fresh version even if a local file with the same name already exists?}
 

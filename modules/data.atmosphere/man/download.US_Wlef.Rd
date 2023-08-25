@@ -19,7 +19,7 @@ download.US_Wlef
 \section{General Description}{
 
 Obtains data from Ankur Desai's WLEF/ Parks Fall flux tower, and selects certain variables (NEE and LE) to return
-Data is retruned at the given timestep in the given range.
+Data is returned at the given timestep in the given range.
 
 This data includes information on a number of flux variables.
 }
