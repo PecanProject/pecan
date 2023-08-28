@@ -42,10 +42,12 @@ Imports:
     stringr(>= 1.1.0)
 Suggests:
     grid,
+    mockery,
     png,
     raster,
     sp,
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
