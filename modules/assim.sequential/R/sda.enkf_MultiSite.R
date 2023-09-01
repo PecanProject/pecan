@@ -415,8 +415,7 @@ sda.enkf.multisite <- function(settings,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
               rename = TRUE,
-	      obs.mean = obs.mean,
-	      time=t,
+              time = obs.year,
               update_phenology=control$update_phenology
             )
           }) %>%

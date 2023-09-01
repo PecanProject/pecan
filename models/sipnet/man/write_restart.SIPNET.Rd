@@ -14,8 +14,7 @@ write_restart.SIPNET(
   RENAME = TRUE,
   new.params = FALSE,
   inputs,
-  obs.mean = NULL,
-  time = NULL,
+  obs_time = NULL,
   update_phenology = NULL
 )
 }

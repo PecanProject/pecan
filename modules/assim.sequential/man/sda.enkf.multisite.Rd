@@ -15,7 +15,8 @@ sda.enkf.multisite(
   control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
     FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
     = FALSE, Profiling = FALSE, OutlierDetection = FALSE, parallel_qsub = TRUE,
-    send_email = NULL, keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE),
+    send_email = NULL, keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE,
+    update_phenology = FALSE),
   ...
 )
 }

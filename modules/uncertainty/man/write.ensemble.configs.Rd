@@ -13,7 +13,6 @@ write.ensemble.configs(
   write.to.db = TRUE,
   restart = NULL,
   rename = FALSE,
-  obs.mean = NULL,
   time = NULL,
   update_phenology = NULL
 )

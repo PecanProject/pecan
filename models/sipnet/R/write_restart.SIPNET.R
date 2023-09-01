@@ -26,7 +26,7 @@
 ##' @return NONE
 ##' @export
 write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state,
-                                 RENAME = TRUE, new.params = FALSE, inputs,obs.mean=NULL,time=NULL,update_phenology=NULL) {
+                                 RENAME = TRUE, new.params = FALSE, inputs, obs_time=NULL, update_phenology=NULL) {
   
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
@@ -128,8 +128,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
                                            run.id = runid,
                                            inputs = inputs,
                                            IC = analysis.save.mat,
-					   obs.mean = obs.mean,
-                                           time_t=time,
-					   update_phenology=update_phenology))
+                                           obs_time=obs_time,
+					                                 update_phenology=update_phenology))
   print(runid)
 } # write_restart.SIPNET

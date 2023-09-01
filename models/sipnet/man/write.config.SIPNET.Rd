@@ -13,8 +13,7 @@ write.config.SIPNET(
   IC = NULL,
   restart = NULL,
   spinup = NULL,
-  obs.mean = NULL,
-  time_t = NULL,
+  obs_time = NULL,
   update_phenology = NULL
 )
 }
