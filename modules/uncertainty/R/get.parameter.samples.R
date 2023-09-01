@@ -165,7 +165,7 @@ get.parameter.samples <- function(settings,
       if (prior %in% param.names[[i]]) {
         if (prior=="som_respiration_rate") {
          samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
-         samples <- samples[(samples>0)&(samples<0.007)]
+         samples <- samples[(samples>0)&(samples<0.003)]
     } else {
         samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
       } }

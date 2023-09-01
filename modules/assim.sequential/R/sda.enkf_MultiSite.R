@@ -492,7 +492,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###---- 
       #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
       #Then specify the settings$state.data.assimilation$by.site as TRUE, and finally
-      if (!is.null(obs.mean[[t]][[1]]) & as.logical(settings$state.data.assimilation$free.run) | control$forceRun) {
+      if (!is.null(obs.mean[[t]][[1]]) | as.logical(settings$state.data.assimilation$free.run) & control$forceRun) {
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating

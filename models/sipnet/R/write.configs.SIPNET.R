@@ -424,10 +424,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
        leafon <- leafphdata$leafonday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
        leafoff<- leafphdata$leafoffday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
        if (!is.na(leafon)){
-	 param[which(param[, 1] == "leafOnDay"), 2] <- as.numeric(leafon)
+	      param[which(param[, 1] == "leafOnDay"), 2] <- leafon
        }
        if (!is.na(leafoff)){
-        param[which(param[, 1] == "leafOffDay"), 2] <- as.numeric(leafoff)
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafoff
        }
       PEcAn.logger::logger.warn("leafonday after")
       print(param[which(param[, 1] == "leafOnDay"), 2])
