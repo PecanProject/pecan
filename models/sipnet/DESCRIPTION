@@ -33,3 +33,5 @@ LazyData: FALSE
 Encoding: UTF-8
 Require: 
 RoxygenNote: 7.2.3
+X-schema.org-keywords: R, Predictive Ecosystem Analyzer, Carbon, Water, vegetated ecosystem , atmosphere, high speed model, Bruteforce Suitable, SIPNET
+X-schema.org-isPartOf: https://pecanproject.org 
