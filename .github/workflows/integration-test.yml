@@ -1,0 +1,21 @@
+name : Integration Tests
+on : 
+  schedule:
+  - cron: '30 4 * * 1'    
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    
+    container: 
+      image: pecan/depends:R4.1
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    - name: Run tests
+      run: |
+        for FILE in modules/data.atmosphere/inst/integrationTests/*; Rscript $FILE;
+    
