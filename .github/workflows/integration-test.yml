@@ -1,7 +1,10 @@
 name : Integration Tests
-on : 
+on :
+  # allow manual triggering 
+  workflow_dispatch:
   schedule:
-  - cron: '30 4 * * 1'    
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'    
 jobs:
   test:
     runs-on: ubuntu-latest
