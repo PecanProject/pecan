@@ -195,8 +195,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
         block.list[[i]]$data$r <- diag(1, length(var.names))
         block.h <- matrix(1, 1, length(var.names))
       } else {
-        y.start <- obs_per_site[i] * (i - 1) + 1
-        y.end <- obs_per_site[i] * i
+        y.start <- sum(obs_per_site[1:i-1]) + 1#obs_per_site[i] * (i - 1) + 1
+        y.end <- y.start + obs_per_site[i] - 1#obs_per_site[i] * i
         block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
         block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
         block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
