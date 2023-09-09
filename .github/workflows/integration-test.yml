@@ -2,6 +2,11 @@ name : Integration Tests
 on :
   # allow manual triggering 
   workflow_dispatch:
+  
+  # for debugging
+  push:
+  pull_request:
+
   schedule:
     # run Thursday 4:30 AM UTC
   - cron: '30 4 * * 4'    
