@@ -7,7 +7,7 @@
 #' In the second case, must be passable to match_species_id. 
 #' @return \code{character} Returns "usda", "latin_name", "fia" or "custom"
 #' @author Tempest McCabe
-get_species_list_standard<-function(vars){
+  get_species_list_standard<-function(vars){
   
   if(any(c("species_id", "species_USDA_symbol") %in% vars)){
     return("usda")
@@ -19,7 +19,7 @@ get_species_list_standard<-function(vars){
     if("bety_species_id" %in% names(custom_table)){
       return("custom")
     }else{
-      logger.warn("Note: custom_table does not have column named 'bety_species_id' and cannot be used with match_species_id(). This prohibits species-level mapping, but allows PFT level mapping.")
+      PEcAn.logger::logger.warn("Note: custom_table does not have column named 'bety_species_id' and cannot be used with match_species_id(). This prohibits species-level mapping, but allows PFT level mapping.")
     }
   }else{
     return(FALSE)

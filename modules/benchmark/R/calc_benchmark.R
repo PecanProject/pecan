@@ -157,7 +157,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
                                          bm_dir)
         
         for(metric.id in metrics$id){
-          metric.name <- filter(metrics,id == metric.id)[["name"]]
+          metric.name <- dplyr::filter(metrics,.data$id == metric.id)[["name"]]
           score <- out.calc_metrics[["benchmarks"]] %>% 
             dplyr::filter(.data$metric == metric.name) %>% 
             dplyr::select(score)

@@ -13,7 +13,7 @@ metric_R2 <- function(metric_dat, ...) {
   out <- (numer / denom) ^ 2
   
   if(is.na(out)){
-    fit <- lm(metric_dat$model ~ metric_dat$obvs)
+    fit <- stats::lm(metric_dat$model ~ metric_dat$obvs)
     out <- summary(fit)$r.squared
   }
   

@@ -14,7 +14,7 @@ load_rds <- function(data.path, format, site, vars = NULL) {
   dat <- readRDS(data.path)
 
   if(!is.null(vars)){
-    return(dplyr::select(dat, one_of(vars)))
+    return(dplyr::select(dat, dplyr::one_of(vars)))
   }else{
     return(dat)
   }

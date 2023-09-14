@@ -10,5 +10,5 @@ metric_PPMC <- function(metric_dat, ...) {
   # numer <- sum((metric_dat$obvs - mean(metric_dat$obvs)) * (metric_dat$model - mean(metric_dat$model)))
   # denom <- sqrt(sum((metric_dat$obvs - mean(metric_dat$obvs)) ^ 2)) * sqrt(sum((metric_dat$model - mean(metric_dat$model)) ^ 2))
   # return(numer / denom)
-  return(cor(metric_dat$obvs, metric_dat$model))
+  return(stats::cor(metric_dat$obvs, metric_dat$model))
 } # metric_PPMC

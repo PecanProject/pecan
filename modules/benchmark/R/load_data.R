@@ -128,13 +128,13 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   # This was part of the arguments but never implemented
   if(!is.na(start_year)){
     out$year <- lubridate::year(out$posix)
-    out <- out %>% filter(.,year >= as.numeric(start_year))
+    out <- out %>% filter(.,.data$year >= as.numeric(start_year))
     print("subsetting by start year")
   }
   
   if(!is.na(end_year)){
     out$year <- lubridate::year(out$posix)
-    out <- out %>% filter(.,year <= as.numeric(end_year))
+    out <- out %>% filter(.,.data$year <= as.numeric(end_year))
     print("subsetting by end year")
   }
   

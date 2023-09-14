@@ -51,7 +51,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   # more than one site, more than one variable we want to track) so we need flexibility.  More
   # generally, files should never be hardcoded since these tests will run on many different machines
   
-  obs_file <- read.table("Location of the data table")
+  obs_file <- utils::read.table("Location of the data table")
   obs_value <- obs_file$value
   N <- size(obs_value)
   
@@ -70,7 +70,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   # purpose of that run was recorded elsewhere.  seems like it would be much better to have all that
   # in one place
   
-  bench_file <- read.table("Location of the data table", bench_id)
+  bench_file <- utils::read.table("Location of the data table", bench_id)
   bench_value <- bench_file$value
   
   # First calculate the differences between the current benchmark run and the observed values
