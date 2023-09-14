@@ -23,6 +23,10 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
+
+    - name: Install mockery
+      run: |
+        Rscript -e "install.packages('mockery', repos='https://ftp.belnet.be/mirror/CRAN')"
       
     - name: Run tests
       run: |
