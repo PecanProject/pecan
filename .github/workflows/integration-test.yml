@@ -18,7 +18,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     
     container: 
-      image: pecan/base
+      image: pecan/base:develop
 
     steps:
     - name: Checkout source code
