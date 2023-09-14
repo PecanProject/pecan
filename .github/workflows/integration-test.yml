@@ -18,13 +18,11 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     
     container: 
-      image: pecan/depends:R4.1
+      image: pecan/base
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
-    - name: Install Packages
-      run: make -j1 install
       
     - name: Run tests
       run: |
