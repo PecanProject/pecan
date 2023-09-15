@@ -169,7 +169,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       if (highday > reso_len) {
         highday <- reso_len
       }
-      dwnsc_day <- rand_vect_cont(div, source$precipitation_flux[x], sd = sd(train$precipitation_flux[lowday:highday]))
+      dwnsc_day <- rand_vect_cont(div, source$precipitation_flux[x], sd = stats::sd(train$precipitation_flux[lowday:highday]))
       precip <- append(precip, dwnsc_day)
     }
     df$precipitation_flux <- precip
@@ -196,7 +196,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
           }
           dwnsc_day <- vector()
           for (n in seq_len(div)) {
-            dwnsc_day[n] <- rnorm(1, mean = sour[x], sd = sd(a[lowday:highday]))
+            dwnsc_day[n] <- stats::rnorm(1, mean = sour[x], sd = stats::sd(a[lowday:highday]))
           }
           train_vec <- append(train_vec, dwnsc_day)
         }
@@ -330,7 +330,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
         if (precip[i] == 0) {
           p <- 2
         }
-        hdry[i] <- A * p * (1 - exp(-1 * bmlist[i] * ((temp_max[i] - temp_min[i])^C)))
+        hdry[i] <- A * p * (1 - exp(-1 * bmlist[i] * ((df$temp_max[i] - df$temp_min[i])^C)))
       }
       hdry[hdry < 0] <- 0
       swflux <- hdry * I

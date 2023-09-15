@@ -24,4 +24,6 @@ PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
 }
 \author{
 David LeBauer
+
+David LeBauer
 }

@@ -24,6 +24,10 @@ get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon) {
 
 get.cruncep <- function(lat, lon, start.date, end.date) {
   result <- load.cfmet(lat, lon)
+  Lat <- ncdf4::ncvar_get(nc = met.nc, varid = "lat")
+  Lon <- ncdf4::ncvar_get(nc = met.nc, varid = "lon")
+  lati <- which.min(abs(Lat - lat))
+  
   hourly.result <- cruncep_hourly(result, lat = Lat[lati])
   weather <- cruncep_dt2weather(hourly.result)
   return(weather)

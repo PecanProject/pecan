@@ -60,7 +60,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
   new.date <- subdailymet[,list(hour = 0:(23 / output.dt) / output.dt),
                     by = c("year", "month", "day", "doy")]
 
-  new.date$date <- new.date[,list(date = lubridate::ymd_h(paste(year, month, day, hour)))]
+  new.date$date <- new.date[,list(date = lubridate::ymd_h(paste(new.date$year, new.date$month, new.date$day, new.date$hour)))]
 
   downscaled.result <- list()
   tint <- nrow(new.date)/ nrow(subdailymet)
@@ -128,32 +128,32 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
     data.table::setnames(dailymet, c("air_temperature_max", "air_temperature_min"), c("tmax", "tmin"))
   }
   
-  light <- dailymet[, lightME(DOY = doy, t.d = tseq, lat = lat), by = c("year", "doy")]
+  light <- dailymet[, lightME(DOY = dailymet$doy, t.d = tseq, lat = lat), by = c("year", "doy")]
   
   light$Itot <- light[, list(I.dir + I.diff)]
-  resC2 <- light[, list(resC2 = (Itot - min(Itot))/max(Itot)), by = c("year", "doy")]$resC2
-  solarR <- dailymet[, list(year, doy, solarR = rep(surface_downwelling_shortwave_flux_in_air * 
+  resC2 <- light[, list(resC2 = (light$Itot - min(light$Itot))/max(light$Itot)), by = c("year", "doy")]$resC2
+  solarR <- dailymet[, list(year = dailymet$year, doy=dailymet$doy, solarR = rep(dailymet$surface_downwelling_shortwave_flux_in_air * 
                                                       2.07 * 10^5/36000, each = tint) * resC2)]
   
   SolarR <- cbind(resC2, solarR)[, list(SolarR = solarR * resC2)]$SolarR
   
   ## Temperature
-  Temp <- dailymet[, list(Temp = tmin + (sin(2 * pi * (tseq - 10)/tint) + 1)/2 * (tmax - tmin), 
+  Temp <- dailymet[, list(Temp = dailymet$tmin + (sin(2 * pi * (tseq - 10)/tint) + 1)/2 * (dailymet$tmax - dailymet$tmin), 
                           hour = tseq), by = "year,doy"]$Temp
   
   ## Relative Humidity
-  RH <- dailymet[, list(RH = rep(relative_humidity, each = tint), hour = tseq), by = "year,doy"]
+  RH <- dailymet[, list(RH = rep(dailymet$relative_humidity, each = tint), hour = tseq), by = "year,doy"]
   data.table::setkeyv(RH, c("year", "doy", "hour"))
   
   # if(!'air_pressure' %in% colnames(dailymet)) air_pressure <-
-  qair <- dailymet[, list(year, doy, tmin, tmax, air_pressure, air_temperature, qmin = rh2qair(rh = relative_humidity/100, 
-                                                                                               T = tmin), qmax = rh2qair(rh = relative_humidity/100, T = tmax))]
+  qair <- dailymet[, list(year=dailymet$year, doy=dailymet$doy, tmin=dailymet$tmet, tmax=dailymet$tmax, air_pressure = dailymet$air_pressure, air_temperature = dailymet$air_temperature, qmin = rh2qair(rh = dailymet$relative_humidity/100, 
+                                                                                               T = dailymet$tmin), qmax = rh2qair(rh = dailymet$relative_humidity/100, T = dailymet$tmax))]
   
-  a <- qair[, list(year, doy, tmin, tmax, air_temperature, qmin, qmax, pressure = PEcAn.utils::ud_convert(air_pressure, 
-                                                                                             "Pa", "millibar"))][, list(year, doy, rhmin = qair2rh(qmin, air_temperature, pressure), rhmax = qair2rh(qmax, 
-                                                                                                                                                                                                     air_temperature, pressure))]
+  a <- qair[, list(year = dailymet$year, doy=dailymet$doy, tmin=dailymet$tmet, tmax=dailymet$tmax, air_temperature=qair$air_temperature, qmin=qair$qmin, qmax=qair$qmax, pressure = PEcAn.utils::ud_convert(qair$air_pressure, 
+                                                                                             "Pa", "millibar"))][, list(year=dailymet$year, doy=dailymet$doy, rhmin = qair2rh(qair$qmin, qair$air_temperature, datasets::pressure), rhmax = qair2rh(qair$qmax, 
+                                                                                                                                                                                                     qair$air_temperature, datasets::pressure))]
   rhscale <- (cos(2 * pi * (tseq - 10)/tint) + 1)/2
-  RH <- a[, list(RH = rhmin + rhscale * (rhmax - rhmin)), by = c("year", "doy")]$RH
+  RH <- a[, list(RH = a$rhmin + rhscale * (a$rhmax - a$rhmin)), by = c("year", "doy")]$RH
   
   ## Wind Speed
   
