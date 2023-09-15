@@ -20,16 +20,38 @@
 #' @return list of soil hydraulic and thermal parameters
 #' @export
 #' @importFrom rlang %||%
-    # null-filling operator: A %||% B == "B if A is null, A in all other cases"
+# null-filling operator: A %||% B == "B if A is null, A in all other cases"
 #' @examples 
 #' sand <- c(0.3, 0.4, 0.5)
 #' clay <- c(0.3, 0.3, 0.3)
 #' soil_params(sand=sand,clay=clay)
 soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL){
   ## load soil parameters
-  load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
+  soil_data <- new.env()
+  load(system.file("data/soil_class.RData",package = "PEcAn.data.land"), envir = soil_data)
   mysoil <- list()
-
+  soil.name <- soil_data$soil.name
+  xsand.def <- soil_data$xsand.def
+  xclay.def <- soil_data$xclay.def
+  fieldcp.K <- soil_data$fieldcp.K
+  soilcp.MPa <- soil_data$soilcp.MPa
+  grav <- soil_data$grav
+  soilwp.MPa <- soil_data$soilwp.MPa
+  sand.hcap <- soil_data$sand.hcap
+  silt.hcap <- soil_data$silt.hcap
+  clay.hcap <- soil_data$clay.hcap
+  air.hcap <- soil_data$air.hcap
+  ksand <- soil_data$ksand
+  sand.cond <- soil_data$sand.cond
+  ksilt <- soil_data$ksilt
+  silt.cond <- soil_data$silt.cond
+  kclay <- soil_data$kclay
+  clay.cond <- soil_data$clay.cond
+  kair <- soil_data$kair
+  air.cond <- soil_data$air.cond
+  h2o.cond <- soil_data$h2o.cond
+  texture <- soil_data$texture
+  
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
@@ -44,27 +66,27 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
     sand <- xsand.def[soil_type]
     clay <- xclay.def[soil_type]
-
+    
   } else {
-
+    
     if (any(c(sand, silt, clay) > 2)) {
       # assume values reported in % not proportion
       sand <- if (is.null(sand)) { NULL } else { sand / 100 }
       silt <- if (is.null(silt)) { NULL } else { silt / 100 }
       clay <- if (is.null(clay)) { NULL } else { clay / 100 }
     }
-
+    
     # compute up to one missing value (>1 missing was handled above)
     sand <- sand %||% (1-silt-clay)
     silt <- silt %||% (1-sand-clay)
     clay <- clay %||% (1-sand-silt)
-
+    
     #normalize
     stot <- sand + silt + clay
     sand <- sand / stot
     silt <- silt / stot
     clay <- clay / stot
-
+    
     mysoil$soil_n <- sclass(sand,clay)
     mysoil$soil_type  <- soil.name[mysoil$soil_n]
   }
@@ -119,14 +141,14 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     
     # Hydraulic conductivity at saturation [ m/s ]
     mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- PEcAn.utils::ud_convert(10.^(-0.60 + 1.26*mysoil$fraction_of_sand_in_soil[z] - 0.64*mysoil$fraction_of_clay_in_soil[z]),
-                                           "inch/hour","meters/second") 
+                                                                                    "inch/hour","meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
     mysoil$volume_fraction_of_water_in_soil_at_saturation[z]  <- (50.5 - 14.2*mysoil$fraction_of_sand_in_soil[z] - 3.7*mysoil$fraction_of_clay_in_soil[z]) / 100.
     
     # Soil field capacity[ m^3/m^3 ]
     mysoil$volume_fraction_of_water_in_soil_at_field_capacity[z] <- mysoil$volume_fraction_of_water_in_soil_at_saturation[z] * ( fieldcp.K/mysoil$soil_hydraulic_conductivity_at_saturation[z])^ (1. / (2.*mysoil$soil_hydraulic_b[z]+3.))
-  
+    
   } ## end primary properties
   
   #---------------------------------------------------------------------------------------#
@@ -178,20 +200,20 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   #                                                                                       #
   #---------------------------------------------------------------------------------------#
   mysoil$thcond0 <- ( ksand * mysoil$fraction_of_sand_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * sand.cond 
-                     + ksilt * mysoil$fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * silt.cond
-                     + kclay * mysoil$fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * clay.cond
-                     + kair                  *       mysoil$volume_fraction_of_water_in_soil_at_saturation    *  air.cond  )
+                      + ksilt * mysoil$fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * silt.cond
+                      + kclay * mysoil$fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * clay.cond
+                      + kair                  *       mysoil$volume_fraction_of_water_in_soil_at_saturation    *  air.cond  )
   mysoil$thcond1 <- rep(h2o.cond - kair * air.cond,length=length(mysoil$thcond0))
   mysoil$thcond2 <- ( ksand * mysoil$fraction_of_sand_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
-                     + ksilt * mysoil$fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
-                     + kclay * mysoil$fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
-                     + kair                  *        mysoil$volume_fraction_of_water_in_soil_at_saturation   )
+                      + ksilt * mysoil$fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
+                      + kclay * mysoil$fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
+                      + kair                  *        mysoil$volume_fraction_of_water_in_soil_at_saturation   )
   mysoil$thcond3 <- rep(1. - kair,length=length(mysoil$thcond0))
   ## default soil thermal conductivity = dry
   mysoil$soil_thermal_conductivity <- ( mysoil$thcond0 + mysoil$thcond1 * mysoil$volume_fraction_of_condensed_water_in_dry_soil) /
-                                      ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_condensed_water_in_dry_soil)
+    ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_condensed_water_in_dry_soil)
   mysoil$soil_thermal_conductivity_at_saturation <- ( mysoil$thcond0 + mysoil$thcond1 * mysoil$volume_fraction_of_water_in_soil_at_saturation) /
-                                      ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_water_in_soil_at_saturation)
+    ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_water_in_soil_at_saturation)
   
   #---------------------------------------------------------------------------------------#
   
@@ -203,11 +225,11 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   }
   for(z in which(!(mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
-    mysoil$soil_albedo[z] <- median(texture$albdry)
-    if(is.null(bulk)) mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
-    mysoil$slden[z]       <- median(texture$slden)
+    mysoil$soil_albedo[z] <- stats::median(texture$albdry)
+    if(is.null(bulk)) mysoil$soil_bulk_density[z] <- stats::median(texture$xrobulk)
+    mysoil$slden[z]       <- stats::median(texture$slden)
   }
-    
+  
   ## Conversions to standard variables
   mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
   
@@ -218,7 +240,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   #mysoil$slcpd <- NULL
   
   return(mysoil)
-  }#end function
+}#end function
 #==========================================================================================#
 #==========================================================================================#
 
@@ -226,7 +248,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
 
 
 
- 
+
 #' This function determines the soil class number based on the fraction of sand, clay, and silt
 #'
 #' @param sandfrac 
