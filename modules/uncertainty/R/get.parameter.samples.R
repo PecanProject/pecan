@@ -57,7 +57,10 @@ get.parameter.samples <- function(settings,
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
       # Load specified file
-      load(posterior.files[i])
+      env <- new.env()
+      load(posterior.files[i], envir = env)
+      post.distns <- env$post.distns
+      prior.distns <- env$prior.distns
       if (!exists("prior.distns") & exists("post.distns")) {
         prior.distns <- post.distns
       }
@@ -65,8 +68,9 @@ get.parameter.samples <- function(settings,
       # Default to most recent posterior in the workflow, or the prior if there is none
       fname <- file.path(outdirs[i], "post.distns.Rdata")
       if (file.exists(fname)) {
-        load(fname)
-        prior.distns <- post.distns
+        env <- new.env()
+        load(fname, envir = env)
+        prior.distns <- env$post.distns
       } else {
         load(file.path(outdirs[i], "prior.distns.Rdata"))
       }
@@ -95,7 +99,9 @@ get.parameter.samples <- function(settings,
     }else if ("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
       PEcAn.logger::logger.info("Defaulting to trait.mcmc file in the pft directory.")
       ma.results <- TRUE
-      load(file.path(outdirs[i], "trait.mcmc.Rdata"))
+      env <- new.env()
+      load(file.path(outdirs[i], "trait.mcmc.Rdata"), envir = env)
+      trait.mcmc <- env$trait.mcmc
     } else {
       ma.results <- FALSE
     }

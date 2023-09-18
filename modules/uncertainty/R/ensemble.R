@@ -29,7 +29,9 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
   if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
-      load(samples.file)
+      samples = new.env()
+      load(samples.file, envir = samples)
+      runs.samples <- samples$runs.samples
       ens.run.ids <- runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")

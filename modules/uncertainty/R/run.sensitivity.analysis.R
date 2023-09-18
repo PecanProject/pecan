@@ -106,7 +106,12 @@ run.sensitivity.analysis <-
         } else {
           ensemble.id <- NULL
         }
-        if(file.exists(fname)) load(fname, envir = environment())
+        if(file.exists(fname)) {
+          samples = new.env()
+          load(fname, envir = samples)
+          runs.samples <- samples$runs.samples
+          sa.samples <- samples$sa.samples
+        }
         
         # For backwards compatibility, define some variables if not just loaded
         if(!exists("pft.names"))    pft.names <- names(trait.samples)
@@ -121,7 +126,9 @@ run.sensitivity.analysis <-
           settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
           ensemble.id = ensemble.id, variable = variable.fn,
           start.year = start.year, end.year = end.year)
-        load(fname, envir = environment())
+        env = new.env()
+        load(fname, envir = env)
+        sensitivity.output <- env$sensitivity.output
         
         ### Generate SA output and diagnostic plots
         sensitivity.results <- list()
@@ -133,7 +140,7 @@ run.sensitivity.analysis <-
             quantiles.str <- quantiles.str[which(quantiles.str != '50')]
             quantiles <- as.numeric(quantiles.str)/100
             
-            C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
+            C.units <- grepl('^Celsius$', PEcAn.utils::trait.lookup(traits)$units, ignore.case = TRUE)
             if(any(C.units)){
               for(x in which(C.units)) {
                 trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(trait.samples[[pft$name]][[x]], "degC", "K")
@@ -144,7 +151,7 @@ run.sensitivity.analysis <-
             good.saruns <- sapply(sensitivity.output[[pft$name]], function(x) sum(is.na(x)) <=2)
             if(!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
               bad.saruns <- !good.saruns
-              warning(paste('missing >2 runs for', vecpaste(traits[bad.saruns]),
+              warning(paste('missing >2 runs for', PEcAn.utils::vecpaste(traits[bad.saruns]),
                             '\n sensitivity analysis or variance decomposition will be performed on these trait(s)',
                             '\n it is likely that the runs did not complete, this should be fixed !!!!!!'))
             }
@@ -171,12 +178,12 @@ run.sensitivity.analysis <-
               sensitivity.plots <- plot_sensitivities(
                 sensitivity.results[[pft$name]]$sensitivity.output, linesize = 1, dotsize = 3)
               
-              pdf(fname, height = 12, width = 9)
+              grDevices::pdf(fname, height = 12, width = 9)
               ## arrange plots  http://stackoverflow.com/q/10706753/199217
               ncol <- floor(sqrt(length(sensitivity.plots)))
               print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol=ncol)))
               print(sensitivity.plots) # old method.  depreciated.
-              dev.off()
+              grDevices::dev.off()
               
               ### Generate VD diagnostic plots
               vd.plots <- plot_variance_decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
@@ -185,9 +192,9 @@ run.sensitivity.analysis <-
                                             all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
                                             start.year=start.year, end.year=end.year)
               
-              pdf(fname, width = 11, height = 8)
+              grDevices::pdf(fname, width = 11, height = 8)
               do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
-              dev.off()
+              grDevices::dev.off()
             }
             
           }  ## end if sensitivity analysis
@@ -206,9 +213,9 @@ run.sensitivity.analysis <-
 
 ##' @export
 runModule.run.sensitivity.analysis <- function(settings, ...) {
-  if(is.MultiSettings(settings)) {
-    return(papply(settings, runModule.run.sensitivity.analysis, ...))
-  } else if (is.Settings(settings)) {
+  if(PEcAn.settings::is.MultiSettings(settings)) {
+    return(PEcAn.settings::papply(settings, runModule.run.sensitivity.analysis, ...))
+  } else if (PEcAn.settings::is.Settings(settings)) {
     run.sensitivity.analysis(settings, ...)
   } else {
     stop("runModule.run.sensitivity.analysis only works with Settings or MultiSettings")
