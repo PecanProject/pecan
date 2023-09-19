@@ -117,7 +117,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 .PHONY: all install check test document shiny \
             check_base check_models check_modules 
 
-all: document installFromRUniverse
+all: installFromRUniverse
 
 
 check_base: $(BASE_C) 
