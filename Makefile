@@ -30,7 +30,7 @@ MODULES_RUNIVERSE :=  PEcAn.BASGRA PEcAn.BIOCRO PEcAn.CLM45 PEcAn.DALEC PEcAn.dv
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
 
-BASE := $(BASE:%=base/%)
+BASE := $(BASE_RUNIVERSE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
@@ -41,19 +41,19 @@ MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
-BASE_C := $(BASE:%=.check/%)
-MODELS_C := $(MODELS:%=.check/%)
-MODULES_C := $(MODULES:%=.check/%)
+BASE_C := $(BASE_RUNIVERSE:%=.check/%)
+MODELS_C := $(MODELS_RUNIVERSE:%=.check/%)
+MODULES_C := $(MODULES_RUNIVERSE:%=.check/%)
 ALL_PKGS_C := $(BASE_C) $(MODULES_C) $(MODELS_C)
 
-BASE_T := $(BASE:%=.test/%)
-MODELS_T := $(MODELS:%=.test/%)
-MODULES_T := $(MODULES:%=.test/%)
+BASE_T := $(BASE_RUNIVERSE:%=.test/%)
+MODELS_T := $(MODELS_RUNIVERSE:%=.test/%)
+MODULES_T := $(MODULES_RUNIVERSE:%=.test/%)
 ALL_PKGS_T := $(BASE_T) $(MODULES_T) $(MODELS_T)
 
-BASE_D := $(BASE:%=.doc/%)
-MODELS_D := $(MODELS:%=.doc/%)
-MODULES_D := $(MODULES:%=.doc/%)
+BASE_D := $(BASE_RUNIVERSE:%=.doc/%)
+MODELS_D := $(MODELS_RUNIVERSE:%=.doc/%)
+MODULES_D := $(MODULES_RUNIVERSE:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
