@@ -30,14 +30,14 @@ MODULES_RUNIVERSE :=  PEcAn.BASGRA PEcAn.BIOCRO PEcAn.CLM45 PEcAn.DALEC PEcAn.dv
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
 
-BASE := $(BASE_RUNIVERSE:%=base/%)
-MODELS := $(MODELS_RUNIVERSE:%=models/%)
-MODULES := $(MODULES_RUNIVERSE:%=modules/%)
+BASE := $(BASE:%=base/%)
+MODELS := $(MODELS:%=models/%)
+MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
-BASE_I := $(BASE_RUNIVERSE:%=.install/%)
-MODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
-MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
+BASE_I := $(BASE:%=.install/%)
+MODELS_I := $(MODELS:%=.install/%)
+MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
@@ -82,15 +82,15 @@ files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
 # a circular dependency between benchmark and data.land.
 # When this is fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R $(subst PEcAn.,,$(1)) \
-	$(if $(findstring modules/benchmark,$(subst PEcAn.,,$(1))),NA,TRUE)
+depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
+	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
-	-e "install.packages('$(notdir $(1))', repos = c('https://pecanproject.r-universe.dev', 'https://cloud.r-project.org'))"
+	-e "install.packages('$(strip $(1))', repos = c('https://pecanproject.r-universe.dev', 'https://cloud.r-project.org'))"
 	
-check_R_pkg = ./scripts/time.sh "check $1" Rscript scripts/check_with_errors.R $(strip $(subst PEcAn.,,$(1)))
+check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
-	-e "devtools::test('$(strip $(subst PEcAn.,,$(1)))'," \
+	-e "devtools::test('$(strip $(1))'," \
 	-e "stop_on_failure = TRUE," \
 	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
