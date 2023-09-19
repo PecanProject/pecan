@@ -35,9 +35,9 @@ MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
-BASE_I := $(BASE_RUNIVERSE:%=.install/%)
-MODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
-MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
+BASE_I := $(BASE:%=.install/%)
+MODELS_I := $(MODELS:%=.install/%)
+MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
