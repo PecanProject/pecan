@@ -31,8 +31,8 @@ SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
 
 BASE := $(BASE_RUNIVERSE:%=base/%)
-MODELS := $(MODELS:%=models/%)
-MODULES := $(MODULES:%=modules/%)
+MODELS := $(MODELS_RUNIVERSE:%=models/%)
+MODULES := $(MODULES_RUNIVERSE:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
 BASE_I := $(BASE_RUNIVERSE:%=.install/%)
@@ -41,19 +41,19 @@ MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
-BASE_C := $(BASE_RUNIVERSE:%=.check/%)
-MODELS_C := $(MODELS_RUNIVERSE:%=.check/%)
-MODULES_C := $(MODULES_RUNIVERSE:%=.check/%)
+BASE_C := $(BASE:%=.check/%)
+MODELS_C := $(MODELS:%=.check/%)
+MODULES_C := $(MODULES:%=.check/%)
 ALL_PKGS_C := $(BASE_C) $(MODULES_C) $(MODELS_C)
 
-BASE_T := $(BASE_RUNIVERSE:%=.test/%)
-MODELS_T := $(MODELS_RUNIVERSE:%=.test/%)
-MODULES_T := $(MODULES_RUNIVERSE:%=.test/%)
+BASE_T := $(BASE:%=.test/%)
+MODELS_T := $(MODELS:%=.test/%)
+MODULES_T := $(MODULES:%=.test/%)
 ALL_PKGS_T := $(BASE_T) $(MODULES_T) $(MODELS_T)
 
-BASE_D := $(BASE_RUNIVERSE:%=.doc/%)
-MODELS_D := $(MODELS_RUNIVERSE:%=.doc/%)
-MODULES_D := $(MODULES_RUNIVERSE:%=.doc/%)
+BASE_D := $(BASE:%=.doc/%)
+MODELS_D := $(MODELS:%=.doc/%)
+MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
@@ -86,7 +86,7 @@ depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
 	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
-	-e "install.packages('$(strip $(1))', repos = c('https://pecanproject.r-universe.dev', 'https://cloud.r-project.org'))"
+	-e "install.packages('$(notdir $(1))', repos = c('https://pecanproject.r-universe.dev', 'https://cloud.r-project.org'))"
 	
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
