@@ -86,7 +86,8 @@ depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
 	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
-	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
+	-e "install.packages('$(strip $(1))', repos = c('https://pecanproject.r-universe.dev', 'https://cloud.r-project.org'))"
+	
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "devtools::test('$(strip $(1))'," \
