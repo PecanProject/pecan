@@ -10,6 +10,18 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+
+BASE_RUNIVERSE :=  PEcAn.logger PEcAn.utils PEcAn.DB PEcAn.settings PEcAn.visualization PEcAn.qaqc \
+                		PEcAn.remote PEcAn.workflow 
+
+MODELS_RUNIVERSE :=  PEcAn.allometry PEcAn.assim.batch PEcAnAssimSequential PEcAn.benchmark PEcAn.data.atmosphere PEcAn.data.hydrology \
+                		PEcAn.data.land PEcAn.data.remote PEcAn.emulator \
+                		PEcAn.MA PEcAn.photosynthesis PEcAn.priors PEcAnRTM PEcAn.uncertainty  
+
+MODULES_RUNIVERSE :=  PEcAn.BASGRA PEcAn.BIOCRO PEcAn.CLM45 PEcAn.DALEC PEcAn.dvmdostem PEcAn.ED2 PEcAn.FATES PEcAn.GDAY PEcAn.JULES \
+						PEcAn.LINKAGES PEcAn.LPJGUESS PEcAn.MAAT PEcAn.MAESPA PEcAn.PRELES PEcAn.SIBCASA PEcAn.SIPNET PEcAn.STICS PEcAn.ModelName \
+                		PEcAn.all
+
 # Components not currently included in the build
 # (Most need more development first)
 # 	models: cable
