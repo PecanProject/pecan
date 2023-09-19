@@ -35,11 +35,16 @@ MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
-BASE_I := $(BASE_RUNIVERSE:%=.install/%)
-MODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
-MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
+BASE_I := $(BASE:%=.install/%)
+MODELS_I := $(MODELS:%=.install/%)
+MODULES_I := $(MODULES:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
+
+RBASE_I := $(BASE_RUNIVERSE:%=.install/%)
+RMODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
+RMODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
+RALL_PKGS_I := $(RBASE_I) $(RMODULES_I) $(RMODELS_I)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
@@ -112,7 +117,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 .PHONY: all install check test document shiny \
             check_base check_models check_modules 
 
-all: installFromRuniverse document
+all: document installFromRUniverse
 
 
 check_base: $(BASE_C) 
@@ -123,10 +128,11 @@ check_models: $(MODELS_C)
 check_modules: $(BASE_I) $(MODULES_C) 
 
 document: $(ALL_PKGS_D) .doc/base/all
-installFromRuniverse: $(ALL_PKGS_I) .install/base/all
+install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
 shiny: $(SHINY_I)
+installFromRUniverse: $(RALL_PKGS_I) 
 
 # Render the PEcAn bookdown documentation
 book:
