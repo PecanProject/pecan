@@ -35,9 +35,9 @@ MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
-BASE_I := $(BASE:%=.install/%)
-MODELS_I := $(MODELS:%=.install/%)
-MODULES_I := $(MODULES:%=.install/%)
+BASE_I := $(BASE_RUNIVERSE:%=.install/%)
+MODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
+MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
 
@@ -112,7 +112,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 .PHONY: all install check test document shiny \
             check_base check_models check_modules 
 
-all: install document
+all: installFromRuniverse document
 
 
 check_base: $(BASE_C) 
@@ -123,7 +123,7 @@ check_models: $(MODELS_C)
 check_modules: $(BASE_I) $(MODULES_C) 
 
 document: $(ALL_PKGS_D) .doc/base/all
-install: $(ALL_PKGS_I) .install/base/all
+installFromRuniverse: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
 shiny: $(SHINY_I)
