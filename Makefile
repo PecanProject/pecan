@@ -35,16 +35,11 @@ MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
-BASE_I := $(BASE:%=.install/%)
-MODELS_I := $(MODELS:%=.install/%)
-MODULES_I := $(MODULES:%=.install/%)
+BASE_I := $(BASE_RUNIVERSE:%=.install/%)
+MODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
+MODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
 ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 SHINY_I := $(SHINY:shiny/%=.shiny_depends/%)
-
-RBASE_I := $(BASE_RUNIVERSE:%=.install/%)
-RMODELS_I := $(MODELS_RUNIVERSE:%=.install/%)
-RMODULES_I := $(MODULES_RUNIVERSE:%=.install/%)
-RALL_PKGS_I := $(RBASE_I) $(RMODULES_I) $(RMODELS_I)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
@@ -132,7 +127,6 @@ install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
 shiny: $(SHINY_I)
-installFromRUniverse: $(RALL_PKGS_I) 
 
 # Render the PEcAn bookdown documentation
 book:
