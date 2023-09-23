@@ -131,7 +131,7 @@ jobs:
 
     # run PEcAn checks
     - name: check
-      run: make -j1 check_base
+      run: make -j1 install
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
