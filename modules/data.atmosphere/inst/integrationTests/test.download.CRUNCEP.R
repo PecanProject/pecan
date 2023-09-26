@@ -1,19 +1,23 @@
 library(testthat)
 library(ncdf4)
+library(mockery)
+library(PEcAn.DB)
+library(PEcAn.logger)
+library(withr)
 
 test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, maxErrors, sleep) {
   # putting logger to debug mode
-  PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
-  on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE), add = TRUE)
-  PEcAn.logger::logger.setLevel("DEBUG")
+  logger.setUseConsole(TRUE, FALSE)
+  on.exit(logger.setUseConsole(TRUE, TRUE), add = TRUE)
+  logger.setLevel("DEBUG")
 
   # mocking functions
-  mockery::stub(PEcAn.DB::convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(PEcAn.DB::convert_input, 'db.query', data.frame(id = 1))
+  stub(convert_input, 'dbfile.input.check', data.frame())
+  stub(convert_input, 'db.query', data.frame(id = 1))
 
-  withr::with_dir(tempdir(), {
+  with_dir(tempdir(), {
     tmpdir <- getwd()
-    PEcAn.DB::convert_input(
+    convert_input(
       input.id = NA,
       outfolder = tmpdir,
       formatname = NULL,
@@ -44,8 +48,8 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
 
     test_that("NetCDF file contains lat and lon variables", {
 
-      mask_nc <- ncdf4::nc_open(paste0(tmpdir, "/cruncep_landwater_mask.nc"))
-      on.exit(ncdf4::nc_close(mask_nc), add = TRUE)
+      mask_nc <- nc_open(paste0(tmpdir, "/cruncep_landwater_mask.nc"))
+      on.exit(nc_close(mask_nc), add = TRUE)
       expect_true("land_water_mask" %in% names(mask_nc$var))
       
       # Check the dimensions of "land_water_mask" variable
