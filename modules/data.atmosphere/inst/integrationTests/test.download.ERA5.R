@@ -37,51 +37,51 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
       product_types = product_types,
       reticulate_python = reticulate_python
     )
-  })
+    
+    test_that("All the required files are downloaded and stored at desired location", { 
+      expect_true(file.exists(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.2m_temperature.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_pressure.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.total_precipitation.nc")))
+    })
 
-  test_that("All the required files are downloaded and stored at desired location", { 
-    expect_true(file.exists(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.2m_temperature.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_pressure.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.total_precipitation.nc")))
-  })
+    test_that("All ERA5 data files have the correct variable units", {
+      nc <- nc_open(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc"))
+      expect_equal(nc$var$d2m$units, "K")
+      nc_close(nc)
 
-  test_that("All ERA5 data files have the correct variable units", {
-    nc <- nc_open(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc"))
-    expect_equal(nc$var$d2m$units, "K")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.2m_temperature.nc"))
+      expect_equal(nc$var$t2m$units, "K")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.2m_temperature.nc"))
-    expect_equal(nc$var$t2m$units, "K")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc"))
+      expect_equal(nc$var$u10$units, "m s**-1")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc"))
-    expect_equal(nc$var$u10$units, "m s**-1")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc"))
+      expect_equal(nc$var$v10$units, "m s**-1")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc"))
-    expect_equal(nc$var$v10$units, "m s**-1")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_pressure.nc"))
+      expect_equal(nc$var$sp$units, "Pa")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_pressure.nc"))
-    expect_equal(nc$var$sp$units, "Pa")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc"))
+      expect_equal(nc$var$ssrd$units, "J m**-2")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc"))
-    expect_equal(nc$var$ssrd$units, "J m**-2")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc"))
+      expect_equal(nc$var$strd$units, "J m**-2")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc"))
-    expect_equal(nc$var$strd$units, "J m**-2")
-    nc_close(nc)
-
-    nc <- nc_open(paste0(tmpdir, "/era5.total_precipitation.nc"))
-    expect_equal(nc$var$tp$units, "m")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.total_precipitation.nc"))
+      expect_equal(nc$var$tp$units, "m")
+      nc_close(nc)
+    })
   })
 }
 
