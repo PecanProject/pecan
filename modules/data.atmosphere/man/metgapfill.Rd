@@ -21,7 +21,7 @@ metgapfill(
 )
 }
 \arguments{
-\item{in.path}{location on disk where inputs are stord}
+\item{in.path}{location on disk where inputs are stored}
 
 \item{in.prefix}{prefix of input and output files}
 
@@ -31,7 +31,7 @@ metgapfill(
 
 \item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
 
-\item{lst}{is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC}
+\item{lst}{is timezone offset from UTC, if timezone is available in time:units attribute in file, it will use that, default is to assume UTC}
 
 \item{overwrite}{should existing files be overwritten}
 

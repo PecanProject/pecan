@@ -39,7 +39,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 if (!array_key_exists($hostname, $hostlist)) {
-  die("${hostname} is not an approved host");
+  die("{$hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
 
@@ -53,7 +53,7 @@ $folder = $workflow['folder'];
 $stmt->closeCursor();
 close_database();
 
-$path = "05-running.php?workflowid=$workflowid&hostname=${hostname}";
+$path = "05-running.php?workflowid=$workflowid&hostname={$hostname}";
 if ($pecan_edit) {
   $path .= "&pecan_edit=pecan_edit";
 }

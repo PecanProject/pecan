@@ -24,7 +24,7 @@ Add data to an existing plot or create a new one
 \details{
 Used to add raw data or summary statistics to the plot of a distribution.
 The height of Y is arbitrary, and can be set to optimize visualization.
-If SE estimates are available, the se wil be plotted
+If SE estimates are available, the SE will be plotted
 }
 \examples{
 \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
