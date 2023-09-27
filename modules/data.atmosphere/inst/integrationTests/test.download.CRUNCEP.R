@@ -45,8 +45,8 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
 
     test_that("NetCDF file contains lat and lon variables", {
 
-      mask_nc <- nc_open(paste0(tmpdir, "/cruncep_landwater_mask.nc"))
-      on.exit(nc_close(mask_nc), add = TRUE)
+      mask_nc <- ncdf4::nc_open(paste0(tmpdir, "/cruncep_landwater_mask.nc"))
+      on.exit(ncdf4::nc_close(mask_nc), add = TRUE)
       expect_true("land_water_mask" %in% names(mask_nc$var))
       
       # Check the dimensions of "land_water_mask" variable
