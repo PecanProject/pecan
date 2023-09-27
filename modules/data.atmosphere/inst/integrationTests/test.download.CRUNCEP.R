@@ -1,21 +1,18 @@
 library(testthat)
 library(ncdf4)
-library(mockery)
 library(PEcAn.DB)
-library(PEcAn.logger)
-library(withr)
 
 test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, maxErrors, sleep) {
   # putting logger to debug mode
-  logger.setUseConsole(TRUE, FALSE)
-  on.exit(logger.setUseConsole(TRUE, TRUE), add = TRUE)
-  logger.setLevel("DEBUG")
+  PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
+  on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE), add = TRUE)
+  PEcAn.logger::logger.setLevel("DEBUG")
 
   # mocking functions
-  stub(convert_input, 'dbfile.input.check', data.frame())
-  stub(convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
+  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
 
-  with_dir(tempdir(), {
+  withr::with_dir(tempdir(), {
     tmpdir <- getwd()
     convert_input(
       input.id = NA,
