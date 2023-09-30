@@ -31,23 +31,23 @@ test_download_AmerifluxLBL <- function(start_date, end_date, sitename, lat.in, l
       lon.in = lon.in,
       sitename = sitename
     )
-  })
-  
-  # checking if the file is downloaded
-  test_that("Downloaded files are present at the desired location", {
-    expect_true(file.exists(paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")))
-  })
 
-  test_that("Downloaded data files have the right format", {
-    firstline <- system(paste0("head -4 ", paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")), intern = TRUE)
-    lastline <- system(paste0("tail -1 ", paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")), intern = TRUE)
-    
-    # checking if first line of CSV has the sitename
-    expect_true(grepl(sitename, firstline[1]))
-    
-    # fourth and last row checked to contain non-alphabetical data since these are used to verify start and end dates
-    expect_false(grepl("[A-Za-z]", firstline[4]))
-    expect_false(grepl("[A-Za-z]", lastline[1]))
+    # checking if the file is downloaded
+    test_that("Downloaded files are present at the desired location", {
+      expect_true(file.exists(paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")))
+    })
+
+    test_that("Downloaded data files have the right format", {
+      firstline <- system(paste0("head -4 ", paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")), intern = TRUE)
+      lastline <- system(paste0("tail -1 ", paste0(tmpdir, "/AMF_US-Akn_BASE_HH_6-5.csv")), intern = TRUE)
+      
+      # checking if first line of CSV has the sitename
+      expect_true(grepl(sitename, firstline[1]))
+      
+      # fourth and last row checked to contain non-alphabetical data since these are used to verify start and end dates
+      expect_false(grepl("[A-Za-z]", firstline[4]))
+      expect_false(grepl("[A-Za-z]", lastline[1]))
+    })
   })
 }
 
