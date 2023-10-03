@@ -1,4 +1,5 @@
 library(testthat)
+library(PEcAn.DB)
 
 test_download_AmerifluxLBL <- function(start_date, end_date, sitename, lat.in, lon.in) {
   # putting logger to debug mode
@@ -7,13 +8,13 @@ test_download_AmerifluxLBL <- function(start_date, end_date, sitename, lat.in, l
   PEcAn.logger::logger.setLevel("DEBUG")
 
   # mocking functions
-  mockery::stub(PEcAn.DB::convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(PEcAn.DB::convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
+  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
 
   withr::with_dir(tempdir(), {
     tmpdir <- getwd()
     # calling download function
-    res <- PEcAn.DB::convert_input(
+    res <- convert_input(
       input.id = NA,
       outfolder = tmpdir,
       formatname = NULL,
