@@ -31,7 +31,7 @@ jobs:
         cache: 'pip' # caching pip dependencies
 
     - name: Install python packages
-    - run: |
+      run: |
         pip install cdsapi
       
     - name: Run tests
