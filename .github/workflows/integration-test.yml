@@ -32,7 +32,12 @@ jobs:
     - name: Print Output to Console
       run: |
         cat .cdsapirc
-      
+     
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+        
     - name: Run tests
       run: |
         for FILE in modules/data.atmosphere/inst/integrationTests/*; do
