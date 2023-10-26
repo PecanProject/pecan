@@ -24,15 +24,14 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
     
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        cache: 'pip' # caching pip dependencies
-
-    - name: Install python packages
+    - name: CDS API file setup
       run: |
-        pip install cdsapi
+        echo "url: https://cds.climate.copernicus.eu/api/v2" >> .cdsapirc
+        echo "key: ${{ secrets.ERA5_API_KEY }}" >> .cdsapirc
+    
+    - name: Print Output to Console
+      run: |
+        cat .cdsapirc
       
     - name: Run tests
       run: |
