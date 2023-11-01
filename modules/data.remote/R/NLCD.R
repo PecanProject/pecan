@@ -103,6 +103,9 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
         print(paste("File not found:", filename))
         return(NULL)
     }
+    
+    # WARNING: the following extraction previously used raster and sp package functions
+    # this new implementation with terra functions has not been thoroughly tested
     nlcd <- terra::rast(filename)
     
     # transform points
