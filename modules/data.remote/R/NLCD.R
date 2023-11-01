@@ -69,8 +69,7 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
 ##' @description Based on codes from Christy Rollinson and from Max Joseph (http://mbjoseph.github.io/2014/11/08/nlcd.html)
 extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 2011) {
     library(raster)
-    require(rgdal)
-    
+
     if (!is.null(con)) {
         library(PEcAn.DB)
         if (year == 2001) {

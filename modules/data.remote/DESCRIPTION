@@ -36,7 +36,6 @@ Suggests:
     dplyr,
     ggplot2,
     lubridate,
-    rgdal,
     reshape,
     testthat (>= 1.0.2),
     tibble
