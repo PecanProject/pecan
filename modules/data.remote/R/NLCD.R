@@ -103,21 +103,21 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
         print(paste("File not found:", filename))
         return(NULL)
     }
-    nlcd <- raster(filename)
+    nlcd <- terra::rast(filename)
     
     # transform points
-    sites <- SpatialPoints(coords = coords, proj4string = CRS("+proj=longlat +datum=WGS84"))
-    sites <- spTransform(sites, crs(nlcd))
+    sites <- terra::vect(coords, geom=c("long", "lat"), crs="+proj=longlat +datum=WGS84")
+    sites <- terra::buffer(x, width=buffer)
     
     # extract
-    sum.raw <- table(extract(nlcd, sites, buffer = buffer))
+    sum.raw <- table(terra::extract(nlcd, sites))
     summ <- prop.table(sum.raw)
-    mydf <- data.frame(cover = names(summ), percent = as.vector(summ), count = as.vector(sum.raw))
+    mydf <- data.frame(cover.name = colnames(summ), percent = as.vector(summ), count = as.vector(sum.raw))
+    mydf <- mydf[mydf$count!=0,]
     
-    # land cover number to name conversions
-    cover.table <- nlcd@data@attributes[[1]]
-    cover.names <- cover.table[as.numeric(as.character(mydf$cover)) + 1, grep("Land", names(cover.table))]
-    mydf$cover.name <- cover.names
+    # land cover name to number conversions
+    nlcd_levels <- terra::levels(nlcd)[[1]]
+    mydf$cover  <- nlcd_levels$value[nlcd_levels$`Land Cover Class` %in% mydf$cover.name]
     
     return(mydf)
 } # extract_NLCD
