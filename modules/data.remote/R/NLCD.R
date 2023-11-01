@@ -109,7 +109,7 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
     
     # transform points
     sites <- terra::vect(coords, geom=c("long", "lat"), crs="+proj=longlat +datum=WGS84")
-    sites <- terra::buffer(x, width=buffer)
+    sites <- terra::buffer(sites, width=buffer)
     
     # extract
     sum.raw <- table(terra::extract(nlcd, sites))
