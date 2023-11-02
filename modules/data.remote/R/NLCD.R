@@ -23,7 +23,7 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
     
     ## before downloading, check if the file already exists on this host
     if (!is.null(con)) {
-        library(PEcAn.DB)
+
         chk <- dbfile.check(type = "Input", id = input.id, con = con)
         if (nrow(chk) > 0) {
             machines <- db.query(paste("SELECT * from machines where id in (", 
@@ -70,7 +70,7 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
 extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 2011) {
 
     if (!is.null(con)) {
-        library(PEcAn.DB)
+
         if (year == 2001) {
             input.id <- 1000000482
         } else if (year == 2011) {
