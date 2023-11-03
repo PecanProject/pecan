@@ -393,7 +393,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   }
 
   barebones <- settings$model$barebones_ed2in
-  if (!is.null(barebones) && !isFALSE(barebones) && barebones != "false") barebones <- TRUE
+  if (!is.null(barebones) && !base::isFALSE(barebones) && barebones != "false") barebones <- TRUE
   write_ed2in(ed2in.text, file.path(settings$rundir, run.id, "ED2IN"), barebones = barebones)
 } # write.config.ED2
 # ==================================================================================================#
