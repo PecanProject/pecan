@@ -112,7 +112,6 @@ wanted <- c(
 'reshape',
 'reshape2',
 'reticulate',
-'rgdal',
 'rjags',
 'rjson',
 'rlang',
