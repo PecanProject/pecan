@@ -68,14 +68,13 @@ shp2kml <- function(dir, ext, kmz = FALSE, proj4 = NULL, color = NULL, NameField
     # Read in shapefile(s) & get coordinates/projection info shp.file <-
     # readShapeSpatial(file.path(dir,i),verbose=TRUE) coordinates(test) <- ~X+Y
     
-    layers <- rgdal::ogrListLayers(file.path(dir, i))
-    info   <- rgdal::ogrInfo(file.path(dir, i), layers)
+    layers <- sf::st_layers(file.path(dir, i))
     # shp.file <- readOGR(file.path(dir,i),layer=layers) # no need to read in file
     
     # Display vector info to the console
     print("")
-    print(paste0("Input layers: ", layers))
-    print(paste0("Input projection info: ", info$p4s))
+    print(paste0("Input layers: ", layers$name))
+    print(paste0("Input projection info: ", layers$crs[[1]]$input))
     print("")
     
     # Write out kml/kmz using plotKML package if (is.null(color)){ color <- 'grey70' }
@@ -133,6 +132,7 @@ get.attributes <- function(file, coords) {
   
   #library(fields)
   #require(rgdal)
+  # note that OGR support is now provided by the sf and terra packages among others 
   
   # print('NOT IMPLEMENTED YET') subset_layer(file,coords)
 } # get.attributes
