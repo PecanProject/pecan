@@ -84,18 +84,18 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   mbiomass_thoc2 <- sbiomass_thoc2 <- matrix(NA, mplot, nt)
   
   for (i in seq_len(mplot)) {
-    mNPP[i, ] <- apply(NPP[i, , ], 2, stats::mean, na.rm = TRUE)
+    mNPP[i, ] <- apply(NPP[i, , ], 2, mean, na.rm = TRUE)
     sNPP[i, ] <- apply(NPP[i, , ], 2, stats::sd, na.rm = TRUE)
-    mAGB[i, ] <- apply(AGB[i, , ], 2, stats::mean, na.rm = TRUE)
+    mAGB[i, ] <- apply(AGB[i, , ], 2, mean, na.rm = TRUE)
     sAGB[i, ] <- apply(AGB[i, , ], 2, stats::sd, na.rm = TRUE)
     
-    mbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, stats::mean, na.rm = TRUE)
+    mbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, mean, na.rm = TRUE)
     sbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, stats::sd, na.rm = TRUE)
-    mbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, stats::mean, na.rm = TRUE)
+    mbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, mean, na.rm = TRUE)
     sbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, stats::sd, na.rm = TRUE)
-    mbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, stats::mean, na.rm = TRUE)
+    mbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, mean, na.rm = TRUE)
     sbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, stats::sd, na.rm = TRUE)
-    mbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, stats::mean, na.rm = TRUE)
+    mbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, mean, na.rm = TRUE)
     sbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, stats::sd, na.rm = TRUE)
   }
   
