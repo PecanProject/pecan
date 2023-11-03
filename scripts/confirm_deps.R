@@ -41,7 +41,7 @@ confirm_deps <- function(pkg,
     dependencies <- c("Depends", "Imports", "LinkingTo")
   } else if (isTRUE(dependencies) || all(dependencies == "soft")) {
     dependencies <- c("Depends", "Imports", "LinkingTo", "Suggests")
-  } else if (isFALSE(dependencies)) {
+  } else if (base::isFALSE(dependencies)) {
     return() # for compatibility with remotes::install_deps
   }
 
