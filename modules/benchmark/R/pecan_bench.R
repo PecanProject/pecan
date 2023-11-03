@@ -34,7 +34,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   
   logic_check <- validation_check(comp_run)
   
-  if (isFALSE(logic_check)) {
+  if (base::isFALSE(logic_check)) {
     print("The results were found to be invalid")
     stop()
   }
