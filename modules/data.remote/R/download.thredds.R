@@ -82,7 +82,7 @@ download.thredds.AGB <- function(outdir = NULL, site_ids, run_parallel = FALSE,
     } else {
       ncores <- parallel::detectCores() -1
     }
-    require(doParallel)
+  
     PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
     cl = parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl)
