@@ -1,5 +1,6 @@
 library(testthat)
 library(ncdf4)
+library(PEcAn.DB)
 
 test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_types, reticulate_python) {
   # putting logger to debug mode
@@ -9,16 +10,16 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
 
 
   # mocking functions
-  mockery::stub(PEcAn.DB::convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(PEcAn.DB::convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
+  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
 
   # additional mocks needed since download.ERA5 does not return data as other download functions
-  mockery::stub(PEcAn.DB::convert_input, 'length', 2)
-  mockery::stub(PEcAn.DB::convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
+  mockery::stub(convert_input, 'length', 2)
+  mockery::stub(convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
 
   withr::with_dir(tempdir(), {
     tmpdir <- getwd()
-    PEcAn.DB::convert_input(
+    convert_input(
       input.id = NA,
       outfolder = tmpdir,
       formatname = NULL,
