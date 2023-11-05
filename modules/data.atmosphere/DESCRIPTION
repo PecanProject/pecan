@@ -52,7 +52,6 @@ Imports:
     sf,
     sp,
     stringr (>= 1.1.0),
-    suntools,
     terra,
     testthat (>= 2.0.0),
     tibble,
@@ -70,6 +69,7 @@ Suggests:
     progress,
     reticulate
 Remotes:
+    github::adokter/suntools,
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
     github::ropensci/nneo

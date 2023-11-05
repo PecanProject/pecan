@@ -9,6 +9,7 @@ Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
 remotes::install_github(c(
+'adokter/suntools',
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
@@ -128,7 +129,6 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
-'suntools',
 'swfscMisc',
 'terra',
 'testthat',
