@@ -23,7 +23,6 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
     
     ## before downloading, check if the file already exists on this host
     if (!is.null(con)) {
-        library(PEcAn.DB)
         chk <- PEcAn.DB::dbfile.check(type = "Input", id = input.id, con = con)
         if (nrow(chk) > 0) {
             machines <- PEcAn.DB::db.query(paste("SELECT * from machines where id in (", 
@@ -68,11 +67,9 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
 ##' 
 ##' @description Based on codes from Christy Rollinson and from Max Joseph (http://mbjoseph.github.io/2014/11/08/nlcd.html)
 extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 2011) {
-    library(raster)
-    require(rgdal)
-    
+
     if (!is.null(con)) {
-        library(PEcAn.DB)
+
         if (year == 2001) {
             input.id <- 1000000482
         } else if (year == 2011) {
@@ -104,21 +101,24 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
         print(paste("File not found:", filename))
         return(NULL)
     }
-    nlcd <- raster::raster(filename)
+    
+    # WARNING: the following extraction previously used raster and sp package functions
+    # this new implementation with terra functions has not been thoroughly tested
+    nlcd <- terra::rast(filename)
     
     # transform points
-    sites <- sp::SpatialPoints(coords = coords, proj4string = sp::CRS("+proj=longlat +datum=WGS84"))
-    sites <- sp::spTransform(sites, raster::crs(nlcd))
+    sites <- terra::vect(coords, geom=c("long", "lat"), crs="+proj=longlat +datum=WGS84")
+    sites <- terra::buffer(sites, width=buffer)
     
     # extract
-    sum.raw <- table(raster::extract(nlcd, sites, buffer = buffer))
+    sum.raw <- table(terra::extract(nlcd, sites))
     summ <- prop.table(sum.raw)
-    mydf <- data.frame(cover = names(summ), percent = as.vector(summ), count = as.vector(sum.raw))
+    mydf <- data.frame(cover.name = colnames(summ), percent = as.vector(summ), count = as.vector(sum.raw))
+    mydf <- mydf[mydf$count!=0,]
     
-    # land cover number to name conversions
-    cover.table <- nlcd@data@attributes[[1]]
-    cover.names <- cover.table[as.numeric(as.character(mydf$cover)) + 1, grep("Land", names(cover.table))]
-    mydf$cover.name <- cover.names
+    # land cover name to number conversions
+    nlcd_levels <- terra::levels(nlcd)[[1]]
+    mydf$cover  <- nlcd_levels$value[nlcd_levels$`Land Cover Class` %in% mydf$cover.name]
     
     return(mydf)
 } # extract_NLCD
