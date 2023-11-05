@@ -129,6 +129,7 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'suntools',
 'swfscMisc',
 'terra',
 'testthat',
