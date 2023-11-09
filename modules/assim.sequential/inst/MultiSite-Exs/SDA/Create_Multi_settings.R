@@ -66,6 +66,7 @@ template <- PEcAn.settings::Settings(list(
     q.type = "SINGLE",
     Localization.FUN = "Local.support",
     scalef = 1,
+    chains = 5,
     data = structure(list(format_id = 1000000040, input.id = 1000013298)),
     state.variables = structure(list(
       #you could add more state variables here

@@ -1,0 +1,11 @@
+test_that("`start_qsub()` able to correctly make the command to be executed remotely to start qsub runs", {
+  mocked_res <- mockery::mock(0)
+  mockery::stub(start_qsub, 'remote.execute.cmd', mocked_res)
+  res <- start_qsub(1, "qsub -N @NAME@ -o @STDOUT@ -e @STDERR@", "test_rundir", "pecan", "test_host_rundir", "test_host_outdir", "test_stdout_log", "test_stderr_log", "test_job_script")
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(args[[1]][[1]], 'pecan')
+  expect_equal(args[[1]][[2]], c('qsub', '-N', 'PEcAn-1', '-o', 'test_host_outdir/1/test_stdout_log', '-e', 'test_host_outdir/1/test_stderr_log'))
+  expect_equal(args[[1]][[3]][[1]], 'test_host_rundir/1/test_job_script')
+  expect_equal(args[[1]]$stderr, TRUE)
+  expect_equal(res, 0)
+})

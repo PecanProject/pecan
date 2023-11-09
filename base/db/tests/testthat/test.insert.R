@@ -47,3 +47,11 @@ test_that(
       }
     )
   })
+
+test_that("`match_colnames()` returns intersection of column names of a dataframe to a table", {
+  mockery::stub(match_colnames, 'dplyr::tbl', data.frame(id = 1, name = 'test', value = 1))
+  expect_equal(
+    match_colnames(values = data.frame(id = 1, name = 'test'), table = 'test', con = 1),
+    c('id', 'name')
+  )
+})

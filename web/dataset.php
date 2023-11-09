@@ -99,12 +99,12 @@ switch ($type) {
         $mime = "image/png";
         $file = tempnam(sys_get_temp_dir(),'plot') . ".png";
         if (!file_exists($datafile)) {
-            die("Invalid file name specified ${file}.");            
+            die("Invalid file name specified {$file}.");            
         }
 
         # execute command to create graph
         $escapedargs = escapeshellarg("--args $datafile $year $xvar $yvar $width $height $file");
-        shell_exec("R_LIBS_USER='${R_library_path}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla $escapedargs plot.netcdf.R /tmp/plot.out");
+        shell_exec("R_LIBS_USER='{$R_library_path}' PECANSETTINGS='$folder/pecan.xml' {$Rbinary} CMD BATCH --vanilla $escapedargs plot.netcdf.R /tmp/plot.out");
         break;
         
     default:
@@ -112,7 +112,7 @@ switch ($type) {
 }
 
 if (!file_exists($file)) {
-    die("Invalid file name specified ${file}.");            
+    die("Invalid file name specified {$file}.");            
 }
 if ($mime != "") {
     header("Content-type: $mime");

@@ -50,7 +50,10 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
         "papply executing ", deparse(substitute(fn)),
         "on element ", i, " of ", length(settings), ".")
 
-      result.i <- try(fn(settings[[i]], ...), silent = TRUE)
+      tmp = settings[[i]]
+      if(all(grepl("settings",names(tmp$run)))) tmp$run = tmp$run[[i]]
+      
+      result.i <- try(fn(tmp, ...), silent = TRUE)
 
       if (!inherits(result.i, "try-error")) {
         ind <- length(result) + 1

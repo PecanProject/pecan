@@ -32,14 +32,14 @@ outlier.detector.boxplot<-function(X) {
 #' SDA_control
 #'
 #' @param trace Logical if code should print out the progress of SDA .
-#' @param ForewardForecast Logical if the foreward forecast estimates needs to be read and visulized in time series plots.
+#' @param ForewardForecast Logical if the foreward forecast estimates needs to be read and visualized in time series plots.
 #' @param interactivePlot Logical if time series plots need to be generated.
 #' @param TimeseriesPlot Logical if time series plots need to be generated.
 #' @param BiasPlot Logical if bias plots need to be generated
 #' @param plot.title Character defining the title of times series plots
 #' @param facet.plots Logical if the timeseries plots should be faceted based on state variables
 #' @param debug Logical if the code should stop at some milestones and open an interactive debugging environment
-#' @param pause Logical if code needs to be puased and wait for further instruction after the analysis step
+#' @param pause Logical if code needs to be paused and wait for further instruction after the analysis step
 #' @param Profiling Logical if code should keep track of how much time each step took
 #' @param OutlierDetection Logical if TRUE then a simple method will be used to replace simulations of outside 3IQR with the median of ensembles.
 #'

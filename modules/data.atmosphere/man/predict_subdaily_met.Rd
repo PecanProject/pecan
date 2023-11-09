@@ -47,7 +47,7 @@ ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
 
-\item{adjust.pr}{- adjustment factor fore preciptiation when the extracted values seem off}
+\item{adjust.pr}{- adjustment factor fore precipitation when the extracted values seem off}
 
 \item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
 

@@ -5,14 +5,14 @@
 ##' Future version will first downscale and fill with NARR, then REddyProc
 ##'
 ##' @export
-##' @param in.path location on disk where inputs are stord
+##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input and output files
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
+##' @param lst is timezone offset from UTC, if timezone is available in time:units attribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {

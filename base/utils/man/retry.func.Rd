@@ -37,7 +37,7 @@ Retry function X times before stopping in error
       "thredds/dodsC/ornldaac/1220", 
       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
 dap <- retry.func(
-  ncdf4::nc_open(file_url)
+  ncdf4::nc_open(file_url),
   maxErrors=10,
   sleep=2)
 }

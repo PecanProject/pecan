@@ -13,7 +13,9 @@ download.MERRA <- function(outfolder, start_date, end_date,
 
   dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
 
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  if(!file.exists(outfolder)) {
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+  }
 
   # Download all MERRA files first. This skips files that have already been downloaded.
   for (i in seq_along(dates)) {
@@ -100,70 +102,77 @@ download.MERRA <- function(outfolder, start_date, end_date,
       )
     ))
 
-    ## Create output file
-    if (file.exists(loc.file)) {
-      PEcAn.logger::logger.warn(
-        "Target file ", loc.file, " already exists.",
-        "It will be overwritten."
-      )
+    if (overwrite || !file.exists(loc.file)) {
+      if (file.exists(loc.file)) {
+        PEcAn.logger::logger.warn(
+          "Target file ", loc.file, " already exists.",
+          "It will be overwritten."
+        )
+      }
+      
+      ## Create output file
+      loc <- ncdf4::nc_create(loc.file, var_list)
+      on.exit(ncdf4::nc_close(loc), add = TRUE)
+
+      # Populate output file
+      dates_yr <- dates[lubridate::year(dates) == year]
+      for (d in seq_along(dates_yr)) {
+        date <- dates_yr[[d]]
+        end <- d * 24
+        start <- end - 23
+        mostfile <- file.path(outfolder, sprintf("merra-most-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", mostfile, " does not exist."), file.exists(mostfile))
+        nc <- ncdf4::nc_open(mostfile)
+        for (r in seq_len(nrow(merra_vars))) {
+          x <- ncdf4::ncvar_get(nc, merra_vars[r,][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_vars[r,][["CF_name"]], x,
+                          start = c(1, 1, start), count = c(1, 1, 24))
+        }
+        ncdf4::nc_close(nc)
+        presfile <- file.path(outfolder, sprintf("merra-pres-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", presfile, " does not exist."), file.exists(presfile))
+        nc <- ncdf4::nc_open(presfile)
+        for (r in seq_len(nrow(merra_pres_vars))) {
+          x <- ncdf4::ncvar_get(nc, merra_pres_vars[r,][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_pres_vars[r,][["CF_name"]], x,
+                          start = c(1, 1, start), count = c(1, 1, 24))
+        }
+        ncdf4::nc_close(nc)
+        fluxfile <- file.path(outfolder, sprintf("merra-flux-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", fluxfile, " does not exist."), file.exists(fluxfile))
+        nc <- ncdf4::nc_open(fluxfile)
+        for (r in seq_len(nrow(merra_flux_vars))) {
+          x <- ncdf4::ncvar_get(nc, merra_flux_vars[r,][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_flux_vars[r,][["CF_name"]], x,
+                          start = c(1, 1, start), count = c(1, 1, 24))
+        }
+        ncdf4::nc_close(nc)
+        lfofile <- file.path(outfolder, sprintf("merra-lfo-%s.nc", as.character(date)))
+        PEcAn.logger::severeifnot(paste0("File ", lfofile, " does not exist."), file.exists(lfofile))
+        nc <- ncdf4::nc_open(lfofile)
+        for (r in seq_len(nrow(merra_lfo_vars))) {
+          x <- ncdf4::ncvar_get(nc, merra_lfo_vars[r,][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_lfo_vars[r,][["CF_name"]], x,
+                          start = c(1, 1, start), count = c(1, 1, 24))
+        }
+        ncdf4::nc_close(nc)
+      }
+
+      # Add derived variables
+      # Total SW diffuse = Diffuse PAR + Diffuse NIR
+      sw_diffuse <-
+        ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air") +
+        ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_nearinfrared_radiative_flux_in_air")
+      ncdf4::ncvar_put(loc, "surface_diffuse_downwelling_shortwave_flux_in_air", sw_diffuse,
+                      start = c(1, 1, 1), count = c(1, 1, -1))
+
+      # Total SW direct = Direct PAR + Direct NIR
+      sw_direct <-
+        ncdf4::ncvar_get(loc, "surface_direct_downwelling_photosynthetic_radiative_flux_in_air") +
+        ncdf4::ncvar_get(loc, "surface_direct_downwelling_nearinfrared_radiative_flux_in_air")
+      ncdf4::ncvar_put(loc, "surface_direct_downwelling_shortwave_flux_in_air", sw_direct,
+                      start = c(1, 1, 1), count = c(1, 1, -1))
     }
-    loc <- ncdf4::nc_create(loc.file, var_list)
-    on.exit(ncdf4::nc_close(loc), add = TRUE)
-
-    # Populate output file
-    dates_yr <- dates[lubridate::year(dates) == year]
-    for (d in seq_along(dates_yr)) {
-      date <- dates_yr[[d]]
-      end <- d * 24
-      start <- end - 23
-      mostfile <- file.path(outfolder, sprintf("merra-most-%s.nc", as.character(date)))
-      nc <- ncdf4::nc_open(mostfile)
-      for (r in seq_len(nrow(merra_vars))) {
-        x <- ncdf4::ncvar_get(nc, merra_vars[r,][["MERRA_name"]])
-        ncdf4::ncvar_put(loc, merra_vars[r,][["CF_name"]], x,
-                         start = c(1, 1, start), count = c(1, 1, 24))
-      }
-      ncdf4::nc_close(nc)
-      presfile <- file.path(outfolder, sprintf("merra-pres-%s.nc", as.character(date)))
-      nc <- ncdf4::nc_open(presfile)
-      for (r in seq_len(nrow(merra_pres_vars))) {
-        x <- ncdf4::ncvar_get(nc, merra_pres_vars[r,][["MERRA_name"]])
-        ncdf4::ncvar_put(loc, merra_pres_vars[r,][["CF_name"]], x,
-                         start = c(1, 1, start), count = c(1, 1, 24))
-      }
-      ncdf4::nc_close(nc)
-      fluxfile <- file.path(outfolder, sprintf("merra-flux-%s.nc", as.character(date)))
-      nc <- ncdf4::nc_open(fluxfile)
-      for (r in seq_len(nrow(merra_flux_vars))) {
-        x <- ncdf4::ncvar_get(nc, merra_flux_vars[r,][["MERRA_name"]])
-        ncdf4::ncvar_put(loc, merra_flux_vars[r,][["CF_name"]], x,
-                         start = c(1, 1, start), count = c(1, 1, 24))
-      }
-      ncdf4::nc_close(nc)
-      lfofile <- file.path(outfolder, sprintf("merra-lfo-%s.nc", as.character(date)))
-      nc <- ncdf4::nc_open(lfofile)
-      for (r in seq_len(nrow(merra_lfo_vars))) {
-        x <- ncdf4::ncvar_get(nc, merra_lfo_vars[r,][["MERRA_name"]])
-        ncdf4::ncvar_put(loc, merra_lfo_vars[r,][["CF_name"]], x,
-                         start = c(1, 1, start), count = c(1, 1, 24))
-      }
-      ncdf4::nc_close(nc)
-    }
-
-    # Add derived variables
-    # Total SW diffuse = Diffuse PAR + Diffuse NIR
-    sw_diffuse <-
-      ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air") +
-      ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_nearinfrared_radiative_flux_in_air")
-    ncdf4::ncvar_put(loc, "surface_diffuse_downwelling_shortwave_flux_in_air", sw_diffuse,
-                     start = c(1, 1, 1), count = c(1, 1, -1))
-
-    # Total SW direct = Direct PAR + Direct NIR
-    sw_direct <-
-      ncdf4::ncvar_get(loc, "surface_direct_downwelling_photosynthetic_radiative_flux_in_air") +
-      ncdf4::ncvar_get(loc, "surface_direct_downwelling_nearinfrared_radiative_flux_in_air")
-    ncdf4::ncvar_put(loc, "surface_direct_downwelling_shortwave_flux_in_air", sw_direct,
-                     start = c(1, 1, 1), count = c(1, 1, -1))
   }
 
   return(results)

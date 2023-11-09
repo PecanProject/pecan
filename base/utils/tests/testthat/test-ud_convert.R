@@ -25,3 +25,15 @@ test_that("output is type numeric and not class \"units\"", {
   testthat::expect_type(x, "double")
 
 })
+
+test_that("ud_convert() handles difftime", {
+  x <- ud_convert(as.difftime("12:00:00"), u1 = "hours", u2 = "days")
+  expect_is(x, "numeric")
+  expect_equal(x, 0.5)
+})
+
+test_that("ud_convert() warns with wrong input units for difftime", {
+  expect_warning(ud_convert(as.difftime("12:00:00"), u1 = "years", u2 = "minutes"))
+  #should still error if units are not convertible
+  expect_error(ud_convert(as.difftime("12:00:00"), u1 = "kilograms", u2 = "minutes"))
+})

@@ -600,7 +600,7 @@ pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames = NULL) {
 } # pda.adjust.jumps
 
 
-##' Adjust PDA blcok MCMC jump size
+##' Adjust PDA block MCMC jump size
 ##'
 ##' @title Adjust PDA block MCMC jump size
 ##' @param settings a PEcAn settings list

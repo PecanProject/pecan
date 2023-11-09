@@ -1,0 +1,299 @@
+---
+title: "Reanalysis Spatiotemporal Variability"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Enable repository from tidyverse
+options(repos = c(
+  tidyverse = 'https://tidyverse.r-universe.dev',
+  rlib = 'https://r-lib.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+if(FALSE){
+  # Download and install tidyverse in R
+  install.packages('rlang')
+  install.packages("R6")
+  install.packages("glue")
+  install.packages("pkgconfig")
+  install.packages("tibble")
+  install.packages("ggplot2")
+  install.packages("purrr")
+  install.packages("tidyr")
+  install.packages("lubridate")
+  install.packages('tidyverse')
+}
+library(tidyverse)
+```
+
+# Exploratory analysis of spatiotemporal variability in PEcAn SDA Reanalysis
+
+## Settings
+```{r}
+rundir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_testrun"
+rundir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA_lai_agb_smp"
+```
+
+
+## Organize data: Annual pools and fluxes
+```{r}
+load(file.path(rundir,"timeseries.plot.data.Rdata")) 
+y = ready.to.plot %>% filter(Type == "SDA_ANALYSIS") ## contains pools in one table
+
+load(file.path(rundir,"sda.output.Rdata"))
+## site.locs contain site lat/lon
+```
+
+## AGB EOF
+```{r}
+## filter date and organize space-wide (columns are timeseries)
+agb = y %>% filter(Variable == "AbvGrndWood ( MgC/ha )") %>% select(Site,Means,Date) %>% pivot_wider(names_from = Site,values_from=Means)
+date = agb$Date
+agb = agb[,-1]
+
+## Standardize
+spat_mean <- apply(agb, 1, mean) ## First find the matrix we need to subtract
+nT <- ncol(agb)
+Zspat_detrend <- agb - outer(rep(1, nT), spat_mean) ## Then subtract and standardize:
+Zt <- 1/sqrt(nT - 1)*Zspat_detrend
+
+## SVD
+E <- svd(Zt)
+V <- E$v
+colnames(E$v) <- paste0("EOF", 1:ncol(V)) # label columns
+EOFs <- cbind(site.locs, E$v)
+EOFs <- as_tibble(EOFs)
+EOFs
+
+TS <- data.frame(E$u) %>% # convert U to data frame
+mutate(t = date) %>% # add a time field
+gather(EOF, PC, -t) # put columns (except time)
+# into long-table format with
+# EOF-PC as key-value pair
+TS$nPC <- TS$PC * sqrt(nT-1) #normalized time series
+TS$EOF = as.numeric(sub('.', '', TS$EOF))
+TS$EOFs = as.factor(TS$EOF)
+
+lambda = E$d / sum(E$d)
+lambda
+barplot(rev(lambda),names.arg = rev(1:10), horiz=TRUE)
+text(rep(0.15,10),y=rev(seq(from=0.8,length=10,by=1.2)),format(lambda,digits=1))
+
+cumsum(lambda)
+
+TS %>% filter(EOF < 3) %>% 
+  ggplot(aes(x=t, y=nPC, group=EOFs)) +
+  geom_line(aes(color=EOFs),linewidth=2) +
+  xlab("Year")
+
+## EOF1
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) +  #cornsilk
+  geom_point(aes(x = Lon, y = Lat, col = EOF1),size=3) +
+#fill_scale(name = "AGB") + 
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_color_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+plot(EOFs$EOF1,apply(agb, 2, mean),xlab="EOF1",ylab="mean(AGB)")
+abline(lm(apply(agb, 2, mean) ~ EOFs$EOF1))
+
+## EOF2
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF2),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF3
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF3),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF4
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF4),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+```
+
+## LAI EOF
+```{r}
+## filter date and organize space-wide (columns are timeseries)
+lai = y %>% filter(Variable == "LAI (  )") %>% select(Site,Means,Date) %>% pivot_wider(names_from = Site,values_from=Means)
+date = lai$Date
+lai = lai[,-1]
+
+## Standardize
+spat_mean <- apply(lai, 1, mean) ## First find the matrix we need to subtract
+nT <- ncol(lai)
+Zspat_detrend <- lai - outer(rep(1, nT), spat_mean) ## Then subtract and standardize:
+Zt <- 1/sqrt(nT - 1)*Zspat_detrend
+
+## SVD
+E <- svd(Zt)
+V <- E$v
+colnames(E$v) <- paste0("EOF", 1:ncol(V)) # label columns
+EOFs <- cbind(site.locs, E$v)
+EOFs <- as_tibble(EOFs)
+EOFs
+
+TS <- data.frame(E$u) %>% # convert U to data frame
+mutate(t = date) %>% # add a time field
+gather(EOF, PC, -t) # put columns (except time)
+# into long-table format with
+# EOF-PC as key-value pair
+TS$nPC <- TS$PC * sqrt(nT-1) #normalized time series
+TS$EOF = as.numeric(sub('.', '', TS$EOF))
+TS$EOFs = as.factor(TS$EOF)
+
+lambda = E$d / sum(E$d)
+lambda
+barplot(rev(lambda),names.arg = rev(1:10), horiz=TRUE)
+text(rep(0.15,10),y=rev(seq(from=0.8,length=10,by=1.2)),format(lambda,digits=1))
+
+cumsum(lambda)
+
+TS %>% filter(EOF < 6) %>% 
+  ggplot(aes(x=t, y=nPC, group=EOFs)) +
+  geom_line(aes(color=EOFs),linewidth=2) +
+  xlab("Year")
+
+## EOF1
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) +  #cornsilk
+  geom_point(aes(x = Lon, y = Lat, fill = EOF1),size=5, shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+plot(EOFs$EOF1,apply(lai, 2, mean),xlab="EOF1",ylab="mean(LAI)")
+abline(lm(apply(lai, 2, mean) ~ EOFs$EOF1))
+
+## EOF2
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF2),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF3
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF3),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF4
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF4),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+```
+## soc EOF
+```{r}
+## filter date and organize space-wide (columns are timeseries)
+soc = y %>% filter(Variable == "TotSoilCarb ( kg/m^2 )") %>% select(Site,Means,Date) %>% pivot_wider(names_from = Site,values_from=Means)
+date = soc$Date
+soc = soc[,-1]
+
+## Standardize
+spat_mean <- apply(soc, 1, mean) ## First find the matrix we need to subtract
+nT <- ncol(soc)
+Zspat_detrend <- soc - outer(rep(1, nT), spat_mean) ## Then subtract and standardize:
+Zt <- 1/sqrt(nT - 1)*Zspat_detrend
+
+## SVD
+E <- svd(Zt)
+V <- E$v
+colnames(E$v) <- paste0("EOF", 1:ncol(V)) # label columns
+EOFs <- cbind(site.locs, E$v)
+EOFs <- as_tibble(EOFs)
+EOFs
+
+TS <- data.frame(E$u) %>% # convert U to data frame
+mutate(t = date) %>% # add a time field
+gather(EOF, PC, -t) # put columns (except time)
+# into long-table format with
+# EOF-PC as key-value pair
+TS$nPC <- TS$PC * sqrt(nT-1) #normalized time series
+TS$EOF = as.numeric(sub('.', '', TS$EOF))
+TS$EOFs = as.factor(TS$EOF)
+
+lambda = E$d / sum(E$d)
+lambda
+barplot(rev(lambda),names.arg = rev(1:10), horiz=TRUE)
+text(rep(0.15,10),y=rev(seq(from=0.8,length=10,by=1.2)),format(lambda,digits=1))
+
+cumsum(lambda)
+
+TS %>% filter(EOF < 5) %>% 
+  ggplot(aes(x=t, y=nPC, group=EOFs)) +
+  geom_line(aes(color=EOFs),linewidth=2) +
+  xlab("Year")
+
+## EOF1
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) +  #cornsilk
+  geom_point(aes(x = Lon, y = Lat, fill = EOF1),size=5, shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+plot(EOFs$EOF1,apply(soc, 2, mean),xlab="EOF1",ylab="mean(soc)")
+abline(lm(apply(soc, 2, mean) ~ EOFs$EOF1))
+
+plot(EOFs$EOF2,apply(soc, 2, mean),xlab="EOF1",ylab="mean(soc)",ylim=c(0,150))
+
+## EOF2
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF2),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF3
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF3),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+## EOF4
+ggplot(EOFs) + 
+  geom_polygon( data=map_data("state"), aes(x=long, y=lat, group=group),
+                color="black", fill="white" ) + 
+  geom_point(aes(x = Lon, y = Lat, fill = EOF4),size=5,shape=21) +
+  theme_bw() +
+  xlab("Longitude (deg)") + ylab("Latitude (deg)") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", midpoint = 0)
+
+```
+
+## Basis model

@@ -18,7 +18,7 @@ Landtrendr_AGB_prep(
 )
 }
 \arguments{
-\item{site_info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{Bety list of site info including site_id, site_name, lon, and lat.}
 
 \item{start_date}{Start date of SDA workflow.}
 

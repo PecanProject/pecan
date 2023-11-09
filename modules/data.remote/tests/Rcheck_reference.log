@@ -1,55 +1,12 @@
-* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.data.remote.Rcheck’
-* using R version 4.2.1 (2022-06-23)
+* using log directory ‘/tmp/Rtmpr2UgRH/PEcAn.data.remote.Rcheck’
+* using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.data.remote/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘PEcAn.data.remote’ version ‘1.7.2.9000’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... WARNING
-Maintainer: ‘Bailey Morrison <bmorrison@bnl.gov>’
-
-New submission
-
-Version contains large components (1.7.2.9000)
-
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
-Strong dependencies not in mainstream repositories:
-  PEcAn.DB, PEcAn.utils, PEcAn.logger, PEcAn.remote
-
-The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -63,11 +20,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Mike Dietze, Bailey Morrison’
-  Authors@R: ‘Mike Dietze [aut], Bailey Morrison [aut, cre], University of Illinois, NCSA [cph]’
-
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -80,49 +33,22 @@ Author field differs from that derived from Authors@R
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
-'library' or 'require' calls not declared from:
-  ‘PEcAn.DB’ ‘doParallel’ ‘raster’
 'library' or 'require' calls in package code:
   ‘PEcAn.DB’ ‘doParallel’ ‘raster’ ‘rgdal’
   Please use :: or requireNamespace() instead.
   See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Namespace in Imports field not imported from: ‘stringr’
-  All declared Imports should be used.
+Missing or unexported objects:
+  ‘PEcAn.utils::download_file’ ‘PEcAn.utils::need_packages’
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-call_MODIS: no visible global function definition for ‘write.csv’
 download.LandTrendr.AGB: no visible binding for global variable ‘k’
-download.NLCD: no visible global function definition for ‘dbfile.check’
-download.NLCD: no visible global function definition for ‘db.query’
-download.NLCD: no visible global function definition for
-  ‘dbfile.insert’
-download.thredds.AGB : get_data: no visible global function definition
-  for ‘write.csv’
-download.thredds.AGB: no visible global function definition for
-  ‘foreach’
-download.thredds.AGB: no visible global function definition for
-  ‘stopCluster’
-extract_NLCD: no visible global function definition for ‘dbfile.check’
-extract_NLCD: no visible global function definition for ‘db.query’
-extract_NLCD: no visible global function definition for ‘raster’
-extract_NLCD: no visible global function definition for ‘SpatialPoints’
-extract_NLCD: no visible global function definition for ‘CRS’
-extract_NLCD: no visible global function definition for ‘spTransform’
-extract_NLCD: no visible global function definition for ‘crs’
-extract_NLCD: no visible global function definition for ‘extract’
 grid2netcdf: no visible binding for global variable ‘years’
 grid2netcdf: no visible binding for global variable ‘yieldarray’
 Undefined global functions or variables:
-  CRS SpatialPoints crs db.query dbfile.check dbfile.insert
-  download.file extract foreach k raster spTransform stopCluster
-  write.csv
-Consider adding
-  importFrom("utils", "download.file", "write.csv")
-to your NAMESPACE file.
+  k years yieldarray
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -148,4 +74,9 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 3 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTE
+See
+  ‘/tmp/Rtmpr2UgRH/PEcAn.data.remote.Rcheck/00check.log’
+for details.
+
+

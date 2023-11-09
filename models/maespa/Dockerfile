@@ -4,16 +4,7 @@ ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM debian:stretch as model-binary
-
-# install dependencies
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       build-essential \
-       curl \
-       git \
-       gfortran \
-    && rm -rf /var/lib/apt/lists/*
+FROM pecan/models:${IMAGE_VERSION} as model-binary
 
 # download, unzip and build ed2
 WORKDIR /src

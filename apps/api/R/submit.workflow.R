@@ -124,7 +124,7 @@ submit.workflow.list <- function(workflowList, userDetails) {
   
   # Post workflow to RabbitMQ
   message <- list(folder = outdir, workflowid = workflow_id_str)
-  res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message, "rabbitmq")
+  res <- PEcAn.remote::rabbitmq_post_message(workflowList$host$rabbitmq$uri, "pecan", message)
   
   if(res$routed){
     return(list(workflow_id = workflow_id_str, status = "Submitted successfully"))

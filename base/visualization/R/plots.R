@@ -188,7 +188,7 @@ iqr <- function(x) {
 ##'
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
-##' If SE estimates are available, the se wil be plotted
+##' If SE estimates are available, the SE will be plotted
 ##' @name plot_data
 ##' @aliases plot.data
 ##' @title Add data to plot 

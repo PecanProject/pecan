@@ -41,11 +41,11 @@ unchanged
 }
 \section{Functions}{
 \itemize{
-\item \code{as.SafeList}: Coerce an object to SafeList.
+\item \code{as.SafeList()}: Coerce an object to SafeList.
 
-\item \code{is.SafeList}: Test if object is already a SafeList.
+\item \code{is.SafeList()}: Test if object is already a SafeList.
+
 }}
-
 \author{
 Ryan Kelly
 }

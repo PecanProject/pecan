@@ -21,6 +21,4 @@ spline approximation
 }
 \author{
 David LeBauer
-
-David LeBauer
 }

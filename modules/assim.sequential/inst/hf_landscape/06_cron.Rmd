@@ -1,0 +1,24 @@
+---
+title: "Setting up and managing cron jobs for landscape forecasts"
+output: html_notebook
+---
+
+```{r}
+library(cronR)
+
+### NO ASSIMILATION FORECAST
+cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/05C_SDA_Workflow_NA.forecast.R")
+cron_add(command = cmd, frequency = 'daily', at='4AM', id = 'HARV_FNA', description = "Harvard Forest landscape forecast, No Assimilated data")
+cron_njobs()
+cron_ls()
+
+```
+
+## SMAP DATA DOWNLOAD
+```{r}
+cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/07_SMAP.R")
+cronR::cron_add(command = cmd, frequency = 'daily', at='11PM', id = 'SMAP', description = "SMAP download")
+cronR::cron_njobs()
+cronR::cron_ls()
+```
+

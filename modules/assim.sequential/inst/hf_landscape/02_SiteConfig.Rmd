@@ -1,0 +1,460 @@
+---
+title: "SiteConfig"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 2. Build a *default pecan.xml settings* file at the patch level
+
+```{r}
+### Based on assim.sequential/inst/MultiSite-Exs/SDA/Create_Multi_settings.R
+
+############################################################################
+############################################################################
+###                                                                      ###
+###                      Setup Environmental Paths                       ###
+###                                                                      ###
+############################################################################
+############################################################################
+start_date <- "2012/01/01"
+end_date <- "2021/12/31"
+
+#setup working space
+outdir <- "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02"
+SDA_run_dir <- file.path(outdir,"run")
+SDA_out_dir <- file.path(outdir,"out")
+
+ERA5_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/ERA5_2012_2021/"
+XML_out_dir <- file.path(outdir,"pecan.xml")
+
+pft_csv_dir <- file.path(outdir,"site_pft.csv")
+
+#Obs_prep part
+#AGB
+AGB_input_dir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
+allow_download <- FALSE
+AGB_outdir <- file.path(outdir,"obs")
+AGB_export_csv <- TRUE
+AGB_timestep <- list(unit="year", num=1)
+
+#LAI
+LAI_outdir <- file.path(outdir,"obs")
+LAI_search_window <- 30
+LAI_timestep <- list(unit="day", num=8)
+LAI_export_csv <- TRUE
+run_parallel <- TRUE
+
+#SMP
+SMP_outdir <- "/projectnb/dietzelab/dietze/hf_landscape_SDA/SMAP_data" #file.path(outdir,"obs")
+SMP_search_window <- 30
+SMP_timestep <- list(unit="day", num=1)
+SMP_export_csv <- TRUE
+update_csv <- FALSE
+
+#SoilC
+SoilC_outdir <- file.path(outdir,"obs")
+SoilC_timestep <- list(unit="year", num=1)
+
+#Obs Date
+Obs_Start_Date <- "2012-07-15"
+Obs_End_Date <- "2021-07-15"
+obs_outdir <- file.path(outdir,"obs")
+
+#Start building template
+template <- PEcAn.settings::Settings(list(
+  ############################################################################
+  ############################################################################
+  ###                                                                      ###
+  ###                     STATE DATA ASSIMILATION PART                     ###
+  ###                                                                      ###
+  ############################################################################
+  ############################################################################
+  state.data.assimilation = structure(list(
+    process.variance = TRUE,
+    adjustment = TRUE,
+    censored.data = FALSE,
+    FullYearNC = TRUE,
+    NC.Overwrite = FALSE,
+    NC.Prefix = "sipnet.out",
+    q.type = "SINGLE",
+    Localization.FUN = "Local.support",
+    scalef = 1,
+    data = structure(list(format_id = 1000000040, input.id = 1000013298)), ## what is this? points to HF Lyford plot paleon data
+    state.variables = structure(list(
+      #you could add more state variables here
+      variable = structure(list(variable.name = "AbvGrndWood", unit = "MgC/ha", min_value = 0, max_value = 9999)),
+      variable = structure(list(variable.name = "LAI", unit = "", min_value = 0, max_value = 9999)),
+      variable = structure(list(variable.name = "SoilMoistFrac", unit = "", min_value = 0, max_value = 1)),#soilWFracInit
+      variable = structure(list(variable.name = "TotSoilCarb", unit = "kg/m^2", min_value = 0, max_value = 9999))
+    )),
+    forecast.time.step = "year",
+    start.date = start_date,
+    end.date = end_date,
+    
+    Obs_Prep = structure(list(
+      Landtrendr_AGB = structure(list(AGB_input_dir = AGB_input_dir, timestep = AGB_timestep, allow_download = allow_download, outdir = AGB_outdir, export_csv = AGB_export_csv)),
+      MODIS_LAI = structure(list(outdir = LAI_outdir, search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
+      SMAP_SMP = structure(list(outdir = SMP_outdir, search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+      Soilgrids_SoilC = structure(list(outdir = SoilC_outdir, timestep = SoilC_timestep)),
+      Start_Date = Obs_Start_Date,
+      End_Date = Obs_End_Date,
+      obs_outdir = obs_outdir
+    ))
+  )),
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                              INFO PART                              ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  info = structure(list(
+    notes = NULL, userid = "-1", username = "",
+    date = "2017/12/06 21:19:33 +0000"
+  )),
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                               DIR PART                              ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  outdir = outdir,
+  rundir = SDA_run_dir,
+  modeloutdir = SDA_out_dir,
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                              BETY PART                              ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  database = structure(list(
+    bety = structure(
+      list(user = "bety", password = "bety", host = "128.197.168.114",
+           dbname = "bety", driver = "PostgreSQL", write = "FALSE"
+      ))
+  )),
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                              PFT PARTS                              ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  pfts = structure(list(
+    #you could add more pfts you needed and make sure to modify the outdir of each pft!!!
+    pft = structure(
+      list(name = "temperate.deciduous.HPDA", 
+           constants = structure(list(num = "1")), 
+           posteriorid = "1000022311", 
+           posterior.files = "/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA" ## previously was outdir
+      )),
+    
+    pft = structure(
+      list(name = "boreal.coniferous",
+           posterior.files = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/Conifer/boreal.coniferous"
+      )),
+    
+    pft = structure(
+      list(name = "semiarid.grassland_HPDA",
+           constants = structure(list(num = "1")),
+           posteriorid = "1000016525",
+           posterior.files = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/GrassA/semiarid.grassland"
+      )),
+    pft = structure(
+      list(name = "soil",
+           posterior.files = "/projectnb/dietzelab/ahelgeso/copy_posteriorsoil/soil.HPDA/trait.mcmc.pda.soil.HPDA_som_respiration_rate_correction.Rdata")
+    )
+  )),
+  
+  ############################################################################
+  ############################################################################
+  ###                                                                      ###
+  ###                          META ANALYSIS PART                          ###
+  ###                                                                      ###
+  ############################################################################
+  ############################################################################
+  meta.analysis = structure(list(
+    iter = "3000", random.effects = FALSE
+  )),
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                            ENSEMBLE PART                            ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  ensemble = structure(list(size = 25, variable = "NPP", 
+                            samplingspace = structure(list(
+                              parameters = structure(list(method = "lhc")),
+                              met = structure(list(method = "sampling"))
+                            ))
+  )),
+  
+  ############################################################################
+  ############################################################################
+  ###                                                                      ###
+  ###                              MODEL PART                              ###
+  ###                                                                      ###
+  ############################################################################
+  ############################################################################
+  model = structure(list(id = "1000000022",
+                         type = "SIPNET",
+                         revision = "ssr",
+                         delete.raw = FALSE,
+                         binary = "/fs/data5/pecan.models/SIPNET/trunk/sipnet", ##"/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
+                         jobtemplate = NULL #"/home/zhangdc/sipnet_geo.job"
+  )),
+  
+  ###########################################################################
+  ###########################################################################
+  ###                                                                     ###
+  ###                              HOST PART                              ###
+  ###                                                                     ###
+  ###########################################################################
+  ###########################################################################
+  #be carefull of the host section, you need to specify the host of your own!!!
+  host = structure(list(name="localhost")),
+  # host = structure(list(
+  #   name = "geo.bu.edu",
+  #   usr = "dietze",
+  #   folder = SDA_out_dir,
+  #   prerun = "module load R/4.1.2",
+  #   cdosetup = "module load cdo/2.0.6",
+  #   qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+  #   qsub.jobid = "Your job ([0-9]+) .*",
+  #   qstat = "qstat -j @JOBID@ || echo DONE",
+  #   tunnel = "~/Tunnel/Tunnel",
+  #   outdir = SDA_out_dir,
+  #   rundir = SDA_run_dir
+  # )),
+  
+  ############################################################################
+  ############################################################################
+  ###                                                                      ###
+  ###                          SETTINGS INFO PART                          ###
+  ###                                                                      ###
+  ############################################################################
+  ############################################################################
+  settings.info = structure(list(
+    deprecated.settings.fixed = TRUE,
+    settings.updated = TRUE,
+    checked = TRUE
+  )),
+  
+  ############################################################################
+  ############################################################################
+  ###                                                                      ###
+  ###                               RUN PART                               ###
+  ###                                                                      ###
+  ############################################################################
+  ############################################################################
+  run = structure(list(
+    inputs = structure(list(
+      met = structure(list(
+        source = "ERA5", 
+        output = "SIPNET",
+        id = "",
+        path = ERA5_dir
+      )),
+      
+      #Saved for latter use of initial condition files.
+      # poolinitcond = structure(list(source = "NEON_veg",
+      #                               output = "poolinitcond",
+      #                               ensemble = 31,
+      #                               path = "/projectnb/dietzelab/ahelgeso/NEON_ic_data/Harvard/April15/"
+      #                               )),
+      # soilinitcond = structure(list(path = "/projectnb/dietzelab/ahelgeso/EFI_Forecast_Challenge/"
+      #                               )),
+      pft.site = structure(list(path = pft_csv_dir))
+    ))
+  ))
+))
+
+############################################################################
+############################################################################
+###                                                                      ###
+###                Using Site Group to create the Settings               ###
+###                                                                      ###
+############################################################################
+############################################################################
+
+## one time: create sitegroup and sites
+if(FALSE){
+  ns = 10
+  sitename = "HF_landscape"
+  con = db.open(list(user="bety",password="bety",host="128.197.168.114"))
+  user.id = 1000000001
+  ## create new sites
+  newID = rep(NA,ns)
+  for(s in 1:ns){
+    sn = paste0(sitename,s)
+    InsertString = paste0("INSERT INTO sites(sitename,country,geometry,user_id) VALUES(",
+                            "'",sn,"', ",
+                            "'US', ",
+                            "ST_GeomFromText('POINT(",-72.19," ",42.5315," ",
+                            300,")', 4326), ",
+                            user.id,
+                            ") RETURNING id;")
+      newID[s] = db.query(InsertString,con) 
+  }
+  ## create sitegroup
+  InsertString = paste0("INSERT INTO sitegroups(name,public_access,user_id) VALUES(",
+                        "'",sitename,"', ",
+                        "TRUE, ",
+                        user.id,
+                        ") RETURNING id;")
+  sitegroupId = db.query(InsertString,con) 
+  ## create sitegroups_sites
+  for(s in seq_len(ns)){
+    InsertString = paste0("INSERT INTO sitegroups_sites(sitegroup_id,site_id) VALUES(",
+                        sitegroupId,", ",newID[s],");")
+    db.query(InsertString,con)
+  }
+} ## end create sitegroup
+
+sitegroupId <- 1000000036 ## HF_landscape
+nSite <- 10
+
+multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
+  template,
+  sitegroupId = sitegroupId,
+  nSite = nSite)
+if(file.exists(XML_out_dir)){
+  unlink(XML_out_dir)
+}
+PEcAn.settings::write.settings(multiRunSettings, outputfile = "pecan.xml")
+
+#here we re-read the xml file to fix issues of some special character within the Host section.
+##tmp = readChar(XML_out_dir,100000000)
+##tmp = gsub("&amp;","&",tmp)
+##writeChar(tmp, XML_out_dir)
+##settings <- PEcAn.settings::read.settings(XML_out_dir)  *** HERE: NOT WRITING MULTISETTINGS!!!
+settings = multiRunSettings
+
+#iteratively grab ERA5 paths for each site
+HF_siteid = 1000004945
+for (i in 1:nSite) {
+  temp_ERA5_path <- settings[[i]]$run$inputs$met$path
+  temp_full_paths <- list.files(path=paste0(temp_ERA5_path, HF_siteid), pattern = '*.clim', full.names = T)
+  
+  #need a better way to code it up
+  #test works!!!!
+  #populated IC file paths into settings
+  Create_mult_list <- function(list.names, paths){
+    out <- as.list(paths)
+    names(out) <- list.names
+    out
+  }
+  settings[[i]]$run$inputs$met$path <- Create_mult_list(rep("path", length(temp_full_paths)), temp_full_paths)
+  
+  #code on met_start and met_end
+  settings[[i]]$run$site$met.start <- start_date
+  settings[[i]]$run$site$met.end <- end_date
+  settings[[i]]$run$start.date <- start_date
+  settings[[i]]$run$end.date <- end_date
+}
+
+#add Lat and Lon to each site
+#grab Site IDs from settings
+site_ID <- c()
+for (i in 1:length(settings)) {
+  obs <- settings[[i]]$run$site$id
+  site_ID <- c(site_ID,obs)
+}
+
+#query site info
+con = PEcAn.DB::db.open(list(user="bety",password="bety",host="128.197.168.114"))
+site_info = PEcAn.DB::db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                      ST_Y(ST_CENTROID(geometry)) AS lat 
+                           FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
+
+#write Lat and Lon into the settings
+for (i in 1:nSite) {
+  temp_ID <- settings[[i]]$run$site$id
+  index_site_info <- which(site_info$id==temp_ID)
+  settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
+  settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
+  settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+}
+
+## TODO: NOT YET FILLING IN IC and SOIL FILES!!
+
+#####
+unlink(paste0(settings$outdir,"/pecan.xml"))
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
+
+
+## HACK: SAVE SETTINGS AS RDS or RData instead of XML
+saveRDS(settings,file=paste0(settings$outdir,"/pecan.RDS"))
+```
+
+## 3. Code to build *initial input files* at the patch-level
+
+*map LULC to PFT*
+```{r}
+##pft.site
+veg = readr::read_csv(file = "patches.csv")
+pft_site = veg %>% dplyr::mutate(
+  site = site_ID,
+  pft = dplyr::case_when(
+  nlcd == 41 ~ "temperate.deciduous.HPDA", ## deciduous
+  nlcd == 42 ~ "boreal.coniferous",        ## conifer
+  nlcd == 43 ~ "temperate.deciduous.HPDA", ## mixed
+  nlcd == 71 ~ "semiarid.grassland_HPDA",  ## herbaceous  
+  nlcd == 90 ~ "temperate.deciduous.HPDA"  ## woody wetland
+)) %>% dplyr::select(site,pft)
+readr::write_csv(pft_site,file=file.path(settings$outdir,"site_pft.csv"))
+```
+
+
+*pool init cond*
+For version 1, start with just one ensemble member
+```{r}
+veg = readr::read_csv(file = "patches.csv")
+veg_config = list()
+for(i in seq_along(site_ID)){
+  
+  ## soil C data
+  soil_carbon = 12.851 ## kgC/m2, default from Finzi paper
+  
+  #Prep Arguments for pool_ic function
+  dims <- list(time =1) #Time dimension may be irrelevant
+  variables <-list(AbvGrndWood = veg$agb[i]/10, LAI = veg$lai[i], soil_organic_carbon_content = soil_carbon)
+  poolinfo <- list(dims = dims,
+                vals = variables) ## check units on ALL variables!
+  
+  ## save output
+  outfolder = file.path(settings$outdir,"IC")
+  if(!dir.exists(outfolder)) dir.create(outfolder)
+  veg_config[[i]] = PEcAn.SIPNET::veg2model.SIPNET(outfolder, poolinfo, site_ID[i], 1)
+  
+  ## add to settings
+  settings[[i]]$run$inputs$poolinitcond <- list(path=veg_config[[i]]$file)
+}
+
+```
+
+
+*soil physical parameters*
+```{r}
+## optional, getting started without setting
+```
+
+*update settings*
+```{r}
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
+saveRDS(settings,file=paste0(settings$outdir,"/pecan.RDS"))
+```
+

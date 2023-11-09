@@ -32,7 +32,7 @@ sendmail <- function(from, to, subject, body) {
     cat(paste0("From: ", from, "\n", 
                "Subject: ", subject, "\n", 
                "To: ", to, "\n", "\n", 
-               body), file = mailfile)
+               body, "\n"), file = mailfile)
     system2(sendmail, c("-f", paste0("\"", from, "\""), 
                         paste0("\"", to, "\""), "<", mailfile))
     unlink(mailfile)

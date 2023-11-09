@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<pecan>
+ <outdir>testdir</outdir>
+ <rundir>testdir</rundir>
+ <modeloutdir>testdir</modeloutdir>
+ <database>
+  <dbfiles>/data/dbfiles</dbfiles>
+ </database>
+ <pfts>
+    <pft>
+     <name>salix</name>
+     <outdir>testdir</outdir>
+     <posteriorid>1</posteriorid>
+    </pft>
+</pfts>
+ <host>
+    <name>localhost</name>
+    <rundir>/fs/data3/guestuser/pecan/testworkflow/run</rundir>
+    <outdir>/fs/data3/guestuser/pecan/testworkflow/out</outdir>
+ </host>
+ <run>
+    <host>
+     <name>localhost</name>
+    </host>
+ </run>
+ <workflow>
+    <id>99000000006</id>
+ </workflow>
+</pecan>

@@ -1,0 +1,18 @@
+test_that("`sendmail()` able to create the file with contents to email correctly, also able to build correct command to send the email", {
+  withr::with_tempfile("tf", {
+    mocked_res <- mockery::mock(TRUE)
+    mockery::stub(sendmail, 'system2', mocked_res)
+    mockery::stub(sendmail, 'tempfile', tf)
+    mockery::stub(sendmail, 'unlink', NULL)
+    sendmail('pecan@@example.com', 'carya@@example.com', 'Hi', 'Message from pecan.')
+    sendmailfile <- readLines(tf)
+    expect_equal(sendmailfile[1], 'From: pecan@@example.com')
+    expect_equal(sendmailfile[2], 'Subject: Hi')
+    expect_equal(sendmailfile[3], 'To: carya@@example.com')
+    expect_equal(sendmailfile[5], 'Message from pecan.')
+    args <- mockery::mock_args(mocked_res)
+    expect_equal(args[[1]][[2]][[1]], '-f')
+    expect_equal(args[[1]][[2]][[2]], '"pecan@@example.com"')
+    expect_equal(args[[1]][[2]][[3]], '"carya@@example.com"')
+  })
+})

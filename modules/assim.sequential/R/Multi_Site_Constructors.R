@@ -118,7 +118,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 ##' @param x Vector of numbers to identify each block.
 ##' @param b Numeric value for the size of the blocks within the matrix ordered depending on byrow
 ##' @param byrow logical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.
-##' @param dimnames Character string of name attribute for the basis of the blcok matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
+##' @param dimnames Character string of name attribute for the basis of the block matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
 ##’  
 ##' 
 ##' @description This function is adopted from migest package.
@@ -172,45 +172,31 @@ block_matrix <- function (x = NULL, b = NULL, byrow = FALSE, dimnames = NULL) {
 ##' @return Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.
 ##' @export
 Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
-
-  site.ids.with.data <- names(obs.t.mean)
-  site.specific.Hs <- list()
-  
-  
-  nsite <- length(site.ids) # number of sites
-  nsite.ids.with.data <-length(site.ids.with.data) # number of sites with data
-  nvariable <- length(var.names)
-  #This is used inside the loop below for moving between the sites when populating the big H matrix
-  nobs <- obs.t.mean %>% purrr::map_dbl(~length(.x)) %>% max # this gives me the max number of obs at sites
-  nobstotal<-obs.t.mean %>% purrr::flatten() %>% length() # this gives me the total number of obs
-  
-  #Having the total number of obs as the row number
-  H <- matrix(0,  nobstotal, (nvariable*nsite))
-  j<-1
-  
-  for(i in seq_along(site.ids))
-    {
-    site <- site.ids[i]
-    choose <- sapply(names(obs.t.mean[[site]]), agrep, x = var.names,
-                     max = 1, USE.NAMES = FALSE) %>% unlist  
-    
-    if(is.null(choose)) next;
-    
-    H.this.site <- matrix(0, length(choose), nvariable)
-    
-    for (n in seq_along(choose))
-    {
-      H.this.site[n, choose[n]] <- 1
-      #sapply(choose[n], agrep, x = seq_along(var.names), max = 1, USE.NAMES = FALSE) %>% unlist
-      #H.this.site[n, choose.col] = 1
+  #we first create a matrix containing site.ids, var.names, observations, and the index of observations across obs.mean.
+  site.ids.matrix <- rep(site.ids, each = length(var.names))#this is replicated site.ids. The number of replication depends on how many vars in total.
+  var.names.matrix <- rep(var.names, length(site.ids))#this is the state variable names from settings.
+  H.pre.matrix <- data.frame(site.ids.matrix, var.names.matrix, NA, NA) %>% `colnames<-` (c("site.id", "var.name", "obs", "obs.ind"))
+  obs.ind <- 1
+  #loop over site.ids * var.names
+  for (i in seq_along(site.ids.matrix)) {
+    site.id <- H.pre.matrix[i,]$site.id
+    var.name <- H.pre.matrix[i,]$var.name
+    site.ind <- which(names(obs.t.mean)==site.id)
+    if(length(site.ind) > 0){
+      obs <- obs.t.mean[[site.ind]]
+      var.ind <- which(names(obs)==var.name)
+      if(length(var.ind) > 0){
+        #write observation and the index into the matrix.
+        H.pre.matrix[i,]$obs <- obs[[var.ind]]
+        H.pre.matrix[i,]$obs.ind <- obs.ind
+        obs.ind <- obs.ind + 1
+      }
     }
-    
-    pos.row <- ((nobs*j)-(nobs-1)):(nobs*j)
-    pos.col <- ((nvariable*i)-(nvariable-1)):(nvariable*i)
-    
-    H[pos.row,pos.col] <- H.this.site
-    j <- j+1
   }
-    
-  return(H)
+  #convert the matrix into H matrix.
+  H <- matrix(0, max(H.pre.matrix$obs.ind, na.rm=T), dim(H.pre.matrix)[1])
+  for (i in seq_along(site.ids.matrix)) {
+    H[H.pre.matrix[i,]$obs.ind, i] <- 1
+  }
+  H
 }

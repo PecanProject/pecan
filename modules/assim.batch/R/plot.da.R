@@ -79,15 +79,10 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   print(nrow(x))
   print(length(good.runs))
   for (i in seq_along(x)) {
-    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
-    if (is.na(trait.entry)) {
-      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
-    }
-
     graphics::plot(x[good.runs, i], y[good.runs],
-         main = trait.entry$figid,
+         main = traits[i]$figid,
          xlim = p.rng[i, ],
-         xlab = trait.entry$units,
+         xlab = traits[i]$units,
          ylab = "-log(likelihood)",
          pch = 1)
     graphics::points(prior.x[, i], prior.y, col = "grey")
@@ -124,19 +119,15 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     all <- do.call(rbind, lapply(samp, function(chain) chain[thin, i]))
     
     # Density plots
-    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
-    if (is.na(trait.entry)) {
-      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
-    }
     graphics::plot(stats::density(all),
          xlim = p.rng[i, ], 
-         main = paste(trait.entry$figid),
+         main = paste(traits[i]$figid),
          type = "l", 
          ylab = "", 
-         xlab = trait.entry$units)
+         xlab = traits[i]$units)
     x <- seq(p.rng[i, 1], p.rng[i, 2], length = 1000)
-    graphics::lines(x, ddist(x, priors[traits[i], ]), col = "grey")
-    graphics::lines(x, ddist(x, priors2[traits[i], ]), col = "grey", lty = 2)
+    graphics::lines(x, ddist(x, priors[traits[i]$id, ]), col = "grey")
+    graphics::lines(x, ddist(x, priors2[traits[i]$id, ]), col = "grey", lty = 2)
   }
   
   # Now approximate posteriors to data assimilation and store them with posteriors from meta

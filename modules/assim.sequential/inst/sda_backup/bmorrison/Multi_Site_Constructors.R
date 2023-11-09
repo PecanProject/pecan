@@ -112,7 +112,7 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
 ##' @param x Vector of numbers to identify each block.
 ##' @param b Numeric value for the size of the blocks within the matrix ordered depending on byrow
 ##' @param byrow logical value. If FALSE (the default) the blocks are filled by columns, otherwise the blocks in the matrix are filled by rows.
-##' @param dimnames Character string of name attribute for the basis of the blcok matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
+##' @param dimnames Character string of name attribute for the basis of the block matrix. If NULL a vector of the same length of b provides the basis of row and column names.#'.
 ##’  
 ##' 
 ##' @description This function is adopted from migest package.

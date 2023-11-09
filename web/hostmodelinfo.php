@@ -199,7 +199,7 @@ function get_sites() {
     $subs = array();
     $query = "SELECT DISTINCT format_id FROM inputs";
     $query .= " INNER JOIN dbfiles ON inputs.id=dbfiles.container_id";
-    $where = " WHERE inputs.site_id=${earth} AND dbfiles.container_type='Input'";
+    $where = " WHERE inputs.site_id={$earth} AND dbfiles.container_type='Input'";
     if ($host) {
       $query .= " INNER JOIN machines ON dbfiles.machine_id=machines.id";
       $where .= " AND machines.hostname=?";

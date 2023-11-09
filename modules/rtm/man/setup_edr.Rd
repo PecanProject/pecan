@@ -7,8 +7,8 @@
 setup_edr(
   ed2in,
   output_dir,
-  datetime = ISOdatetime(ed2in[["IYEARA"]], ed2in[["IMONTHA"]], ed2in[["IDATEA"]], 12,
-    0, 0, tz = "UTC"),
+  datetime = ISOdatetime(ed2in[["IYEARA"]], ed2in[["IMONTHA"]], ed2in[["IDATEA"]], 12, 0,
+    0, tz = "UTC"),
   ...
 )
 }

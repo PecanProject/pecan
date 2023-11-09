@@ -22,7 +22,7 @@ function getURL() {
             $url .= "localhost";
         }
         if (array_key_exists('SERVER_PORT', $_SERVER)) {
-            $url .= ":${_SERVER['SERVER_PORT']}";
+            $url .= ":{$_SERVER['SERVER_PORT']}";
         }
     }
 
@@ -71,32 +71,32 @@ if (!$stmt->execute(array($params['modelid']))) {
 }
 $model = "";
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-    $model = "${row['model_name']} (v${row['revision']})";
+    $model = "{$row['model_name']} (v{$row['revision']})";
 }
 $stmt->closeCursor();
 
 
 echo "<pre>\n";
-echo "# model       : ${model}\n";
-echo "# site        : ${params['sitename']}\n";
-echo "# pft         : ${pft[0]}\n";
-echo "# time range  : ${params['start']} - ${params['end']}\n";
+echo "# model       : {$model}\n";
+echo "# site        : {$params['sitename']}\n";
+echo "# pft         : {$pft[0]}\n";
+echo "# time range  : {$params['start']} - {$params['end']}\n";
 echo "curl -v -X POST \\\n";
-echo "    -F 'hostname=${params['hostname']}' \\\n";
-echo "    -F 'modelid=${params['modelid']}' \\\n";
+echo "    -F 'hostname={$params['hostname']}' \\\n";
+echo "    -F 'modelid={$params['modelid']}' \\\n";
 echo "    -F 'sitegroupid=1' \\\n";
-echo "    -F 'siteid=${params['siteid']}' \\\n";
-echo "    -F 'sitename=${params['sitename']}' \\\n";
-echo "    -F 'pft[]=${pft[0]}' \\\n";
-echo "    -F 'start=${params['start']}' \\\n";
-echo "    -F 'end=${params['end']}' \\\n";
+echo "    -F 'siteid={$params['siteid']}' \\\n";
+echo "    -F 'sitename={$params['sitename']}' \\\n";
+echo "    -F 'pft[]={$pft[0]}' \\\n";
+echo "    -F 'start={$params['start']}' \\\n";
+echo "    -F 'end={$params['end']}' \\\n";
 foreach($params as $key => $value) {
     if (substr($key, 0, 6) === "input_" && $value !== "-1") {
-        echo "    -F '${key}=${value}' \\\n";
+        echo "    -F '{$key}={$value}' \\\n";
     }
 }
-echo "    -F 'email=${params['email']}' \\\n";
-echo "    -F 'notes=${params['notes']}' \\\n";
+echo "    -F 'email={$params['email']}' \\\n";
+echo "    -F 'notes={$params['notes']}' \\\n";
 echo "    '" . getURL() . "'\n";
 echo "</pre>";
 

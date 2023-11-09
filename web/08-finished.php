@@ -49,7 +49,7 @@ if ($workflow['value'] != '') {
   $params = array();
 }
 if (isset($params['hostname'])) {
-    $hostname = "&hostname=${params['hostname']}";
+    $hostname = "&hostname={$params['hostname']}";
 }
 
 # check to make sure all is ok
@@ -104,7 +104,7 @@ if (is_dir("$folder/pft")) {
       continue;
     }
     $pfts[$pft] = array();
-    foreach(recursive_scandir("$folder/pft/${pft}", "") as $file) {
+    foreach(recursive_scandir("$folder/pft/{$pft}", "") as $file) {
       if (is_dir("$folder/pft/$pft/$file")) {
         continue;
       }
@@ -145,7 +145,7 @@ if (is_dir("$folder/run")) {
       $outfile[$runid][] = $file;
       if (preg_match('/^\d\d\d\d.nc$/', $file)) {
         $year = substr($file, 0, 4);
-        $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
+        $vars = explode("\n", file_get_contents("{$folder}/out/{$runid}/{$file}.var"));
         $outplot[$runid][$year] = array_filter($vars);
         sort($outplot[$runid][$year]);
       }
@@ -253,7 +253,7 @@ foreach ($status as $line) {
       foreach($y as $s) {
         $kv = explode(" ", $s, 2);
         if ($kv[1] == '') $kv[1] = $kv[0];
-        print "  outplot['$key']['$x']['{$kv[0]}'] = '${kv[1]}';\n";
+        print "  outplot['$key']['$x']['{$kv[0]}'] = '{$kv[1]}';\n";
       }
     }
   }
@@ -573,22 +573,22 @@ foreach ($status as $line) {
   echo "    <tr>\n";
   if ($data[0] == "BrownDog") {
     echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
-    echo "${data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
+    echo "{$data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
   } else {
-    echo "      <td>${data[0]}</td>\n";
+    echo "      <td>{$data[0]}</td>\n";
   }
   if (count($data) >= 2) {
-    echo "      <td>${data[1]}</td>\n";
+    echo "      <td>{$data[1]}</td>\n";
   } else {
     echo "      <td></td>\n";
   }
   if (count($data) >= 3) {
-    echo "      <td>${data[2]}</td>\n";
+    echo "      <td>{$data[2]}</td>\n";
   } else {
     echo "      <td></td>\n";
   }
   if (count($data) >= 4) {
-    echo "      <td>${data[3]}</td>\n";
+    echo "      <td>{$data[3]}</td>\n";
   } else {
     echo "      <td>RUNNING</td>\n";
   }

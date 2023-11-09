@@ -7,7 +7,7 @@
 priorfig(
   priordata = NA,
   priordensity = NA,
-  trait = "",
+  trait = NA,
   xlim = "auto",
   fontsize = 18
 )
@@ -17,7 +17,7 @@ priorfig(
 
 \item{priordensity}{density of prior distribution, calculated by \code{\link{prior.density}}}
 
-\item{trait}{name of trait}
+\item{trait}{dataframe with id, figid and units of the trait}
 
 \item{xlim}{limits for x axis}
 }

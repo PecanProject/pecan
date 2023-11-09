@@ -48,14 +48,16 @@ Starred columns are required for writing. This table is left joined with
 }
 }
 
-The formatting of a meteorlogy header file is as follows (from the \link[=https://github.com/EDmodel/ED2/wiki/Drivers]{ED GitHub Wiki}):\preformatted{<number of file formats>    # Repeat lines below this number of times
+The formatting of a meteorology header file is as follows (from the \link[=https://github.com/EDmodel/ED2/wiki/Drivers]{ED GitHub Wiki}):
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{<number of file formats>    # Repeat lines below this number of times
 <path and prefix of files>
 <nlon>, <nlat>, <dx>, <dy>, <xmin>, <ymin>
 <number of variables>
 <list of variable names>
 <list of update frequencies (seconds) or scalar values if flag=4>
 <list of variable flags>
-}
+}\if{html}{\out{</div>}}
 
 The variables in the third row are defined as follows:
 }

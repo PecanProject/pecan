@@ -21,7 +21,7 @@ SDA_control(
 \arguments{
 \item{trace}{Logical if code should print out the progress of SDA .}
 
-\item{ForewardForecast}{Logical if the foreward forecast estimates needs to be read and visulized in time series plots.}
+\item{ForewardForecast}{Logical if the foreward forecast estimates needs to be read and visualized in time series plots.}
 
 \item{interactivePlot}{Logical if time series plots need to be generated.}
 
@@ -35,7 +35,7 @@ SDA_control(
 
 \item{debug}{Logical if the code should stop at some milestones and open an interactive debugging environment}
 
-\item{pause}{Logical if code needs to be puased and wait for further instruction after the analysis step}
+\item{pause}{Logical if code needs to be paused and wait for further instruction after the analysis step}
 
 \item{Profiling}{Logical if code should keep track of how much time each step took}
 

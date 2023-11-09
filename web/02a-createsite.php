@@ -44,9 +44,9 @@ if (!$stmt->execute(array(get_userid()))) {
 $sitegroups = "";
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   if ($sitegroupid == $row['id']) {
-    $sitegroups .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
+    $sitegroups .= "<option value='{$row['id']}' selected>{$row['name']}</option>\n";
   } else {
-    $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
+    $sitegroups .= "<option value='{$row['id']}'>{$row['name']}</option>\n";    
   }
 }
 if ($sitegroupid == "-1") {
@@ -163,14 +163,14 @@ if ($sitegroupid == "-1") {
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
       if(strcmp($key, "notes") == 0) {
         $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }

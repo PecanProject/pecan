@@ -7,12 +7,12 @@ $stmt = $pdo->query($query);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
 if (array_key_exists('id', $row)) {
-    $where = "AND workflows.id >= ${row['id']}000000000 AND workflows.id <= ${row['id']}999999999";
+    $where = "AND workflows.id >= {$row['id']}000000000 AND workflows.id <= {$row['id']}999999999";
 } else {
     $where = "AND workflows.id >= 99000000000 AND workflows.id <= 99999999999";
 }
 
-$query = "SELECT workflows.id, workflows.params, attributes.value FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE params != '' AND value is null ${where} ORDER BY workflows.id DESC";
+$query = "SELECT workflows.id, workflows.params, attributes.value FROM workflows LEFT OUTER JOIN attributes ON workflows.id=attributes.container_id AND attributes.container_type='workflows' WHERE params != '' AND value is null {$where} ORDER BY workflows.id DESC";
 $stmt = $pdo->prepare($query);
 if ($stmt->execute() === FALSE) {
   die('Invalid query: ' . error_database());
@@ -23,7 +23,7 @@ $ignore_vars = array("Pycharm-abdee044","Pycharm-abdee403","Phpstorm-bd36376b","
 print "<pre>";
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $params = eval("return ${row['params']};");
+    $params = eval("return {$row['params']};");
     foreach ($ignore_vars as $x) {
         unset($params[$x]);
     }
@@ -36,8 +36,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       die('Invalid query: ' . error_database());
     }
 
-    $pdo->exec("UPDATE workflows SET params = '' WHERE id = ${row['id']}");
-    print("updated workflow with id=${row['id']}</br>");
+    $pdo->exec("UPDATE workflows SET params = '' WHERE id = {$row['id']}");
+    print("updated workflow with id={$row['id']}</br>");
 }
 
 print "</pre>";

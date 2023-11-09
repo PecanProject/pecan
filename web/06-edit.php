@@ -41,7 +41,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 if (!array_key_exists($hostname, $hostlist)) {
-  die("${hostname} is not an approved host");
+  die("{$hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
 

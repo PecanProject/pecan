@@ -31,11 +31,11 @@ If none is found, both will return NA.
 }
 \section{Functions}{
 \itemize{
-\item \code{dbfile.file}: Return full path to file from the dbfiles table
+\item \code{dbfile.file()}: Return full path to file from the dbfiles table
 
-\item \code{dbfile.id}: Return id to container type given a filename
+\item \code{dbfile.id()}: Return id to container type given a filename
+
 }}
-
 \examples{
 \dontrun{
   dbfile.file('Input', 7, dbcon)
@@ -45,7 +45,5 @@ If none is found, both will return NA.
 }
 }
 \author{
-Rob Kooper
-
 Rob Kooper
 }

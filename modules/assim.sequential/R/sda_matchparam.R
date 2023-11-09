@@ -15,9 +15,13 @@ sda_matchparam <- function(settings, ensemble.samples, site.ids, nens){
   all.pft.names <- names(ensemble.samples)
   
   #loop over each site.
-  for (i in 1:length(site.ids)) {
+  for (i in seq_along(site.ids)) {
     #match pft name
     site.pft.name <- settings[[i]]$run$site$site.pft$pft.name
+    if(is.null(site.pft.name)){
+      site_pft = utils::read.csv(settings[[i]]$run$inputs$pft.site$path)
+      site.pft.name = site_pft$pft[site_pft$site == settings[[i]]$run$site$id]
+    }
     which.pft <- which(all.pft.names==site.pft.name)
     
     site.param <- list()

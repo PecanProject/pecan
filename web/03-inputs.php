@@ -106,7 +106,7 @@ $stmt->closeCursor();
 // get list of files
 $stmt = $pdo->prepare("SELECT tag, inputs.name AS input_name, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
                       " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
-                      " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
+                      " WHERE (inputs.site_id={$earth} OR inputs.site_id=?)" .
                       " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
                       " AND dbfiles.machine_id=machines.id AND machines.hostname=?" .
                       " AND inputs.format_id=modeltypes_formats.format_id AND inputs.site_id=sites.id" .
@@ -366,10 +366,10 @@ $stmt->closeCursor();
 <?php foreach($_REQUEST as $key => $value){
 	if(is_array($value)) {
 	  foreach($value as $v) {
-	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	    echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
 	  }
 	} else {
-	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	  echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
 	}
       }
 ?>
@@ -385,10 +385,10 @@ $stmt->closeCursor();
 <?php foreach($_REQUEST as $key => $value){
         if(is_array($value)) {
           foreach($value as $v) {
-            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+            echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
           }
         } else {
-	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	  echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
         }
       }
 ?>
@@ -396,7 +396,7 @@ $stmt->closeCursor();
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php
 foreach($pfts as $pft) {
-  print "        <option data-id='{$pft['id']}' ${pft['selected']} title=\"${pft['name']}\">${pft['name']}</option>\n";
+  print "        <option data-id='{$pft['id']}' {$pft['selected']} title=\"{$pft['name']}\">{$pft['name']}</option>\n";
 }
 ?>
       </select>
@@ -414,20 +414,20 @@ foreach($inputs as $input) {
   $name=substr($input['name'], 0, 20);
   $tag=$input['tag'];
   if ($input['required']) {
-    print "      <label id=\"metlabel\">${name}*<div id=\"metlabeldiv\"></div></label>\n";
+    print "      <label id=\"metlabel\">{$name}*<div id=\"metlabeldiv\"></div></label>\n";
   } else { 
-    print "      <label id=\"metlabel\">${name}<div id=\"metlabeldiv\"></div></label>\n";
+    print "      <label id=\"metlabel\">{$name}<div id=\"metlabeldiv\"></div></label>\n";
   }
-  print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
+  print "      <select id=\"{$tag}\" name=\"input_{$tag}\" onChange=\"validate();\">\n";
   if (!$input['required']) {
     print "      <option value='-1'></option>\n";
   }
   foreach($input['files'] as $file) {
-    print "        <option value='${file['id']}'";
-    if (isset($_REQUEST["input_${tag}"]) && $_REQUEST["input_${tag}"] == "${file['id']}") {
+    print "        <option value='{$file['id']}'";
+    if (isset($_REQUEST["input_{$tag}"]) && $_REQUEST["input_{$tag}"] == "{$file['id']}") {
       print " selected";
     }
-    print ">${file['name']}</option>\n";
+    print ">{$file['name']}</option>\n";
   }
   print "      </select>\n";
   print "      <div class=\"spacer\"></div>\n";
@@ -488,7 +488,7 @@ close_database();
 function printInfo($siteinfo, $var, $text) {
   if (isset($siteinfo[$var])) {
     $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
-    echo "    info+= \"${text} : ${tmp}</br/>\";";
+    echo "    info+= \"{$text} : {$tmp}</br/>\";";
   }
 }
 ?>

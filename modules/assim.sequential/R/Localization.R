@@ -2,9 +2,9 @@
 ##' @name  Local.support
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param Pf Forecast error coveriance matrix
+##' @param Pf Forecast error covariance matrix
 ##' @param distance.mat is matrix of distances between sites.
-##' @param scalef scalef is a numeric value that requires tunning and it controls the shape of the corrolation function
+##' @param scalef scalef is a numeric value that requires tuning and it controls the shape of the corrolation function
 ##' @description 
 ##' distance.mat matrix doesn't need to be just the physical distance, however it represent a measure of similarity between state variables in different sites.
 ##' @return It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function
@@ -24,9 +24,9 @@ Local.support <-function(Pf, distance.mat, scalef=1){
 ##' @name  simple.local
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param Pf Forecast error coveriance matrix
+##' @param Pf Forecast error covariance matrix
 ##' @param distance.mat is matrix of distances between sites.
-##' @param scalef scalef is a numeric value that requires tunning and it controls the shape of the corrolation function
+##' @param scalef scalef is a numeric value that requires tuning and it controls the shape of the corrolation function
 ##' @description Adopted from Data assimilation for spatio-temporal processes - p250 - Sebastian Reich
 ##' @return It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function
 ##' @export
@@ -44,9 +44,9 @@ simple.local <-function(Pf, distance.mat, scalef=2){
 ##' @name  piecew.poly.local
 ##' @author Hamze Dokoohaki
 ##' 
-##' @param Pf Forecast error coveriance matrix
+##' @param Pf Forecast error covariance matrix
 ##' @param distance.mat is matrix of distances between sites.
-##' @param scalef scalef is a numeric value that requires tunning and it controls the shape of the corrolation function
+##' @param scalef scalef is a numeric value that requires tuning and it controls the shape of the corrolation function
 ##' @description 5th order piecewise polynomial adopted from Data assimilation for spatio-temporal processes - p250 - Sebastian Reich
 ##' 
 ##' @return It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function

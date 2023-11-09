@@ -34,13 +34,13 @@ The use of Docker in PEcAn is described in detail in the [PEcAn documentation](h
 ### Installing Docker
 
 To install Docker and docker-compose, see the docker documentation:
-- Docker Desktop in [Mac OSX](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
+- Docker Desktop in [MacOS](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
 - Docker (e.g. [Ubuntu](https://docs.docker.com/compose/install/)) and [docker-compose](https://docs.docker.com/compose/install/) on your linux operating system.
 
 _Note for Linux users:_ add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using
 ```sh
 # for linux users
-sudo adduser ${USER} docker`.
+sudo adduser ${USER} docker.
 ```
 
 ### Deploying PEcAn in Docker
@@ -235,7 +235,7 @@ You can now modify the code on your local machine, or you can use [rstudio](http
 
 The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/lib` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
 
-To compile the PEcAn code you can use the make command in either the rstudio container, or in the executor container. The script [`compile.sh`](sripts/compile.sh) will run make inside the executor container.
+To compile the PEcAn code you can use the make command in either the rstudio container, or in the executor container. The script [`compile.sh`](scripts/compile.sh) will run make inside the executor container.
 
 ### Workflow Submission
 

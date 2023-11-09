@@ -53,7 +53,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 if (!array_key_exists($hostname, $hostlist)) {
-  die("${hostname} is not an approved host");
+  die("{$hostname} is not an approved host");
 }
 $hostoptions = $hostlist[$hostname];
 
@@ -187,14 +187,14 @@ if (isset($modelinfo['revision'])) {
 <?php foreach($_REQUEST as $key => $value){
         if(is_array($value)) {
           foreach($value as $v) {
-            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+            echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
           }   
         } else {
           if(strcmp($key, "notes") == 0) {
             $str = htmlentities($value, ENT_QUOTES);
-            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+            echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
           } else {
-            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+            echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
           }
         }
       }
@@ -211,14 +211,14 @@ if (isset($modelinfo['revision'])) {
 <?php foreach($_REQUEST as $key => $value){
 	if(is_array($value)) {
 	  foreach($value as $v) {
-	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	    echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
 	  }
 	} else {
           if(strcmp($key, "notes") == 0) {
             $str = htmlentities($value, ENT_QUOTES);
-            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+            echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
           } else {
-            echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+            echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
           }
 	}
       }

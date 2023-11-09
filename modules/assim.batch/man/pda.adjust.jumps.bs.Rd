@@ -19,7 +19,7 @@ pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
 A PEcAn settings list updated to reflect adjusted jump distributions
 }
 \description{
-Adjust PDA blcok MCMC jump size
+Adjust PDA block MCMC jump size
 }
 \author{
 Ryan Kelly

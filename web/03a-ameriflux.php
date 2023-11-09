@@ -77,14 +77,14 @@ $fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] :
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
       if(strcmp($key, "notes") == 0 ) {
         $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }
@@ -101,14 +101,14 @@ $fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] :
   foreach($_REQUEST as $key => $value) {
     if (is_array($value)) {
       foreach($value as $v) {
-        echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+        echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
       }
     } else {
       if (strcmp($key, "notes") == 0 ) {
         $str = htmlentities($value, ENT_QUOTES);
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$str}\"/>";
       } else if (strcmp($key, "fluxusername") != 0 ) {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }

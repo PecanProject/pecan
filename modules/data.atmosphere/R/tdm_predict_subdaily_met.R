@@ -30,7 +30,7 @@
 ##' @param ens.labs - vector containing the labels (suffixes) for each ensemble member; this allows you to add to your 
 ##'                   ensemble rather than overwriting with a default naming scheme
 ##' @param resids - logical stating whether to pass on residual data or not
-##' @param adjust.pr - adjustment factor fore preciptiation when the extracted values seem off
+##' @param adjust.pr - adjustment factor fore precipitation when the extracted values seem off
 ##' @param force.sanity - (logical) do we force the data to meet sanity checks?                             
 ##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
 ##' @param overwrite logical: replace output file if it already exists?
