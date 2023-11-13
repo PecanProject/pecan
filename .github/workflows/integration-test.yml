@@ -36,6 +36,10 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
 
+    - name: Download glibc
+      run: |
+        apt install libc6
+
     - name: Install dependencies
       uses: BSFishy/pip-action@v1
       with:
