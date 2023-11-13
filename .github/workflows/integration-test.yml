@@ -37,8 +37,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo -H python3 -m pip3 install --upgrade pip3
-        sudo -H pip3 install cdsapi
+        sudo -H apt install python3-pip
+        sudo -H pip install cdsapi
 
     - name: Run tests
       run: |
