@@ -23,9 +23,6 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
-    - name: Check Ubuntu Version
-      run: |
-        hostnamectl
     - name: CDS API file setup
       run: |
         echo "url: https://cds.climate.copernicus.eu/api/v2" >> .cdsapirc
