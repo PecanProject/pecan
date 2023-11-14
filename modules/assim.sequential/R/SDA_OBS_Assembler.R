@@ -21,7 +21,7 @@ SDA_OBS_Assembler <- function(settings){
   
   #check if we want to proceed the free run without any observations.
   if (as.logical(settings$state.data.assimilation$free.run)) {
-    #calcualte time points.
+    #calculate time points.
     time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, Obs_Prep$timestep)
     
     #generate obs.mean and obs.cov with NULL filled.
