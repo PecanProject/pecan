@@ -176,65 +176,37 @@ tobit.model <-  nimbleCode({
 #' @format TBD
 #' @export
 GEF.MultiSite.Nimble <-  nimbleCode({
-  if (q.type == 1) {
-    # Sorting out qs
-    qq ~ dgamma(aq, bq) ## aq and bq are estimated over time
-    q[1:YN, 1:YN] <- qq * diag(YN)
-  } else if (q.type == 2) {
-    # Sorting out qs
-    q[1:YN, 1:YN] ~ dwish(R = aq[1:YN, 1:YN], df = bq) ## aq and bq are estimated over time
-    
-  }
-  
   # X model
   X.mod[1:N] ~ dmnorm(mean = muf[1:N], cov = pf[1:N, 1:N])
-  
-  for (i in 1:nH) {
-    tmpX[i]  <- X.mod[H[i]]
-    Xs[i] <- tmpX[i]
-  }
-  ## add process error to x model but just for the state variables that we have data and H knows who
-  X[1:YN]  ~ dmnorm(Xs[1:YN], prec = q[1:YN, 1:YN])
-  
-  ## Likelihood
-  y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN, 1:YN])
-  
-  # #puting the ones that they don't have q in Xall - They come from X.model
-  # # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
-  if(nNotH > 0){
-    for (j in 1:nNotH) {
-      tmpXmod[j]  <- X.mod[NotH[j]]
-      Xall[NotH[j]] <- tmpXmod[j]
+  if (q.type == 1 | q.type == 2) {
+    if (q.type == 1) {#single Q
+      # Sorting out qs
+      qq ~ dgamma(aq, bq) ## aq and bq are estimated over time
+      q[1:YN, 1:YN] <- qq * diag(YN)
+    } else if (q.type == 2) {#site Q
+      # Sorting out qs
+      q[1:YN, 1:YN] ~ dwish(R = aq[1:YN, 1:YN], df = bq) ## aq and bq are estimated over time
     }
-  }
-  
-  #These are the one that they have data and their q can be estimated.
-  for (i in 1:nH) {
-    tmpXH[i]  <- X[i]
-    Xall[H[i]] <- tmpXH[i]
-  }
-  
-  for (i in 1:YN) {
-    y.ind[i] ~ dinterval(y.censored[i], 0)
-  }
-  
-})
-
-#GEF.Block.Nimble--This does the block-based SDA -------------------------------------
-#' block-based TWEnF
-#' @format TBD
-#' @export
-GEF.Block.Nimble <-  nimbleCode({
-  #I think the blocked nimble has to be implemented and used instead of a long vector sampling.
-  #1) due to the convergence of X.mod.
-  #2) temporal efficiency. MVN sampling over a large cov matrix can be time consuming.
-  #4) this data structure design allows us to implement the MCMC sampling parallely.
-  
-  #sample X.mod from the forecast.
-  X.mod[1:N] ~ dmnorm(mean = muf[1:N], cov = pf[1:N, 1:N])
-  
-  #here we only consider vector Q and Wishart Q.
-  if (q.type == 1) {
+    
+    for (i in 1:nH) {
+      tmpX[i]  <- X.mod[H[i]]
+      Xs[i] <- tmpX[i]
+    }
+    ## add process error to x model but just for the state variables that we have data and H knows who
+    X[1:YN]  ~ dmnorm(Xs[1:YN], prec = q[1:YN, 1:YN])
+    
+    ## Likelihood
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN, 1:YN])
+    
+    # #puting the ones that they don't have q in Xall - They come from X.model
+    # # If I don't have data on then then their q is not identifiable, so we use the same Xs as Xmodel
+    if(nNotH > 0){
+      for (j in 1:nNotH) {
+        tmpXmod[j]  <- X.mod[NotH[j]]
+        Xall[NotH[j]] <- tmpXmod[j]
+      }
+    }
+  } else if (q.type == 3) {#Vector Q
     for (i in 1:YN) {
       #sample Q.
       q[i] ~ dgamma(shape = aq[i], rate = bq[i])
@@ -247,7 +219,7 @@ GEF.Block.Nimble <-  nimbleCode({
       #likelihood
       y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))
     }
-  } else if (q.type == 2) {
+  } else if (q.type == 4) {#Wishart Q
     #if it's a Wishart Q.
     #sample Q.
     q[1:YN, 1:YN] ~ dwishart(R = aq[1:YN, 1:YN], df = bq)
