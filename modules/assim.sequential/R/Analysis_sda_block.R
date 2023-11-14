@@ -3,14 +3,14 @@
 ##' @author Dongchen Zhang
 ##' 
 ##' @param settings  pecan standard multi-site settings list.  
-##' @param block.list.all List contains nt empty sub-elements.
-##' @param X A matrix contains ensemble forecasts.
-##' @param obs.mean List of dataframe of observation means, named with observation datetime.
-##' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
-##' @param t time point.
-##' @param nt total length of time steps.
-##' @param MCMC.args arguments for the MCMC sampling.
-##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.
+##' @param block.list.all Lists of forecast and analysis outputs for each time point of each block. If t=1, we initialize those outputs of each block with NULL from the `sda.enkf.multisite` function.
+##' @param X A matrix contains ensemble forecasts with the dimensions of `[ensemble number, site number * number of state variables]`. The columns are matched with the site.ids and state variable names of the inside the `FORECAST` object in the `sda.enkf.multisite` script. 
+##' @param obs.mean Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point. 
+##' @param obs.cov   Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point. 
+##' @param t time point in format of YYYY-MM-DD.
+##' @param nt total length of time steps, corresponding to the `nt` variable in the `sda.enkf.multisite` function.
+##' @param MCMC.args arguments for the MCMC sampling, details can be found in the roxygen strucutre for control list in the `sda.enkf.multisite` function.
+##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL. Details can be found in the roxygen structure for `pre_enkf_params` of the `sda.enkf.multisite` function
 ##' @details This function will add data and constants into each block that are needed for the MCMC sampling.
 ##'  
 ##' @description This function provides the block-based MCMC sampling approach.
@@ -25,7 +25,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                                  obs.mean = obs.mean, 
                                                                  obs.cov = obs.cov, 
                                                                  t = t)))) {
-    PEcAn.logger::logger.error("Something wrong within the build.block.xy function.")
+    PEcAn.logger::logger.severe("Something wrong within the build.block.xy function.")
     return(0)
   }
   #grab block.list and H from the results.
@@ -39,13 +39,13 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                             bqq.Init = as.numeric(settings$state.data.assimilation$bqq.Init),
                                                             MCMC_dat = NULL,
                                                             block.list.all.pre)))) {
-    PEcAn.logger::logger.error("Something wrong within the update_q function.")
+    PEcAn.logger::logger.severe("Something wrong within the update_q function.")
     return(0)
   }
   
-  #add initial conditions.
+  #add initial conditions for the MCMC sampling.
   if ("try-error" %in% class(try(block.list.all[[t]] <- MCMC_Init(block.list.all[[t]], X)))) {
-    PEcAn.logger::logger.error("Something wrong within the MCMC_Init function.")
+    PEcAn.logger::logger.severe("Something wrong within the MCMC_Init function.")
     return(0)
   }
   
@@ -59,14 +59,14 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
-    PEcAn.logger::logger.error("Something wrong within the MCMC_block_function function.")
+    PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
     return(0)
   }
   PEcAn.logger::logger.info("Completed!")
   
   #convert from block lists to vector values.
   if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H)))) {
-    PEcAn.logger::logger.error("Something wrong within the block.2.vector function.")
+    PEcAn.logger::logger.severe("Something wrong within the block.2.vector function.")
     return(0)
   }
   
@@ -98,9 +98,9 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
 build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   #set q.type from settings.
   if (settings$state.data.assimilation$q.type == "vector") {
-    q.type <- 1
+    q.type <- 3
   } else if (settings$state.data.assimilation$q.type == "wishart") {
-    q.type <- 2
+    q.type <- 4
   }
   
   #grab basic arguments based on X.
@@ -108,19 +108,22 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   var.names <- unique(attributes(X)$dimnames[[2]])
   mu.f <- colMeans(X)
   Pf <- stats::cov(X)
-  diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
+  if (length(diag(Pf)[which(diag(Pf)==0)]) > 0) {
+    diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
+    PEcAn.logger::logger.warn("The zero variances in Pf is being replaced by one fifth of the minimum variance in those matrices respectively.")
+  }
   
   #distance calculations and localization
+  site.locs <- settings$run %>% 
+    purrr::map('site') %>% 
+    purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+    t %>%
+    `colnames<-`(c("Lon","Lat")) %>%
+    `rownames<-`(site.ids)
+  #Finding the distance between the sites
+  dis.matrix <- sp::spDists(site.locs, longlat = TRUE)
   if (!is.null(settings$state.data.assimilation$Localization.FUN)) {
     Localization.FUN <- get(settings$state.data.assimilation$Localization.FUN)
-    site.locs <- settings$run %>% 
-      purrr::map('site') %>% 
-      purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
-      t %>%
-      `colnames<-`(c("Lon","Lat")) %>%
-      `rownames<-`(site.ids)
-    #Finding the distance between the sites
-    dis.matrix <- sp::spDists(site.locs, longlat = TRUE)
     #turn that into a blocked matrix format
     blocked.dis <- block_matrix(dis.matrix %>% as.numeric(), rep(length(var.names), length(site.ids)))
     Pf <- Localization.FUN(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
@@ -134,13 +137,18 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     H <- list(ind = seq_along(rep(var.names, length(site.ids))))
     Y <- rep(NA, length(H$ind))
     R <- diag(1, length(H$ind))
+  } else if (!as.logical(settings$state.data.assimilation$free.run) && all(is.null(unlist(obs.mean[[t]])))) {
+    PEcAn.logger::logger.error("Please set the settings$state.data.assimilation$free.run as TRUE if you don't have any observations!")
+    return(0)
   } else {
     Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
     Y <- Obs.cons$Y
     R <- Obs.cons$R
     if (length(Y) > 1) {
-      PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-      diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+      if (length(diag(R)[which(diag(R)==0)]) > 0) {
+        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+        PEcAn.logger::logger.warn("The zero variances in R is being replaced by half of the minimum variance in those matrices respectively.")
+      }
     }
     #create matrix the describes the support for each observed state variable at time t
     min_max <- settings$state.data.assimilation$state.variables %>% 
@@ -172,7 +180,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   
   #start the blocking process
   #should we consider interactions between sites?
-  if(as.logical(settings$state.data.assimilation$by.site)){
+  if(as.numeric(settings$state.data.assimilation$scalef) == 0){
     block.list <- vector("list", length(site.ids))
     #loop over sites
     for (i in seq_along(site.ids)) {
@@ -219,7 +227,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
         purrr::map(function(l){length(l)}) %>%
         unlist %>%
         sum() != length(site.ids)) {
-      PEcAn.logger::logger.error("Block calculation failed, please check the matrix_network function!")
+      PEcAn.logger::logger.severe("Block calculation failed, please check the matrix_network function!")
       return(0)
     }
     block.list <- vector("list", length(block.vec))
@@ -318,7 +326,8 @@ MCMC_Init <- function (block.list, X) {
 ##' @return It returns the `block` object with analysis results filled in.
 MCMC_block_function <- function(block) {
   #build nimble model
-  model_pred <- nimble::nimbleModel(GEF.Block.Nimble,
+  #TODO: harmonize the MCMC code between block-based and general analysis functions to reduce the complexity of code.
+  model_pred <- nimble::nimbleModel(GEF.MultiSite.Nimble,
                                     data = block$data,
                                     inits = block$Inits,
                                     constants = block$constant,
