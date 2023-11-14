@@ -19,21 +19,21 @@ analysis_sda_block(
 \arguments{
 \item{settings}{pecan standard multi-site settings list.}
 
-\item{block.list.all}{List contains nt empty sub-elements.}
+\item{block.list.all}{Lists of forecast and analysis outputs for each time point of each block. If t=1, we initialize those outputs of each block with NULL from the `sda.enkf.multisite` function.}
 
-\item{X}{A matrix contains ensemble forecasts.}
+\item{X}{A matrix contains ensemble forecasts with the dimensions of `[ensemble number, site number * number of state variables]`. The columns are matched with the site.ids and state variable names of the inside the `FORECAST` object in the `sda.enkf.multisite` script.}
 
-\item{obs.mean}{List of dataframe of observation means, named with observation datetime.}
+\item{obs.mean}{Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point.}
 
-\item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
+\item{obs.cov}{Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point.}
 
-\item{t}{time point.}
+\item{t}{time point in format of YYYY-MM-DD.}
 
-\item{nt}{total length of time steps.}
+\item{nt}{total length of time steps, corresponding to the `nt` variable in the `sda.enkf.multisite` function.}
 
-\item{MCMC.args}{arguments for the MCMC sampling.}
+\item{MCMC.args}{arguments for the MCMC sampling, details can be found in the roxygen strucutre for control list in the `sda.enkf.multisite` function.}
 
-\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL.}
+\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL. Details can be found in the roxygen structure for `pre_enkf_params` of the `sda.enkf.multisite` function}
 }
 \value{
 It returns the `build.block.xy` object and the analysis results.
