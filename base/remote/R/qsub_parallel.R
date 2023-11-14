@@ -3,6 +3,7 @@
 #' @param settings pecan settings object
 #' @param files allow submit jobs based on job.sh file paths.
 #' @param prefix used for detecting if jobs are completed or not.
+#' @param sleep time (in second) that we wait each time for the jobs to be completed.
 #' @export
 #' @examples
 #' \dontrun{
@@ -11,7 +12,7 @@
 #' @author Dongchen Zhang
 #' 
 #' @importFrom foreach %dopar%
-qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
+qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10) {
   if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
     return(0)
@@ -93,6 +94,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out") {
   folders <- file.path(settings$host$outdir, run_list)
   completed_folders <- c()
   while (length(completed_folders) < length(folders)) {
+    Sys.sleep(sleep)
     completed_folders <- foreach::foreach(folder = folders) %dopar% {
       if(file.exists(file.path(folder, prefix))){
         return(folder)
