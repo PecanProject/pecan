@@ -116,7 +116,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         # function might need a splitting arg
         gr  <- gr[ydays %in% simdays]
         if (length(ind) > length(gr)) {
-          PEcAn.logger::logger.severe('The input does not cover the requested simulation period')
+          PEcAn.logger::logger.severe(
+                          sprintf(
+                            'The input does not cover the requested simulation period: %i > %i',
+                            length(ind), length(gr)
+                          )
+                        )
         }
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
