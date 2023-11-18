@@ -216,11 +216,11 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       day <- as.POSIXct(sprintf("%s 12:00:00", date), tz = tz)
       sequence <- seq(from = day, length.out = span, by = "days")
       
-      sunrise <- maptools::sunriset(lon.lat, sequence, direction = "sunrise", 
+      sunrise <- suntools::sunriset(lon.lat, sequence, direction = "sunrise", 
                                     POSIXct.out = TRUE)
-      sunset <- maptools::sunriset(lon.lat, sequence, direction = "sunset", 
+      sunset <- suntools::sunriset(lon.lat, sequence, direction = "sunset", 
                                    POSIXct.out = TRUE)
-      solar_noon <- maptools::solarnoon(lon.lat, sequence, POSIXct.out = TRUE)
+      solar_noon <- suntools::solarnoon(lon.lat, sequence, POSIXct.out = TRUE)
       
       data.frame(date = as.Date(sunrise$time), sunrise = as.numeric(format(sunrise$time, "%H%M")), 
                  solarnoon = as.numeric(format(solar_noon$time, "%H%M")), 
