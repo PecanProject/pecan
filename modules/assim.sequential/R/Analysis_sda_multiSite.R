@@ -15,7 +15,7 @@
 ##' 
 ##' @return It returns a list with estimated mean and cov matrix of forecast state variables as well as mean and cov estimated as a result of assimilation/analysis .
 ##' @export
-EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
+EnKF.MultiSite <- function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   #------------------------------Setup
   Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
@@ -72,7 +72,7 @@ EnKF.MultiSite <-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
 
 ##' @rdname GEF
 ##' @export
-GEF.MultiSite<-function(settings, Forecast, Observed, H, extraArg,...){
+GEF.MultiSite <- function(settings, Forecast, Observed, H, extraArg,...){
   #-- reading the dots and exposing them to the inside of the function
   dots<-list(...)
   if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})

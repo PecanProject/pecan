@@ -750,6 +750,8 @@ The following tags can be used for state data assimilation. More detailed inform
 ```xml
 <state.data.assimilation>
 	<process.variance>TRUE</process.variance>
+	<aqq.Init>1</aqq.Init>
+	<bqq.Init>1</bqq.Init>
   <sample.parameters>FALSE</sample.parameters>
   <adjustment>TRUE</adjustment>
   <censored.data>FALSE</censored.data>
@@ -757,6 +759,7 @@ The following tags can be used for state data assimilation. More detailed inform
   <NC.Overwrite>FALSE</NC.Overwrite>
   <NC.Prefix>sipnet.out</NC.Prefix>
   <q.type>SINGLE</q.type>
+  <free.run>FALSE</free.run>
   <Localization.FUN>Local.support</Localization.FUN>
   <scalef>1</scalef>
   <chains>5</chains>
@@ -835,6 +838,8 @@ The following tags can be used for state data assimilation. More detailed inform
 ```
 
 * **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE.
+* **aqq.Init** : [optional] The initial value of `aqq` used for estimate the Q distribution, the default value is 1 (note that, the `aqq.init` and `bqq.init` right now only work on the `VECTOR` q type, and we didn't account for the variabilities of them across sites or variables, meaning we initialize the `aqq` and `bqq` given single value).
+* **bqq.Init** : [optional] The initial value of `bqq` used for estimate the Q distribution, the default value is 1.
 * **sample.parameters** : [optional] TRUE/FLASE flag for if parameters should be sampled for each ensemble member or not. This allows for more spread in the intial conditions of the forecast.
 * **adjustment** : [optional] Bool variable decide if you want to adjust analysis results by the likelihood.
 * **censored.data** : [optional] Bool variable decide if you want to do MCMC sampling for the forecast ensemble space, the default is FALSE.
@@ -842,6 +847,7 @@ The following tags can be used for state data assimilation. More detailed inform
 * **NC.Overwrite** : [optional] Bool variable decide if you want to overwrite the previous netcdf file when there is a overlap in time, the default is FALSE.
 * **NC.Prefix** : [optional] The prefix for the generation of the full-year netcdf file, the default is sipnet.out.
 * **q.type** : [optional] The type of process variance that will be estimated, the default is SINGLE.
+* **free.run** : [optional] If it's a free run without any observations, the default is FALSE.
 * **Localization.FUN** : [optional] The localization function name for the localization operation, the default is Local.support.
 * **scalef** : [optional] The scale parameter used for the localization operation, the smaller the value is, the sites are more isolated.
 * **chains** : [optional] The number of chains needed to be estimated during the MCMC sampling process.
