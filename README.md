@@ -22,7 +22,7 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult documentation of the PEcAn Project; either the [lastest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/master/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
+Consult documentation of the PEcAn Project; either the [latest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/master/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
 
 ## Getting Started
 
@@ -47,7 +47,7 @@ This, however, may have limited functionality without also installing other comp
 
 ### Website
 
-Visit our [webage](https://pecanproject.github.io) to keep up with latest news, version, and information about the PEcAn Project
+Visit our [webpage](https://pecanproject.github.io) to keep up with latest news, version, and information about the PEcAn Project
 
 #### Web Interface demo
 The fastest way to begin modeling ecosystems is through the PEcAn web interface.  

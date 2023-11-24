@@ -50,7 +50,7 @@ to the given outfolder. Details about amf_download_base function can be found he
 https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
 }
 \details{
-Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
+Uses Ameriflux LBL JSON API to download met data from Ameriflux towers in CSV format
 }
 \examples{
 \dontrun{

@@ -200,3 +200,96 @@ Construct.H.multisite <- function(site.ids, var.names, obs.t.mean){
   }
   H
 }
+
+##' @title construct_nimble_H
+##' @name  construct_nimble_H
+##' @author Dongchen Zhang
+##' 
+##' @param site.ids a vector name of site ids  
+##' @param var.names vector names of state variable names
+##' @param obs.t list of vector of means for the time t for different sites.
+##' @param pft.path physical path to the pft.csv file.
+##' @param by criteria, it supports by variable, site, pft, all, and single Q.
+##' 
+##' @description This function is an upgrade to the Construct.H.multisite function which provides the index by different criteria.
+##' 
+##' @return Returns one vector containing index for which Q to be estimated for which variable, 
+##' and the other vector gives which state variable has which observation (= element.W.Data).
+##' @export
+construct_nimble_H <- function(site.ids, var.names, obs.t, pft.path = NULL, by = "single"){
+  if(by == "pft" | by == "block_pft_var" & is.null(pft.path)){
+    PEcAn.logger::logger.info("please provide pft path.")
+    return(0)
+  }
+  H <- Construct.H.multisite(site.ids, var.names, obs.t)
+  if (by == "var") {
+    total_var_name <- rep(var.names, length(site.ids))
+    Ind <- rep(0, dim(H)[2])
+    for (i in seq_along(var.names)) {
+      Ind[which(total_var_name == var.names[i])] <- i
+    }
+  } else if (by == "site") {
+    total_site_id <- rep(site.ids, each = length(var.names))
+    Ind <- rep(0, dim(H)[2])
+    for (i in seq_along(site.ids)) {
+      Ind[which(total_site_id == site.ids[i])] <- i
+    }
+  } else if (by == "pft") {
+    pft <- utils::read.csv(pft.path)
+    rownames(pft) <- pft$site
+    total_site_id <- rep(site.ids, each = length(var.names))
+    total_pft <- pft[total_site_id, 2]
+    Ind <- rep(0, dim(H)[2])
+    pft.names <- sort(unique(pft$pft))
+    for (i in seq_along(pft.names)) {
+      Ind[which(total_pft == pft.names[i])] <- i
+    }
+  } else if (by == "block_pft_var") {
+    #by pft
+    pft <- utils::read.csv(pft.path)
+    rownames(pft) <- pft$site
+    total_site_id <- rep(site.ids, each = length(var.names))
+    total_pft <- pft[total_site_id, 2]
+    Ind_pft <- rep(0, dim(H)[2])
+    pft.names <- sort(unique(pft$pft))
+    for (i in seq_along(pft.names)) {
+      Ind_pft[which(total_pft == pft.names[i])] <- i
+    }
+    #by var
+    total_var_name <- rep(var.names, length(site.ids))
+    Ind_var <- rep(0, dim(H)[2])
+    for (i in seq_along(var.names)) {
+      Ind_var[which(total_var_name == var.names[i])] <- i
+    }
+    #by site
+    total_site_id <- rep(site.ids, each = length(var.names))
+    Ind_site <- rep(0, dim(H)[2])
+    for (i in seq_along(site.ids)) {
+      Ind_site[which(total_site_id == site.ids[i])] <- i
+    }
+    # #create reference to which block and which var
+    # #Ind for which site should use which block
+    # block.index <- var.index <- Ind_site
+    # for (i in seq_along(Ind_site)) {
+    #   Ind_block[i] <- Ind_pft[i]
+    # }
+  } else if (by == "all") {
+    Ind <- 1:dim(H)[2]
+  } else if (by == "single") {
+    Ind <- rep(1, dim(H)[2])
+  } else {
+    PEcAn.logger::logger.info("Couldn't find the proper by argument!")
+    return(0)
+  }
+  if (by == "block_pft_var") {
+    return(list(Ind_pft = Ind_pft[which(apply(H, 2, sum) == 1)],
+                Ind_site = Ind_site[which(apply(H, 2, sum) == 1)],
+                Ind_var = Ind_var[which(apply(H, 2, sum) == 1)],
+                H.ind = which(apply(H, 2, sum) == 1)))
+  } else {
+    return(list(Q.ind = Ind[which(apply(H, 2, sum) == 1)], 
+                H.ind = which(apply(H, 2, sum) == 1),
+                H.matrix = H))
+  }
+  
+}
