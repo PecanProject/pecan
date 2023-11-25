@@ -1,5 +1,6 @@
 library(testthat)
 library(ncdf4)
+library(PEcAn.DB)
 
 test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_types, reticulate_python) {
   # putting logger to debug mode
@@ -9,16 +10,16 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
 
 
   # mocking functions
-  mockery::stub(PEcAn.DB::convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(PEcAn.DB::convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
+  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
 
   # additional mocks needed since download.ERA5 does not return data as other download functions
-  mockery::stub(PEcAn.DB::convert_input, 'length', 2)
-  mockery::stub(PEcAn.DB::convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
+  mockery::stub(convert_input, 'length', 2)
+  mockery::stub(convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
 
   withr::with_dir(tempdir(), {
     tmpdir <- getwd()
-    PEcAn.DB::convert_input(
+    convert_input(
       input.id = NA,
       outfolder = tmpdir,
       formatname = NULL,
@@ -37,51 +38,51 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
       product_types = product_types,
       reticulate_python = reticulate_python
     )
-  })
+    
+    test_that("All the required files are downloaded and stored at desired location", { 
+      expect_true(file.exists(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.2m_temperature.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_pressure.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc")))
+      expect_true(file.exists(paste0(tmpdir, "/era5.total_precipitation.nc")))
+    })
 
-  test_that("All the required files are downloaded and stored at desired location", { 
-    expect_true(file.exists(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.2m_temperature.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_pressure.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc")))
-    expect_true(file.exists(paste0(tmpdir, "/era5.total_precipitation.nc")))
-  })
+    test_that("All ERA5 data files have the correct variable units", {
+      nc <- nc_open(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc"))
+      expect_equal(nc$var$d2m$units, "K")
+      nc_close(nc)
 
-  test_that("All ERA5 data files have the correct variable units", {
-    nc <- nc_open(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc"))
-    expect_equal(nc$var$d2m$units, "K")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.2m_temperature.nc"))
+      expect_equal(nc$var$t2m$units, "K")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.2m_temperature.nc"))
-    expect_equal(nc$var$t2m$units, "K")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc"))
+      expect_equal(nc$var$u10$units, "m s**-1")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc"))
-    expect_equal(nc$var$u10$units, "m s**-1")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc"))
+      expect_equal(nc$var$v10$units, "m s**-1")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.10m_v_component_of_wind.nc"))
-    expect_equal(nc$var$v10$units, "m s**-1")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_pressure.nc"))
+      expect_equal(nc$var$sp$units, "Pa")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_pressure.nc"))
-    expect_equal(nc$var$sp$units, "Pa")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc"))
+      expect_equal(nc$var$ssrd$units, "J m**-2")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_solar_radiation_downwards.nc"))
-    expect_equal(nc$var$ssrd$units, "J m**-2")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc"))
+      expect_equal(nc$var$strd$units, "J m**-2")
+      nc_close(nc)
 
-    nc <- nc_open(paste0(tmpdir, "/era5.surface_thermal_radiation_downwards.nc"))
-    expect_equal(nc$var$strd$units, "J m**-2")
-    nc_close(nc)
-
-    nc <- nc_open(paste0(tmpdir, "/era5.total_precipitation.nc"))
-    expect_equal(nc$var$tp$units, "m")
-    nc_close(nc)
+      nc <- nc_open(paste0(tmpdir, "/era5.total_precipitation.nc"))
+      expect_equal(nc$var$tp$units, "m")
+      nc_close(nc)
+    })
   })
 }
 
