@@ -23,10 +23,9 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
     
     ## before downloading, check if the file already exists on this host
     if (!is.null(con)) {
-
-        chk <- dbfile.check(type = "Input", id = input.id, con = con)
+        chk <- PEcAn.DB::dbfile.check(type = "Input", id = input.id, con = con)
         if (nrow(chk) > 0) {
-            machines <- db.query(paste("SELECT * from machines where id in (", 
+            machines <- PEcAn.DB::db.query(paste("SELECT * from machines where id in (", 
                                        paste(chk$machine_id, sep = ","), ")"), con)
             if (PEcAn.remote::fqdn() %in% machines$hostname) {
                 ## record already exists on this host
@@ -49,7 +48,7 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
         prefix <- table(sapply(strsplit(dir(data_dir), ".", fixed = TRUE), function(x) { x[1] }))
         prefix <- names(which.max(prefix))
         site.id <- 1000000676
-        return(dbfile.insert(data_dir, in.prefix = prefix, type = "Input", input.id, con, 
+        return(PEcAn.DB::dbfile.insert(data_dir, in.prefix = prefix, type = "Input", input.id, con, 
             reuse = TRUE))
     }
     return(data_dir)
@@ -78,9 +77,9 @@ extract_NLCD <- function(buffer, coords, data_dir = NULL, con = NULL, year = 201
         } else {
             print(paste("Year not yet supported: ", year))
         }
-        chk <- dbfile.check(type = "Input", id = input.id, con = con)
+        chk <- PEcAn.DB::dbfile.check(type = "Input", id = input.id, con = con)
         if (nrow(chk) > 0) {
-            machines <- db.query(paste("SELECT * from machines where id in (",
+            machines <- PEcAn.DB::db.query(paste("SELECT * from machines where id in (",
                                        paste(chk$machine_id, sep = ","), ")"), con)
             if (PEcAn.remote::fqdn() %in% machines$hostname) {
                 ## record already exists on this host
