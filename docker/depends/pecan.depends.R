@@ -76,7 +76,6 @@ wanted <- c(
 'Maeswrap',
 'magic',
 'magrittr',
-'maps',
 'markdown',
 'MASS',
 'Matrix',
