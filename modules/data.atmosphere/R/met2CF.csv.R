@@ -2,9 +2,9 @@
 ##' @title met2CF.csv
 ##' @export
 ##' 
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
+##' @param in.path directory in which to find met csv files
+##' @param in.prefix pattern to match to find met files inside `in.path`
+##' @param outfolder directory name to write CF outputs
 ##' @param format data frame or list with elements as described below
 ##' format is output from db/R/query.format.vars, and should have:
 ##'   REQUIRED:

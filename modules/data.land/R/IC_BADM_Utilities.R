@@ -268,7 +268,7 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
 #' @param Lat numeric latitude
 #' @param Lon numeric longitude
 #' @description This function is designed to find the level1 and level2 code ecoregions for a given lat and long. 
-#' You can learn more about ecoregions here: \link{https://www.epa.gov/eco-research/ecoregions}.
+#' You can learn more about ecoregions here: \url{https://www.epa.gov/eco-research/ecoregions}.
 
 #'
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns

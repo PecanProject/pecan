@@ -16,6 +16,13 @@ met2CF.FACE(
   ...
 )
 }
+\arguments{
+\item{in.path}{directory in which to find FACE files}
+
+\item{in.prefix}{pattern to match to find FACE files inside `in.path`}
+
+\item{outfolder}{directory name to write CF outputs}
+}
 \description{
 convert FACE files to CF files
 }

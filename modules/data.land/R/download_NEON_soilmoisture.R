@@ -16,7 +16,7 @@
 ##' @author Juliette Bateman
 ##' 
 ##' @examples
-##' \run{
+##' \dontrun{
 ##' test <- download_NEON_soilmoisture(
 ##'   site = c("SRER", "BART", "KONA"),
 ##'   avg = 30,

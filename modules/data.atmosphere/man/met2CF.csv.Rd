@@ -19,6 +19,12 @@ met2CF.csv(
 )
 }
 \arguments{
+\item{in.path}{directory in which to find met csv files}
+
+\item{in.prefix}{pattern to match to find met files inside `in.path`}
+
+\item{outfolder}{directory name to write CF outputs}
+
 \item{format}{data frame or list with elements as described below
 format is output from db/R/query.format.vars, and should have:
   REQUIRED:

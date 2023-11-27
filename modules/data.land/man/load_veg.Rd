@@ -20,7 +20,7 @@ load_veg(
 )
 }
 \description{
-Function uses load_data{benchmark} to get veg data
+uses `PEcAn.benchmark::load_data()` to get veg data
 }
 \author{
 Istem Fer

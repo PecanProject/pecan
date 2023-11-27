@@ -1,9 +1,9 @@
 ##' convert FACE files to CF files
 ##' @export
 ##' 
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
+##' @param in.path directory in which to find FACE files
+##' @param in.prefix pattern to match to find FACE files inside `in.path`
+##' @param outfolder directory name to write CF outputs
 ##' @author Elizabeth Cowdery
 
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {

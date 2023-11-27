@@ -8,7 +8,6 @@
 #' @return if Write is True then return input IDs with physical paths; if Write is False then return just physical paths of extracted ERA5 clim files.
 #' @export
 #'
-#' @examples
 ERA5_met_process <- function(settings, in.path, out.path, Write=FALSE){
   #getting site info
   #getting site ID

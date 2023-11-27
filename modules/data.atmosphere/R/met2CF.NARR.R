@@ -1,11 +1,9 @@
 ##' Convert NARR files to CF files
-##' @name met2CF.NARR
-##' @title met2CF.NARR
 ##' @export
 ##'
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
+##' @param in.path directory in which to find NARR files
+##' @param in.prefix pattern to match to find NARR files inside `in.path`
+##' @param outfolder directory name to write CF outputs
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
