@@ -20,8 +20,7 @@ SDA_OBS_Assembler <- function(settings){
   Obs_Prep <- settings$state.data.assimilation$Obs_Prep
   
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
-  site_info <- settings %>% 
-    purrr::map(~.x[['run']] ) %>% 
+  site_info <- settings$run %>% 
     purrr::map('site')%>% 
     purrr::map(function(site.list){
       #conversion from string to number
