@@ -42,5 +42,12 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 # host specific teardown
 @HOST_TEARDOWN@
 
+#copy files back.
+@CPCMD@
+
+#delete files in the run and out folder.
+@RMRUNDIRCMD@
+@RMOUTDIRCMD@
+
 # all done
 echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
