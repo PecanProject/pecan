@@ -35,8 +35,7 @@ SDA_OBS_Assembler <- function(settings){
   }
   
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
-  site_info <- settings %>% 
-    purrr::map(~.x[['run']] ) %>% 
+  site_info <- settings$run %>% 
     purrr::map('site')%>% 
     purrr::map(function(site.list){
       #conversion from string to number
@@ -215,8 +214,8 @@ SDA_OBS_Assembler <- function(settings){
                          Obs_Prep[var_ind] %>% purrr::map(~.x$start.date), 
                          Obs_Prep[var_ind] %>% purrr::map(~.x$end.date)),
                     function(var_timestep, var_start_date, var_end_date){
-          obs_timestep2timepoint(var_start_date, var_end_date, var_timestep)
-        }) %>% 
+                      obs_timestep2timepoint(var_start_date, var_end_date, var_timestep)
+                    }) %>% 
         purrr::map(function(all_timepoints){
           all_timepoints[which(!all_timepoints %in% time_points)]
         }) %>% 
