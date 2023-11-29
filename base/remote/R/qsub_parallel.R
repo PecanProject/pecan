@@ -4,6 +4,7 @@
 #' @param files allow submit jobs based on job.sh file paths.
 #' @param prefix used for detecting if jobs are completed or not.
 #' @param sleep time (in second) that we wait each time for the jobs to be completed.
+#' @param hybrid Decide if we want to detect the job completion by both files and job ids on the server or just by the job ids on the server.s
 #' @export
 #' @examples
 #' \dontrun{
@@ -12,7 +13,7 @@
 #' @author Dongchen Zhang
 #' 
 #' @importFrom foreach %dopar%
-qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10) {
+qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10, hybrid = TRUE) {
   if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
     return(0)
@@ -89,21 +90,71 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
   PEcAn.logger::logger.info("Checking the qsub jobs status!")
   PEcAn.logger::logger.info(paste0("Checking the file ", prefix))
   ## setup progressbar
-  pb <- utils::txtProgressBar(min = 0, max = length(unlist(run_list)), style = 3)
-  pbi <- 0
   folders <- file.path(settings$host$outdir, run_list)
-  completed_folders <- c()
-  while (length(completed_folders) < length(folders)) {
-    Sys.sleep(sleep)
-    completed_folders <- foreach::foreach(folder = folders) %dopar% {
-      if(file.exists(file.path(folder, prefix))){
-        return(folder)
-      }
+  L_folder <- length(folders)
+  L_jobid <- length(jobids)
+  
+  pb <- utils::txtProgressBar(min = 0, max = L_folder, style = 3)
+  pb1 <- utils::txtProgressBar(min = 0, max = L_jobid, style = 3)
+  pbi <- pbi1 <- 0
+  #here we not only detect if the target files are generated.
+  #we also detect if the jobs are still existed on the server.
+  if (hybrid) {
+    while ((L_folder - length(folders)) < L_folder & 
+           (L_jobid - length(jobids)) < L_jobid) {
+      Sys.sleep(sleep)
+      completed_folders <- foreach::foreach(folder = folders) %dopar% {
+        if(file.exists(file.path(folder, prefix))){
+          return(folder)
+        }
+      } %>% unlist()
+      folders <- folders[which(!folders %in% completed_folders)]
+      
+      #or we can try detect if the jobs are still on the server.
+      #specify the host and qstat arguments for the future_map function.
+      host <- settings$host
+      qstat <- host$qstat
+      completed_jobs <- jobids %>% furrr::future_map(function(id) {
+        if (PEcAn.remote::qsub_run_finished(
+          run = id,
+          host = host,
+          qstat = qstat)) {
+          return(id)
+        }
+      }) %>% unlist()
+      jobids <- jobids[which(!jobids %in% completed_jobs)]
+      
+      #compare two progresses and set the maximum progress for the progress bar.
+      pbi <- L_folder - length(folders)
+      utils::setTxtProgressBar(pb, pbi)
+      
+      pbi1 <- L_jobid - length(jobids)
+      utils::setTxtProgressBar(pb1, pbi1)
     }
-    completed_folders <- unlist(completed_folders)
-    pbi <- length(completed_folders)
-    utils::setTxtProgressBar(pb, pbi)
+  } else {
+    #special case that only detect the job ids on the server.
+    while ((L_jobid - length(jobids)) < L_jobid) {
+      #detect if the jobs are still on the server.
+      #specify the host and qstat arguments for the future_map function.
+      Sys.sleep(sleep)
+      host <- settings$host
+      qstat <- host$qstat
+      completed_jobs <- jobids %>% furrr::future_map(function(id) {
+        if (PEcAn.remote::qsub_run_finished(
+          run = id,
+          host = host,
+          qstat = qstat)) {
+          return(id)
+        }
+      }) %>% unlist()
+      jobids <- jobids[which(!jobids %in% completed_jobs)]
+      
+      #compare two progresses and set the maximum progress for the progress bar.
+      pbi1 <- L_jobid - length(jobids)
+      utils::setTxtProgressBar(pb1, pbi1)
+    }
   }
+  
   close(pb)
   parallel::stopCluster(cl)
   PEcAn.logger::logger.info("Completed!")
