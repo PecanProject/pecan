@@ -3,6 +3,8 @@
 #' @param settings pecan settings object
 #' @param files allow submit jobs based on job.sh file paths.
 #' @param prefix used for detecting if jobs are completed or not.
+#' @param sleep time (in second) that we wait each time for the jobs to be completed.
+#' @param hybrid Decide if we want to detect the job completion by both files and job ids on the server or just by the job ids on the server.s
 #' @export
 #' @examples
 #' \dontrun{
@@ -11,7 +13,7 @@
 #' @author Dongchen Zhang
 #' 
 #' @importFrom foreach %dopar%
-qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", hybrid = TRUE) {
+qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10, hybrid = TRUE) {
   if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
     return(0)
@@ -100,6 +102,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", hybrid 
   if (hybrid) {
     while ((L_folder - length(folders)) < L_folder & 
            (L_jobid - length(jobids)) < L_jobid) {
+      Sys.sleep(sleep)
       completed_folders <- foreach::foreach(folder = folders) %dopar% {
         if(file.exists(file.path(folder, prefix))){
           return(folder)
@@ -130,10 +133,10 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", hybrid 
     }
   } else {
     #special case that only detect the job ids on the server.
-    #it will be more robust for thise option.
     while ((L_jobid - length(jobids)) < L_jobid) {
       #detect if the jobs are still on the server.
       #specify the host and qstat arguments for the future_map function.
+      Sys.sleep(sleep)
       host <- settings$host
       qstat <- host$qstat
       completed_jobs <- jobids %>% furrr::future_map(function(id) {
