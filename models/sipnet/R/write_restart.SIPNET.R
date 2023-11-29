@@ -20,13 +20,14 @@
 ##' @param RENAME flag to either rename output file or not
 ##' @param new.params list of parameters to convert between different states 
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
+##' @param verbose decide if we want to print the outputs.
 ##'
 ##' @description Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
 ##' 
 ##' @return NONE
 ##' @export
 write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state,
-                                 RENAME = TRUE, new.params = FALSE, inputs) {
+                                 RENAME = TRUE, new.params = FALSE, inputs, verbose = FALSE) {
   
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
@@ -120,8 +121,10 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat <- NULL
   }
 
-  print(runid %>% as.character())
-  print(analysis.save.mat)
+  if (verbose) {
+    print(runid %>% as.character())
+    print(analysis.save.mat)
+  }
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,
