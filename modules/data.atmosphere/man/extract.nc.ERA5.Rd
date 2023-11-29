@@ -15,6 +15,7 @@ extract.nc.ERA5(
   newsite,
   vars = NULL,
   overwrite = FALSE,
+  verbose = FALSE,
   ...
 )
 }
