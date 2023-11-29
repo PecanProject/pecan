@@ -8,6 +8,7 @@
 ##' @author Anne Thomas
 pool_ic_netcdf2list <- function(nc.path){
   IC.nc <- try(ncdf4::nc_open(nc.path))
+  on.exit(ncdf4::nc_close(IC.nc), add = FALSE) 
   if(!inherits(IC.nc, "try-error")) {
     dims <- vector(mode = "list", length = length(IC.nc$dim))
     names(dims) <- names(IC.nc$dim)
@@ -20,7 +21,6 @@ pool_ic_netcdf2list <- function(nc.path){
     for(varname in names(vals)){
       vals[[varname]] <- ncdf4::ncvar_get(IC.nc,varname)
     }
-    on.exit(ncdf4::nc_close(IC.nc), add = FALSE) 
     return(list(dims = dims, vals = vals))
   }
   else{
