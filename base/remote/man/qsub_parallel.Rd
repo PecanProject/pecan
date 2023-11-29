@@ -4,7 +4,7 @@
 \alias{qsub_parallel}
 \title{qsub_parallel}
 \usage{
-qsub_parallel(settings, files = NULL, prefix = "sipnet.out")
+qsub_parallel(settings, files = NULL, prefix = "sipnet.out", hybrid = TRUE)
 }
 \arguments{
 \item{settings}{pecan settings object}
