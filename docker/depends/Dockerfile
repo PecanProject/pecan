@@ -26,6 +26,7 @@ RUN apt-get update \
        jags \
        time \
        openssh-client \
+       patch \
        rsync \
        libgdal-dev \
        libglpk-dev \
