@@ -4,7 +4,7 @@
 #' @param files allow submit jobs based on job.sh file paths.
 #' @param prefix used for detecting if jobs are completed or not.
 #' @param sleep time (in second) that we wait each time for the jobs to be completed.
-#' @param hybrid Decide if we want to detect the job completion by both files and job ids on the server or just by the job ids on the server.s
+#' @param hybrid A Boolean argument decide the way of detecting job completion. If it's TRUE then we will detect both the outputted files and job ids on the server. If it's FALSE then we will only detect the job ids on the server.
 #' @export
 #' @examples
 #' \dontrun{
