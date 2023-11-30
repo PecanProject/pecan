@@ -9,9 +9,9 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA"
-SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run"
-SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out"
+outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/"
+SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run/"
+SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out/"
 
 ERA5_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/ERA5_2012_2021/"
 XML_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
@@ -80,9 +80,8 @@ if (host.flag == "remote") {
     rabbitmq = structure(list(
       uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
       queue = "SIPNET_r136",
-      oc = "/data/bin/oc",
-      occmd = "get pod -l app=@APPNAME@ -o name",
-      appname = "dongchen-sda"
+      cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
+      cpfcmd = "/data/bin/oc rsync @OUTDIR@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
     )),
     folder = SDA_out_dir,
     outdir = SDA_out_dir,

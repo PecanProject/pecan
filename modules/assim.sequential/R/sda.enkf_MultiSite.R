@@ -427,9 +427,8 @@ sda.enkf.multisite <- function(settings,
         
         #if it's a rabbitmq job sumbmission, we will first copy and paste the whole run folder within the SDA to the remote host.
         if (!is.null(settings$host$rabbitmq)) {
-          cmd <- paste0("oc rsync", settings$host$rundir, "$(", "oc" )
-          sipnet.label <- "oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):"
-          try(system(paste0("oc rsync ", settings$host$rundir, " $(", sipnet.label, settings$host$rundir), intern = TRUE))
+          cp2cmd <- gsub("@RUNDIR@", settings$host$rundir, settings$host$rabbitmq$cp2cmd)
+          try(system(cp2cmd, intern = TRUE))
         }
         
         #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
