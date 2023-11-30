@@ -87,7 +87,7 @@ extract.nc.ERA5 <-
                 vars <- names(nc_data$var)
               # for the variables extract the data
               all.data.point <- vars %>%
-                set_names(vars) %>%
+                purrr::set_names(vars) %>%
                 purrr::map_dfc(function(vname) {
                   if (verbose) {
                     PEcAn.logger::logger.info(paste0(" \t ",vname, "is being extracted ! "))
