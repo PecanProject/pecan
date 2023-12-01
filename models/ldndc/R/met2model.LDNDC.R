@@ -251,7 +251,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 # netcdf file's starting date and simulation's starting date and converting that
 # difference to seconds. Returns +1 index based on the matching seconds.
 start_index <- function(units, start_date, sec){
-  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400
+  timediff <-round((PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400)
   if(timediff == 0){
     return(1)
   }else{
@@ -262,6 +262,6 @@ start_index <- function(units, start_date, sec){
 
 end_index <- function(units, start_date, end_date, sec, tstep){
   #if(lubridate::year(start_date) == lubridate::year(end_date)){
-  timediff <-(PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")+1)*86400
+  timediff <- round((PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")+1)*86400)
   return(which(sec == (timediff-86400/tstep)))
 }
