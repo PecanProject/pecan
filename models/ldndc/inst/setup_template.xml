@@ -22,7 +22,7 @@
 
 			    <!-- outputs -->
 		        <module id="output:microclimate:daily" />
-		        <module id="output:watercycle:daily" />
+		        <module id="output:watercycle:subdaily" />
 		        <module id="output:physiology:subdaily" />
 		        <module id="output:vegstructure:daily" />
 		        <module id="output:soilchemistry:subdaily" />
