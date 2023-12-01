@@ -128,6 +128,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@METPATH@", MetPath, jobsh)
   
+  # LDNDC binaries in this server are located here. Check from the LDNDC userquide to fix this path accordingly.
   jobsh <- gsub("@BINARY@", paste(settings$model$binary, " -c /data/models/LDNDC_Latest/.ldndc/ldndc.conf ",paste0(rundir, "/project.ldndc")), jobsh)
   
   if(is.null(settings$model$delete.raw)){
@@ -159,19 +160,17 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   setupfile <- gsub("@longitude@", settings$run$site$lon, setupfile)
   
   
-  ## Populate the setup filebased on the simulated field id, options: Arable (Haltiala), Grassland (Viikki) and Forest (Lettosuo)
   ## Check the site id
-  # Haltiala: 15000000027
-  # Viikki: 15000000029
-  # Lettosuo: 15000000023
   site_id <- settings$run$site$id
   
   
   
   ## Handle the setups, when working with grass, crop and forest fields
+  # Possibly to hard code species to the list, this differentiation is done only
+  # for the purpose of separating the setups between forest and grassland/crops
   # Available species for grass/crops: timothy, oat and barley
-  # Available species for forest:      pipy(?)
-  pfts_grasscrops <- c("barley", "oat", "timothy", "meadow", "soil")
+  # Available species for forest:      pipy
+  pfts_grasscrops <- c("barley", "oat", "triticale", "timothy", "meadow", "soil")
   pfts_forest <- c("pipy")
   pfts_run <- NULL
   for(pft_names in 1:length(settings$pfts)){
@@ -239,7 +238,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   
   # Given pfts were not among the supported species
   else{
-    PEcAn.logger::logger.severe("Given species are not currently supported")
+    PEcAn.logger::logger.severe("Given species are not currently supported. This can be fixed by updating the write.config.LDNDC.R file.")
   }
   
   
@@ -289,6 +288,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     
     # Number at the beginning refers to the number of species parameters in LDNDC guide book.
+    # NOTE! LDNDC Userguide has been updated later on so the numbering can be a little bit off compared
+    # to the latest version.
     # First there is name in LDNDC and the second is name in BETY database
     
     
@@ -573,12 +574,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #93 GDD_FLOWERING - 
     if ("gdd_flowering" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t<par name='GDD_FLOWERING' value='", pft.traits[which(pft.names == "gdd_flowering")], "' /> \n"), collapse="")
+      b.2 <- paste(b.2, paste0("\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_flowering")] + pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
     }
     
-    #94 GDD_GRAIN_FILLING - 
-    if ("gdd_grain_filling" %in% pft.names) {
-      b.2 <- paste(b.2, paste0("\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
-    }
+    # #94 GDD_GRAIN_FILLING - GRAIN FILLING RELATIVE TO FLOWERING
+    # if ("gdd_grain_filling" %in% pft.names) {
+    #   b.2 <- paste(b.2, paste0("\t\t\t\t<par name='GDD_GRAIN_FILLING' value='", pft.traits[which(pft.names == "gdd_grain_filling")], "' /> \n"), collapse="")
+    # }
     
     #95 GDD_MATURITY - 
     if ("gdd_maturity" %in% pft.names) {
@@ -981,6 +983,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       b.2 <- paste(b.2, paste0("\t\t\t\t<par name='SENESCENCE_FROST' value='", pft.traits[which(pft.names == "senescence_frost")], "' /> \n"), collapse="")
     }
     
+    #?? SENESCSTART - 
+    if ("senescstart" %in% pft.names) {
+      b.2 <- paste(b.2, paste0("\t\t\t\t<par name='SENESCSTART' value='", pft.traits[which(pft.names == "senescstart")], "' /> \n"), collapse="")
+    }
+    
     #192 SHOOT_STIMULATION_REPROD - 
     if ("shoot_stimulation_reprod" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t<par name='SHOOT_STIMULATION_REPROD' value='", pft.traits[which(pft.names == "shoot_stimulation_reprod")], "' /> \n"), collapse="")
@@ -1112,8 +1119,9 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     }
     
     #221 WUECMIN - wuecmin
-    if ("wuecmax" %in% pft.names) { # INTENTIONALLY PUT IT TO BE SAME AS MAX VALUE
-      b.2 <- paste(b.2, paste0("\t\t\t\t<par name='WUECMIN' value='", pft.traits[which(pft.names == "wuecmax")], "' /> \n"), collapse="")
+    if ("wuecmin" %in% pft.names) { # CHECK THAT THE VALUE IS NOT OVER MAX
+      wuecmin_val <- ifelse(pft.traits[which(pft.names == "wuecmin")] > pft.traits[which(pft.names == "wuecmax")], pft.traits[which(pft.names == "wuecmax")], pft.traits[which(pft.names == "wuecmin")])
+      b.2 <- paste(b.2, paste0("\t\t\t\t<par name='WUECMIN' value='", wuecmin_val, "' /> \n"), collapse="")
     }
     
     #222 ZRTMC - 
@@ -1129,6 +1137,11 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     ## SITEPARAMETERS
     # Number at the beginning refers to the number of site parameters in LDNDC guide book.
     
+    
+    #58 EVALIM
+    if ("evalim" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='EVALIM' value='", pft.traits[which(pft.names == "evalim")], "' /> \n"), collapse="")
+    }
     
     #82 GROUNDWATER_NUTRIENT_RENEWAL - 
     if ("groundwater_nutrient_renewal" %in% pft.names) {
@@ -1753,10 +1766,17 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       h.2 <- paste(h.2, paste0("\t\t<par name='ROOT_DEPENDENT_TRANS' value='", pft.traits[which(pft.names == "root_dependent_trans")], "' /> \n"), collapse="")
     }
     
+    # 349 WCDNDC_EVALIM_FRAC_WCMIN
+    if ("wcdndc_evalim_frac_wcmin" %in% pft.names) {
+      h.2 <- paste(h.2, paste0("\t\t<par name='WCDNDC_EVALIM_FRAC_WCMIN' value='", pft.traits[which(pft.names == "wcdndc_evalim_frac_wcmin")], "' /> \n"), collapse="")
+    }
+    
     #335 WCDNDC_INCREASE_POT_EVAPOTRANS -
     if ("wcdndc_increase_pot_evapotrans" %in% pft.names) {
       h.2 <- paste(h.2, paste0("\t\t<par name='WCDNDC_INCREASE_POT_EVAPOTRANS' value='", pft.traits[which(pft.names == "wcdndc_increase_pot_evapotrans")], "' /> \n"), collapse="")
     }
+    
+    
     
     
     
@@ -1855,7 +1875,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         soil_type <- unlist(soil_IC_list$vals["soil_type"])[[1]]
       }
       else{
-        soil_type <- "CLLO"
+        soil_type <- "SALO"
       }
       sitefile <- gsub("@Soil_Type@", paste0("'", soil_type, "'"), sitefile)
     }
@@ -2033,6 +2053,13 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
       speciesparfile_pfts <- paste0(speciesparfile_pfts,
                                     "\t\t\t <species mnemonic='oats'> \n",
                                     species_par_values["oat"][[1]],
+                                    "\t\t\t </species> \n\n")
+    }
+    # Triticale
+    if(pftn == "triticale"){
+      speciesparfile_pfts <- paste0(speciesparfile_pfts,
+                                    "\t\t\t <species mnemonic='trse'> \n",
+                                    species_par_values["triticale"][[1]],
                                     "\t\t\t </species> \n\n")
     }
     ## Grass
