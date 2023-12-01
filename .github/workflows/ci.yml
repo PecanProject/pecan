@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     services:
@@ -91,7 +91,7 @@ jobs:
       matrix:
         package: [check_base, check_modules, check_models]
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     env:
@@ -141,6 +141,7 @@ jobs:
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
+
   # ----------------------------------------------------------------------
   # SIPNET TESTS
   # ----------------------------------------------------------------------
@@ -154,7 +155,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     services:
