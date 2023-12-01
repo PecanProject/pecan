@@ -10,22 +10,27 @@
 
 ### Introduction
 
-LandscapeDNDC is designed to simulate biosphere/hydrosphere processes of forest, arable and grassland ecosystems. It is modularly designed and therefore allows for various model selections to be plugged in. Most up-to-date information from LDNDC can be found here, as well as the authors, users guide and documentation of the model: https://ldndc.imk-ifu.kit.edu/index.php
+LandscapeDNDC is designed to simulate biosphere/hydrosphere processes of forest, arable and grassland ecosystems. The LDNDC design allows various models/modules to be plugged in, and this enables the simulations for different ecosystems. Most up-to-date information from LDNDC can be found here, as well as the authors, users guide and documentation of the model: https://ldndc.imk-ifu.kit.edu/index.php
+
+Note! The setups are written for LDNDC version that has been downloaded 2022-10-19. Some of the newer versions of LDNDC might have differences in the names of variables and parameters.
 
 **PEcAn configuration file additions**
 
-The following sections of the PEcAn XML are relevant or have influence at the moment:
+The following sections of the PEcAn XML are relevant or have influence at this development stage:
 
 `ensemble`
-  `variable`: Options are only LAI and GPP
+  `variable`: LAI, GPP, NPP, NEE, Respirations (*AutoResp*, *HeteroResp*, *TotalResp*), biomass of harvesting (*harvest_carbon_flux*), ABG and BGB (*below_ground_carbon_content*).
 
 `model`
-  `id`: Corresponding the id of LDNDC in BETY
+  `id`: Corresponding the id of LDNDC in BETY.
 
 `run`
   `inputs`
       `start_date`: Start date of the simulation
       `end_date`: End date of the simulation
+      
+      
+Paths to meteorological drivers, events and initial conditions. Also possibly, but not required to give paths to airchemistry and groundwater files, if available.
 
 
 ### Model specific input files
@@ -54,25 +59,41 @@ Input files:
 #### Model configuration files
 
 Due to the amount of different input files, there are several templates which are used in model configuration.
-Templates are located at `models/ldndc/inst/` and are copied to the simulation's run directory before the model run.
+Templates are located at `models/ldndc/inst/`. Populated and run specific inputs of these files should be informed by giving a path to the file in pecan.xml.
 
-* **project.ldndc** : Project file is populated in `write.configs.LDNDC` based on the inputs of the PEcAn run. In addition to having the correct input files that are used in the simulation, the project file is filled in with the simulation time period and the directory paths regarding other input files that are read during the simulation. The file also sets the path for output files. These other input files are found from the same directory as the project file when starting the model run, and the output file is created among the other outputs of the simulation. At the moment, simulations are executed half-hourly.
+* **project.ldndc** : Project file is populated in `write.configs.LDNDC` based on the inputs of the PEcAn run. In addition of having the correct input files that are used in the simulation, the project file is filled in with the simulation time period. The file also sets the path for output files. The other input files should be found from the same directory as the project file when starting the model run, and the output directory is created among the other outputs of the simulation. Simulations are executed half-hourly by default and this is hard coded in `write.configs.LDNDC` file.
 
 * **template.job** : Will be filled in with the information that model execution requires in PEcAn. Calls for example models binary and executes the `project.ldndc` file.
 
 * **events_template.xml** : Has three events (plant, manure and cut), which are filled in in `write.configs.LDNDC`. Events should be generated based on some event file, but such implementation has not been applied yet. This template is only meant for testing for now.
 
-* **speciesparameter_template.xml** : Has one replacable section. This section is filled in within `write.configs.LDNDC`, and is currently just hard-coded values for perennial grass species. This will be one of the key files, because the used pfts and corresponding pft values are written here. At this stage, it is hard-coded to only have one pft, but it should be generated based on the trait values that are available from BETY database.
+* **speciesparameter_template.xml** : Has one replacable section. This section is filled in within `write.configs.LDNDC`. This file is filled with the given prior values for the species. Currently, there are a few species hard coded in `write.configs.LDNDC`. If species, other than already coded there, is needed for the simulations, it is easy to add those in the configurations.
 
-* **siteparameters.xml** : Some default value for siteparameters.
+* **siteparameters.xml** : This file is populated by given site(parameter) prior values.
 
-* **site.xml** : Some default values for site.
+* **site.xml** : This file is written based on the given initial condition file (netcdf). If no path in *poolinitcond* has been given, then some default mineral clay soil setups are written into this file. However, it is highly recommended that some initial conditions are provided based on the simulated site. Variables than can, but are not obligatory to be found from the initial conditions:
+  + *For each layer*
+    - pH (-), 
+    - water_concentration_at_field_capacity (m3 m-3),
+    - water_concentration_at_wilting_point (m3 m-3),
+    - soil_nitrogen_content (kg kg-1),
+    - soil_carbon_content (kg kg-1),
+    - soil_clay_content (kg kg-1),
+    - soil_sand_content (kg kg-1),
+    - soil_silt_content (kg kg-1),
+    - soil_bulk_density (kg m-3),
+    - soil_hydraulic_conductivity (-),
+    - stratum = (-)
+  + *Single value*
+    - c2n_humus (ratio), [is actually written in siteparameter file]
+    - AGB = (kg m-2),
+    - fractional_cover (%)
+  + *Model specific*
+    - history (soil use history, e.g. arable)
+    - soil_type (e.g ORMA, SALO)
+    
 
-* **airchemistry.txt** : Some default data for airchemistry.
-
-* **climate.txt** : This file is created from the netcdf file. A symbolic link will be created into the run directory for it.
-
-* **setup.xml** : Contains information which modules the model simulation is using. Default settings should fit for most of the purposes and these are currently hard-coded.
+* **setup.xml** : Contains information which modules the model simulation is using. Default settings should fit for most of the purposes and these are currently hard-coded. These setups differ for agricultural and forest sites.
 
 
 ### Installation notes
