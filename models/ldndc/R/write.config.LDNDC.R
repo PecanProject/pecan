@@ -168,6 +168,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   ## Handle the setups, when working with grass, crop and forest fields
   # Possibly to hard code species to the list, this differentiation is done only
   # for the purpose of separating the setups between forest and grassland/crops
+  # If more species is wanted to be add, update also the part where parameters of pfts are written into speciesparameter file.
   # Available species for grass/crops: timothy, oat and barley
   # Available species for forest:      pipy
   pfts_grasscrops <- c("barley", "oat", "triticale", "timothy", "meadow", "soil")
