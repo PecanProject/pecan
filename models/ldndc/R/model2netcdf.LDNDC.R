@@ -19,7 +19,6 @@
 ##' @author Henri Kajasilta
 model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE) {
 
-
   # File path to Output directory wherein the raw model results are located 
   output_dir <- file.path(outdir, "Output")
   
@@ -35,35 +34,61 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     # Physiology data: LAI, Photosynthesis rate
     physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
                          select = c(datetime, species, lai, dC_co2_upt.kgCm.2., dC_maintenance_resp.kgCm.2.,
-                                    dC_transport_resp.kgCm.2., dC_growth_resp.kgCm.2.))
+                                    dC_transport_resp.kgCm.2., dC_growth_resp.kgCm.2., DW_below.kgDWm.2., DW_above.kgDWm.2.))
     
     
     soilchemistry <- subset(read.csv(paste(output_dir, "soilchemistry-subdaily.txt", sep = "/"), header = T, sep ="\t"),
                             select = c(datetime, sC_co2_hetero.kgCm.2.))
     
+    # Soil moisture information
+    watercycle <- subset(read.csv(paste(output_dir, "watercycle-subdaily.txt", sep = "/"), header = T, sep ="\t"),
+                         select = c(datetime, soilwater_10cm..., soilwater_30cm...))
+    
+    
+    # Harvest
+    harvest <- subset(read.csv(paste(output_dir, "report-harvest.txt", sep = "/"), header = T, sep ="\t"),
+                      select = c(datetime, dC_fru_export.kgCha.1., dC_fol_export.kgCha.1., dC_frt_export.kgCha.1.,
+                                 dC_lst_above_export.kgCha.1., dC_lst_below_export.kgCha.1., dC_dst_above_export.kgCha.1.,
+                                 dC_dst_below_export.kgCha.1., dC_straw_export.kgCha.1.)) %>%
+      dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
+    
+    # Cut
+    cut <- subset(read.csv(paste(output_dir, "report-cut.txt", sep = "/"), header = T, sep ="\t"),
+                      select = c(datetime, dC_fru_export.kgCha.1., dC_fol_export.kgCha.1., dC_dfol_export.kgCha.1.,
+                                 dC_lst_export.kgCha.1., dC_dst_export.kgCha.1., dC_frt_export.kgCha.1.)) %>%
+      dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
+    
   } else{
     PEcAn.logger::logger.severe("Subdaily output files not found, check the configurations for the LDNDC runs")
   }
   
-  ## If there are several species on the field, choose the rows which shows the sum values of species variables.
-  if(!identical((which(physiology$species == ":ALL:")), integer(0))){
-    physiology <- physiology[which(physiology$species == ":ALL:"),]
-  }
 
+  # This approach should be more reliable compared to previous since just choose one unique datetime
+  # and the last one will be the "all", if there are several species on the field
+  physiology <- physiology[!duplicated(physiology$datetime, fromLast = T),] 
+  
+  
+  # Combine harvest and cut as one event
+  harvest <- rbind(harvest, cut) %>% dplyr::group_by(datetime) %>% dplyr::summarise(harvest_carbon_flux = sum(total)/10000) %>%
+    as.data.frame()
   
   # Temporary solution to get "no visible binding" note off from the variables: 'Date', 'Year' and 'Day'
   Date <- Year <- Day <- NULL
   
   ## Merge subdaily-files
   ldndc.raw.out <- merge(physiology, soilchemistry, by = 'datetime', all = TRUE)
+  ldndc.raw.out <- merge(ldndc.raw.out, watercycle, by = 'datetime', all = TRUE)
+  ldndc.raw.out <- merge(ldndc.raw.out, harvest, by = 'datetime', all = TRUE)
   
   ldndc.out <- ldndc.raw.out %>%
-    dplyr:: mutate(Date = format(as.POSIXlt(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
+    dplyr:: mutate(Date = format(as.POSIXct(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
     dplyr::select(Year, Day, Step, lai, dC_maintenance_resp.kgCm.2., dC_transport_resp.kgCm.2.,
-                  dC_growth_resp.kgCm.2., dC_co2_upt.kgCm.2., sC_co2_hetero.kgCm.2.)
+                  dC_growth_resp.kgCm.2., dC_co2_upt.kgCm.2., sC_co2_hetero.kgCm.2.,
+                  DW_below.kgDWm.2., DW_above.kgDWm.2., soilwater_10cm...,
+                  soilwater_30cm..., harvest_carbon_flux)
   
   
   
@@ -108,33 +133,25 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     ## Subset the years we are interested in
     sub.ldndc.out <- subset(sub.ldndc.out, Day >= begin_date & Day <= end_d)
-    
-    
-    # Aggregate the daily values
-    # sub.ldndc.out.daily <- sub.ldndc.out %>% group_by(Year, Day) %>%
-    #   summarise(lai_daily = mean(lai), dC_maintenance_resp.kgCm.2._daily = sum(dC_maintenance_resp.kgCm.2.),
-    #             dC_transport_resp.kgCm.2._daily = sum(dC_transport_resp.kgCm.2.), dC_growth_resp.kgCm.2._daily = sum(dC_growth_resp.kgCm.2.),
-    #             dC_co2_upt.kgCm.2._daily = sum(dC_co2_upt.kgCm.2.), sC_co2_hetero.kgCm.2._daily = sum(sC_co2_hetero.kgCm.2.))
-    
+
     
     # Create the tvals that are used in nc-files
     tvals <- sub.ldndc.out[["Day"]] + sub.ldndc.out[["Step"]] /out_day -1
-    #tvals_daily <- sub.ldndc.out.daily[["Day"]] - 1
-    
     
     
     ## Outputs need to be an appropriate units, this can be done here
     output <- list()
     
     # LAI
-    output[[1]] <- sub.ldndc.out$lai
+    output[[1]] <- ifelse(!is.na(sub.ldndc.out$lai), sub.ldndc.out$lai, 0)
     
     # Photosynthesis rate - GPP
-    GPP <- sub.ldndc.out$dC_co2_upt.kgCm.2./timestep.s
+    GPP <- ifelse(!is.na(sub.ldndc.out$dC_co2_upt.kgCm.2.), sub.ldndc.out$dC_co2_upt.kgCm.2./timestep.s, 0)
     output[[2]] <- GPP
     
     # Autotrophic respiration
-    Autotrophic <- (sub.ldndc.out$dC_maintenance_resp.kgCm.2. + sub.ldndc.out$dC_transport_resp.kgCm.2. + sub.ldndc.out$dC_growth_resp.kgCm.2.)/timestep.s
+    Autotrophic <- ifelse(!is.na((sub.ldndc.out$dC_maintenance_resp.kgCm.2. + sub.ldndc.out$dC_transport_resp.kgCm.2. + sub.ldndc.out$dC_growth_resp.kgCm.2.)),
+                          (sub.ldndc.out$dC_maintenance_resp.kgCm.2. + sub.ldndc.out$dC_transport_resp.kgCm.2. + sub.ldndc.out$dC_growth_resp.kgCm.2.)/timestep.s, 0)   
     output[[3]] <- Autotrophic
     
     # Heterotrophic respiration
@@ -144,12 +161,25 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     # Total respiration
     output[[5]] <- Autotrophic + Heterotrophic
     
+    # NPP
+    output[[6]] <- GPP - Autotrophic
+    
     # NEE
-    output[[6]] <- Autotrophic + Heterotrophic - GPP
+    output[[7]] <- ifelse(!is.na(Autotrophic), Autotrophic, 0) + Heterotrophic - GPP
     
+    # Soilmoisture at 10 cm
+    output[[8]] <- c(t(data.frame(sub.ldndc.out$soilwater_10cm..., sub.ldndc.out$soilwater_30cm...)))
     
-    # LAI Daily
-    #output[[7]] <- sub.ldndc.out.daily$lai_daily
+    # Aboveground biomass
+    output[[9]] <- ifelse(!is.na(sub.ldndc.out$DW_above.kgDWm.2.), sub.ldndc.out$DW_above.kgDWm.2., 0)/timestep.s
+    
+    # Belowground biomass
+    # Using constant 0.45 to calculate the C from dry matter
+    output[[10]] <- ifelse(!is.na(sub.ldndc.out$DW_below.kgDWm.2.), sub.ldndc.out$DW_below.kgDWm.2., 0) * 0.45 / timestep.s
+    
+    harvest <- ifelse(!is.na(sub.ldndc.out$harvest_carbon_flux), sub.ldndc.out$harvest_carbon_flux, 0) * 0.45 / timestep.s
+    output[[11]] <- harvest
+    
     
     #### Declare netCDF variables ####
     t <- ncdf4::ncdim_def(name = "time",
@@ -160,20 +190,17 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
                           unlim = TRUE)
     
     
-    # t_daily <- ncdf4::ncdim_def(name = "daily_time",
-    #                             longname = "daily_time",
-    #                             units = paste0("days since ", y, "-01-01"), # 00:00:00
-    #                             vals = tvals_daily,
-    #                             calendar = "standard",
-    #                             unlim = FALSE)
-    
-    
-    
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 
                             longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), 
                             longname = "station_longitude")
+    
+    
+    depth <- ncdf4::ncdim_def("depth", "m", vals = c(.10, .30))
+    
     dims <- list(lon = lon, lat = lat, time = t)
+    dims_added <- list(lon = lon, lat = lat, depth = depth, time = t)
+    
     #dims_daily <- list(lon = lon, lat = lat, time = t_daily)
     time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
                                       longname="history time interval endpoint dimensions",
@@ -190,7 +217,20 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     nc_var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
     nc_var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
     nc_var[[5]] <- PEcAn.utils::to_ncvar("TotalResp", dims)
-    nc_var[[6]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[6]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[7]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    
+    # Soilwater
+    nc_var[[8]] <- PEcAn.utils::to_ncvar("SoilMoist", dims_added)
+    
+    # Biomass aboveground and belowground
+    nc_var[[9]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = dims, missval = -999,
+                                    longname = "above ground biomass")
+    nc_var[[10]] <- ncdf4::ncvar_def("below_ground_carbon_content", units = "kg C m-2", dim = dims, missval = -999,
+                                     longname = "below ground biomass")
+    
+    nc_var[[length(nc_var)+1]] <- ncdf4::ncvar_def("harvest_carbon_flux", units = "kg m-2", dim = dims, missval = -999,
+                                                   longname = "biomass of harvested organs")
     
     # Daily values
    # nc_var[[7]] <- PEcAn.utils::to_ncvar("LAI_Daily", dims_daily)
