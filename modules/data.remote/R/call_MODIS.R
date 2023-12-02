@@ -283,7 +283,7 @@ call_MODIS <- function(var, product,
         fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_unfiltered.csv", sep = "")
       }
       fname <- file.path(outdir, fname)
-      write.csv(site, fname, row.names = FALSE)
+      utils::write.csv(site, fname, row.names = FALSE)
     }
     
   }
