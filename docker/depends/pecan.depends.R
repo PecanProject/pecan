@@ -19,7 +19,8 @@ remotes::install_github(c(
 'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
 'ropensci/nneo',
-'rstudio/rmarkdown@v2.20'
+'rstudio/rmarkdown@v2.20',
+'tidyverse/dbplyr@v2.4.0'
 ), lib = rlib)
 
 # install all packages (depends, imports, suggests)
