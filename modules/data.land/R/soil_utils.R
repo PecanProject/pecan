@@ -30,27 +30,27 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   soil_data <- new.env()
   load(system.file("data/soil_class.RData",package = "PEcAn.data.land"), envir = soil_data)
   mysoil <- list()
-  soil.name <- soil_data$soil.name
-  xsand.def <- soil_data$xsand.def
-  xclay.def <- soil_data$xclay.def
-  fieldcp.K <- soil_data$fieldcp.K
-  soilcp.MPa <- soil_data$soilcp.MPa
-  grav <- soil_data$grav
-  soilwp.MPa <- soil_data$soilwp.MPa
-  sand.hcap <- soil_data$sand.hcap
-  silt.hcap <- soil_data$silt.hcap
-  clay.hcap <- soil_data$clay.hcap
-  air.hcap <- soil_data$air.hcap
-  ksand <- soil_data$ksand
-  sand.cond <- soil_data$sand.cond
-  ksilt <- soil_data$ksilt
-  silt.cond <- soil_data$silt.cond
-  kclay <- soil_data$kclay
-  clay.cond <- soil_data$clay.cond
-  kair <- soil_data$kair
   air.cond <- soil_data$air.cond
+  air.hcap <- soil_data$air.hcap
+  clay.cond <- soil_data$clay.cond
+  clay.hcap <- soil_data$clay.hcap
+  fieldcp.K <- soil_data$fieldcp.K
+  grav <- soil_data$grav
   h2o.cond <- soil_data$h2o.cond
+  kair <- soil_data$kair
+  kclay <- soil_data$kclay
+  ksand <- soil_data$ksand
+  ksilt <- soil_data$ksilt
+  sand.cond <- soil_data$sand.cond
+  sand.hcap <- soil_data$sand.hcap
+  silt.cond <- soil_data$silt.cond
+  silt.hcap <- soil_data$silt.hcap
+  soil.name <- soil_data$soil.name
+  soilcp.MPa <- soil_data$soilcp.MPa
+  soilwp.MPa <- soil_data$soilwp.MPa
   texture <- soil_data$texture
+  xclay.def <- soil_data$xclay.def
+  xsand.def <- soil_data$xsand.def
   
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
