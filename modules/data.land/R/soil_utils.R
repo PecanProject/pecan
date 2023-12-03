@@ -144,7 +144,8 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
       10.^(-0.60 
            + 1.26*mysoil$fraction_of_sand_in_soil[z]
            - 0.64*mysoil$fraction_of_clay_in_soil[z]),
-                                                                                    "inch/hour","meters/second") 
+      "inch/hour",
+      "meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
     mysoil$volume_fraction_of_water_in_soil_at_saturation[z]  <- (50.5 - 14.2*mysoil$fraction_of_sand_in_soil[z] - 3.7*mysoil$fraction_of_clay_in_soil[z]) / 100.
