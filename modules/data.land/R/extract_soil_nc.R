@@ -142,7 +142,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     # estimating the proportion of areas for those mukeys which are modeled
     mukey_area <- mukey_area %>%
       dplyr::filter(mukeys %in% simulated.soil.props$mukey) %>%
-      dplyr::mutate(Area=mukey_area$Area/sum(mukey_area$Area))
+      dplyr::mutate(Area=.data$Area/sum(.data$Area))
     
     #--- Mixing the depths
     soil.profiles<-simulated.soil.props %>% 
