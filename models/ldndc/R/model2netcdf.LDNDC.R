@@ -49,14 +49,17 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     harvest <- subset(read.csv(file.path(output_dir, "report-harvest.txt"), header = T, sep ="\t"),
                       select = c("datetime", "dC_fru_export.kgCha.1.", "dC_fol_export.kgCha.1.", "dC_frt_export.kgCha.1.",
                                  "dC_lst_above_export.kgCha.1.", "dC_lst_below_export.kgCha.1.", "dC_dst_above_export.kgCha.1.",
-                                 "dC_dst_below_export.kgCha.1.", "dC_straw_export.kgCha.1.")) %>%
-      dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
+                                 "dC_dst_below_export.kgCha.1.", "dC_straw_export.kgCha.1."))
+    harvest$total <- rowSums(harvest[,-1])
+    harvest <- harvest[,c("datetime", "total")]
     
     # Cut
     cut <- subset(read.csv(paste(output_dir, "report-cut.txt", sep = "/"), header = T, sep ="\t"),
                       select = c("datetime", "dC_fru_export.kgCha.1.", "dC_fol_export.kgCha.1.", "dC_dfol_export.kgCha.1.",
-                                 "dC_lst_export.kgCha.1.", "dC_dst_export.kgCha.1.", "dC_frt_export.kgCha.1.")) %>%
-      dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
+                                 "dC_lst_export.kgCha.1.", "dC_dst_export.kgCha.1.", "dC_frt_export.kgCha.1."))
+    
+    cut$total <- rowSums(cut[,-1])
+    cut <- cut[,c("datetime", "total")]
     
   } else{
     PEcAn.logger::logger.severe("Subdaily output files not found, check the configurations for the LDNDC runs")
@@ -69,11 +72,11 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   
   
   # Combine harvest and cut as one event
-  harvest <- rbind(harvest, cut) %>% dplyr::group_by(datetime) %>% dplyr::summarise(harvest_carbon_flux = sum(total)/10000) %>%
+  harvest <- rbind(harvest, cut) %>% dplyr::group_by(.data$datetime) %>% dplyr::summarise(harvest_carbon_flux = sum(.data$total)/10000) %>%
     as.data.frame()
   
   # Temporary solution to get "no visible binding" note off from the variables: 'Date', 'Year' and 'Day'
-  Date <- Year <- Day <- NULL
+  Date <- Year <- Day <- Step <- NULL
   
   ## Merge subdaily-files
   ldndc.raw.out <- merge(physiology, soilchemistry, by = 'datetime', all = TRUE)
@@ -85,10 +88,10 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra line in output
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
-    dplyr::select(Year, Day, Step, lai, dC_maintenance_resp.kgCm.2., dC_transport_resp.kgCm.2.,
-                  dC_growth_resp.kgCm.2., dC_co2_upt.kgCm.2., sC_co2_hetero.kgCm.2.,
-                  DW_below.kgDWm.2., DW_above.kgDWm.2., soilwater_10cm...,
-                  soilwater_30cm..., harvest_carbon_flux)
+    dplyr::select(Year, Day, Step, .data$lai, .data$dC_maintenance_resp.kgCm.2., .data$dC_transport_resp.kgCm.2.,
+                  .data$dC_growth_resp.kgCm.2., .data$dC_co2_upt.kgCm.2., .data$sC_co2_hetero.kgCm.2.,
+                  .data$DW_below.kgDWm.2., .data$DW_above.kgDWm.2., .data$soilwater_10cm...,
+                  .data$soilwater_30cm..., .data$harvest_carbon_flux)
   
   
   
