@@ -437,7 +437,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     #43 DIAMMAX (m) - stem_diameter (cm)
     if ("stem_diameter" %in% pft.names) {
       b.2 <- paste(b.2, paste0("\t\t\t\t<par name='DIAMMAX' value='",
-                               udunits2::ud.convert(
+                               PEcAn.utils::ud_convert(
                                  pft.traits[which(pft.names == "stem_diameter")], "m", "cm"
                                ),"' /> \n"), collapse="")
     }
@@ -1837,7 +1837,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     # Initial biomass in the field
     if(any(grepl("@InitialBiomass@", eventsfile))){
       if ("AGB" %in% names(soil_IC_list$vals)) {
-        initialbiomass <- round( ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1"), 1 )
+        initialbiomass <- round( PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["AGB"])[[1]], "kg m-2", "kg ha-1"), 1 )
       }
       else{
         initialbiomass <- 100
@@ -1930,7 +1930,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         ## Check which values are found from the soil netcdf file
         if("soil_bulk_density" %in% names(soil_IC_list$vals)){
           # Bulk density in a soil
-          bd <- ud_convert(unlist(soil_IC_list$vals["soil_bulk_density"])[[depth_level]], "kg m-3", "kg dm-3")
+          bd <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_bulk_density"])[[depth_level]], "kg m-3", "kg dm-3")
           soil_layer_values <- ifelse(!is.na(bd), paste0(soil_layer_values, paste0("bd='", bd, "' ")), soil_layer_values)
         }
         
