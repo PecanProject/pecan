@@ -11,6 +11,8 @@ on:
 
   pull_request:
 
+  merge_group:
+
   issue_comment:
     types:
       - created
@@ -36,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     services:
@@ -87,8 +89,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        package: [check_base, check_modules, check_models]
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     env:
@@ -128,11 +131,13 @@ jobs:
       run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
 
     # run PEcAn checks
+    # The package names of base, modules, and models are passed as matrix variables to avoid repeatability of code
     - name: check
-      run: make -j1 check
+      run: make -j1 ${{ matrix.package }}
       env:
         REBUILD_DOCS: "FALSE"
         RUN_TESTS: "FALSE"
+
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
 
@@ -150,7 +155,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
-          - "4.0"
+          - "4.2"
           - "4.1"
 
     services:

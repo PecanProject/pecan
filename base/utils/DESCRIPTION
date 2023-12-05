@@ -39,6 +39,7 @@ Imports:
     magrittr,
     ncdf4 (>= 1.15),
     PEcAn.logger,
+    purrr,
     rlang,
     stringi,
     units
@@ -47,15 +48,15 @@ Suggests:
     data.table,
     ggplot2,
     MASS,
+    mockery,
     randtoolbox,
-    raster,
     rjags,
-    sp,
     testthat (>= 2.0.0),
+    withr,
     xtable
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

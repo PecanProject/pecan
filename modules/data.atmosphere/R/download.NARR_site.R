@@ -19,6 +19,7 @@
 #'
 #'
 #' @export
+#' @importFrom rlang .data
 #'
 #' @author Alexey Shiklomanov
 download.NARR_site <- function(outfolder,
@@ -43,7 +44,7 @@ download.NARR_site <- function(outfolder,
   date_limits_chr <- strftime(range(narr_data$datetime), "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   narr_byyear <- narr_data %>%
-    dplyr::mutate(year = lubridate::year(datetime)) %>%
+    dplyr::mutate(year = lubridate::year(.data$datetime)) %>%
     dplyr::group_by(.data$year) %>%
     tidyr::nest()
 
@@ -76,7 +77,7 @@ download.NARR_site <- function(outfolder,
       data_nc = purrr::map2(.data$data, .data$file, prepare_narr_year, lat = lat, lon = lon)
     )
 
-  results <- dplyr::select(result_full, -.data$data)
+  results <- dplyr::select(result_full, -"data")
   return(invisible(results))
 } # download.NARR_site
 
@@ -208,7 +209,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   sfc_df <- generate_narr_url(dates, FALSE)
 
   # Load dimensions, etc. from first netCDF file
-  nc1 <- robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
+  nc1 <- PEcAn.utils::robustly(ncdf4::nc_open, n = 20, timeout = 0.5)(flx_df$url[1])
   on.exit(ncdf4::nc_close(nc1), add = TRUE)
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
@@ -235,7 +236,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
         .packages = c("PEcAn.data.atmosphere", "magrittr"),
         .export = c("get_narr_url", "robustly")
       ),
-        robustly(get_narr_url)(url, xy = xy, flx = flx)
+        PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)
     )
     flx_data_raw <- dplyr::filter(get_dfs, .data$flx)
     sfc_data_raw <- dplyr::filter(get_dfs, !.data$flx)
@@ -257,7 +258,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = TRUE,
           pb = pb
@@ -268,7 +269,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       dplyr::mutate(
         data = purrr::map(
           url,
-          robustly(get_narr_url, n = 20, timeout = 1),
+          PEcAn.utils::robustly(get_narr_url, n = 20, timeout = 1),
           xy = xy,
           flx = FALSE,
           pb = pb
@@ -276,15 +277,15 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
       )
   }
   flx_data <- post_process(flx_data_raw) %>%
-    dplyr::select(datetime, narr_flx_vars$CF_name)
+    dplyr::select("datetime", narr_flx_vars$CF_name)
   sfc_data <- post_process(sfc_data_raw) %>%
-    dplyr::select(datetime, narr_sfc_vars$CF_name)
+    dplyr::select("datetime", narr_sfc_vars$CF_name)
   met_data <- dplyr::full_join(flx_data, sfc_data, by = "datetime") %>%
-    dplyr::arrange(datetime)
+    dplyr::arrange(.data$datetime)
 
   if (drop_outside) {
     met_data <- met_data %>%
-      dplyr::filter(datetime >= start_date, datetime < (end_date + lubridate::days(1)))
+      dplyr::filter(.data$datetime >= start_date, .data$datetime < (end_date + lubridate::days(1)))
   }
 
   met_data
@@ -298,9 +299,9 @@ post_process <- function(dat) {
     tidyr::unnest(.data$data) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(datetime = .data$startdate + lubridate::dhours(.data$dhours)) %>%
-    dplyr::select(-.data$startdate, -.data$dhours) %>%
-    dplyr::select(datetime, dplyr::everything()) %>%
-    dplyr::select(-url, url)
+    dplyr::select(-"startdate", -"dhours") %>%
+    dplyr::select("datetime", dplyr::everything()) %>%
+    dplyr::select(-"url", "url")
 }
 
 #' Generate NARR url from a vector of dates
@@ -341,7 +342,7 @@ generate_narr_url <- function(dates, flx) {
       )
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(.data$startdate, .data$url)
+    dplyr::select("startdate", "url")
 }
 
 #' Assign daygroup tag for a given date
@@ -383,7 +384,7 @@ get_narr_url <- function(url, xy, flx, pb = NULL) {
   if (dhours[1] == 3) dhours <- dhours - 3
   narr_vars <- if (flx) narr_flx_vars else narr_sfc_vars
   result <- purrr::pmap(
-    narr_vars %>% dplyr::select(variable = .data$NARR_name, unit = .data$units),
+    narr_vars %>% dplyr::select(variable = "NARR_name", unit = "units"),
     read_narr_var,
     nc = nc, xy = xy, flx = flx, pb = pb
   )
@@ -464,9 +465,9 @@ latlon2narr <- function(nc, lat.in, lon.in) {
 #' @inheritParams get_NARR_thredds
 #' @return `sp::SpatialPoints` object containing transformed x and y
 #' coordinates, in km, which should match NARR coordinates
-#' @importFrom rgdal checkCRSArgs
+#' @importFrom sf st_crs
   # ^not used directly here, but needed by sp::CRS.
-  # sp lists rgdal in Suggests rather than Imports,
+  # sp lists sf in Suggests rather than Imports,
   # so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export

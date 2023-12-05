@@ -1,8 +1,6 @@
 # How to contribute
 
-Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications. 
-The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct. 
-Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment. 
+Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications.  The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct.  Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment. 
 There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
 
 ## PEcAn CORE vs Models vs Modules
@@ -25,51 +23,53 @@ If you are unsure of whether your contribution should be implemented as a model,
 
 ## Getting Started
 
-We highly recommend starting with the [downloaded VM image](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). This image comes with a copy of PEcAn preinstalled with a fully populated copy of the and BETYdb database. 
-It also has the following models preinstalled: ED, SIPNET, Linkages and DALEC. 
-Another option is to install PEcAn on your own machine, using the instructions in the [documentation](https://pecanproject.github.io/pecan-documentation/installing-pecan.html). However, be prepared for this to take a half day or so.
+We highly recommend starting with running PEcAn in Docker. This will give you a chance to familiarize yourself with PEcAn as well as getting all the pieces setup. Please check out [DEV-INTRO.md](DEV-INTRO.md) for more information.
 
-When you login into the VM you will have already a cloned copy of PEcAn however for development this needs to be switch to your forked version of PEcAn. To get this started you will need to first fork PEcAn on GitHub using the following two steps.
+At this point you will have a copy of PEcAn and you are almost ready to work on the code. The first step however is to switch the code  to your forked version of PEcAn. To get this started you will need to first fork PEcAn on GitHub using the following two steps.
 
 1. Goto the [PEcAn project](https://github.com/PecanProject/pecan) repo.
 2. Click on the Fork button in the upper right corner.
 
-At this point you will have a copy of the pecan repo in your personal space. Next steps are to setup the VM for you to work with git.
+At this point you will have a copy of the pecan repo in your personal space. Next steps are to setup your local copy to work with the forked version.
 
-Introduce your self to GIT, make sure you use an email associated with your GitHub account.
-```
+Introduce your self to GIT (if you have not done this yet), make sure you use an email associated with your GitHub account.
+```bash
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
 
 Switch pecan to your fork
-```
+```bash
 git remote set-url origin https://github.com/<your username>/pecan.git
 ```
 
-Setup pecan to be able to fetch from the master
-```
+Setup pecan to be able to fetch from the master/develop
+```bash
 git remote add upstream https://github.com/PecanProject/pecan.git
 ```
+
+## PEcAn Branches
+
+PEcAn uses two protected branches, the master branch and the develop branch. The master branch will match the official releases, but all work will be done on the develop branch. Make sure that you create branches from the develop branch. This should be the default branch in your git repository.
 
 ## Adding Features
 
 When you add a new feature always create an issue first, this allows others to comment and give you tips. It will also help us keep track of what people are adding and with new releases helps us to write new release notes and give you credit for your work.
 
-Secondly always work in a  branch, never work on the master branch. Keep your master branch in sync with the master of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
+Secondly always work in a  branch, never work on the master or develop branch. Keep your master and develop branch in sync with the master and develop of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
 
-Finally try to keep your branches focused on fixing/adding only one feature and try not fall in the trap of doing a lot of things in a  single branch. This will not only make it harder for us to process your pull request but makes it take longer before you can submit your pull request. Small pull requests are more likely to be looked at faster and pulled into the main branch faster.
+Finally try to keep your branches focused on fixing/adding only one feature and try not fall in the trap of doing a lot of things in a  single branch. This will not only make it harder for us to process your pull request but makes it take longer before you can submit your pull request. Small pull requests are more likely to be looked at faster and pulled into the develop branch faster.
 
 Here is a simplified workflow on how add a new feature:
 
 ### Get latest version
 
-Update your master (both locally and on GitHub)
+Update your develop (both locally and on GitHub)
 
 ```
 git fetch upstream
-git checkout master
-git merge upstream/master
+git checkout develop
+git merge upstream/develop
 git push
 ```
 
@@ -101,5 +101,5 @@ git push -u origin GH-issuenumber-title-of-issue
 
 - [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/master/adding-an-ecosystem-model.html)
 - [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/master/pecan-xml-configuration.html)
-- [Development help](https://pecanproject.github.io/pecan-documentation/master/overview.html)
+- [Development help](https://pecanproject.github.io/pecan-documentation/master/developer-guide.html)
 - [PEcAn Code of Conduct](https://pecanproject.github.io/pecan-documentation/master/contributor-covenant-code-of-conduct.html)

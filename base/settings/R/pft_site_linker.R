@@ -56,16 +56,18 @@ site.pft.linkage <- function(settings, site.pft.links) {
           "Since your site xml tag does NOT have a site id,",
           "we can not assign a PFT to it. The site of this site is",
           (site.setting[["run"]])$site$name)
-      }
-      # see if we can find this site id in the LUT
-      if (site.id %in% site.pft.links$site) {
-       site.pft <- site.pft.links$pft[which(site.pft.links$site %in% site.id)]
-      }
-      # if there was a pft associated with that
-      if (!is.null(site.pft)) {
-        site.setting[["run"]]$site$site.pft <- stats::setNames(
-          as.list(site.pft),
-          rep("pft.name", length(site.pft)))
+      } else {
+        # see if we can find this site id in the LUT
+        if (site.id %in% site.pft.links$site) {
+          site.pft <- site.pft.links$pft[which(site.pft.links$site %in% site.id)]
+        }
+        # if there was a pft associated with that
+        if (!is.null(site.pft)) {
+          site.setting[["run"]]$site$site.pft <- stats::setNames(
+            as.list(site.pft),
+            rep("pft.name", length(site.pft))
+          )
+        }
       }
       return(site.setting)
     })

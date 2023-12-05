@@ -276,7 +276,7 @@ load.allom <- function(object) {
       my.files <- dir(object[i], "Allom.*.Rdata", full.names = TRUE)
     }
     ## Need to add a 3rd option if the files are remotely on Dropbox
-    ## download.file(object,'foo.Rdata',method='curl') works for a single file not sure how to get the
+    ## download_file(object,'foo.Rdata',method='curl') works for a single file not sure how to get the
     ## file listing
     
     for (j in seq_along(my.files)) {

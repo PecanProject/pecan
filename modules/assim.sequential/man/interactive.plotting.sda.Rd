@@ -8,6 +8,7 @@
 \alias{post.analysis.ggplot}
 \alias{post.analysis.ggplot.violin}
 \alias{post.analysis.multisite.ggplot}
+\alias{SDA_timeseries_plot}
 \title{Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot}
 \usage{
 interactive.plotting.sda(
@@ -84,7 +85,25 @@ post.analysis.multisite.ggplot(
   ANALYSIS,
   plot.title = NULL,
   facetg = FALSE,
-  readsFF = NULL
+  readsFF = NULL,
+  Add_Map = FALSE
+)
+
+SDA_timeseries_plot(
+  ANALYSIS,
+  FORECAST,
+  obs.mean = NULL,
+  obs.cov = NULL,
+  outdir,
+  pft.path = NULL,
+  by = "site",
+  types = c("FORECAST", "ANALYSIS", "OBS"),
+  CI = c(0.025, 0.975),
+  unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb =
+    "kg/m2"),
+  style = list(general_color = c(FORECAST = "blue", ANALYSIS = "red", OBS = "black"),
+    fill_color = c(FORECAST = "yellow", ANALYSIS = "green", OBS = "grey"), title_color =
+    "red")
 )
 }
 \arguments{
@@ -92,22 +111,41 @@ post.analysis.multisite.ggplot(
 
 \item{t}{current time - int number giving the position of the current time in obs.time.}
 
-\item{obs.mean}{list of vectors of the means of observed data named by the measured date.}
+\item{obs.mean}{obs.mean}
 
-\item{obs.cov}{list of cov matrices of the observed data named by the measured date.}
+\item{obs.cov}{obs.cov}
 
 \item{obs}{list containing the mean and cov object}
 
 \item{X}{dataframe of state variables for each ensemble}
 
-\item{FORECAST}{dataframe of state variables for each ensemble}
+\item{FORECAST}{Forecast object from the sda.output.Rdata.}
 
-\item{ANALYSIS}{vector of mean of state variable after analysis}
+\item{ANALYSIS}{Analysis object from the sda.output.Rdata.}
 
 \item{plot.title}{character giving the title for post visualization ggplots}
+
+\item{Add_Map}{Bool variable decide if we want to export the GIS map of Ecoregion.}
+
+\item{outdir}{physical path where the pdf will be stored.}
+
+\item{pft.path}{Physical path of pft.csv file to allow by = pft option.}
+
+\item{by}{arrange figures by var, pft, or site.}
+
+\item{types}{data types that shown in the figure.}
+
+\item{CI}{range of confidence interval.}
+
+\item{unit}{list of unit used for y axis label.}
+
+\item{style}{color option.}
 
 \item{obs.time}{vector of dates of measurements}
 }
 \description{
 Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot
+}
+\author{
+Dongchen Zhang
 }

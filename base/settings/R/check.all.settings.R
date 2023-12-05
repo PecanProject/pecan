@@ -67,12 +67,17 @@ check.inputs <- function(settings) {
         }
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
-        id <- PEcAn.DB::dbfile.id(
-          "Input",
-          settings$run$inputs[[tag]][["path"]],
-          dbcon,
-          hostname)
-        if (!is.na(id)) {
+        #adding for to loop over ensemble member filepaths 
+        id <- list()
+        path <- settings$run$inputs[[tag]][["path"]]
+        for (j in 1:length(path)){
+          id[j] <- PEcAn.DB::dbfile.id(
+            "Input",
+            path[[j]],
+            dbcon,
+            hostname)
+        }
+        if (any(!is.na(id))) {
           settings$run$inputs[[tag]][["id"]] <- id
         }
       }
@@ -398,7 +403,7 @@ check.settings <- function(settings, force = FALSE) {
         "qsub not specified using default value :", settings$host$qsub)
     }
     if (is.null(settings$host$qsub.jobid)) {
-      settings$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      settings$host$qsub.jobid <- ".* ([0-9]+).*"
       PEcAn.logger::logger.info(
         "qsub.jobid not specified using default value :",
         settings$host$qsub.jobid)
@@ -722,6 +727,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
+      site <- NULL
       if (!is.null(dbcon)) {
         site <- PEcAn.DB::db.query(
           paste(
@@ -1143,21 +1149,22 @@ check.ensemble.settings <- function(settings) {
       PEcAn.logger::logger.severe(
        "Start year of ensemble should come before the end year of the ensemble")
     }
-  }
-  # Old version of pecan xml files which they don't have a sampling space
-  # or it's just sampling space and nothing inside it.
-  if (is.null(settings$ensemble$samplingspace)
-      || !is.list(settings$ensemble$samplingspace)) {
-    PEcAn.logger::logger.info(
-      "We are updating the ensemble tag inside the xml file.")
-    # I try to put ensemble method in older versions into the parameter space -
-    # If I fail (when no method is defined) I just set it as uniform
-    settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
-      settings$ensemble$samplingspace$parameters$method <- "uniform"
+
+    # Old version of pecan xml files which they don't have a sampling space
+    # or it's just sampling space and nothing inside it.
+    if (is.null(settings$ensemble$samplingspace)
+        || !is.list(settings$ensemble$samplingspace)) {
+      PEcAn.logger::logger.info(
+        "We are updating the ensemble tag inside the xml file.")
+      # I try to put ensemble method in older versions into the parameter space -
+      # If I fail (when no method is defined) I just set it as uniform
+      settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
+      if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+        settings$ensemble$samplingspace$parameters$method <- "uniform"
+      }
+      #putting something simple in the met
+      settings$ensemble$samplingspace$met$method <- "sampling"
     }
-    #putting something simple in the met
-    settings$ensemble$samplingspace$met$method <- "sampling"
   }
   return(settings)
 }

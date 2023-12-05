@@ -54,9 +54,9 @@ if (!$stmt->execute(array(get_userid()))) {
 $sitegroups = "";
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   if ($sitegroupid == $row['id']) {
-    $sitegroups .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
+    $sitegroups .= "<option value='{$row['id']}' selected>{$row['name']}</option>\n";
   } else {
-    $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
+    $sitegroups .= "<option value='{$row['id']}'>{$row['name']}</option>\n";    
   }
 }
 if ($sitegroupid == "-1") {

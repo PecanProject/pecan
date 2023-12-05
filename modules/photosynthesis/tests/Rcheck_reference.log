@@ -19,13 +19,8 @@
 * checking whether package ‘PEcAn.photosynthesis’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Authors@R field gives no person with name and roles.
-Authors@R field gives no person with maintainer role, valid email
-address and non-empty name.
-* checking top-level files ... NOTE
-Non-standard file/directory found at top level:
-  ‘code’
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -46,34 +41,7 @@ Package in Depends field not imported from: ‘rjags’
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-ciEnvelope: no visible global function definition for ‘polygon’
-estimate_mode: no visible global function definition for ‘density’
-fitA: no visible global function definition for ‘jags.model’
-fitA: no visible global function definition for ‘coda.samples’
-Licor_QC: no visible global function definition for ‘plot’
-Licor_QC: no visible global function definition for ‘points’
-Licor_QC: no visible global function definition for ‘text’
-Licor_QC: no visible global function definition for ‘legend’
-Licor_QC: no visible global function definition for ‘identify’
-mat2mcmc.list: no visible global function definition for ‘as.mcmc’
-mat2mcmc.list: no visible global function definition for ‘as.mcmc.list’
-plot_photo: no visible binding for global variable ‘quantile’
-plot_photo: no visible global function definition for ‘plot’
-plot_photo: no visible global function definition for ‘lines’
-plot_photo: no visible global function definition for ‘points’
-plot_photo: no visible global function definition for ‘legend’
-read_Licor: no visible global function definition for ‘tail’
-read_Licor: no visible global function definition for ‘read.table’
-Undefined global functions or variables:
-  as.mcmc as.mcmc.list coda.samples density identify jags.model legend
-  lines plot points polygon quantile read.table tail text
-Consider adding
-  importFrom("graphics", "identify", "legend", "lines", "plot", "points",
-             "polygon", "text")
-  importFrom("stats", "density", "quantile")
-  importFrom("utils", "read.table", "tail")
-to your NAMESPACE file.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -97,10 +65,7 @@ See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘ResponseCurves.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... NONE
 * DONE
 Status: 2 WARNINGs, 4 NOTEs

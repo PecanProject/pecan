@@ -9,20 +9,25 @@ Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
 remotes::install_github(c(
+'adokter/suntools',
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
-'r-lib/testthat@v3.0.4',
-'r-lib/vdiffr@v1.0.2',
+'r-lib/mockery@v0.4.3',
+'r-lib/testthat@v3.1.6',
+'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
-'ropensci/nneo'
+'ropensci/nneo',
+'rstudio/rmarkdown@v2.20'
 ), lib = rlib)
 
 # install all packages (depends, imports, suggests)
 wanted <- c(
 'abind',
 'amerifluxr',
+'arrow',
+'assertthat',
 'BayesianTools',
 'BioCro',
 'bit64',
@@ -37,9 +42,11 @@ wanted <- c(
 'dbplyr',
 'devtools',
 'doParallel',
+'doSNOW',
 'dplR',
 'dplyr',
 'ellipse',
+'emdbook',
 'foreach',
 'fs',
 'furrr',
@@ -49,6 +56,7 @@ wanted <- c(
 'ggmap',
 'ggmcmc',
 'ggplot2',
+'ggpubr',
 'ggrepel',
 'glue',
 'graphics',
@@ -69,7 +77,6 @@ wanted <- c(
 'magic',
 'magrittr',
 'maps',
-'maptools',
 'markdown',
 'MASS',
 'Matrix',
@@ -106,10 +113,10 @@ wanted <- c(
 'reshape',
 'reshape2',
 'reticulate',
-'rgdal',
 'rjags',
 'rjson',
 'rlang',
+'rlist',
 'rmarkdown',
 'RPostgres',
 'RPostgreSQL',
@@ -122,6 +129,7 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'suntools',
 'swfscMisc',
 'terra',
 'testthat',

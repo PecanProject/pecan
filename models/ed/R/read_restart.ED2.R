@@ -1,7 +1,12 @@
 #' @title State data assimilation read-restart for ED2
 #'
 #' @author Alexey Shiklomanov, Istem Fer
-#' @inheritParams PEcAn.ModelName::read_restart.ModelName
+#' @param outdir Output directory
+#' @param runid Run ID
+#' @param stop.time Year that is being read
+#' @param settings PEcAn settings object
+#' @param var.names Variable names to be extracted
+#' @param params Any parameters required for state calculations
 #' @examples
 #' \dontrun{
 #'   outdir <- "~/sda-hackathon/outputs"

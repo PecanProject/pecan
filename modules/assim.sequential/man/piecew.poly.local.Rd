@@ -7,11 +7,11 @@
 piecew.poly.local(Pf, distance.mat, scalef = 2)
 }
 \arguments{
-\item{Pf}{Forecast error coveriance matrix}
+\item{Pf}{Forecast error covariance matrix}
 
 \item{distance.mat}{is matrix of distances between sites.}
 
-\item{scalef}{scalef is a numeric value that requires tunning and it controls the shape of the corrolation function}
+\item{scalef}{scalef is a numeric value that requires tuning and it controls the shape of the corrolation function}
 }
 \value{
 It returns a localized covariance matrix by taking a Schur product between Pf and a corrolation function

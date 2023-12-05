@@ -29,6 +29,8 @@ jobs:
         R:
           - "4.0"
           - "4.1"
+          - "4.2"
+          - "4.3"
           - "devel"
 
     steps:
@@ -37,6 +39,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           set-safe-directory: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker
+          buildkitd-flags: --debug
+          install: true
 
       # calculate some variables that are used later
       - name: github branch
@@ -59,7 +68,7 @@ jobs:
       # this will publish to the actor (person) github packages
       - name: Publish to GitHub
         if: env.TAG != ''
-        uses: elgohr/Publish-Docker-Github-Action@2.22
+        uses: elgohr/Publish-Docker-Github-Action@v5
         env:
           R_VERSION: ${{ matrix.R  }}
         with:
@@ -74,7 +83,7 @@ jobs:
       # this will publish to the clowder dockerhub repo
       - name: Publish to Docker Hub
         if: env.TAG != ''
-        uses: elgohr/Publish-Docker-Github-Action@2.18
+        uses: elgohr/Publish-Docker-Github-Action@v5
         env:
           R_VERSION: ${{ matrix.R  }}
         with:

@@ -1,0 +1,153 @@
+---
+title: "Initial Ensemble Forecast, no SDA"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(terra)
+library(purrr)
+```
+
+## Simple ensemble run, based on workflow.R
+```{r}
+library("PEcAn.all")
+settings = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/pecan.RDS")
+settings <- PEcAn.settings::prepare.settings(settings, force = FALSE)
+
+settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
+#runModule.get.results(settings)
+#runModule.run.ensemble.analysis(settings, TRUE)
+```
+
+## process forecast output into EFI long csv format
+```{r}
+source("~/pecan/modules/assim.sequential/inst/hf_landscape/PEcAn2EFI.R")
+
+out = data.table::rbindlist(runModule.PEcAn2EFI(settings))
+saveRDS(out,"out.RDS")
+
+```
+
+
+## pull together, weight, and visualize outputs
+```{r}
+if(!exists("out")){
+  out = readRDS("out.RDS")
+}
+
+#site.ids <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('id') %>% unlist() %>% as.character()
+
+
+## plot example time-series
+sitets <- out %>% filter(site_id == settings[[1]]$run$site$id) %>% 
+  dplyr::select(NPP,time_bounds) %>%
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day) %>% 
+  dplyr::summarise(mu = mean(NPP),lci = quantile(NPP,0.025),uci=quantile(NPP,0.975))
+  
+ggplot2::ggplot(sitets, aes(x = day, y = mu)) + 
+  geom_line(col='black') + 
+  geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.1) +
+  labs(x="time",y="NPP")
+
+cumNPP <- out %>% filter(site_id == settings[[1]]$run$site$id) %>%
+  dplyr::select(NPP,time_bounds,parameter) %>%  ## first, calculate cumulative sum for each ensemble member
+  dplyr::group_by(parameter) %>%
+  dplyr::mutate(cumNPP = cumsum(NPP)) %>%
+  dplyr::ungroup() %>% dplyr::select(-parameter) %>% ## drop ensemble dimension, then calculate daily mean & CI
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day) %>% 
+  dplyr::summarise(mu = mean(cumNPP),lci = quantile(cumNPP,0.025),uci=quantile(cumNPP,0.975))
+
+ggplot2::ggplot(cumNPP, aes(x = day, y = mu)) + 
+  geom_line(col='black') + 
+  geom_ribbon(aes(ymin = lci, ymax = uci), alpha = 0.1) +
+  labs(x="time",y="NPP")
+```
+
+## spatial visualizations
+```{r}
+tower_lonlat = data.frame(lon=-72.17265,lat=42.53691)
+tower_utm    = c(732183.98,4713266.18)
+if(!exists("patches")){
+  patches = read.csv("patches.csv")
+}
+if(!exists("pmap")){
+  patchMap <- terra::rast("patches.tif")
+  pmap <- project(patchMap, "+proj=longlat",method="near")
+  plot(pmap)
+  points(tower_lonlat[1],tower_lonlat[2])
+  tow = extract(pmap,tower_lonlat)
+}
+
+## calculate daily means
+dm <- out %>% dplyr::select(NPP,time_bounds,site_id) %>%
+  dplyr::mutate(day = lubridate::round_date(time_bounds,"day")) %>% 
+  dplyr::group_by(day,site_id) %>% 
+  dplyr::summarise(mu = mean(NPP),lci = quantile(NPP,0.025),uci=quantile(NPP,0.975),.groups = "drop")
+
+## plot example maps of mean and uncertainties
+foo = dm[dm$day == as.Date("2016-07-04"),]
+nmap = pmap
+for(i in seq_len(nrow(patches))){
+  nmap[pmap == i] = foo$mu[i]
+}
+plot(nmap)
+
+## animated map
+gen_anim <- function(adir = NULL) {
+  days = sort(unique(dm$day))
+  rng = range(dm$mu)
+  for(t in seq_along(days)){  # for each time point
+    foo = dm[dm$day == days[t],]
+    tc = as.character(days[t])
+    nmap = pmap
+    for(i in seq_len(nrow(patches))){
+      nmap[pmap == i] = foo$mu[i]
+    }
+    if(!is.null(adir)) { 
+      png(file.path(adir,paste0(tc,".png"))) 
+      print(tc)
+      }
+    plot(nmap,main=tc,range=rng)
+    if(!is.null(adir)) {dev.off()} 
+  }
+}
+
+adir = file.path(settings$outdir,"anim")
+dir.create(adir)
+gen_anim(adir)
+
+## run on command line
+# convert -delay 10 -loop 0 *.png myimage.gif
+
+if(FALSE){
+library("animation")
+ani.options(interval = 0.2)     # 0.2s interval between frames
+saveHTML(gen_anim(),            # run the main function
+        autoplay = FALSE,      # do not play on load
+        loop = FALSE,          # do not loop
+        verbose = FALSE,       # no verbose
+        outdir = ".",          # save to current dir
+        single.opts = "'controls': ['first', 'previous',
+                                    'play', 'next', 'last',
+                                     'loop', 'speed'],
+                                     'delayMin': 0",
+        htmlfile = "hf_anim.html")  # save filename
+}
+```
+
+
+
+## landscape-scale weighted time-series
+```{r}
+
+
+```
+
