@@ -32,30 +32,30 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     PEcAn.logger::logger.info("Files with sub-daily timesteps found: ", Subdailyfiles)
     
     # Physiology data: LAI, Photosynthesis rate
-    physiology <- subset(read.csv(paste(output_dir, "physiology-subdaily.txt", sep = "/"), header = T, sep = "\t"),
-                         select = c(datetime, species, lai, dC_co2_upt.kgCm.2., dC_maintenance_resp.kgCm.2.,
-                                    dC_transport_resp.kgCm.2., dC_growth_resp.kgCm.2., DW_below.kgDWm.2., DW_above.kgDWm.2.))
+    physiology <- subset(read.csv(file.path(output_dir, "physiology-subdaily.txt"), header = T, sep = "\t"),
+                         select = c("datetime", "species", "lai", "dC_co2_upt.kgCm.2.", "dC_maintenance_resp.kgCm.2.",
+                                    "dC_transport_resp.kgCm.2.", "dC_growth_resp.kgCm.2.", "DW_below.kgDWm.2.", "DW_above.kgDWm.2."))
     
     
-    soilchemistry <- subset(read.csv(paste(output_dir, "soilchemistry-subdaily.txt", sep = "/"), header = T, sep ="\t"),
-                            select = c(datetime, sC_co2_hetero.kgCm.2.))
+    soilchemistry <- subset(read.csv(file.path(output_dir, "soilchemistry-subdaily.txt"), header = T, sep ="\t"),
+                            select = c("datetime", "sC_co2_hetero.kgCm.2."))
     
     # Soil moisture information
-    watercycle <- subset(read.csv(paste(output_dir, "watercycle-subdaily.txt", sep = "/"), header = T, sep ="\t"),
-                         select = c(datetime, soilwater_10cm..., soilwater_30cm...))
+    watercycle <- subset(read.csv(file.path(output_dir, "watercycle-subdaily.txt"), header = T, sep ="\t"),
+                         select = c("datetime", "soilwater_10cm...", "soilwater_30cm..."))
     
     
     # Harvest
-    harvest <- subset(read.csv(paste(output_dir, "report-harvest.txt", sep = "/"), header = T, sep ="\t"),
-                      select = c(datetime, dC_fru_export.kgCha.1., dC_fol_export.kgCha.1., dC_frt_export.kgCha.1.,
-                                 dC_lst_above_export.kgCha.1., dC_lst_below_export.kgCha.1., dC_dst_above_export.kgCha.1.,
-                                 dC_dst_below_export.kgCha.1., dC_straw_export.kgCha.1.)) %>%
+    harvest <- subset(read.csv(file.path(output_dir, "report-harvest.txt"), header = T, sep ="\t"),
+                      select = c("datetime", "dC_fru_export.kgCha.1.", "dC_fol_export.kgCha.1.", "dC_frt_export.kgCha.1.",
+                                 "dC_lst_above_export.kgCha.1.", "dC_lst_below_export.kgCha.1.", "dC_dst_above_export.kgCha.1.",
+                                 "dC_dst_below_export.kgCha.1.", "dC_straw_export.kgCha.1.")) %>%
       dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
     
     # Cut
     cut <- subset(read.csv(paste(output_dir, "report-cut.txt", sep = "/"), header = T, sep ="\t"),
-                      select = c(datetime, dC_fru_export.kgCha.1., dC_fol_export.kgCha.1., dC_dfol_export.kgCha.1.,
-                                 dC_lst_export.kgCha.1., dC_dst_export.kgCha.1., dC_frt_export.kgCha.1.)) %>%
+                      select = c("datetime", "dC_fru_export.kgCha.1.", "dC_fol_export.kgCha.1.", "dC_dfol_export.kgCha.1.",
+                                 "dC_lst_export.kgCha.1.", "dC_dst_export.kgCha.1.", "dC_frt_export.kgCha.1.")) %>%
       dplyr::transmute(datetime, total = rowSums(dplyr::select(., -datetime)))
     
   } else{
@@ -82,7 +82,7 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   
   ldndc.out <- ldndc.raw.out %>%
     dplyr:: mutate(Date = format(as.POSIXct(.data$datetime, format = "%Y-%m-%d")), .keep = "unused") %>%
-    dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra observation
+    dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra line in output
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
     dplyr::select(Year, Day, Step, lai, dC_maintenance_resp.kgCm.2., dC_transport_resp.kgCm.2.,
