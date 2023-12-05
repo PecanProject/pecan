@@ -18,11 +18,6 @@
 write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
 
   
-  # To enforce minimum version to be used in simulations.
-  # Should not be necessary, but informs users who want to
-  # inspect input files closer (or do simulatons on different
-  # environment. Set based on current model version (1.33)
-  # and probably no reason to change.
   MinPackReq <- "1.35" # Current version 1.35
   
   
