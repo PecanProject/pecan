@@ -123,8 +123,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@METPATH@", MetPath, jobsh)
   
-  # LDNDC binaries in this server are located here. Check from the LDNDC userquide to fix this path accordingly.
-  jobsh <- gsub("@BINARY@", paste(settings$model$binary, " -c /data/models/LDNDC_Latest/.ldndc/ldndc.conf ",paste0(rundir, "/project.ldndc")), jobsh)
+  # LDNDC binaries in this server are located here. This binary also points to model own configurations.
+  jobsh <- gsub("@BINARY@", paste(settings$model$binary, paste0(rundir, "/project.ldndc")), jobsh)
   
   if(is.null(settings$model$delete.raw)){
     settings$model$delete.raw <- FALSE
@@ -1776,7 +1776,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
     
     
     
-    # Assining pft values
+    # Assigning pft values
     species_par_values[names(trait.values)[pft]] <- b.2
     
     b.2 <- ""
