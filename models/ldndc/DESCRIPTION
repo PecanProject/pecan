@@ -7,7 +7,6 @@ Authors@R: c(person("Henri", "Kajasilta", role = c("aut", "cre"),
                     email = "henri.kajasilta@fmi.fi"))
 Description: This module provides functions to link the (LDNDC) to PEcAn.
 Imports:
-    PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
     dplyr,
@@ -16,7 +15,8 @@ Imports:
     data.table,
     PEcAn.remote,
     PEcAn.data.atmosphere,
-    rlang
+    rlang,
+    PEcAn.data.land
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: LDNDC
@@ -26,4 +26,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
