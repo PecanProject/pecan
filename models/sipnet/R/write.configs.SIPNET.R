@@ -98,9 +98,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
   
-  gsub("@CPCMD@", cpcmd, jobsh)
-  gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
-  gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
+  jobsh <- gsub("@CPCMD@", cpcmd, jobsh)
+  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
+  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
   
   if(is.null(settings$state.data.assimilation$NC.Prefix)){
     settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
