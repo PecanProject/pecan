@@ -427,6 +427,7 @@ sda.enkf.multisite <- function(settings,
         
         #if it's a rabbitmq job sumbmission, we will first copy and paste the whole run folder within the SDA to the remote host.
         if (!is.null(settings$host$rabbitmq)) {
+          settings$host$rabbitmq$prefix <- paste0(obs.year, ".nc")
           cp2cmd <- gsub("@RUNDIR@", settings$host$rundir, settings$host$rabbitmq$cp2cmd)
           try(system(cp2cmd, intern = TRUE))
         }
