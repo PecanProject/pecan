@@ -43,7 +43,8 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 @HOST_TEARDOWN@
 
 #copy files back.
-@CPCMD@
+@CPRUNCMD@
+@CPOUTCMD@
 
 #delete files in the run and out folder.
 @RMRUNDIRCMD@
