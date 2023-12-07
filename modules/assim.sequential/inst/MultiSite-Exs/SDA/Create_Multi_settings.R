@@ -78,6 +78,7 @@ if (host.flag == "remote") {
   host = structure(list(
     name = "localhost",
     rabbitmq = structure(list(
+      prefix = NULL,
       uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
       queue = "SIPNET_r136",
       cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
