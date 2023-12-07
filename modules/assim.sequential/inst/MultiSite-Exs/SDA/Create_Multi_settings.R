@@ -81,7 +81,7 @@ if (host.flag == "remote") {
       uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
       queue = "SIPNET_r136",
       cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
-      cpfcmd = "/data/bin/oc rsync @OUTDIR@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
+      cpfcmd = "/data/bin/oc rsync @OUTFOLDER@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
     )),
     folder = SDA_out_dir,
     outdir = SDA_out_dir,
