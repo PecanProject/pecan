@@ -70,10 +70,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   # create rabbitmq specific setup.
-  cpcmd <- rmoutdircmd <- rmrundircmd <- ""
+  cpruncmd <- cpoutcmd <- rmoutdircmd <- rmrundircmd <- ""
   if (!is.null(settings$host$rabbitmq)) {
     #rsync cmd from remote to local host.
-    cpcmd <- gsub("@OUTDIR@", outdir, settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTDIR@", settings$host$rundir, settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTFOLDER@", rundir, cpruncmd)
+    
+    cpoutcmd <- gsub("@OUTDIR@", settings$host$outdir, settings$host$rabbitmq$cpfcmd)
+    cpoutcmd <- gsub("@OUTFOLDER@", outdir, cpoutcmd)
     
     #delete files within rundir and outdir.
     rmoutdircmd <- paste("rm", file.path(outdir, "*"))
@@ -98,7 +102,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
   
-  jobsh <- gsub("@CPCMD@", cpcmd, jobsh)
+  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
   jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
   jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
   
