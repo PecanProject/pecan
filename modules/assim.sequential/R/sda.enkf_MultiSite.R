@@ -439,7 +439,11 @@ sda.enkf.multisite <- function(settings,
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
         if(control$parallel_qsub){
-          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
+          if (is.null(control$jobs.per.file)) {
+            PEcAn.remote::qsub_parallel(settings, prefix = paste0(obs.year, ".nc"))
+          } else {
+            PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
+          }
         }else{
           PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         }
