@@ -119,14 +119,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       out <- PEcAn.remote::start_rabbitmq(
         folder, settings$host$rabbitmq$uri, settings$host$rabbitmq$queue)
       PEcAn.logger::logger.debug("JOB.SH submit status:", out)
-      
-      #if we want to detect the job completion by nc files.
-      if (!is.null(settings$host$rabbitmq$prefix)) {
-        jobids[run] <- out
-      } else {
-        #if we want to detect the job completion by rabbitmq.out files.
-        jobids[run] <- folder
-      }
+      jobids[run] <- folder
       
     } else if (is_modellauncher) {
       # set up launcher script if we use modellauncher
@@ -298,13 +291,8 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       # check to see if job is done
       job_finished <- FALSE
       if (is_rabbitmq) {
-        if (!is.null(settings$host$rabbitmq$prefix)) {
-          job_finished <- 
-            file.exists(file.path(jobids[run], settings$host$rabbitmq$prefix))
-        } else {
-          job_finished <- 
-            file.exists(file.path(jobids[run], "rabbitmq.out"))
-        }
+        job_finished <- 
+          file.exists(file.path(jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- PEcAn.remote::qsub_run_finished(
           run = jobids[run],
@@ -313,7 +301,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-      
+        
         # TODO check output log
         if (is_rabbitmq) {
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))
