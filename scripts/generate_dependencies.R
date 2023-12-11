@@ -142,8 +142,7 @@ uniq_deps <- deps |>
   dplyr::group_by(package) |>
   dplyr::summarize(
     version = condense_version_requirements(version),
-    .groups = "drop") |>
-  dplyr::arrange(package)
+    .groups = "drop")
 
 # Deps without any restriction on version installed.
 # We'll install these with one plain old `install.packages()` call.
@@ -159,7 +158,8 @@ versioned_dep_install_calls <- uniq_deps[uniq_deps$version != "*",] |>
       "remotes::install_version(",
       shQuote(package), ", ", shQuote(version),
       ", dependencies = TRUE, upgrade = FALSE)")) |>
-  dplyr::pull(inst_call)
+  dplyr::pull(inst_call) |>
+  sort()
 
 
 
