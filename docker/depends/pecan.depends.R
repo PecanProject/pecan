@@ -14,12 +14,8 @@ remotes::install_github(c(
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
-'r-lib/mockery@v0.4.3',
-'r-lib/testthat@v3.1.6',
-'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
-'ropensci/nneo',
-'rstudio/rmarkdown@v2.20'
+'ropensci/nneo'
 ), lib = rlib)
 
 # install package listed as Depends, Imports, Suggests of any PEcAn package
@@ -155,7 +151,7 @@ remotes::install_version('coda', '>= 0.18', dependencies = TRUE, upgrade = FALSE
 remotes::install_version('geonames', '> 0.998', dependencies = TRUE, upgrade = FALSE)
 remotes::install_version('lubridate', '>= 1.7.0', dependencies = TRUE, upgrade = FALSE)
 remotes::install_version('magic', '>= 1.5.0', dependencies = TRUE, upgrade = FALSE)
-remotes::install_version('mockery', '>= 0.3.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('mockery', '>= 0.4.3', dependencies = TRUE, upgrade = FALSE)
 remotes::install_version('ncdf4', '>= 1.15', dependencies = TRUE, upgrade = FALSE)
 remotes::install_version('plyr', '>= 1.8.4', dependencies = TRUE, upgrade = FALSE)
 remotes::install_version('purrr', '>= 0.2.3', dependencies = TRUE, upgrade = FALSE)
