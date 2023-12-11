@@ -22,9 +22,9 @@ remotes::install_github(c(
 'rstudio/rmarkdown@v2.20'
 ), lib = rlib)
 
-# install all packages (depends, imports, suggests)
+# install package listed as Depends, Imports, Suggests of any PEcAn package
+#   that do not have a stated version limit
 wanted <- c(
-'abind',
 'amerifluxr',
 'arrow',
 'assertthat',
@@ -32,7 +32,6 @@ wanted <- c(
 'BioCro',
 'bit64',
 'BrownDog',
-'coda',
 'corrplot',
 'curl',
 'data.table',
@@ -51,7 +50,6 @@ wanted <- c(
 'fs',
 'furrr',
 'future',
-'geonames',
 'getPass',
 'ggmap',
 'ggmcmc',
@@ -72,9 +70,7 @@ wanted <- c(
 'lattice',
 'linkages',
 'lqmm',
-'lubridate',
 'Maeswrap',
-'magic',
 'magrittr',
 'maps',
 'markdown',
@@ -86,11 +82,8 @@ wanted <- c(
 'mgcv',
 'minpack.lm',
 'mlegp',
-'mockery',
-'MODISTools',
 'mvbutils',
 'mvtnorm',
-'ncdf4',
 'neonstore',
 'neonUtilities',
 'nimble',
@@ -98,11 +91,9 @@ wanted <- c(
 'optparse',
 'parallel',
 'plotrix',
-'plyr',
 'png',
 'prodlim',
 'progress',
-'purrr',
 'pwr',
 'R.utils',
 'randtoolbox',
@@ -111,13 +102,10 @@ wanted <- c(
 'REddyProc',
 'redland',
 'reshape',
-'reshape2',
 'reticulate',
 'rjags',
 'rjson',
-'rlang',
 'rlist',
-'rmarkdown',
 'RPostgres',
 'RPostgreSQL',
 'Rpreles',
@@ -128,11 +116,9 @@ wanted <- c(
 'sp',
 'stats',
 'stringi',
-'stringr',
 'suntools',
 'swfscMisc',
 'terra',
-'testthat',
 'tibble',
 'tictoc',
 'tidyr',
@@ -140,17 +126,42 @@ wanted <- c(
 'tidyverse',
 'tools',
 'traits',
-'TruncatedNormal',
 'truncnorm',
 'units',
 'urltools',
 'utils',
-'vdiffr',
 'withr',
-'XML',
 'xtable',
 'xts',
 'zoo'
 )
 missing <- wanted[!(wanted %in% installed.packages()[,'Package'])]
 install.packages(missing, lib = rlib)
+
+# Install packages listed as Depends, Imports, Suggests
+#    that list a minimum version.
+# When the minimum is not satisfied in the fixed-date CRAN snapshot
+#    used by our Docker images, we pull it in from an up-to-date mirror.
+# (Assumes our CRAN uses the same URL scheme as Posit package manager)
+options(repos = c(
+    getOption('repos'),
+    sub(r'(\d{4}-\d{2}-\d{2})', 'latest', getOption('repos'))
+))
+remotes::install_version('MODISTools', '>= 1.1.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('TruncatedNormal', '>= 2.2', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('XML', '>= 3.98-1.4', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('abind', '>= 1.4.5', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('coda', '>= 0.18', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('geonames', '> 0.998', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('lubridate', '>= 1.7.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('magic', '>= 1.5.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('mockery', '>= 0.3.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('ncdf4', '>= 1.15', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('plyr', '>= 1.8.4', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('purrr', '>= 0.2.3', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('reshape2', '>= 1.4.2', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('rlang', '>= 0.2.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('rmarkdown', '>= 2.19', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('stringr', '>= 1.1.0', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('testthat', '>= 3.0.4', dependencies = TRUE, upgrade = FALSE)
+remotes::install_version('vdiffr', '>= 1.0.2', dependencies = TRUE, upgrade = FALSE)
