@@ -155,9 +155,7 @@ unversioned_deps <- uniq_deps[uniq_deps$version == "*",]$package
 versioned_dep_install_calls <- uniq_deps[uniq_deps$version != "*",] |>
   dplyr::mutate(
     inst_call = paste0(
-      "remotes::install_version(",
-      shQuote(package), ", ", shQuote(version),
-      ", dependencies = TRUE, upgrade = FALSE)")) |>
+      "install_if_version(", shQuote(package), ", ", shQuote(version), ")")) |>
   dplyr::pull(inst_call) |>
   sort()
 
@@ -193,5 +191,14 @@ cat("#!/usr/bin/env Rscript",
     "    getOption('repos'),",
     "    sub(r'(\\d{4}-\\d{2}-\\d{2})', 'latest', getOption('repos'))",
     "))",
+    "install_if_version <- function(pkg, version) {",
+    "    vers <- gsub('[^[:digit:].-]+', '', version)",
+    "    cmp <- get(gsub('[^<>=]+', '', version))",
+    "    ok <- requireNamespace(pkg, quietly = TRUE) &&",
+    "        cmp(packageVersion(pkg), vers)",
+    "    if (!ok) {",
+    "        remotes::install_version(pkg, version, dependencies = TRUE, upgrade = FALSE)",
+    "    }",
+    "}",
     paste(versioned_dep_install_calls, collapse = "\n"),
     file = "docker/depends/pecan.depends.R", sep = "\n", append = FALSE)
