@@ -60,7 +60,7 @@ jobs:
         token: ${{ secrets.GH_PAT }}
     # upload new documentation
     - name: publish to github
-      if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+      if: github.event_name == 'push'
       run: |
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
