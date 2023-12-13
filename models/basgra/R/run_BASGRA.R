@@ -101,11 +101,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
           #this should always be the case, butorigin just in case
-          origin_dt <- as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC")
+          origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
           # below -dt means that midnights belong to the day that ends. This is consistent
           # with data files which are exclusive of the 1 Jan midnight + dt till 1 Jan next year.
           # ydays <- lubridate::yday(origin_dt + sec - dt)
           ydays <- lubridate::yday(origin_dt + sec) 
+          all_days <- origin_dt + sec
         } else {
           PEcAn.logger::logger.error("Check units of time in the weather data.")
         }
@@ -114,19 +115,14 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         gr  <- rad *  0.0864 # W m-2 to MJ m-2 d-1
         # temporary hack, not sure if it will generalize with other data products
         # function might need a splitting arg
-        gr  <- gr[ydays %in% simdays]
+        gr  <- gr[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
         if (length(ind) > length(gr)) {
-          PEcAn.logger::logger.severe(
-                          sprintf(
-                            'The input does not cover the requested simulation period: %i > %i',
-                            length(ind), length(gr)
-                          )
-                        )
+          PEcAn.logger::logger.severe('The input does not cover the requested simulation period')
         }
         matrix_weather[ ,3]  <- round(tapply(gr, ind, mean, na.rm = TRUE), digits = 2) # irradiation (MJ m-2 d-1)
         
         Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-        Tair   <- Tair[ydays %in% simdays]
+        Tair   <- Tair[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
         Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
         
         #in BASGRA tmin and tmax is only used to calculate the average daily temperature, see environment.f90
@@ -137,7 +133,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         matrix_weather[ ,5] <- t_dmax # that's what they had in read_weather_Bioforsk
         
         RH <- ncdf4::ncvar_get(nc, "relative_humidity")  # %
-        RH <- RH[ydays %in% simdays]
+        RH <- RH[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
         RH <- round(tapply(RH, ind, mean, na.rm = TRUE), digits = 2) 
      
         # This is vapor pressure according to BASGRA.f90#L86 and environment.f90#L49
@@ -145,19 +141,19 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         
         # TODO: check these
         Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
-        Rain  <- Rain[ydays %in% simdays]
+        Rain  <- Rain[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
         raini <- tapply(Rain*86400, ind, mean, na.rm = TRUE) 
         matrix_weather[ ,7] <- round(raini, digits = 2) # precipitation (mm d-1)	
         
         U <- try(ncdf4::ncvar_get(nc, "eastward_wind"))
         V <- try(ncdf4::ncvar_get(nc, "northward_wind"))
         if(is.numeric(U) & is.numeric(V)){
-          U  <- U[ydays %in% simdays]
-          V  <- V[ydays %in% simdays]
+          U  <- U[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
+          V  <- V[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
           ws <- sqrt(U ^ 2 + V ^ 2)      
         }else{
           ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
-          ws <- ws[ydays %in% simdays]
+          ws <- ws[(ydays %in% simdays) & (lubridate::year(all_days) == year)]
           if (is.numeric(ws)) {
             PEcAn.logger::logger.info("eastward_wind and northward_wind absent; using wind_speed")
           }else{
@@ -170,7 +166,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
         # CO2
         co2 <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
         if(is.numeric(co2)){
-          co2 <- co2[ydays %in% simdays] / 1e-06 # ppm
+          co2 <- co2[(ydays %in% simdays) & (lubridate::year(all_days) == year)] / 1e-06 # ppm
           co2 <- round(tapply(co2, ind, mean, na.rm = TRUE), digits = 2) 
         }else{
           co2 <- NA
@@ -439,7 +435,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(clvd, "g m-2", "kg m-2") 
 
     if (have_yasso) {
-      csomf         <- rowSums(output[thisyear, outputNames %in% c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N')]) # (g C m-2)
+      csomf         <- rowSums(output[thisyear, outputNames %in% c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N'), drop=FALSE]) # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
       csoms         <- output[thisyear, outputNames == "CSOM_H"] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")
