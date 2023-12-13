@@ -164,6 +164,30 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "TVERN")] <- pft.traits[which(pft.names == "vernalization_threshold")]
     }
     
+    if ("hardening_parameter" %in% pft.names) {
+      run_params[which(names(run_params) == "Hparam")] <- pft.traits[which(pft.names == "hardening_parameter")]
+    }
+    
+    if ("max_res_abg" %in% pft.names) {
+      run_params[which(names(run_params) == "COCRESMX")] <- pft.traits[which(pft.names == "max_res_abg")]
+    }
+    
+    if ("max_size_etil" %in% pft.names) {
+      run_params[which(names(run_params) == "CSTAVM")] <- pft.traits[which(pft.names == "max_size_etil")]
+    }
+    
+    if ("maxSLAmin" %in% pft.names) {
+      run_params[which(names(run_params) == "FSLAMIN")] <- pft.traits[which(pft.names == "maxSLAmin")]
+    }
+    
+    if ("rehardening_disappears" %in% pft.names) {
+      run_params[which(names(run_params) == "reHardRedDay")] <- pft.traits[which(pft.names == "rehardening_disappears")]
+    }
+    
+    if ("LUE_increase" %in% pft.names) {
+      run_params[which(names(run_params) == "KLUETILG")] <- pft.traits[which(pft.names == "LUE_increase")]
+    }
+    
     
     ##### Soil parameters
     
@@ -391,11 +415,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
     }
     
-    # Rooting depth (m)
-    rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
-    if (!is.na(rootd) && is.numeric(rootd)) {
-      run_params[which(names(run_params) == "ROOTDM")] <- rootd
-    }
+    # # Rooting depth (m)
+    # rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
+    # if (!is.na(rootd) && is.numeric(rootd)) {
+    #   run_params[which(names(run_params) == "ROOTDM")] <- rootd
+    # }
     
     # WCI
     wci <- try(ncdf4::ncvar_get(IC.nc, "SoilMoistFrac"), silent = TRUE)
@@ -407,6 +431,21 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     tiltoti <- try(ncdf4::ncvar_get(IC.nc, "tiller_density"), silent = TRUE)
     if (!is.na(tiltoti) && is.numeric(tiltoti)) {
       run_params[which(names(run_params) == "TILTOTI")] <- tiltoti
+    }
+    
+    tilg1 <- try(ncdf4::ncvar_get(IC.nc, "nonelongating_generative_tiller"), silent = TRUE)
+    if (!is.na(tilg1) && is.numeric(tilg1)) {
+      run_params[names(run_params) == "TILG1I"] <-  tilg1
+    }
+    
+    tilg2 <- try(ncdf4::ncvar_get(IC.nc, "elongating_generative_tiller"), silent = TRUE)
+    if (!is.na(tilg2) && is.numeric(tilg2)) {
+      run_params[names(run_params) == "TILG2I"] <-  tilg2
+    }
+    
+    tilv <- try(ncdf4::ncvar_get(IC.nc, "nonelongating_vegetative_tiller"), silent = TRUE)
+    if (!is.na(tilv) && is.numeric(tilv)) {
+      run_params[names(run_params) == "TILVI"] <-  tilv
     }
     
     # Phenological stage
