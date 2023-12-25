@@ -58,12 +58,16 @@ template <- PEcAn.settings::Settings(list(
   ############################################################################
   state.data.assimilation = structure(list(
     process.variance = TRUE,
+    aqq.Init = 1,
+    bqq.Init = 1,
     adjustment = TRUE,
     censored.data = FALSE,
+    free.run = FALSE,
     FullYearNC = TRUE,
     NC.Overwrite = FALSE,
     NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
+    by.site = FALSE,
     Localization.FUN = "Local.support",
     scalef = 1,
     chains = 5,
