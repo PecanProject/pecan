@@ -27,7 +27,7 @@ jobs:
     - name: Run tests
       run: |
         for FILE in modules/data.atmosphere/inst/integrationTests/*; do
-          if [[ ! "$FILE" == *ERA5* ]]; then
+          if [ ! "$FILE" == *ERA5* ]; then
             Rscript "$FILE"
           else
             echo "Skipping file : $FILE"
