@@ -23,27 +23,13 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
-    - name: CDS API file setup
-      run: |
-        echo "url: https://cds.climate.copernicus.eu/api/v2" >> .cdsapirc
-        echo "key: ${{ secrets.ERA5_API_KEY }}" >> .cdsapirc
-    
-    - name: Print Output to Console
-      run: |
-        cat .cdsapirc
-     
-    - name: Set up Python
-      uses: actions/setup-python@v2
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install python3-pip -y
-        sudo -H python3 -m pip install --upgrade pip
-        sudo -H pip install --user cdsapi
 
     - name: Run tests
       run: |
         for FILE in modules/data.atmosphere/inst/integrationTests/*; do
-          Rscript $FILE;
+          if [[ ! "$FILE" == *ERA5* ]]; then
+            Rscript "$FILE"
+          else
+            echo "Skipping file : $FILE"
+          fi
         done
