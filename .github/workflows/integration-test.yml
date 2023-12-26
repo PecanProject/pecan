@@ -4,8 +4,8 @@ on :
   workflow_dispatch:
   
   # for debugging
-  push:
-  pull_request:
+  # push:
+  # pull_request:
 
   schedule:
     # run Thursday 4:30 AM UTC
