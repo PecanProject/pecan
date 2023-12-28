@@ -1,11 +1,7 @@
 name : Integration Tests
 on :
-  # allow manual triggering 
+  # allow manual triggering
   workflow_dispatch:
-  
-  # for debugging
-  # push:
-  # pull_request:
 
   schedule:
     # run Thursday 4:30 AM UTC
