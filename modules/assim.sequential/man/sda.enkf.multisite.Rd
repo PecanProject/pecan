@@ -10,49 +10,42 @@ sda.enkf.multisite(
   obs.cov,
   Q = NULL,
   restart = NULL,
-  forceRun = TRUE,
-  keepNC = TRUE,
   pre_enkf_params = NULL,
-  run_parallel = TRUE,
   ensemble.samples = NULL,
-  parallel_qsub = TRUE,
-  free_run = FALSE,
-  send_email = NULL,
-  control = list(trace = TRUE, FF = FALSE, interactivePlot = FALSE, TimeseriesPlot =
-    FALSE, BiasPlot = FALSE, plot.title = NULL, facet.plots = FALSE, debug = FALSE, pause
-    = FALSE, Profiling = FALSE, OutlierDetection = FALSE),
+  control = list(trace = TRUE, TimeseriesPlot = FALSE, debug = FALSE, pause = FALSE,
+    Profiling = FALSE, OutlierDetection = FALSE, parallel_qsub = TRUE, send_email = NULL,
+    keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL),
   ...
 )
 }
 \arguments{
 \item{settings}{PEcAn settings object}
 
-\item{obs.mean}{List of dataframe of observation means, named with observation datetime.}
+\item{obs.mean}{Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point.}
 
-\item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
+\item{obs.cov}{Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point.}
 
 \item{Q}{Process covariance matrix given if there is no data to estimate it.}
 
-\item{restart}{Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA}
+\item{restart}{Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA.}
 
-\item{forceRun}{Used to force job.sh files that were not run for ensembles in SDA (quick fix)}
-
-\item{keepNC}{Used for debugging issues. .nc files are usually removed after each year in the out folder. This flag will keep the .nc + .nc.var files for futher investigations.}
-
-\item{pre_enkf_params}{Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.}
-
-\item{run_parallel}{If allows to proceed under parallel mode, default is TRUE.}
+\item{pre_enkf_params}{Used for passing pre-existing time-series of process error into the current SDA runs to ignore the impact by the differences between process errors.}
 
 \item{ensemble.samples}{Pass ensemble.samples from outside to avoid GitHub check issues.}
 
-\item{parallel_qsub}{Bool variable decide if you want to submit the bash jobs under the parallel mode, the default value is TRUE.}
-
-\item{free_run}{Bool variable decide if the run is a free run with no analysis been used, the default value is FALSE.}
-
-\item{send_email}{List object containing the "from", "to", and "body", the default value is NULL.}
-
-\item{control}{List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.}
+\item{control}{List of flags controlling the behavior of the SDA. 
+`trace` for reporting back the SDA outcomes; 
+`TimeseriesPlot` for post analysis examination; 
+`debug` decide if we want to pause the code and examining the variables inside the function;
+`pause` decide if we want to pause the SDA workflow at current time point t;
+`Profiling` decide if we want to export the temporal SDA outputs in CSV file;
+`OutlierDetection` decide if we want to execute the outlier detection each time after the model forecasting;
+`parallel_qsub` decide if we want to execute the `qsub` job submission under parallel mode;
+`send_email` contains lists for sending email to report the SDA progress;
+`keepNC` decide if we want to keep the NetCDF files inside the out directory;
+`forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
+`run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
+`MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).}
 }
 \value{
 NONE
