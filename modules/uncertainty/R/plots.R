@@ -50,20 +50,20 @@ plot_variance_decomposition <- function(plot.inputs,
   
   
   trait.plot <- base.plot + ggplot2::ggtitle("Parameter") + 
-    ggplot2::geom_text(ggplot2::aes(y = 1, x = plot.data$points, label = trait.labels, hjust = 1), size = fontsize$axis/3) + 
+    ggplot2::geom_text(ggplot2::aes(y = 1, x = .data$points, label = trait.labels, hjust = 1), size = fontsize$axis/3) + 
     ggplot2::scale_y_continuous(breaks = c(0, 0), limits = c(0, 1)) + 
     ggplot2::theme(axis.text.x = ggplot2::element_blank())
   cv.plot <- base.plot + ggplot2::ggtitle("CV (%)") + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = plot.data$points, y = plot.data$coef.vars, ymin = 0, ymax = plot.data$coef.vars), size = 1.25) +
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$coef.vars, ymin = 0, ymax = plot.data$coef.vars), size = 1.25) +
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title))
   
   el.plot <- base.plot + ggplot2::ggtitle("Elasticity") + 
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = plot.data$points, y = plot.data$elasticities, ymin = 0, ymax = plot.data$elasticities), size = 1.25)
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$elasticities, ymin = 0, ymax = plot.data$elasticities), size = 1.25)
   
   pv.plot <- base.plot + ggplot2::ggtitle("Variance") + 
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = plot.data$points, sqrt(plot.data$variances), ymin = 0, ymax = sqrt(plot.data$variances)), size = 1.25)
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, sqrt(.data$variances), ymin = 0, ymax = sqrt(plot.data$variances)), size = 1.25)
   
   return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
 } # plot_variance_decomposition
@@ -138,11 +138,11 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
   if (!is.null(prior.sa.sample) & !is.null(prior.sa.spline)) {
     prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot + ## plot spline
-      ggplot2::geom_line(ggplot2::aes(x=prior.x, y=prior.sa.spline(prior.x)), data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)), 
+      ggplot2::geom_line(ggplot2::aes(x= .data$x, y= .data$y, data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)), 
                 size = linesize, color = "grey") + ## plot points used to evaluate spline
-      ggplot2::geom_point(ggplot2::aes(x=prior.sa.sample, y=prior.sa.spline(prior.sa.sample)), data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)), 
+      ggplot2::geom_point(ggplot2::aes(x= .data$x, y= .data$y, data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)), 
                  size = dotsize, color = "grey") + ## indicate location of medians
-      ggplot2::geom_point(ggplot2::aes(x=prior.sa.sample[median.i], y=prior.sa.spline(prior.sa.sample[median.i])), data = data.frame(x = prior.sa.sample[median.i], y = prior.sa.spline(prior.sa.sample[median.i])), 
+      ggplot2::geom_point(ggplot2::aes(x= .data$x, y= .data$y, data = data.frame(x = prior.sa.sample[median.i], y = prior.sa.spline(prior.sa.sample[median.i])), 
                  size = dotsize * 1.5, color = "grey")
   }    
   max.x <- max(prior.x)
