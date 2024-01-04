@@ -19,7 +19,7 @@ Please note! The PEcAn setups here are written for the LDNDC version that has be
 The following sections of the PEcAn XML are relevant or have influence at this development stage:
 
 `ensemble`
-  `variable`: LAI, GPP, NPP, NEE, Respirations (*AutoResp*, *HeteroResp*, *TotalResp*), biomass of harvesting (*harvest_carbon_flux*), ABG and BGB (*below_ground_carbon_content*).
+  `variable`: LAI, GPP, NPP, NEE, Respirations (*AutoResp*, *HeteroResp*, *TotalResp*), biomass of harvesting (*harvest_carbon_flux*), AGB and BGB (*below_ground_carbon_content*).
 
 `model`
   `id`: Corresponding the id of LDNDC in BETY.
