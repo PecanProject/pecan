@@ -32,7 +32,7 @@ $(call depends,models/ed): | .install/modules/data.atmosphere .install/modules/d
 $(call depends,models/fates): | .install/base/logger .install/base/remote .install/base/utils
 $(call depends,models/gday): | .install/base/utils .install/base/logger .install/base/remote
 $(call depends,models/jules): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/utils
-$(call depends,models/ldndc): | .install/base/logger .install/base/utils .install/base/remote .install/modules/data.atmosphere .install/modules/data.land
+$(call depends,models/ldndc): | .install/modules/data.atmosphere .install/modules/data.land .install/base/logger .install/base/remote .install/base/utils
 $(call depends,models/linkages): | .install/base/utils .install/modules/data.atmosphere .install/base/logger .install/base/remote
 $(call depends,models/lpjguess): | .install/base/logger .install/base/remote .install/base/utils
 $(call depends,models/maat): | .install/modules/data.atmosphere .install/base/logger .install/base/remote .install/base/settings .install/base/utils
