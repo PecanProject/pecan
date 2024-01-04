@@ -1,6 +1,8 @@
 #' Test remote execution
 #'
 #' @inheritParams remote.execute.cmd
+#' 
+#' @param ... additional arguments.
 #'
 #' @return `TRUE` is remote execution is successful.
 #' If unsuccessful, depends on the value of `stderr`.

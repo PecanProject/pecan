@@ -8,6 +8,8 @@ addSecrets(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}
+
+\item{force}{Logical: add secrets even if they have been added previously?}
 }
 \value{
 will return the updated settings values
