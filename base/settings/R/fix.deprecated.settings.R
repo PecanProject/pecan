@@ -10,6 +10,7 @@
 #'
 #' @title Fix Deprecated Settings
 #' @param settings settings list
+#' @param force Logical: re-run fixing of deprecated settings even if it has been done previously?
 #' @return updated settings list
 #' @author Ryan Kelly
 #' @export fix.deprecated.settings
