@@ -54,16 +54,16 @@ plot_variance_decomposition <- function(plot.inputs,
     ggplot2::scale_y_continuous(breaks = c(0, 0), limits = c(0, 1)) + 
     ggplot2::theme(axis.text.x = ggplot2::element_blank())
   cv.plot <- base.plot + ggplot2::ggtitle("CV (%)") + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$coef.vars, ymin = 0, ymax = plot.data$coef.vars), size = 1.25) +
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$coef.vars, ymin = 0, ymax = .data$coef.vars), size = 1.25) +
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title))
   
   el.plot <- base.plot + ggplot2::ggtitle("Elasticity") + 
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$elasticities, ymin = 0, ymax = plot.data$elasticities), size = 1.25)
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$elasticities, ymin = 0, ymax = .data$elasticities), size = 1.25)
   
   pv.plot <- base.plot + ggplot2::ggtitle("Variance") + 
     ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, sqrt(.data$variances), ymin = 0, ymax = sqrt(plot.data$variances)), size = 1.25)
+    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, sqrt(.data$variances), ymin = 0, ymax = sqrt(.data$variances)), size = 1.25)
   
   return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
 } # plot_variance_decomposition
