@@ -8,7 +8,7 @@
 \alias{package-pecan}
 \title{R package to support PEcAn, the Predictive Ecosystem Analyzer}
 \description{
-Instructions for the use of this package are provided in the project documentation \url{https://pecan.gitbooks.io/pecan-documentation/content/}.
+Instructions for the use of this package are provided in the project documentation \url{https://pecanproject.github.io/documentation.html}.
 }
 \details{
 Project homepage: \url{pecanproject.org}
