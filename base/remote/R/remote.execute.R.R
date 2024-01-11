@@ -6,10 +6,11 @@
 #'
 #' @title Execute command remotely
 #' @param script the script to be invoked, as a list of commands.
-#' @param args a character vector of arguments to command.
 #' @param host settings host list
 #' @param user the username to use for remote login
 #' @param verbose should the output be printed to the console
+#' @param R Path to the R executable or binary file.
+#' @param scratchdir Path to the scratch directory for temporary files during remote execution.
 #' @return the captured output of the command (both stdout and stderr)
 #' @author Rob Kooper
 #' @export
