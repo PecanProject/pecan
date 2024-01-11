@@ -9,10 +9,12 @@ Sys.setenv(RLIB = rlib)
 
 # install remotes first in case packages are references in dependencies
 remotes::install_github(c(
+'adokter/suntools',
 'araiho/linkages_package',
 'chuhousen/amerifluxr',
 'ebimodeling/biocro@0.951',
 'MikkoPeltoniemi/Rpreles',
+'r-lib/mockery@v0.4.3',
 'r-lib/testthat@v3.1.6',
 'r-lib/vdiffr@v1.0.4',
 'ropensci/geonames',
@@ -75,7 +77,6 @@ wanted <- c(
 'magic',
 'magrittr',
 'maps',
-'maptools',
 'markdown',
 'MASS',
 'Matrix',
@@ -112,7 +113,6 @@ wanted <- c(
 'reshape',
 'reshape2',
 'reticulate',
-'rgdal',
 'rjags',
 'rjson',
 'rlang',
@@ -129,6 +129,7 @@ wanted <- c(
 'stats',
 'stringi',
 'stringr',
+'suntools',
 'swfscMisc',
 'terra',
 'testthat',

@@ -8,7 +8,7 @@
 data frame, all columns character
 \describe{
 \item{Variable.Name}{Short name suitable for programming with}
-\item{standard_name}{Name used in the NetCDF \href{http://cfconventions.org/standard-names.html}{CF metadata conventions} }
+\item{standard_name}{Name used in the NetCDF \href{http://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html}{CF metadata conventions} }
 \item{Units}{Standard units for this variable. Do not call variables by these names if they are in different units.
 See \code{ud_convert} for conversions to and from non-standard units}
 \item{Long.Name}{Human-readable variable name, suitable for e.g. axis labels}

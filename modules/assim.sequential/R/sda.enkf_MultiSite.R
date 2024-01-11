@@ -3,14 +3,25 @@
 #' @author Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
-#' @param obs.mean  List of dataframe of observation means, named with observation datetime.
-#' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
+#' @param obs.mean  Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point. 
+#' @param obs.cov   Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point. 
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param restart   Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA.
-#' @param pre_enkf_params Used for carrying out SDA with pre-existed enkf.params, in which the Pf, aqq, and bqq can be used for the analysis step.
+#' @param pre_enkf_params Used for passing pre-existing time-series of process error into the current SDA runs to ignore the impact by the differences between process errors.
 #' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
-#' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-#' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.
+#' @param control   List of flags controlling the behavior of the SDA. 
+#' `trace` for reporting back the SDA outcomes; 
+#' `TimeseriesPlot` for post analysis examination; 
+#' `debug` decide if we want to pause the code and examining the variables inside the function;
+#' `pause` decide if we want to pause the SDA workflow at current time point t;
+#' `Profiling` decide if we want to export the temporal SDA outputs in CSV file;
+#' `OutlierDetection` decide if we want to execute the outlier detection each time after the model forecasting;
+#' `parallel_qsub` decide if we want to execute the `qsub` job submission under parallel mode;
+#' `send_email` contains lists for sending email to report the SDA progress;
+#' `keepNC` decide if we want to keep the NetCDF files inside the out directory;
+#' `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
+#' `run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
+#' `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
 #'
 #’ @details
 #’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
@@ -29,12 +40,7 @@ sda.enkf.multisite <- function(settings,
                                pre_enkf_params = NULL,
                                ensemble.samples = NULL,
                                control=list(trace = TRUE,
-                                            FF = FALSE,
-                                            interactivePlot = FALSE,
                                             TimeseriesPlot = FALSE,
-                                            BiasPlot = FALSE,
-                                            plot.title = NULL,
-                                            facet.plots = FALSE,
                                             debug = FALSE,
                                             pause = FALSE,
                                             Profiling = FALSE,
@@ -44,7 +50,8 @@ sda.enkf.multisite <- function(settings,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
                                             run_parallel = TRUE,
-					    update_phenology = FALSE),
+                                            MCMC.args = NULL,
+                                            update_phenology = TRUE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -290,7 +297,8 @@ sda.enkf.multisite <- function(settings,
             settings = settings,
             model = settings$model$type,
             write.to.db = settings$database$bety$write,
-            restart = restart.arg
+            restart = restart.arg,
+            update_phenology=control$update_phenology
           )
         }) %>%
         stats::setNames(site.ids)
@@ -356,7 +364,7 @@ sda.enkf.multisite <- function(settings,
         )
        })
   ###------------------------------------------------------------------------------------------------###
-  ### w over time                                                                                 ###
+  ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
       obs.t <- as.character(lubridate::date(obs.times[t]))
@@ -491,7 +499,7 @@ sda.enkf.multisite <- function(settings,
       ###  preparing OBS                                                    ###
       ###-------------------------------------------------------------------###---- 
       #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
-      #Then specify the settings$state.data.assimilation$by.site as TRUE, and finally
+      #Then specify the settings$state.data.assimilation$scalef as 0, and settings$state.data.assimilation$free.run as TRUE.
       if (!is.null(obs.mean[[t]][[1]]) | as.logical(settings$state.data.assimilation$free.run) & control$forceRun) {
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
@@ -512,19 +520,16 @@ sda.enkf.multisite <- function(settings,
             block.list.all <- obs.mean %>% purrr::map(function(l){NULL})
           }
           #initialize MCMC arguments.
-          if (!exists("MCMC.args")) {
+          if (is.null(control$MCMC.args)) {
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
-                              nchain = 1,
+                              nchain = 3,
                               nburnin = 5e4)
+          } else {
+            MCMC.args <- control$MCMC.args
           }
           #running analysis function.
-
-      #Qianyu's diag
-	  save(X,file = file.path(settings$outdir,"X.Rdata"))
-          PEcAn.logger::logger.info("The total number of time is:")
-	  print(nt)
-      #Qianyu's diag
+          save(X,file = file.path(settings$outdir, "X.data"))
           enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all

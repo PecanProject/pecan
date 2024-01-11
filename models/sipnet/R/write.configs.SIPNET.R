@@ -420,19 +420,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
     #update LeafOnday and LeafOffDay
     if (update_phenology){
-       leafphdata <- utils::read.csv("/data2/Projects/NASA_CMS/neon_soc_sda/leaf_phenology.csv")
-       leafon <- leafphdata$leafonday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
-       leafoff<- leafphdata$leafoffday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
-       if (!is.na(leafon)){
-	      param[which(param[, 1] == "leafOnDay"), 2] <- leafon
+     leaf_pheno_outdir <- settings$model$leaf_phenology$outdir  ## read from settings
+     if (!is.null(leaf_pheno_outdir)) {
+    ##read data
+       leafphdata <- utils::read.csv(paste0(leaf_pheno_outdir,"/leaf_phenology.csv"))
+       leafOnDay <- leafphdata$leafonday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
+       leafOffDay<- leafphdata$leafoffday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
+       if (!is.na(leafOnDay)){
+	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }
-       if (!is.na(leafoff)){
-        param[which(param[, 1] == "leafOffDay"), 2] <- leafoff
+       if (!is.na(leafOffDay)){
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
        }
-      PEcAn.logger::logger.warn("leafonday after")
-      print(param[which(param[, 1] == "leafOnDay"), 2])
+      }else {
+      PEcAn.logger::logger.info("No phenology data were found. Please consider running modules/data.remote/R/phenology_MODIS_extract.R to get the parameter file.")
+      }
     }
-  }  ## end loop over PFTS
+  } ## end loop over PFTS
   ####### end parameter update
   #working on reading soil file (only working for 1 soil file)
   if(length(settings$run$inputs$soilinitcond$path)==1){
@@ -457,7 +461,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if (all(plant_wood_vars %in% ic.names)) {
       # reconstruct total wood C
       if(IC$abvGrndWoodFrac < 0.05){
-        wood_total_C <- 0
+        wood_total_C <- IC$AbvGrndWood
       }else{
         wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       }

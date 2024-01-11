@@ -163,12 +163,8 @@ get.parameter.samples <- function(settings,
     }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-        if (prior=="som_respiration_rate") {
          samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
-         samples <- samples[(samples>0)&(samples<0.003)]
-    } else {
-        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
-      } }
+      }
       else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
