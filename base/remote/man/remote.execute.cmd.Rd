@@ -9,11 +9,11 @@ remote.execute.cmd(host, cmd, args = character(), stderr = FALSE)
 \arguments{
 \item{host}{host structure to execute command on}
 
+\item{cmd}{the system command to be invoked, as a character string.}
+
 \item{args}{a character vector of arguments to command.}
 
 \item{stderr}{should stderr be returned as well.}
-
-\item{command}{the system command to be invoked, as a character string.}
 }
 \value{
 the captured output of the command (both stdout and stderr)
