@@ -71,25 +71,7 @@ File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
  OK
 * checking for unstated dependencies in vignettes ... OK
 * checking package vignettes in ‘inst/doc’ ... OK
-* checking re-building of vignette outputs ... WARNING
-Error(s) in re-building vignettes:
-  ...
---- re-building ‘AssimBatchVignette.Rmd’ using rmarkdown
-Error: processing vignette 'AssimBatchVignette.Rmd' failed with diagnostics:
-The function xfun::isFALSE() will be deprecated in the future. Please consider using base::isFALSE(x) or identical(x, FALSE) instead.
---- failed re-building ‘AssimBatchVignette.Rmd’
-
---- re-building ‘MultiSitePDAVignette.Rmd’ using rmarkdown
-Error: processing vignette 'MultiSitePDAVignette.Rmd' failed with diagnostics:
-The function xfun::isFALSE() will be deprecated in the future. Please consider using base::isFALSE(x) or identical(x, FALSE) instead.
---- failed re-building ‘MultiSitePDAVignette.Rmd’
-
-SUMMARY: processing the following files failed:
-  ‘AssimBatchVignette.Rmd’ ‘MultiSitePDAVignette.Rmd’
-
-Error: Vignette re-building failed.
-Execution halted
-
+* checking re-building of vignette outputs ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
