@@ -5,7 +5,7 @@
 #' machine it will execute the command locally without ssh.
 #'
 #' @title Execute command remotely
-#' @param command the system command to be invoked, as a character string.
+#' @param cmd the system command to be invoked, as a character string.
 #' @param host host structure to execute command on
 #' @param args a character vector of arguments to command.
 #' @param stderr should stderr be returned as well.

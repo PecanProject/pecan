@@ -22,7 +22,9 @@ remote.execute.R(
 
 \item{verbose}{should the output be printed to the console}
 
-\item{args}{a character vector of arguments to command.}
+\item{R}{Path to the R executable or binary file.}
+
+\item{scratchdir}{Path to the scratch directory for temporary files during remote execution.}
 }
 \value{
 the captured output of the command (both stdout and stderr)
