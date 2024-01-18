@@ -44,7 +44,7 @@ Imports:
     curl,
     DBI,
     dbplyr (>= 2.4.0),
-    dplyr,
+    dplyr (>= 1.1.2),
     fs,
     glue,
     lubridate,

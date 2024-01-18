@@ -38,7 +38,6 @@ wanted <- c(
 'doParallel',
 'doSNOW',
 'dplR',
-'dplyr',
 'ellipse',
 'emdbook',
 'foreach',
@@ -153,6 +152,7 @@ ensure_version <- function(pkg, version) {
 ensure_version('abind', '>= 1.4.5')
 ensure_version('coda', '>= 0.18')
 ensure_version('dbplyr', '>= 2.4.0')
+ensure_version('dplyr', '>= 1.1.2')
 ensure_version('geonames', '> 0.998')
 ensure_version('lubridate', '>= 1.7.0')
 ensure_version('magic', '>= 1.5.0')
