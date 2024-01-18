@@ -523,13 +523,12 @@ sda.enkf.multisite <- function(settings,
           if (is.null(control$MCMC.args)) {
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
-                              nchain = 3,
+                              nchain = 1,
                               nburnin = 5e4)
           } else {
             MCMC.args <- control$MCMC.args
           }
           #running analysis function.
-          save(X,file = file.path(settings$outdir, "X.data"))
           enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
           enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
           block.list.all <- enkf.params[[obs.t]]$block.list.all

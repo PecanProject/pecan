@@ -58,27 +58,9 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
- # if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
- #  PEcAn.logger::logger.error("Something wrong within the MCMC_block_function function.")
-  # return(0)
- # }
-
-  if  (length(block.list.all[[t]]) >1){
-  cores <- parallel::detectCores()
-  cl <- parallel::makeCluster(cores)
-  doSNOW::registerDoSNOW(cl)
-  #progress bar
-  pb <- utils::txtProgressBar(min=1, max=length(block.list.all[[t]]), style=3)
-  progress <- function(n) utils::setTxtProgressBar(pb, n)
-  opts <- list(progress=progress)
-  PEcAn.logger::logger.info("Submitting jobs!")
-   block.list.all[[t]]<-foreach::foreach(block = block.list.all[[t]], .packages="Kendall", .options.snow=opts) %dopar% {
-    library(nimble)
-    library(purrr)
-    MCMC_block_function(block)
-}
-}else{
-    block.list.all[[t]][[1]]<-MCMC_block_function(block=block.list.all[[t]][[1]])
+  if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
+   PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
+   return(0)
   }
   PEcAn.logger::logger.info("Completed!")
   
@@ -132,7 +114,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #distance calculations and localization
-  site.locs <- settings$run %>%
+  site.locs <- settings  %>% map(~.x[['run']] ) %>%
     purrr::map('site') %>%
     purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>%
     t %>%
@@ -318,11 +300,11 @@ MCMC_Init <- function (block.list, X) {
     }
     #initialize q.
     #if we want the vector q.
-    if (block.list[[i]]$constant$q.type == 1) {
+    if (block.list[[i]]$constant$q.type == 3) {
       for (j in seq_along(block.list[[i]]$data$y.censored)) {
         block.list[[i]]$Inits$q <- c(block.list[[i]]$Inits$q, stats::rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j]))
       }
-    } else if (block.list[[i]]$constant$q.type == 2) {
+    } else if (block.list[[i]]$constant$q.type == 4) {
       #if we want the wishart Q.
       if ("try-error" %in% class(try(block.list[[i]]$Inits$q <- 
                                      stats::rWishart(1, df = block.list[[i]]$data$bq, Sigma = block.list[[i]]$data$aq)[,,1], silent = T))) {
@@ -359,12 +341,12 @@ MCMC_block_function <- function(block) {
   #because it has a better performance of MVN sampling
   samplerLists <- conf$getSamplers()
   samplerNumberOffset <- length(samplerLists)
-  if (block$constant$q.type == 1) {
+  if (block$constant$q.type == 3) {
     #if we have vector q
     #only X.mod should be sampled with ess sampler.
     X.mod.ind <- which(grepl("X.mod", samplerLists %>% purrr::map(~ .x$target) %>% unlist()))
     samplerLists[[X.mod.ind]]$setName("ess")
-  } else if (block$constant$q.type == 2) {
+  } else if (block$constant$q.type == 4) {
     #if we have wishart q
     #everything should be sampled with ess sampler.
     samplerLists %>% purrr::map(function(l){l$setName("ess")})
@@ -391,11 +373,10 @@ MCMC_block_function <- function(block) {
   
   #run MCMC
   dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
-  
   #update aq, bq, mua, and pa
   M <- colMeans(dat)
   block$update$aq <- block$Inits$q
-  if (block$constant$q.type == 1) {
+  if (block$constant$q.type == 3) {
     #if it's a vector q case
     aq <- bq <- rep(NA, length(block$data$y.censored))
     for (i in seq_along(aq)) {
@@ -408,7 +389,7 @@ MCMC_block_function <- function(block) {
     block$aqq[block$constant$H, block$t+1] <- aq
     block$bqq[,block$t+1] <- block$bqq[, block$t]
     block$bqq[block$constant$H, block$t+1] <- bq
-  } else if (block$constant$q.type == 2) {
+  } else if (block$constant$q.type == 4) {
     #previous updates
     mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
     q.bar <- matrix(apply(mq, 2, mean),
@@ -481,7 +462,7 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
       for (i in seq_along(block.list)) {
         nvar <- length(block.list[[i]]$data$muf)
         nobs <- length(block.list[[i]]$data$y.censored)
-        if (block.list[[i]]$constant$q.type == 1) {
+        if (block.list[[i]]$constant$q.type == 3) {
           #initialize aqq and bqq for nt
           if (!is.null(aqq.Init) && !is.null(bqq.Init)) {
             block.list[[i]]$aqq <- array(aqq.Init, dim = c(nvar, nt + 1))
@@ -493,7 +474,7 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
           #update aq and bq based on aqq and bqq
           block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
-        } else if (block.list[[i]]$constant$q.type == 2) {
+        } else if (block.list[[i]]$constant$q.type == 4) {
           #initialize aqq and bqq for nt
           block.list[[i]]$aqq <- array(1, dim = c(nvar, nvar, nt + 1))
           block.list[[i]]$aqq[,,t] <- stats::toeplitz((nvar:1)/nvar)
@@ -513,14 +494,14 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
       for (i in seq_along(block.list)) {
         nvar <- length(block.list[[i]]$data$muf)
         nobs <- length(block.list[[i]]$data$y.censored)
-        if (block.list[[i]]$constant$q.type == 1) {
+        if (block.list[[i]]$constant$q.type == 3) {
           #copy previous aqq and bqq to the current t
           block.list[[i]]$aqq <- block.list.pre[[i]]$aqq
           block.list[[i]]$bqq <- block.list.pre[[i]]$bqq
           #update aq and bq
           block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
-        } else if (block.list[[i]]$constant$q.type == 2) {
+        } else if (block.list[[i]]$constant$q.type == 4) {
           #initialize aqq and bqq for nt
           block.list[[i]]$aqq <- block.list.pre[[i]]$aqq
           block.list[[i]]$bqq <- block.list.pre[[i]]$bqq
