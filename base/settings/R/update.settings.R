@@ -12,6 +12,7 @@
 #' @title Update Settings
 #' @name update.settings
 #' @param settings settings file
+#' @param force Logical: update even if settings have previously been updated?.
 #' @return will return the updated settings values
 #' @export update.settings
 #' @author Rob Kooper
