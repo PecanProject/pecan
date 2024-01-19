@@ -4,9 +4,9 @@
 ##' 
 ##' @param settings  pecan standard multi-site settings list.  
 ##' @param block.list.all Lists of forecast and analysis outputs for each time point of each block. If t=1, we initialize those outputs of each block with NULL from the `sda.enkf.multisite` function.
-##' @param X A matrix contains ensemble forecasts with the dimensions of `[ensemble number, site number * number of state variables]`. The columns are matched with the site.ids and state variable names of the inside the `FORECAST` object in the `sda.enkf.multisite` script.
-##' @param obs.mean Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point.
-##' @param obs.cov   Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point.
+##' @param X A matrix contains ensemble forecasts with the dimensions of `[ensemble number, site number * number of state variables]`. The columns are matched with the site.ids and state variable names of the inside the `FORECAST` object in the `sda.enkf.multisite` script. 
+##' @param obs.mean Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point. 
+##' @param obs.cov   Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point. 
 ##' @param t time point in format of YYYY-MM-DD.
 ##' @param nt total length of time steps, corresponding to the `nt` variable in the `sda.enkf.multisite` function.
 ##' @param MCMC.args arguments for the MCMC sampling, details can be found in the roxygen strucutre for control list in the `sda.enkf.multisite` function.
@@ -59,8 +59,8 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
-   PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
-   return(0)
+    PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
+    return(0)
   }
   PEcAn.logger::logger.info("Completed!")
   
@@ -151,11 +151,11 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       }
     }
     #create matrix the describes the support for each observed state variable at time t
-    min_max <- settings$state.data.assimilation$state.variables %>%
+    min_max <- settings$state.data.assimilation$state.variables %>% 
       purrr::map(function(state.variable){
         c(as.numeric(state.variable$min_value),
           as.numeric(state.variable$max_value))
-      }) %>% unlist() %>% as.vector() %>%
+      }) %>% unlist() %>% as.vector() %>% 
       matrix(length(settings$state.data.assimilation$state.variables), 2, byrow = T) %>%
       `rownames<-`(var.names)
     #Create y.censored and y.ind

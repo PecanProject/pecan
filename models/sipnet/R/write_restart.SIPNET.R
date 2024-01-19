@@ -20,6 +20,8 @@
 ##' @param RENAME flag to either rename output file or not
 ##' @param new.params list of parameters to convert between different states 
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
+##' @param obs_time obervation timepoints
+##' @param update_phenology TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA
 ##'
 ##' @description Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
 ##' 
@@ -109,7 +111,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
     if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
-   names(analysis.save[[length(analysis.save)]]) <- c("lai")
+    names(analysis.save[[length(analysis.save)]]) <- c("lai")
   }
   
   if (!is.null(analysis.save) && length(analysis.save)>0){

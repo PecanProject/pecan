@@ -350,7 +350,7 @@ sda.enkf.multisite <- function(settings,
         load(file.path(settings$outdir, "samples.Rdata"))
       }
       #reformatting params
-      new.params <- PEcAnAssimSequential:::sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
       #sample met ensemble members
       #TODO: incorporate Phyllis's restart work
@@ -444,7 +444,7 @@ sda.enkf.multisite <- function(settings,
         #put building of X into a function that gets called
         max_t <- 0
         while("try-error" %in% class(
-          try(reads <- PEcAnAssimSequential:::build_X(out.configs = out.configs, 
+          try(reads <- build_X(out.configs = out.configs, 
                                settings = settings, 
                                new.params = new.params, 
                                nens = nens, 

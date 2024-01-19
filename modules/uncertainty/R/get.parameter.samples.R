@@ -163,9 +163,8 @@ get.parameter.samples <- function(settings,
     }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-         samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
-      }
-      else {
+        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
+      } else {
         samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
       trait.samples[[pft.name]][[prior]] <- samples

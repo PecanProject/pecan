@@ -465,6 +465,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }else{
         wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       }
+
       #Sanity check
       if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
         wood_total_C <- 0
@@ -564,7 +565,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.na(leafOnDay) && is.numeric(leafOnDay)) {
         param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
       }
-
       ## leafOffDay
       leafOffDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_senescence"),silent = TRUE)
       if (!is.na(leafOffDay) && is.numeric(leafOffDay)) {
@@ -629,4 +629,4 @@ remove.config.SIPNET <- function(main.outdir, settings) {
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
-} # remove.config.SIPNET 
+} # remove.config.SIPNET
