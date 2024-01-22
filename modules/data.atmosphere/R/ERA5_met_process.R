@@ -29,7 +29,7 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
                                    #conversion from string to number
                                    site.list$lat <- as.numeric(site.list$lat)
                                    site.list$lon <- as.numeric(site.list$lon)
-                                   list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+                                   list(site.id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
                                  }) %>% 
                                  dplyr::bind_rows() %>% 
                                  as.list()))) {
@@ -80,18 +80,14 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
     Input_IDs <- list()
   }
   
-  #restructure the site_info.
-  new.site.info <- vector("list", length(settings))
-  for (i in seq_along(new.site.info)) {
-    new.site.info[[i]] <- list(site.id = site_info$site_id[i],
-                               lat = as.numeric(site_info$lat[i]),
-                               lon = as.numeric(site_info$lon[i]),
-                               start_date = settings$state.data.assimilation$start.date,
-                               end_date = settings$state.data.assimilation$end.date,
-                               out.path = out.path,
-                               in.path = in.path,
-                               model.type = settings$model$type)
-  }
+  #restructure the site_info into list.
+  site_info$start_date <- rep(settings$state.data.assimilation$start.date, length(settings))
+  site_info$end_date <- rep(settings$state.data.assimilation$end.date, length(settings))
+  site_info$out.path <- rep(out.path, length(settings))
+  site_info$in.path <- rep(in.path, length(settings))
+  site_info$model.type <- rep(settings$model$type, length(settings))
+  new.site.info <- split(as.data.frame(site_info), seq(nrow(as.data.frame(site_info))))
+  
   #Extract ERA5 for each site.
   PEcAn.logger::logger.info("Started extracting ERA5 data!\n")
   Clim_paths <- furrr::future_map(new.site.info, function(site){
@@ -150,12 +146,16 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
   #write the paths into settings.
   if (write) {
     #write paths into settings.
-    settings$run <- furrr::future_map2(settings$run, Clim_paths, function(site.list, paths){
-      met.list <- as.list(paths)
-      names(met.list) <- rep("path", length(paths))
-      site.list$run$inputs$met <- met.list
-      site.list
-    })
+    for (i in seq_along(settings)) {
+      #fill in dates related to met files.
+      settings[[i]]$run$site$met.start <- 
+        settings[[i]]$run$start.date <- 
+        settings[[i]]$state.data.assimilation$start.date
+      settings[[i]]$run$site$met.end <- 
+        settings[[i]]$run$end.date <- 
+        settings[[i]]$state.data.assimilation$end.date
+      settings[[i]]$run$inputs$met <- as.list(unlist(Clim_paths[[i]])) %>% set_names(rep("path", length(Clim_paths[[i]])))
+    }
     
     #write settings into xml file.
     PEcAn.logger::logger.info(paste0("Write updated pecan.xml file into: ", file.path(settings$outdir, "pecan.xml")))

@@ -80,39 +80,44 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
     AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
     AGB_Output$site_id <- site_info$site_id
-    AGB_Output_temp <- AGB_Output
   }
+  AGB_Output_temp <- AGB_Output
+  
   new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(AGB_Output)])
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
     if(is.null(buffer) | as.logical(skip_buffer)){
       #prepare lists for future::map parallelization.
-      l <- vector("list", length = length(new_site_info$site_id))
-      for (i in seq_along(l)) {
-        l[[i]] <- list(site_info = list(site_id = new_site_info$site_id[i],
-                                        lat = new_site_info$lat[i],
-                                        lon = new_site_info$lon[i],
-                                        site_name = NA), 
-                       data_dir = AGB_indir, 
-                       product_dates = lubridate::year(time_points),
-                       time_points = time_points)
-      }
+      new_site_info$AGB_indir <- rep(AGB_indir, length(new_site_info$site_id))
+      new_site_info$start_date <- rep(start_date, length(new_site_info$site_id))
+      new_site_info$end_date <- rep(end_date, length(new_site_info$site_id))
+      l <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info))))
+      
       #extracting AGB data
       AGB_Output <- l %>% furrr::future_map(function(ll) {
-        med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = ll$site_info, 
+        time_points <- seq(as.Date(ll$start_date), as.Date(ll$end_date), "1 year")
+        #Landtrendr AGB doesn't provide data after 2017.
+        time_points <- time_points[which(lubridate::year(time_points) < 2018)]
+        product_dates <- lubridate::year(time_points)
+        site_info <- list(site_id = ll$site_id,
+                          lat = ll$lat,
+                          lon = ll$lon,
+                          site_name = NA)
+        
+        med_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = site_info, 
                                                                   dataset = "median", 
                                                                   fun = "mean", 
-                                                                  data_dir = ll$data_dir, 
-                                                                  product_dates = ll$product_dates)[[1]] %>% dplyr::select(-2) %>%
-          `colnames<-`(c("site_id", paste0(ll$time_points, "_AbvGrndWood")))
-        sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = ll$site_info, 
+                                                                  data_dir = ll$AGB_indir, 
+                                                                  product_dates = product_dates)[[1]] %>% dplyr::select(-2) %>%
+          `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood")))
+        sdev_agb_data <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = site_info, 
                                                                    dataset = "stdv", 
                                                                    fun = "mean", 
-                                                                   data_dir = ll$data_dir, 
-                                                                   product_dates = ll$product_dates)[[1]] %>% dplyr::select(-c(1:2)) %>%
-          `colnames<-`(c(paste0(ll$time_points, "_SD")))
+                                                                   data_dir = ll$AGB_indir, 
+                                                                   product_dates = product_dates)[[1]] %>% dplyr::select(-c(1:2)) %>%
+          `colnames<-`(c(paste0(time_points, "_SD")))
         cbind(med_agb_data, sdev_agb_data)
-      }, .progress = T) %>% bind_rows()
+      }, .progress = T) %>% dplyr::bind_rows()
     }else{#buffer is not empty
       #extracting AGB data
       med <- PEcAn.data.remote::extract.LandTrendr.AGB(site_info = new_site_info, 
@@ -149,7 +154,7 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
     
     for (id in AGB_Output$site_id) {
-      site_AGB <- AGB_Output[which(AGB_Output$site_id==id),]
+      site_AGB <- unlist(AGB_Output[which(AGB_Output$site_id==id),])
       for (i in seq_along(time_points)) {
         date <- lubridate::year(time_points[i])
         site_id <- id
@@ -181,8 +186,8 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       t <- time_points[i]#otherwise the t will be number instead of date.
       for (id in site_info$site_id) {
         site_AGB <- Current_CSV[which(Current_CSV$site_id == id),]
-        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB[which(site_AGB$date == lubridate::year(t)), "agb"]
-        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB[which(site_AGB$date == lubridate::year(t)), "sd"]
+        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- as.numeric(site_AGB[which(site_AGB$date == lubridate::year(t)), "agb"])
+        AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- as.numeric(site_AGB[which(site_AGB$date == lubridate::year(t)), "sd"])
       }
     }
   }
