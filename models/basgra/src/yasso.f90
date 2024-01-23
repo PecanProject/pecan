@@ -79,6 +79,7 @@ public decompose
 public initialize
 public initialize_totc
 public average_met
+public average_met_ema
 public partition_nitr
 public inputs_to_fractions
 
