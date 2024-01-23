@@ -71,6 +71,9 @@ real, parameter :: awenh_compost(statesize_yasso) = (/0.69, 0.09, 0.02, 0.20, 0.
 
 integer, parameter, public :: met_ind_init = 1
 
+! whether use the exponentially weighted averaging for meteorological parameters
+logical, parameter, public :: use_met_ema = .true.
+
 public get_params
 public decompose
 public initialize
@@ -95,7 +98,7 @@ contains
     param_final(1:3) = alpha_awen(1:3) + pc_rate * decomp_pc(1)
     param_final(4) = alpha_awen(4)
     param_final(22:23) = beta12 + pc_tresp * decomp_pc(2)
-    ! hard constraints on parameter value
+    ! hard constraints on parameter values
     param_final(1:4) = max(param_final(1:4), 1e-6) ! decomposition rates must be strictly positive
     param_final(22) = max(param_final(22), 0.0) ! first order temperature response must be positive
     param_final(23) = min(param_final(23), 0.0) ! second order temperature response must be negative
@@ -486,7 +489,29 @@ contains
     met_rolling = sum(met_state(:,1:met_ind-1), dim=2) / (met_ind-1)
     
   end subroutine average_met
-  
+
+  subroutine average_met_ema(met_daily, met_rolling)
+    ! Evaluate an exponentially weighted moving average for the daily met quantities to
+    ! scale them to monthly level.
+    real, intent(in) :: met_daily(:)
+    real, intent(out) :: met_rolling(:)
+    
+    real :: alpha_smooth1=0.05, alpha_smooth2=0.005
+    
+    if (size(met_rolling) /= 2) then
+       print *, 'met_rolling has wrong shape'
+       error stop
+    end if
+    if (size(met_daily) /= 2) then
+       print *, 'met_daily has wrong shape'
+       error stop
+    end if
+    
+    met_rolling(1) = alpha_smooth1 * met_daily(1) + (1-alpha_smooth1) * met_rolling(1)
+    met_rolling(2) = alpha_smooth2 * met_daily(2) + (1-alpha_smooth2) * met_rolling(2)
+    
+  end subroutine average_met_ema
+
   !************************************************************************************
   ! Linear algebra for the steady state computation
   

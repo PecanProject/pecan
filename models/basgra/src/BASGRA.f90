@@ -262,7 +262,11 @@ do day = 1, NDAYS
   call N_fert         (year,doy,DAYS_FERT,NFERTV,      Nfert, input_soluble_c, input_compost_c, input_org_n)
 
   if (use_yasso) then
-     call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
+     if (use_met_ema) then
+        call average_met_ema((/DAVTMP, RAIN/), yasso_met)
+     else
+        call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)
+     end if
      call decompose(&
           yasso_param, &
           DELT, & ! timestep
