@@ -40,7 +40,7 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
-COPY pecan.depends.R /
+COPY pecan.depends.R pecan_package_dependencies.csv pecan_deps_from_github.txt /
 RUN  --mount=type=secret,id=github_token \
   export GITHUB_PAT=`cat /run/secrets/github_token` \
   && Rscript -e "install.packages(c('devtools'))" \
