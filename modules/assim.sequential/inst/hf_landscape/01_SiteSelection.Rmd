@@ -1,0 +1,281 @@
+---
+title: "Site Selection"
+author: "MCD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(terra)
+```
+
+This document contains the code for the initial prep of a landscape-scale run
+
+* Settings: bounding box and grid resolution
+* Inputs: data layers used for assigning locations to a "patch"
+* Outputs: grid of patch assignment IDs used to process inputs and data constraints
+
+## Settings
+```{r}
+grain = 30
+tower_latlon = c(42.53691, -72.17265)
+tower_lonlat = rev(tower_latlon)
+tower_utm    = c(732183.98,4713266.18)
+nclass = 10
+```
+
+# Inputs
+
+
+## NEON LAI
+NEON AOP mosaic data are provided in tiles with UTM coordinates in each file name. This is not explained well on the NEON data portal
+
+NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2022. https://doi.org/10.48443/ys43-cb22. Dataset accessed from https://data.neonscience.org on December 21, 2022
+
+```{r}
+## load data
+laifile = "NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20221221T142516Z.RELEASE-2022/NEON_D01_HARV_DP3_732000_4713000_LAI.tif"
+lairaw <- rast(laifile)
+laie <- rast("NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20221221T142516Z.RELEASE-2022/NEON_D01_HARV_DP3_732000_4713000_LAI_Error.tif")
+```
+
+First download only got one tile, went back for more!
+NEON (National Ecological Observatory Network). LAI - spectrometer - mosaic (DP3.30012.001), RELEASE-2023. https://doi.org/10.48443/7x5a-mn68. Dataset accessed from https://data.neonscience.org on March 22, 2023
+
+Need to mosaic together: https://www.neonscience.org/resources/learning-hub/tutorials/merge-aop-raster-data
+using code https://raw.githubusercontent.com/NEONScience/NEON-Data-Skills/main/tutorials/R/AOP/AOP-L3-rasters/aop_merge_raster_functions.R
+```{r}
+source("~/pecan/modules/assim.sequential/inst/hf_landscape/aop_merge_raster_functions.R")
+lai_folder = "/projectnb/dietzelab/dietze/hf_landscape_SDA/NEON_lai-spectrometer-mosaic/NEON.D01.HARV.DP3.30012.001.2019-08.basic.20230322T174312Z.RELEASE-2023/"
+
+#get the list of dataTiles for each data directory and extension
+dataTiles <- getDataTilesByExt(lai_folder,dataExts = getDataExts("DP3.30012.001"))
+
+cat('Creating full site mosaics\n')
+fullMosaics <- list()
+fullMosaicNames <- list()
+for (i in 1:length(dataTiles)) {
+  fullMosaics[[i]] <- mergeDataTiles(dataTiles[[i]])
+  dataDirSplit <- unlist(strsplit(dataTiles[[i]][1],.Platform$file.sep))
+  tileNameSplit <- unlist(strsplit(dataTiles[[i]][1],'_'))
+  if (tail(tileNameSplit,1)=='error.tif') {
+    fullMosaicNames[[i]] <- paste0(dataDirSplit[9],'_',tail(tileNameSplit,n=2)[1],'_error.tif')} 
+  else {
+    fullMosaicNames[[i]] <- paste0(dataDirSplit[9],'_',tail(tileNameSplit,n=1))}
+}
+
+cat('Writing full mosaics to Geotiffs and Cloud-Optimized Geotiffs\n')
+outFileDir = file.path(dirname(lai_folder),"mosaic")
+makeDir(outFileDir)
+for (i in 1:length(fullMosaics)) {
+  outFileTif <- fullMosaicNames[[i]]
+  cat(paste0('Generating ',outFileTif,'\n'))
+  writeFullMosaicTif(fullMosaics[[i]],outFileDir,outFileTif)
+  # name the COG file the same as tif but with COG suffix
+  outFileCog <- gsub(".tif", "_COG.tif", outFileTif) 
+  cat(paste0('Generating ',outFileCog,'\n'))
+  convertTif2Cog(outFileDir,outFileTif,outFileCog)
+}
+dir(outFileDir)
+
+## load file
+laifile = data.frame(file=dir(outFileDir,full.names = TRUE)) %>% dplyr::filter(!(grepl("Error",file) | grepl("COG",file)))
+lairaw <- rast(laifile$file)
+```
+
+
+## regrid
+```{r}
+#lai <- aggregate(lairaw,fact=grain,na.rm=TRUE)
+```
+
+
+
+```{r}
+## visualize data
+lairaw2 = terra::clamp(lairaw,upper=5)
+plot(lairaw2)
+points(tower_utm[1],tower_utm[2])
+
+#plot(lai)
+#points(tower_utm[1],tower_utm[2])
+```
+Set overall grid  based on LAI map
+```{r}
+box = ext(lai)
+```
+
+## NLCD
+```{r}
+url = "https://cpdataeuwest.blob.core.windows.net/cpdata/raw/nlcd/conus/30m/2016.tif"  ## check with Carl about why this didn't work
+url = "/projectnb/dietzelab/dietze/nlcd/2016.tif"
+nlcd_full = rast(url)
+```
+
+```{r}
+## move NLCD and LAI to same grain and extent
+lairp = project(lairaw2,crs(nlcd_full))
+nlcd = crop(nlcd_full,lairp)
+lai <- exactextractr::exact_resample(lairp, nlcd, 'mean')
+
+plot(nlcd)
+plot(lai)
+plot(nlcd,lai)
+
+```
+
+## landtrendr agb
+```{r}
+agbpath = "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB/biomassfiaald_2017_median.tif"
+agb_full <- rast(agbpath)
+agb = crop(agb_full,nlcd)
+agb = project(agb,crs(nlcd))
+
+plot(agb,lai)
+
+```
+
+## site selection 1: NLCD
+```{r}
+## remove non-vegetated pixels
+nlcd[nlcd < 41] = NA
+nlcd[is.na(agb)] = NA
+nlcd[is.na(lai)] = NA
+plot(nlcd)
+
+## repeat until nothing is rare or things cant be merged
+n_nlcd = table(as.vector(nlcd))
+n_nlcd = n_nlcd/sum(n_nlcd)
+
+## aggregate rare classes
+rare = names(n_nlcd)[which(n_nlcd*nclass < 0.5)]
+
+last = names(which.min(n_nlcd))
+if(last %in% c(72:82,95)) nlcd[nlcd == as.numeric(last)] = 71 ## merge herbaceous
+if(last %in% c(52)) nlcd[nlcd == as.numeric(last)] = 43       ## merge scrub
+
+writeRaster(nlcd, "nlcd_crop.tif", overwrite=TRUE)
+writeRaster(lai, "lai_crop.tif", overwrite=TRUE)
+writeRaster(agb, "agb_crop.tif", overwrite=TRUE)
+
+```
+
+## determine splits of common classes
+```{r}
+n_nlcd = table(as.vector(nlcd))
+n_nlcd = n_nlcd/sum(n_nlcd)
+grouped = names(n_nlcd)[which(n_nlcd < 1/nclass)]
+
+## repeat until all assigned
+common = n_nlcd[!(names(n_nlcd) %in% grouped)]
+last = names(which.min(common))
+remaining_area = sum(common)
+remaining_bins = nclass - length(grouped)
+nlast = round(common[which(names(common) == last)] /  (remaining_area/remaining_bins))
+if(length(common)==1) nlast = remaining_bins
+grouped = c(grouped, rep(last,nlast))
+
+### sanity checks
+length(grouped) == nclass
+
+table(grouped)/nclass
+n_nlcd
+
+```
+## cluster and split the common classes
+```{r}
+nlcd[is.na(nlcd)] = 0
+
+reps = table(grouped)
+common = as.numeric(names(reps)[reps > 1])
+
+for(i in seq_along(common)){
+  nlcdc = as.vector(nlcd)[which(as.vector(nlcd) == common[i])]
+  laic = scale(as.vector(lai)[which(as.vector(nlcd) == common[i])])
+  agbc = scale(as.vector(agb)[which(as.vector(nlcd) == common[i])])
+  df = cbind(laic,agbc)
+  #sel = apply(!is.na(df),1,all)
+  
+  k = kmeans(df, centers = reps[names(reps) == common[i]], nstart = 25)
+  plot(df,col=k$cluster)
+  
+#  nlcd[nlcd == common[i]] = common[i] + k$cluster/nclass
+  nlcd[abs(nlcd - common[i]) < 0.3] = common[i] + k$cluster/nclass
+}
+#nlcd = as.numeric(nlcd)
+table(as.vector(nlcd))
+
+nlcd[nlcd == 0] = NA
+```
+
+## recode and generate summary stats
+```{r}
+area   = table(as.vector(nlcd))
+area   = area/sum(area)
+common = names(area)
+mylai = tapply(as.vector(lai),as.vector(nlcd),mean,na.rm=TRUE)
+myagb   = tapply(as.vector(agb),as.vector(nlcd),mean,na.rm=TRUE)
+
+df = tibble::tibble(patch = seq_along(common),
+            area  = area,
+            nlcd  = floor(as.numeric(common)),
+            lai = mylai,
+            agb = myagb
+           )
+write.csv(df,file = "patches.csv",row.names = FALSE,col.names = TRUE)
+
+size = df$area*nclass*1.5
+size[size<0.5] = 0.5
+plot(df$agb,df$lai,type="n")
+text(df$agb,df$lai,as.character(df$nlcd),cex=size)
+
+```
+
+
+```{r}
+for(i in seq_along(common)){
+  nlcd[nlcd == as.numeric(common[i])] = i
+}
+writeRaster(nlcd, "patches.tif", overwrite=TRUE)
+```
+
+
+## compare patches to ground plots
+```{r}
+library(dplyr)
+patches = df
+if(!exists("pmap")){
+  patchMap <- terra::rast("patches.tif")
+  pmap <- project(patchMap, "+proj=longlat",method="near")
+  plot(pmap)
+  points(tower_lonlat[1],tower_lonlat[2])
+  tow = extract(pmap,tower_lonlat)
+}
+
+pfile = "/projectnb/dietzelab/dietze/hf_landscape_SDA/HF_Biometry_Plots_Lat_Long.csv"
+if(file.exists(pfile)){
+  inv.plot = read.csv(pfile) %>% rename(lat=Latitude,lon=Longitude) %>% select(lon,lat)
+  inv.patch = extract(pmap,inv.plot)  
+  count = table(inv.patch$Layer_1)
+  count = tibble(patch=as.numeric(names(count)),n=count)
+  p2 = left_join(patches,count,"patch")
+  
+  plot(pmap)
+  points(inv.plot$lon,inv.plot$lat)
+}
+
+lairaw3 = terra::project(lairaw2,"+proj=longlat")
+plot(lairaw3)
+points(inv.plot$lon,inv.plot$lat)
+
+inv.ll = terra::vect(inv.plot, crs="+proj=longlat")
+plot(lairaw3)
+points(inv.ll)
+
+inv.utm = terra::project(inv.ll,lairaw2)
+plot(lairaw2)
+points(inv.utm)
+```
+
+

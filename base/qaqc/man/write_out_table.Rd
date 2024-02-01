@@ -7,7 +7,7 @@
 write_out_table(table, table_name, outdir, relevant_table_columns)
 }
 \arguments{
-\item{table}{a table that is output from one of the find_* fucntions}
+\item{table}{a table that is output from one of the find_* functions}
 
 \item{table_name}{name of table}
 
@@ -16,7 +16,7 @@ write_out_table(table, table_name, outdir, relevant_table_columns)
 \item{relevant_table_columns}{a list of all columns to keep. ID and table name will be automatically included.}
 }
 \description{
-This is a fucntion that returns a dataframe with all of the format entries that have no assosiated input records.  
+This is a function that returns a dataframe with all of the format entries that have no associated input records.
 
 For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 or look at the README

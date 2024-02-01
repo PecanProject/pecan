@@ -20,7 +20,6 @@ Imports:
     PEcAn.utils,
     purrr,
     XML,
-    raster,
     sp,
     MODISTools (>= 1.1.0),
     reticulate,
@@ -28,6 +27,7 @@ Imports:
     magrittr,
     PEcAn.remote,
     stringr (>= 1.1.0),
+    terra,
     doParallel,
     parallel,
     foreach
@@ -36,7 +36,7 @@ Suggests:
     dplyr,
     ggplot2,
     lubridate,
-    rgdal,
+    raster,
     reshape,
     testthat (>= 1.0.2),
     tibble

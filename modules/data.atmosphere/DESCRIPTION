@@ -25,6 +25,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    arrow,
     curl,
     data.table,
     dplyr,
@@ -35,7 +36,6 @@ Imports:
     jsonlite,
     lubridate (>= 1.6.0),
     magrittr,
-    maptools,
     MASS,
     mgcv,
     ncdf4 (>= 1.15),
@@ -48,10 +48,12 @@ Imports:
     raster,
     REddyProc,
     reshape2,
-    rgdal,
     rlang (>= 0.2.0),
+    sf,
     sp,
     stringr (>= 1.1.0),
+    suntools,
+    terra,
     testthat (>= 2.0.0),
     tibble,
     tidyr,
@@ -68,6 +70,7 @@ Suggests:
     progress,
     reticulate
 Remotes:
+    github::adokter/suntools,
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
     github::ropensci/nneo

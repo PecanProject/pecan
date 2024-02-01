@@ -7,6 +7,8 @@ log_level <- Sys.getenv("LOGLEVEL", unset = NA)
 die_level <- Sys.getenv("DIELEVEL", unset = NA)
 redocument <- as.logical(Sys.getenv("REBUILD_DOCS", unset = NA))
 runtests <- as.logical(Sys.getenv("RUN_TESTS", unset = TRUE))
+resave <- as.logical(Sys.getenv("RESAVE_CHECKS", unset = FALSE))
+if (resave) die_level <- "never"
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (file.exists(old_file)) {
@@ -71,7 +73,7 @@ if (log_notes && n_notes > 0) {
 # such that it's not yet practical to break the build on every warning.
 # Cleaning this up is a long-term goal, but will take time.
 # Meanwhile, we compare against a cached historic check output to enforce that
-# no *new* warnings are added. As historic warnings are removed, we will update
+# no *new* warnings are added. As historic warnings are removed, we update
 # the cached results to ensure they stay gone.
 #
 # To compare checks, we take a two-level approach:
@@ -83,16 +85,16 @@ if (log_notes && n_notes > 0) {
 ###
 # To update reference files after fixing an old warning:
 # * Run check_with_errors.R to be sure the check is currently passing
-# * Delete the file you want to update
-# * Uncomment this section
-# * run `DIELEVEL=never Rscript scripts/check_with_errors.R path/to/package`
-# * recomment this section
-# * Commit updated file
-# if (!file.exists(old_file)) {
-#     cat("No reference check file found. Saving current results as the new standard\n")
-#     cat(chk$stdout, file = old_file)
-#     quit("no")
-# }
+# * run `RESAVE_CHECKS=true Rscript scripts/check_with_errors.R path/to/package`
+# * Commit updated <pkgname>/tests/Rcheck_reference.log file
+if (resave) {
+    cat("Saving current check results as the new standard\n")
+    if (file.exists(old_file)) {
+        cat("**Overwriting** existing saved check output\n")
+    }
+    cat(chk$stdout, file = old_file)
+    quit("no")
+}
 ###
 
 # everything beyond this point is comparing to old version

@@ -8,6 +8,8 @@ check.run.settings(settings, dbcon = NULL)
 }
 \arguments{
 \item{settings}{settings file}
+
+\item{dbcon}{database connection.}
 }
 \description{
 Check Run Settings

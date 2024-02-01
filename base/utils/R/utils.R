@@ -669,7 +669,7 @@ convert.expr <- function(expression) {
 ##' @author Shawn Serbin, Rob Kooper
 download_file <- function(url, filename, method) {
   if (startsWith(url, "ftp://")) {
-    method <- if (missing(method)) getOption("download.ftp.method", default = "auto")
+    if (missing(method)) method <- getOption("download.ftp.method", default = "auto")
     if (method == "ncftpget") {
       PEcAn.logger::logger.debug(paste0("FTP Method: ",method))
       #system2("ncftpget", c("-c", "url", ">", filename))
@@ -706,7 +706,7 @@ download_file <- function(url, filename, method) {
 ##'       "thredds/dodsC/ornldaac/1220", 
 ##'       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
 ##' dap <- retry.func(
-##'   ncdf4::nc_open(file_url)
+##'   ncdf4::nc_open(file_url),
 ##'   maxErrors=10,
 ##'   sleep=2)
 ##' }

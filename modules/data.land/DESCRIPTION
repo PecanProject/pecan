@@ -61,7 +61,6 @@ Suggests:
     PEcAn.settings,
     redland,
     raster,
-    rgdal,
     RPostgreSQL,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE

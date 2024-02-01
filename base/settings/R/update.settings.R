@@ -12,6 +12,7 @@
 #' @title Update Settings
 #' @name update.settings
 #' @param settings settings file
+#' @param force Logical: update even if settings have previously been updated?.
 #' @return will return the updated settings values
 #' @export update.settings
 #' @author Rob Kooper
@@ -43,7 +44,7 @@ update.settings <- function(settings, force = FALSE) {
       PEcAn.logger::logger.info(
         "Database tag has changed, please use <database><bety> to store",
         "information about accessing the BETY database. See also",
-        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+        "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
 
       bety <- list()
       for (name in names(settings$database)) {
@@ -57,7 +58,7 @@ update.settings <- function(settings, force = FALSE) {
       PEcAn.logger::logger.warn(
         "<bety><write> is now part of the database settings. For more",
         "information about the database settings see",
-        "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+        "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
       if (is.null(settings$database$bety$write)) {
         settings$database$bety$write <- settings$bety$write
         settings$bety$write <- NULL
@@ -81,7 +82,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <model><type> to specify",
       "type of model. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$model$type <- settings$model$model_type
     settings$model$model_type <- NULL
   }
@@ -99,7 +100,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <model><type> to specify",
       "type of model. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$model$type <- settings$model$name
     settings$model$name <- NULL
   }
@@ -121,7 +122,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><met> to specify",
       "met file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$met$path <- settings$run$site$met
     settings$run$site$met <- NULL
   }
@@ -180,7 +181,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><veg> to specify",
       "veg file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$veg <- settings$model$veg
     settings$model$veg <- NULL
   }
@@ -200,7 +201,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><soil> to specify",
       "soil file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$soil <- settings$model$soil
     settings$model$soil <- NULL
   }
@@ -215,7 +216,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><pss/css/site> to specify",
       "pss/css/site file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$pss <- file.path(settings$model$psscss, "foo.pss")
     settings$run$inputs$css <- file.path(settings$model$psscss, "foo.css")
     settings$run$inputs$site <- file.path(settings$model$psscss, "foo.site")
@@ -232,7 +233,7 @@ update.settings <- function(settings, force = FALSE) {
     PEcAn.logger::logger.info(
       "Model tag has changed, please use <inputs><lu/thsums> to specify",
       "lu/thsums file for a run. See also",
-      "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+      "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$lu <- file.path(settings$model$inputs, "glu")
     settings$run$inputs$thsums <- settings$model$inputs
     settings$model$soil <- NULL

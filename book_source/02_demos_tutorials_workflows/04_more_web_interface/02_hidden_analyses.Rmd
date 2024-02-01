@@ -105,7 +105,7 @@ This is the main ensemble Kalman filter and generalized filter code. Originally,
 
 * IC - (optional) initial condition matrix (dimensions: ensemble memeber # by state variables). Default is NULL.
 
-* Q - (optional) process covariance matrix (dimensions: state variable by state variables). Defualt is NULL.
+* Q - (optional) process covariance matrix (dimensions: state variable by state variables). Default is NULL.
 
 #### State Data Assimilation Workflow
 Before running sda.enkf, these tasks must be completed (in no particular order),
@@ -182,7 +182,7 @@ Create diagnostics
 
 #### State Data Assimilation Tags Descriptions
 
-* **adjustment** : [optional] TRUE/FLASE flag for if ensembles needs to be adjusted based on weights estimated given their likelihood during analysis step. The defualt is TRUE for this flag.
+* **adjustment** : [optional] TRUE/FLASE flag for if ensembles needs to be adjusted based on weights estimated given their likelihood during analysis step. The Default is TRUE for this flag.
 * **process.variance** : [optional] TRUE/FLASE flag for if process variance should be estimated (TRUE) or not (FALSE). If TRUE, a generalized ensemble filter will be used. If FALSE, an ensemble Kalman filter will be used. Default is FALSE. If you use the TRUE argument you can set three more optional tags to control the MCMCs built for the generalized esnsemble filter.
 * **nitrGEF** : [optional] numeric defining the length of the MCMC chains.
 * **nthin** : [optional] numeric defining thining length for the MCMC chains.
@@ -289,14 +289,50 @@ $n_{t+1}	=	\frac{\sum_{i=1}^{I}\sum_{j=1}^{J}\frac{v_{ijt}^{2}+v_{iit}v_{jjt}}{V
 
 where we calculate the mean of the process covariance matrix $\left(\bar{\boldsymbol{Q}_{t}}\right)$ from the posterior samples at time t. Degrees of freedom for the Wishart are typically calculated element by element where $v_{ij}$ are the elements of $\boldsymbol{V}_{t}$. $I$ and $J$ index rows and columns of $\boldsymbol{V}$. Here, we calculate a mean number of degrees of freedom for $t+1$ by summing over all the elements of the scale matrix $\left(\boldsymbol{V}\right)$ and dividing by the count of those elements $\left(I\times J\right)$. We fit this model sequentially through time in the R computing environment using R package 'rjags.'
 
-Users have control over how they think is the best way to estimate $Q$. Our code will look for the tag `q.type` in the XML settings under `state.data.assimilation` which can take 3 values of Single, PFT or Site. If `q.type` is set to single then one value of process variance will be estimated across all different sites or PFTs. On the other hand, when q.type` is set to Site or PFT then a process variance will be estimated for each site or PFT at a cost of more time and computation power.
+Users have control over how they think is the best way to estimate $Q$. Our code will look for the tag `q.type` in the XML settings under `state.data.assimilation` which can take 4 values of Single, Site, Vector, or Wishart. If `q.type` is set to single then one value of process variance will be estimated across all different sites and variables. When `q.type` is set to Site then a process variance will be estimated for each siteat a cost of more time and computation power. When the `q.type` is set to Vector or Wishart then process errors for each variable of each site will be estimated and propagated through time, while the Wishart Q support the estimation of covariance between sites and variables through the MCMC sampling of wishart distributions, which further support the propagation of process error through not just time but space and variables. 
 
 #### Multi-site State data assimilation.
+`sda.enkf.multisite` is housed within: `/pecan/modules/assim.sequential/R`
+
+The 4-site tutorial is housed within: `~/pecan/modules/assim.sequential/inst/MultiSite-Exs`
+
+#### **sda.enkf.multisite.R Description**
 `sda.enkf.multisite` function allows for assimilation of observed data at multiple sites at the same time. In order to run a multi-site SDA, one needs to send a multisettings pecan xml file to this function. This multisettings xml file needs to contain information required for running at least two sites under `run` tag. The code will automatically run the ensembles for all the sites and reformats the outputs matching the required formats for analysis step. 
+#### **sda.enkf.multisite.R Arguments**
+* settings - (required) [State Data Assimilation Tags Example] settings object
 
-The observed mean and cov needs to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. In case that zero variance was estimated for a variable inside the obs.cov, the SDA code will automatically replace that with half of the minimum variance from other non-zero variables in that time step.
+* obs.mean - (required) Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation means for each state variables of each site for each time point. 
 
-This would look like something like this:
+* obs.cov - (required) Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point. 
+
+* Q - (optional) Process covariance matrix given if there is no data to estimate it. Default is NULL.
+
+* restart - (optional) Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA. Default is NULL.
+
+* pre_enkf_params - (optional) Used for carrying out SDA with pre-existed `enkf.params`, in which the `Pf`, `aqq`, and `bqq` can be used for the analysis step. Default is NULL.
+
+* ensemble.samples - (optional) Pass ensemble.samples from outside, which are lists of calibrated parameters for different plant functional types. This also helps to avoid GitHub check issues. Default is NULL.
+
+* control - (optional) List of flags controlling the behavior of the SDA. Here is an example of the `control` list. The detailed explanation of them are shown inside the `sda.enkf.multisite` function in the `assim.sequential` package.
+```
+control=list(trace = TRUE,
+             TimeseriesPlot = FALSE,
+             debug = FALSE,
+             pause = FALSE,
+             Profiling = FALSE,
+             OutlierDetection=FALSE,
+             parallel_qsub = TRUE,
+             send_email = NULL,
+             keepNC = TRUE,
+             run_parallel = TRUE,
+             MCMC.args = NULL)
+```
+
+#### **obs.mean and obs.cov Description**
+The observations are required for passing the time points into the SDA workflow, which should match the start and end date in the settings object. For the generations of obs.mean and obs.cov, please use the function `SDA_OBS_Assembler` inside the `assim.sequential` package. For the unconstrained runs, please specify the `free.run` flag as TRUE inside the `settings$state.data.assimilation$Obs_Prep` section. Otherwise, please specify the arguments that are needed for preparations of different observations (note that, the observation preparation functions currently only support `MODIS LAI`, `Landtrendr AGB`, `SMAP soil moisture`, and `SoilGrid soil organic carbon`). For the details about how to setup those arguments, please reference the `Create_Multi_settings.R` script inside `~/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA` directory.
+The observed mean and covariance need to be formatted as list of different dates with observations. For each element of this list also there needs to be a list with mean and cov matrices of different sites named by their siteid. In case that zero variance was estimated for a variable inside the obs.cov, the SDA code will automatically replace that with half of the minimum variance from other non-zero variables in that time step.
+
+Here are examples of the `obs.mean` and `obs.cov` for single time point, two sites, and two observations.
 ```
 > obs.mean
 
@@ -324,34 +360,127 @@ $`2010/12/31`$`1000000651`
 [1,] 15.2821691 0.513584319
 [2,]  0.1213583 0.001162113
 ```
-An example of multi-settings pecan xml file also may look like below:
+#### Anlysis SDA workflow
+Before running the SDA analysis functions, the ensemble forecast results have to be generated, and arguments such as H matrix, MCMC arguments, and multi-site Y and R (by `Construct.R` function) have to be generated as well. Here are the workflows for three types of SDA analysis functions that we are currently used.
+
+* Decide which analysis function to be used. Here we have three options: 1) traditional ensemble Kalman Filter (`EnKF.MultiSite`) with analytical solution, within which the process error needs to be prescribed from outside (see `Q` arguments in the `sda.enkf.multisite` function); 2) generalized ensemble Kalman Filter (`GEF.MultiSite`); and 3) block-based generalized ensemble Kalman Filter (`analysis_sda_block`). The latter two methods support the feature of propagating process variance across space and time. To choose the analysis method 1, we need to set the `process.variance` as FALSE. Otherwise, if we set the `process.variance` as TRUE and provide the `q.type` as either `SINGLE` or `SITE` the method `GEF.MultiSite` will be used, and if we provide the `q.type` as either `vector` or `wishart` the method `analysis_sda_block` will be used. The explanations for different Q types can be found in the `The Generalized Ensemble Filter` section in this documentation. For the `analysis_sda_block` method, there is also a special case for complete or partial missing of observations.
+
+* If we decide to use `EnKF.MultiSite`, then the analysis results will be calculated based on equations.
+
+* If we decide to use `GEF.MultiSite`, then it will first do censoring process based on how you setup the `censored.data` flag within settings xml file. Then, if t equals to 1, we will first initialize the `aqq`, `bqq`, `aq`, and `bq` based on how you setup the `q.type` argument within settings xml file. After preparing the initial conditions (ICs), data, and constants for the `GEF.MultiSite.Nimble` nimble model, the MCMC sampling will happen afterwards. Finally, the process variance and the analysis results will be calculated and updated and returned to the `sda.enkf.multisite` function.
+
+* If we decide to use `analysis_sda_block` method, then if t equals 1, the workflow will first build blocks using the `matrix_network` function for the calculations for indexes of variables by networks of site groups based on the spatial scale (see `scalef` argument in the `Example of multi-settings pecan xml file` section) that we specify inside the `state.data.assimilation` section. Then, the workflow will execute the `build.block.xy` to automatically initialize the overall block-based MCMC lists (`block.list.all`) and fill in datasets (`mu.f`, `y.censored`, or `Pf`) for each block and for all time points to facilitate the process of passing arguments between scripts/functions. After that, the `MCMC_args` (see the explanations inside the roxygen structure of the `sda.enkf.multisite` function) will be specified either from the `control` list or by default (see below). Then, the workflow will update the process error using the `update_q` function. If t equals 1, it will initialize the arguments for the process error. Otherwise, it will grab the previously updated process error. After that, in the `MCMC_Init` function, it will create the initial conditions (ICs) for the MCMC sampling based on randomly sampled data. Then, the completed block-based arguments (`block.list.all`) will be used by the `MCMC_block_function` function under the parallel mode. Finally, the block-based results will be converted into long vectors and large matrices by the `block.2.vector` function and values such as `block.list.all`, `mu.f`, `mu.a`, `Pf`, `Pa` will be returned to the `sda.enkf.multisite` function.
+
+```
+MCMC.args <- list(niter = 1e5,
+                  nthin = 10,
+                  nchain = 3,
+                  nburnin = 1e4)
+```
+
+* There is a special case for the `analysis_sda_block` method where NA values appear in the observations, which provides the opportunity for the estimations of process error without any observations. This special case currently is only working under restricted conditions when we set the `scalef` as 0 (that feature currently only works for isolated-site SDA runs) and turn on the `free.run` flag in the settings, which will then automatically fill in NA values to the observations by each site (see bellow).
+
+```
+<state.data.assimilation>
+  <scalef>0</scalef>
+  <free.run>TRUE</free.run>
+</state.data.assimilation>
+```
+
+
+#### Example of multi-settings pecan xml file
+Here is an example of what does a multi-settings pecan xml file look like. The detailed explanation for the xml file can be found under the `Multi-Settings` section in the `03_pecan_xml.Rmd` documentation.
+
 ```
 <?xml version="1.0"?>
 <pecan.multi>
  <state.data.assimilation>
-   <process.variance>FALSE</process.variance>
-   <adjustment>TRUE</adjustment>
-   <data>
-    <format_id>1000000040</format_id>
-    <input.id>1000013298</input.id>
-  </data>
-   <state.variables>
-   <variable>
-      <variable.name>GWBI</variable.name>
-   <unit>KgC/m^2</unit>
-       <min_value>0</min_value>
-       <max_value>9999</max_value>
-   </variable>
-   <variable>
-   <variable.name>AbvGrndWood</variable.name>
-   <unit>KgC/m^2</unit>
-   <min_value>0</min_value>
-   <max_value>9999</max_value>
-   </variable>
-   </state.variables>
-  <start.date>1960/01/01</start.date>
-  <end.date>2000/12/31</end.date>
-  </state.data.assimilation>
+	<process.variance>TRUE</process.variance>
+	<aqq.Init>1</aqq.Init>
+	<bqq.Init>1</bqq.Init>
+  <sample.parameters>FALSE</sample.parameters>
+  <adjustment>TRUE</adjustment>
+  <censored.data>FALSE</censored.data>
+  <FullYearNC>TRUE</FullYearNC>
+  <NC.Overwrite>FALSE</NC.Overwrite>
+  <NC.Prefix>sipnet.out</NC.Prefix>
+  <q.type>SINGLE</q.type>
+  <free.run>FALSE</free.run>
+  <Localization.FUN>Local.support</Localization.FUN>
+  <scalef>1</scalef>
+  <chains>5</chains>
+  <state.variables>
+    <variable>
+      <variable.name>AbvGrndWood</variable.name>
+      <unit>MgC/ha</unit>
+      <min_value>0</min_value>
+      <max_value>9999</max_value>
+    </variable>
+    <variable>
+      <variable.name>LAI</variable.name>
+      <unit></unit>
+      <min_value>0</min_value>
+      <max_value>9999</max_value>
+    </variable>
+    <variable>
+      <variable.name>SoilMoistFrac</variable.name>
+      <unit></unit>
+      <min_value>0</min_value>
+      <max_value>100</max_value>
+    </variable>
+    <variable>
+      <variable.name>TotSoilCarb</variable.name>
+      <unit>kg/m^2</unit>
+      <min_value>0</min_value>
+      <max_value>9999</max_value>
+    </variable>
+  </state.variables>
+  <Obs_Prep>
+    <Landtrendr_AGB>
+      <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
+      <allow_download>TRUE</allow_download>
+      <export_csv>TRUE</export_csv>
+      <timestep>
+        <unit>year</unit>
+        <num>1</num>
+      </timestep>
+    </Landtrendr_AGB>
+    <MODIS_LAI>
+      <search_window>30</search_window>
+      <export_csv>TRUE</export_csv>
+      <run_parallel>TRUE</run_parallel>
+      <timestep>
+        <unit>year</unit>
+        <num>1</num>
+      </timestep>
+    </MODIS_LAI>
+    <SMAP_SMP>
+      <search_window>30</search_window>
+      <export_csv>TRUE</export_csv>
+      <update_csv>FALSE</update_csv>
+      <timestep>
+        <unit>year</unit>
+        <num>1</num>
+      </timestep>
+    </SMAP_SMP>
+    <Soilgrids_SoilC>
+      <timestep>
+        <unit>year</unit>
+        <num>1</num>
+      </timestep>
+    </Soilgrids_SoilC>
+    <outdir>/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS</outdir>
+    <start.date>2012-07-15</start.date>
+    <end.date>2021-07-15</end.date>
+  </Obs_Prep>
+  <spin.up>
+  	<start.date>2004/01/01</start.date>
+	  <end.date>2006/12/31</end.date>
+  </spin.up>
+  <forecast.time.step>1</forecast.time.step>
+	<start.date>2004/01/01</start.date>
+	<end.date>2006/12/31</end.date>
+</state.data.assimilation>
  <info>
     <notes></notes>
     <userid>-1</userid>

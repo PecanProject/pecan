@@ -11,6 +11,8 @@ clean.settings(inputfile = "pecan.xml", outputfile = "pecan.xml", write = TRUE)
 
 \item{outputfile}{the name of file to which the settings will be
 written inside the outputdir.}
+
+\item{write}{Indicates whether to write the modified settings to a file.}
 }
 \value{
 list of all settings as saved to the XML file(s)

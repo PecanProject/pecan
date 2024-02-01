@@ -52,7 +52,7 @@ jobs:
         path: book_source/_book/
     # download documentation repo
     - name: Checkout documentation repo
-      if: github.event_name != 'pull_request'
+      if: github.event_name == 'push'
       uses: actions/checkout@v3
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
@@ -60,11 +60,11 @@ jobs:
         token: ${{ secrets.GH_PAT }}
     # upload new documentation
     - name: publish to github
-      if: github.event_name != 'pull_request'
+      if: github.event_name == 'push'
       run: |
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
-        export VERSION=${GITHUB_REF##*/}
+        export VERSION=$(echo $GITHUB_REF | sed 's,.*/,,' )
         cd pecan-documentation
         mkdir -p $VERSION
         rsync -a --delete ../book_source/_book/ ${VERSION}/
