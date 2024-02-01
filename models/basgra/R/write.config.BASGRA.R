@@ -415,11 +415,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
     }
     
-    # # Rooting depth (m)
-    # rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
-    # if (!is.na(rootd) && is.numeric(rootd)) {
-    #   run_params[which(names(run_params) == "ROOTDM")] <- rootd
-    # }
+    # Rooting depth (m)
+    rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
+    if (!is.na(rootd) && is.numeric(rootd)) {
+      run_params[which(names(run_params) == "ROOTDM")] <- rootd
+    }
     
     # WCI
     wci <- try(ncdf4::ncvar_get(IC.nc, "SoilMoistFrac"), silent = TRUE)
