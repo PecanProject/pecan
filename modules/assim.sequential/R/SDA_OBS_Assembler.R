@@ -21,6 +21,7 @@ SDA_OBS_Assembler <- function(settings){
   
   #check if we want to proceed the free run without any observations.
   if (as.logical(settings$state.data.assimilation$free.run)) {
+    PEcAn.logger::logger.info("Create obs for free run!")
     #calculate time points.
     time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, Obs_Prep$timestep)
     
@@ -62,6 +63,7 @@ SDA_OBS_Assembler <- function(settings){
     if (names(Obs_Prep)[i] %in% c("timestep", "start.date", "end.date", "outdir")){
       next
     }else{
+      PEcAn.logger::logger.info(paste("Entering", names(Obs_Prep)[i]))
       fun_name <- names(Obs_Prep)[i]
       var_ind <- c(var_ind, i)
     }
