@@ -1,13 +1,13 @@
 # How to contribute
 
-Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications.  The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct.  Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment. 
+Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications.  The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct.  Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment.
 There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
 
 ## PEcAn CORE vs Models vs Modules
 
 New functionality is typically directed toward modules to provide a slimmer PEcAn Core, reducing the requirements to get PEcAn running on different platforms, especially HPC machines, and to allow greater freedom for modules and models.
 
-Generally, new model should be added to the models folder and new modules should be added to the modules folder. 
+Generally, new model should be added to the models folder and new modules should be added to the modules folder.
 Exceptions include code that is reused in many models or modules and wrapper functions that call specific implementations in models; these can be placed in the core packages.
 
 If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ) or ask on the pecan-develop mailing list for advice.
@@ -16,9 +16,9 @@ If you are unsure of whether your contribution should be implemented as a model,
 
 - Make sure you have a GitHub account.
 - Search GitHub and Google to see if your issue has already been reported
-        - Create an issue in GitHub, assuming one does not already exist.
-	- Clearly describe the issue including steps to reproduce when it is a bug.
-	- Make sure you fill in the earliest version that you know has the issue.
+  - Create an issue in GitHub, assuming one does not already exist.
+  - Clearly describe the issue including steps to reproduce when it is a bug.
+  - Make sure you fill in the earliest version that you know has the issue.
 - Ask @dlebauer, @mdietze or @robkooper to add you to the PEcAn project if you plan on fixing the issue.
 
 ## Getting Started
@@ -33,17 +33,20 @@ At this point you will have a copy of PEcAn and you are almost ready to work on 
 At this point you will have a copy of the pecan repo in your personal space. Next steps are to setup your local copy to work with the forked version.
 
 Introduce your self to GIT (if you have not done this yet), make sure you use an email associated with your GitHub account.
+
 ```bash
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 ```
 
 Switch pecan to your fork
+
 ```bash
 git remote set-url origin https://github.com/<your username>/pecan.git
 ```
 
 Setup pecan to be able to fetch from the master/develop
+
 ```bash
 git remote add upstream https://github.com/PecanProject/pecan.git
 ```
@@ -66,30 +69,30 @@ Here is a simplified workflow on how add a new feature:
 
 Update your develop (both locally and on GitHub)
 
-```
+```bash
 git fetch upstream
 git checkout develop
 git merge upstream/develop
 git push
 ```
 
-### Create a branch to do your work.
+### Create a branch to do your work
 
-A good practice is to call the branch in the form of GH-<issue-number> followed by the title of the issue. This makes it easier to find out the issue you are trying to solve and helps us to understand what is done in the branch. Calling a branch my-work is confusing. Names of branch can not have a space, and should be replaced with a hyphen.
+A good practice is to call the branch in the form of `GH-<issue-number>` followed by the title of the issue. This makes it easier to find out the issue you are trying to solve and helps us to understand what is done in the branch. Calling a branch my-work is confusing. Names of branch can not have a space, and should be replaced with a hyphen.
 
-```
+```bash
 git checkout -b GH-issuenumber-title-of-issue
 ```
 
 ### Work and commit
 
-Do you work, and commit as you see fit.Make your commit messages helpful. 
+Do you work, and commit as you see fit.Make your commit messages helpful.
 
-### Push your changes up to GitHub.
+### Push your changes up to GitHub
 
 If this is the first time pushing to GitHub you will need to extended command, other wise you can simply do a `git push`.
 
-```
+```bash
 git push -u origin GH-issuenumber-title-of-issue
 ```
 
