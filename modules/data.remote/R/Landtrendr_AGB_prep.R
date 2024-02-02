@@ -26,7 +26,6 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   } else {
     future::plan(future::multisession)
   }
-  
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
@@ -34,11 +33,9 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
   }
   #Landtrendr AGB doesn't provide data after 2017.
   time_points <- time_points[which(lubridate::year(time_points) < 2018)]
-  
   #check the integrity of AGB files.
   AGB_median_years <- as.numeric(gsub(".*?([0-9]+).*", "\\1", list.files(AGB_indir, pattern = "*median.tif")))
   missing_years_median <- lubridate::year((time_points[which(!lubridate::year(time_points)%in%AGB_median_years)])) #for landtrendr AGB data, we only have data before 2018.
-  
   #starting downloading
   if(length(missing_years_median)>0){
     if(as.logical(allow_download)){
@@ -50,31 +47,37 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       return(0)
     }
   }
-  
   #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
   #if we have previous downloaded CSV file
   if(!is.null(outdir)){
     if(file.exists(file.path(outdir, "AGB.csv")) && length(buffer)==0 && as.logical(skip_buffer)){
+      PEcAn.logger::logger.info("Extracting previous AGB file!")
       Previous_CSV <- as.data.frame(utils::read.csv(file.path(outdir, "AGB.csv")))
       AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
         `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
       AGB_Output$site_id <- site_info$site_id
-      
       #Calculate AGB for each time step and site.
       #loop over time and site
-      for (i in seq_along(time_points)) {
-        t <- time_points[i]
+      AGB.list <- time_points %>% furrr::future_map(function(t){
+        out.t <- data.frame()
         for (id in site_info$site_id) {
           site_AGB <- Previous_CSV[which(Previous_CSV$site_id == id),]
           if(length(site_AGB$agb[which(site_AGB$date == lubridate::year(t))])==1){
-            AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AbvGrndWood")] <- site_AGB$agb[which(site_AGB$date == lubridate::year(t))]
-            AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[which(site_AGB$date == lubridate::year(t))]
+            out.t <- rbind(out.t, list(mean = site_AGB$agb[which(site_AGB$date == lubridate::year(t))], 
+                                       sd = site_AGB$sd[which(site_AGB$date == lubridate::year(t))]))
+          } else {
+            out.t <- rbind(out.t, list(mean = NA, sd = NA))
           }
         }
+        out.t %>% purrr::set_names(c(paste0(t, "_AbvGrndWood"), paste0(t, "_SD")))
+      }, .progress = T)
+      for (i in seq_along(time_points)) {
+        t <- time_points[i]#otherwise the t will be number instead of date.
+        AGB_Output[, paste0(t, "_AbvGrndWood")] <- AGB.list[[i]][,paste0(t, "_AbvGrndWood")]
+        AGB_Output[, paste0(t, "_SD")] <- AGB.list[[i]][,paste0(t, "_SD")]
       }
     }
   }
-  
   #only Site that has NA for any time points need to be downloaded.
   if(!exists("AGB_Output")){
     AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
@@ -82,7 +85,6 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
     AGB_Output$site_id <- site_info$site_id
   }
   AGB_Output_temp <- AGB_Output
-  
   new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(AGB_Output)])
   #if we have any site missing previously
   if(length(new_site_info$site_id) != 0){
@@ -148,11 +150,9 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
         as.data.frame%>%
         `colnames<-`(c("site_id", paste0(time_points, "_AbvGrndWood"), paste0(time_points, "_SD")))
     }
-    
     #prepare CSV from AGB_Output
     Current_CSV <- matrix(NA, 0, 6) %>% 
       `colnames<-`(c("date", "site_id", "lat", "lon", "agb", "sd"))
-    
     for (id in AGB_Output$site_id) {
       site_AGB <- unlist(AGB_Output[which(AGB_Output$site_id==id),])
       for (i in seq_along(time_points)) {
@@ -165,7 +165,6 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
         Current_CSV <- rbind(Current_CSV, tibble::tibble(date, site_id, lat, lon, agb, sd))#in date, id, lat, lon, agb, sd
       }
     }
-    
     #Compare with existing CSV file. (We name the CSV file as AGB.csv)
     if(export_csv){
       if(exists("Previous_CSV")){#we already read the csv file previously.
@@ -176,11 +175,9 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
         utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
       }
     }
-    
     #write current csv into AGB_Output data frame.
     #recreate the AGB_Output object
     AGB_Output <- AGB_Output_temp
-    
     #loop over time and site
     for (i in seq_along(time_points)) {
       t <- time_points[i]#otherwise the t will be number instead of date.
