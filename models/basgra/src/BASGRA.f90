@@ -270,7 +270,7 @@ do day = 1, NDAYS
   if (use_yasso) then
      if (use_met_ema) then
         if (day == 1) then
-           yasso_met(1:2) = (/DAVTMP, RAIN/)
+           yasso_met(1:2) = yasso_met_init(1:2)
         end if
         call average_met_ema((/DAVTMP, RAIN/), yasso_met)
      else

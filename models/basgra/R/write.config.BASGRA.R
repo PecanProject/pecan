@@ -361,7 +361,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "PHENI"] <-  IC$phenological_stage
     }
 
-    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')
     for (p in yasso_pools) {
       if (p %in% ic.names) {
         run_params[names(run_params) == p] <- IC[[p]]
@@ -500,7 +500,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "FWCWP")] <- wcwp / wcst 
     }
 
-    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')
     for (p in yasso_pools) {
       value <- try(ncdf4::ncvar_get(IC.nc, p), silent=TRUE)
       if (!is.na(value) && is.numeric(value)) {

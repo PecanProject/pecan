@@ -55,7 +55,6 @@ test_that('write.config retrieves default parameters from the file', {
   job.file <- file.path(outfolder, run.id, 'job.sh')
   content <- paste(readLines(job.file), collapse='\n')
   param.vector <- eval(parse(text=content))
-  #print(param.vector)
   expect_equal(params.from.file$name, names(param.vector))
   # a few of the parameters are redundant and get reset byt write.config based on the other parameters.
   # these parameters need to be set consistently in the default parameter file or otherwise this test fails.
@@ -140,7 +139,6 @@ test_that('the force column values are interpreted flexibly', {
   trait.values <- list(list(leaf_width = 6.1))
   job.file <- file.path(outfolder, run.id, 'job.sh')
   df_params[,2] <-flagvalue
-  print(df_params)
   
   df_params$force = rep('True', nrow(df_params))
   write.csv(df_params, param_path, row.names=FALSE)
@@ -180,15 +178,16 @@ test_that('YASSO pool ICs pass thru (list)', {
     CSOM_E = 3,
     CSOM_N = 4,
     CSOM_H = 5,
-    NSOM = 6
+    NSOM = 6,
+    TEMPR30 = 7,
+    PRECIP30 = 8
   )
   write.config.BASGRA(defaults, trait.values=list(), settings=settings, run.id=run.id, IC=ic_list)
   job.file <- file.path(outfolder, run.id, 'job.sh')
   content <- paste(readLines(job.file), collapse='\n')
   param.vector <- eval(parse(text=content))
-  print(param.vector)
-  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
-  expect_equal(setNames(state, NULL), seq(6))
+  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')]
+  expect_equal(setNames(state, NULL), seq(8))
 })
 
 test_that('YASSO pool ICs pass thru (file)', {
@@ -196,7 +195,7 @@ test_that('YASSO pool ICs pass thru (file)', {
   settings <- basesettings
   settings$model$jobtemplate <- jobtemplate
   settings$run$inputs$poolinitcond = list(
-    path='ic_with_yasso_pools.nc'
+    path='ic_with_yasso_pools_and_met.nc'
   )
   default <- NULL
   run.id <- 9999
@@ -205,9 +204,11 @@ test_that('YASSO pool ICs pass thru (file)', {
   job.file <- file.path(outfolder, run.id, 'job.sh')
   content <- paste(readLines(job.file), collapse='\n')
   param.vector <- eval(parse(text=content))
-  print(param.vector)
-  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
-  correct_state <- c(849.689004672464, 95.7316652108849, 51.5525079322194, 1092.13089465692, 14298.5439024818, 1536.9834023606)
+  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')]
+  correct_state <- c(
+    1011.55245115532, 118.194058863007, 62.5131705827862, 1153.2435021838, 14274.4980088834, 1549.22075041662,
+    12.0709309808298, 1.28496155077734
+  )
   expect_equal(setNames(state, NULL), correct_state)
 })
 

@@ -75,5 +75,6 @@ real                  :: yasso_decomp_pc(2)
 ! initial YASSO C & N state
 real                  :: yasso_cstate_init(5)
 real                  :: yasso_nstate_init
+real                  :: yasso_met_init(2)
 end module parameters_site
 
