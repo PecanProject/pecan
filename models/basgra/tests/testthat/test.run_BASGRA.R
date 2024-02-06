@@ -348,7 +348,6 @@ test_that('Fertilizer C inputs work consistently with Yasso', {
     write_raw_output = TRUE
   )
   output_compost <- read.csv(file.path(outfolder, 'output_basgra.csv'))
-  
   expect_true(all(output_compost$CSOM_A >= output_mineral$CSOM_A))
   expect_true(any(output_compost$CSOM_A > output_mineral$CSOM_A))
   expect_true(all(output_compost$CSOM_N >= output_mineral$CSOM_N))
@@ -635,3 +634,63 @@ test_that('The yasso_rate_pc parameter has a reasonable effect', {
   expect_lt(sum(output_mod[1, awen]), sum(output[1, awen]))
 })
 
+test_that('The yasso ICs are handled consistently', {
+  met_path <- 'test.met'
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 1
+  
+  run_params <- setNames(df_params[,2], df_params[,1])
+  yasso_state <- c(
+    849, 95, 51, 1092, 14298, 1536
+  )
+  run_params[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')] <- yasso_state
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  output_state = as.numeric(output[1,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')])
+  expect_equal(
+    output_state,
+    yasso_state,
+    tolerance=2 # needed because the end of time step state is in output
+  )
+  
+})
+
+test_that('The yasso ICs are ignored if negative', {
+  met_path <- 'test.met'
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 1
+  
+  run_params <- setNames(df_params[,2], df_params[,1])
+  yasso_state <- rep(-1, 6)
+  run_params[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')] <- yasso_state
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  output_state = as.numeric(output[1,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')])
+  expect_gt(sum(output_state), 1000)
+})

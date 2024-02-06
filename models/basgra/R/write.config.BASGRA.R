@@ -360,6 +360,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     if ("phenological_stage"  %in% ic.names) {
       run_params[names(run_params) == "PHENI"] <-  IC$phenological_stage
     }
+
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')
+    for (p in yasso_pools) {
+      if (p %in% ic.names) {
+        run_params[names(run_params) == p] <- IC[[p]]
+      }
+    }
     
 
   }else if(!is.null(settings$run$inputs$poolinitcond$path)){
@@ -493,6 +500,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "FWCWP")] <- wcwp / wcst 
     }
 
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')
+    for (p in yasso_pools) {
+      value <- try(ncdf4::ncvar_get(IC.nc, p), silent=TRUE)
+      if (!is.na(value) && is.numeric(value)) {
+        run_params[names(run_params) == p] <- value
+      }
+    }
   }
   
   # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR

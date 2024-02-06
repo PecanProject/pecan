@@ -11,7 +11,7 @@ contains
 
     real :: cn_h_min
 
-    if (size(pa) < 152) then
+    if (size(pa) < 158) then
        print *, 'parameter vector too small:', size(pa)
        error stop
     end if
@@ -187,6 +187,8 @@ contains
     yasso_alpha_awen = pa(145:148)
     yasso_beta12 = pa(149:150)
     yasso_decomp_pc = pa(151:152)
+    yasso_cstate_init = pa(153:157)
+    yasso_nstate_init = pa(158)
     
     ! Parameter transformations 
     CLVI  = LOG10CLVI

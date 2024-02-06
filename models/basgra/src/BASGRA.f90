@@ -169,19 +169,25 @@ if (use_yasso) then
    !      totc_min_init, &
    !      yasso_cstate, &
    !      yasso_nstate)
-
-   call initialize_totc(&
-        yasso_param, &
-        totc_init, &
-        cn_input = 50.0, &
-        fract_root_input = 0.7, &
-        fract_legacy_soc = fract_legacy_c, &
-        tempr_c = hist_mean_tempr, &
-        precip_day = hist_yearly_precip / 365.0, &
-        tempr_ampl = hist_tempr_ampl, &
-        cstate = yasso_cstate, nstate = yasso_nstate)
-   
-   
+   if (sum(yasso_cstate_init) > 0.0) then
+      yasso_cstate = yasso_cstate_init
+      if (.not. yasso_nstate_init > 0.0) then
+         print *, 'yasso initial nstate is zero but cstate is not'
+         error stop
+      end if
+      yasso_nstate = yasso_nstate_init
+   else
+      call initialize_totc(&
+           yasso_param, &
+           totc_init, &
+           cn_input = 50.0, &
+           fract_root_input = 0.7, &
+           fract_legacy_soc = fract_legacy_c, &
+           tempr_c = hist_mean_tempr, &
+           precip_day = hist_yearly_precip / 365.0, &
+           tempr_ampl = hist_tempr_ampl, &
+           cstate = yasso_cstate, nstate = yasso_nstate)
+   end if
 else
    ! Initial constants for soil state variables
    CLITT      = CLITT0
@@ -263,6 +269,9 @@ do day = 1, NDAYS
 
   if (use_yasso) then
      if (use_met_ema) then
+        if (day == 1) then
+           yasso_met(1:2) = (/DAVTMP, RAIN/)
+        end if
         call average_met_ema((/DAVTMP, RAIN/), yasso_met)
      else
         call average_met((/DAVTMP, RAIN/), yasso_met, 30, yasso_met_state, yasso_met_ind)

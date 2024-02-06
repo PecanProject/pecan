@@ -151,3 +151,9 @@
 "yasso_beta_2",-0.002
 "yasso_rate_pc",0.0
 "yasso_tresp_pc",0.0
+"CSOM_A",0.0
+"CSOM_W",0.0
+"CSOM_E",0.0
+"CSOM_N",0.0
+"CSOM_H",0.0
+"NSOM",1e-3

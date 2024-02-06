@@ -72,6 +72,8 @@ real                  :: yasso_alpha_awen(4) ! base decomposition rates for the 
 real                  :: yasso_beta12(2)     ! temperature sensitivity parameters
 ! principal component parametrization for the decomposition rates and temperature sensitivity
 real                  :: yasso_decomp_pc(2)  
-
+! initial YASSO C & N state
+real                  :: yasso_cstate_init(5)
+real                  :: yasso_nstate_init
 end module parameters_site
 

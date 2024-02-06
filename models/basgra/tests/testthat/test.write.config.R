@@ -166,3 +166,50 @@ test_that('the force column values are interpreted flexibly', {
   expect_equal(length(param.vector), nrow(df_params))
   expect_equal(param.vector['LFWIDV'], c(LFWIDV=6.1*1e-3)) # in mm
 })
+
+test_that('YASSO pool ICs pass thru (list)', {
+  jobtemplate <- create_job_template('@RUN_PARAMS@')
+  settings <- basesettings
+  settings$model$jobtemplate <- jobtemplate
+  default <- NULL
+  run.id <- 9999
+  dir.create(file.path(outfolder, run.id), showWarnings = FALSE)
+  ic_list <-  list(
+    CSOM_A = 1,
+    CSOM_W = 2,
+    CSOM_E = 3,
+    CSOM_N = 4,
+    CSOM_H = 5,
+    NSOM = 6
+  )
+  write.config.BASGRA(defaults, trait.values=list(), settings=settings, run.id=run.id, IC=ic_list)
+  job.file <- file.path(outfolder, run.id, 'job.sh')
+  content <- paste(readLines(job.file), collapse='\n')
+  param.vector <- eval(parse(text=content))
+  print(param.vector)
+  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
+  expect_equal(setNames(state, NULL), seq(6))
+})
+
+test_that('YASSO pool ICs pass thru (file)', {
+  jobtemplate <- create_job_template('@RUN_PARAMS@')
+  settings <- basesettings
+  settings$model$jobtemplate <- jobtemplate
+  settings$run$inputs$poolinitcond = list(
+    path='ic_with_yasso_pools.nc'
+  )
+  default <- NULL
+  run.id <- 9999
+  dir.create(file.path(outfolder, run.id), showWarnings = FALSE)
+  write.config.BASGRA(defaults, trait.values=list(), settings=settings, run.id=run.id)
+  job.file <- file.path(outfolder, run.id, 'job.sh')
+  content <- paste(readLines(job.file), collapse='\n')
+  param.vector <- eval(parse(text=content))
+  print(param.vector)
+  state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
+  correct_state <- c(849.689004672464, 95.7316652108849, 51.5525079322194, 1092.13089465692, 14298.5439024818, 1536.9834023606)
+  expect_equal(setNames(state, NULL), correct_state)
+})
+
+
+
