@@ -140,7 +140,6 @@ test_that('the force column values are interpreted flexibly', {
   trait.values <- list(list(leaf_width = 6.1))
   job.file <- file.path(outfolder, run.id, 'job.sh')
   df_params[,2] <-flagvalue
-  print(df_params)
   
   df_params$force = rep('True', nrow(df_params))
   write.csv(df_params, param_path, row.names=FALSE)
@@ -186,7 +185,6 @@ test_that('YASSO pool ICs pass thru (list)', {
   job.file <- file.path(outfolder, run.id, 'job.sh')
   content <- paste(readLines(job.file), collapse='\n')
   param.vector <- eval(parse(text=content))
-  print(param.vector)
   state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
   expect_equal(setNames(state, NULL), seq(6))
 })
@@ -205,7 +203,6 @@ test_that('YASSO pool ICs pass thru (file)', {
   job.file <- file.path(outfolder, run.id, 'job.sh')
   content <- paste(readLines(job.file), collapse='\n')
   param.vector <- eval(parse(text=content))
-  print(param.vector)
   state <- param.vector[c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM')]
   correct_state <- c(849.689004672464, 95.7316652108849, 51.5525079322194, 1092.13089465692, 14298.5439024818, 1536.9834023606)
   expect_equal(setNames(state, NULL), correct_state)
