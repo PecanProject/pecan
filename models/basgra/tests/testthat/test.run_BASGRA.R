@@ -665,7 +665,6 @@ test_that('The yasso ICs are handled consistently', {
     yasso_state,
     tolerance=2 # needed because the end of time step state is in output
   )
-  
 })
 
 test_that('The yasso ICs are ignored if negative', {
@@ -693,4 +692,36 @@ test_that('The yasso ICs are ignored if negative', {
   output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
   output_state = as.numeric(output[1,c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N','CSOM_H','NSOM')])
   expect_gt(sum(output_state), 1000)
+  # check that met values are reasonable from the defaults
+  output_met <- as.numeric(output[1,c('TEMPR30', 'PRECIP30')])
+  expect_equal(output_met[1], 10, tolerance=20)
+  expect_equal(output_met[2], 1, tolerance=5)
+})
+
+test_that('The smoothed tempr and precip are read from params', {
+  met_path <- 'test.met'
+  df_params <- read.csv(system.file('BASGRA_params.csv', package='PEcAn.BASGRA'))
+  df_params[df_params[,1] == 'use_yasso', 2] <- 1
+  df_params[df_params[,1] == 'use_nitrogen', 2] <- 0
+  
+  run_params <- setNames(df_params[,2], df_params[,1])
+  met_values = c(-1e5, 1e5)
+  run_params[c('TEMPR30', 'PRECIP30')] <- met_values
+  outfolder <- mktmpdir()
+  harvest_file <- file.path(outfolder, 'harvest.csv')
+  fertilize_file <- file.path(outfolder, 'fertilize.csv')
+  write_harv_fert(harvest_file, fertilize_file)
+  run_BASGRA(
+    met_path, run_params, harvest_file, fertilize_file,
+    start_date = '2019-01-01',
+    end_date = '2019-12-31 23:00',
+    outdir = outfolder,
+    sitelat = 60.29,
+    sitelon = 22.39, # match the test meteo data file
+    write_raw_output = TRUE
+  )
+  output <- read.csv(file.path(outfolder, 'output_basgra.csv'))
+  output_values <- as.numeric(output[1,c('TEMPR30', 'PRECIP30')])
+  expect_lt(output_values[1], -1e2)
+  expect_gt(output_values[2], 1e2)
 })

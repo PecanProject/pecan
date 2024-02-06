@@ -367,7 +367,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   #days_harvest <- as.integer(days_harvest)
   
   # run  model
-  NPARAMS = as.integer(158) # from set_params.f90
+  NPARAMS = as.integer(160) # from set_params.f90
   if (length(run_params) != NPARAMS) {
     PEcAn.logger::logger.severe(sprintf('%i parameters required, %i given', NPARAMS, length(run_params)))
   }
