@@ -132,8 +132,8 @@ run.sensitivity.analysis <-
         
         for (pft in settings$pfts) {
           if (pft$name %in% pfts) {
-            traits <- trait.names[[pft$name]]
-            quantiles.str <- rownames(sa.samples[[pft$name]])
+            traits <- samples$trait.names[[pft$name]]
+            quantiles.str <- rownames(samples$sa.samples[[pft$name]])
             quantiles.str <- quantiles.str[which(quantiles.str != '50')]
             quantiles <- as.numeric(quantiles.str)/100
             
@@ -163,7 +163,7 @@ run.sensitivity.analysis <-
             
             ### Send diagnostic output to the console
             print(sensitivity.results[[pft$name]]$variance.decomposition.output)
-            print(sensitivity.output[[pft$name]])
+            print(sens_out$sensitivity.output[[pft$name]])
             
             ### Plotting - Optional
             if(plot){
