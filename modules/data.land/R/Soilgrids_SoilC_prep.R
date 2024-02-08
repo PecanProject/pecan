@@ -10,7 +10,6 @@
 #' @return A data frame containing AGB median and sd for each site and each time step.
 #' @export
 #'
-#' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points, 

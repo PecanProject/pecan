@@ -1,5 +1,3 @@
-##' @name download_NEON_soilmoist
-##' @description: 
 ##' Download NEON Soil Water Content and Soil Salinity data by date and site name
 ##' 
 ##' @param site four letter NEON site code name(s). If no site is specified, it will download all of them (chr) (e.g "BART" or c("SRER", "KONA", "BART"))
@@ -17,8 +15,8 @@
 ##' 
 ##' @author Juliette Bateman
 ##' 
-##' @example
-##' \run{
+##' @examples
+##' \dontrun{
 ##' test <- download_NEON_soilmoisture(
 ##'   site = c("SRER", "BART", "KONA"),
 ##'   avg = 30,
