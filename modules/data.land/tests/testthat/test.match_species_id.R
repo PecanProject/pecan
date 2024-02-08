@@ -24,14 +24,15 @@ test_that("Species matching works", {
     dbname = "bety",
     user = "bety",
     password = "bety",
-    host = "localhost")
+    host = "localhost",
+    driver = "Postgres")
   con <- PEcAn.DB::db.open(db_params)
 
   test_merge(c('ACRU', 'TSCA'), 'usda', con)
-  test_merge(c(316, 261), 'fia', con)
+  test_merge(c(316L, 261L), 'fia', con)
   test_merge(c('Acer rubrum', 'Tsuga canadensis'), 'latin_name', con)
 
-  test_table <- data.frame(bety_species_id = c(30, 1419),
+  test_table <- data.frame(bety_species_id = c(30L, 1419L),
                            input_code = c('AceRub', 'TsuCan'))
 
   test_merge(input_codes = test_table$input_code, format_name = 'custom', bety = con,

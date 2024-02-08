@@ -6,14 +6,13 @@
 library(PEcAn.utils)
 library(PEcAn.settings)
 library(PEcAn.DB)
-library(RPostgreSQL)
 
 betyparms <- PEcAn.DB::get_postgres_envvars(
   host = "localhost",
   dbname = "bety",
   user = "bety",
   password = "bety",
-  driver = "PostgreSQL",
+  driver = "Postgres",
   write = FALSE)
 fiaparms <- betyparms
 fiaparms$dbname <- "fia5data"
