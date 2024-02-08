@@ -31,8 +31,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
     if (file.exists(samples.file)) {
       samples = new.env()
       load(samples.file, envir = samples)
-      runs.samples <- samples$runs.samples
-      ens.run.ids <- runs.samples$ensemble
+      ens.run.ids <- samples$runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")
     }
