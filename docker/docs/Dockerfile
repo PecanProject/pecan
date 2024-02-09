@@ -9,7 +9,7 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \
-    && install2.r -e -s -r cloud.r-project.org -n -1 bookdown \
+    && install2.r -e -s -r cloud.r-project.org -n -1 bookdown rmarkdown knitr \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src/book_source/
