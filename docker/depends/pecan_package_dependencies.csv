@@ -110,13 +110,13 @@
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
-"knitr","*","base/db","Suggests",FALSE
 "knitr","*","base/qaqc","Suggests",FALSE
 "knitr","*","modules/allometry","Suggests",FALSE
 "knitr","*","modules/assim.batch","Suggests",FALSE
 "knitr","*","modules/meta.analysis","Suggests",FALSE
 "knitr","*","modules/photosynthesis","Suggests",FALSE
 "knitr","*","modules/rtm","Suggests",FALSE
+"knitr",">= 1.42","base/db","Suggests",FALSE
 "lattice","*","modules/meta.analysis","Imports",FALSE
 "linkages","*","models/linkages","Suggests",FALSE
 "lqmm","*","modules/assim.batch","Imports",FALSE
