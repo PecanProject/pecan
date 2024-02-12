@@ -9,7 +9,12 @@ MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \
-    && install2.r -e -s -n -1 bookdown \
+    && Rscript \
+        -e 'repos <- c(getOption("repos"),' \
+        -e '           sub(r"(\d{4}-\d{2}-\d{2})", "latest", getOption("repos")))' \
+        -e 'remotes::install_version("rmarkdown", ">= 2.19", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
+        -e 'remotes::install_version("knitr", ">= 1.42", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
+        -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src/book_source/
