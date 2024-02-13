@@ -24,7 +24,7 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     # install bookdown
     - name: Install bookdown
       run: |
@@ -55,7 +55,7 @@ jobs:
     # download documentation repo
     - name: Checkout documentation repo
       if: github.event_name == 'push'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
