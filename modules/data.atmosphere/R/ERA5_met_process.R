@@ -81,8 +81,8 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
   }
   
   #restructure the site_info into list.
-  site_info$start_date <- rep(settings$state.data.assimilation$start.date, length(settings))
-  site_info$end_date <- rep(settings$state.data.assimilation$end.date, length(settings))
+  site_info$start_date <- start_date <- rep(settings$state.data.assimilation$start.date, length(settings))
+  site_info$end_date <- end_date <- rep(settings$state.data.assimilation$end.date, length(settings))
   site_info$out.path <- rep(out.path, length(settings))
   site_info$in.path <- rep(in.path, length(settings))
   site_info$model.type <- rep(settings$model$type, length(settings))
@@ -154,7 +154,7 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
       settings[[i]]$run$site$met.end <- 
         settings[[i]]$run$end.date <- 
         settings[[i]]$state.data.assimilation$end.date
-      settings[[i]]$run$inputs$met <- as.list(unlist(Clim_paths[[i]])) %>% set_names(rep("path", length(Clim_paths[[i]])))
+      settings[[i]]$run$inputs$met <- as.list(unlist(Clim_paths[[i]])) %>% purrr::set_names(rep("path", length(Clim_paths[[i]])))
     }
     
     #write settings into xml file.
