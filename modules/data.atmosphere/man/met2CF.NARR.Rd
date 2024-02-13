@@ -29,6 +29,8 @@ met2CF.NARR(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should ouput of function be extra verbose}
+
+\item{...}{other arguments, currently ignored}
 }
 \description{
 Convert NARR files to CF files
