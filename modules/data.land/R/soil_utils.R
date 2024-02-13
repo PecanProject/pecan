@@ -66,27 +66,22 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
     sand <- xsand.def[soil_type]
     clay <- xclay.def[soil_type]
-    
   } else {
-    
     if (any(c(sand, silt, clay) > 2)) {
       # assume values reported in % not proportion
       sand <- if (is.null(sand)) { NULL } else { sand / 100 }
       silt <- if (is.null(silt)) { NULL } else { silt / 100 }
       clay <- if (is.null(clay)) { NULL } else { clay / 100 }
     }
-    
     # compute up to one missing value (>1 missing was handled above)
     sand <- sand %||% (1-silt-clay)
     silt <- silt %||% (1-sand-clay)
     clay <- clay %||% (1-sand-silt)
-    
     #normalize
     stot <- sand + silt + clay
     sand <- sand / stot
     silt <- silt / stot
     clay <- clay / stot
-    
     mysoil$soil_n <- sclass(sand,clay)
     mysoil$soil_type  <- soil.name[mysoil$soil_n]
   }
@@ -152,7 +147,6 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
     
     # Soil field capacity[ m^3/m^3 ]
     mysoil$volume_fraction_of_water_in_soil_at_field_capacity[z] <- mysoil$volume_fraction_of_water_in_soil_at_saturation[z] * ( fieldcp.K/mysoil$soil_hydraulic_conductivity_at_saturation[z])^ (1. / (2.*mysoil$soil_hydraulic_b[z]+3.))
-    
   } ## end primary properties
   
   #---------------------------------------------------------------------------------------#
