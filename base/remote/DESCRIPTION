@@ -19,6 +19,7 @@ Description: This package contains utilities for communicating with and executin
 Imports:
     dplyr,
     foreach,
+    furrr,
     PEcAn.logger,
     httr,
     jsonlite,
