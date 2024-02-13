@@ -495,6 +495,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                                          "g m-2", "kg m-2") / sec_in_day
     outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FSOILAMDC"],
                                                          "g m-2", "kg m-2") / sec_in_day
+    outlist[[length(outlist)+1]] <- output[thisyear, outputNames == "TEMPR30"]
+    outlist[[length(outlist)+1]] <- output[thisyear, outputNames == "PRECIP30"]
+
     
     # ******************** Declare netCDF dimensions and variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -555,7 +558,11 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                                     missval = -999, longname='C in runoff')
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("FSOILAMDC", units = "kg C m-2 s-1", dim = dims,
                                                     missval = -999, longname='Flux of carbon input in soil amendments')
-    
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("TEMPR30", units = "degC", dim = dims,
+                                                    missval = -999, longname='Smoothed air temperature')
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("PRECIP30", units = "mm/day", dim = dims,
+                                                    missval = -999, longname='Smoothed daily precipitation')
+
     
     # ******************** Declare netCDF variables ********************#
     
