@@ -56,7 +56,6 @@
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
-"dplyr","*","modules/assim.batch","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
 "dplyr","*","modules/data.atmosphere","Imports",FALSE
@@ -73,9 +72,11 @@
 "furrr","*","base/remote","Imports",FALSE
 "furrr","*","modules/assim.sequential","Imports",FALSE
 "furrr","*","modules/data.atmosphere","Suggests",FALSE
+"furrr","*","modules/data.land","Imports",FALSE
 "furrr","*","modules/data.remote","Imports",FALSE
 "future","*","modules/assim.sequential","Imports",FALSE
 "future","*","modules/data.atmosphere","Suggests",FALSE
+"future","*","modules/data.land","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE

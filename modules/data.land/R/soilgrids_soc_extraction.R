@@ -52,7 +52,7 @@
 ##' 
 ##' @export
 ##' @author Qianyu Li, Shawn P. Serbin
-##' 
+##' @importFrom magrittr %>%
 soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   if (future::supportsMulticore()) {
     future::plan(future::multicore)

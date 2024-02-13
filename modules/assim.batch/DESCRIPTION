@@ -23,7 +23,6 @@ Imports:
     MASS,
     methods,
     mlegp,
-    dplyr,
     ellipse,
     graphics,
     grDevices,
