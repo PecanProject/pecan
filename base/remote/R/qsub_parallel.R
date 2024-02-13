@@ -13,6 +13,7 @@
 #' @author Dongchen Zhang
 #' 
 #' @importFrom foreach %dopar%
+#' @importFrom dplyr %>%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10, hybrid = TRUE) {
   if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
