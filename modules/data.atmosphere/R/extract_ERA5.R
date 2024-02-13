@@ -10,7 +10,8 @@
 #' @param newsite site name.
 #' @param vars variables to be extracted. If NULL all the variables will be returned.
 #' @param overwrite Logical if files needs to be overwritten.
-#' @verbose Decide if we want to stop printing info.
+#' @param verbose Decide if we want to stop printing info.
+#' @param ... other inputs.
 #' @details For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
