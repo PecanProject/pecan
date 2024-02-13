@@ -20,7 +20,6 @@
 #' @return list of soil hydraulic and thermal parameters
 #' @export
 #' @importFrom rlang %||%
-    # `A %||% B` is a null-filling operator: "B if A is null, A in all other cases"
 #' @examples 
 #' sand <- c(0.3, 0.4, 0.5)
 #' clay <- c(0.3, 0.3, 0.3)
