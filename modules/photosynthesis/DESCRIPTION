@@ -27,8 +27,8 @@ Imports:
     graphics,
     stats
 Suggests:
-    knitr,
-    rmarkdown,
+    knitr (>= 1.42),
+    rmarkdown (>= 2.19),
     markdown
 SystemRequirements: JAGS (>=2.2.0)
 License: BSD_3_clause + file LICENSE
