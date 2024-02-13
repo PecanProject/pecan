@@ -73,7 +73,6 @@
 "future","*","modules/assim.sequential","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
-"ggmap","*","modules/uncertainty","Imports",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
 "ggplot2","*","base/utils","Suggests",FALSE
 "ggplot2","*","base/visualization","Imports",FALSE
@@ -110,13 +109,13 @@
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
-"knitr","*","base/qaqc","Suggests",FALSE
-"knitr","*","modules/allometry","Suggests",FALSE
-"knitr","*","modules/assim.batch","Suggests",FALSE
-"knitr","*","modules/meta.analysis","Suggests",FALSE
-"knitr","*","modules/photosynthesis","Suggests",FALSE
-"knitr","*","modules/rtm","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
+"knitr",">= 1.42","base/qaqc","Suggests",FALSE
+"knitr",">= 1.42","modules/allometry","Suggests",FALSE
+"knitr",">= 1.42","modules/assim.batch","Suggests",FALSE
+"knitr",">= 1.42","modules/meta.analysis","Suggests",FALSE
+"knitr",">= 1.42","modules/photosynthesis","Suggests",FALSE
+"knitr",">= 1.42","modules/rtm","Suggests",FALSE
 "lattice","*","modules/meta.analysis","Imports",FALSE
 "linkages","*","models/linkages","Suggests",FALSE
 "lqmm","*","modules/assim.batch","Imports",FALSE
@@ -470,12 +469,12 @@
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
-"rmarkdown","*","base/qaqc","Suggests",FALSE
-"rmarkdown","*","modules/allometry","Suggests",FALSE
-"rmarkdown","*","modules/assim.batch","Suggests",FALSE
-"rmarkdown","*","modules/meta.analysis","Suggests",FALSE
-"rmarkdown","*","modules/photosynthesis","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE
+"rmarkdown",">= 2.19","base/qaqc","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/allometry","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/assim.batch","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/meta.analysis","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/photosynthesis","Suggests",FALSE
 "RPostgres","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
