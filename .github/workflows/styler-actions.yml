@@ -14,7 +14,7 @@ jobs:
         run: echo '${{ steps.file_changes.outputs.files_modified }}'
       - name: work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
       - uses: r-lib/actions/pr-fetch@master
@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
       - uses: r-lib/actions/pr-fetch@v1

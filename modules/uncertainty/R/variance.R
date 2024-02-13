@@ -20,7 +20,11 @@ variance.stats <- function(x){
 ##' Calculate distribution of function of a variable
 ##'
 ##' Transform trait parameter through trait-specific univariate model emulator spline function
-##' Given a matrix of parameter sets, calculates a matrix of model output by applying appropriate spline function to each parameter. Output is use with \code{\link{variance.decomposition}} and \code{\link{spline.ensemble}}  
+##' Given a matrix of parameter sets, calculates a matrix of model output
+##'   by applying appropriate spline function to each parameter.
+##'   Output is used with \code{\link{plot_variance_decomposition}}
+##'   and \code{\link{spline.ensemble}}
+##'
 ##' @title Get g_i(phi_i)
 ##' @param splinefuns univariate spline functions created for each trait, e.g. by the \code{\link{sensitivity.analysis}} function. 
 ##' @param trait.samples n x m matrix (or list with m vectors of length n) of n parameter sets, each with a sample from m traits 
@@ -76,7 +80,7 @@ spline.ensemble <- function(gi.phii, median){
 
 vd.variance <- function(gi.phii){
   ## Calculate variance for each trait
-  var.phii    <- apply(gi.phii, 2, var)
+  var.phii    <- apply(gi.phii, 2, stats::var)
   sd.var.phii <- apply(gi.phii, 2, sd.var)
   return(list(var = sum(var.phii),
               sd  = sqrt(sum(sd.var.phii^2))))

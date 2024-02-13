@@ -53,7 +53,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -112,7 +112,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -171,7 +171,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -189,7 +189,7 @@ jobs:
 
     # install sipnet
     - name: Check out SIPNET
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: PecanProject/sipnet
         path: sipnet
