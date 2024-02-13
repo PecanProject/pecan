@@ -84,7 +84,7 @@ deps <- pkgs_parsed |>
   dplyr::filter(package != "R") |>
   dplyr::mutate(is_pecan = grepl("^PEcAn", package)) |>
   dplyr::select(package, version, needed_by_dir, tidyselect::everything()) |>
-  dplyr::arrange(package, version, needed_by_dir)
+  dplyr::arrange(package, version, needed_by_dir, .locale = "en_US")
 
 # Save these for use at install time
 write.csv(deps, "docker/depends/pecan_package_dependencies.csv", row.names = FALSE)
