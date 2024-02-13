@@ -32,7 +32,7 @@ Read.IC.info.BADM <-function(lat, long){
   biomass.df <- U.S.SB %>%
     dplyr::filter(
       .data$NA_L2CODE == Code_Level,
-      .data$VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
+      grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)
     ) %>%
     dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   
@@ -44,7 +44,7 @@ Read.IC.info.BADM <-function(lat, long){
     biomass.df <- U.S.SB %>%
       dplyr::filter(
         .data$NA_L1CODE == Code_Level,
-        .data$VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
+        grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)
       ) %>%
       dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
@@ -54,7 +54,7 @@ Read.IC.info.BADM <-function(lat, long){
   if (nrow(biomass.df) < 3)  {
     Code_Level <- "ALL"
     biomass.df <- U.S.SB %>%
-      dplyr::filter(.data$VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)) %>%
+      dplyr::filter(grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)) %>%
       dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
 
@@ -94,7 +94,7 @@ Read.IC.info.BADM <-function(lat, long){
           type <- type[-which(type == "*_BIOMASS")]
         #----------------- Unit conversion
         unit.in <- Gdf %>%
-          dplyr::filter(.data$VARIABLE %>% grepl("UNIT", .)) %>%
+          dplyr::filter(grepl("UNIT", .data$VARIABLE)) %>%
           dplyr::pull(.data$DATAVALUE) %>% 
           as.character()
         
@@ -113,7 +113,7 @@ Read.IC.info.BADM <-function(lat, long){
           unit.ready <- "kg/m^2"
         
         Date.in <- Gdf %>%
-          dplyr::filter(.data$VARIABLE %>% grepl("DATE", .)) %>%
+          dplyr::filter(grepl("DATE", .data$VARIABLE)) %>%
           dplyr::pull(.data$DATAVALUE) %>%
           as.Date()
         
@@ -124,7 +124,7 @@ Read.IC.info.BADM <-function(lat, long){
         # if it's biomass
         if (type == "*_BIOMASS") {
           Oregan.in <- Gdf %>%
-            dplyr::filter(.data$VARIABLE %>% grepl("ORGAN", .)) %>%
+            dplyr::filter(grepl("ORGAN", .data$VARIABLE)) %>%
             dplyr::pull(.data$DATAVALUE) 
           
           
@@ -134,7 +134,7 @@ Read.IC.info.BADM <-function(lat, long){
           
         } else if (type == "*SOIL") {
           val <- Gdf %>%
-            dplyr::filter(.data$VARIABLE %>% grepl("SOIL_STOCK_C_ORG", .)) %>% #"SOIL_STOCK_C_ORG"
+            dplyr::filter(grepl("SOIL_STOCK_C_ORG", .data$VARIABLE)) %>%
             dplyr::pull(.data$DATAVALUE) %>%
             as.numeric()
           
