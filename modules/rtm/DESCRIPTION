@@ -30,7 +30,7 @@ Suggests:
     PEcAn.ED2,
     XML,
     testthat (>= 1.0.2),
-    knitr,
+    knitr (>= 1.42),
     pwr
 OS_type: unix
 License: BSD_3_clause + file LICENSE
