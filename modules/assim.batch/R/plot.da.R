@@ -23,8 +23,27 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   num.run.ids <- 5  #commandArgs(trailingOnly = TRUE)
   print(num.run.ids)
   
-  load(paste(in.dir, "samples.Rdata", sep = ""))
-  load(paste(in.dir, "L.nee.Rdata", sep = ""))
+  samples.file <- paste(in.dir, "samples.Rdata", sep = "")
+  L.nee.file <- paste(in.dir, "L.nee.Rdata", sep = "")
+  
+  if(file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = "samples")
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the plot.da function")
+  }
+  
+  if(file.exists(L.nee.file)) {
+    L.nee <- new.env()
+    load(L.nee.file, envir = "L.nee")
+    x <- L.nee$x
+    y <- L.nee$y
+  } else {
+    PEcAn.logger::logger.error(L.nee.file, "not found, this file is required by the plot.da function")
+  }
+
   prior.x <- x
   prior.y <- y
   
@@ -90,7 +109,16 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
 
   samp <- lapply(seq(num.run.ids), function(run.id) {
     print(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
-    load(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
+    run.id.file <- paste0(in.dir, "./mcmc", run.id, ".Rdata")
+    
+    if(file.exists(run.id.file)) {
+      run.env <- new.env()
+      load(run.id.file, envir = "run.env")
+      m <- run.env$m
+    } else {
+      PEcAn.logger::logger.error(run.id.file, "not found, this file is required by the plot.da function")
+    }
+    
     return(m)
   })
   
