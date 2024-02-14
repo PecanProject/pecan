@@ -15,6 +15,7 @@ Imports:
     curl,
     DBI,
     furrr,
+    future,
     glue,
     ncdf4,
     PEcAn.DB,

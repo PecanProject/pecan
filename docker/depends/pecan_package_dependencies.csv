@@ -77,6 +77,7 @@
 "future","*","modules/assim.sequential","Imports",FALSE
 "future","*","modules/data.atmosphere","Suggests",FALSE
 "future","*","modules/data.land","Imports",FALSE
+"future","*","modules/data.remote","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
