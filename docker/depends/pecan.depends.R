@@ -13,17 +13,19 @@ condense_version_requirements <- function(specs) {
     return("*")
   }
   specs <- unique(specs[specs != "*"])
-  if (any(!grepl(">", specs))) {
-    # we *could* write more to handle this case if needed, but it seems very rare:
-    # available.packages() shows `<=` or `==` deps in just 4 of 20297 CRAN packages
-    stop(
-      "pecan_depends only supports minimum versions (e.g. `>= 2.8.1`), ",
-      "not exact (`==`) or maximum versions (`<=`).",
-      "Problem seen in (", paste(dQuote(specs), collapse = ", "), ")")
-  }
   versions <- package_version(
     gsub("[^[:digit:].-]+", "", specs))
 
+  if ((length(unique(versions)) > 1) && any(!grepl(">", specs))) {
+    # can't assume the latest version works for all, so give up.
+    # we *could* write more to handle this case if needed, but it seems very rare:
+    # available.packages() shows `<=` or `==` deps in just 4 of 20297 CRAN packages
+    stop(
+      "pecan_depends only knows how to resolve minimum dependency versions ",
+      "(e.g. `>= 2.8.1`). Exact (`==`) or maximum versions (`<=`) ",
+      " are only allowed if all PEcAn packages declare the same version.",
+      "Problem seen in (", paste(dQuote(specs), collapse = ", "), ")")
+  }
   specs[versions == max(versions)]
 }
 
