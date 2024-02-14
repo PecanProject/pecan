@@ -8,8 +8,7 @@
 * this is package ‘PEcAn.data.land’ version ‘1.7.2.9000’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-
+* checking package dependencies ... NOTE
 Imports includes 35 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
@@ -1079,5 +1078,3 @@ Status: 7 WARNINGs, 4 NOTEs
 See
   ‘/tmp/RtmpBGazJV/PEcAn.data.land.Rcheck/00check.log’
 for details.
-
-
