@@ -48,13 +48,13 @@
 "doSNOW","*","base/remote","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
+"dplyr","*","base/remote","Imports",FALSE
 "dplyr","*","base/utils","Imports",FALSE
 "dplyr","*","base/workflow","Imports",FALSE
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
-"dplyr","*","modules/assim.batch","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
 "dplyr","*","modules/data.atmosphere","Imports",FALSE
@@ -69,8 +69,15 @@
 "foreach","*","modules/data.remote","Imports",FALSE
 "fs","*","base/db","Imports",FALSE
 "fs","*","modules/data.land","Imports",FALSE
+"furrr","*","base/remote","Imports",FALSE
 "furrr","*","modules/assim.sequential","Imports",FALSE
+"furrr","*","modules/data.atmosphere","Suggests",FALSE
+"furrr","*","modules/data.land","Imports",FALSE
+"furrr","*","modules/data.remote","Imports",FALSE
 "future","*","modules/assim.sequential","Imports",FALSE
+"future","*","modules/data.atmosphere","Suggests",FALSE
+"future","*","modules/data.land","Imports",FALSE
+"future","*","modules/data.remote","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
@@ -358,6 +365,7 @@
 "PEcAn.settings","*","modules/assim.batch","Imports",TRUE
 "PEcAn.settings","*","modules/assim.sequential","Imports",TRUE
 "PEcAn.settings","*","modules/benchmark","Imports",TRUE
+"PEcAn.settings","*","modules/data.atmosphere","Suggests",TRUE
 "PEcAn.settings","*","modules/data.land","Suggests",TRUE
 "PEcAn.settings","*","modules/meta.analysis","Imports",TRUE
 "PEcAn.settings","*","modules/uncertainty","Imports",TRUE

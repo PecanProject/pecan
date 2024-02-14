@@ -6,11 +6,7 @@
 \usage{
 MODIS_LAI_prep(
   site_info,
-  start_date,
-  end_date,
   time_points,
-  NCore = NULL,
-  run_parallel = FALSE,
   outdir = NULL,
   search_window = 30,
   export_csv = FALSE
@@ -19,15 +15,7 @@ MODIS_LAI_prep(
 \arguments{
 \item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
-\item{start_date}{Start date of SDA workflow.}
-
-\item{end_date}{End date of SDA workflow.}
-
 \item{time_points}{A vector contains each time point within the start and end date.}
-
-\item{NCore}{Number of CPU to be used for LAI extraction.}
-
-\item{run_parallel}{Bool variable decide if you want to proceed parallelly.}
 
 \item{outdir}{Where the final CSV file will be stored.}
 
