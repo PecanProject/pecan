@@ -102,7 +102,7 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   ocdquant_dep <- cbind(ocdquant,depths)
   ocd_df <- tidyr::pivot_longer(as.data.frame(ocdquant_dep),cols=tidyselect::all_of(quantile_name),names_to=c("Quantile", "Siteid"),names_sep = "_")
   #remove NA from ocd_df
-  ocd_df <- na.omit(ocd_df)
+  ocd_df <- stats::na.omit(ocd_df)
   colnames(ocd_df) <- c("Depth","Quantile", "Siteid","Value")
   ocd_df$Value<-as.numeric(ocd_df$Value)
   f1<-factor(ocd_df$Siteid,levels=unique(ocd_df$Siteid))

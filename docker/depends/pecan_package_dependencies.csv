@@ -161,7 +161,6 @@
 "magrittr","*","modules/data.atmosphere","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
-"maps","*","base/visualization","Imports",FALSE
 "markdown","*","modules/allometry","Suggests",FALSE
 "markdown","*","modules/photosynthesis","Suggests",FALSE
 "MASS","*","base/utils","Suggests",FALSE
@@ -268,7 +267,6 @@
 "PEcAn.DB","*","base/all","Depends",TRUE
 "PEcAn.DB","*","base/qaqc","Imports",TRUE
 "PEcAn.DB","*","base/settings","Imports",TRUE
-"PEcAn.DB","*","base/visualization","Imports",TRUE
 "PEcAn.DB","*","base/workflow","Imports",TRUE
 "PEcAn.DB","*","models/biocro","Suggests",TRUE
 "PEcAn.DB","*","models/ldndc","Imports",TRUE
@@ -381,7 +379,6 @@
 "PEcAn.utils","*","base/db","Imports",TRUE
 "PEcAn.utils","*","base/qaqc","Suggests",TRUE
 "PEcAn.utils","*","base/settings","Imports",TRUE
-"PEcAn.utils","*","base/visualization","Imports",TRUE
 "PEcAn.utils","*","base/workflow","Imports",TRUE
 "PEcAn.utils","*","models/biocro","Imports",TRUE
 "PEcAn.utils","*","models/clm45","Depends",TRUE
