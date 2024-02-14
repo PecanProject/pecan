@@ -478,7 +478,6 @@
 "RPostgres","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
-"RPostgreSQL","*","modules/data.land","Suggests",FALSE
 "Rpreles","*","models/preles","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
