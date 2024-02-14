@@ -120,7 +120,7 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
             } else {
               return(NA)
             }
-          }) %>% unlist %>% set_names(NULL)
+          }) %>% unlist %>% purrr::set_names(NULL)
       }, .progress = T)
     PEcAn.logger::logger.info("Extracting LAI qc products!")
     lai_qc <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
@@ -142,7 +142,7 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
             } else {
               return(NA)
             }
-          }) %>% unlist %>% set_names(NULL)
+          }) %>% unlist %>% purrr::set_names(NULL)
       }, .progress = T)
     # LAI <- data.frame(matrix(NA, 0, 6)) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "lai", "sd"))
     LAI <- data.frame()
