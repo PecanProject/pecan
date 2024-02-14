@@ -29,6 +29,8 @@ Imports:
     dplyr,
     dplR,
     fs,
+    future,
+    furrr,
     httr,
     lubridate,
     magrittr,
