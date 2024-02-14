@@ -17,14 +17,21 @@ condense_version_requirements <- function(specs) {
     gsub("[^[:digit:].-]+", "", specs))
 
   if ((length(unique(versions)) > 1) && any(!grepl(">", specs))) {
-    # can't assume the latest version works for all, so give up.
-    # we *could* write more to handle this case if needed, but it seems very rare:
+    # Can't assume the latest version works for all, so give up.
+    # We *could* write more to handle this case if needed, but it seems very rare:
     # available.packages() shows `<=` or `==` deps in just 4 of 20297 CRAN packages
+    #
+    # Since the package name wasn't passed in here, we unhelpfully print *just*
+    #   the offending versions and send the user back to the CSV for details.
     stop(
-      "pecan_depends only knows how to resolve minimum dependency versions ",
-      "(e.g. `>= 2.8.1`). Exact (`==`) or maximum versions (`<=`) ",
-      " are only allowed if all PEcAn packages declare the same version.",
-      "Problem seen in (", paste(dQuote(specs), collapse = ", "), ")")
+      "Found multiple version requirements (",
+      paste(dQuote(specs), collapse = ", "), ") for the same dependency, ",
+      "and not all are minimum versions (e.g. `>= x.y.z`). ",
+      "Exact (`==`) or maximum (`<=`) version reuirements are only allowed ",
+      "if all PEcAn packages declare the same version. ",
+      "Sorry, this function doesn't know which dependency caused this. ",
+      "To find it, search for these version strings in ",
+      "'pecan_package_dependencies.csv'.")
   }
   specs[versions == max(versions)]
 }

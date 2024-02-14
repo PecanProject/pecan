@@ -479,7 +479,6 @@
 "rmarkdown",">= 2.19","modules/assim.batch","Suggests",FALSE
 "rmarkdown",">= 2.19","modules/meta.analysis","Suggests",FALSE
 "rmarkdown",">= 2.19","modules/photosynthesis","Suggests",FALSE
-"roxygen2","== 6.1.0","models/cable","Roxygen",FALSE
 "roxygen2","== 7.2.3","base/all","Roxygen",FALSE
 "roxygen2","== 7.2.3","base/db","Roxygen",FALSE
 "roxygen2","== 7.2.3","base/logger","Roxygen",FALSE
@@ -491,6 +490,7 @@
 "roxygen2","== 7.2.3","base/workflow","Roxygen",FALSE
 "roxygen2","== 7.2.3","models/basgra","Roxygen",FALSE
 "roxygen2","== 7.2.3","models/biocro","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/cable","Roxygen",FALSE
 "roxygen2","== 7.2.3","models/clm45","Roxygen",FALSE
 "roxygen2","== 7.2.3","models/dalec","Roxygen",FALSE
 "roxygen2","== 7.2.3","models/dvmdostem","Roxygen",FALSE
