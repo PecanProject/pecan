@@ -82,13 +82,13 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           "soil_depth"),
         function(x) x / 100))
 
-  soilprop.new <- soilprop.new[ complete.cases(soilprop.new) , ]
+  soilprop.new <- soilprop.new[ stats::complete.cases(soilprop.new) , ]
   #converting it to list
   soil.data.gssurgo <- names(soilprop.new)[1:4] %>%
     purrr::map(function(var) {
       soilprop.new[, var]
     }) %>%
-    setNames(names(soilprop.new)[1:4])
+    stats::setNames(names(soilprop.new)[1:4])
   #This ensures that I have at least one soil ensemble in case the modeling part failed
   all.soil.ens <-c(all.soil.ens, list(soil.data.gssurgo))
   
@@ -105,7 +105,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     depth.levs[depth.levs>length(depths)] <-length(depths)
     
      soilprop.new.grouped<-soilprop.new %>% 
-      mutate(DepthL=depths[depth.levs])
+      dplyr::mutate(DepthL=depths[depth.levs])
     
     # let's fit dirichlet for each depth level separately
     simulated.soil.props<-soilprop.new.grouped %>%
@@ -123,7 +123,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           # # using the simulated sand/silt/clay to generate soil ensemble
           simulated.soil<-simulated.soil %>%
             as.data.frame %>%
-            mutate(DepthL=rep(DepthL.Data[1,6], size),
+            dplyr::mutate(DepthL=rep(DepthL.Data[1,6], size),
                    mukey=rep(DepthL.Data[1,5], size)) %>%
             `colnames<-`(c("fraction_of_sand_in_soil",
                            "fraction_of_silt_in_soil",
@@ -141,8 +141,8 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     
     # estimating the proportion of areas for those mukeys which are modeled
     mukey_area <- mukey_area %>%
-      filter(mukeys %in% simulated.soil.props$mukey) %>%
-      mutate(Area=Area/sum(Area))
+      dplyr::filter(mukeys %in% simulated.soil.props$mukey) %>%
+      dplyr::mutate(Area=.data$Area/sum(.data$Area))
     
     #--- Mixing the depths
     soil.profiles<-simulated.soil.props %>% 
@@ -166,7 +166,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           purrr::map(function(var){
             SEns[,var]
           })%>% 
-          setNames(names(SEns))
+          stats::setNames(names(SEns))
       })%>%
       c(all.soil.ens,.)
     
@@ -203,7 +203,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     purrr::discard(is.null)
   
   out.ense<-out.ense%>% 
-    setNames(rep("path", length(out.ense)))
+    stats::setNames(rep("path", length(out.ense)))
   
   return(out.ense)
 }
@@ -244,8 +244,8 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   soil.lon <- ncdf4::ncvar_get(nc, lon.dim)
   
   ## check in range
-  dlat <- abs(median(diff(soil.lat)))
-  dlon <- abs(median(diff(soil.lon)))
+  dlat <- abs(stats::median(diff(soil.lat)))
+  dlon <- abs(stats::median(diff(soil.lon)))
   if(lat < (min(soil.lat)-dlat) | lat > (max(soil.lat)+dlat)){
     PEcAn.logger::logger.error("site lat out of bounds",lat,range(soil.lat))
   }
