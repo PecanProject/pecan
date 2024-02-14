@@ -269,7 +269,6 @@
 "PEcAn.DB","*","base/settings","Imports",TRUE
 "PEcAn.DB","*","base/workflow","Imports",TRUE
 "PEcAn.DB","*","models/biocro","Suggests",TRUE
-"PEcAn.DB","*","models/ldndc","Imports",TRUE
 "PEcAn.DB","*","models/stics","Imports",TRUE
 "PEcAn.DB","*","models/template","Imports",TRUE
 "PEcAn.DB","*","modules/allometry","Imports",TRUE
