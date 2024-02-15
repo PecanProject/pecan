@@ -18,14 +18,12 @@ on:
     branches:
       - master
       - develop
-
   pull_request:
-
   merge_group:
-
   issue_comment:
     types:
       - created
+  workflow_dispatch:
 
 # Certain actions will only run when this is the master repo.
 env:

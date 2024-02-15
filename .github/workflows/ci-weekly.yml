@@ -5,6 +5,7 @@ on:
   # (hopefully after the 1:30 AM `depends` build has completed)
    schedule:
     - cron: '30 4 * * 1'
+  workflow_dispatch:
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
