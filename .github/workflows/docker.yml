@@ -78,7 +78,7 @@ jobs:
         if: github.base_ref != ''
         run: |
           dep_chgs=$(
-            git diff --name-status ${GITHUB_BASE_REF}...${GITHUB_HEAD_REF} -- docker/depends)
+            git diff --name-status ${GITHUB_BASE_REF} ${GITHUB_HEAD_REF} -- docker/depends)
           if [[ "$dep_chgs" != "" ]]; then
             echo 'UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}' >> $GITHUB_ENV
           fi
