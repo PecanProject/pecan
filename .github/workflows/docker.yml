@@ -74,7 +74,18 @@ jobs:
             echo "PECAN_VERSION=develop" >> $GITHUB_ENV
             echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           fi
-
+      # If any dependencies changed in this PR, try to update depends image
+      # Only runs on pull_request -- others it's not clear what base to compare to
+      - name: check for changed dependencies
+        if: github.base_ref != ''
+        run: |
+          dep_chgs=$(
+            git diff --name-status ${GITHUB_BASE_REF}...HEAD docker/depends)
+          if [[ "$dep_chgs" != "" ]]; then
+            echo 'UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}' >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_BASE_REF: develop
       # use shell script to build, there is some complexity in this
       - name: create images
         run: ./docker.sh -i github
@@ -82,6 +93,7 @@ jobs:
           PECAN_GIT_CHECKSUM: ${{ github.sha }}
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
           VERSION: ${{ env.PECAN_VERSION }}
+          UPDATE_DEPENDS_FROM_TAG: ${{ env.UPDATE_DEPENDS_FROM_TAG }}
 
       # push all images to github
       - name: Publish to GitHub
