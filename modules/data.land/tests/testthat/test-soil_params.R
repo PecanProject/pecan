@@ -1,6 +1,4 @@
 
-context("soil_params")
-
 test_that("accepts 2-component textures", {
 	sand <- c(0.3, 0.4, 0.5)
 	clay <- c(0.2, 0.3, 0.3)
