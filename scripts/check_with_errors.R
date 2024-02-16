@@ -87,12 +87,13 @@ if (log_notes && n_notes > 0) {
 # * Run check_with_errors.R to be sure the check is currently passing
 # * run `RESAVE_CHECKS=true Rscript scripts/check_with_errors.R path/to/package`
 # * Commit updated <pkgname>/tests/Rcheck_reference.log file
+new_file <- file.path(chk$checkdir, "00check.log")
 if (resave) {
     cat("Saving current check results as the new standard\n")
     if (file.exists(old_file)) {
         cat("**Overwriting** existing saved check output\n")
     }
-    cat(chk$stdout, file = old_file)
+    file.copy(from = new_file, to = old_file)
     quit("no")
 }
 ###
@@ -103,6 +104,16 @@ if (!file.exists(old_file)) {
 }
 
 old <- rcmdcheck::parse_check(old_file)
+
+# "Why reread instead of just using the existing `chk` object?"
+# Because newer versions of rcmdcheck insert timestamps into stdout
+#   (e.g. `checking R code for possible problems ... [41s/17s] NOTE`).
+# It ignores them for its whole-warning checks, but they cause spurious
+#   mismatches in our line-by-line comparison.
+# Rereading the raw R CMD check output from disk should give a more
+#   stable format for comparison.
+chk <- rcmdcheck::parse_check(new_file)
+
 cmp <- rcmdcheck::compare_checks(old, chk)
 
 msg_lines <- function(msg) {
