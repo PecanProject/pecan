@@ -76,14 +76,14 @@ jobs:
       # Only runs on pull_request -- others it's not clear what base to compare to
       - name: check for changed dependencies
         if: github.base_ref != ''
-        run: |
-          dep_chgs=$(
-            git diff --name-status ${GITHUB_BASE_REF} ${GITHUB_HEAD_REF} -- docker/depends)
-          if [[ "$dep_chgs" != "" ]]; then
-            echo 'UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}' >> $GITHUB_ENV
-          fi
-        env:
-          GITHUB_BASE_REF: develop
+        uses: dorny/paths-filter@v3
+        id: findchanges
+        with:
+          filters: |
+            deps:
+              - docker/depends/**
+      - if: steps.findchanges.outputs.deps == 'true'
+        run: echo 'UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}' >> $GITHUB_ENV
       # use shell script to build, there is some complexity in this
       - name: create images
         run: ./docker.sh -i github
