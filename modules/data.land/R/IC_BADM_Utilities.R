@@ -1,5 +1,4 @@
 
-#Reading the data and writing the netcdf
 #' Read.IC.info.BADM
 #'
 #' @param lat numeric latitude
@@ -9,7 +8,8 @@
 #' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content. Variable in the return objext refers to the what this value was called inside BADM database.
+#' @return a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content.
+#'   Variable in the return object refers to what this value was called inside BADM database.
 #'
 #' @export
 #' @examples
@@ -72,7 +72,7 @@ Read.IC.info.BADM <-function(lat, long){
         Rootini <- NA
         litterIni <- NA
         Date.in <- NA
-        Oregan.in <- NA
+        Organ.in <- NA
         # find what type of entry it is - biomass/soil or litter
         if (nrow(Gdf) > 0) {
           type <-
@@ -123,7 +123,7 @@ Read.IC.info.BADM <-function(lat, long){
       
         # if it's biomass
         if (type == "*_BIOMASS") {
-          Oregan.in <- Gdf %>%
+          Organ.in <- Gdf %>%
             dplyr::filter(grepl("ORGAN", .data$VARIABLE)) %>%
             dplyr::pull(.data$DATAVALUE) 
           
@@ -157,7 +157,7 @@ Read.IC.info.BADM <-function(lat, long){
             Site = Gdf$SITE_ID %>% unique(),
             Var = Gdf$VARIABLE[1],
             Date = Date.in,
-            Organ = Oregan.in,
+            Organ = Organ.in,
             AGB = PlantWoodIni,
             soil_organic_carbon_content = SoilIni,
             litter_carbon_content = litterIni
