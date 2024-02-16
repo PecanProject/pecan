@@ -83,7 +83,7 @@ jobs:
             deps:
               - docker/depends/**
       - if: steps.findchanges.outputs.deps == 'true'
-        run: echo 'UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}' >> $GITHUB_ENV
+        run: echo "UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}" >> $GITHUB_ENV
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
       # use shell script to build, there is some complexity in this
