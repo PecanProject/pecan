@@ -93,7 +93,7 @@ if (resave) {
     if (file.exists(old_file)) {
         cat("**Overwriting** existing saved check output\n")
     }
-    file.copy(from = new_file, to = old_file)
+    file.copy(from = new_file, to = old_file, overwrite = TRUE)
     quit("no")
 }
 ###
@@ -123,6 +123,14 @@ msg_lines <- function(msg) {
     #split lines, delete empty ones
     msg <- strsplit(msg, split = "\n", fixed = TRUE)
     msg <- lapply(msg, function(x)x[x != ""])
+
+    # Remove "[14s/16s]" timestamp from title line, if present
+    # Copied from https://github.com/r-lib/rcmdcheck/issues/128
+    msg[[1]] <- gsub(
+        "\\[[0-9]+s(/[0-9]+s)?\\] ([A-Z]+)",
+        "\\2",
+        msg[[1]],
+        useBytes=TRUE)
 
     # prepend message title (e.g. "checking Rd files ... NOTE") to each line
     unlist(lapply(
