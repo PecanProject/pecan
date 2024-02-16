@@ -21,7 +21,7 @@ Read.IC.info.BADM <-function(lat, long){
   #Reading in the DB
   #
   U.S.SB <-
-    utils::read.csv(system.file("data","BADM.csv", package = "PEcAn.data.land"))
+    load(system.file("data","BADM.rda", package = "PEcAn.data.land"))
 
   
   Regions <- EPA_ecoregion_finder(lat, long)
@@ -285,14 +285,14 @@ EPA_ecoregion_finder <- function(Lat, Lon){
 
   # L1 layer
   L1 <-
-    sf::read_sf(system.file("data","eco-region.json", package = "PEcAn.data.land")) %>%
+    sf::read_sf(system.file("extdata","eco-region.json", package = "PEcAn.data.land")) %>%
     sf::st_set_crs(
       "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
     ) %>%
     sf::st_transform("+proj=longlat +datum=WGS84")
   # L2 layer
   L2 <-
-    sf::read_sf(system.file("data","eco-regionl2.json", package = "PEcAn.data.land")) %>%
+    sf::read_sf(system.file("extdata","eco-regionl2.json", package = "PEcAn.data.land")) %>%
     sf::st_set_crs(
       "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
     ) %>%
