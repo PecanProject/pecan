@@ -20,8 +20,7 @@ Read.IC.info.BADM <-function(lat, long){
   cov.factor <-1
   #Reading in the DB
   #
-  U.S.SB <-
-    load(system.file("data","BADM.rda", package = "PEcAn.data.land"))
+  U.S.SB <- PEcAn.data.land::BADM
 
   
   Regions <- EPA_ecoregion_finder(lat, long)

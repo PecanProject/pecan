@@ -66,7 +66,6 @@ Suggests:
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-LazyLoad: yes
-LazyData: FALSE
+LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.2.3
