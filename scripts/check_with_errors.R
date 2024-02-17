@@ -116,6 +116,20 @@ chk <- rcmdcheck::parse_check(new_file)
 
 cmp <- rcmdcheck::compare_checks(old, chk)
 
+collapse_title <- function(x) {
+
+    # Remove "[14s/16s]" timestamp from title line, if present
+    # modified from https://github.com/r-lib/rcmdcheck/issues/128
+    x[[1]] <- gsub(
+        "\\[[0-9]+s(/[0-9]+s)?\\] ?", "", x[[1]], useBytes=TRUE)
+
+    if (length(x) > 1) {
+        paste(x[[1]], x[-1], sep = ": ")
+    } else {
+        x
+    }
+}
+
 msg_lines <- function(msg) {
     # leading double-space indicates wrapped line -> rejoin
     msg <- gsub("\n  ", " ", msg, fixed = TRUE)
@@ -124,24 +138,8 @@ msg_lines <- function(msg) {
     msg <- strsplit(msg, split = "\n", fixed = TRUE)
     msg <- lapply(msg, function(x)x[x != ""])
 
-    # Remove "[14s/16s]" timestamp from title line, if present
-    # Copied from https://github.com/r-lib/rcmdcheck/issues/128
-    msg[[1]] <- gsub(
-        "\\[[0-9]+s(/[0-9]+s)?\\] ([A-Z]+)",
-        "\\2",
-        msg[[1]],
-        useBytes=TRUE)
-
     # prepend message title (e.g. "checking Rd files ... NOTE") to each line
-    unlist(lapply(
-        msg,
-        function(x) {
-            if (length(x) > 1) {
-                paste(x[[1]], x[-1], sep = ": ")
-            } else {
-                x
-            }
-        }))
+    unlist(lapply(msg, collapse_title))
 }
 
 if (cmp$status != "+") {
