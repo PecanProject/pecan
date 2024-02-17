@@ -551,7 +551,6 @@
 "stringr",">= 1.1.0","base/visualization","Imports",FALSE
 "stringr",">= 1.1.0","models/ed","Imports",FALSE
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
-"stringr",">= 1.1.0","modules/data.remote","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
 "swfscMisc","*","modules/data.land","Imports",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
