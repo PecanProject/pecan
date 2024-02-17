@@ -82,6 +82,11 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   scipen <- getOption("scipen")
   options(scipen = 12)
 
+  trait.samples <- NULL
+  sa.samples <- NULL
+  ensemble.samples <- NULL
+  runs.samples <- NULL
+
   PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
   samples.file <- file.path(settings$outdir, "samples.Rdata")
   if (file.exists(samples.file)) {
