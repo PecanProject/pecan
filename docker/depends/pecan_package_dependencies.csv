@@ -401,7 +401,6 @@
 "PEcAn.utils","*","modules/data.land","Imports",TRUE
 "PEcAn.utils","*","modules/data.remote","Imports",TRUE
 "PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
-"PEcAn.utils","*","modules/priors","Imports",TRUE
 "PEcAn.utils","*","modules/rtm","Suggests",TRUE
 "PEcAn.utils","*","modules/uncertainty","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/basgra","Imports",TRUE
