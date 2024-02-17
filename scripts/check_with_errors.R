@@ -99,7 +99,7 @@ if (resave) {
 ###
 
 # everything beyond this point is comparing to old version
-if (!file.exists(old_file)) {
+if (!file.exists(old_file) || sum(n_errors, n_warns, n_notes) == 0) {
     quit("no")
 }
 
