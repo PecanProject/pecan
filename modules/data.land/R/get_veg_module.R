@@ -79,7 +79,7 @@ get_veg_module <- function(input_veg,
       write = TRUE,
       overwrite = overwrite,
       # fcn specific args
-      new_site = new.site,
+      new_site = new_site,
       source_id = source.id,
       format_name = input_veg$match.format,
       dbparms = dbparms,
