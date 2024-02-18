@@ -91,7 +91,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     ensemble.samples <- samples$ensemble.samples
     sa.samples <- samples$sa.samples
     runs.samples <- samples$runs.samples
-    env.samples <- samples$env.samples
+    ## env.samples <- samples$env.samples
   } else {
     PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
   }
