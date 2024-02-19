@@ -51,6 +51,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("NEE")
   }
   
+  if ("NPP" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$NPP[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("NPP")
+  }
+  
   if ("Qle" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$Qle[last]  # W m-2
     names(forecast[[length(forecast)]]) <- c("Qle")
@@ -125,6 +130,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   if ("phenological_stage" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$phenological_stage[last]  
     names(forecast[[length(forecast)]]) <- c("phenological_stage")
+  } 
+  
+  if ("SoilMoistFrac" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  
+    names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
   } 
   
   PEcAn.logger::logger.info(runid)

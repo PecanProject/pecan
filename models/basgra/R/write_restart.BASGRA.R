@@ -116,6 +116,13 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("phenological_stage")
   }
   
+  if ("SoilMoistFrac" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac
+    if (new.state$SoilMoistFrac < 0) analysis.save[[length(analysis.save)]] <- 0.001
+    if (new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 1
+    names(analysis.save[[length(analysis.save)]]) <- c("SoilMoistFrac")
+  }
+  
   if (!is.null(analysis.save) && length(analysis.save) > 0){
     analysis.save.mat <- data.frame(matrix(unlist(analysis.save, use.names = TRUE), nrow = 1))
     colnames(analysis.save.mat) <- names(unlist(analysis.save))
