@@ -49,13 +49,13 @@
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/db","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
+"dplyr","*","base/remote","Imports",FALSE
 "dplyr","*","base/utils","Imports",FALSE
 "dplyr","*","base/workflow","Imports",FALSE
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
-"dplyr","*","modules/assim.batch","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
 "dplyr","*","modules/data.atmosphere","Imports",FALSE
@@ -69,8 +69,15 @@
 "foreach","*","modules/data.remote","Imports",FALSE
 "fs","*","base/db","Imports",FALSE
 "fs","*","modules/data.land","Imports",FALSE
+"furrr","*","base/remote","Imports",FALSE
 "furrr","*","modules/assim.sequential","Imports",FALSE
+"furrr","*","modules/data.atmosphere","Suggests",FALSE
+"furrr","*","modules/data.land","Imports",FALSE
+"furrr","*","modules/data.remote","Imports",FALSE
 "future","*","modules/assim.sequential","Imports",FALSE
+"future","*","modules/data.atmosphere","Suggests",FALSE
+"future","*","modules/data.land","Imports",FALSE
+"future","*","modules/data.remote","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
@@ -155,7 +162,6 @@
 "magrittr","*","modules/data.atmosphere","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
-"maps","*","base/visualization","Imports",FALSE
 "markdown","*","modules/allometry","Suggests",FALSE
 "markdown","*","modules/photosynthesis","Suggests",FALSE
 "MASS","*","base/utils","Suggests",FALSE
@@ -262,10 +268,8 @@
 "PEcAn.DB","*","base/all","Depends",TRUE
 "PEcAn.DB","*","base/qaqc","Imports",TRUE
 "PEcAn.DB","*","base/settings","Imports",TRUE
-"PEcAn.DB","*","base/visualization","Imports",TRUE
 "PEcAn.DB","*","base/workflow","Imports",TRUE
 "PEcAn.DB","*","models/biocro","Suggests",TRUE
-"PEcAn.DB","*","models/ldndc","Imports",TRUE
 "PEcAn.DB","*","models/stics","Imports",TRUE
 "PEcAn.DB","*","models/template","Imports",TRUE
 "PEcAn.DB","*","modules/allometry","Imports",TRUE
@@ -361,6 +365,7 @@
 "PEcAn.settings","*","modules/assim.batch","Imports",TRUE
 "PEcAn.settings","*","modules/assim.sequential","Imports",TRUE
 "PEcAn.settings","*","modules/benchmark","Imports",TRUE
+"PEcAn.settings","*","modules/data.atmosphere","Suggests",TRUE
 "PEcAn.settings","*","modules/data.land","Suggests",TRUE
 "PEcAn.settings","*","modules/meta.analysis","Imports",TRUE
 "PEcAn.settings","*","modules/uncertainty","Imports",TRUE
@@ -374,7 +379,6 @@
 "PEcAn.utils","*","base/db","Imports",TRUE
 "PEcAn.utils","*","base/qaqc","Suggests",TRUE
 "PEcAn.utils","*","base/settings","Imports",TRUE
-"PEcAn.utils","*","base/visualization","Imports",TRUE
 "PEcAn.utils","*","base/workflow","Imports",TRUE
 "PEcAn.utils","*","models/biocro","Imports",TRUE
 "PEcAn.utils","*","models/clm45","Depends",TRUE
@@ -475,10 +479,52 @@
 "rmarkdown",">= 2.19","modules/assim.batch","Suggests",FALSE
 "rmarkdown",">= 2.19","modules/meta.analysis","Suggests",FALSE
 "rmarkdown",">= 2.19","modules/photosynthesis","Suggests",FALSE
+"roxygen2","== 7.2.3","base/all","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/db","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/logger","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/qaqc","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/remote","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/settings","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/utils","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/visualization","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/workflow","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/basgra","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/biocro","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/cable","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/clm45","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/dalec","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/dvmdostem","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/ed","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/fates","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/gday","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/jules","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/ldndc","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/linkages","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/lpjguess","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/maat","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/maespa","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/preles","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/sibcasa","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/sipnet","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/stics","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/template","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/allometry","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/assim.batch","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/assim.sequential","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/benchmark","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.atmosphere","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.hydrology","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.land","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.remote","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/emulator","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/meta.analysis","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/photosynthesis","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/priors","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/rtm","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/uncertainty","Roxygen",FALSE
 "RPostgres","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
-"RPostgreSQL","*","modules/data.land","Suggests",FALSE
 "Rpreles","*","models/preles","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE

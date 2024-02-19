@@ -425,6 +425,13 @@ sda.enkf.multisite <- function(settings,
           }) %>%
           stats::setNames(site.ids)
         
+        #if it's a rabbitmq job sumbmission, we will first copy and paste the whole run folder within the SDA to the remote host.
+        if (!is.null(settings$host$rabbitmq)) {
+          settings$host$rabbitmq$prefix <- paste0(obs.year, ".nc")
+          cp2cmd <- gsub("@RUNDIR@", settings$host$rundir, settings$host$rabbitmq$cp2cmd)
+          try(system(cp2cmd, intern = TRUE))
+        }
+        
         #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
         runs.tmp <- list.dirs(rundir, full.names = F)
         runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
@@ -432,7 +439,11 @@ sda.enkf.multisite <- function(settings,
         paste(file.path(rundir, 'runs.txt'))  ## testing
         Sys.sleep(0.01)                       ## testing
         if(control$parallel_qsub){
-          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
+          if (is.null(control$jobs.per.file)) {
+            PEcAn.remote::qsub_parallel(settings, prefix = paste0(obs.year, ".nc"))
+          } else {
+            PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
+          }
         }else{
           PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
         }
