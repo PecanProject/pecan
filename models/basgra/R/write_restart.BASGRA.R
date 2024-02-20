@@ -38,6 +38,18 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("slow_soil_pool_carbon_content")
   }
   
+  if ("soil_nitrogen_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$soil_nitrogen_content
+    if (new.state$soil_nitrogen_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("soil_nitrogen_content")
+  }
+  
+  if ("TotSoilCarb" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$TotSoilCarb
+    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("TotSoilCarb")
+  }
+  
   if ("CropYield" %in% variables) {
      analysis.save[[length(analysis.save) + 1]] <- new.state$CropYield
      if (new.state$CropYield < 0) analysis.save[[length(analysis.save)]] <- 0

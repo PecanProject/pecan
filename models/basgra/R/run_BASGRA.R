@@ -439,11 +439,16 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
       csoms         <- output[thisyear, outputNames == "CSOM_H"] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")
+      nsom          <- output[thisyear, outputNames == "NSOM"] # (g N m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nsom, "g m-2", "kg m-2")
     } else {
       csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
       csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
+      nsomf          <- output[thisyear, outputNames == "NSOMF"] # (g N m-2)
+      nsoms          <- output[thisyear, outputNames == "NSOMS"] # (g N m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nsomf+nsoms, "g m-2", "kg m-2")
     }
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf + csoms, "g m-2", "kg m-2") 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG1")] 
@@ -537,6 +542,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                       longname = "Dead Leaf Carbon Content")
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("soil_nitrogen_content", units = "kg N m-2", dim = dims, missval = -999,
+                                                    longname = "Soil Nitrogen Content by Layer	") 
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Non-elongating generative tiller density") 

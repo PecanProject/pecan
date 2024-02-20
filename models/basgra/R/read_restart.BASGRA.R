@@ -41,6 +41,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("slow_soil_pool_carbon_content")
   }
   
+  if ("soil_nitrogen_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$soil_nitrogen_content[last]  # kg N m-2
+    names(forecast[[length(forecast)]]) <- c("soil_nitrogen_content")
+  }
+  
   if ("TotSoilCarb" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  # kg C m-2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")

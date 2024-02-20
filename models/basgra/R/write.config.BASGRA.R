@@ -372,10 +372,14 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
 
       #run_params[names(run_params) == "fract_legacy_c"] <-  run_params[names(run_params) == "CSOM_H"] / run_params[names(run_params) == "totc_init"]
      
-      run_params[names(run_params) == "NSOM"] <- ratio_soc *last_vals[names(last_vals) == "NSOM"]
-      if(is.nan(run_params[names(run_params) == "NSOM"]) | is.infinite(run_params[names(run_params) == "NSOM"])){
-        run_params[names(run_params) == "NSOM"] <- run_params[names(run_params) == "CSOM_H"]*0.115
-      } 
+      if ("soil_nitrogen_content"  %in% ic.names) {
+        run_params[names(run_params) == "NSOM"] <- udunits2::ud.convert(IC$soil_nitrogen_content, "kg", "g")
+      }else{
+        run_params[names(run_params) == "NSOM"] <- ratio_soc *last_vals[names(last_vals) == "NSOM"]
+        if(is.nan(run_params[names(run_params) == "NSOM"]) | is.infinite(run_params[names(run_params) == "NSOM"])){
+          run_params[names(run_params) == "NSOM"] <- run_params[names(run_params) == "CSOM_H"]*0.115
+        }
+      }
       
     }else{
       if ("fast_soil_pool_carbon_content"  %in% ic.names) {
