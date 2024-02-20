@@ -26,11 +26,11 @@ Create a PEcAn Settings object
 }
 \section{Functions}{
 \itemize{
-\item \code{as.Settings}: coerce an object to Settings
+\item \code{as.Settings()}: coerce an object to Settings
 
-\item \code{is.Settings}: test if object is already a Settings
+\item \code{is.Settings()}: test if object is already a Settings
+
 }}
-
 \author{
 Ryan Kelly
 }

@@ -35,7 +35,7 @@ The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 
 \item{username}{Ameriflux username}
 
-\item{method}{Optional. download.file() function option.  Use this to set custom programs such as ncftp}
+\item{method}{Optional. download_file() function option.  Use this to set custom programs such as ncftp}
 
 \item{useremail}{Used email, should include 'address sign' for code to be functional}
 
@@ -50,7 +50,7 @@ to the given outfolder. Details about amf_download_base function can be found he
 https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
 }
 \details{
-Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
+Uses Ameriflux LBL JSON API to download met data from Ameriflux towers in CSV format
 }
 \examples{
 \dontrun{

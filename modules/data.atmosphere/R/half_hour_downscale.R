@@ -14,7 +14,7 @@
 #' @examples
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
-  # open netcdf
+    # open netcdf
   nc <- ncdf4::nc_open(input_file)
   
   if(stringr::str_detect(input_file, "ens")){
@@ -54,16 +54,53 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
   
   # spline-based downscaling
   if(length(which(c("air_temperature", "wind_speed","specific_humidity", "air_pressure") %in% cf_var_names) == 4)){
-    forecast_noaa_ds <- downscale_spline_to_half_hrly(df = noaa_data, VarNames = c("air_temperature", "wind_speed","specific_humidity", "air_pressure"))
-  }else{
+    #convert units for qair2rh conversion
+    noaa_data_units <- data.frame(time = noaa_data$time, wind_speed = noaa_data$wind_speed, specific_humidity = noaa_data$specific_humidity)
+    airTemp <- noaa_data$air_temperature
+    airPress <- noaa_data$air_pressure
+    #convert K to C
+    K2C <- function(K){
+      C = K - 273.15
+      return(C)
+    }
+    temp.K <- as.matrix(airTemp)
+    temp.C <- apply(temp.K, 1, K2C)
+    noaa_data_units$air_temperature <- temp.C
+    #convert Pa to mb
+    Pa2mb <- function(P){
+      M <- P/100
+      return(M)
+    }
+    press.P <- as.matrix(airPress)
+    press.mb <- apply(press.P, 1, Pa2mb)
+    noaa_data_units$air_pressure <- press.mb
+    forecast_noaa_ds <- PEcAn.data.atmosphere::downscale_spline_to_half_hrly(df = noaa_data_units, VarNames = c("wind_speed","specific_humidity", "air_temperature", "air_pressure"))
+     }else{
     #Add error message
+       PEcAn.logger::logger.error(paste0("1hr Met ncdf file missing either air_temperature, wind_speed, specific_humidity, or air_pressure"))
   }
   
   # Convert splined SH, temperature, and presssure to RH
   forecast_noaa_ds <- forecast_noaa_ds %>%
     dplyr::mutate(relative_humidity = qair2rh(qair = forecast_noaa_ds$specific_humidity, temp = forecast_noaa_ds$air_temperature, press = forecast_noaa_ds$air_pressure)) %>%
     dplyr::mutate(relative_humidity = ifelse(.data$relative_humidity > 1, 1, .data$relative_humidity))
-  
+  #convert airTemp and air Press back to K and Pa for met2model fcns
+  #convert C to K
+  C2K <- function(C){
+    K = C + 273.15
+    return(K)
+  }
+  temp.C <- as.matrix(forecast_noaa_ds$air_temperature)
+  temp.K <- apply(temp.C, 1, C2K)
+  forecast_noaa_ds$air_temperature <- temp.K
+  #convert mb to Pa
+  mb2Pa <- function(M){
+    P = M*100
+    return(P)
+  }
+  press.mb <- as.matrix(forecast_noaa_ds$air_pressure)
+  press.P <- apply(press.mb, 1, mb2Pa)
+  forecast_noaa_ds$air_pressure <- press.P
   # convert longwave to hourly (just copy 6 hourly values over past 6-hour time period)
   if("surface_downwelling_longwave_flux_in_air" %in% cf_var_names){
     LW.flux.hrly <- downscale_repeat_6hr_to_half_hrly(df = noaa_data, varName = "surface_downwelling_longwave_flux_in_air")
@@ -73,7 +110,7 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
   }
   
   # convert precipitation to hourly (just copy 6 hourly values over past 6-hour time period)
-  if("surface_downwelling_longwave_flux_in_air" %in% cf_var_names){
+  if("precipitation_flux" %in% cf_var_names){
     Precip.flux.hrly <- downscale_repeat_6hr_to_half_hrly(df = noaa_data, varName = "precipitation_flux")
     forecast_noaa_ds <- dplyr::inner_join(forecast_noaa_ds, Precip.flux.hrly, by = "time")
   }else{
@@ -104,7 +141,7 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
     dplyr::select("time", tidyselect::all_of(cf_var_names), "NOAA.member")
   
   #Write netCDF
-  write_noaa_gefs_netcdf(df = forecast_noaa_ds,
+  PEcAn.data.atmosphere::write_noaa_gefs_netcdf(df = forecast_noaa_ds,
                                                 ens = ens,
                                                 lat = lat.in,
                                                 lon = lon.in,
@@ -165,7 +202,9 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   df <- df %>%
     dplyr::select("time", "surface_downwelling_shortwave_flux_in_air") %>%
     dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
-    dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
+    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
+    dplyr::mutate(day = lubridate::date(.data$time))#%>%
+    #dplyr::mutate(lead_var = dplyr::lead(.data$surface_downwelling_shortwave_flux_in_air, 1))
   
   interp.df.days <- seq(min(df$days_since_t0), as.numeric(max(df$days_since_t0)), 1/(24/hr))
   
@@ -174,35 +213,52 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   data.hrly <- noaa_data_interp %>%
     dplyr::left_join(df, by = "time")
   
-  data.hrly$group_6hr <- NA
+  data.hrly$surface_downwelling_shortwave_flux_in_air <- NA
+  data.hrly$day <- lubridate::date(data.hrly$time)
+  data.hrly$hour <- lubridate::hour(data.hrly$time)
+  data.hrly$hourmin <- lubridate::hour(data.hrly$time) + lubridate::minute(data.hrly$time)/60
+  data.hrly$doyH <- lubridate::yday(data.hrly$time) + data.hrly$hour/(24/hr)
+  data.hrly$doyHM <- lubridate::yday(data.hrly$time) + data.hrly$hourmin/(24/hr)
+  data.hrly$rpotH <- downscale_solar_geom_halfhour(data.hrly$doyH, as.vector(lon), as.vector(lat))
+  data.hrly$rpotHM <- downscale_solar_geom_halfhour(data.hrly$doyHM, as.vector(lon), as.vector(lat))
   
-  group <- 0
-  for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      group <- group + 1
-      data.hrly$group_6hr[i] <- group
-    }else{
-      data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
-      data.hrly$group_6hr[i] <- group
+  for (k in 1:nrow(data.hrly)) {
+    if(is.na(data.hrly$surface_downwelling_shortwave_flux_in_air[k])){
+      SWflux <- as.matrix(subset(df, .data$day == data.hrly$day[k] & .data$hour == data.hrly$hour[k], data.hrly$surface_downwelling_shortwave_flux_in_air[k]))
+      data.hrly$surface_downwelling_shortwave_flux_in_air[k] <- ifelse(data.hrly$rpotHM[k] > 0, as.numeric(SWflux[1])*(data.hrly$rpotH[k]/data.hrly$rpotHM[k]),0)
     }
   }
   
-  ShortWave.ds <- data.hrly %>%
-    dplyr::mutate(hour = lubridate::hour(.data$time)) %>%
-    dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
-    dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
-    dplyr::group_by(.data$group_6hr) %>%
-    dplyr::mutate(avg.rpot = mean(.data$rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
-    dplyr::ungroup() %>%
-    dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
-    dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
-  
+  #ShortWave.ds <- dplyr::select(data.hrly, time, surface_downwelling_shortwave_flux_in_air)
+  ShortWave.ds <- data.hrly %>% select("time", "surface_downwelling_shortwave_flux_in_air")
+  # data.hrly$group_6hr <- NA
+  # 
+  # group <- 0
+  # for(i in 1:nrow(data.hrly)){
+  #   if(!is.na(data.hrly$lead_var[i])){
+  #     curr <- data.hrly$lead_var[i]
+  #     data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- curr
+  #     group <- group + 1
+  #     data.hrly$group_6hr[i] <- group
+  #   }else{
+  #     data.hrly$surface_downwelling_shortwave_flux_in_air[i] <- data.hrly$lead_var[i-1]
+  #     data.hrly$group_6hr[i] <- data.hrly$group_6hr[i-1]
+  #   }
+  # }
+  # 
+  # ShortWave.ds <- data.hrly %>%
+  #   dplyr::mutate(hour = lubridate::hour(.data$time) + lubridate::minute(.data$time)/60) %>%
+  #   dplyr::mutate(doy = lubridate::yday(.data$time) + .data$hour/(24/hr))%>%
+  #   dplyr::mutate(rpot = downscale_solar_geom_halfhour(.data$doy, as.vector(lon), as.vector(lat))) %>% # hourly sw flux calculated using solar geometry
+  #   dplyr::group_by(.data$group_6hr) %>%
+  #   dplyr::mutate(avg.rpot = mean(.data$rpot, na.rm = TRUE)) %>% # daily sw mean from solar geometry
+  #   dplyr::ungroup() %>%
+  #   dplyr::mutate(surface_downwelling_shortwave_flux_in_air = ifelse(.data$avg.rpot > 0, .data$rpot* (.data$surface_downwelling_shortwave_flux_in_air/.data$avg.rpot),0)) %>%
+  #   dplyr::select(.data$time, .data$surface_downwelling_shortwave_flux_in_air)
+
   return(ShortWave.ds)
   
 }
-
 
 #' @title Downscale repeat to half hourly
 #' @param df dataframe of data to be downscaled (Longwave)
@@ -228,11 +284,19 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     #Shift valued back because the 6hr value represents the average over the
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
+  #check for NA values and gapfill using closest timestep
+  for(k in 1:dim(df)[1]){
+    if (is.na(df$lead_var[k])) {
+      df$lead_var[k] <- df$lead_var[k-1]
+    }else{
+      df$lead_var[k] <- df$lead_var[k]
+    }
+  }
   
   #Create new vector with all hours
-  interp.df.days <- seq(min(df$days_since_t0),
-                        as.numeric(max(df$days_since_t0)),
-                        1 / (24 / hr))
+  interp.df.days <- seq(from = min(df$days_since_t0),
+                        to = as.numeric(max(df$days_since_t0)),
+                        by = 1 / (24 / hr))
   
   #Create new data frame
   noaa_data_interp <- tibble::tibble(time = lubridate::as_datetime(t0 + interp.df.days))
@@ -242,16 +306,17 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     dplyr::left_join(df, by = "time")
   
   #Fill in hours
+  curr <- vector()
   for(i in 1:nrow(data.hrly)){
-    if(!is.na(data.hrly$lead_var[i])){
-      curr <- data.hrly$lead_var[i]
+    if(is.na(data.hrly$lead_var[i])){
+      curr[i] <- data.hrly$lead_var[i-1]
     }else{
-      data.hrly$lead_var[i] <- curr
+      curr[i] <- data.hrly$lead_var[i]
     }
   }
-  
+  data.hrly$curr <- curr
   #Clean up data frame
-  data.hrly <- data.hrly %>% dplyr::select("time", .data$lead_var) %>%
+  data.hrly <- data.hrly %>% dplyr::select("time", "curr") %>%
     dplyr::arrange(.data$time)
   
   names(data.hrly) <- c("time", varName)

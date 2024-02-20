@@ -47,7 +47,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
   # set up bety connection
   con <- PEcAn.DB::db.open(dbparms$bety)
-  on.exit(db.close(con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   #grab site lat and lon info
   latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
@@ -94,10 +94,10 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     return(settings)
   }else if (input$source == "NEON_veg"){
     #For debugging purposes I am hard coding in the start and end dates, will revisit and adjust once extract_NEON_veg is working within ic_process
-    # start_date = as.Date("2020-01-01")
-    # end_date = as.Date("2021-09-01")
     start_date = as.Date(input$startdate)
     end_date = as.Date(input$enddate)
+    # start_date = as.Date("2020-01-01")
+    # end_date = as.Date("2021-09-01")
     #Note the start and end dates for ICs are not the same as those for the forecast runs
     #please check out NEON products DP1.10098.001 for your desired site to check data availability before setting start and end dates
   }else{

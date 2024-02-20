@@ -23,8 +23,27 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   num.run.ids <- 5  #commandArgs(trailingOnly = TRUE)
   print(num.run.ids)
   
-  load(paste(in.dir, "samples.Rdata", sep = ""))
-  load(paste(in.dir, "L.nee.Rdata", sep = ""))
+  samples.file <- paste(in.dir, "samples.Rdata", sep = "")
+  L.nee.file <- paste(in.dir, "L.nee.Rdata", sep = "")
+  
+  if(file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = "samples")
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the plot.da function")
+  }
+  
+  if(file.exists(L.nee.file)) {
+    L.nee <- new.env()
+    load(L.nee.file, envir = "L.nee")
+    x <- L.nee$x
+    y <- L.nee$y
+  } else {
+    PEcAn.logger::logger.error(L.nee.file, "not found, this file is required by the plot.da function")
+  }
+
   prior.x <- x
   prior.y <- y
   
@@ -79,15 +98,10 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   print(nrow(x))
   print(length(good.runs))
   for (i in seq_along(x)) {
-    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
-    if (is.na(trait.entry)) {
-      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
-    }
-
     graphics::plot(x[good.runs, i], y[good.runs],
-         main = trait.entry$figid,
+         main = traits[i]$figid,
          xlim = p.rng[i, ],
-         xlab = trait.entry$units,
+         xlab = traits[i]$units,
          ylab = "-log(likelihood)",
          pch = 1)
     graphics::points(prior.x[, i], prior.y, col = "grey")
@@ -95,7 +109,16 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
 
   samp <- lapply(seq(num.run.ids), function(run.id) {
     print(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
-    load(paste0(in.dir, "./mcmc", run.id, ".Rdata"))
+    run.id.file <- paste0(in.dir, "./mcmc", run.id, ".Rdata")
+    
+    if(file.exists(run.id.file)) {
+      run.env <- new.env()
+      load(run.id.file, envir = "run.env")
+      m <- run.env$m
+    } else {
+      PEcAn.logger::logger.error(run.id.file, "not found, this file is required by the plot.da function")
+    }
+    
     return(m)
   })
   
@@ -124,19 +147,15 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     all <- do.call(rbind, lapply(samp, function(chain) chain[thin, i]))
     
     # Density plots
-    trait.entry <- PEcAn.utils::trait.lookup(gsub("[1-2]$", "", traits[i]))
-    if (is.na(trait.entry)) {
-      trait.entry <- PEcAn.utils::trait.lookup(traits[i])
-    }
     graphics::plot(stats::density(all),
          xlim = p.rng[i, ], 
-         main = paste(trait.entry$figid),
+         main = paste(traits[i]$figid),
          type = "l", 
          ylab = "", 
-         xlab = trait.entry$units)
+         xlab = traits[i]$units)
     x <- seq(p.rng[i, 1], p.rng[i, 2], length = 1000)
-    graphics::lines(x, ddist(x, priors[traits[i], ]), col = "grey")
-    graphics::lines(x, ddist(x, priors2[traits[i], ]), col = "grey", lty = 2)
+    graphics::lines(x, ddist(x, priors[traits[i]$id, ]), col = "grey")
+    graphics::lines(x, ddist(x, priors2[traits[i]$id, ]), col = "grey", lty = 2)
   }
   
   # Now approximate posteriors to data assimilation and store them with posteriors from meta

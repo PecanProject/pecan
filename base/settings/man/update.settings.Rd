@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{settings}{settings file}
+
+\item{force}{Logical: update even if settings have previously been updated?.}
 }
 \value{
 will return the updated settings values

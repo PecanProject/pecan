@@ -26,7 +26,12 @@ This function estimates the univariate responses of a model to a parameter for a
 }
 \examples{
 \dontrun{
-sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
+sensitivity.analysis(
+ trait.samples[[pft$name]],
+ sa.samples[[pft$name]], 
+ sa.agb[[pft$name]], 
+ pft$outdir
+)
 }
 }
 \author{

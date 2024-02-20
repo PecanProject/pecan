@@ -65,18 +65,20 @@ Suggests:
     bit64,
     data.table,
     here,
-    knitr,
+    knitr (>= 1.42),
+    mockery (>= 0.4.3),
     RPostgreSQL,
     RPostgres,
     RSQLite,
     rcrossref,
-    rmarkdown,
+    rmarkdown (>= 2.19),
     testthat (>= 2.0.0),
-    tidyverse
+    tidyverse,
+    withr
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

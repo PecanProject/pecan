@@ -45,5 +45,11 @@ remote.copy.from <- function(host, src, dst, options = NULL, delete = FALSE, std
     }
   }
   PEcAn.logger::logger.debug("rsync", shQuote(args))
-  system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
+  out <-
+    system2("rsync", shQuote(args), stdout = "", stderr = as.logical(stderr))
+  if (out != 0) {
+    PEcAn.logger::logger.severe(paste0("rsync status: ", out))
+  } else {
+    PEcAn.logger::logger.info("rsync status: success!")
+  }
 } # remote.copy.from

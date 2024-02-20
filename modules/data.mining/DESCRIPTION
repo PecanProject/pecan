@@ -1,6 +1,6 @@
 Package: PEcAn.data.mining
 Type: Package
-Title: PEcAn functions used for exploring model residuals and structures
+Title: PEcAn Functions Used for Exploring Model Residuals and Structures
 Description: (Temporary description) PEcAn functions used for exploring model residuals and structures
 Version: 1.7.2
 Date: 2021-10-04
@@ -21,4 +21,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2

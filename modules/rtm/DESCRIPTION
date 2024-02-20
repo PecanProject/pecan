@@ -30,7 +30,7 @@ Suggests:
     PEcAn.ED2,
     XML,
     testthat (>= 1.0.2),
-    knitr,
+    knitr (>= 1.42),
     pwr
 OS_type: unix
 License: BSD_3_clause + file LICENSE
@@ -40,4 +40,4 @@ LazyData: FALSE
 Encoding: UTF-8
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

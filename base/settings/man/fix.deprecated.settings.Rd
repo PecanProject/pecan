@@ -8,6 +8,8 @@ fix.deprecated.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings list}
+
+\item{force}{Logical: re-run fixing of deprecated settings even if it has been done previously?}
 }
 \value{
 updated settings list

@@ -52,10 +52,10 @@ if ($authentication) {
 					<?php foreach ($_REQUEST as $k => $v) {
 						if (is_array($v)) {
 							foreach($v as $x) {
-								echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+								echo "<input type=\"hidden\" name=\"{$k}[]\" value=\"{$x}\" />\n";
 							}
 						} else {
-							echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+							echo "<input type=\"hidden\" name=\"{$k}\" value=\"{$v}\" />\n";
 						}
 					} ?>
 				</form>
@@ -64,10 +64,10 @@ if ($authentication) {
 					<?php foreach ($_REQUEST as $k => $v) {
 						if (is_array($v)) {
 							foreach($v as $x) {
-								echo "<input type=\"hidden\" name=\"${k}[]\" value=\"${x}\" />\n";
+								echo "<input type=\"hidden\" name=\"{$k}[]\" value=\"{$x}\" />\n";
 							}
 						} else {
-							echo "<input type=\"hidden\" name=\"${k}\" value=\"${v}\" />\n";
+							echo "<input type=\"hidden\" name=\"{$k}\" value=\"{$v}\" />\n";
 						}
 					} ?>
 				</form>

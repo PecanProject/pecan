@@ -21,6 +21,8 @@ on:
 
   pull_request:
 
+  merge_group:
+
   issue_comment:
     types:
       - created
@@ -29,6 +31,7 @@ on:
 env:
   MASTER_REPO: PecanProject/pecan
   DOCKERHUB_ORG: pecan
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   docker:
@@ -38,9 +41,15 @@ jobs:
     steps:
       - name: Work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+          buildkitd-flags: --debug
+          install: true
 
       # calculate some variables that are used later
       - name: get version tag
@@ -72,7 +81,7 @@ jobs:
         env:
           PECAN_GIT_CHECKSUM: ${{ github.sha }}
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
-          VERSION: ${PECAN_VERSION}
+          VERSION: ${{ env.PECAN_VERSION }}
 
       # push all images to github
       - name: Publish to GitHub

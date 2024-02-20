@@ -11,6 +11,8 @@ on:
 
   pull_request:
 
+  merge_group:
+
 jobs:
   bookdown:
     runs-on: ubuntu-latest  
@@ -22,11 +24,13 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v2
-    # install rmarkdown
-    - name: Install rmarkdown
+    - uses: actions/checkout@v4
+    # install bookdown
+    - name: Install bookdown
       run: |
-        Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
+        Rscript \
+          -e 'repos <- c(getOption("repos"), sub(r"(\d{4}-\d{2}-\d{2})", "latest", getOption("repos")))' \
+          -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)'
     # copy files
     - name: copy extfiles
       run: |
@@ -44,25 +48,25 @@ jobs:
         cd book_source
         Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
     # save artifact
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: pecan-documentation
         path: book_source/_book/
     # download documentation repo
     - name: Checkout documentation repo
-      if: github.event_name != 'pull_request'
-      uses: actions/checkout@v2
+      if: github.event_name == 'push'
+      uses: actions/checkout@v4
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
         token: ${{ secrets.GH_PAT }}
     # upload new documentation
     - name: publish to github
-      if: github.event_name != 'pull_request'
+      if: github.event_name == 'push'
       run: |
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
-        export VERSION=${GITHUB_REF##*/}
+        export VERSION=$(echo $GITHUB_REF | sed 's,.*/,,' )
         cd pecan-documentation
         mkdir -p $VERSION
         rsync -a --delete ../book_source/_book/ ${VERSION}/

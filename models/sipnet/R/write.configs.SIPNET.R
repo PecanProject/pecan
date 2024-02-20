@@ -55,6 +55,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
   
+  # create cdo specific settings
+  cdosetup <- ""
+  if (!is.null(settings$host$cdosetup)) {
+    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+  }
+  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -62,8 +68,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
+  
+  # create rabbitmq specific setup.
+  cpruncmd <- cpoutcmd <- rmoutdircmd <- rmrundircmd <- ""
+  if (!is.null(settings$host$rabbitmq)) {
+    #rsync cmd from remote to local host.
+    cpruncmd <- gsub("@OUTDIR@", settings$host$rundir, settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTFOLDER@", rundir, cpruncmd)
+    
+    cpoutcmd <- gsub("@OUTDIR@", settings$host$outdir, settings$host$rabbitmq$cpfcmd)
+    cpoutcmd <- gsub("@OUTFOLDER@", outdir, cpoutcmd)
+    
+    #delete files within rundir and outdir.
+    rmoutdircmd <- paste("rm", file.path(outdir, "*"))
+    rmrundircmd <- paste("rm", file.path(rundir, "*"))
+  }
+  
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
@@ -78,6 +101,28 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
+  
+  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
+  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
+  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
+  
+  if(is.null(settings$state.data.assimilation$NC.Prefix)){
+    settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
+  }
+  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
+  
+  #overwrite argument
+  if(is.null(settings$state.data.assimilation$NC.Overwrite)){
+    settings$state.data.assimilation$NC.Overwrite <- FALSE
+  }
+  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
+  
+  #allow conflict? meaning allow full year nc export.
+  if(is.null(settings$state.data.assimilation$FullYearNC)){
+    settings$state.data.assimilation$FullYearNC <- FALSE
+  }
+  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
   
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
@@ -97,7 +142,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     template.param <- settings$model$default.param
   }
   
-  param <- read.table(template.param)
+  param <- utils::read.table(template.param)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -416,7 +461,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
       # reconstruct total wood C
-      wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      if(IC$abvGrndWoodFrac < 0.05){
+        wood_total_C <- IC$AbvGrndWood
+      }else{
+        wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      }
+      
       #Sanity check
       if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
         wood_total_C <- 0
@@ -442,43 +492,46 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "laiInit"), 2] <- IC$lai
     }
     ## litterInit gC/m2
-    if ("litter" %in% ic.names) {
-      param[which(param[, 1] == "litterInit"), 2] <- IC$litter
+    if ("litter_carbon_content" %in% ic.names) {
+      param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
     }
     ## soilInit gC/m2
     if ("soil" %in% ic.names) {
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
     ## litterWFracInit fraction
-    if ("litterWFrac" %in% ic.names) {
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litterWFrac
+    if ("litter_mass_content_of_water" %in% ic.names) {
+      #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
+      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
     ## soilWFracInit fraction
     if ("soilWFrac" %in% ic.names) {
       param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
     }
     ## snowInit cm water equivalent
-    if ("snow" %in% ic.names) {
-      param[which(param[, 1] == "snowInit"), 2] <- IC$snow
+    if ("SWE" %in% ic.names) {
+      param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
     ## microbeInit mgC/g soil
     if ("microbe" %in% ic.names) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
+
   else if (length(settings$run$inputs$poolinitcond$path)>0) {
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
+
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "g m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
-      lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
       }
@@ -493,7 +546,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'g m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'kg m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
@@ -545,7 +598,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 
-  write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
+  utils::write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
 #--------------------------------------------------------------------------------------------------#

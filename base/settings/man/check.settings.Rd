@@ -8,6 +8,8 @@ check.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}
+
+\item{force}{Logical: Rerun check even if these settings have been checked previously?}
 }
 \value{
 will return the updated settings values with defaults set.

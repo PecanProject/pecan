@@ -138,7 +138,7 @@
       }
     }
 
-    echo "${result['id']} ${result['sitename']} ${sitegroupid}";
+    echo "{$result['id']} {$result['sitename']} {$sitegroupid}";
   }
 
 ?>

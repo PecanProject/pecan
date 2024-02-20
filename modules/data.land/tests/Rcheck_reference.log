@@ -1,21 +1,15 @@
-* using log directory ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck’
-* using R version 4.0.2 (2020-06-22)
+* using log directory ‘/tmp/RtmpBGazJV/PEcAn.data.land.Rcheck’
+* using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-manual --as-cran’
+* using options ‘--no-tests --no-manual --as-cran’
 * checking for file ‘PEcAn.data.land/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.data.land’ version ‘1.7.1’
+* this is package ‘PEcAn.data.land’ version ‘1.7.2.9000’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-
-Imports includes 33 non-default packages.
-Importing from so many packages makes the package vulnerable to any of
-them becoming unavailable.  Move as many as possible to Suggests and
-use conditionally.
 * checking package dependencies ... NOTE
-Imports includes 33 non-default packages.
+Imports includes 35 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -26,18 +20,12 @@ use conditionally.
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
 * checking serialization versions ... OK
-* checking whether package ‘PEcAn.data.land’ can be installed ... WARNING
-Found the following significant warnings:
-  Note: possible error in 'write_veg(outfolder, ': unused argument (source) 
-See ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00install.out’ for details.
-Information on the location(s) of code generating the ‘Note’s can be
-obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
-to ‘yes’.
+* checking whether package ‘PEcAn.data.land’ can be installed ... OK
 * checking installed package size ... NOTE
   installed size is 13.4Mb
   sub-directories of 1Mb or more:
-    data            9.4Mb
     FIA_allometry   2.7Mb
+    data            9.4Mb
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
@@ -60,229 +48,38 @@ Non-standard file/directory found at top level:
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-dataone_download: no visible binding for '<<-' assignment to
-  ‘newdir_D1’
-dataone_download: no visible binding for global variable ‘newdir_D1’
-download_package_rm: no visible binding for '<<-' assignment to ‘mnId’
-download_package_rm: no visible binding for '<<-' assignment to ‘mn’
-download_package_rm: no visible binding for global variable ‘mnId’
-download_package_rm: no visible binding for '<<-' assignment to
-  ‘bagitFile’
-download_package_rm: no visible binding for global variable ‘mn’
-download_package_rm: no visible binding for '<<-' assignment to
-  ‘zip_contents’
-download_package_rm: no visible binding for global variable ‘bagitFile’
-download_package_rm: no visible binding for global variable
-  ‘zip_contents’
-ens_veg_module: no visible global function definition for ‘db.close’
-ens_veg_module: no visible global function definition for ‘db.query’
-ens_veg_module: no visible global function definition for
-  ‘convert.input’
-EPA_ecoregion_finder: no visible global function definition for
-  ‘as_Spatial’
-extract_FIA: no visible global function definition for ‘db.close’
-extract_FIA: no visible global function definition for ‘db.query’
-extract_soil_gssurgo: no visible global function definition for ‘as’
-extract_soil_gssurgo: no visible global function definition for
-  ‘complete.cases’
-extract_soil_gssurgo: no visible global function definition for
-  ‘setNames’
-extract_soil_gssurgo: no visible global function definition for
-  ‘mutate’
+InventoryGrowthFusionDiagnostics: no visible binding for global
+  variable ‘data’
+Read.IC.info.BADM: no visible binding for global variable ‘.’
+Read.IC.info.BADM : <anonymous>: no visible binding for global variable
+  ‘.’
 extract_soil_gssurgo : <anonymous>: no visible binding for global
   variable ‘.’
-extract_soil_gssurgo : <anonymous>: no visible global function
-  definition for ‘mutate’
-extract_soil_gssurgo: no visible global function definition for
-  ‘filter’
-extract_soil_gssurgo: no visible binding for global variable ‘Area’
 extract_soil_gssurgo: no visible binding for global variable ‘.’
 extract_soil_gssurgo : <anonymous> : <anonymous>: no visible binding
   for global variable ‘.’
-extract_soil_gssurgo : <anonymous>: no visible global function
-  definition for ‘setNames’
-extract_soil_nc: no visible global function definition for ‘median’
-extract_veg: possible error in write_veg(outfolder, start_date,
-  end_date, veg_info = veg_info, source): unused argument (source)
-fia.to.psscss: no visible global function definition for ‘data’
 fia.to.psscss: no visible binding for global variable ‘pftmapping’
-fia.to.psscss: no visible global function definition for ‘na.omit’
-fia.to.psscss: no visible global function definition for ‘median’
-fia.to.psscss: no visible global function definition for ‘write.table’
-fia.to.psscss: no visible global function definition for
-  ‘dbfile.input.insert’
-format_identifier: no visible binding for '<<-' assignment to ‘doi1’
-format_identifier: no visible binding for global variable ‘doi1’
-get_resource_map: no visible binding for '<<-' assignment to ‘mnId’
-get_resource_map: no visible binding for '<<-' assignment to ‘mn’
-get_resource_map: no visible binding for global variable ‘mnId’
-get_resource_map: no visible binding for global variable ‘doi1’
-get_resource_map: no visible binding for '<<-' assignment to
-  ‘resource_map’
-get_resource_map: no visible binding for global variable ‘resource_map’
-get_veg_module: no visible global function definition for
-  ‘convert.input’
 get_veg_module: no visible binding for global variable ‘input’
-get_veg_module: no visible binding for global variable ‘new.site’
-ic_process: no visible global function definition for ‘db.close’
-ic_process: no visible global function definition for ‘db.query’
-id_resolveable: no visible binding for global variable ‘doi1’
-InventoryGrowthFusion: no visible global function definition for
-  ‘is.mcmc.list’
-InventoryGrowthFusion: no visible global function definition for
-  ‘mcmc.list2init’
-InventoryGrowthFusion: no visible global function definition for
-  ‘runif’
-InventoryGrowthFusion: no visible global function definition for ‘var’
-InventoryGrowthFusion: no visible global function definition for
-  ‘load.module’
-InventoryGrowthFusion: no visible global function definition for
-  ‘coda.samples’
-InventoryGrowthFusion: no visible global function definition for
-  ‘as.mcmc.list’
-InventoryGrowthFusion : <anonymous>: no visible global function
-  definition for ‘coef’
-InventoryGrowthFusion : <anonymous>: no visible global function
-  definition for ‘lm’
-InventoryGrowthFusionDiagnostics: no visible binding for global
-  variable ‘quantile’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘layout’
-InventoryGrowthFusionDiagnostics: no visible binding for global
-  variable ‘data’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘points’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘par’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘hist’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘abline’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘pairs’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘as.mcmc.list’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘gelman.diag’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘cor’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘lines’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘boxplot’
-InventoryGrowthFusionDiagnostics: no visible global function definition
-  for ‘legend’
 is.land: no visible binding for global variable ‘met.nc’
-match_species_id: no visible binding for global variable ‘id’
-match_species_id: no visible binding for global variable ‘genus’
-match_species_id: no visible binding for global variable ‘species’
-matchInventoryRings: no visible global function definition for
-  ‘combine.rwl’
-matchInventoryRings: no visible global function definition for
-  ‘write.table’
-plot2AGB: no visible global function definition for ‘txtProgressBar’
-plot2AGB: no visible global function definition for ‘setTxtProgressBar’
-plot2AGB: no visible binding for global variable ‘sd’
-plot2AGB: no visible global function definition for ‘pdf’
-plot2AGB: no visible global function definition for ‘par’
-plot2AGB: no visible global function definition for ‘lines’
-put_veg_module: no visible global function definition for ‘db.close’
-put_veg_module: no visible global function definition for ‘db.query’
-put_veg_module: no visible global function definition for
-  ‘convert.input’
-Read.IC.info.BADM: no visible global function definition for ‘read.csv’
-Read.IC.info.BADM: no visible binding for global variable ‘NA_L2CODE’
-Read.IC.info.BADM: no visible binding for global variable ‘VARIABLE’
-Read.IC.info.BADM: no visible binding for global variable ‘.’
-Read.IC.info.BADM: no visible binding for global variable ‘SITE_ID’
-Read.IC.info.BADM: no visible binding for global variable ‘GROUP_ID’
-Read.IC.info.BADM: no visible binding for global variable
-  ‘VARIABLE_GROUP’
-Read.IC.info.BADM: no visible binding for global variable ‘DATAVALUE’
-Read.IC.info.BADM: no visible binding for global variable ‘NA_L1CODE’
-Read.IC.info.BADM : <anonymous>: no visible binding for global variable
-  ‘VARIABLE’
-Read.IC.info.BADM : <anonymous>: no visible binding for global variable
-  ‘.’
-Read.IC.info.BADM : <anonymous>: no visible binding for global variable
-  ‘DATAVALUE’
-read.plot: no visible global function definition for ‘read.csv’
-read.velmex: no visible global function definition for ‘read.fwf’
-sample_ic: no visible global function definition for ‘complete.cases’
-soil_params: no visible binding for global variable ‘soil.name’
-soil_params: no visible binding for global variable ‘xsand.def’
-soil_params: no visible binding for global variable ‘xclay.def’
-soil_params: no visible binding for global variable ‘fieldcp.K’
-soil_params: no visible binding for global variable ‘soilcp.MPa’
-soil_params: no visible binding for global variable ‘grav’
-soil_params: no visible binding for global variable ‘soilwp.MPa’
-soil_params: no visible binding for global variable ‘sand.hcap’
-soil_params: no visible binding for global variable ‘silt.hcap’
-soil_params: no visible binding for global variable ‘clay.hcap’
-soil_params: no visible binding for global variable ‘air.hcap’
-soil_params: no visible binding for global variable ‘ksand’
-soil_params: no visible binding for global variable ‘sand.cond’
-soil_params: no visible binding for global variable ‘ksilt’
-soil_params: no visible binding for global variable ‘silt.cond’
-soil_params: no visible binding for global variable ‘kclay’
-soil_params: no visible binding for global variable ‘clay.cond’
-soil_params: no visible binding for global variable ‘kair’
-soil_params: no visible binding for global variable ‘air.cond’
-soil_params: no visible binding for global variable ‘h2o.cond’
-soil_params: no visible binding for global variable ‘texture’
-soil_params: no visible global function definition for ‘median’
 soil_process: no visible global function definition for ‘db.query’
 write_ic: no visible binding for global variable ‘input_veg’
 Undefined global functions or variables:
-  . abline air.cond air.hcap Area as as_Spatial as.mcmc.list
-  bagitFile boxplot clay.cond clay.hcap coda.samples coef
-  combine.rwl complete.cases comppct_r convert.input cor DATAVALUE
-  db.close db.query dbfile.input.insert doi1 fieldcp.K
-  filter gelman.diag genus grav GROUP_ID h2o.cond hist
-  hzdept_r id input input_veg is.mcmc.list kair kclay ksand ksilt
-  layout legend lines lm load.module mcmc.list2init median met.nc mn
-  mnId mutate NA_L1CODE NA_L2CODE na.omit new.site newdir_D1
-  pairs par pdf pftmapping points quantile read.csv read.fwf
-  resource_map runif sand.cond sand.hcap sd setNames settings
-  setTxtProgressBar silt.cond silt.hcap SITE_ID soil.name soilcp.MPa
-  soilwp.MPa species texture txtProgressBar var VARIABLE
-  VARIABLE_GROUP write.table xclay.def xsand.def zip_contents
+  . data db.query input input_veg met.nc pftmapping
 Consider adding
-  importFrom("graphics", "abline", "boxplot", "hist", "layout", "legend",
-             "lines", "pairs", "par", "points")
-  importFrom("grDevices", "pdf")
-  importFrom("methods", "as")
-  importFrom("stats", "coef", "complete.cases", "cor",
-             "filter", "lm", "median", "na.omit", "quantile",
-             "runif", "sd", "setNames", "var")
-  importFrom("utils", "read.csv", "read.fwf",
-             "setTxtProgressBar", "txtProgressBar", "write.table")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
+  importFrom("utils", "data")
 to your NAMESPACE file.
-
-Found the following calls to data() loading into the global environment:
-File ‘PEcAn.data.land/R/fia2ED.R’:
-  data(pftmapping)
-See section ‘Good practice’ in ‘?data’.
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'dataone_download.Rd':
-  \examples lines wider than 100 characters:
-     dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles")
-
-These lines will be truncated in the PDF manual.
+* checking Rd line widths ... OK
 * checking Rd cross-references ... WARNING
 Missing link or links in documentation object 'EPA_ecoregion_finder.Rd':
   ‘https://www.epa.gov/eco-research/ecoregions’
 
 See section 'Cross-references' in the 'Writing R Extensions' manual.
-
 * checking for missing documentation entries ... WARNING
 Undocumented data sets:
-  ‘BADM’ ‘.extract.nc.module’ ‘.getRunSettings’ ‘.met2model.module’
-  ‘.Random.seed’ ‘air.cond’ ‘air.hcap’ ‘clay.cond’ ‘clay.hcap’
+  ‘BADM’ ‘.Random.seed’ ‘.extract.nc.module’ ‘.getRunSettings’
+  ‘.met2model.module’ ‘air.cond’ ‘air.hcap’ ‘clay.cond’ ‘clay.hcap’
   ‘clay.now’ ‘fieldcp.K’ ‘grav’ ‘h2o.cond’ ‘kair’ ‘kclay’ ‘ksand’
   ‘ksilt’ ‘n’ ‘nstext.lines’ ‘nstext.polygon’ ‘sand.cond’ ‘sand.hcap’
   ‘sand.now’ ‘silt.cond’ ‘silt.hcap’ ‘soil.key’ ‘soil.name’
@@ -306,13 +103,6 @@ Undocumented arguments in documentation object 'Read_Tucson'
 Undocumented arguments in documentation object 'extract.stringCode'
   ‘x’ ‘extractor’
 
-Undocumented arguments in documentation object 'extract_FIA'
-  ‘lon’ ‘lat’ ‘start_date’ ‘end_date’ ‘gridres’ ‘dbparms’
-
-Undocumented arguments in documentation object 'extract_veg'
-  ‘new_site’ ‘start_date’ ‘end_date’ ‘source’ ‘gridres’ ‘format_name’
-  ‘machine_host’ ‘dbparms’ ‘outfolder’ ‘overwrite’ ‘...’
-
 Undocumented arguments in documentation object 'fia.to.psscss'
   ‘settings’ ‘lat’ ‘lon’ ‘year’ ‘gridres’ ‘min.year’ ‘max.year’
   ‘overwrite’
@@ -325,20 +115,12 @@ Undocumented arguments in documentation object 'from.Tag'
 Undocumented arguments in documentation object 'from.TreeCode'
   ‘x’
 
-Undocumented arguments in documentation object 'ic_process'
-  ‘input’ ‘dir’
-Documented arguments not in \usage in documentation object 'ic_process':
-  ‘dbfiles’
-
 Undocumented arguments in documentation object 'load_veg'
   ‘new_site’ ‘start_date’ ‘end_date’ ‘source_id’ ‘source’ ‘icmeta’
   ‘format_name’ ‘machine_host’ ‘dbparms’ ‘outfolder’ ‘overwrite’ ‘...’
 
 Undocumented arguments in documentation object 'matchInventoryRings'
   ‘trees’ ‘rings’ ‘extractor’ ‘nyears’ ‘coredOnly’
-
-Undocumented arguments in documentation object 'match_pft'
-  ‘query’
 
 Undocumented arguments in documentation object 'match_species_id'
   ‘...’
@@ -355,12 +137,6 @@ Undocumented arguments in documentation object 'netcdf.writer.BADM'
 Undocumented arguments in documentation object 'plot2AGB'
   ‘allom.stats’
 
-Undocumented arguments in documentation object 'pool_ic_list2netcdf'
-  ‘ens’
-
-Undocumented arguments in documentation object 'sample_ic'
-  ‘...’
-
 Undocumented arguments in documentation object 'soil_process'
   ‘run.local’
 
@@ -369,10 +145,6 @@ Undocumented arguments in documentation object 'to.Tag'
 
 Undocumented arguments in documentation object 'to.TreeCode'
   ‘SITE’ ‘PLOT’ ‘SUBPLOT’ ‘TAG’
-
-Undocumented arguments in documentation object 'write_ic'
-  ‘in.path’ ‘in.name’ ‘start_date’ ‘end_date’ ‘outfolder’ ‘model’
-  ‘new_site’ ‘pfts’ ‘source’ ‘overwrite’ ‘...’
 
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.
@@ -1297,14 +1069,12 @@ Please remove it.
   soil_class.RData    117Kb     18Kb       xz
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ...
-  Running ‘testthat.R’
- OK
+* checking tests ... SKIPPED
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 7 WARNINGs, 5 NOTEs
+Status: 7 WARNINGs, 4 NOTEs
 See
-  ‘/tmp/Rtmp9ipF88/PEcAn.data.land.Rcheck/00check.log’
+  ‘/tmp/RtmpBGazJV/PEcAn.data.land.Rcheck/00check.log’
 for details.

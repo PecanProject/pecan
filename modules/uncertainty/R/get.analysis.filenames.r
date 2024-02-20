@@ -111,7 +111,7 @@ sensitivity.filename <- function(settings,
                     " among ", sapply(settings$pfts, function(x) x$name), " USING")
         ind <- ind[1]
       }
-      if (is.null(settings$pfts[[ind]]$outdir) | is.na(settings$pfts[[ind]]$outdir)) {
+      if (is.null(settings$pfts[[ind]]$outdir) || is.na(settings$pfts[[ind]]$outdir)) {
         ## no outdir
         settings$pfts[[ind]]$outdir <- file.path(settings$outdir, "pfts", pft)
       }
