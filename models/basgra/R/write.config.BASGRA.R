@@ -349,39 +349,55 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # For Yasso restart
     if(run_params[names(run_params) == "use_yasso"]){
       
-      last_soc <- sum(last_vals[names(last_vals) == "CSOM_A"],
-                      last_vals[names(last_vals) == "CSOM_W"],
-                      last_vals[names(last_vals) == "CSOM_E"],
-                      last_vals[names(last_vals) == "CSOM_N"],
-                      last_vals[names(last_vals) == "CSOM_H"])
+      last_somf <- sum(last_vals[names(last_vals) == "CSOM_A"],
+                       last_vals[names(last_vals) == "CSOM_W"],
+                       last_vals[names(last_vals) == "CSOM_E"],
+                       last_vals[names(last_vals) == "CSOM_N"])
       
-      if ("TotSoilCarb"  %in% ic.names) {
-        run_params[names(run_params) == "totc_init"] <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g")
+      last_soms <- last_vals[names(last_vals) == "CSOM_H"]
+      
+      if ("fast_soil_pool_carbon_content"  %in% ic.names & "slow_soil_pool_carbon_content"  %in% ic.names) {
+        
+        new_somf <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g") 
+        new_soms <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g") 
+        
+        ratio_somf <- new_somf / last_somf
+        
+        # update via ratio
+        run_params[names(run_params) == "CSOM_A"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_A"]
+        run_params[names(run_params) == "CSOM_W"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_W"]
+        run_params[names(run_params) == "CSOM_E"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_E"]
+        run_params[names(run_params) == "CSOM_N"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_N"]
+        run_params[names(run_params) == "CSOM_H"] <- new_soms
+        
+        run_params[names(run_params) == "NSOM"] <- ((new_somf+new_soms)/(last_somf+last_soms)) * last_vals[names(last_vals) == "NSOM"]
+        
       }else{
-        run_params[names(run_params) == "totc_init"] <- last_soc
+        
+        run_params[names(run_params) == "CSOM_A"] <- last_vals[names(last_vals) == "CSOM_A"]
+        run_params[names(run_params) == "CSOM_W"] <- last_vals[names(last_vals) == "CSOM_W"]
+        run_params[names(run_params) == "CSOM_E"] <- last_vals[names(last_vals) == "CSOM_E"]
+        run_params[names(run_params) == "CSOM_N"] <- last_vals[names(last_vals) == "CSOM_N"]
+        run_params[names(run_params) == "CSOM_H"] <- last_soms
+        
+        run_params[names(run_params) == "NSOM"] <- last_vals[names(last_vals) == "NSOM"]
+        
       }
       
-      ratio_soc <- run_params[names(run_params) == "totc_init"] / last_soc
+      # #else-if ("TotSoilCarb"  %in% ic.names)?
+      # new_totc <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g") 
+      # 
+      # ratio_soc <- new_totc / (last_somf + last_soms)
+      # 
+      # # update via ratio
+      # run_params[names(run_params) == "CSOM_A"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_A"]
+      # run_params[names(run_params) == "CSOM_W"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_W"]
+      # run_params[names(run_params) == "CSOM_E"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_E"]
+      # run_params[names(run_params) == "CSOM_N"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_N"]
+      # run_params[names(run_params) == "CSOM_H"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_H"]
       
-      # update via ratio
-      run_params[names(run_params) == "CSOM_A"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_A"]
-      run_params[names(run_params) == "CSOM_W"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_W"]
-      run_params[names(run_params) == "CSOM_E"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_E"]
-      run_params[names(run_params) == "CSOM_N"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_N"]
-      run_params[names(run_params) == "CSOM_H"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_H"]
-
-      #run_params[names(run_params) == "fract_legacy_c"] <-  run_params[names(run_params) == "CSOM_H"] / run_params[names(run_params) == "totc_init"]
-     
-      if ("soil_nitrogen_content"  %in% ic.names) {
-        run_params[names(run_params) == "NSOM"] <- udunits2::ud.convert(IC$soil_nitrogen_content, "kg", "g")
-      }else{
-        run_params[names(run_params) == "NSOM"] <- ratio_soc *last_vals[names(last_vals) == "NSOM"]
-        if(is.nan(run_params[names(run_params) == "NSOM"]) | is.infinite(run_params[names(run_params) == "NSOM"])){
-          run_params[names(run_params) == "NSOM"] <- run_params[names(run_params) == "CSOM_H"]*0.115
-        }
-      }
       
-    }else{
+    }else{ # no Yasso
       if ("fast_soil_pool_carbon_content"  %in% ic.names) {
         run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
       }else{
@@ -409,7 +425,8 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }else{
       run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
     }
-    run_params[names(run_params) == "NLITT0"] <- run_params[names(run_params) == "CLITT0"] / run_params[names(run_params) == "CNLITT0"]
+    #run_params[names(run_params) == "NLITT0"] <- run_params[names(run_params) == "CLITT0"] / run_params[names(run_params) == "CNLITT0"]
+    run_params[which(names(run_params) == "NLITT0")] <- last_vals[names(last_vals) == "NLITT"]
     
     if ("stubble_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "CSTUBI"] <- udunits2::ud.convert(IC$stubble_carbon_content, "kg", "g")
@@ -431,7 +448,17 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
     }
     run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*run_params[names(run_params) == "NCR"]
+   # if(run_params[which(names(run_params) == "NRTI")] <= 0) run_params[which(names(run_params) == "NRTI")] <- 0.0001
+
+    # # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
+    # # NSH      = NCSHI * (CLVI+CSTI)
+    lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
+    ncshi <- run_params[names(run_params) == "NCSHMAX"] *
+      (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
+    run_params[which(names(run_params) == "NSHI")] <- ncshi *
+      ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
     
+
     if ("reserve_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "LOG10CRESI"] <- udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
     }else{
@@ -536,10 +563,10 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     #  WAL        = 1000. * ROOTDM * WCI
     if ("SoilMoistFrac"  %in% ic.names) {
       run_params[names(run_params) == "WCI"] <-  IC$SoilMoistFrac
-      run_params[names(run_params) == "WALI"]  <- 1000. * run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "WCI"]
+      run_params[names(run_params) == "WALI"]  <- 1000. * (run_params[names(run_params) == "ROOTDM"] - run_params[names(run_params) == "FdepthI"]) * run_params[names(run_params) == "WCI"]
     }else{
       run_params[names(run_params) == "WALI"]  <- last_vals[names(last_vals) == "WAL"] 
-      run_params[names(run_params) == "WCI"]   <- run_params[names(run_params) == "WALI"] / (1000 * run_params[names(run_params) == "ROOTDM"])
+      run_params[names(run_params) == "WCI"]   <- run_params[names(run_params) == "WALI"] / (1000 * (run_params[names(run_params) == "ROOTDM"]- run_params[names(run_params) == "FdepthI"]))
     }
     
     yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')
@@ -690,14 +717,6 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
   }
 
-  # need to think about this one
-  # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
-  # NSH      = NCSHI * (CLVI+CSTI)
-  lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
-  ncshi <- run_params[names(run_params) == "NCSHMAX"] * 
-    (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
-  run_params[which(names(run_params) == "NSHI")] <- ncshi * 
-    ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
   
   # if the default parameter file is set to force some parameter values, override the trait.values here:
   if ('force' %in% colnames(df_run_params)) {
