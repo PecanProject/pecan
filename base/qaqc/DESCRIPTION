@@ -20,14 +20,14 @@ Imports:
     rlang,
     stats
 Suggests:
-    knitr,
+    knitr (>= 1.42),
     mockery,
     mvbutils,
     PEcAn.BIOCRO,
     PEcAn.ED2,
     PEcAn.SIPNET,
     PEcAn.utils,
-    rmarkdown,
+    rmarkdown (>= 2.19),
     testthat (>= 3.0.4),
     vdiffr (>= 1.0.2),
     withr

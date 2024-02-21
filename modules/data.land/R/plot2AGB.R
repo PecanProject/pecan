@@ -49,7 +49,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   biomass_thoc2 <- array(NA, c(mplot, nrep, nt))
   
   ## sample over tree chronologies
-  pb <- txtProgressBar(min = 0, max = nrep, style = 3)
+  pb <- utils::txtProgressBar(min = 0, max = nrep, style = 3)
   for (g in seq_len(nrep)) {
     
     ## Draw allometries
@@ -72,7 +72,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
       ## diff to get NPP
       NPP[j, g, ] <- diff(AGB[j, g, ])
     }
-    setTxtProgressBar(pb, g)
+    utils::setTxtProgressBar(pb, g)
   }
   
   mAGB <- sAGB <- matrix(NA, mplot, nt)
@@ -85,33 +85,33 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   
   for (i in seq_len(mplot)) {
     mNPP[i, ] <- apply(NPP[i, , ], 2, mean, na.rm = TRUE)
-    sNPP[i, ] <- apply(NPP[i, , ], 2, sd, na.rm = TRUE)
+    sNPP[i, ] <- apply(NPP[i, , ], 2, stats::sd, na.rm = TRUE)
     mAGB[i, ] <- apply(AGB[i, , ], 2, mean, na.rm = TRUE)
-    sAGB[i, ] <- apply(AGB[i, , ], 2, sd, na.rm = TRUE)
+    sAGB[i, ] <- apply(AGB[i, , ], 2, stats::sd, na.rm = TRUE)
     
     mbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, mean, na.rm = TRUE)
-    sbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, sd, na.rm = TRUE)
+    sbiomass_tsca[i, ]  <- apply(biomass_tsca[i, , ], 2, stats::sd, na.rm = TRUE)
     mbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, mean, na.rm = TRUE)
-    sbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, sd, na.rm = TRUE)
+    sbiomass_acsa3[i, ] <- apply(biomass_acsa3[i, , ], 2, stats::sd, na.rm = TRUE)
     mbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, mean, na.rm = TRUE)
-    sbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, sd, na.rm = TRUE)
+    sbiomass_beal2[i, ] <- apply(biomass_beal2[i, , ], 2, stats::sd, na.rm = TRUE)
     mbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, mean, na.rm = TRUE)
-    sbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, sd, na.rm = TRUE)
+    sbiomass_thoc2[i, ] <- apply(biomass_thoc2[i, , ], 2, stats::sd, na.rm = TRUE)
   }
   
-  pdf(file.path(outfolder, "plot2AGB.pdf"))
-  par(mfrow = c(2, 1))
+  grDevices::pdf(file.path(outfolder, "plot2AGB.pdf"))
+  graphics::par(mfrow = c(2, 1))
   for (i in seq_len(mplot)) {
     up  <- mNPP[i, ] + sNPP[i, ] * 1.96
     low <- mNPP[i, ] - sNPP[i, ] * 1.96
-    plot(yrvec[-1], mNPP[i, ], ylim = range(c(up, low)), ylab = "Mg/ha/yr", xlab = "year")
-    lines(yrvec[-1], up)
-    lines(yrvec[-1], low)
+    graphics::plot(yrvec[-1], mNPP[i, ], ylim = range(c(up, low)), ylab = "Mg/ha/yr", xlab = "year")
+    graphics::lines(yrvec[-1], up)
+    graphics::lines(yrvec[-1], low)
     upA  <- mAGB[i, ] + sAGB[i, ] * 1.96
     lowA <- mAGB[i, ] - sAGB[i, ] * 1.96
-    plot(yrvec, mAGB[i, ], ylim = range(c(upA, lowA)), ylab = "Mg/ha", xlab = "year")
-    lines(yrvec, upA)
-    lines(yrvec, lowA)
+    graphics::plot(yrvec, mAGB[i, ], ylim = range(c(upA, lowA)), ylab = "Mg/ha", xlab = "year")
+    graphics::lines(yrvec, upA)
+    graphics::lines(yrvec, lowA)
   }
   grDevices::dev.off()
   

@@ -13,7 +13,8 @@ write_restart.SIPNET(
   new.state,
   RENAME = TRUE,
   new.params = FALSE,
-  inputs
+  inputs,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ write_restart.SIPNET(
 \item{new.params}{list of parameters to convert between different states}
 
 \item{inputs}{list of model inputs to use in write.configs.SIPNET}
+
+\item{verbose}{decide if we want to print the outputs.}
 }
 \value{
 NONE

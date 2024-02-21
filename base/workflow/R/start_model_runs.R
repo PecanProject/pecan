@@ -301,7 +301,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-      
+        
         # TODO check output log
         if (is_rabbitmq) {
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))
