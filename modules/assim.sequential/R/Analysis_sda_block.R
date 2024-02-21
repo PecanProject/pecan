@@ -131,9 +131,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   
   #Handle observation
   #observation number per site
-  obs_per_site <- obs.mean[[t]] %>% 
-    purrr::map(function(site.obs){length(site.obs)}) %>% 
-    unlist()
+  obs_per_site <- purrr::map_int(obs.mean[[t]], length)
   #if we do free run or the current obs.mean are all NULL.
   if (as.logical(settings$state.data.assimilation$free.run) | all(is.null(unlist(obs.mean[[t]])))) {
     obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
