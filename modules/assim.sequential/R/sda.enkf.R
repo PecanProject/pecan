@@ -27,7 +27,12 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
       "needed by `PEcAnAssimSequential::sda.enkf.original()`.",
       "Please install it and try again.")
   }
-  
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcAn.visualization',",
+      "needed by `PEcAnAssimSequential::sda.enkf.original()`.",
+      "Please install it and try again.")
+  }
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
   second  <- lubridate::second

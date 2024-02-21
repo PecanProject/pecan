@@ -95,7 +95,7 @@ SDA_remote_launcher <-function(settingPath,
                                ObsPath,
                                run.bash.args){
   
-  future::plan(future::multiprocess)
+  future::plan(future::multisession)
   #---------------------------------------------------------------
   # Reading the settings
   #---------------------------------------------------------------

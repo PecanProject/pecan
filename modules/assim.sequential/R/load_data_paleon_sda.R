@@ -118,6 +118,13 @@ load_data_paleon_sda <- function(settings){
       
       ### Map species to model specific PFTs
       if(any(var.names == 'AGB.pft')){
+        # this is the only code path that uses data.land, so we check now instead of at top of function
+        if (!requireNamespace("PEcAn.data.land", quietly = TRUE)) {
+          PEcAn.logger::logger.error(
+            "Can't find package 'PEcAn.data.land',",
+            "needed by `PEcAnAssimSequential::load_data_paleon_sda()`.",
+            "Please install it and try again.")
+        }
         spp_id <- PEcAn.data.land::match_species_id(unique(dataset$species_id),format_name = 'usda', con)
         pft_mat <- PEcAn.data.land::match_pft(spp_id$bety_species_id, settings$pfts,
                              con = con, allow_missing = TRUE)

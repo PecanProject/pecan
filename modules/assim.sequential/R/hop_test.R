@@ -26,6 +26,12 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
     
     ens.runid <- utils::read.table(file.path(settings$rundir,'runs.txt'))
   }
+  if (!requireNamespace("PEcAn.utils", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcAn.utils',",
+      "needed by `PEcAnAssimSequential::hop_test()`.",
+      "Please install it and try again.")
+  }
   ens <- PEcAn.utils::read.output(runid = ens.runid, 
                      outdir = file.path(settings$outdir,'out', ens.runid), 
                      start.year = lubridate::year(settings$run$start.date), 
