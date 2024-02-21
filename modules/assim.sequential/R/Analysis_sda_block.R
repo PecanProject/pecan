@@ -130,6 +130,10 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #Handle observation
+  #observation number per site
+  obs_per_site <- obs.mean[[t]] %>% 
+    purrr::map(function(site.obs){length(site.obs)}) %>% 
+    unlist()
   #if we do free run or the current obs.mean are all NULL.
   if (as.logical(settings$state.data.assimilation$free.run) | all(is.null(unlist(obs.mean[[t]])))) {
     obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
@@ -167,16 +171,20 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       } else {y.ind[i] <- y.censored[i] <- 0}
     }
     #create H
-    H <- construct_nimble_H(site.ids = site.ids,
-                            var.names = var.names,
-                            obs.t = obs.mean[[t]],
-                            pft.path = settings[[1]]$run$inputs$pft.site$path,
-                            by = "block_pft_var")
+    # if there is any site that has zero observation.
+    if (any(obs_per_site == 0)) {
+      f.2.y.ind <- which(grepl(unique(names(unlist(obs.mean[[t]] %>% purrr::set_names(NULL)))), var.names, fixed = T))
+      H <- list(ind = f.2.y.ind %>% purrr::map(function(start){
+        seq(start, length(site.ids) * length(var.names), length(var.names))
+      }) %>% unlist() %>% sort)
+    } else {
+      H <- construct_nimble_H(site.ids = site.ids,
+                              var.names = var.names,
+                              obs.t = obs.mean[[t]],
+                              pft.path = settings[[1]]$run$inputs$pft.site$path,
+                              by = "block_pft_var")
+    }
   }
-  #observation number per site
-  obs_per_site <- obs.mean[[t]] %>% 
-    purrr::map(function(site.obs){length(site.obs)}) %>% 
-    unlist()
   
   #start the blocking process
   #should we consider interactions between sites?
