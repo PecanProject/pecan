@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.FACE.R
 \name{download.FACE}
 \alias{download.FACE}
-\title{download.FACE}
+\title{Download Raw FACE data from the internet}
 \usage{
 download.FACE(
   sitename,

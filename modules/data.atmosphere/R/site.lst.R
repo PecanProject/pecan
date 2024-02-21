@@ -1,10 +1,8 @@
 ##' Find time zone for a site
 ##'
-##' @name site.lst
-##' @title site.lst
 ##' @export
-##' @param site.id
-##' @param con
+##' @param site.id bety id of site to look up
+##' @param con betydb connection object
 ##' @author Betsy Cowdery
 site.lst <- function(site.id, con) {
   time.zone <- PEcAn.DB::db.query(paste("SELECT time_zone from SITES where id =", site.id), con)
