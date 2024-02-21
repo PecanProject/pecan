@@ -136,7 +136,7 @@ sda.particle <- function(model, settings) {
     ensp.conv[[i]] <- t(apply(ensp.all[[i]], 1, tapply, Year, mean)) * unit[i]
   }
   ## plot scatter plots of outputs
-  parpar(mfrow = c(1, 2))
+  graphics::par(mfrow = c(1, 2))
   for (i in 2:3) {
     plot(ensp.conv[[1]][, nt], ensp.conv[[i]][, nt], xlab = names(ensp.all)[1], ylab = names(ensp.all)[i])
   }
