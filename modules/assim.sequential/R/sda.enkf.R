@@ -759,7 +759,10 @@ for(t in seq_len(nt)) { #
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
         #Pf <- cov(X.new)
         
-        if(sum(diag(Pf)-diag(stats::cov(X.new))) > 3 | sum(diag(Pf)-diag(stats::cov(X.new))) < -3) PEcAn.logger::logger.warn('Covariance in tobit2space model estimate is too different from original forecast covariance. Consider increasing your number of ensemble members.')
+        if (sum(diag(Pf) - diag(stats::cov(X.new))) > 3
+           || sum(diag(Pf) - diag(stats::cov(X.new))) < -3) {
+          PEcAn.logger::logger.warn('Covariance in tobit2space model estimate is too different from original forecast covariance. Consider increasing your number of ensemble members.')
+        }
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -966,8 +969,14 @@ for(t in seq_len(nt)) { #
 #        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
 #      }
       
-      if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) PEcAn.logger::logger.warn('Problem with ensemble adjustment (1)')
-      if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) PEcAn.logger::logger.warn('Problem with ensemble adjustment (2)')
+      if (sum(mu.a - colMeans(X_a)) > 1
+         || sum(mu.a - colMeans(X_a)) < -1) {
+        PEcAn.logger::logger.warn('Problem with ensemble adjustment (1)')
+      }
+      if (sum(diag(Pa) - diag(cov(X_a))) > 5
+         || sum(diag(Pa) - diag(cov(X_a))) < -5) {
+        PEcAn.logger::logger.warn('Problem with ensemble adjustment (2)')
+      }
       
       analysis <- as.data.frame(X_a)
     }else{

@@ -468,7 +468,7 @@ alltocs <-function(fname="tocs.csv") {
         )
         return(dfout)
       }) %>%
-      dplyr::mutate(ExecutionTimeP = c(min(TimeElapsed), diff(TimeElapsed))) %>%
+      dplyr::mutate(ExecutionTimeP = c(min(.data$TimeElapsed), diff(.data$TimeElapsed))) %>%
       utils::write.table(
         file = fname,
         append = T,

@@ -381,7 +381,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
                            
                          })%>%
             dplyr::mutate(Variables=names(one.day.data$means))%>%
-            `colnames<-`(c('`2.5%`', '`97.5%`', 'Variables'))%>%
+            `colnames<-`(c('2.5%', '97.5%', 'Variables'))%>%
             dplyr::mutate(means=one.day.data$means%>%unlist,
                    Type="Data",
                    Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
@@ -415,13 +415,13 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
 
       p<-ready.to.plot%>%
         ggplot2::ggplot(aes(x=Date))+
-        ggplot2::geom_ribbon(ggplot2::aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
-        ggplot2::geom_line(ggplot2::aes(y=means, color=Type),lwd=1.02,linetype=2)+
-        ggplot2::geom_point(ggplot2::aes(y=means, color=Type),size=3,alpha=0.75)+
+        ggplot2::geom_ribbon(ggplot2::aes(ymin=.data$`2.5%`,ymax=.data$`97.5%`,fill=.data$Type),color="black")+
+        ggplot2::geom_line(ggplot2::aes(y=.data$means, color=.data$Type),lwd=1.02,linetype=2)+
+        ggplot2::geom_point(ggplot2::aes(y=.data$means, color=.data$Type),size=3,alpha=0.75)+
         ggplot2::scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         ggplot2::scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
         ggplot2::theme_bw(base_size = 17)+
-        ggplot2::facet_wrap(~Variables, scales = "free", ncol=2)+
+        ggplot2::facet_wrap(~.data$Variables, scales = "free", ncol=2)+
         ggplot2::theme(legend.position = "top",
               strip.background = ggplot2::element_blank())->p
       if (!is.null(plot.title)) p <- p + ggplot2::labs(title=plot.title)
@@ -476,9 +476,9 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
                      })%>%
-        dplyr::mutate(Variables=names(one.day.data$means))%>%
-        `colnames<-`(c('`2.5%`', '`97.5%`', 'Variables'))%>%
-        dplyr::mutate(means=one.day.data$means%>%unlist,
+        dplyr::mutate(Variables=names(one.day.data$means)) %>%
+        `colnames<-`(c('2.5%', '97.5%', 'Variables')) %>%
+        dplyr::mutate(means=one.day.data$means %>% unlist,
                Type="Data",
                Date=one.day.data$Date%>%as.POSIXct(tz="UTC"))
       
@@ -504,13 +504,13 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
       p<-ready.FA%>%
 #        filter(Variables==vari)%>%
         ggplot2::ggplot(aes(Date,Value))+
-        ggplot2::geom_ribbon(ggplot2::aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
-        ggplot2::geom_line(ggplot2::aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
-        ggplot2::geom_violin(ggplot2::aes(x=Date,fill=Type,group=interaction(Date,Type)), position = ggplot2::position_dodge(width=0.9))+
-        ggplot2::geom_jitter(ggplot2::aes(color=Type), position= ggplot2::position_jitterdodge(dodge.width=0.9))+
+        ggplot2::geom_ribbon(ggplot2::aes(x=.data$Date,y=.data$means,ymin=.data$`2.5%`,ymax=.data$`97.5%`,fill=.data$Type), data=obs.df, color="black")+
+        ggplot2::geom_line(ggplot2::aes(y=.data$means, color=.data$Type),data=obs.df,lwd=1.02,linetype=2)+
+        ggplot2::geom_violin(ggplot2::aes(x=.data$Date,fill=.data$Type,group=interaction(.data$Date,.data$Type)), position = ggplot2::position_dodge(width=0.9))+
+        ggplot2::geom_jitter(ggplot2::aes(color=.data$Type), position= ggplot2::position_jitterdodge(dodge.width=0.9))+
         ggplot2::scale_fill_manual(values = c(alphapink,alphagreen,alphablue))+
         ggplot2::scale_color_manual(values = c(alphapink,alphagreen,alphablue))+
-        ggplot2::facet_wrap(~Variables, scales = "free", ncol=2)+
+        ggplot2::facet_wrap(~.data$Variables, scales = "free", ncol=2)+
         ggplot2::theme_bw(base_size = 17)+
       #  labs(y=paste(vari,'(',unit,')'))+
         ggplot2::theme(legend.position = "top",
@@ -711,9 +711,9 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             ready.to.plot%>%
               dplyr::filter(Site==site)%>%
               ggplot2::ggplot(aes(x=Date))+
-              ggplot2::geom_ribbon(ggplot2::aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
-              ggplot2::geom_line(ggplot2::aes(y=Means, color=Type),lwd=1.02,linetype=2)+
-              ggplot2::geom_point(ggplot2::aes(y=Means, color=Type),size=3,alpha=0.75)+
+              ggplot2::geom_ribbon(ggplot2::aes(ymin=.data$Lower,ymax=.data$Upper,fill=.data$Type),color="black")+
+              ggplot2::geom_line(ggplot2::aes(y=.data$Means, color=.data$Type),lwd=1.02,linetype=2)+
+              ggplot2::geom_point(ggplot2::aes(y=.data$Means, color=.data$Type),size=3,alpha=0.75)+
               ggplot2::scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               ggplot2::scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               ggplot2::theme_bw(base_size = 17)+
@@ -721,7 +721,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
               ggplot2::theme(legend.position = "top",
                     strip.background = ggplot2::element_blank())->p
             if (!is.null(plot.title)) p <- p + ggplot2::labs(title=plot.title)
-            p <- p + ggplot2::facet_wrap(~Variable, ncol=2, scales = "free_y")
+            p <- p + ggplot2::facet_wrap(~.data$Variable, ncol=2, scales = "free_y")
             list(p)
       
       })
@@ -744,9 +744,9 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             ready.to.plot%>%
               dplyr::filter(Variable==vari, Site==site)%>%
               ggplot2::ggplot(aes(x=Date))+
-              ggplot2::geom_ribbon(ggplot2::aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
-              ggplot2::geom_line(ggplot2::aes(y=Means, color=Type),lwd=1.02,linetype=2)+
-              ggplot2::geom_point(ggplot2::aes(y=Means, color=Type),size=3,alpha=0.75)+
+              ggplot2::geom_ribbon(ggplot2::aes(ymin=.data$Lower,ymax=.data$Upper,fill=.data$Type),color="black")+
+              ggplot2::geom_line(ggplot2::aes(y=.data$Means, color=.data$Type),lwd=1.02,linetype=2)+
+              ggplot2::geom_point(ggplot2::aes(y=.data$Means, color=.data$Type),size=3,alpha=0.75)+
               ggplot2::scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               ggplot2::scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
               ggplot2::theme_bw(base_size = 17)+
