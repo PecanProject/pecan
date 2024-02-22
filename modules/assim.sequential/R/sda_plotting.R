@@ -28,6 +28,7 @@ generate_colors_sda <-function(){
 ##' @param FORECAST dataframe of state variables for each ensemble
 ##' @param ANALYSIS  vector of mean of state variable after analysis
 ##' @param plot.title character giving the title for post visualization ggplots
+##' @param Add_Map Bool variable decide if we want to export the GIS map of Ecoregion.
 ##' @export
 
 interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, obs, X, FORECAST, ANALYSIS){
@@ -413,7 +414,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
 
       p<-ready.to.plot%>%
-        ggplot(aes(x=Date))+
+        ggplot2::ggplot(aes(x=Date))+
         geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
         geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
         geom_point(aes(y=means, color=Type),size=3,alpha=0.75)+
@@ -502,7 +503,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
       p<-ready.FA%>%
 #        filter(Variables==vari)%>%
-        ggplot(aes(Date,Value))+
+        ggplot2::ggplot(aes(Date,Value))+
         geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
         geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
         geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
@@ -528,7 +529,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
 ##' @rdname interactive.plotting.sda
 ##' @export
-post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL){
+post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL, Add_Map=FALSE){
 
   if (!requireNamespace("ggrepel", quietly = TRUE)) {
     PEcAn.logger::logger.error(
@@ -627,7 +628,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     })
       
 
-  obs.var.names <- (obs.mean[[1]])[[1]] %>% colnames()
+  obs.var.names <- (obs.mean[[1]])[[1]] %>% names()
   #Observed data
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
@@ -709,7 +710,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -742,7 +743,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             #plotting
             ready.to.plot%>%
               filter(Variable==vari, Site==site)%>%
-              ggplot(aes(x=Date))+
+              ggplot2::ggplot(aes(x=Date))+
               geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
               geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
               geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
@@ -758,76 +759,84 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       })
   }
 
+  if(Add_Map){
+    #------------------------------------------------ map
+    site.locs <- settings %>% 
+      purrr::map(~.x[['run']] ) %>% 
+      purrr::map('site') %>% 
+      purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>%
+                as.numeric)%>% 
+      t %>%
+      as.data.frame()%>%
+      `colnames<-`(c("Lon","Lat")) %>%
+      dplyr::mutate(Site=site.ids %>% unique(),
+             Name=site.names)
+    
+    suppressMessages({
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
+    })
+    
+    #transform site locs into new projection - UTM 2163
+    site.locs.sp<-site.locs
+    coordinates(site.locs.sp) <- c("Lon", "Lat")
+    proj4string(site.locs.sp) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
+    res <- sp::spTransform(site.locs.sp, sp::CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
+    site.locs[,c(1,2)] <-res@coords
+    
+    #finding site with data
+    sites.w.data <-
+      obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
+    #adding the column to site
+    site.locs <- site.locs %>%
+      dplyr::mutate(Data = Site %in% sites.w.data)
+    
+    #plotting
+    map.plot<- ggplot2::ggplot() + 
+      geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
+      geom_point(data = site.locs,
+                 aes(x = Lon, y = Lat),
+                 size = 2) +
+      ggrepel::geom_label_repel(
+        data = site.locs,
+        aes(
+          x = Lon,
+          y = Lat,
+          label = paste0(Site, "\n", Name),
+          color = Data,
+        ),
+        vjust = 1.2,
+        fontface = "bold",
+        size = 3.5
+      ) + 
+      #coord_sf(datum = sf::st_crs(2163),default = F)+
+      scale_fill_manual(values = c("#a6cee3",
+                                   "#1f78b4","#b2df8a",
+                                   "#33a02c","#fb9a99",
+                                   "#e31a1c","#fdbf6f",
+                                   "#ff7f00","#cab2d6",
+                                   "#6a3d9a","#ffff99",
+                                   "#b15928","#fccde5",
+                                   "#d9d9d9","#66c2a5",
+                                   "#ffd92f","#8dd3c7",
+                                   "#80b1d3","#d9d9d9",
+                                   "#fdbf6f"),name="Eco-Region")+
+      scale_color_manual(values= c("#e31a1c","#33a02c"))+
+      theme_minimal()+
+      theme(axis.text = element_blank())
+    
+    #----- Reordering the plots
+    all.plots.print <-list(map.plot)
+    for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
+    
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots.print %>% purrr::map(~print(.x))
+    dev.off()
+  }else{
+    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    all.plots %>% purrr::map(~print(.x))
+    dev.off()
+  }
   
-  #------------------------------------------------ map
-  site.locs <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map_dfr(~c(.x[['lon']],.x[['lat']]) %>%as.numeric)%>% 
-    t %>%
-    as.data.frame()%>%
-    `colnames<-`(c("Lon","Lat")) %>%
-    mutate(Site=site.ids %>% unique(),
-           Name=site.names)
-  
-
-  suppressMessages({
-    aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
-  })
-  
-  #transform site locs into new projection - UTM 2163
-  site.locs.sp<-site.locs
-  coordinates(site.locs.sp) <- c("Lon", "Lat")
-  proj4string(site.locs.sp) <- CRS("+proj=longlat +datum=WGS84")  ## for example
-  res <- spTransform(site.locs.sp, CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
-  site.locs[,c(1,2)] <-res@coords
-  
-  
-  #finding site with data
-  sites.w.data <-
-    obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
-  #adding the column to site
-  site.locs <- site.locs %>%
-    mutate(Data = Site %in% sites.w.data)
-
-  #plotting
-  map.plot<- ggplot() + 
-    geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
-    geom_point(data = site.locs,
-               aes(x = Lon, y = Lat),
-               size = 2) +
-    ggrepel::geom_label_repel(
-      data = site.locs,
-      aes(
-        x = Lon,
-        y = Lat,
-        label = paste0(Site, "\n", Name),
-        color = Data,
-      ),
-      vjust = 1.2,
-      fontface = "bold",
-      size = 3.5
-    ) + 
-    #coord_sf(datum = sf::st_crs(2163),default = F)+
-    scale_fill_manual(values = c("#a6cee3",
-      "#1f78b4","#b2df8a",
-      "#33a02c","#fb9a99",
-      "#e31a1c","#fdbf6f",
-      "#ff7f00","#cab2d6",
-      "#6a3d9a","#ffff99",
-      "#b15928","#fccde5",
-      "#d9d9d9","#66c2a5",
-      "#ffd92f","#8dd3c7",
-      "#80b1d3","#d9d9d9",
-      "#fdbf6f"),name="Eco-Region")+
-    scale_color_manual(values= c("#e31a1c","#33a02c"))+
-    theme_minimal()+
-    theme(axis.text = element_blank())
-
-  #----- Reordering the plots
-  all.plots.print <-list(map.plot)
-  for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
-  
-  pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
-  all.plots.print %>% purrr::map(~print(.x))
-  dev.off()
   
   #saving plot data
   save(all.plots, ready.to.plot, file = file.path(settings$outdir, "timeseries.plot.data.Rdata"))
@@ -836,3 +845,159 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 }
 
 
+
+##' @rdname interactive.plotting.sda
+##' @param ANALYSIS Analysis object from the sda.output.Rdata.
+##' @param FORECAST Forecast object from the sda.output.Rdata.
+##' @param obs.mean obs.mean
+##' @param obs.cov obs.cov
+##' @param outdir physical path where the pdf will be stored.
+##' @param pft.path Physical path of pft.csv file to allow by = pft option.
+##' @param by arrange figures by var, pft, or site.
+##' @param types data types that shown in the figure.
+##' @param CI range of confidence interval.
+##' @param unit list of unit used for y axis label.
+##' @param style color option.
+##' @export
+##' @author Dongchen Zhang
+SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = NULL, outdir, pft.path = NULL, by = "site", types = c("FORECAST", "ANALYSIS", "OBS"), CI = c(0.025, 0.975), 
+                                unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb = "kg/m2"),
+                                style = list(general_color = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black"),
+                                             fill_color = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey"),
+                                             title_color = "red")){
+  #Check package availability.
+  if("try-error" %in% class(try(find.package("ggpubr"), silent = T))){
+    PEcAn.logger::logger.info("Package ggpubr is not installed! Please install it and rerun the function!")
+    return(0)
+  }
+  #TODO: make page, font, line, point sizes adjustable.
+  time_points <- names(FORECAST)
+  site_ids <- attributes(FORECAST[[1]])$Site
+  var_names <- attributes(FORECAST[[1]])$dimnames[[2]]
+  #new diag function: fixed the bug when length==1 then it will return 0x0 matrix
+  diag_fix <- function(vector){
+    if (length(vector)>1){
+      return(diag(vector))
+    }else if (length(vector)==1){
+      return(vector)
+    }
+  }
+  #read pft.csv file for the option by == pft.
+  if(!is.null(pft.path)){
+    pft <- utils::read.csv(pft.path)
+  }
+  #create database
+  DB <- data.frame()
+  for (id in sort(unique(site_ids))) {
+    for (time_point in time_points) {
+      for (var_name in sort(unique(var_names))) {
+        for (type in types) {
+          if(type == "OBS") {
+            obs_mean <- obs.mean[[time_point]][[id]][[var_name]]
+            if(length(obs_mean) == 0 | is.null(obs_mean)){
+              next
+            }else{
+              obs_cov <- diag_fix(obs.cov[[time_point]][[id]])[which(var_name == names(obs.mean[[time_point]][[id]]))]
+              MIN <- obs_mean - 1.96*sqrt(obs_cov)
+              MAX <- obs_mean + 1.96*sqrt(obs_cov)
+              MEAN <- obs_mean
+            }
+          } else {
+            temp_Dat <- get(type)[[time_point]]
+            site_ind <- which(id == site_ids)
+            var_ind <- which(var_name == var_names)
+            ind <- var_ind[which(var_ind %in% site_ind)]
+            MEAN <- mean(temp_Dat[,ind])
+            MIN <- stats::quantile(temp_Dat[,ind], CI[1])
+            MAX <- stats::quantile(temp_Dat[,ind], CI[2])
+          }
+          if(MIN < 0) MIN <- 0
+          DB <- rbind(DB, list(id = id, date = time_point, var_name = var_name, type = type, upper = MAX, lower = MIN, mean = MEAN))
+        }
+      }
+    }
+  }
+  #if we plot by each site.
+  if(by == "site") {
+    PDF_w <- 10
+    PDF_h <- 8
+    p <- list()
+    for (site.id in sort(unique(site_ids))) {
+      site_p <- list()
+      for (var.name in sort(unique(var_names))) {
+        site_p <- rlist::list.append(site_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
+                                       dplyr::select(-c(id, var_name)) %>%
+                                       dplyr::mutate(date = lubridate::ymd(date)) %>%
+                                       ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                       ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
+                                       ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                       ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                       ggplot2::scale_fill_manual(values = style$fill_color) +
+                                       ggplot2::scale_color_manual(values = style$general_color) +
+                                       ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")))
+      }
+      p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
+                                                         top = ggpubr::text_grob(site.id, color = style$title_color, face = "bold", size = 14)))
+    }
+    #if we plot by each state variable
+  } else if (by == "var") {
+    PDF_w <- 20
+    PDF_h <- 16
+    p <- list()
+    for (var.name in sort(unique(var_names))) {
+      var_p <- list()
+      for (site.id in sort(unique(site_ids))) {
+        var_p <- rlist::list.append(var_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
+                                      dplyr::select(-c(id, var_name)) %>%
+                                      dplyr::mutate(date = lubridate::ymd(date)) %>%
+                                      ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                      ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
+                                      ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                      ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                      ggplot2::scale_fill_manual(values = style$fill_color) +
+                                      ggplot2::scale_color_manual(values = style$general_color) +
+                                      ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")) +
+                                      ggplot2::ggtitle(site.id))
+      }
+      p <- rlist::list.append(p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = var_p, common.legend = TRUE), 
+                                                         top = ggpubr::text_grob(var.name, color = style$title_color, face = "bold", size = 14)))
+    }
+    #if we plot by each (pft * state variable)
+  } else if (by == "pft") {
+    if (!exists("pft")) {
+      PEcAn.logger::logger.info("Please provide the pdf path!")
+      return(0)
+    } else {
+      PDF_w <- 20
+      PDF_h <- 16
+      p <- list()
+      for (PFT in sort(unique(pft$pft))) {
+        site_id_pft <- pft$site[which(pft$pft == PFT)]
+        var_p <- list()
+        for (var.name in sort(unique(var_names))) {
+          site_p <- list()
+          for (site.id in sort(site_id_pft)) {
+            site_p <- rlist::list.append(site_p, dplyr::filter(DB, id == site.id & var_name == var.name) %>% 
+                                           dplyr::select(-c(id, var_name)) %>%
+                                           dplyr::mutate(date = lubridate::ymd(date)) %>%
+                                           ggplot2::ggplot(ggplot2::aes(x=date)) +
+                                           ggplot2::geom_ribbon(ggplot2::aes(x = .data$date, ymin = .data$lower, ymax = .data$upper, fill=.data$type), inherit.aes = FALSE, alpha = 0.5) +
+                                           ggplot2::geom_line(ggplot2::aes(y=mean, color=type),lwd=0.5,linetype=2) +
+                                           ggplot2::geom_point(ggplot2::aes(y=mean, color=type), size=1.5, alpha=0.75) +
+                                           ggplot2::scale_fill_manual(values = style$fill_color) +
+                                           ggplot2::scale_color_manual(values = style$general_color) +
+                                           ggplot2::ylab(paste0(var.name, " (", unit[var.name], ")")) +
+                                           ggplot2::ggtitle(site.id))
+          }
+          var_p <- rlist::list.append(var_p, ggpubr::annotate_figure(ggpubr::ggarrange(plotlist = site_p, common.legend = TRUE), 
+                                                                     top = ggpubr::text_grob(paste(PFT, var.name), color = style$title_color, face = "bold", size = 14)))
+        }
+        p <- rlist::list.append(p, var_p)
+      }
+    }
+  }
+  #print pdf
+  grDevices::pdf(file.path(outdir, paste0("SDA_", by, ".pdf")),width = PDF_w, height = PDF_h)
+  print(p)
+  grDevices::dev.off()
+}

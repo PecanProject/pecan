@@ -1,7 +1,10 @@
 #' Select spectra
 #'
 #' @inheritParams wavelengths
-#' @inheritParams base::"["
+#' @param i,j indices specifying elements to extract or replace.
+#'  See [`base::Extract`] for details.
+#' @param drop Coerce result to the lowest dimension possible?
+#'  See [base::drop()] for details.
 #' @export
 "[.spectra" <- function(spectra, i, j, drop = FALSE) {
   if (missing(i)) {
@@ -20,6 +23,8 @@
 #' 
 #' @inheritParams [.spectra
 #' @param wavelength Wavelength vector to select
+#' @param j index specifying elements to extract or replace.
+#'  See [`base::Extract`] for details.
 #' @export
 "[[.spectra" <- function(spectra, wavelength, j) {
   spec_wl <- wavelengths(spectra)

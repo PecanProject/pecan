@@ -16,11 +16,10 @@ LazyData: FALSE
 Imports:
     PEcAn.logger,
     PEcAn.MA,
-    PEcAn.utils,
     ggplot2,
     MASS
 Suggests:
     PEcAn.visualization,
     testthat
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

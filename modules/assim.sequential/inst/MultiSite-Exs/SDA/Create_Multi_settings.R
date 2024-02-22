@@ -9,16 +9,89 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA"
-SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run"
-SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out"
+outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/"
+SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run/"
+SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out/"
 
 ERA5_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/ERA5_2012_2021/"
 XML_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
 
 pft_csv_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
 
-template <- Settings(list(
+#Obs_prep part
+#AGB
+AGB_indir <- "/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB"
+allow_download <- TRUE
+AGB_export_csv <- TRUE
+AGB_timestep <- list(unit="year", num=1)
+
+#LAI
+LAI_search_window <- 30
+LAI_timestep <- list(unit="year", num=1)
+LAI_export_csv <- TRUE
+run_parallel <- TRUE
+
+#SMP
+SMP_search_window <- 30
+SMP_timestep <- list(unit="year", num=1)
+SMP_export_csv <- TRUE
+update_csv <- FALSE
+
+#SoilC
+SoilC_timestep <- list(unit="year", num=1)
+SoilC_export_csv <- TRUE
+
+#Obs Date
+obs_start_date <- "2012-07-15"
+obs_end_date <- "2021-07-15"
+obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+timestep <- list(unit="year", num=1)
+
+#specify model binary
+model_binary <- "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if"
+
+#specify host section
+host.flag <- "rabbitmq"
+if (host.flag == "remote") {
+  #if we submit jobs through tunnel remotely.
+  host = structure(list(
+    name = "geo.bu.edu",
+    usr = "zhangdc",
+    folder = SDA_out_dir,
+    prerun = "module load R/4.1.2",
+    cdosetup = "module load cdo/2.0.6",
+    qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+    qsub.jobid = "Your job ([0-9]+) .*",
+    qstat = "qstat -j @JOBID@ || echo DONE",
+    tunnel = "~/Tunnel/Tunnel",
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+} else if (host.flag == "local") {
+  host = structure(list(
+    name = "localhost",
+    folder = SDA_out_dir,
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+} else if (host.flag == "rabbitmq") {
+  host = structure(list(
+    name = "localhost",
+    rabbitmq = structure(list(
+      prefix = NULL,
+      uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
+      queue = "SIPNET_r136",
+      cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
+      cpfcmd = "/data/bin/oc rsync @OUTFOLDER@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
+    )),
+    folder = SDA_out_dir,
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+  model_binary <- "/usr/local/bin/sipnet.r136"
+}
+#Start building template
+template <- PEcAn.settings::Settings(list(
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -28,14 +101,19 @@ template <- Settings(list(
   ############################################################################
   state.data.assimilation = structure(list(
     process.variance = TRUE,
-    adjustment = FALSE,
+    aqq.Init = 1,
+    bqq.Init = 1,
+    adjustment = TRUE,
     censored.data = FALSE,
+    free.run = FALSE,
     FullYearNC = TRUE,
     NC.Overwrite = FALSE,
     NC.Prefix = "sipnet.out",
     q.type = "SINGLE",
+    by.site = FALSE,
     Localization.FUN = "Local.support",
     scalef = 1,
+    chains = 5,
     data = structure(list(format_id = 1000000040, input.id = 1000013298)),
     state.variables = structure(list(
       #you could add more state variables here
@@ -46,7 +124,18 @@ template <- Settings(list(
     )),
     forecast.time.step = "year",
     start.date = start_date,
-    end.date = end_date
+    end.date = end_date,
+    
+    Obs_Prep = structure(list(
+      Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+      MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
+      SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+      Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
+      start.date = obs_start_date,
+      end.date = obs_end_date,
+      outdir = obs_outdir,
+      timestep = timestep
+    ))
   )),
   
   ###########################################################################
@@ -81,7 +170,7 @@ template <- Settings(list(
   ###########################################################################
   database = structure(list(
     bety = structure(
-      list(user = "bety", password = "bety", host = "128.197.168.114",
+      list(user = "bety", password = "bety", host = "10.241.76.27",
            dbname = "bety", driver = "PostgreSQL", write = "FALSE"
       ))
   )),
@@ -151,7 +240,7 @@ template <- Settings(list(
                          type = "SIPNET",
                          revision = "ssr",
                          delete.raw = FALSE,
-                         binary = "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
+                         binary = model_binary,
                          jobtemplate = "~/sipnet_geo.job"
   )),
   
@@ -163,19 +252,7 @@ template <- Settings(list(
   ###########################################################################
   ###########################################################################
   #be carefull of the host section, you need to specify the host of your own!!!
-  host = structure(list(
-    name = "geo.bu.edu",
-    usr = "zhangdc",
-    folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    prerun = "module load R/4.1.2",
-    cdosetup = "module load cdo/2.0.6",
-    qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-    qsub.jobid = "Your job ([0-9]+) .*",
-    qstat = "qstat -j @JOBID@ || echo DONE",
-    tunnel = "~/Tunnel/Tunnel",
-    outdir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    rundir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run"
-  )),
+  host = host,
   
   ############################################################################
   ############################################################################
@@ -230,81 +307,49 @@ template <- Settings(list(
 sitegroupId <- 1000000031
 nSite <- 39
 
-multiRunSettings <- createSitegroupMultiSettings(
+multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
   template,
   sitegroupId = sitegroupId,
   nSite = nSite)
 if(file.exists(XML_out_dir)){
   unlink(XML_out_dir)
 }
-write.settings(multiRunSettings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(multiRunSettings, outputfile = "pecan.xml")
 
 #here we re-read the xml file to fix issues of some special character within the Host section.
 tmp = readChar(XML_out_dir,100000000)
 tmp = gsub("&amp;","&",tmp)
 writeChar(tmp, XML_out_dir)
 
-settings <- read.settings(XML_out_dir)
-
-#iteratively grab ERA5 paths for each site
-for (i in 1:nSite) {
-  temp_ERA5_path <- settings[[i]]$run$inputs$met$path
-  temp_site_id <- settings[[i]]$run$site$id
-  temp_full_paths <- list.files(path=paste0(temp_ERA5_path, temp_site_id), pattern = '*.clim', full.names = T)
-  
-  #need a better way to code it up
-  #test works!!!!
-  #populated IC file paths into settings
-  Create_mult_list <- function(list.names, paths){
-    out <- as.list(paths)
-    names(out) <- list.names
-    out
-  }
-  settings[[i]]$run$inputs$met$path <- Create_mult_list(rep("path", length(temp_full_paths)), temp_full_paths)
-  
-  #code on met_start and met_end
-  settings[[i]]$run$site$met.start <- start_date
-  settings[[i]]$run$site$met.end <- end_date
-  settings[[i]]$run$start.date <- start_date
-  settings[[i]]$run$end.date <- end_date
-}
+settings <- PEcAn.settings::read.settings(XML_out_dir)
 
 #add Lat and Lon to each site
 #grab Site IDs from settings
-observations <- c()
+site_ID <- c()
 for (i in 1:length(settings)) {
   obs <- settings[[i]]$run$site$id
-  observations <- c(observations,obs)
+  site_ID <- c(site_ID,obs)
 }
 #query site info
 #open a connection to bety and grab site info based on site IDs
-bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
-                            host     = settings$database$bety$host,
-                            user     = settings$database$bety$user,
-                            password = settings$database$bety$password)
-con <- bety$con
+con <- PEcAn.DB::db.open(settings$database$bety)
+site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
+                                      ST_Y(ST_CENTROID(geometry)) AS lat 
+                           FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
 
-site_ID <- observations
-suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                              ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
-                                            ids = site_ID, .con = con))
-suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
-                  lon=qry_results$lon, time_zone=qry_results$time_zone)
 #write Lat and Lon into the settings
 for (i in 1:nSite) {
   temp_ID <- settings[[i]]$run$site$id
-  index_site_info <- which(site_info$site_id==temp_ID)
+  index_site_info <- which(site_info$id==temp_ID)
   settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
-  settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+  settings[[i]]$run$site$name <- site_info$sitename[index_site_info]#temp_ID
 }
 
 #####
 unlink(paste0(settings$outdir,"/pecan.xml"))
-write.settings(settings, outputfile = "pecan.xml")
+PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
 
 #test create site pft function
 #read the settings already done previously
-settings <- read.settings("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml")
+settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.xml"))

@@ -17,12 +17,17 @@ Authors@R: c(person("David", "LeBauer", role = c("aut"),
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
     In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
 Imports:
+    dplyr,
+    foreach,
+    furrr,
     PEcAn.logger,
     httr,
     jsonlite,
     urltools
 Suggests:
+    doSNOW,
     getPass,
+    mockery,
     testthat,
     tools,
     withr
@@ -30,4 +35,4 @@ License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

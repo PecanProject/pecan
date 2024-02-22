@@ -93,13 +93,7 @@ Package in Depends field not imported from: ‘PEcAn.utils’
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-model2netcdf.GDAY: no visible global function definition for ‘read.csv’
-Undefined global functions or variables:
-  read.csv
-Consider adding
-  importFrom("utils", "read.csv")
-to your NAMESPACE file.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -129,4 +123,4 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 2 WARNINGs, 3 NOTEs
+Status: 2 WARNINGs, 2 NOTEs

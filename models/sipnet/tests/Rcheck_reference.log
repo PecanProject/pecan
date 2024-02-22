@@ -101,33 +101,19 @@ Package in Depends field not imported from: ‘PEcAn.data.atmosphere’
 * checking R code for possible problems ... NOTE
 met2model.SIPNET: no visible binding for global variable ‘i’
 met2model.SIPNET: no visible global function definition for ‘convolve’
-met2model.SIPNET: no visible global function definition for
-  ‘write.table’
-model2netcdf.SIPNET: no visible global function definition for
-  ‘read.table’
 model2netcdf.SIPNET: no visible binding for global variable ‘year’
-model2netcdf.SIPNET: no visible global function definition for ‘head’
 sample.IC.SIPNET: no visible global function definition for ‘runif’
 split_inputs.SIPNET: no visible global function definition for ‘%>%’
 split_inputs.SIPNET: no visible binding for global variable ‘.’
-split_inputs.SIPNET: no visible global function definition for
-  ‘read.table’
 split_inputs.SIPNET: no visible binding for global variable ‘V2’
 split_inputs.SIPNET: no visible binding for global variable ‘V3’
 split_inputs.SIPNET: no visible binding for global variable ‘Date’
 split_inputs.SIPNET: no visible binding for global variable ‘V4’
-split_inputs.SIPNET: no visible global function definition for
-  ‘write.table’
-write.config.SIPNET: no visible global function definition for
-  ‘read.table’
-write.config.SIPNET: no visible global function definition for
-  ‘write.table’
 write_restart.SIPNET: no visible global function definition for ‘%>%’
 Undefined global functions or variables:
-  %>% . Date V2 V3 V4 convolve head i read.table runif write.table year
+  %>% . Date V2 V3 V4 convolve i runif year
 Consider adding
   importFrom("stats", "convolve", "runif")
-  importFrom("utils", "head", "read.table", "write.table")
 to your NAMESPACE file.
 * checking Rd files ... OK
 * checking Rd metadata ... OK

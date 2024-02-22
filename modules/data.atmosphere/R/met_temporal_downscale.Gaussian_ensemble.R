@@ -3,18 +3,18 @@ substrRight <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
-##' met_temporal_downscale.Gaussian_ensemble takes source data and a training dataset from the same site and temporally 
+##' met_temporal_downscale.Gaussian_ensemble
+##'
+##' takes source data and a training dataset from the same site and temporally
 ##'    downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
-##' @name met_temporal_downscale.Gaussian_ensemble
-##' @title met_temporal_downscale.Gaussian_ensemble
+##'
 ##' @export
-##' @param in.path 
-##' @param in.prefix 
+##' @param in.path ignored
+##' @param in.prefix ignored
 ##' @param outfolder path to directory in which to store output. Will be created if it does not exist
 ##' @param input_met - the source dataset that will temporally downscaled by the train_met dataset
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
-##' @param site.id
 ##' @param overwrite logical: replace output file if it already exists? 
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
 ##'   print debugging information as they run?
@@ -216,11 +216,11 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       day <- as.POSIXct(sprintf("%s 12:00:00", date), tz = tz)
       sequence <- seq(from = day, length.out = span, by = "days")
       
-      sunrise <- maptools::sunriset(lon.lat, sequence, direction = "sunrise", 
+      sunrise <- suntools::sunriset(lon.lat, sequence, direction = "sunrise", 
                                     POSIXct.out = TRUE)
-      sunset <- maptools::sunriset(lon.lat, sequence, direction = "sunset", 
+      sunset <- suntools::sunriset(lon.lat, sequence, direction = "sunset", 
                                    POSIXct.out = TRUE)
-      solar_noon <- maptools::solarnoon(lon.lat, sequence, POSIXct.out = TRUE)
+      solar_noon <- suntools::solarnoon(lon.lat, sequence, POSIXct.out = TRUE)
       
       data.frame(date = as.Date(sunrise$time), sunrise = as.numeric(format(sunrise$time, "%H%M")), 
                  solarnoon = as.numeric(format(solar_noon$time, "%H%M")), 

@@ -5,13 +5,13 @@
 ##' @param con database connection object
 ##' @param user_id_code  Optional parameter to search by user_id
 ##' @param created_after Optional parameter to search by creation date. Date must be in form 'YYYY-MM-DD'.
-##' @param created_before Optional parameter to search by creation date. Can be used in conjunciton with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.
-##' @param updated_after Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.
-##' @param updated_before Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.
+##' @param created_before Optional parameter to search by creation date. Can be used in conjunction with created_after to specify a specific window. Date must be in form 'YYYY-MM-DD'.
+##' @param updated_after Optional parameter to search all entries updated after a certain date. Date must be in form 'YYYY-MM-DD'.
+##' @param updated_before Optional parameter to search all entries updated before a certain date. Date must be in form 'YYYY-MM-DD'.
 ##' @param con connection the the bety database
 ##'
 ##'
-##' @description This is a fucntion that returns a dataframe with all of the format entries that have no assosiated input records.
+##' @description This is a function that returns a dataframe with all of the format entries that have no associated input records.
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README

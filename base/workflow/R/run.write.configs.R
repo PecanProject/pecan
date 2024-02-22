@@ -40,10 +40,10 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
-  #TODO: sometimes `files` is a 0x0 tibble and other operations with it fail.
+        #TODO: sometimes `files` is a 0x0 tibble and other operations with it fail.
         files <- PEcAn.DB::dbfile.check("Posterior",
-                              settings$pfts[[i]]$posteriorid, 
-                              con, settings$host$name, return.all = TRUE)
+                                        settings$pfts[[i]]$posteriorid, 
+                                        con, settings$host$name, return.all = TRUE)
         pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
         if (length(pid) == 0) {
           pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
@@ -53,8 +53,29 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
         }  ## otherwise leave posteriors as NA
       }
       ## otherwise leave NA and get.parameter.samples will look for local
-    }
-  }
+    } else {
+      ## does posterior.files point to a directory instead of a file?
+      if(utils::file_test("-d",posterior.files[i])){
+        pfiles = dir(posterior.files[i],pattern = "post.distns.*Rdata",full.names = TRUE)
+        if(length(pfiles)>1){
+          pid = grep("post.distns.Rdata",pfiles)
+          if(length(pid > 0)){
+            pfiles = pfiles[grep("post.distns.Rdata",pfiles)]
+          } else {
+            PEcAn.logger::logger.error(
+              "run.write.configs: could uniquely identify posterior files within",
+              posterior.files[i])
+          }
+          posterior.files[i] = pfiles
+        }
+      }
+      ## also, double check PFT outdir exists
+      if (is.null(settings$pfts[[i]]$outdir) || is.na(settings$pfts[[i]]$outdir)) {
+        ## no outdir
+        settings$pfts[[i]]$outdir <- file.path(settings$outdir, "pfts", settings$pfts[[i]]$name)
+      }
+    }  ## end else
+  } ## end for loop over pfts
   
   ## Sample parameters
   model <- settings$model$type
@@ -62,7 +83,18 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   options(scipen = 12)
 
   PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
-  load(file.path(settings$outdir, "samples.Rdata"))
+  samples.file <- file.path(settings$outdir, "samples.Rdata")
+  if (file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = samples) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
+    trait.samples <- samples$trait.samples
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+    runs.samples <- samples$runs.samples
+    ## env.samples <- samples$env.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+  }
   
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {

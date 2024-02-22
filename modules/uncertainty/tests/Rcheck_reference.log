@@ -1,73 +1,16 @@
-* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.uncertainty.Rcheck’
-* using R version 4.2.1 (2022-06-23)
-* using platform: x86_64-pc-linux-gnu (64-bit)
+* using log directory ‘/private/var/folders/qx/l3bryh8517q2l91915lm37gh0000gn/T/RtmpfAsesz/file11a8216940d9b/PEcAn.uncertainty.Rcheck’
+* using R version 4.3.2 (2023-10-31)
+* using platform: aarch64-apple-darwin20 (64-bit)
+* R was compiled by
+    Apple clang version 14.0.0 (clang-1400.0.29.202)
+    GNU Fortran (GCC) 12.2.0
+* running under: macOS Ventura 13.5.1
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.uncertainty/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.uncertainty’ version ‘1.7.2’
+* this is package ‘PEcAn.uncertainty’ version ‘1.7.2.9000’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... WARNING
-Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
-
-New submission
-
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  ## This is the master copy of the PEcAn License
-
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  PEcAn project
-  www.pecanproject.org
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
-Strong dependencies not in mainstream repositories:
-  PEcAn.utils, PEcAn.priors, PEcAn.DB, PEcAn.emulator, PEcAn.logger,
-    PEcAn.settings
-
-Found the following (possibly) invalid URLs:
-  URL: http://math.stackexchange.com/q/72975/3733 (moved to https://math.stackexchange.com/q/72975/3733)
-    From: man/sd.var.Rd
-    Status: 200
-    Message: OK
-  URL: http://stats.stackexchange.com/q/29905/1381 (moved to https://stats.stackexchange.com/q/29905/1381)
-    From: man/sd.var.Rd
-    Status: 200
-    Message: OK
-  URL: http://stats.stackexchange.com/q/7004/1381 (moved to https://stats.stackexchange.com/q/7004/1381)
-    From: man/sd.var.Rd
-    Status: 200
-    Message: OK
-
-The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -81,15 +24,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl Davidson, Rob Kooper, Shawn Serbin’
-  Authors@R: ‘Mike Dietze [aut], David LeBauer [aut, cre], Xiaohui Feng [aut], Dan Wang [aut], Carl Davidson [aut], Rob Kooper [aut], Shawn Serbin [aut], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
-  Authors@R:  ‘David LeBauer <dlebauer@email.arizona.edu>’
-
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -101,102 +36,15 @@ Maintainer field differs from that derived from Authors@R
 * checking whether the package can be unloaded cleanly ... OK
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
-* checking loading without being on the library search path ... OK
-* checking use of S3 registration ... OK
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-ensemble.ts: no visible binding for global variable ‘quantile’
-get.parameter.samples: no visible binding for global variable
-  ‘post.distns’
-get.parameter.samples: no visible binding for global variable
-  ‘trait.mcmc’
-get.results: no visible binding for global variable ‘trait.samples’
-get.results: no visible binding for global variable ‘runs.samples’
-get.results: no visible binding for global variable ‘sa.samples’
-plot.oechel.flux: no visible global function definition for ‘par’
-plot_sensitivity: no visible binding for global variable ‘x’
-plot_sensitivity: no visible binding for global variable ‘y’
-plot_variance_decomposition: no visible binding for global variable
-  ‘points’
-plot_variance_decomposition: no visible binding for global variable
-  ‘coef.vars’
-plot_variance_decomposition: no visible binding for global variable
-  ‘elasticities’
-plot_variance_decomposition: no visible binding for global variable
-  ‘variances’
-prep.data.assim: no visible global function definition for ‘rexp’
-prep.data.assim: no visible global function definition for
-  ‘complete.cases’
-prep.data.assim: no visible global function definition for ‘cov’
-read.ensemble.output: no visible binding for global variable
-  ‘runs.samples’
-read.ensemble.ts: no visible binding for global variable ‘runs.samples’
-run.ensemble.analysis: no visible global function definition for
-  ‘mstmipvar’
-run.ensemble.analysis: no visible binding for global variable
-  ‘ensemble.output’
-run.ensemble.analysis: no visible global function definition for ‘pdf’
-run.ensemble.analysis: no visible global function definition for ‘par’
-run.ensemble.analysis: no visible global function definition for ‘hist’
-run.ensemble.analysis: no visible global function definition for
-  ‘boxplot’
-run.ensemble.analysis: no visible global function definition for
-  ‘dev.off’
-run.sensitivity.analysis: no visible binding for global variable
-  ‘runs.samples’
-run.sensitivity.analysis: no visible binding for global variable
-  ‘sa.samples’
-run.sensitivity.analysis: no visible global function definition for
-  ‘trait.lookup’
-run.sensitivity.analysis: no visible binding for global variable
-  ‘sensitivity.output’
-run.sensitivity.analysis: no visible global function definition for
-  ‘vecpaste’
-run.sensitivity.analysis: no visible global function definition for
-  ‘pdf’
-run.sensitivity.analysis: no visible global function definition for
-  ‘dev.off’
-run.sensitivity.analysis: no visible binding for global variable
-  ‘grid.arrange’
-runModule.run.ensemble.analysis: no visible global function definition
-  for ‘is.MultiSettings’
-runModule.run.ensemble.analysis: no visible global function definition
-  for ‘papply’
-runModule.run.ensemble.analysis: no visible global function definition
-  for ‘is.Settings’
-runModule.run.sensitivity.analysis: no visible global function
-  definition for ‘is.MultiSettings’
-runModule.run.sensitivity.analysis: no visible global function
-  definition for ‘papply’
-runModule.run.sensitivity.analysis: no visible global function
-  definition for ‘is.Settings’
-vd.variance: no visible binding for global variable ‘var’
-Undefined global functions or variables:
-  boxplot coef.vars complete.cases cov dev.off elasticities
-  ensemble.output grid.arrange hist is.MultiSettings is.Settings
-  mstmipvar papply par pdf points post.distns quantile rexp
-  runs.samples sa.samples sensitivity.output trait.lookup trait.mcmc
-  trait.samples var variances vecpaste x y
-Consider adding
-  importFrom("grDevices", "dev.off", "pdf")
-  importFrom("graphics", "boxplot", "hist", "par", "points")
-  importFrom("stats", "complete.cases", "cov", "quantile", "rexp", "var")
-to your NAMESPACE file.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
-* checking Rd line widths ... NOTE
-Rd file 'sensitivity.analysis.Rd':
-  \examples lines wider than 100 characters:
-     sensitivity.analysis(trait.samples[[pft$name]], sa.samples[[pft$name]], sa.agb[[pft$name]], pft$outdir)
-
-These lines will be truncated in the PDF manual.
-* checking Rd cross-references ... WARNING
-Missing link or links in documentation object 'get.gi.phii.Rd':
-  ‘variance.decomposition’
-
-See section 'Cross-references' in the 'Writing R Extensions' manual.
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
   ‘runModule.run.ensemble.analysis’
@@ -239,9 +87,6 @@ Undocumented arguments in documentation object 'read.ensemble.ts'
 Undocumented arguments in documentation object 'run.ensemble.analysis'
   ‘settings’ ‘ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’ ‘...’
 
-Undocumented arguments in documentation object 'run.sensitivity.analysis'
-  ‘settings’ ‘ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’ ‘...’
-
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
@@ -263,9 +108,16 @@ Argument items with no description in Rd object 'sa.splinefun':
 * checking data for ASCII and uncompressed saves ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ...
+  Running ‘testthat.R’
+ OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 6 WARNINGs, 3 NOTEs
+Status: 3 WARNINGs
+See
+  ‘/private/var/folders/qx/l3bryh8517q2l91915lm37gh0000gn/T/RtmpfAsesz/file11a8216940d9b/PEcAn.uncertainty.Rcheck/00check.log’
+for details.
+
+

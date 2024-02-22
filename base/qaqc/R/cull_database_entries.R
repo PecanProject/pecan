@@ -23,7 +23,7 @@ cull_database_entries <- function(table = NULL, outdir, file_name = NULL, con, m
       PEcAn.logger::logger.severe("If a table object hasn't been provided, a file_name must be set.")
     } else {
       file <- paste(outdir, "/", file_name, sep = "")
-      table <- read.table(file = file, header = TRUE, sep = "|") # '|' chosen because it's unlikely to overlap with "notes" text.
+      table <- utils::read.table(file = file, header = TRUE, sep = "|") # '|' chosen because it's unlikely to overlap with "notes" text.
     }
   } else if (!is.null(table) && !is.null(file_name)) {
     PEcAn.logger::logger.severe("table and file_name cannot both be provided. Providing table prevents file_name from being read in. Please choose one to avoid acidential deletions.")
@@ -62,5 +62,5 @@ cull_database_entries <- function(table = NULL, outdir, file_name = NULL, con, m
     delete_command <- paste("DELETE from ", table_name, " where id = ", id, ";", sep = "")
     PEcAn.DB::db.query(delete_command, con = con)
   }
-  write.table(log, file = paste(outdir, "/deletion_log_of_", file_name, sep = ""), row.names = FALSE)
+  utils::write.table(log, file = paste(outdir, "/deletion_log_of_", file_name, sep = ""), row.names = FALSE)
 }
