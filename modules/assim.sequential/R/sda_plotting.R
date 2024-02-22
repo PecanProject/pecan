@@ -632,7 +632,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
                 as.data.frame %>% 
                 dplyr::mutate(Site=site)
             }) %>%
-            tidyr::gather(Variable, Value, -c(Site)) %>%
+            tidyr::gather(key = "Variable", value = "Value", -c("Site")) %>%
             dplyr::group_by(.data$Site,.data$Variable) %>%
             dplyr::summarise(
               Means=mean(Value, na.rm=T),
@@ -655,14 +655,14 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     purrr::map_df(function(one.day.data){
       one.day.data$means %>% 
         purrr::map_dfr(~.x) %>% 
-        dplyr::mutate(Site=names(one.day.data$means)) %>% 
-        tidyr::gather(Variable,Means,-c(Site)) %>%
+        dplyr::mutate(Site = names(one.day.data$means)) %>%
+        tidyr::gather(key = "Variable", value = "Means", -c("Site")) %>%
         dplyr::right_join(one.day.data$covs %>% 
                      purrr::map_dfr(~ t(sqrt(as.numeric(diag_fix(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
-                     dplyr::mutate(Site=names(one.day.data$covs)) %>% 
-                     tidyr::gather(Variable,Sd,-c(Site)),
-                   by=c('Site','Variable')) %>%
+                     dplyr::mutate(Site = names(one.day.data$covs)) %>%
+                     tidyr::gather(key = "Variable", value = "Sd", -c("Site")),
+                   by = c('Site', 'Variable')) %>%
         dplyr::mutate(Upper=Means+(.data$Sd*1.96),
                Lower=Means-(.data$Sd*1.96))%>%
         # dropped the "_" from "SDA_Data"
@@ -685,7 +685,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
         siteX %>% purrr::map_df(function(DateX){
           DateX %>% 
             purrr::map_df(~.x %>% t ) %>%
-            tidyr::gather(Variable, Value,-c(Date, Site)) %>%
+            tidyr::gather(key = "Variable", value = "Value", -c("Date", "Site")) %>%
             dplyr::group_by(.data$Variable,.data$Date, .data$Site) %>%
             dplyr::summarise(
                Means=mean(Value, na.rm=T),
@@ -726,7 +726,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       purrr::map(function(site){
             #plotting
             ready.to.plot%>%
-              dplyr::filter(Site==site)%>%
+              dplyr::filter(.data$Site==site)%>%
               ggplot2::ggplot(aes(x=Date))+
               ggplot2::geom_ribbon(ggplot2::aes(ymin=.data$Lower,ymax=.data$Upper,fill=.data$Type),color="black")+
               ggplot2::geom_line(ggplot2::aes(y=.data$Means, color=.data$Type),lwd=1.02,linetype=2)+
@@ -759,7 +759,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
             #plotting
             ready.to.plot%>%
-              dplyr::filter(Variable==vari, Site==site)%>%
+              dplyr::filter(.data$Variable==vari, .data$Site==site)%>%
               ggplot2::ggplot(aes(x=Date))+
               ggplot2::geom_ribbon(ggplot2::aes(ymin=.data$Lower,ymax=.data$Upper,fill=.data$Type),color="black")+
               ggplot2::geom_line(ggplot2::aes(y=.data$Means, color=.data$Type),lwd=1.02,linetype=2)+
@@ -809,15 +809,19 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     
     #plotting
     map.plot<- ggplot2::ggplot() + 
-      ggplot2::geom_sf(ggplot2::aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
-      ggplot2::geom_point(data = site.locs,
-                 size = 2) +
+      ggplot2::geom_sf(
+        ggplot2::aes(fill = .data$NA_L1CODE),
+        data = aoi_boundary_HARV,
+        alpha=0.35,
+        lwd=0,
+        color="black") +
+      ggplot2::geom_point(data = site.locs, size = 2) +
       ggrepel::geom_label_repel(
         data = site.locs,
         ggplot2::aes(
           x = Lon,
           y = Lat,
-          label = paste0(Site, "\n", Name),
+          label = paste0(.data$Site, "\n", .data$Name),
           color = Data,
         ),
         vjust = 1.2,

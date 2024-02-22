@@ -1,4 +1,4 @@
-* using log directory ‘/tmp/Rtmpnay1QT/PEcAnAssimSequential.Rcheck’
+* using log directory ‘/tmp/RtmpVOTVGb/PEcAnAssimSequential.Rcheck’
 * using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
@@ -132,19 +132,9 @@ post.analysis.ggplot.violin: no visible binding for global variable
 post.analysis.ggplot.violin: no visible binding for global variable
   ‘alphablue’
 post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Variable’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
   binding for global variable ‘Value’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Site’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Variable’
 post.analysis.multisite.ggplot : <anonymous>: no visible binding for
   global variable ‘Means’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Site’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Sd’
 post.analysis.multisite.ggplot : <anonymous>: no visible global
   function definition for ‘aes’
 post.analysis.multisite.ggplot : <anonymous>: no visible binding for
@@ -170,15 +160,9 @@ post.analysis.multisite.ggplot: no visible global function definition
 post.analysis.multisite.ggplot: no visible global function definition
   for ‘proj4string<-’
 post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘NA_L1CODE’
-post.analysis.multisite.ggplot: no visible binding for global variable
   ‘Lon’
 post.analysis.multisite.ggplot: no visible binding for global variable
   ‘Lat’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Site’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Name’
 post.analysis.multisite.ggplot: no visible binding for global variable
   ‘Data’
 postana.bias.plotting.sda: no visible binding for global variable
@@ -213,14 +197,14 @@ sda.particle: no visible binding for global variable ‘sNPP’
 sda.particle: no visible binding for global variable ‘outfolder’
 simple.local: no visible binding for global variable ‘rloc’
 Undefined global functions or variables:
-  . Cmcmc_tobit2space Data J Lat Lon MCMC_iteration Means N NA_L1CODE
-  Name Rmcmc_tobit2space Sd Site Type Value Variable Variables YN
-  abline aes alphablue alphabrown alphagreen alphapink alphapurple
-  blocked.dis blue brown col2rgb conf_tobit2space coordinates<- cov
-  distances ensemble.samples green host is lambda_0 mNPP mtext nt nu_0
-  obs.mean outfolder pft.cat pink post.distns proj4string<- purple
-  quantile returnType rgb rloc sNPP samplerNumberOffset_tobit2space
-  site_id stop.on.error tobit2space_pred yrvec
+  . Cmcmc_tobit2space Data J Lat Lon MCMC_iteration Means N
+  Rmcmc_tobit2space Type Value Variables YN abline aes alphablue
+  alphabrown alphagreen alphapink alphapurple blocked.dis blue brown
+  col2rgb conf_tobit2space coordinates<- cov distances ensemble.samples
+  green host is lambda_0 mNPP mtext nt nu_0 obs.mean outfolder pft.cat
+  pink post.distns proj4string<- purple quantile returnType rgb rloc
+  sNPP samplerNumberOffset_tobit2space site_id stop.on.error
+  tobit2space_pred yrvec
 Consider adding
   importFrom("grDevices", "col2rgb", "rgb")
   importFrom("graphics", "abline", "mtext")
@@ -278,7 +262,7 @@ Extensions’ manual.
 
 Status: 2 WARNINGs, 1 NOTE
 See
-  ‘/tmp/Rtmpnay1QT/PEcAnAssimSequential.Rcheck/00check.log’
+  ‘/tmp/RtmpVOTVGb/PEcAnAssimSequential.Rcheck/00check.log’
 for details.
 
 
