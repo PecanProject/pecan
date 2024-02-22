@@ -625,7 +625,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     # Initial mineral N
-    nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_nitrogen_content"), silent = TRUE)
+    nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_inorganic_nitrogen_content"), silent = TRUE)
     if (!is.na(nmin0) && is.numeric(nmin0)) {
       run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
     }

@@ -542,8 +542,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                       longname = "Dead Leaf Carbon Content")
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("soil_nitrogen_content", units = "kg N m-2", dim = dims, missval = -999,
-                                                    longname = "Soil Nitrogen Content by Layer	") 
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("soil_organic_nitrogen_content", units = "kg N m-2", dim = dims, missval = -999,
+                                                    longname = "Soil Organic Nitrogen Content by Layer	") 
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Non-elongating generative tiller density") 
