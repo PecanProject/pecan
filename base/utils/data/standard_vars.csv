@@ -60,6 +60,8 @@ slow_soil_pool_carbon_content,slow_soil_pool_carbon_content_of_soil_layer,kg C m
 fast_soil_pool_carbon_content,fast_soil_pool_carbon_content_of_soil_layer,kg C m-2,Fast Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Fast soil pool carbon content of soil layer,
 structural_soil_pool_carbon_content,structural_soil_pool_carbon_content_of_soil_layer,kg C m-2,Structural Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Structural soil pool carbon content of soil layer,
 soil_nitrogen_content,soil_nitrogen_content_of_soil_layer,kg N m-2,Soil Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,Total nitrogen content of soil layer,
+soil_inorganic_nitrogen_content,soil_inorganic_nitrogen_content_of_soil_layer,kg N m-2,Soil Inorganic Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,Total inorganic nitrogen content of soil layer (mineralized nitrogen),
+soil_organic_nitrogen_content,soil_organic_nitrogen_content_of_soil_layer,kg N m-2,Soil Organic Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,"Total organic nitrogen content of soil layer, excluding litter",
 soil_phosphorus_content,soil_phosphorus_content_of_soil_layer,kg P m-2,Soil Phosphorus Content by Layer,Phosphorus Pools,real,lon,lat,time,depth,Total phosphorus content of soil layer,
 Qh,NA,W m-2,Sensible heat,Energy Fluxes,real,lon,lat,time,NA,Sensible heat flux into the boundary layer (positive into atmosphere),
 Qle,NA,W m-2,Latent heat,Energy Fluxes,real,lon,lat,time,NA,Latent heat flux into the boundary layer (positive into atmosphere),

@@ -172,6 +172,7 @@ test_that('YASSO pool ICs pass thru (list)', {
   default <- NULL
   run.id <- 9999
   dir.create(file.path(outfolder, run.id), showWarnings = FALSE)
+  load(system.file('last_vals_basgra.Rdata', package='PEcAn.BASGRA'))
   ic_list <-  list(
     CSOM_A = 1,
     CSOM_W = 2,
@@ -180,7 +181,8 @@ test_that('YASSO pool ICs pass thru (list)', {
     CSOM_H = 5,
     NSOM = 6,
     TEMPR30 = 7,
-    PRECIP30 = 8
+    PRECIP30 = 8,
+    test_vals = last_vals
   )
   write.config.BASGRA(defaults, trait.values=list(), settings=settings, run.id=run.id, IC=ic_list)
   job.file <- file.path(outfolder, run.id, 'job.sh')

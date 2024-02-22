@@ -439,11 +439,16 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
       csoms         <- output[thisyear, outputNames == "CSOM_H"] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")
+      nsom          <- output[thisyear, outputNames == "NSOM"] # (g N m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nsom, "g m-2", "kg m-2")
     } else {
       csomf         <- output[thisyear, which(outputNames == "CSOMF")] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf, "g m-2", "kg m-2")  
       csoms         <- output[thisyear, which(outputNames == "CSOMS")] # (g C m-2)
       outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csoms, "g m-2", "kg m-2")  
+      nsomf          <- output[thisyear, outputNames == "NSOMF"] # (g N m-2)
+      nsoms          <- output[thisyear, outputNames == "NSOMS"] # (g N m-2)
+      outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nsomf+nsoms, "g m-2", "kg m-2")
     }
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(csomf + csoms, "g m-2", "kg m-2") 
     outlist[[length(outlist)+1]]  <- output[thisyear, which(outputNames == "TILG1")] 
@@ -473,6 +478,9 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     # again this is not technically GPP
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(phot, "g m-2", "kg m-2") / sec_in_day
     
+    # NPP 
+    outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(nee - rsoil, "g m-2", "kg m-2") / sec_in_day
+    
     # Qle W/m2
     outlist[[length(outlist)+1]]  <- ( output[thisyear, which(outputNames == "EVAP")] + output[thisyear, which(outputNames == "TRAN")] * 
                           PEcAn.data.atmosphere::get.lv()) / sec_in_day  
@@ -482,6 +490,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     soilm <- output[thisyear, which(outputNames == "WAL")] # mm
     outlist[[length(outlist)+1]]  <- PEcAn.utils::ud_convert(soilm, "mm", "m") * 1000 # (kg m-3) density of water in soil
 
+    # WCL = WAL*0.001 / (ROOTD-Fdepth) Water concentration in non-frozen soil
+    # need to think about ice! but the sensors maybe don't measure that
+    ROOTD  <- output[thisyear, which(outputNames == "ROOTD")] 
+    Fdepth <- output[thisyear, which(outputNames == "Fdepth")] 
+    outlist[[length(outlist)+1]]  <- soilm * 0.001 / (ROOTD - Fdepth)
+    
     # Additional C fluxes
     outlist[[length(outlist)+1]] <- udunits2::ud.convert(output[thisyear, outputNames == "FLITTC_LEAF"],
                                                          "g m-2", "kg m-2") / sec_in_day    
@@ -528,6 +542,8 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
                                       longname = "Dead Leaf Carbon Content")
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("soil_organic_nitrogen_content", units = "kg N m-2", dim = dims, missval = -999,
+                                                    longname = "Soil Organic Nitrogen Content by Layer	") 
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("nonelongating_generative_tiller", units = "m-2", dim = dims, missval = -999,
                                       longname = "Non-elongating generative tiller density") 
@@ -543,9 +559,12 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("NEE", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("NPP", dims)
     nc_var[[length(nc_var)+1]]  <- PEcAn.utils::to_ncvar("Qle", dims)
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = dims, missval = -999,
                                       longname = "Average Layer Soil Moisture")
+    nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("SoilMoistFrac", units = "m3 m-3", dim = dims, missval = -999,
+                                                    longname = "Average Layer Fraction of Saturation")
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("leaf_litter_carbon_flux", units = "kg C m-2 s-1", dim = dims,
                                                     missval = -999, longname='Flux of carbon from leaf litter to soil pools')
     nc_var[[length(nc_var)+1]]  <- ncdf4::ncvar_def("fine_root_litter_carbon_flux", units = "kg C m-2 s-1", dim = dims,
