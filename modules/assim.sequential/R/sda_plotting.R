@@ -1,5 +1,5 @@
-#' @author Ann Raiho 
-#' @description This function generates a series of colors. This is mainly used in AssimSequential package.
+# @author Ann Raiho
+# @description This function generates a series of colors. This is mainly used in AssimSequential package.
 generate_colors_sda <-function(){
   pink        <- col2rgb("deeppink")
   alphapink   <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
