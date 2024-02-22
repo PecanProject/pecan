@@ -80,7 +80,16 @@ get.da.data.growth <- function() {
   growth <- cbind(buds[, c("plot", "individual", "pft")], growth)
   
   ensemble.size <- 500
-  load(paste(out.dir, "samples.Rdata", sep = ""))
+  samples.file <- paste(out.dir, "samples.Rdata" , sep = "")
+  
+  if(file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = samples)
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the get.da.data function")
+  }
   
   pfts <- names(ensemble.samples)
   pfts <- pfts[pfts != "env"]

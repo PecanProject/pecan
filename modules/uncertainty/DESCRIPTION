@@ -30,7 +30,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
 Depends:
 Imports:
     dplyr,
-    ggmap,
     ggplot2,
     gridExtra,
     PEcAn.DB,

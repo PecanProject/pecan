@@ -404,8 +404,8 @@ model{
   
   ## JAGS initial conditions
   init   <- list()
-  if(is.mcmc.list(restart)){
-    init <- mcmc.list2init(restart)
+  if(coda::is.mcmc.list(restart)){
+    init <- PEcAn.utils::mcmc.list2init(restart)
     nchain <- length(init)
   } else {
     nchain <- 3
@@ -438,7 +438,7 @@ model{
   }
   
   PEcAn.logger::logger.info("RUN MCMC")
-  load.module("dic")
+  rjags::load.module("dic")
   for(k in avail.chunks){
     
     ## determine whether to sample states
@@ -457,17 +457,17 @@ model{
     save(jags.out,file=ofile)
     
     ## update restart
-    if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
+    if(!is.null(restart) & ((is.logical(restart) && restart) || coda::is.mcmc.list(restart))){
       ofile <- paste("IGF",model,"RESTART.RData",sep=".")
-      jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
+      jags.final <- rjags::coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
       k_restart = k + 1  ## finished k, so would restart at k+1
       save(jags.final,k_restart,file=ofile)
     }
     
     ## check for convergence and break from loop early
-    D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
+    D <- coda::as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
     gbr <- coda::gelman.diag(D)$psrf[1,1]
-    trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
+    trend <- mean(sapply(D,function(x){stats::coef(stats::lm(x~seq_len(n.chunk)))[2]}))
     if(gbr < 1.005 & abs(trend) < 0.5) break
   }
   
