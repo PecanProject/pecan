@@ -7,7 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(testthat)
-library(PEcAn.utils)
 
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 test_check("PEcAn.priors")

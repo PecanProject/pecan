@@ -1,8 +1,5 @@
 ##' Download Raw FACE data from the internet
 ##'
-##' @name download.FACE
-##' @title download.FACE
-##' @export
 ##'
 ##' @param sitename sitename
 ##' @param outfolder location where output is stored
@@ -12,8 +9,9 @@
 ##' @param end_date desired end date YYYY-MM-DD
 ##' @param overwrite overwrite existing files? Default is FALSE
 ##' @param ... other inputs
-##' 
+##'
 ##' @author Betsy Cowdery
+##' @export
 download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, method, ...) {
   # download.FACE <-
   # function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){

@@ -39,14 +39,13 @@
 "datapack","*","modules/data.land","Imports",FALSE
 "DBI","*","base/db","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
-"dbplyr","*","base/db","Imports",FALSE
 "dbplyr","*","modules/benchmark","Imports",FALSE
+"dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
-"dplyr","*","base/db","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
 "dplyr","*","base/remote","Imports",FALSE
 "dplyr","*","base/utils","Imports",FALSE
@@ -61,6 +60,7 @@
 "dplyr","*","modules/data.land","Imports",FALSE
 "dplyr","*","modules/data.remote","Suggests",FALSE
 "dplyr","*","modules/uncertainty","Imports",FALSE
+"dplyr",">= 1.1.2","base/db","Imports",FALSE
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "emdbook","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
@@ -402,7 +402,6 @@
 "PEcAn.utils","*","modules/data.land","Imports",TRUE
 "PEcAn.utils","*","modules/data.remote","Imports",TRUE
 "PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
-"PEcAn.utils","*","modules/priors","Imports",TRUE
 "PEcAn.utils","*","modules/rtm","Suggests",TRUE
 "PEcAn.utils","*","modules/uncertainty","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/basgra","Imports",TRUE
@@ -553,7 +552,6 @@
 "stringr",">= 1.1.0","base/visualization","Imports",FALSE
 "stringr",">= 1.1.0","models/ed","Imports",FALSE
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
-"stringr",">= 1.1.0","modules/data.remote","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
 "swfscMisc","*","modules/data.land","Imports",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
