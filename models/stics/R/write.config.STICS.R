@@ -207,7 +207,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # phasic development
     # to see parameters per formalism
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "phasic development")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "phasic development")
     # unlist(values)
     
     # name code of plant in 3 letters
@@ -302,7 +302,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     
     # emergence and starting
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "emergence and starting")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "emergence and starting")
     # unlist(values)
     
     # minimum temperature below which emergence is stopped (degreeC)
@@ -359,7 +359,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # there are also "planting" related parameters
     
     # leaves
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "leaves")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "leaves")
     # unlist(values)
     
     
@@ -402,7 +402,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # temperature beyond which foliar growth stops
     if ("tcmax_foliar_growth" %in% pft.names) {
       #  tcxstop must be > tdmax, priors should be set that way, and we can let the simulation fail afterwards, but putting a warning here
-      tdmax   <- SticsRFiles::get_param_xml(plant_file, param_name="tdmax", select = "formalisme", value = "phasic development")[[1]][[1]]
+      tdmax   <- SticsRFiles::get_param_xml(plant_file, param="tdmax", select = "formalisme", select_value = "phasic development")[[1]][[1]]
       tcxstop <- pft.traits[which(pft.names == "tcmax_foliar_growth")]
       if(tcxstop < tdmax){
         PEcAn.logger::logger.warn("tcmax_foliar_growth value (", tcxstop, ") should be greater than tdmax (", tdmax, ").")
@@ -480,7 +480,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     
     # radiation interception
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "radiation interception")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "radiation interception")
     
     # extinction coefficient of photosynthetic active radiation in the canopy
     if ("extinction_coefficient_diffuse" %in% pft.names) {
@@ -488,7 +488,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     } 
     
     # shoot biomass growth
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "shoot biomass growth")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "shoot biomass growth")
     
     # minimum temperature for development
     if ("temin" %in% pft.names) {
@@ -537,7 +537,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     
     # partitioning of biomass in organs
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "partitioning of biomass in organs")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "partitioning of biomass in organs")
     
     # maximum SLA (specific leaf area) of green leaves (cm2 g-1)
     if ("SLAMAX" %in% pft.names) {
@@ -565,7 +565,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # yield formation, will get back
     
     # roots
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "roots")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "roots")
   
     
     # sensanox, index of anoxia sensitivity (0 = insensitive), 0 for now
@@ -695,7 +695,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # correspondance code BBCH
     
     # cultivar parameters
-    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", value = "cultivar parameters")
+    # values = SticsRFiles::get_param_xml(plant_file, select = "formalisme", select_value = "cultivar parameters")
     
     # there are multiple cultivars (varietes) in plt file
     # for now I assume we will always use only #1 in simulations 
@@ -734,7 +734,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
-      SticsRFiles::convert_xml2txt(xml_file = plant_file, java_dir = javastics_path)
+      SticsRFiles::convert_xml2txt(file = plant_file, javastics = javastics_path)
       # do I also need to move the file out of the plant folder to main rundir?
     }
     
@@ -1151,7 +1151,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # skipping, Qmulchdec:
     # maximal amount of decomposable mulch
       
-    SticsRFiles::convert_xml2txt(xml_file = gen_file, java_dir = javastics_path)
+    SticsRFiles::convert_xml2txt(file = gen_file, javastics = javastics_path)
     
     this_usm <- grep(names(trait.values)[pft], usmdirs)
     sapply(this_usm, function(x){
@@ -1167,7 +1167,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # DO NOTHING ELSE FOR NOW
     
-    SticsRFiles::convert_xml2txt(xml_file = newf_file, java_dir = javastics_path)
+    SticsRFiles::convert_xml2txt(file = newf_file, javastics = javastics_path)
     sapply(this_usm, function(x){
       file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs[x], "tempoparv6.sti"), overwrite = TRUE)
     })
@@ -1247,7 +1247,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       ncdf4::nc_close(ic_nc)
     }
     
-    SticsRFiles::convert_xml2txt(xml_file = ini_file, java_dir = javastics_path)
+    SticsRFiles::convert_xml2txt(file = ini_file, javastics = javastics_path)
     file.rename(file.path(rundir, "ficini.txt"), file.path(usmdirs[i], "ficini.txt"))
   }
 
@@ -1533,8 +1533,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         # TODO: more than 1 USM, rbind
         
-        SticsRFiles::convert_xml2txt(xml_file = file.path(usmdirs[usmi], "tmp_tec.xml"), 
-                                     java_dir = javastics_path)
+        SticsRFiles::convert_xml2txt(file = file.path(usmdirs[usmi], "tmp_tec.xml"), 
+                                     javastics = javastics_path)
         
       
      } # end-loop over usms
