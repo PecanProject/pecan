@@ -111,6 +111,8 @@ SDA_timeseries_plot(
 
 \item{t}{current time - int number giving the position of the current time in obs.time.}
 
+\item{obs.times}{vector of dates of measurements}
+
 \item{obs.mean}{obs.mean}
 
 \item{obs.cov}{obs.cov}
@@ -140,8 +142,6 @@ SDA_timeseries_plot(
 \item{unit}{list of unit used for y axis label.}
 
 \item{style}{color option.}
-
-\item{obs.time}{vector of dates of measurements}
 }
 \description{
 Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot

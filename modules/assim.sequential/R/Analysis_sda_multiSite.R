@@ -284,9 +284,9 @@ GEF.MultiSite <- function(settings, Forecast, Observed, H, extraArg,...){
           purrr::map('site') %>%
           purrr::map('site.pft') %>%
           purrr::map('pft.name') %>%
-          modify(as.factor) %>%
-          modify(as.numeric) %>%
-          modify_if(function(x) {
+          purrr::modify(as.factor) %>%
+          purrr::modify(as.numeric) %>%
+          purrr::modify_if(function(x) {
             if (length(x) > 0) {
               return(FALSE)
             } else{
