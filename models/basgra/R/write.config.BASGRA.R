@@ -300,42 +300,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     last_vals <- c()
     last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
     
-    if(!file.exists(last_states_file)){
-      PEcAn.logger::logger.warn("Last step output values are missing for restart.")
-      # trying to bypass Julius' test
-      last_vals <- run_params
-      outputNames <- c(
-        "Time"      , "year"     , "doy"      , "DAVTMP"    , "CLV"      , "CLVD"     ,
-        "YIELD"     , "CRES"     , "CRT"      , "CST"       , "CSTUB"    , "DRYSTOR"  ,
-        "Fdepth"    , "LAI"      , "LT50"     , "O2"        , "PHEN"     , "ROOTD"    ,
-        "Sdepth"    , "TANAER"   , "TILG"     , "TILV"      , "WAL"      , "WAPL"     ,
-        "WAPS"      , "WAS"      , "WETSTOR"  , "DM"        , "RES"      , "PHENCR"     , 
-        "NELLVG"    , "NELLVM"    , "SLA"      , "TILTOT"    , "FRTILG"   , "TILG1"  ,
-        "TILG2"   , "RDRT"     , "VERN"     ,
-        "CLITT"      , "CSOMF", "CSOMS"   , "NLITT"       , "NSOMF",
-        "NSOMS"      , "NMIN" , "PHOT"    , "RplantAer"   ,"Rsoil"   , "NemissionN2O",
-        "NemissionNO", "Nfert", "Ndep"    , "RWA"         ,
-        "NSH"        , "GNSH" , "DNSH"    , "HARVNSH"     ,  "NCSH" ,
-        "NCGSH"      , "NCDSH", "NCHARVSH",
-        "fNgrowth","RGRTV","FSPOT","RESNOR","TV2TIL","NSHNOR","KNMAX","KN",    # 63:70
-        "DMLV"       , "DMST"             , "NSH_DMSH"    ,                    # 71:73
-        "Nfert_TOT"  , "YIELD_POT"        , "DM_MAX"      ,                    # 74:76
-        "F_PROTEIN"  , "F_ASH"            ,                                    # 77:78
-        "F_WALL_DM"  , "F_WALL_DMSH"      , "F_WALL_LV"   , "F_WALL_ST",       # 79:82
-        "F_DIGEST_DM", "F_DIGEST_DMSH"    ,                                    # 83:84
-        "F_DIGEST_LV", "F_DIGEST_ST"      , "F_DIGEST_WALL",                   # 85:87
-        "RDRS"       , "Precipitation"    , "Nleaching"   , "NSHmob",          # 88:91
-        "NSHmobsoil" , "Nfixation"        , "Nupt"        , "Nmineralisation", # 92:95
-        "NSOURCE"    , "NSINK"            ,                                    # 96:97
-        "NRT"        , "NCRT"             ,                                    # 98:99
-        "rNLITT"     , "rNSOMF"           ,                                    # 100:101
-        "DAYL"       , "EVAP"             , "TRAN"        , "FLITTC_LEAF",     # 102:105
-        "FLITTC_ROOT", "NEE"              , "FHARVC"      , "FRUNOFFC",        # 106:109
-        "CSOM_A"     , "CSOM_W"           , "CSOM_E"      , "CSOM_N",          # 110:113
-        "CSOM_H"     , "NSOM"             , "TEMPR30"     , "PRECIP30",        # 114:117
-        "FSOILAMDC"                                                            # 118
-      )
-      names(last_vals) <- outputNames
+    if(!file.exists(last_states_file) & is.null(IC$test_vals)){
+      PEcAn.logger::logger.severe("Last step output values are missing for restart.")
+    }else if(!is.null(IC$test_vals)){
+      # for package testing
+      last_vals <- IC$test_vals
     }else{
       load(last_states_file)
     }
