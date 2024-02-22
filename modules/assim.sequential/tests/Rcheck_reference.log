@@ -1,4 +1,4 @@
-* using log directory ‘/tmp/RtmpVOTVGb/PEcAnAssimSequential.Rcheck’
+* using log directory ‘/tmp/Rtmptev7up/PEcAnAssimSequential.Rcheck’
 * using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
@@ -75,108 +75,14 @@ Obs.data.prepare.MultiSite : <anonymous>: no visible binding for global
   variable ‘.’
 SDA_remote_launcher: no visible binding for global variable
   ‘stop.on.error’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘pink’
 generate_colors_sda: no visible global function definition for
   ‘col2rgb’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphapink’
 generate_colors_sda: no visible global function definition for ‘rgb’
-generate_colors_sda: no visible binding for global variable ‘pink’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘green’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphagreen’
-generate_colors_sda: no visible binding for global variable ‘green’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘blue’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphablue’
-generate_colors_sda: no visible binding for global variable ‘blue’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘purple’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphapurple’
-generate_colors_sda: no visible binding for global variable ‘purple’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘brown’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphabrown’
-generate_colors_sda: no visible binding for global variable ‘brown’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphagreen’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphablue’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphapink’
 load_data_paleon_sda: no visible binding for global variable
   ‘MCMC_iteration’
 load_data_paleon_sda: no visible binding for global variable ‘site_id’
 load_data_paleon_sda: no visible binding for global variable ‘pft.cat’
 piecew.poly.local: no visible binding for global variable ‘rloc’
-post.analysis.ggplot: no visible global function definition for ‘aes’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphapink’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphagreen’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphablue’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Variables’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Value’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Type’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘aes’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphapink’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphagreen’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphablue’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Value’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Means’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘aes’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphabrown’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphapink’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphagreen’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphablue’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘aes’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphabrown’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphapink’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphagreen’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphablue’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘coordinates<-’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘proj4string<-’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Lon’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Lat’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Data’
-postana.bias.plotting.sda: no visible binding for global variable
-  ‘alphabrown’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘mtext’
-postana.bias.plotting.sda: no visible binding for global variable
-  ‘alphapurple’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphagreen’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphablue’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphapink’
 sample.parameters: no visible binding for global variable ‘post.distns’
 sample_met: no visible binding for global variable ‘host’
 sda.enkf: no visible binding for global variable ‘ensemble.samples’
@@ -197,17 +103,14 @@ sda.particle: no visible binding for global variable ‘sNPP’
 sda.particle: no visible binding for global variable ‘outfolder’
 simple.local: no visible binding for global variable ‘rloc’
 Undefined global functions or variables:
-  . Cmcmc_tobit2space Data J Lat Lon MCMC_iteration Means N
-  Rmcmc_tobit2space Type Value Variables YN abline aes alphablue
-  alphabrown alphagreen alphapink alphapurple blocked.dis blue brown
-  col2rgb conf_tobit2space coordinates<- cov distances ensemble.samples
-  green host is lambda_0 mNPP mtext nt nu_0 obs.mean outfolder pft.cat
-  pink post.distns proj4string<- purple quantile returnType rgb rloc
-  sNPP samplerNumberOffset_tobit2space site_id stop.on.error
-  tobit2space_pred yrvec
+  . Cmcmc_tobit2space J MCMC_iteration N Rmcmc_tobit2space YN abline
+  blocked.dis col2rgb conf_tobit2space cov distances ensemble.samples
+  host is lambda_0 mNPP nt nu_0 obs.mean outfolder pft.cat post.distns
+  quantile returnType rgb rloc sNPP samplerNumberOffset_tobit2space
+  site_id stop.on.error tobit2space_pred yrvec
 Consider adding
   importFrom("grDevices", "col2rgb", "rgb")
-  importFrom("graphics", "abline", "mtext")
+  importFrom("graphics", "abline")
   importFrom("methods", "is")
   importFrom("stats", "cov", "quantile")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
@@ -238,9 +141,7 @@ Undocumented arguments in documentation object 'hop_test'
   ‘ens.runid’
 
 Undocumented arguments in documentation object 'interactive.plotting.sda'
-  ‘obs.times’ ‘aqq’ ‘bqq’ ‘facetg’ ‘readsFF’
-Documented arguments not in \usage in documentation object 'interactive.plotting.sda':
-  ‘obs.time’
+  ‘aqq’ ‘bqq’ ‘facetg’ ‘readsFF’
 
 Undocumented arguments in documentation object 'sda.enkf'
   ‘...’
@@ -262,7 +163,7 @@ Extensions’ manual.
 
 Status: 2 WARNINGs, 1 NOTE
 See
-  ‘/tmp/RtmpVOTVGb/PEcAnAssimSequential.Rcheck/00check.log’
+  ‘/tmp/Rtmptev7up/PEcAnAssimSequential.Rcheck/00check.log’
 for details.
 
 
