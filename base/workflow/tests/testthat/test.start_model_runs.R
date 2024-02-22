@@ -1,5 +1,5 @@
-test_that("`start_model_runs` throws a warning if run.txt not provided", {
-  withr::with_dir(tempdir(), {
+test_that("`start_model_runs` throws a warning if runs.txt not provided", {
+  withr::with_tempdir({
     PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
     on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE))
     settings <- list(rundir = getwd())
@@ -8,7 +8,7 @@ test_that("`start_model_runs` throws a warning if run.txt not provided", {
 })
 
 test_that("`start_model_runs` throws a warning if runs.txt is empty", {
-  withr::with_dir(tempdir(), {
+  withr::with_tempdir({
     PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
     on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE))
     settings <- list(rundir = getwd())
