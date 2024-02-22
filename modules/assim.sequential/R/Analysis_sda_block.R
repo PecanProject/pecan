@@ -339,11 +339,11 @@ MCMC_Init <- function (block.list, X) {
     }
     #initialize q.
     #if we want the vector q.
-    if (block.list[[i]]$constant$q.type == 1) {
+    if (block.list[[i]]$constant$q.type == 3) {
       for (j in seq_along(block.list[[i]]$data$y.censored)) {
         block.list[[i]]$Inits$q <- c(block.list[[i]]$Inits$q, stats::rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j]))
       }
-    } else if (block.list[[i]]$constant$q.type == 2) {
+    } else if (block.list[[i]]$constant$q.type == 4) {
       #if we want the wishart Q.
       if ("try-error" %in% class(try(block.list[[i]]$Inits$q <- 
                                      stats::rWishart(1, df = block.list[[i]]$data$bq, Sigma = block.list[[i]]$data$aq)[,,1], silent = T))) {

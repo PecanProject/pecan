@@ -12,7 +12,6 @@
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 #'
-#' @examples
 ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write = TRUE){
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {
