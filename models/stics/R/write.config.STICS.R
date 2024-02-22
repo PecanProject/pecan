@@ -1191,12 +1191,12 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # DO NOTHING FOR NOW
     # but when you do note that this also has multiple options, e.g.
-    # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0", param_value = 1, select = "plante", value = "1", overwrite = TRUE) 
+    # SticsRFiles::set_param_xml(file = ini_file, param = "lai0", values = 1, select = "plante", select_value = "1", overwrite = TRUE) 
     if(i > 1){
       # these may or may not be modified depending on how crop cycles work in STICS
       # 'snu' is bare soil
       # fine for annual crops but need to change for perennials
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0",     param_value = "snu", select = "plante", value = "1", overwrite = TRUE)  
+      SticsRFiles::set_param_xml(file = ini_file, param = "stade0",     values = "snu", select = "plante", select_value = "1", overwrite = TRUE)  
       # when snu others are set to 0 by STICS
        
     }else if(!is.null(settings$run$inputs$poolinitcond)){
@@ -1205,27 +1205,28 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       
       # initial leaf area index (m2 m-2)
       lai0    <- ncdf4::ncvar_get(ic_nc, "LAI")
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "lai0", param_value = lai0, select = "plante", value = "1", overwrite = TRUE)  
+      SticsRFiles::set_param_xml(file = ini_file, param = "lai0", values = lai0, select = "plante", select_value = "1", overwrite = TRUE)  
       
       # initial aerial biomass (kg m-2 --> t ha-1)
       masec0    <- ncdf4::ncvar_get(ic_nc, "AGB")
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "masec0", param_value = udunits2::ud.convert(masec0, "kg m-2", "t ha-1"), select = "plante", value = "1", overwrite = TRUE)
+      SticsRFiles::set_param_xml(file = ini_file, param = "masec0", values = udunits2::ud.convert(masec0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE)
       
       # initial depth of root apex of the crop (m --> cm)
       zrac0    <- ncdf4::ncvar_get(ic_nc, "rooting_depth")
       if(zrac0 < 0.2) zrac0 <- 0.2
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "zrac0", param_value = udunits2::ud.convert(zrac0, "m", "cm"), select = "plante", value = "1", overwrite = TRUE) 
+      SticsRFiles::set_param_xml(file = ini_file, param = "zrac0", values = udunits2::ud.convert(zrac0, "m", "cm"), select = "plante", select_value = "1", overwrite = TRUE) 
       
       # initial grain dry weight - haven't started any simulations from this stage yet
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "magrain0",   param_value = 0, select = "plante", value = "1", overwrite = TRUE)    
+      # SticsRFiles::set_param_xml(file = ini_file, param = "magrain0",   values = 0, select = "plante", select_value = "1", overwrite = TRUE)    
       
       # initial N amount in the plant (kg m-2 --> kg ha-1)
       QNplante0    <- ncdf4::ncvar_get(ic_nc, "plant_nitrogen_content")
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "QNplante0",  param_value = udunits2::ud.convert(QNplante0, "kg m-2", "kg ha-1"), select = "plante", value = "1", overwrite = TRUE) 
+      SticsRFiles::set_param_xml(file = ini_file, param = "QNplante0",  values = udunits2::ud.convert(QNplante0, "kg m-2", "kg ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
       
+      # Not anymore
       # initial reserve of biomass (kg m-2 --> t ha-1)
-      resperenne0    <- ncdf4::ncvar_get(ic_nc, "reserve_biomass")
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "resperenne0", param_value = udunits2::ud.convert(resperenne0, "kg m-2", "t ha-1"), select = "plante", value = "1", overwrite = TRUE) 
+      #resperenne0    <- ncdf4::ncvar_get(ic_nc, "reserve_biomass")
+      #SticsRFiles::set_param_xml(file = ini_file, param = "resperenne0", values = udunits2::ud.convert(resperenne0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
       
       # initial root density in each of the five soil layers
       densinitial    <- ncdf4::ncvar_get(ic_nc, "root_density")
@@ -1239,10 +1240,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       }else if(zrac0 < 0.8){
         densinitial[5] <-0 #densinitial layers should not be filled if zrac0 is not there
       }
-      SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "densinitial", param_value = densinitial, select = "plante", value = "1", overwrite = TRUE) 
+      SticsRFiles::set_param_xml(file = ini_file, param = "densinitial", values = densinitial, select = "plante", select_value = "1", overwrite = TRUE) 
       
       # default 'lev'
-      # SticsRFiles::set_param_xml(xml_file = ini_file, param_name = "stade0", param_value = "plt", select = "plante", value = "1", overwrite = TRUE)  
+      # SticsRFiles::set_param_xml(file = ini_file, param = "stade0", values = "plt", select = "plante", select_value = "1", overwrite = TRUE)  
       
       ncdf4::nc_close(ic_nc)
     }
@@ -1271,7 +1272,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   str_ns <- paste0(as.numeric(settings$run$site$id) %/% 1e+09, "-", as.numeric(settings$run$site$id) %% 1e+09)
   
   # I guess not important what this is called as long as it's consistent in usms
-  SticsRFiles::set_soil_txt(filepath = sols_file, param="typsol", value=paste0("sol", str_ns))
+  SticsRFiles::set_soil_txt(file = sols_file, param="typsol", value=paste0("sol", str_ns))
   
   if(!is.null(settings$run$inputs$poolinitcond)){
     ic_path <- settings$run$inputs$poolinitcond$path
@@ -1280,42 +1281,42 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # pH
     pH    <- ncdf4::ncvar_get(ic_nc, "pH")
     pH    <- round(pH[1], digits = 1) # STICS uses 1 pH value
-    SticsRFiles::set_soil_txt(filepath = sols_file, param="pH", value=pH)
+    SticsRFiles::set_soil_txt(file = sols_file, param="pH", value=pH)
  
-    sapply(1:5, function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="epc", value=20, layer = x)) 
+    sapply(1:5, function(x) SticsRFiles::set_soil_txt(file = sols_file, param="epc", value=20, layer = x)) 
     
     # water_concentration_at_field_capacity
     hccf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_field_capacity")
     hccf    <- round(hccf*100, digits = 2)
-    sapply(seq_along(hccf), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="hccf", value=hccf[x], layer = x)) 
+    sapply(seq_along(hccf), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="hccf", value=hccf[x], layer = x)) 
     
     # water_concentration_at_wilting_point
     hminf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_wilting_point")
     hminf    <- round(hminf*100, digits = 2)
-    sapply(seq_along(hminf), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="hminf", value=hminf[x], layer = x)) 
+    sapply(seq_along(hminf), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="hminf", value=hminf[x], layer = x)) 
     
     # soil_organic_nitrogen_content
     Norg    <- ncdf4::ncvar_get(ic_nc, "soil_nitrogen_content")
     Norg    <- round(Norg[1]*100, digits = 2) # STICS uses 1 Norg value
-    SticsRFiles::set_soil_txt(filepath = sols_file, param="Norg", value=Norg) 
+    SticsRFiles::set_soil_txt(file = sols_file, param="Norg", value=Norg) 
 
     # soil_clay_content
     argi    <- ncdf4::ncvar_get(ic_nc, "soil_clay_content")
     argi    <- round(argi[1]*100, digits = 0) # STICS uses 1 argi value
-    SticsRFiles::set_soil_txt(filepath = sols_file, param="argi", value=argi) 
+    SticsRFiles::set_soil_txt(file = sols_file, param="argi", value=argi) 
     
     # soil_bulk_density (kg m-3 --> g cm-3)
     DAF    <- ncdf4::ncvar_get(ic_nc, "soil_bulk_density")
     DAF    <- round(udunits2::ud.convert(DAF, "kg m-3", "g cm-3"), digits = 1)
-    sapply(seq_along(DAF), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="DAF", value=DAF[x], layer = x)) 
+    sapply(seq_along(DAF), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="DAF", value=DAF[x], layer = x)) 
     
     # c2n_humus
     #CsurNsol0    <- ncdf4::ncvar_get(ic_nc, "c2n_humus")
-    #SticsRFiles::set_soil_txt(filepath = sols_file, param="CsurNsol", value=CsurNsol0) 
+    #SticsRFiles::set_soil_txt(file = sols_file, param="CsurNsol", value=CsurNsol0) 
     
     # epd 
     epd <- rep(10, 5)
-    sapply(seq_along(epd), function(x) SticsRFiles::set_soil_txt(filepath = sols_file, param="epd", value=epd[x], layer = x)) 
+    sapply(seq_along(epd), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="epd", value=epd[x], layer = x)) 
     
     ncdf4::nc_close(ic_nc)
   }
@@ -1325,7 +1326,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # DO NOTHING ELSE FOR NOW
 
   # this has some bug for sols.xml
-  # SticsRFiles::convert_xml2txt(xml_file = sols_file, java_dir = javastics_path)
+  # SticsRFiles::convert_xml2txt(file = sols_file, javastics = javastics_path)
   
   ######################### Prepare Weather Station File ###############################
   
@@ -1342,7 +1343,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # change latitude
   SticsRFiles::set_param_xml(sta_file, "latitude", settings$run$site$lat, overwrite = TRUE)
   
-  SticsRFiles::convert_xml2txt(xml_file = sta_file, java_dir = javastics_path)
+  SticsRFiles::convert_xml2txt(file = sta_file, javastics = javastics_path)
   file.copy(file.path(rundir, "station.txt"), file.path(usmdirs, "station.txt"))
   
   # another way to change latitute
@@ -1529,7 +1530,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         usm_tec_df$ratiol <- 0
         
-        SticsRFiles::gen_tec_xml(out_path = usmdirs[usmi], param_table = usm_tec_df)
+        SticsRFiles::gen_tec_xml(param_df = usm_tec_df, file = system.file("pecan_tec.xml",  package = "PEcAn.STICS"), out_dir = usmdirs[usmi])
         
         # TODO: more than 1 USM, rbind
         
@@ -1559,26 +1560,26 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # Type of LAI simulation 
     # 0 = culture (LAI calculated by the model), 1 = feuille (LAI forced)
-    SticsRFiles::set_usm_txt(usm_file, "codesimul", 0, add = FALSE) # hardcode for now
+    SticsRFiles::set_usm_txt(usm_file, "codesimul", 0, append = FALSE) # hardcode for now
     
     # use optimization
     # 0 = no;  1 = yes main plant; 2 = yes associated plant
-    SticsRFiles::set_usm_txt(usm_file, "codeoptim", 0, add = FALSE) 
+    SticsRFiles::set_usm_txt(usm_file, "codeoptim", 0, append = FALSE) 
     
     # option to simulate several
     # successive USM (0 = no, 1 = yes)
     if(usmi == 1){
-      SticsRFiles::set_usm_txt(usm_file, "codesuite", 0, add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "codesuite", 0, append = FALSE)
     }else{
-      SticsRFiles::set_usm_txt(usm_file, "codesuite", 1, add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "codesuite", 1, append = FALSE)
     }
      
 
     # number of simulated plants (sole crop=1; intercropping=2)
-    SticsRFiles::set_usm_txt(usm_file, "nbplantes", 1, add = FALSE) # hardcode for now
+    SticsRFiles::set_usm_txt(usm_file, "nbplantes", 1, append = FALSE) # hardcode for now
     
     # pft name
-    SticsRFiles::set_usm_txt(usm_file, "nom", basename(usmdirs[usmi]), add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "nom", basename(usmdirs[usmi]), append = FALSE)
     
     
     ## handle dates, also for partial year(s)
@@ -1586,61 +1587,61 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if(usmi == 1){
       # beginning day of the simulation (julian.d)
       # end day of the simulation (julian.d) (at the end of consecutive years, i.e. can be greater than 366)
-      SticsRFiles::set_usm_txt(usm_file, "datedebut", lubridate::yday(settings$run$start.date), add = FALSE)
-      SticsRFiles::set_usm_txt(usm_file, "datefin", (lubridate::yday(settings$run$start.date) + length(dseq_sub) - 1), add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datedebut", lubridate::yday(settings$run$start.date), append = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datefin", (lubridate::yday(settings$run$start.date) + length(dseq_sub) - 1), append = FALSE)
     }else{
-      SticsRFiles::set_usm_txt(usm_file, "datedebut", 1, add = FALSE) # for now!
-      SticsRFiles::set_usm_txt(usm_file, "datefin", length(dseq_sub), add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "datedebut", 1, append = FALSE) # for now!
+      SticsRFiles::set_usm_txt(usm_file, "datefin", length(dseq_sub), append = FALSE)
     }
     
     # name of the initialization file
-    SticsRFiles::set_usm_txt(usm_file, "finit", paste0(basename(usmdirs[usmi]), "_ini.xml"), add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "finit", paste0(basename(usmdirs[usmi]), "_ini.xml"), append = FALSE)
     
     # soil number
-    SticsRFiles::set_usm_txt(usm_file, "numsol", 1, add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "numsol", 1, append = FALSE)
     
     # name of the soil in the sols.xml file
-    SticsRFiles::set_usm_txt(usm_file, "nomsol", paste0("sol", str_ns), add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "nomsol", paste0("sol", str_ns), append = FALSE)
     
     # name of the weather station file
-    SticsRFiles::set_usm_txt(usm_file, "fstation", paste0(str_ns, "_sta.xml"), add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "fstation", paste0(str_ns, "_sta.xml"), append = FALSE)
     
     # name of the first climate file
-    SticsRFiles::set_usm_txt(usm_file, "fclim1", paste0(str_ns, ".", usm_years[1]), add = FALSE)
+    SticsRFiles::set_usm_txt(usm_file, "fclim1", paste0(str_ns, ".", usm_years[1]), append = FALSE)
     
     # name of the last climate file
     if(length(usm_years) == 2){
-      SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(str_ns, ".", usm_years[2]), add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(str_ns, ".", usm_years[2]), append = FALSE)
     }else{
       # repeat same year
-      SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(str_ns, ".", usm_years[1]), add = FALSE)
+      SticsRFiles::set_usm_txt(usm_file, "fclim2", paste0(str_ns, ".", usm_years[1]), append = FALSE)
     }
     
     
     # number of simulation years
-    SticsRFiles::set_usm_txt(usm_file, "nbans", length(unique(usm_years)), add = FALSE) # hardcode for now
+    SticsRFiles::set_usm_txt(usm_file, "nbans", length(unique(usm_years)), append = FALSE) # hardcode for now
     
     # number of calendar years involved in the crop cycle
     # 1 = 1 year e.g. for spring crops, 0 = two years, e.g. for winter crops
     culturean <- ifelse( length(unique(usm_years)) == 2, 0, 1)
-    SticsRFiles::set_usm_txt(usm_file, "culturean", culturean, add = FALSE) #hardcoding this for now, if passed as a trait from priors it breaks sensitivity analysis
+    SticsRFiles::set_usm_txt(usm_file, "culturean", culturean, append = FALSE) #hardcoding this for now, if passed as a trait from priors it breaks sensitivity analysis
     # probably best to pass this via the json file
     
     # name of the plant file for main plant 
     if(length(plt_files) < usmi){
       # multiple usms, 1 plt file = same spp, consecutive rotations, but hacky
-      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[1]]), add = FALSE) 
+      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[1]]), append = FALSE) 
     }else{
-      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[usmi]]), add = FALSE) 
+      SticsRFiles::set_usm_txt(usm_file, "fplt1", basename(plt_files[[usmi]]), append = FALSE) 
     }
     
     
     # name of the technical file for main plant
     # does this even matter?
-    SticsRFiles::set_usm_txt(usm_file, "ftec1", "tmp_tec.xml", add = FALSE) 
+    SticsRFiles::set_usm_txt(usm_file, "ftec1", "tmp_tec.xml", append = FALSE) 
     
     # name of the LAI forcing file for main plant (null if none)
-    SticsRFiles::set_usm_txt(usm_file, "flai1", "default.lai", add = FALSE) # hardcode for now, doesn't matter when codesimul==0
+    SticsRFiles::set_usm_txt(usm_file, "flai1", "default.lai", append = FALSE) # hardcode for now, doesn't matter when codesimul==0
     
     # TODO: more than 1 PFTs 
     # STICS can run 2 PFTs max: main crop + intercrop
