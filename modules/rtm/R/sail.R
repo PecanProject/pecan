@@ -34,7 +34,7 @@ foursail <- function(refl, tran, rsoil, param) {
   plist$rsdt <- numeric(nw)
   plist$rdot <- numeric(nw)
   plist$rsot <- numeric(nw)
-  inputs     <- c("foursail", plist)
+  inputs     <- c("foursail", plist, PACKAGE="PEcAnRTM")
   outlist <- do.call(.Fortran, inputs)
   lo      <- length(outlist)
   canopy_refl    <- do.call(cbind, outlist[(lo - 3):lo])

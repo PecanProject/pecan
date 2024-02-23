@@ -28,8 +28,6 @@ nstext.lines      = length(stext.lines)
 for(n in 1:nstext.lines){
   stext.lines[[n]]$silt = pmax(0,pmin(1,1.-stext.lines[[n]]$sand-stext.lines[[n]]$clay))
 }#end for
-stext.lines   <<- stext.lines
-nstext.lines  <<- nstext.lines
 #==========================================================================================#
 #==========================================================================================#
 
@@ -99,8 +97,6 @@ for(n in 1:nstext.polygon){
   clay.now = stext.polygon[[n]]$clay
   stext.polygon[[n]]$silt = pmax(0,pmin(1,1.-sand.now-clay.now))
 }#end for
-stext.polygon  <<- stext.polygon
-nstext.polygon <<- nstext.polygon
 #==========================================================================================#
 #==========================================================================================#
 
@@ -116,7 +112,7 @@ soil.name = c("Sand","Loamy sand","Sandy loam","Silt loam","Loam","Sandy clay lo
               ,"Silty clay loam","Clayey loam","Sandy clay","Silty clay","Clay"
               ,"Peat","Bedrock","Silt","Heavy clay","Clayey sand","Clayey silt")
 
-texture <- read.csv("~/pecan/modules/data.land/data/texture.csv",header=TRUE,stringsAsFactors = FALSE)
+texture <- read.csv("texture.csv",header=TRUE,stringsAsFactors = FALSE)
 
 
 
@@ -156,4 +152,33 @@ ksilt <- 3. * h2o.cond / ( 2. * h2o.cond + silt.cond )
 kclay <- 3. * h2o.cond / ( 2. * h2o.cond + clay.cond )
 kair  <- 3. * h2o.cond / ( 2. * h2o.cond +  air.cond )
 
-save.image("~/pecan/modules/data.land/data/soil_class.RData")
+# TODO may be more useful to collect related variables into sublists...
+soil_class <- list(
+  air.cond = air.cond,
+  air.hcap = air.hcap,
+  clay.cond = clay.cond,
+  clay.hcap = clay.hcap,
+  fieldcp.K = fieldcp.K,
+  grav = grav,
+  h2o.cond = h2o.cond,
+  kair = kair,
+  kclay = kclay,
+  ksand = ksand,
+  ksilt = ksilt,
+  sand.cond = sand.cond,
+  sand.hcap = sand.hcap,
+  silt.cond = silt.cond,
+  silt.hcap = silt.hcap,
+  soil.key = soil.key,
+  soil.name = soil.name,
+  soilcp.MPa = soilcp.MPa,
+  soilld.MPa = soilld.MPa,
+  soilwp.MPa = soilwp.MPa,
+  stext.lines = stext.lines,
+  stext.polygon = stext.polygon,
+  texture = texture,
+  theta.crit = theta.crit,
+  xclay.def = xclay.def,
+  xsand.def = xsand.def)
+
+save(soil_class, file = "../data/soil_class.rda")

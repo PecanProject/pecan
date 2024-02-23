@@ -87,23 +87,48 @@ if (log_notes && n_notes > 0) {
 # * Run check_with_errors.R to be sure the check is currently passing
 # * run `RESAVE_CHECKS=true Rscript scripts/check_with_errors.R path/to/package`
 # * Commit updated <pkgname>/tests/Rcheck_reference.log file
+new_file <- file.path(chk$checkdir, "00check.log")
 if (resave) {
     cat("Saving current check results as the new standard\n")
     if (file.exists(old_file)) {
         cat("**Overwriting** existing saved check output\n")
     }
-    cat(chk$stdout, file = old_file)
+    file.copy(from = new_file, to = old_file, overwrite = TRUE)
     quit("no")
 }
 ###
 
 # everything beyond this point is comparing to old version
-if (!file.exists(old_file)) {
+if (!file.exists(old_file) || sum(n_errors, n_warns, n_notes) == 0) {
     quit("no")
 }
 
 old <- rcmdcheck::parse_check(old_file)
+
+# "Why reread instead of just using the existing `chk` object?"
+# Because newer versions of rcmdcheck insert timestamps into stdout
+#   (e.g. `checking R code for possible problems ... [41s/17s] NOTE`).
+# It ignores them for its whole-warning checks, but they cause spurious
+#   mismatches in our line-by-line comparison.
+# Rereading the raw R CMD check output from disk should give a more
+#   stable format for comparison.
+chk <- rcmdcheck::parse_check(new_file)
+
 cmp <- rcmdcheck::compare_checks(old, chk)
+
+collapse_title <- function(x) {
+
+    # Remove "[14s/16s]" timestamp from title line, if present
+    # modified from https://github.com/r-lib/rcmdcheck/issues/128
+    x[[1]] <- gsub(
+        "\\[[0-9]+s(/[0-9]+s)?\\] ?", "", x[[1]], useBytes=TRUE)
+
+    if (length(x) > 1) {
+        paste(x[[1]], x[-1], sep = ": ")
+    } else {
+        x
+    }
+}
 
 msg_lines <- function(msg) {
     # leading double-space indicates wrapped line -> rejoin
@@ -114,15 +139,7 @@ msg_lines <- function(msg) {
     msg <- lapply(msg, function(x)x[x != ""])
 
     # prepend message title (e.g. "checking Rd files ... NOTE") to each line
-    unlist(lapply(
-        msg,
-        function(x) {
-            if (length(x) > 1) {
-                paste(x[[1]], x[-1], sep = ": ")
-            } else {
-                x
-            }
-        }))
+    unlist(lapply(msg, collapse_title))
 }
 
 if (cmp$status != "+") {

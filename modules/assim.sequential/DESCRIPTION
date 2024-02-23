@@ -33,7 +33,6 @@ Imports:
     stringr
 Suggests:
     corrplot,
-    DBI,
     ggrepel,
     emdbook,
     glue,
@@ -42,7 +41,10 @@ Suggests:
     magic (>= 1.5.0),
     methods,
     PEcAn.benchmark,
+    PEcAn.data.land,
     PEcAn.data.remote,
+    PEcAn.utils,
+    PEcAn.visualization,
     plotrix,
     plyr (>= 1.8.4),
     raster,

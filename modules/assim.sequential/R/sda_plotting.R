@@ -1,26 +1,30 @@
-#' @title generate_colors_sda
-#' @name  generate_colors_sda
-#' @author Ann Raiho 
-#' @description This function generates a series of colors in its parents enviroment. This is mainly used in AssimSequential package.
-#' @export
+# @author Ann Raiho
+# @description This function generates a series of colors. This is mainly used in AssimSequential package.
 generate_colors_sda <-function(){
-  pink       <<- col2rgb("deeppink")
-  alphapink  <<- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green      <<- col2rgb("green")
-  alphagreen <<- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue       <<- col2rgb("blue")
-  alphablue  <<- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple       <<- col2rgb("purple")
-  alphapurple <<- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <<- col2rgb("brown")
-  alphabrown <<- rgb(brown[1], brown[2], brown[3], 30, max = 255)
+  pink        <- col2rgb("deeppink")
+  alphapink   <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
+  green       <- col2rgb("green")
+  alphagreen  <- rgb(green[1], green[2], green[3], 75, max = 255)
+  blue        <- col2rgb("blue")
+  alphablue   <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
+  purple      <- col2rgb("purple")
+  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
+  brown       <- col2rgb("brown")
+  alphabrown  <- rgb(brown[1], brown[2], brown[3], 30, max = 255)
+
+  return(list(
+    pink = alphapink,
+    green = alphagreen,
+    blue = alphablue,
+    purple = alphapurple,
+    brown = alphabrown))
 }
 
 
 ##' Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot
 ##' @param settings  pecan standard settings list.  
 ##' @param t current time - int number giving the position of the current time in obs.time. 
-##' @param obs.time vector of dates of measurements
+##' @param obs.times vector of dates of measurements
 ##' @param obs.mean list of vectors of the means of observed data named by the measured date.
 ##' @param obs.cov list of cov matrices of the observed data named by the measured date.
 ##' @param obs list containing the mean and cov object
@@ -39,9 +43,14 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
       "needed by `PEcAnAssimSequential::interactive.plotting.sda()`.",
       "Please install it and try again.")
   }
-
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcAn.visualization',",
+      "needed by `PEcAnAssimSequential::interactive.plotting.sda()`.",
+      "Please install it and try again.")
+  }
   #Defining some colors
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   t1 <- 1
   var.names <- var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -55,7 +64,7 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
   }))
   
   if(any(obs)){
-    Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
+    Y.order <- stats::na.omit(pmatch(colnames(X), colnames(Ybar)))
     Ybar <- Ybar[,Y.order]
     Ybar[is.na(Ybar)] <- 0
     YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
@@ -72,15 +81,15 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
     YCI <- matrix(NA,nrow=length(t1:t), ncol=max(length(names.y),1))
   }
   
-  par(mfrow = c(2, 1))
+  graphics::par(mfrow = c(2, 1))
   colmax<-2
   for (i in 1:ncol(FORECAST[[t]])) { #
     
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
+    Xci  <- plyr::laply(FORECAST[t1:t], function(x) { stats::quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { stats::quantile(x[, i], c(0.025, 0.975), na.rm = TRUE) })
     
     ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                 function(x) { x })[2, ], use.names = FALSE)
@@ -95,11 +104,11 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
            xlab = "Year", 
            ylab = ylab.names[grep(colnames(X)[i], var.names)], 
            main = colnames(X)[i])
-      ciEnvelope(as.Date(obs.times[t1:t]),
+      PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]),
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
-                 col = alphagreen)
-      lines(as.Date(obs.times[t1:t]), 
+                 col = sda_colors$green)
+      graphics::lines(as.Date(obs.times[t1:t]), 
             as.numeric(Ybar[, i]), 
             type = "l", 
             col = "darkgreen", 
@@ -115,13 +124,13 @@ interactive.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, ob
     }
     
     # forecast
-    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
-    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
+    PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = sda_colors$blue)  #col='lightblue')
+    graphics::lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
     
     # analysis
-    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
-    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-    #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+    PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = sda_colors$pink)
+    graphics::lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
+    #legend('topright', c('Forecast','Data','Analysis'), col=c(sda_colors$blue, sda_colors$green, sda_colors$pink), lty=1, lwd=5)
   }
 }
 
@@ -136,13 +145,19 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
       "needed by `PEcAnAssimSequential::postana.timeser.plotting.sda()`.",
       "Please install it and try again.")
   }
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcAn.visualization',",
+      "needed by `PEcAnAssimSequential::postana.timeser.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   t1 <- 1
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
-  pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
+  grDevices::pdf(file.path(settings$outdir,"SDA", "sda.enkf.time-series.pdf"))
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   Ybar <- t(sapply(obs.mean[t1:t], function(x) {
     tmp <- rep(NA, length(names.y))
@@ -177,7 +192,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
       mean(x[, i], na.rm = TRUE) }) #/rowSums(x[,1:9],na.rm = T)
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { 
-      quantile(x[, i], c(0.025, 0.975),na.rm = T) })
+      stats::quantile(x[, i], c(0.025, 0.975),na.rm = T) })
     
     Xci[is.na(Xci)]<-0
     
@@ -188,7 +203,7 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
       mean(x[, i],na.rm = T) })
     
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-      quantile(x[, i], c(0.025, 0.975),na.rm = T )})
+      stats::quantile(x[, i], c(0.025, 0.975),na.rm = T )})
     
     Xa <- Xa
     XaCI <- XaCI
@@ -203,28 +218,33 @@ postana.timeser.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov
     
     # observation / data
     if (i<=ncol(X)) { #
-     ciEnvelope(as.Date(obs.times[t1:t]), 
+      PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
-                 col = alphagreen)
-      lines(as.Date(obs.times[t1:t]), 
+                 col = sda_colors$green)
+      graphics::lines(as.Date(obs.times[t1:t]), 
             as.numeric(Ybar[, i]), 
             type = "l", col = "darkgreen", lwd = 2)
     }
     
     # forecast
-    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue') #alphablue
-    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2) #"darkblue"
+    PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = sda_colors$blue)  #col='lightblue') #alphablue
+    graphics::lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2) #"darkblue"
     
     # analysis
-    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink) #alphapink
-    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
+    PEcAn.visualization::ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = sda_colors$pink) #alphapink
+    graphics::lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
     
-    legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+    graphics::legend(
+      'topright',
+      c('Forecast', 'Data', 'Analysis'),
+      col=c(sda_colors$blue, sda_colors$green, sda_colors$pink),
+      lty=1,
+      lwd=5)
     
   }
   
-  dev.off()
+  grDevices::dev.off()
   
 }
 
@@ -239,9 +259,15 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
       "needed by `PEcAnAssimSequential::postana.bias.plotting.sda()`.",
       "Please install it and try again.")
   }
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcan.visualization',",
+      "needed by `PEcAnAssimSequential::postana.bias.plotting.sda()`.",
+      "Please install it and try again.")
+  }
 
   #Defining some colors
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   t1 <- 1
   ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                               function(x) { x })[2, ], use.names = FALSE)
@@ -254,16 +280,16 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
     tmp
   }))
   #----
-  pdf(file.path(settings$outdir,"SDA", "bias.diagnostic.pdf"))
+  grDevices::pdf(file.path(settings$outdir,"SDA", "bias.diagnostic.pdf"))
   for (i in seq_along(obs.mean[[1]])) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xci <- plyr::laply(FORECAST[t1:t], function(x) { stats::quantile(x[, i], c(0.025, 0.975)) })
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { stats::quantile(x[, i], c(0.025, 0.975)) })
     
     if(length(which(is.na(Ybar[,i])))>=length(t1:t)) next()
-    reg <- lm(Xbar[t1:t] - unlist(Ybar[, i]) ~ c(t1:t))
+    reg <- stats::lm(Xbar[t1:t] - unlist(Ybar[, i]) ~ c(t1:t))
     plot(t1:t, 
          Xbar - unlist(Ybar[, i]),
          pch = 16, cex = 1, 
@@ -271,18 +297,19 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", 
          ylab = "Error", 
          main = paste(colnames(X)[i], " Error = Forecast - Data"))
-    ciEnvelope(rev(t1:t), 
+    PEcAn.visualization::ciEnvelope(rev(t1:t), 
                rev(Xci[, 1] - unlist(Ybar[, i])), 
                rev(Xci[, 2] - unlist(Ybar[, i])),
-               col = alphabrown)
-    abline(h = 0, lty = 2, lwd = 2)
-    abline(reg)
-    mtext(paste("slope =", signif(summary(reg)$coefficients[2], digits = 3), 
-                "intercept =", signif(summary(reg)$coefficients[1], digits = 3)))
+               col = sda_colors$brown)
+    graphics::abline(h = 0, lty = 2, lwd = 2)
+    graphics::abline(reg)
+    graphics::mtext(paste(
+      "slope =", signif(summary(reg)$coefficients[2], digits = 3),
+      "intercept =", signif(summary(reg)$coefficients[1], digits = 3)))
     # d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i]))) lines(d$y+1,d$x)
     
     # forecast minus analysis = update
-    reg1 <- lm(Xbar - Xa ~ c(t1:t))
+    reg1 <- stats::lm(Xbar - Xa ~ c(t1:t))
     plot(t1:t, 
          Xbar - Xa, 
          pch = 16, cex = 1, 
@@ -290,18 +317,19 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
-  ciEnvelope(rev(t1:t), 
+    PEcAn.visualization::ciEnvelope(rev(t1:t), 
                rev(Xbar - XaCI[, 1]), 
                rev(Xbar - XaCI[, 2]), 
-               col = alphapurple)
-    abline(h = 0, lty = 2, lwd = 2)
-    abline(reg1)
-    mtext(paste("slope =", signif(summary(reg1)$coefficients[2], digits = 3),
-                "intercept =", signif(summary(reg1)$coefficients[1], 
-                                      digits = 3)))
+               col = sda_colors$purple)
+    graphics::abline(h = 0, lty = 2, lwd = 2)
+    graphics::abline(reg1)
+    graphics::mtext(paste(
+      "slope =", signif(summary(reg1)$coefficients[2], digits = 3),
+      "intercept =", signif(summary(reg1)$coefficients[1],
+                            digits = 3)))
     # d<-density(c(Xbar[t1:t] - Xa[t1:t])) lines(d$y+1,d$x)
   }
-  dev.off()
+  grDevices::dev.off()
   
 }
 
@@ -311,23 +339,23 @@ postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   
   t1<- 1
   #Defining some colors
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
 
   #---
-  pdf('SDA/process.var.plots.pdf')
+  grDevices::pdf('SDA/process.var.plots.pdf')
   
-  cor.mat <- cov2cor(aqq[t,,] / bqq[t])
+  cor.mat <- stats::cov2cor(aqq[t,,] / bqq[t])
   colnames(cor.mat) <- colnames(X)
   rownames(cor.mat) <- colnames(X)
-  par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
+  graphics::par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
   corrplot::corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
   
-  par(mfrow=c(1,1))   
+  graphics::par(mfrow=c(1,1))   
   plot(as.Date(obs.times[t1:t]), bqq[t1:t],
        pch = 16, cex = 1,
        ylab = "Degrees of Freedom", xlab = "Time")
   
-  dev.off()
+  grDevices::dev.off()
 }
 
 ##' @rdname interactive.plotting.sda
@@ -338,7 +366,7 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   t1 <- 1
   #Defining some colors
   ready.OBS<-NULL
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   #----
   #Analysis & Forcast cleaning and STAT
@@ -348,11 +376,11 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
     c("FORECAST", "ANALYSIS") %>% purrr::map_df(function(listFA) {
       All.my.data[[listFA]] %>% purrr::map_df(function(state.vars) {
         means <- apply(state.vars, 2, mean, na.rm = T)
-        CI <- apply(state.vars, 2, quantile, c(0.025, 0.975),
+        CI <- apply(state.vars, 2, stats::quantile, c(0.025, 0.975),
                     na.rm = T)
-        rbind(means, CI) %>% t %>% as.data.frame() %>% mutate(Variables = paste(colnames(state.vars))) %>%
+        rbind(means, CI) %>% t %>% as.data.frame() %>% dplyr::mutate(Variables = paste(colnames(state.vars))) %>%
           tidyr::replace_na(list(0))
-      }) %>% mutate(
+      }) %>% dplyr::mutate(
         Type = listFA,
         Date = rep(
           lubridate::ymd_hms(obs.times[t1:t], truncated = 3, tz = "EST"),
@@ -370,8 +398,8 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   tryCatch({
       ready.OBS<- names(obs.mean)%>%
         purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
-                     setNames(c('means','covs','Date')))%>%
-        setNames(names(obs.mean))%>%
+                     stats::setNames(c('means','covs','Date')))%>%
+        stats::setNames(names(obs.mean))%>%
         purrr::map_df(function(one.day.data){
           #CI
           
@@ -380,9 +408,9 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
                            data.frame(mean-(sd*1.96), mean+(sd*1.96))
                            
                          })%>%
-            mutate(Variables=names(one.day.data$means))%>%
-            `colnames<-`(c('2.5%','97.5%','Variables'))%>%
-            mutate(means=one.day.data$means%>%unlist,
+            dplyr::mutate(Variables=names(one.day.data$means))%>%
+            `colnames<-`(c('2.5%', '97.5%', 'Variables'))%>%
+            dplyr::mutate(means=one.day.data$means%>%unlist,
                    Type="Data",
                    Date=one.day.data$Date%>%as.POSIXct(tz="EST"))
           
@@ -395,11 +423,11 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   )
 
   ready.to.plot <- ready.OBS %>%
-    bind_rows(ready.FA)
+    dplyr::bind_rows(ready.FA)
   
   #Adding the units to the variables
   ready.to.plot$Variable %>% unique() %>% 
-    walk(function(varin){
+    purrr::walk(function(varin){
       #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
       if (length(unitp)>0) {
@@ -413,25 +441,28 @@ post.analysis.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, obs,
   
   
 
-      p<-ready.to.plot%>%
-        ggplot2::ggplot(aes(x=Date))+
-        geom_ribbon(aes(ymin=`2.5%`,ymax=`97.5%`,fill=Type),color="black")+
-        geom_line(aes(y=means, color=Type),lwd=1.02,linetype=2)+
-        geom_point(aes(y=means, color=Type),size=3,alpha=0.75)+
-        scale_fill_manual(values = c(alphapink,alphagreen,alphablue),name="")+
-        scale_color_manual(values = c(alphapink,alphagreen,alphablue),name="")+
-        theme_bw(base_size = 17)+
-        facet_wrap(~Variables, scales = "free", ncol=2)+
-        theme(legend.position = "top",
-              strip.background = element_blank())->p
-      if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+  p <- ready.to.plot %>%
+    ggplot2::ggplot(ggplot2::aes(x = Date)) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = .data$`2.5%`, ymax = .data$`97.5%`, fill = .data$Type),
+      color = "black") +
+    ggplot2::geom_line(ggplot2::aes(y = .data$means, color = .data$Type), lwd = 1.02, linetype = 2) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$means, color = .data$Type), size = 3, alpha = 0.75) +
+    ggplot2::scale_fill_manual(values = c(sda_colors$pink, sda_colors$green, sda_colors$blue), name = "") +
+    ggplot2::scale_color_manual(values = c(sda_colors$pink, sda_colors$green, sda_colors$blue), name = "") +
+    ggplot2::theme_bw(base_size = 17) +
+    ggplot2::facet_wrap(~.data$Variables, scales = "free", ncol = 2) +
+    ggplot2::theme(legend.position = "top", strip.background = ggplot2::element_blank())
+  if (!is.null(plot.title)) {
+    p <- p + ggplot2::labs(title = plot.title)
+  }
 
 
   
   
-  pdf("SDA/SDA.pdf", width = 14, height = 10, onefile = TRUE)
+  grDevices::pdf("SDA/SDA.pdf", width = 14, height = 10, onefile = TRUE)
   print(p)
-  dev.off()
+  grDevices::dev.off()
   
   #saving plot data
   save(p, ready.to.plot, file = file.path(settings$outdir,"SDA", "timeseries.plot.data.Rdata"))
@@ -445,7 +476,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 
   t1 <- 1 
   #Defining some colors
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
 
 #rearranging the forcast and analysis data  
@@ -457,18 +488,18 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
       All.my.data[[listFA]]%>%
         purrr::map_df(function(state.vars){
           state.vars%>%as.data.frame()
-        })%>%mutate(Type=listFA,
+        })%>%dplyr::mutate(Type=listFA,
                     Date=rep(obs.times[t1:t], each=((All.my.data[[listFA]])[[1]]) %>% nrow())
         )
       
     })%>%
-    tidyr::gather(Variables, Value, -c(Type,Date)) 
+    tidyr::gather(key = "Variables", value = "Value", -c("Type", "Date"))
   #Observed data
   #first merging mean and conv based on the day
   obs.df <- names(obs.mean)%>%
     purrr::map(~c(obs.mean[.x], obs.cov[.x], .x)%>%
-                 setNames(c('means','covs','Date')))%>%
-    setNames(names(obs.mean))%>%
+                 stats::setNames(c('means','covs','Date')))%>%
+    stats::setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       #CI
       purrr::map2_df(sqrt(one.day.data$covs %>% purrr::map( ~ diag(.x)) %>% unlist), one.day.data$means,
@@ -476,9 +507,9 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
                        data.frame(mean-(sd*1.96), mean+(sd*1.96))
                        
                      })%>%
-        mutate(Variables=names(one.day.data$means))%>%
-        `colnames<-`(c('2.5%','97.5%','Variables'))%>%
-        mutate(means=one.day.data$means%>%unlist,
+        dplyr::mutate(Variables=names(one.day.data$means)) %>%
+        `colnames<-`(c('2.5%', '97.5%', 'Variables')) %>%
+        dplyr::mutate(means=one.day.data$means %>% unlist,
                Type="Data",
                Date=one.day.data$Date%>%as.POSIXct(tz="UTC"))
       
@@ -488,7 +519,7 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
   
   #Adding the units to the variables
   ready.FA$Variable %>% unique() %>% 
-    walk(function(varin){
+    purrr::walk(function(varin){
       #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
       if (length(unitp)>0) {
@@ -501,26 +532,36 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
     })
 
 
-      p<-ready.FA%>%
-#        filter(Variables==vari)%>%
-        ggplot2::ggplot(aes(Date,Value))+
-        geom_ribbon(aes(x=Date,y=means,ymin=`2.5%`,ymax=`97.5%`,fill=Type), data=obs.df, color="black")+
-        geom_line(aes(y=means, color=Type),data=obs.df,lwd=1.02,linetype=2)+
-        geom_violin(aes(x=Date,fill=Type,group=interaction(Date,Type)), position = position_dodge(width=0.9))+
-        geom_jitter(aes(color=Type), position=position_jitterdodge(dodge.width=0.9))+
-        scale_fill_manual(values = c(alphapink,alphagreen,alphablue))+
-        scale_color_manual(values = c(alphapink,alphagreen,alphablue))+
-        facet_wrap(~Variables, scales = "free", ncol=2)+
-        theme_bw(base_size = 17)+
-      #  labs(y=paste(vari,'(',unit,')'))+
-        theme(legend.position = "top",
-              strip.background = element_blank())
-      if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+  p <- ready.FA %>%
+    ggplot2::ggplot(ggplot2::aes(.data$Date, .data$Value)) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(x = .data$Date, y = .data$means, ymin = .data$`2.5%`, ymax = .data$`97.5%`, fill = .data$Type),
+      data = obs.df,
+      color = "black") +
+    ggplot2::geom_line(
+      ggplot2::aes(y = .data$means, color = .data$Type),
+      data = obs.df,
+      lwd = 1.02,
+      linetype = 2) +
+    ggplot2::geom_violin(
+      ggplot2::aes(x = .data$Date, fill = .data$Type, group = interaction(.data$Date, .data$Type)),
+      position = ggplot2::position_dodge(width = 0.9)) +
+    ggplot2::geom_jitter(
+      ggplot2::aes(color = .data$Type),
+      position = ggplot2::position_jitterdodge(dodge.width = 0.9)) +
+    ggplot2::scale_fill_manual(values = c(sda_colors$pink, sda_colors$green, sda_colors$blue)) +
+    ggplot2::scale_color_manual(values = c(sda_colors$pink, sda_colors$green, sda_colors$blue)) +
+    ggplot2::facet_wrap(~.data$Variables, scales = "free", ncol = 2) +
+    ggplot2::theme_bw(base_size = 17) +
+    ggplot2::theme(legend.position = "top", strip.background = ggplot2::element_blank())
+  if (!is.null(plot.title)) {
+    p <- p + ggplot2::labs(title = plot.title)
+  }
 
   
-  pdf("SDA/SDA.Violin.pdf", width = 14, height = 10, onefile = TRUE)
+  grDevices::pdf("SDA/SDA.Violin.pdf", width = 14, height = 10, onefile = TRUE)
    print(p)
-  dev.off()
+   grDevices::dev.off()
   
   #saving plot data
   save(p, ready.FA, obs.df, file = file.path(settings$outdir,"SDA", "timeseries.violin.plot.data.Rdata"))
@@ -587,7 +628,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
   #Defining some colors
   t1 <- 1
-  generate_colors_sda()
+  sda_colors <- generate_colors_sda()
   varnames <- settings$state.data.assimilation$state.variable
   #just a check
   if (is.null(varnames)) varnames <- settings[[1]]$state.data.assimilation$state.variable
@@ -597,7 +638,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   site.ids <- attr(FORECAST[[1]], 'Site')
-  site.names <- settings %>% map(~.x[['run']] ) %>% map('site') %>% map('name') %>% unlist() %>% as.character()
+  site.names <- settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('name') %>% unlist() %>% as.character()
   
   #------------------------------------------------Data prepration
   #Analysis & Forcast cleaning and STAT
@@ -610,18 +651,18 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
          
           #finding the mean and Ci for all the state variables
           site.ids %>% unique() %>%
-            map_df(function(site){
+            purrr::map_df(function(site){
               (state.vars)[,which(site.ids  %in% site)] %>% 
                 as.data.frame %>% 
-                mutate(Site=site)
+                dplyr::mutate(Site=site)
             }) %>%
-            tidyr::gather(Variable, Value, -c(Site)) %>%
-            group_by(Site,Variable) %>%
-            summarise(
-              Means=mean(Value, na.rm=T),
-              Lower=quantile(Value,0.025, na.rm=T),
-              Upper = quantile(Value, 0.975,  na.rm = TRUE))
-        }) %>% mutate(Type = paste0("SDA_", listFA),
+            tidyr::gather(key = "Variable", value = "Value", -c("Site")) %>%
+            dplyr::group_by(.data$Site,.data$Variable) %>%
+            dplyr::summarise(
+              Means = mean(.data$Value, na.rm = TRUE),
+              Lower = stats::quantile(.data$Value,0.025, na.rm = TRUE),
+              Upper = stats::quantile(.data$Value, 0.975,  na.rm = TRUE))
+        }) %>% dplyr::mutate(Type = paste0("SDA_", listFA),
                     Date = rep(as.Date(names(FORECAST)), each = colnames((All.my.data[[listFA]])[[1]]) %>% length() / length(unique(site.ids))) %>% as.POSIXct()
         )
     
@@ -633,53 +674,54 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
   #first merging mean and conv based on the day
   ready.to.plot <- names(obs.mean)%>%
     purrr::map(~c(obs.mean[.x],obs.cov[.x],.x)%>%
-                 setNames(c('means','covs','Date')))%>%
-    setNames(names(obs.mean))%>%
+                 stats::setNames(c('means','covs','Date')))%>%
+    stats::setNames(names(obs.mean))%>%
     purrr::map_df(function(one.day.data){
       one.day.data$means %>% 
-        map_dfr(~.x) %>% 
-        mutate(Site=names(one.day.data$means)) %>% 
-        tidyr::gather(Variable,Means,-c(Site)) %>%
-        right_join(one.day.data$covs %>% 
-                     map_dfr(~ t(sqrt(as.numeric(diag_fix(.x)))) %>% 
+        purrr::map_dfr(~.x) %>% 
+        dplyr::mutate(Site = names(one.day.data$means)) %>%
+        tidyr::gather(key = "Variable", value = "Means", -c("Site")) %>%
+        dplyr::right_join(one.day.data$covs %>% 
+                     purrr::map_dfr(~ t(sqrt(as.numeric(diag_fix(.x)))) %>% 
                                data.frame %>% `colnames<-`(c(obs.var.names))) %>%
-                     mutate(Site=names(one.day.data$covs)) %>% 
-                     tidyr::gather(Variable,Sd,-c(Site)),
-                   by=c('Site','Variable')) %>%
-        mutate(Upper=Means+(Sd*1.96),
-               Lower=Means-(Sd*1.96))%>%
+                     dplyr::mutate(Site = names(one.day.data$covs)) %>%
+                     tidyr::gather(key = "Variable", value = "Sd", -c("Site")),
+                   by = c('Site', 'Variable')) %>%
+        dplyr::mutate(
+          Upper = .data$Means + (.data$Sd*1.96),
+          Lower = .data$Means - (.data$Sd*1.96)) %>%
         # dropped the "_" from "SDA_Data"
-        mutate(Type="Data",
+        dplyr::mutate(Type="Data",
                Date=one.day.data$Date %>% as.POSIXct())
         # mutate(Type="SDA_Data",
         #        Date=one.day.data$Date %>% as.POSIXct())
       
       
     })%>% 
-    dplyr::select(-Sd) %>%
-    bind_rows(ready.FA)
+    dplyr::select(-.data$Sd) %>%
+    dplyr::bind_rows(ready.FA)
   
   #--- Adding the forward forecast
   if (!is.null(readsFF)){
     
     readsFF.df<-readsFF %>%
-      map_df(function(siteX){
+      purrr::map_df(function(siteX){
     
-        siteX %>% map_df(function(DateX){
+        siteX %>% purrr::map_df(function(DateX){
           DateX %>% 
-            map_df(~.x %>% t ) %>%
-            tidyr::gather(Variable, Value,-c(Date, Site)) %>%
-            group_by(Variable,Date, Site) %>%
-             summarise(
-               Means=mean(Value, na.rm=T),
-               Lower=quantile(Value,0.025, na.rm=T),
-               Upper=quantile(Value,0.975, na.rm=T)) %>% 
-             mutate(Type="ForwardForecast")
+            purrr::map_df(~.x %>% t ) %>%
+            tidyr::gather(key = "Variable", value = "Value", -c("Date", "Site")) %>%
+            dplyr::group_by(.data$Variable,.data$Date, .data$Site) %>%
+            dplyr::summarise(
+               Means = mean(.data$Value, na.rm = TRUE),
+               Lower = stats::quantile(.data$Value, 0.025, na.rm = TRUE),
+               Upper = stats::quantile(.data$Value, 0.975, na.rm = TRUE)) %>%
+             dplyr::mutate(Type="ForwardForecast")
         })
       })
     
     ready.to.plot <- ready.to.plot %>%
-      bind_rows(readsFF.df)
+      dplyr::bind_rows(readsFF.df)
     
   }
   
@@ -688,7 +730,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 
   #Adding the units to the variables
   ready.to.plot$Variable %>% unique() %>% 
-    walk(function(varin){
+    purrr::walk(function(varin){
       #find the unit
       unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
       if (length(unitp)>0) {
@@ -705,25 +747,32 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     filew <- 14
     fileh <- 10
     #for each site  and for each variable
-    all.plots<-ready.to.plot$Site%>%unique() %>%
+    all.plots <- ready.to.plot$Site%>%unique() %>%
       purrr::map(function(site){
             #plotting
-            ready.to.plot%>%
-              filter(Site==site)%>%
-              ggplot2::ggplot(aes(x=Date))+
-              geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
-              geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
-              geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
-              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
-              theme_bw(base_size = 17)+
-              labs(y="", subtitle=paste0("Site id: ",site))+
-              theme(legend.position = "top",
-                    strip.background = element_blank())->p
-            if (!is.null(plot.title)) p <- p + labs(title=plot.title)
-            p <- p + facet_wrap(~Variable, ncol=2, scales = "free_y")
+            p <- ready.to.plot %>%
+              dplyr::filter(.data$Site == site) %>%
+              ggplot2::ggplot(ggplot2::aes(x = Date)) +
+              ggplot2::geom_ribbon(
+                ggplot2::aes(ymin = .data$Lower, ymax = .data$Upper, fill = .data$Type),
+                color = "black") +
+              ggplot2::geom_line(ggplot2::aes(y = .data$Means, color = .data$Type), lwd = 1.02, linetype = 2) +
+              ggplot2::geom_point(ggplot2::aes(y = .data$Means, color = .data$Type), size = 3, alpha = 0.75) +
+              ggplot2::scale_fill_manual(
+                values = c(sda_colors$brown, sda_colors$pink, sda_colors$green, sda_colors$blue),
+                name = "") +
+              ggplot2::scale_color_manual(
+                values = c(sda_colors$brown, sda_colors$pink, sda_colors$green, sda_colors$blue),
+                name = "") +
+              ggplot2::theme_bw(base_size = 17) +
+              ggplot2::labs(y = "", subtitle=paste0("Site id: ",site)) +
+              ggplot2::theme(legend.position = "top", strip.background = ggplot2::element_blank())
+            if (!is.null(plot.title)) {
+              p <- p + ggplot2::labs(title=plot.title)
+            }
+            p <- p + ggplot2::facet_wrap(~.data$Variable, ncol = 2, scales = "free_y")
+
             list(p)
-      
       })
 
   }else{
@@ -741,19 +790,27 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
             unitp <- which(lapply(settings$state.data.assimilation$state.variable, "[", 'variable.name') %>% unlist %in% varin)
             if (length(unitp)>0) unit <- settings$state.data.assimilation$state.variable[[unitp]]$unit
             #plotting
-            ready.to.plot%>%
-              filter(Variable==vari, Site==site)%>%
-              ggplot2::ggplot(aes(x=Date))+
-              geom_ribbon(aes(ymin=Lower,ymax=Upper,fill=Type),color="black")+
-              geom_line(aes(y=Means, color=Type),lwd=1.02,linetype=2)+
-              geom_point(aes(y=Means, color=Type),size=3,alpha=0.75)+
-              scale_fill_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
-              scale_color_manual(values = c(alphabrown,alphapink,alphagreen,alphablue),name="")+
-              theme_bw(base_size = 17)+
-              labs(y=paste(vari,'(',unit,')'), subtitle=paste0("Site id: ",site))+
-              theme(legend.position = "top",
-                    strip.background = element_blank())->p
-            if (!is.null(plot.title)) p <- p + labs(title=plot.title)
+            p<- ready.to.plot %>%
+              dplyr::filter(.data$Variable == vari, .data$Sitev== site) %>%
+              ggplot2::ggplot(ggplot2::aes(x = Date)) +
+              ggplot2::geom_ribbon(
+                ggplot2::aes(ymin = .data$Lower, ymax = .data$Upper, fill = .data$Type),
+                color = "black") +
+              ggplot2::geom_line(ggplot2::aes(y = .data$Means, color = .data$Type), lwd = 1.02, linetype = 2) +
+              ggplot2::geom_point(ggplot2::aes(y = .data$Means, color = .data$Type), size = 3, alpha = 0.75) +
+              ggplot2::scale_fill_manual(
+                values = c(sda_colors$brown, sda_colors$pink, sda_colors$green, sda_colors$blue),
+                name = "") +
+              ggplot2::scale_color_manual(
+                values = c(sda_colors$brown, sda_colors$pink, sda_colors$green, sda_colors$blue),
+                name = "") +
+              ggplot2::theme_bw(base_size = 17) +
+              ggplot2::labs(y = paste(vari,'(',unit,')'), subtitle = paste0("Site id: ",site)) +
+              ggplot2::theme(legend.position = "top", strip.background = ggplot2::element_blank())
+            if (!is.null(plot.title)) {
+              p <- p + ggplot2::labs(title=plot.title)
+            }
+
             p
           })
       })
@@ -769,8 +826,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       t %>%
       as.data.frame()%>%
       `colnames<-`(c("Lon","Lat")) %>%
-      dplyr::mutate(Site=site.ids %>% unique(),
-             Name=site.names)
+      dplyr::mutate(Site=.data$site.ids %>% unique(),
+             Name=.data$site.names)
     
     suppressMessages({
       aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
@@ -778,8 +835,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
     
     #transform site locs into new projection - UTM 2163
     site.locs.sp<-site.locs
-    coordinates(site.locs.sp) <- c("Lon", "Lat")
-    proj4string(site.locs.sp) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
+    sp::coordinates(site.locs.sp) <- c("Lon", "Lat")
+    sp::proj4string(site.locs.sp) <- sp::CRS("+proj=longlat +datum=WGS84")  ## for example
     res <- sp::spTransform(site.locs.sp, sp::CRS("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"))
     site.locs[,c(1,2)] <-res@coords
     
@@ -788,28 +845,31 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
       obs.mean %>% purrr::map(names) %>% unlist() %>% as.character() %>% unique()
     #adding the column to site
     site.locs <- site.locs %>%
-      dplyr::mutate(Data = Site %in% sites.w.data)
+      dplyr::mutate(Data = .data$Site %in% sites.w.data)
     
     #plotting
     map.plot<- ggplot2::ggplot() + 
-      geom_sf(aes(fill=NA_L1CODE),data = aoi_boundary_HARV, alpha=0.35,lwd=0,color="black")+
-      geom_point(data = site.locs,
-                 aes(x = Lon, y = Lat),
-                 size = 2) +
+      ggplot2::geom_sf(
+        ggplot2::aes(fill = .data$NA_L1CODE),
+        data = aoi_boundary_HARV,
+        alpha=0.35,
+        lwd=0,
+        color="black") +
+      ggplot2::geom_point(data = site.locs, size = 2) +
       ggrepel::geom_label_repel(
         data = site.locs,
-        aes(
-          x = Lon,
-          y = Lat,
-          label = paste0(Site, "\n", Name),
-          color = Data,
+        ggplot2::aes(
+          x = .data$Lon,
+          y = .data$Lat,
+          label = paste0(.data$Site, "\n", .data$Name),
+          color = .data$Data,
         ),
         vjust = 1.2,
         fontface = "bold",
         size = 3.5
       ) + 
       #coord_sf(datum = sf::st_crs(2163),default = F)+
-      scale_fill_manual(values = c("#a6cee3",
+      ggplot2::scale_fill_manual(values = c("#a6cee3",
                                    "#1f78b4","#b2df8a",
                                    "#33a02c","#fb9a99",
                                    "#e31a1c","#fdbf6f",
@@ -820,21 +880,21 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
                                    "#ffd92f","#8dd3c7",
                                    "#80b1d3","#d9d9d9",
                                    "#fdbf6f"),name="Eco-Region")+
-      scale_color_manual(values= c("#e31a1c","#33a02c"))+
-      theme_minimal()+
-      theme(axis.text = element_blank())
+      ggplot2::scale_color_manual(values= c("#e31a1c","#33a02c"))+
+      ggplot2::theme_minimal()+
+      ggplot2::theme(axis.text = ggplot2::element_blank())
     
     #----- Reordering the plots
     all.plots.print <-list(map.plot)
     for (i in seq_along(all.plots)) all.plots.print <-c(all.plots.print,all.plots[[i]])
     
-    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    grDevices::pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
     all.plots.print %>% purrr::map(~print(.x))
-    dev.off()
+    grDevices::dev.off()
   }else{
-    pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
+    grDevices::pdf(paste0(settings$outdir,"/SDA.pdf"),width = filew, height = fileh)
     all.plots %>% purrr::map(~print(.x))
-    dev.off()
+    grDevices::dev.off()
   }
   
   
