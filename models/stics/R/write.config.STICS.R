@@ -790,7 +790,8 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     if ("rootmin_harvest" %in% pft.names) {
       SticsRFiles::set_param_xml(gen_file, "y0msrac", pft.traits[which(pft.names == "rootmin_harvest")], overwrite = TRUE)
     }
-      
+    
+    # move to plt!!! file  
     # extinction coefficient connecting LAI to crop height
     if ("LAI2height" %in% pft.names) {
       SticsRFiles::set_param_xml(gen_file, "khaut", pft.traits[which(pft.names == "LAI2height")], overwrite = TRUE)
@@ -825,6 +826,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(gen_file, "lvopt", pft.traits[which(pft.names == "lvopt")], overwrite = TRUE)
     }
   
+    # move to plt!!! file
     # average root radius
     if ("rayon" %in% pft.names) {
       SticsRFiles::set_param_xml(gen_file, "rayon", pft.traits[which(pft.names == "rayon")], overwrite = TRUE)
@@ -889,21 +891,25 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(gen_file, "TREFr", soil_params[which(soil.names == "T_r_ORdecomp")], overwrite = TRUE)
     }
     
+    # not used anymore, or at least not with this name!!!
     # initial fraction of soil organic N inactive for mineralisation (= stable SON/ total SON)
     if ("FINERT" %in% soil.names) {
       SticsRFiles::set_param_xml(gen_file, "FINERT", soil_params[which(soil.names == "FINERT")], overwrite = TRUE)
     }
     
+    # not used anymore, or at least not with this name!!!
     # relative potential mineralization rate: K2 = fmin1 * exp(- fmin2*argi) / (1+fmin3*calc)
     if ("FMIN1" %in% soil.names) {
       SticsRFiles::set_param_xml(gen_file, "FMIN1", soil_params[which(soil.names == "FMIN1")], overwrite = TRUE)
     }
 
+    # not used anymore, or at least not with this name!!!
     # parameter defining the effect of clay on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
     if ("FMIN2" %in% soil.names) {
       SticsRFiles::set_param_xml(gen_file, "FMIN2", soil_params[which(soil.names == "FMIN2")], overwrite = TRUE)
     }
     
+    # not used anymore, or at least not with this name!!!
     # parameter defining the effect of CaCO3 on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
     if ("FMIN3" %in% soil.names) {
       SticsRFiles::set_param_xml(gen_file, "FMIN3", soil_params[which(soil.names == "FMIN3")], overwrite = TRUE)
@@ -1160,6 +1166,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     ### new formulations 
     
+    # move to plt!!! file
     # minimal value for drought stress index
     if ("swfacmin" %in% pft.names) {
       SticsRFiles::set_param_xml(newf_file, "swfacmin", pft.traits[which(pft.names == "swfacmin")], overwrite = TRUE)
@@ -1375,7 +1382,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   tec_df$variete <- 1 # cultivar number corresponding to the cultivar name in the plant file (could be passed via a field activity file)
   tec_df$irecbutoir <- 999 #latest date of harvest (imposed if the crop cycle is not finished at this date)
   tec_df$profmes <- 120 # depth of measurement of the soil water reserve (cm)
-  tec_df$engrais <- 1 # fertilizer type
+  #tec_df$engrais <- 1 # fertilizer type
   tec_df$concirr <- 0.11 # concentration of mineral N in irrigation water (kg ha-1 mm-1)
   tec_df$ressuite <- 'straw+roots' # type of crop residue
   tec_df$h2ograinmax <- 0.32 # maximal water content of fruits at harvest
@@ -1428,9 +1435,13 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
                            "hautcoupe"  , # cut height for forage crops, m
                            "lairesiduel", # residual LAI after each cut of forage crop, m2 m-2
                            "msresiduel" , # residual aerial biomass after a cut of a forage crop, t.ha-1
-                           "anitcoupe")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
+                           "anitcoupe",
+                           "engraiscoupe",
+                           "tauxexportfauche",
+                           "restit",
+                           "mscoupemini")   # amount of mineral N added by fertiliser application at each cut of a forage crop, kg.ha-1
 
-      
+
         harvest_sub <- events_sub[events_sub$mgmt_operations_event == "harvest",]
  
         harvest_list <- list()
@@ -1464,6 +1475,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
             harvest_df$lairesiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.2, 0.8) # hardcode for now
             harvest_df$msresiduel <- ifelse(harvest_df$hautcoupe < 0.08, 0.05, 0.3) # residual aerial biomass after a cut of a forage crop (t ha-1)
             harvest_df$anitcoupe <- 21 # amount of mineral N added by fertiliser application at each cut of a forage crop (kg ha-1)
+            harvest_df$engraiscoupe <- 0
+            harvest_df$tauxexportfauche <- 0
+            harvest_df$restit <- 0
+            harvest_df$mscoupemini <- 0
           }
           
           colnames(harvest_df) <- paste0(h_param_names, "_", hrow)
@@ -1478,7 +1493,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         }else{
           harvest_tec$codefauche <- 2 
         }
-        harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
+        #harvest_tec$mscoupemini <- 0 # min val of aerial biomass to make a cut
         harvest_tec$codemodfauche <- 2 # use calendar days
         harvest_tec$hautcoupedefaut <- 0.05 # cut height for forage crops (calendar calculated)
         harvest_tec$stadecoupedf <- "rec"
@@ -1530,7 +1545,9 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         usm_tec_df$ratiol <- 0
         
-        SticsRFiles::gen_tec_xml(param_df = usm_tec_df, file = system.file("pecan_tec.xml",  package = "PEcAn.STICS"), out_dir = usmdirs[usmi])
+        SticsRFiles::gen_tec_xml(param_df = usm_tec_df,
+                                 file=system.file("pecan_tec.xml", package = "PEcAn.STICS"),
+                                 out_dir = usmdirs[usmi])
         
         # TODO: more than 1 USM, rbind
         
