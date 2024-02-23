@@ -171,7 +171,11 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     #create H
     # if there is any site that has zero observation.
     if (any(obs_per_site == 0)) {
-      f.2.y.ind <- which(grepl(unique(names(unlist(obs.mean[[t]] %>% purrr::set_names(NULL)))), var.names, fixed = T))
+      #name matching between observation names and state variable names.
+      f.2.y.ind <- obs.mean[[t]] %>% 
+        purrr::map(\(x)which(var.names %in% names(x))) %>% 
+        base::unlist %>% 
+        base::unique
       H <- list(ind = f.2.y.ind %>% purrr::map(function(start){
         seq(start, length(site.ids) * length(var.names), length(var.names))
       }) %>% unlist() %>% sort)
@@ -272,7 +276,10 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       # H
       if (any(is.na(y.block))) {
         block.h <- matrix(0, 1, length(ids)*length(var.names))#matrix(1, 1, length(var.names))
-        f.2.y.ind <- which(grepl(unique(names(unlist(obs.mean[[t]] %>% purrr::set_names(NULL)))), var.names, fixed = T))
+        f.2.y.ind <- obs.mean[[t]] %>% 
+          purrr::map(\(x)which(var.names %in% names(x))) %>% 
+          base::unlist %>% 
+          base::unique
         seq.ind <- f.2.y.ind %>% purrr::map(function(start){
           seq(start, dim(block.h)[2], length(var.names))
         }) %>% unlist()
