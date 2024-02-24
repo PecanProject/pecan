@@ -2,8 +2,7 @@
 % Please edit documentation in R/merge_job_files.R
 \name{merge_job_files}
 \alias{merge_job_files}
-\title{merge_job_files
-Merge multiple job.sh files into one larger file.}
+\title{Merge multiple job.sh files into one larger file.}
 \usage{
 merge_job_files(settings, jobs_per_file = 10, outdir = NULL)
 }
@@ -14,8 +13,10 @@ merge_job_files(settings, jobs_per_file = 10, outdir = NULL)
 
 \item{outdir}{output directory of merged job files.}
 }
+\value{
+vector of the newly created filenames
+}
 \description{
-merge_job_files
 Merge multiple job.sh files into one larger file.
 }
 \author{

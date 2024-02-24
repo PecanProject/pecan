@@ -16,7 +16,6 @@ LazyData: FALSE
 Imports:
     PEcAn.logger,
     PEcAn.MA,
-    PEcAn.utils,
     ggplot2,
     MASS
 Suggests:

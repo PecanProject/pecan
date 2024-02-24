@@ -20,9 +20,9 @@ met_temporal_downscale.Gaussian_ensemble(
 )
 }
 \arguments{
-\item{in.path}{}
+\item{in.path}{ignored}
 
-\item{in.prefix}{}
+\item{in.prefix}{ignored}
 
 \item{outfolder}{path to directory in which to store output. Will be created if it does not exist}
 
@@ -47,7 +47,7 @@ print debugging information as they run?}
 \item{...}{further arguments, currently ignored}
 }
 \description{
-met_temporal_downscale.Gaussian_ensemble takes source data and a training dataset from the same site and temporally 
+takes source data and a training dataset from the same site and temporally
    downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
 }
 \author{
