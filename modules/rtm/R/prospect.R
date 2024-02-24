@@ -44,6 +44,7 @@ prospect <- function(param, version) {
     stop("Version must be 4, 5, 5B, or D")
   }
   
+  inlist <- c(inlist, PACKAGE="PEcAnRTM")
   outlist <- do.call(.Fortran, inlist)
   out <- spectra(outlist[[length(outlist)]], 400:2500)
   colnames(out) <- c("reflectance", "transmittance")

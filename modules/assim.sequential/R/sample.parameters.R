@@ -12,15 +12,15 @@ sample.parameters <- function(ne, settings, con) {
   
   ## grab posteriors from database
   if (is.null(settings$assim.sequential$prior)) {
-    pft.id <- db.query(paste0("SELECT id from pfts where name = '", settings$pfts$pft$name, "'"), 
+    pft.id <- PEcAn.DB::db.query(paste0("SELECT id from pfts where name = '", settings$pfts$pft$name, "'"), 
                        con)
-    priors <- db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
+    priors <- PEcAn.DB::db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
     ## by default, use the most recent posterior as the prior
     settings$assim.sequential$prior <- priors$id[which.max(priors$updated_at)]
   }
   
   ## load prior
-  prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", 
+  prior.db <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", 
                               settings$assim.sequential$prior), con)
   prior.db <- prior.db[grep("post.distns.Rdata", prior.db$file_name), ]
   load(file.path(prior.db$file_path, "post.distns.Rdata"))
