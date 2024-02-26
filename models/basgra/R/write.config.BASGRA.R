@@ -435,7 +435,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CLVI"] <- udunits2::ud.convert(IC$leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CLVI"] <- PEcAn.utils::ud_convert(IC$leaf_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
     }
