@@ -32,11 +32,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   # load default(!) BASGRA params
   if (!is.null(settings$run$inputs$defaults$path)) {
-    df_run_params <- read.csv(settings$run$inputs$defaults$path)
+    df_run_params <- utils::read.csv(settings$run$inputs$defaults$path)
   } else {
-    df_run_params <- read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
+    df_run_params <- utils::read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
   }
-  run_params <- setNames(df_run_params[,2], df_run_params[,1])
+  run_params <- stats::setNames(df_run_params[,2], df_run_params[,1])
   run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
