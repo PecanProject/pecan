@@ -599,6 +599,12 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
     }
     
+        # Initial organic N
+    nsom0 <- try(ncdf4::ncvar_get(IC.nc, "soil_organic_nitrogen_content"), silent = TRUE)
+    if (!is.na(nsom0) && is.numeric(nsom0)) {
+      run_params[which(names(run_params) == "NSOM")] <- PEcAn.utils::ud_convert(nsom0, "kg", "g")
+    }
+    
     # Rooting depth (m)
     rootd <- try(ncdf4::ncvar_get(IC.nc, "rooting_depth"), silent = TRUE)
     if (!is.na(rootd) && is.numeric(rootd)) {
