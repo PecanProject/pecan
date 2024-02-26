@@ -441,7 +441,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("dead_leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLVDI"] <- udunits2::ud.convert(IC$dead_leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CLVDI"] <- PEcAn.utils::ud_convert(IC$dead_leaf_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "CLVDI"] <- last_vals[names(last_vals) == "CLVD"]
     }
