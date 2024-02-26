@@ -404,7 +404,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
    
     if ("stem_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSTI"] <- udunits2::ud.convert(IC$stem_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSTI"] <- PEcAn.utils::ud_convert(IC$stem_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
     }
