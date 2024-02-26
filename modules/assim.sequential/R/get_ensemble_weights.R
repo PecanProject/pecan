@@ -23,7 +23,7 @@ get_ensemble_weights <- function(settings, time_do){
     ###-------------------------------------------------------------------###
     ### Loading Weights                                                   ###
     ###-------------------------------------------------------------------###
-    weight_file <- read.csv(settings$run$inputs$ensembleweights$path)
+    weight_file <- utils::read.csv(settings$run$inputs$ensembleweights$path)
     start_date <- settings$run$inputs$ensembleweights$start.date
     end_date <- settings$run$inputs$ensembleweights$end.date
     years_get <- lubridate::year(start_date):lubridate::year(end_date) #assuming year time step... would need to change for other analyses possibly going down the load.data path?

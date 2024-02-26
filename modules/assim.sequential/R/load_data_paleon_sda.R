@@ -68,7 +68,7 @@ load_data_paleon_sda <- function(settings){
   biomass2carbon <- 0.48
   
   for(i in seq_along(format_id)){
-    input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), con)
+    input.list[[i]] <- PEcAn.DB::db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), con)
     input.id[[i]] <- input.list[[i]]$id
     
     data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, con)
@@ -118,8 +118,15 @@ load_data_paleon_sda <- function(settings){
       
       ### Map species to model specific PFTs
       if(any(var.names == 'AGB.pft')){
-        spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda', con)
-        pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts,
+        # this is the only code path that uses data.land, so we check now instead of at top of function
+        if (!requireNamespace("PEcAn.data.land", quietly = TRUE)) {
+          PEcAn.logger::logger.error(
+            "Can't find package 'PEcAn.data.land',",
+            "needed by `PEcAnAssimSequential::load_data_paleon_sda()`.",
+            "Please install it and try again.")
+        }
+        spp_id <- PEcAn.data.land::match_species_id(unique(dataset$species_id),format_name = 'usda', con)
+        pft_mat <- PEcAn.data.land::match_pft(spp_id$bety_species_id, settings$pfts,
                              con = con, allow_missing = TRUE)
         
         x <- paste0('AGB.pft.', pft_mat$pft)
@@ -150,7 +157,7 @@ load_data_paleon_sda <- function(settings){
       mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
       
       iter_mat <- reshape2::acast(melt.next, arguments3, mean)
-      cov.test <- apply(iter_mat,3,function(x){cov(x)})
+      cov.test <- apply(iter_mat,3,function(x){stats::cov(x)})
       
       for(t in seq_along(obs.times)){
         obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], -c(1)] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
@@ -184,20 +191,20 @@ load_data_paleon_sda <- function(settings){
       sp::proj4string(coords) <- sp::CRS('+proj=longlat +ellps=WGS84')
       
       ### site utm coordinates
-      utm <- sp::spTransform(coords, CRS("+proj=utm +zone=18N ellps=WGS84"))
+      utm <- sp::spTransform(coords, sp::CRS("+proj=utm +zone=18N ellps=WGS84"))
       utm <- as.matrix(data.frame(utm))
       
       ### find grid cell
-      site.x <- which(min(abs(ncvar_get(ncin, 'x') - utm[1])) == abs(ncvar_get(ncin, 'x') - utm[1]))
-      site.y <- which(min(abs(ncvar_get(ncin, 'y') - utm[2])) == abs(ncvar_get(ncin, 'y') - utm[2]))
-      years <- formatC(ncvar_get(ncin, 'year'), width = 4, format = "d", flag = "0")
+      site.x <- which(min(abs(ncdf4::ncvar_get(ncin, 'x') - utm[1])) == abs(ncdf4::ncvar_get(ncin, 'x') - utm[1]))
+      site.y <- which(min(abs(ncdf4::ncvar_get(ncin, 'y') - utm[2])) == abs(ncdf4::ncvar_get(ncin, 'y') - utm[2]))
+      years <- formatC(ncdf4::ncvar_get(ncin, 'year'), width = 4, format = "d", flag = "0")
       
       taxa <- names(ncin$var)
       if('other'%in%taxa) taxa <- taxa[-c(grep('other',taxa))]
         
       sims.keep <- array(NA,dim=c(length(taxa),length(ncin$dim$year$vals),length(ncin$dim$sample$vals)))
       for(n in seq_along(taxa)){
-        taxa.start <- ncvar_get(ncin, taxa[n])
+        taxa.start <- ncdf4::ncvar_get(ncin, taxa[n])
         
         # input is a matrix 'sims', with rows as time and columns as MCMC samples
         sims.keep[n,,] <- taxa.start[site.x,site.y,,]
@@ -216,7 +223,7 @@ load_data_paleon_sda <- function(settings){
         for(lag in 1:(ntimes-1)){
           covars <- c(covars, rowMeans(row.means.sims[(lag+1):ntimes, , drop = FALSE] * row.means.sims[1:(ntimes-lag), , drop = FALSE])) 
         }
-        vars <- apply(row.means.sims, 1, var) # pointwise post variances at each time, might not be homoscedastic
+        vars <- apply(row.means.sims, 1, stats::var) # pointwise post variances at each time, might not be homoscedastic
         
         # nominal sample size scaled by ratio of variance of an average
         # under independence to variance of average of correlated values
@@ -228,7 +235,7 @@ load_data_paleon_sda <- function(settings){
       pecan.pfts <- as.character(lapply(settings$pfts, function(x) x[["name"]]))
       
       for(n in taxa){
-        sims.start <- ncvar_get(ncin,n)
+        sims.start <- ncdf4::ncvar_get(ncin,n)
         
         # input is a matrix 'sims', with rows as time and columns as MCMC samples
         sims <- sims.start[site.x,site.y,,]
@@ -265,7 +272,7 @@ load_data_paleon_sda <- function(settings){
       rownames(sims.keep) <- colnames(mean.mat)
       obs.cov <- list()
       for(n in 1:length(ncin$dim$year$vals)){
-        obs.cov[[n]] <- cov(t(sims.keep[,n,])) #* var.inf
+        obs.cov[[n]] <- stats::cov(t(sims.keep[,n,])) #* var.inf
       }
       
       names(obs.cov) <- paste0(years,'/12/31')
@@ -274,7 +281,7 @@ load_data_paleon_sda <- function(settings){
       which.keep <- list()
       
       for(n in obs.times){
-        min.vec <- na.omit(as.numeric(n) - year(as.Date(names(obs.mean))))
+        min.vec <- stats::na.omit(as.numeric(n) - year(as.Date(names(obs.mean))))
         which.keep[[n]] <- which(min(abs(min.vec))==abs(min.vec))
         obs.mean.tmp[[n]] <- obs.mean[[which.keep[[n]][1]]]
         obs.cov.tmp[[n]] <- obs.cov[[which.keep[[n]][1]]]
