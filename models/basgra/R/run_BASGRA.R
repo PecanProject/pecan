@@ -329,7 +329,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   calendar_Ndep[3,] <- c( 2100, 366,  0*1000/(10000*365) ) #  0 kg N ha-1 y-1 N-deposition in 2100
   
   harvest_params <- matrix(0.0, nrow=300, ncol=2)
-  df_harvest <- read.csv(site_harvest)
+  df_harvest <- utils::read.csv(site_harvest)
   n_events <- nrow(df_harvest)
   allowed_harv_colnames <- c('year', 'doy', 'CLAIV', 'cut_only')
   if (!all(colnames(df_harvest) %in% allowed_harv_colnames)) {
@@ -386,7 +386,7 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   # for now a hack to write other states out
   # save(output, file = file.path(outdir, "output_basgra.Rdata"))
   if (write_raw_output) {
-    write.csv(setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
+    utils::write.csv(stats::setNames(as.data.frame(output), outputNames), file.path(outdir, "output_basgra.csv"))
   }
   last_vals <- output[nrow(output),]
   names(last_vals) <- outputNames
