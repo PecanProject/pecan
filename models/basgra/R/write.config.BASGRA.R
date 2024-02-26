@@ -412,7 +412,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     # NRT        = NCR * CRTI
     #run_params[names(run_params) == "NCR"] <- last_vals[names(last_vals) == "NRT"] / last_vals[names(last_vals) == "CRT"] 
     if ("root_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CRTI"] <-  udunits2::ud.convert(IC$root_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRTI"] <-  PEcAn.utils::ud_convert(IC$root_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
     }
