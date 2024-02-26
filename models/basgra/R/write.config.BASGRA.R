@@ -354,7 +354,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       }
       
       # #else-if ("TotSoilCarb"  %in% ic.names)?
-      # new_totc <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g") 
+      # new_totc <- PEcAn.utils::ud_convert(IC$TotSoilCarb, "kg", "g") 
       # 
       # ratio_soc <- new_totc / (last_somf + last_soms)
       # 
