@@ -497,17 +497,17 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
     outlist[[length(outlist)+1]]  <- soilm * 0.001 / (ROOTD - Fdepth)
     
     # Additional C fluxes
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "FLITTC_LEAF"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "FLITTC_LEAF"],
                                                          "g m-2", "kg m-2") / sec_in_day    
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "FLITTC_ROOT"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "FLITTC_ROOT"],
                                                          "g m-2", "kg m-2") / sec_in_day
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "FHARVC"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "FHARVC"],
                                                          "g m-2", "kg m-2") / sec_in_day
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "NEE"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "NEE"],
                                                          "g m-2", "kg m-2") / sec_in_day
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "FRUNOFFC"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "FRUNOFFC"],
                                                          "g m-2", "kg m-2") / sec_in_day
-    outlist[[length(outlist)+1]] <- use PEcAn.utils::ud_convert(output[thisyear, outputNames == "FSOILAMDC"],
+    outlist[[length(outlist)+1]] <- PEcAn.utils::ud_convert(output[thisyear, outputNames == "FSOILAMDC"],
                                                          "g m-2", "kg m-2") / sec_in_day
     outlist[[length(outlist)+1]] <- output[thisyear, outputNames == "TEMPR30"]
     outlist[[length(outlist)+1]] <- output[thisyear, outputNames == "PRECIP30"]
