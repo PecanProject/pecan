@@ -327,7 +327,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       
       if ("fast_soil_pool_carbon_content"  %in% ic.names & "slow_soil_pool_carbon_content"  %in% ic.names) {
         
-        new_somf <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g") 
+        new_somf <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g") 
         new_soms <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g") 
         
         ratio_somf <- new_somf / last_somf
