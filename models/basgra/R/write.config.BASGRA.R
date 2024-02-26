@@ -429,7 +429,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
 
     if ("reserve_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CRESI"] <- udunits2::ud.convert(IC$reserve_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRESI"] <- PEcAn.utils::ud_convert(IC$reserve_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
     }
