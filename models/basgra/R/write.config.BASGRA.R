@@ -375,7 +375,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
       
       if ("slow_soil_pool_carbon_content"  %in% ic.names) {
-        run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+        run_params[names(run_params) == "CSOMS0"] <- PEcAn.utils::ud_convert(IC$slow_soil_pool_carbon_content, "kg", "g")
       }else{
         run_params[names(run_params) == "CSOMS0"] <- last_vals[names(last_vals) == "CSOMS"]
       }
