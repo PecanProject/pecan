@@ -368,7 +368,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       
     }else{ # no Yasso
       if ("fast_soil_pool_carbon_content"  %in% ic.names) {
-        run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+        run_params[names(run_params) == "CSOMF0"] <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g")
       }else{
         run_params[names(run_params) == "CSOMF0"] <- last_vals[names(last_vals) == "CSOMF"]
       }
