@@ -24,7 +24,7 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
              person("Chris", "Black", role = c("aut"),
                      email = "chris@ckblack.org"),
              person("Liam", "Burke", role = c("aut"),
-                     email = "liam.burke24@gmail.com>"),
+                     email = "liam.burke24@gmail.com"),
              person("Ryan", "Kelly", role = c("aut"),
                      email = "rykelly@bu.edu"),
              person("Dan", "Wang", role = c("aut")),
@@ -43,8 +43,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Imports:
     curl,
     DBI,
-    dbplyr,
-    dplyr,
+    dbplyr (>= 2.4.0),
+    dplyr (>= 1.1.2),
     fs,
     glue,
     lubridate,
@@ -65,8 +65,8 @@ Suggests:
     bit64,
     data.table,
     here,
-    knitr,
-    mockery,
+    knitr (>= 1.42),
+    mockery (>= 0.4.3),
     RPostgreSQL,
     RPostgres,
     RSQLite,
@@ -75,15 +75,6 @@ Suggests:
     testthat (>= 2.0.0),
     tidyverse,
     withr
-X-Comment-Remotes:
-    Installing markdown from GitHub because as of 2023-02-05, this is the
-    easiest way to get version >= 2.19 onto Docker images that use older
-    Rstudio Package Manager snapshots.
-    When building on a system that finds a new enough version on CRAN,
-    OK to remove the Remotes line and this comment.
-Remotes:
-    github::rstudio/rmarkdown@v2.20,
-    github::r-lib/mockery@v0.4.3
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr
 Copyright: Authors

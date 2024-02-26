@@ -321,7 +321,7 @@ sda.enkf <- function(settings,
       
       
       #-------------------------- Writing the config/Running the model and reading the outputs for each ensemble
-      outconfig <- write.ensemble.configs(defaults = config.settings$pfts, 
+      outconfig <- PEcAn.uncertainty::write.ensemble.configs(defaults = config.settings$pfts, 
                                           ensemble.samples = ensemble.samples, 
                                           settings = config.settings,
                                           model = config.settings$model$type, 
@@ -388,7 +388,7 @@ sda.enkf <- function(settings,
     
     
     if(sum(X,na.rm=T) == 0){
-      logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
+      PEcAn.logger::logger.severe(paste('NO FORECAST for',obs.times[t],'Check outdir logfiles or read restart. Do you have the right variable names?'))
     }
     
     ###-------------------------------------------------------------------###
@@ -519,7 +519,7 @@ sda.enkf <- function(settings,
       
     } else {
       mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-      Pf <- cov(X)
+      Pf <- stats::cov(X)
       ###-------------------------------------------------------------------###
       ### No Observations --                                                ###----
       ###-----------------------------------------------------------------### 
@@ -547,7 +547,7 @@ sda.enkf <- function(settings,
       if (processvar & exists('X.new')) {X.adj.arg <- X.new }else{ X.adj.arg <- X ; print('using X not X.new. Assuming GEF was skipped this iteration?')}
       analysis <-adj.ens(Pf, X.adj.arg, mu.f, mu.a, Pa)
     }else{
-      analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
+      analysis <- as.data.frame(mvtnorm::rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
     
     colnames(analysis) <- colnames(X)

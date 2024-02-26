@@ -53,22 +53,23 @@ get.parameter.samples <- function(settings,
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
     
-    rm(prior.distns, post.distns, trait.mcmc)
+    distns = new.env()
+
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
       # Load specified file
-      load(posterior.files[i])
-      if (!exists("prior.distns") & exists("post.distns")) {
-        prior.distns <- post.distns
+      load(posterior.files[i], envir = distns)
+      if (is.null(distns$prior.distns) & !is.null(distns$post.distns)) {
+        distns$prior.distns <- distns$post.distns
       }
     } else {
       # Default to most recent posterior in the workflow, or the prior if there is none
       fname <- file.path(outdirs[i], "post.distns.Rdata")
       if (file.exists(fname)) {
-        load(fname)
-        prior.distns <- post.distns
+        load(fname, envir = distns)
+        distns$prior.distns <- distns$post.distns
       } else {
-        load(file.path(outdirs[i], "prior.distns.Rdata"))
+        load(file.path(outdirs[i], "prior.distns.Rdata"), envir = distns)
       }
     }
     
@@ -81,8 +82,9 @@ get.parameter.samples <- function(settings,
       if (length(tid) > 0) {
         trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
         ma.results <- TRUE
-        load(trait.mcmc.file)
-        
+        load(trait.mcmc.file, envir = distns)
+
+
         # PDA samples are fitted together, to preserve correlations downstream let workflow know they should go together
         if(grepl("mcmc.pda", trait.mcmc.file)) independent <- FALSE 
         # NOTE: Global MA samples will also be together, right?
@@ -95,7 +97,7 @@ get.parameter.samples <- function(settings,
     }else if ("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
       PEcAn.logger::logger.info("Defaulting to trait.mcmc file in the pft directory.")
       ma.results <- TRUE
-      load(file.path(outdirs[i], "trait.mcmc.Rdata"))
+      load(file.path(outdirs[i], "trait.mcmc.Rdata"), envir = distns)
     } else {
       ma.results <- FALSE
     }
@@ -104,16 +106,16 @@ get.parameter.samples <- function(settings,
     
     ### When no ma for a trait, sample from prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
-    if(exists("prior.distns")){
-      priors <- rownames(prior.distns)
+    if(!is.null(distns$prior.distns)){
+      priors <- rownames(distns$prior.distns)
     } else {
       priors <- NULL
     }  
-    if (exists("trait.mcmc")) {
-      param.names[[i]] <- names(trait.mcmc)
+    if (!is.null(distns$trait.mcmc)) {
+      param.names[[i]] <- names(distns$trait.mcmc)
       names(param.names)[i] <- pft.name
       
-      samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
+      samples.num <- min(sapply(distns$trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
       if (length(param.names[[i]]) > 0) {
@@ -155,9 +157,12 @@ get.parameter.samples <- function(settings,
     }
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
-        samples <- trait.mcmc[[prior]] %>% purrr::map(~ .x[,'beta.o']) %>% unlist() %>% as.matrix()
+        samples <- distns$trait.mcmc[[prior]] %>%
+          purrr::map(~ .x[,'beta.o']) %>%
+          unlist() %>%
+          as.matrix()
       } else {
-        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
+        samples <- PEcAn.priors::get.sample(distns$prior.distns[prior, ], samples.num, q_samples[ , priors==prior])
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }

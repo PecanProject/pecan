@@ -9,9 +9,9 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA"
-SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run"
-SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out"
+outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/"
+SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run/"
+SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out/"
 
 ERA5_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/ERA5_2012_2021/"
 XML_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
@@ -47,6 +47,49 @@ obs_end_date <- "2021-07-15"
 obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
 timestep <- list(unit="year", num=1)
 
+#specify model binary
+model_binary <- "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if"
+
+#specify host section
+host.flag <- "rabbitmq"
+if (host.flag == "remote") {
+  #if we submit jobs through tunnel remotely.
+  host = structure(list(
+    name = "geo.bu.edu",
+    usr = "zhangdc",
+    folder = SDA_out_dir,
+    prerun = "module load R/4.1.2",
+    cdosetup = "module load cdo/2.0.6",
+    qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+    qsub.jobid = "Your job ([0-9]+) .*",
+    qstat = "qstat -j @JOBID@ || echo DONE",
+    tunnel = "~/Tunnel/Tunnel",
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+} else if (host.flag == "local") {
+  host = structure(list(
+    name = "localhost",
+    folder = SDA_out_dir,
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+} else if (host.flag == "rabbitmq") {
+  host = structure(list(
+    name = "localhost",
+    rabbitmq = structure(list(
+      prefix = NULL,
+      uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
+      queue = "SIPNET_r136",
+      cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
+      cpfcmd = "/data/bin/oc rsync @OUTFOLDER@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
+    )),
+    folder = SDA_out_dir,
+    outdir = SDA_out_dir,
+    rundir = SDA_run_dir
+  ))
+  model_binary <- "/usr/local/bin/sipnet.r136"
+}
 #Start building template
 template <- PEcAn.settings::Settings(list(
   ############################################################################
@@ -127,7 +170,7 @@ template <- PEcAn.settings::Settings(list(
   ###########################################################################
   database = structure(list(
     bety = structure(
-      list(user = "bety", password = "bety", host = "128.197.168.114",
+      list(user = "bety", password = "bety", host = "10.241.76.27",
            dbname = "bety", driver = "PostgreSQL", write = "FALSE"
       ))
   )),
@@ -197,7 +240,7 @@ template <- PEcAn.settings::Settings(list(
                          type = "SIPNET",
                          revision = "ssr",
                          delete.raw = FALSE,
-                         binary = "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
+                         binary = model_binary,
                          jobtemplate = "~/sipnet_geo.job"
   )),
   
@@ -209,19 +252,7 @@ template <- PEcAn.settings::Settings(list(
   ###########################################################################
   ###########################################################################
   #be carefull of the host section, you need to specify the host of your own!!!
-  host = structure(list(
-    name = "geo.bu.edu",
-    usr = "zhangdc",
-    folder = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    prerun = "module load R/4.1.2",
-    cdosetup = "module load cdo/2.0.6",
-    qsub = "qsub -l h_rt=24:00:00 -q &apos;geo*&apos; -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-    qsub.jobid = "Your job ([0-9]+) .*",
-    qstat = "qstat -j @JOBID@ || echo DONE",
-    tunnel = "~/Tunnel/Tunnel",
-    outdir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out",
-    rundir = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run"
-  )),
+  host = host,
   
   ############################################################################
   ############################################################################
@@ -291,29 +322,6 @@ tmp = gsub("&amp;","&",tmp)
 writeChar(tmp, XML_out_dir)
 
 settings <- PEcAn.settings::read.settings(XML_out_dir)
-
-#iteratively grab ERA5 paths for each site
-for (i in 1:nSite) {
-  temp_ERA5_path <- settings[[i]]$run$inputs$met$path
-  temp_site_id <- settings[[i]]$run$site$id
-  temp_full_paths <- list.files(path=paste0(temp_ERA5_path, temp_site_id), pattern = '*.clim', full.names = T)
-  
-  #need a better way to code it up
-  #test works!!!!
-  #populated IC file paths into settings
-  Create_mult_list <- function(list.names, paths){
-    out <- as.list(paths)
-    names(out) <- list.names
-    out
-  }
-  settings[[i]]$run$inputs$met$path <- Create_mult_list(rep("path", length(temp_full_paths)), temp_full_paths)
-  
-  #code on met_start and met_end
-  settings[[i]]$run$site$met.start <- start_date
-  settings[[i]]$run$site$met.end <- end_date
-  settings[[i]]$run$start.date <- start_date
-  settings[[i]]$run$end.date <- end_date
-}
 
 #add Lat and Lon to each site
 #grab Site IDs from settings

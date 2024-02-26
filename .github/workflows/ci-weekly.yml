@@ -41,7 +41,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -53,7 +53,8 @@ jobs:
     - name: check for out-of-date dependencies files
       uses: infotroph/tree-is-clean@v1
     - name: install newly-added dependencies
-      run: Rscript docker/depends/pecan.depends.R
+      working-directory: docker/depends
+      run: Rscript pecan.depends.R
 
     # initialize database
     - name: db setup
@@ -97,7 +98,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -105,7 +106,7 @@ jobs:
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
+      run: Rscript scripts/generate_dependencies.R && cd docker/depends && Rscript pecan.depends.R
 
     # run PEcAn checks
     - name: check
@@ -144,7 +145,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         set-safe-directory: false
 
@@ -152,7 +153,7 @@ jobs:
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
+      run: Rscript scripts/generate_dependencies.R && cd docker/depends && Rscript pecan.depends.R
 
     # initialize database
     - name: db setup
@@ -162,7 +163,7 @@ jobs:
 
     # install sipnet
     - name: Check out SIPNET
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: PecanProject/sipnet
         path: sipnet

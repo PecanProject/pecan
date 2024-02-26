@@ -3,27 +3,22 @@
 # 
 # @author Anthony Cohen
 # ----------------------------------------------------------------------------------------------------------
-library(PEcAn.utils)
-library(PEcAn.settings)
-library(PEcAn.DB)
-library(RPostgreSQL)
 
 betyparms <- PEcAn.DB::get_postgres_envvars(
   host = "localhost",
   dbname = "bety",
   user = "bety",
   password = "bety",
-  driver = "PostgreSQL",
+  driver = "Postgres",
   write = FALSE)
 fiaparms <- betyparms
 fiaparms$dbname <- "fia5data"
-if (db.exists(params = betyparms) && db.exists(fiaparms)) {
+if (PEcAn.DB::db.exists(params = betyparms) && PEcAn.DB::db.exists(fiaparms)) {
 
 
-  context("Testing consistency of FIA PFTs")
   test_that("PFTs don't overlap species", {
     
-    overlapping.pfts <- read.settings("dup_species.xml")		#settings list
+    overlapping.pfts <- PEcAn.settings::read.settings("dup_species.xml")		#settings list
     #expect_output(fia.to.psscss(overlapping.pfts), "ERROR \\[.*\\] : There are [0123456789]+ spcd entries that are duplicated. Please remove overlapping PFTs.")	
     expect_error(fia.to.psscss(overlapping.pfts))	
     
@@ -32,14 +27,14 @@ if (db.exists(params = betyparms) && db.exists(fiaparms)) {
   
   test_that("User is warned if PFTs have extra species not suggested by FIA", {
     
-    extra.pft <- read.settings("wrong_pft.xml")
+    extra.pft <- PEcAn.settings::read.settings("wrong_pft.xml")
     expect_error(fia.to.psscss(extra.pft))  
   })
   
   
   test_that("PFTs encompass all species suggested by FIA", {
     
-    insufficient.pft <- read.settings("wrong_pft.xml")
+    insufficient.pft <- PEcAn.settings::read.settings("wrong_pft.xml")
     expect_error(fia.to.psscss(insufficient.pft))
   })
   

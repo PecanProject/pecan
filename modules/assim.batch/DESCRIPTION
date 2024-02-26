@@ -23,7 +23,6 @@ Imports:
     MASS,
     methods,
     mlegp,
-    dplyr,
     ellipse,
     graphics,
     grDevices,
@@ -51,8 +50,8 @@ Imports:
     lqmm,
     mvtnorm
 Suggests:
-    knitr,
-    rmarkdown,
+    knitr (>= 1.42),
+    rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
