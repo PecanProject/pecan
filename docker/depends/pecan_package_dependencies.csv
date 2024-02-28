@@ -438,6 +438,7 @@
 "purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
 "pwr","*","modules/rtm","Suggests",FALSE
 "R.utils","*","base/db","Imports",FALSE
+"randomForest","*","modules/assim.sequential","Suggests",FALSE
 "randtoolbox","*","base/utils","Suggests",FALSE
 "randtoolbox","*","modules/uncertainty","Imports",FALSE
 "raster","*","base/visualization","Suggests",FALSE
@@ -446,6 +447,7 @@
 "raster","*","modules/data.land","Suggests",FALSE
 "raster","*","modules/data.remote","Suggests",FALSE
 "rcrossref","*","base/db","Suggests",FALSE
+"readr","*","modules/assim.sequential","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -554,6 +556,7 @@
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
 "swfscMisc","*","modules/data.land","Imports",FALSE
+"terra","*","modules/assim.sequential","Suggests",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
 "terra","*","modules/data.land","Imports",FALSE
 "terra","*","modules/data.remote","Imports",FALSE
