@@ -75,15 +75,15 @@ Many configurations for the model are (less surprisingly) written in `write.conf
 * **site.xml** : This file is written based on the given initial condition file (netcdf). If no path is given in *poolinitcond*, then some default mineral clay soil settings will be written to this file. However, it is strongly recommended that some initial conditions based on the simulated site are provided. Variables that can be found from the initial conditions, but are not required:
   + *For each layer*
     - pH (-), 
-    - water_concentration_at_field_capacity (m3 m-3),
-    - water_concentration_at_wilting_point (m3 m-3),
+    - volume_fraction_of_water_in_soil_at_field_capacity (m3 m-3),
+    - volume_fraction_of_condensed_water_in_soil_at_wilting_point (m3 m-3),
     - soil_nitrogen_content (kg kg-1),
     - soil_carbon_content (kg kg-1),
-    - soil_clay_content (kg kg-1),
-    - soil_sand_content (kg kg-1),
-    - soil_silt_content (kg kg-1),
-    - soil_bulk_density (kg m-3),
-    - soil_hydraulic_conductivity (-),
+    - volume_fraction_of_clay_in_soil (kg kg-1),
+    - volume_fraction_of_sand_in_soil (kg kg-1),
+    - volume_fraction_of_silt_in_soil (kg kg-1),
+    - soil_density (kg m-3),
+    - soil_hydraulic_conductivity_at_saturation (m s-1),
     - stratum = (-) [number of how many stratums a soil layer has]
   + *Single value*
     - c2n_humus (ratio), [is written in siteparameter file]
