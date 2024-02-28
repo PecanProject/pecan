@@ -223,13 +223,14 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         cat(data_prefix, file = file.path(outfolder, out.file))
         
         # For the first year, keep col.names as TRUE
-        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
-                           sep = "\t", col.names = T, append = T)
+        readr::write_delim(x = data, file = file.path(outfolder, out.file),
+                         delim = "\t", append = T, quote = "none")
+        
         
       }else{
-        # For the other year, col.names are FALSE
-        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
-                           sep = "\t", col.names = F, append = T)
+        # For the other years, col.names are FALSE
+        readr::write_delim(x = data, file = file.path(outfolder, out.file),
+                           delim = "\t", col_names = F, append = T)
       }
       
       
