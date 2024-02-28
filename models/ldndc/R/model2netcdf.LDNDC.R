@@ -88,10 +88,10 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     dplyr::slice(1:(dplyr::n()-1)) %>% # Removing one extra line in output
     dplyr::mutate(Year = lubridate::year(Date), Day = as.numeric(strftime(Date, format = "%j")),
            Step = rep(0:(length(which(Date %in% unique(Date)[1]))-1),len = length(Date))) %>%
-    dplyr::select(Year, Day, Step, .data$lai, .data$dC_maintenance_resp.kgCm.2., .data$dC_transport_resp.kgCm.2.,
-                  .data$dC_growth_resp.kgCm.2., .data$dC_co2_upt.kgCm.2., .data$sC_co2_hetero.kgCm.2.,
-                  .data$DW_below.kgDWm.2., .data$DW_above.kgDWm.2., .data$soilwater_10cm...,
-                  .data$soilwater_30cm..., .data$harvest_carbon_flux)
+    dplyr::select("Year", "Day", "Step", "lai", "dC_maintenance_resp.kgCm.2.", "dC_transport_resp.kgCm.2.",
+                  "dC_growth_resp.kgCm.2.", "dC_co2_upt.kgCm.2.", "sC_co2_hetero.kgCm.2.",
+                  "DW_below.kgDWm.2.", "DW_above.kgDWm.2.", "soilwater_10cm...",
+                  "soilwater_30cm...", "harvest_carbon_flux")
   
   
   
