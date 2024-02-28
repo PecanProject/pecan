@@ -1923,27 +1923,27 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         
         
         ## Check which values are found from the soil netcdf file
-        if("soil_bulk_density" %in% names(soil_IC_list$vals)){
+        if("soil_density" %in% names(soil_IC_list$vals)){
           # Bulk density in a soil
-          bd <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_bulk_density"])[[depth_level]], "kg m-3", "kg dm-3")
+          bd <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_density"])[[depth_level]], "kg m-3", "kg dm-3")
           soil_layer_values <- ifelse(!is.na(bd), paste0(soil_layer_values, paste0("bd='", bd, "' ")), soil_layer_values)
         }
         
-        if("soil_clay_content" %in% names(soil_IC_list$vals)){
+        if("volume_fraction_of_clay_in_soil" %in% names(soil_IC_list$vals)){
           # Clay content value
-          clay <- unlist(soil_IC_list$vals["soil_clay_content"])[[depth_level]]
+          clay <- unlist(soil_IC_list$vals["volume_fraction_of_clay_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(clay), paste0(soil_layer_values, paste0("clay='", clay, "' ")), soil_layer_values)
         }
         
-        if("soil_sand_content" %in% names(soil_IC_list$vals)){
+        if("volume_fraction_of_sand_in_soil" %in% names(soil_IC_list$vals)){
           # Sand content value
-          sand <- unlist(soil_IC_list$vals["soil_sand_content"])[[depth_level]]
+          sand <- unlist(soil_IC_list$vals["volume_fraction_of_sand_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(sand), paste0(soil_layer_values, paste0("sand='", sand, "' ")), soil_layer_values)
         }
         
-        if("soil_silt_content" %in% names(soil_IC_list$vals)){
+        if("volume_fraction_of_silt_in_soil" %in% names(soil_IC_list$vals)){
           # Silt content value
-          silt <- unlist(soil_IC_list$vals["soil_silt_content"])[[depth_level]]
+          silt <- unlist(soil_IC_list$vals["volume_fraction_of_silt_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(silt), paste0(soil_layer_values, paste0("silt='", silt, "' ")), soil_layer_values)
         }
         
@@ -1983,21 +1983,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
           soil_layer_values <- ifelse(!is.na(va), paste0(soil_layer_values, paste0("vangenuchten_alpha='", va, "' ")), soil_layer_values)
         }
         
-        if("water_concentration_at_field_capacity" %in% names(soil_IC_list$vals)){
+        if("volume_fraction_of_water_in_soil_at_field_capacity" %in% names(soil_IC_list$vals)){
           # Field capacity - Change m3 m-3 to dm3 m-3
-          wcmax <- unlist(soil_IC_list$vals["water_concentration_at_field_capacity"])[[depth_level]] * 1000
+          wcmax <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_field_capacity"])[[depth_level]] * 1000
           soil_layer_values <- ifelse(!is.na(wcmax), paste0(soil_layer_values, paste0("wcmax='", wcmax, "' ")), soil_layer_values)
         }
         
-        if("water_concentration_at_wilting_point" %in% names(soil_IC_list$vals)){
+        if("volume_fraction_of_condensed_water_in_soil_at_wilting_point" %in% names(soil_IC_list$vals)){
           # Wilting point - Change m3 m-3 to dm3 m-3
-          wcmin <- unlist(soil_IC_list$vals["water_concentration_at_wilting_point"])[[depth_level]] * 1000
+          wcmin <- unlist(soil_IC_list$vals["volume_fraction_of_condensed_water_in_soil_at_wilting_point"])[[depth_level]] * 1000
           soil_layer_values <- ifelse(!is.na(wcmin), paste0(soil_layer_values, paste0("wcmin='", wcmin, "' ")), soil_layer_values)
         }
         
-        if("soil_hydraulic_conductivity" %in% names(soil_IC_list$vals)){
+        if("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)){
           # Hydraulic conductivity - cm / min ???
-          sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity"])[[depth_level]]
+          sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(sks), paste0(soil_layer_values, paste0("sks='", sks, "' ")), soil_layer_values)
         }
         
