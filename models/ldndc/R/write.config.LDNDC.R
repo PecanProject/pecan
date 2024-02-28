@@ -1996,8 +1996,8 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
         }
         
         if("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)){
-          # Hydraulic conductivity - cm / min ???
-          sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[[depth_level]]
+          # Hydraulic conductivity - change m s-1 to cm/min
+          sks <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[[depth_level]] * 100 * 60
           soil_layer_values <- ifelse(!is.na(sks), paste0(soil_layer_values, paste0("sks='", sks, "' ")), soil_layer_values)
         }
         
