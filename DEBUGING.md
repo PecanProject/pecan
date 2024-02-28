@@ -1,3 +1,5 @@
+# DEBUGGING.MD
+
 Adding the following to the workflow.R or to your .Rprofile will enable
 printing of a stacktrace in case something goes wrong. This will help
 with the development of PEcAn.
