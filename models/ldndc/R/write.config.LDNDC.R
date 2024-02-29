@@ -1929,21 +1929,21 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
           soil_layer_values <- ifelse(!is.na(bd), paste0(soil_layer_values, paste0("bd='", bd, "' ")), soil_layer_values)
         }
         
-        if("volume_fraction_of_clay_in_soil" %in% names(soil_IC_list$vals)){
+        if("mass_fraction_of_clay_in_soil" %in% names(soil_IC_list$vals)){
           # Clay content value
-          clay <- unlist(soil_IC_list$vals["volume_fraction_of_clay_in_soil"])[[depth_level]]
+          clay <- unlist(soil_IC_list$vals["mass_fraction_of_clay_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(clay), paste0(soil_layer_values, paste0("clay='", clay, "' ")), soil_layer_values)
         }
         
-        if("volume_fraction_of_sand_in_soil" %in% names(soil_IC_list$vals)){
+        if("mass_fraction_of_sand_in_soil" %in% names(soil_IC_list$vals)){
           # Sand content value
-          sand <- unlist(soil_IC_list$vals["volume_fraction_of_sand_in_soil"])[[depth_level]]
+          sand <- unlist(soil_IC_list$vals["mass_fraction_of_sand_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(sand), paste0(soil_layer_values, paste0("sand='", sand, "' ")), soil_layer_values)
         }
         
-        if("volume_fraction_of_silt_in_soil" %in% names(soil_IC_list$vals)){
+        if("mass_fraction_of_silt_in_soil" %in% names(soil_IC_list$vals)){
           # Silt content value
-          silt <- unlist(soil_IC_list$vals["volume_fraction_of_silt_in_soil"])[[depth_level]]
+          silt <- unlist(soil_IC_list$vals["mass_fraction_of_silt_in_soil"])[[depth_level]]
           soil_layer_values <- ifelse(!is.na(silt), paste0(soil_layer_values, paste0("silt='", silt, "' ")), soil_layer_values)
         }
         

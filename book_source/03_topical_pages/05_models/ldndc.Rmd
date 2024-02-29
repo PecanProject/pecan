@@ -79,9 +79,9 @@ Many configurations for the model are (less surprisingly) written in `write.conf
     - volume_fraction_of_condensed_water_in_soil_at_wilting_point (m3 m-3),
     - soil_nitrogen_content (kg kg-1),
     - soil_carbon_content (kg kg-1),
-    - volume_fraction_of_clay_in_soil (kg kg-1),
-    - volume_fraction_of_sand_in_soil (kg kg-1),
-    - volume_fraction_of_silt_in_soil (kg kg-1),
+    - mass_fraction_of_clay_in_soil (kg kg-1),
+    - mass_fraction_of_sand_in_soil (kg kg-1),
+    - mass_fraction_of_silt_in_soil (kg kg-1),
     - soil_density (kg m-3),
     - soil_hydraulic_conductivity_at_saturation (m s-1),
     - stratum = (-) [number of how many stratums a soil layer has]
