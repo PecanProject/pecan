@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.12
 
 ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
     RABBITMQ_MGMT_PORT="15672" \

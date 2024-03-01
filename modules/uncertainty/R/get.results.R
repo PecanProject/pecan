@@ -51,17 +51,18 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     if (!file.exists(fname)) {
       PEcAn.logger::logger.severe("No sensitivity analysis samples file found!")
     }
-    load(fname)
+    samples <- new.env()
+    load(fname, envir = samples)
     
     # For backwards compatibility, define some variables if not just loaded
-    if (!exists("pft.names")) {
-      pft.names <- names(trait.samples)
+    if (is.null(samples$pft.names)) {
+      samples$pft.names <- names(samples$trait.samples)
     }
-    if (!exists("trait.names")) {
-      trait.names <- lapply(trait.samples, names)
+    if (is.null(samples$trait.names)) {
+      samples$trait.names <- lapply(samples$trait.samples, names)
     }
-    if (!exists("sa.run.ids")) {
-      sa.run.ids <- runs.samples$sa
+    if (is.null(samples$sa.run.ids)) {
+      samples$sa.run.ids <- samples$runs.samples$sa
     }
     
     # Set variable and years. Use args first, then settings, then defaults/error
@@ -102,9 +103,9 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
         variable.sa <- variables$variable.eqn
         variable.fn <- variables$variable.drv
         
-        for(pft.name in pft.names){
-          quantiles <- rownames(sa.samples[[pft.name]])    
-          traits <- trait.names[[pft.name]]
+        for(pft.name in samples$pft.names){
+          quantiles <- rownames(samples$sa.samples[[pft.name]])
+          traits <- samples$trait.names[[pft.name]]
           
           # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
           per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
@@ -118,7 +119,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
             start.year = start.year.sa,
             end.year = end.year.sa,
             variable = variable.sa,
-            sa.run.ids = sa.run.ids,
+            sa.run.ids = samples$sa.run.ids,
             per.pft = per.pft)
         }
         
@@ -157,17 +158,18 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     if (!file.exists(fname)) {
       PEcAn.logger::logger.severe("No ensemble samples file found!")
     }
-    load(fname)
+    ens <- new.env()
+    load(fname, envir = ens)
     
     # For backwards compatibility, define some variables if not just loaded
-    if (!exists("pft.names")) {
-      pft.names <- names(trait.samples)
+    if (is.null(ens$pft.names)) {
+      ens$pft.names <- names(ens$trait.samples)
     }
-    if (!exists("trait.names")) {
-      trait.names <- lapply(trait.samples, names)
+    if (is.null(ens$trait.names)) {
+      ens$trait.names <- lapply(ens$trait.samples, names)
     }
-    if (!exists("ens.run.ids")) {
-      ens.run.ids <- runs.samples$ens
+    if (is.null(ens$ens.run.ids)) {
+      ens$ens.run.ids <- ens$runs.samples$ens
     }
     
     # Set variable and years. Use args first, then settings, then defaults/error
@@ -219,7 +221,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
           start.year = start.year.ens, 
           end.year = end.year.ens, 
           variable = variable.ens,
-          ens.run.ids = ens.run.ids
+          ens.run.ids = ens$ens.run.ids
         )
         
         # Save ensemble output

@@ -17,7 +17,9 @@ Authors@R: c(person("David", "LeBauer", role = c("aut"),
 Description: This package contains utilities for communicating with and executing code on local and remote hosts.
     In particular, it has PEcAn-specific utilities for starting ecosystem model runs.
 Imports:
+    dplyr,
     foreach,
+    furrr,
     PEcAn.logger,
     httr,
     jsonlite,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.NARR.R
 \name{met2CF.NARR}
 \alias{met2CF.NARR}
-\title{met2CF.NARR}
+\title{Convert NARR files to CF files}
 \usage{
 met2CF.NARR(
   in.path,
@@ -16,6 +16,12 @@ met2CF.NARR(
 )
 }
 \arguments{
+\item{in.path}{directory in which to find NARR files}
+
+\item{in.prefix}{pattern to match to find NARR files inside `in.path`}
+
+\item{outfolder}{directory name to write CF outputs}
+
 \item{start_date}{the start date of the data to be downloaded (will only use the year part of the date)}
 
 \item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
@@ -23,6 +29,8 @@ met2CF.NARR(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should ouput of function be extra verbose}
+
+\item{...}{other arguments, currently ignored}
 }
 \description{
 Convert NARR files to CF files

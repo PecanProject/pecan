@@ -4,8 +4,7 @@
 \alias{write_restart.CABLE}
 \title{Write restart template for SDA}
 \usage{
-write_restart.CABLE(outdir, runid, start.time, stop.time, settings,
-  new.state)
+write_restart.CABLE(outdir, runid, start.time, stop.time, settings, new.state)
 }
 \arguments{
 \item{start.time}{Time of current assimilation step}

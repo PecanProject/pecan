@@ -37,8 +37,8 @@ Imports:
 Suggests:
     ggmcmc,
     ggplot2,
-    knitr,
-    rmarkdown,
+    knitr (>= 1.42),
+    rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
 SystemRequirements: JAGS
 License: BSD_3_clause + file LICENSE

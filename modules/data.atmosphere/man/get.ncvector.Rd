@@ -7,6 +7,12 @@
 get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
 }
 \arguments{
+\item{var}{name of variable to extract}
+
+\item{lati, loni}{latitude and longitude to extract}
+
+\item{run.dates}{data.table of dates to read}
+
 \item{met.nc}{netcdf file with CF variable names}
 }
 \value{
