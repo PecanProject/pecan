@@ -6,11 +6,11 @@
 
 'Documentation':
   - documentation/**
-  - CHANGELOG.md
   - CONTRIBUTING.md
   - DEBUGING.md
   - DEV-INTRO.md
   - README.md
+  - book_source/**
 
 # Add 'Dockerfile' label to any changes in the docker directory
 'Dockerfile':
