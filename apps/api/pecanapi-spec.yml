@@ -41,6 +41,8 @@ tags:
     description: Everything about PEcAn PFTs (Plant Functional Types)
   - name: inputs
     description: Everything about PEcAn inputs
+  - name: posteriors
+    description: Everything about PEcAn posteriors
 
 #####################################################################################################################
 ##################################################### API Endpoints #################################################
@@ -992,6 +994,123 @@ paths:
           description: Access forbidden
         '404':
           description: Run data not found
+          
+  /api/posteriors/:
+    get:
+      tags:
+        - posteriors
+      summary: Search for the posteriors
+      parameters:
+        - in: query
+          name: pft_id
+          description: If provided, returns all posteriors for the provided model_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: host_id
+          description: If provided, returns all posteriors for the provided host_id
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: offset
+          description: The number of posteriors to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          required: false
+        - in: query
+          name: limit
+          description: The number of posteriors to return.
+          schema:
+            type: integer
+            default: 50
+            enum:
+              - 10
+              - 20
+              - 50
+              - 100
+              - 500
+          required: false
+      responses:
+        '200':
+          description: List of posteriors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inputs:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        file_name:
+                          type: string
+                        file_path:
+                          type: string
+                        pft_name:
+                          type: string
+                        tag:
+                          type: string
+                        hostname:
+                          type: string
+                        start_date:
+                          type: string
+                        end_date:
+                          type: string
+                  count:
+                    type: integer
+                  next_page:
+                    type: string
+                  prev_page:
+                    type: string
+                
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+        '404':
+          description: Workflows not found
+  
+  /api/posteriors/{posterior_id}:
+    get:
+      tags:
+        - posteriors
+      summary: Download a desired PEcAn posterior file
+      parameters:
+        - in: path
+          name: posterior_id
+          description: ID of the PEcAn Posterior to be downloaded
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: filename
+          description: Optional filename specified if the id points to a folder instead of file
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contents of the desired posterior file  
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. Posterior ID points to directory & filename is not specified
+        '401':
+          description: Authentication required
+        '403':
+          description: Access forbidden
+          
+    
 #####################################################################################################################
 ###################################################### Components ###################################################
 #####################################################################################################################

@@ -69,6 +69,10 @@ root$mount("/api/runs", runs_pr)
 runs_pr <- plumber::Plumber$new("available-models.R")
 root$mount("/api/availableModels", runs_pr)
 
+# The endpoints mounted here are related to details of PEcAn posteriors
+runs_pr <- plumber::Plumber$new("posteriors.R")
+root$mount("/api/posteriors", runs_pr)
+
 # set swagger documentation
 root$setApiSpec("../pecanapi-spec.yml")
 
