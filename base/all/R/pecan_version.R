@@ -55,6 +55,14 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     all_pkgs <- sessioninfo::package_info(pkgs = "installed", dependencies = FALSE)
     our_pkgs <- all_pkgs[grepl("PEcAn", all_pkgs$package),]
 
+    all_loaded <- sessioninfo::package_info(pkgs = "loaded", dependencies = FALSE)
+    our_loaded <- all_loaded[grepl("PEcAn", all_loaded$package),]
+
+    unloaded <- our_pkgs[!our_pkgs$package %in% our_loaded$package,]
+    our_pkgs <- rbind(our_loaded, unloaded)
+    our_pkgs <- our_pkgs[order(our_pkgs$package),]
+
+
     # TODO: consider using package_info's callouts of packages where loaded and
     #   installed versions mismatch -- it's a more elegant version of what we
     #   were trying for with the "multiple rows for packages with multiple

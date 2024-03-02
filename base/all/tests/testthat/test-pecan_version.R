@@ -83,3 +83,11 @@ test_that("pecan_version without sessioninfo", {
     with_sessinfo[, colnames(with_sessinfo) != "source"],
     without_sessinfo)
 })
+
+# TODO: Would be nice to add a check here that will notice if the list of PEcAn
+# releases falls out of date, but it's not clear what other source of truth
+# to consult to determine that.
+#
+# The approach that failed just before I wrote this note:
+# No, the version of PEcAn.all (1.8.1.9000 today) is not reliably in sync with
+# the PEcAn version last tagged as a release (1.7.2 today).
