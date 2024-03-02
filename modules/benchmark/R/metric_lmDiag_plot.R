@@ -9,7 +9,7 @@ metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE
   
   fit <- stats::lm(metric_dat[, 1] ~ metric_dat[, 2])
 
-  p1 <- ggplot2::ggplot(fit, ggplot2::aes(.fitted, .resid))
+  p1 <- ggplot2::ggplot(fit, ggplot2::aes(.data$.fitted, .data$.resid))
   p1 <- p1 + ggplot2::geom_point()
   p1 <- p1 + ggplot2::stat_smooth(method = "loess") 
   p1 <- p1 + ggplot2::geom_hline(yintercept = 0, col = "red", linetype = "dashed")

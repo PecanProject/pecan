@@ -14,9 +14,9 @@ metric_residual_plot <- function(metric_dat, var, filename = NA, draw.plot = is.
   metric_dat$diff <- abs(metric_dat$model - metric_dat$obvs)
   metric_dat$zeros <- rep(0, length(metric_dat$time))
   
-  p <- ggplot2::ggplot(data = metric_dat, ggplot2::aes(x = metric_dat$time)) 
-  p <- p + ggplot2::geom_path(ggplot2::aes(y = metric_dat$zeros), colour = "#666666", size = 2, linetype = 2, lineend = "round") 
-  p <- p + ggplot2::geom_point(ggplot2::aes(y = diff), size = 4, colour = "#619CFF") 
+    p <- ggplot2::ggplot(data = metric_dat, ggplot2::aes(x = .data$time)) 
+  p <- p + ggplot2::geom_path(ggplot2::aes(y = .data$zeros), colour = "#666666", size = 2, linetype = 2, lineend = "round") 
+  p <- p + ggplot2::geom_point(ggplot2::aes(y = .data$diff), size = 4, colour = "#619CFF") 
   p <- p + ggplot2::labs(title = var, x = "years", y = "abs(model - observation)")
   
   if (!is.na(filename)) {
