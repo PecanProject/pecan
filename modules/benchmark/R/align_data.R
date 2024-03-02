@@ -43,8 +43,8 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
   coarse.unit <- compare$diff_units[coarse]
   
   # Round to the larger time step (experimental)
-  obvs.calc$round.posix  <- as.POSIXct(round(obvs.calc$posix),  units = coarse.unit)
-  model.calc$round.posix <- as.POSIXct(round(model.calc$posix), units = coarse.unit)
+  obvs.calc$round.posix  <- as.POSIXct(round(obvs.calc$posix,  units = coarse.unit))
+  model.calc$round.posix <- as.POSIXct(round(model.calc$posix, units = coarse.unit))
   
   
   # Determine the overlaping range of dates
