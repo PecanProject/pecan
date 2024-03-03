@@ -641,6 +641,7 @@
 "withr","*","base/settings","Suggests",FALSE
 "withr","*","base/utils","Suggests",FALSE
 "withr","*","base/visualization","Suggests",FALSE
+"withr","*","base/workflow","Suggests",FALSE
 "withr","*","models/ed","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
