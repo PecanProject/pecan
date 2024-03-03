@@ -1,13 +1,12 @@
-##' @name load_csv
-##' @title load_csv
-##' @export
+##' load_csv
+##'
 ##' @param data.path character
 ##' @param format list
-##' @param start_year numeric
-##' @param end_year numeric
 ##' @param site list
+##' @param vars column names to return. If NULL, returns all columns
 ##' 
 ##' @author Betsy Cowdery
+##' @export
 load_csv <- function(data.path, format, site, vars = NULL) {
   
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))

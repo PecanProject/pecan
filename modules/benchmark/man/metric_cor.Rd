@@ -8,6 +8,8 @@ metric_cor(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Correlation Coefficient

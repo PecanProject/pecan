@@ -12,7 +12,13 @@ metric_residual_plot(
 )
 }
 \arguments{
-\item{draw.plot}{}
+\item{metric_dat}{dataframe to plot, with at least columns `time`, `model`, `obvs`}
+
+\item{var}{variable name, used as plot title}
+
+\item{filename}{path to save plot, or NA to not save}
+
+\item{draw.plot}{logical: Return the plot object?}
 }
 \description{
 Residual Plot

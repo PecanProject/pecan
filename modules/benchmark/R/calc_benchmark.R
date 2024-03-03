@@ -1,10 +1,10 @@
-##-------------------------------------------------------------------------------------------------#
+##' Calculate benchmarking statistics
+##'
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name calc_benchmark 
-##' @title Calculate benchmarking statistics
-##' @param bm.ensemble object, either from create_BRR or start.bm.ensemle
+##' @param settings settings object describing the run to calculate
 ##' @param bety database connection
+##' @param start_year,end_year time range to read. If NA, these are taken from `settings`
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 

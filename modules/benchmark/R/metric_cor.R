@@ -2,6 +2,7 @@
 ##' @title Correlation Coefficient
 ##' @export
 ##' @param dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Mike Dietze
 

@@ -1,12 +1,12 @@
-##' @name metric_scatter_plot
-##' @title Scatter Plot
-##' @export
-##' @param metric_dat
-##' @param var
-##' @param filename
-##' @param draw.plot
+##' Scatter Plot
+##'
+##' @param metric_dat dataframe to plot, with at least columns `model` and `obvs`
+##' @param var ignored
+##' @param filename path to save plot, or NA to not save
+##' @param draw.plot logical: Return the plot object?
 ##' 
 ##' @author Betsy Cowdery
+##' @export
 
 metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Scatter Plot")

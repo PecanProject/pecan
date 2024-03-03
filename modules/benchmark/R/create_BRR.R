@@ -1,10 +1,10 @@
-##-------------------------------------------------------------------------------------------------#
+##' Create benchmark reference run and ensemble
+##'
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name create_BRR
-##' @title Create benchmark reference run and ensemble
 ##' @param ens_wf table made from joining ensemble and workflow tables 
 ##' @param con database connection
+##' @param user_id Optional user id to use for this record in reference_runs table
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 

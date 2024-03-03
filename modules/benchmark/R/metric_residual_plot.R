@@ -1,12 +1,12 @@
-##' @name metric_residual_plot
-##' @title Residual Plot
-##' @export
-##' @param metric_dat
-##' @param var
-##' @param filename
-##' @param draw.plot
+##' Residual Plot
+##'
+##' @param metric_dat dataframe to plot, with at least columns `time`, `model`, `obvs`
+##' @param var variable name, used as plot title
+##' @param filename path to save plot, or NA to not save
+##' @param draw.plot logical: Return the plot object?
 ##' 
 ##' @author Betsy Cowdery
+##' @export
 metric_residual_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Residual Plot")
   

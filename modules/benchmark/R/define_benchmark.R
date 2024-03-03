@@ -1,12 +1,14 @@
+##' Benchmark Definition: Retrieve or Create Bety Benchmarking Records
+##'
 ##' Creates records for benchmarks, benchmarks_benchmarks_reference_runs, benchmarks_metrics
 ##'
-##' @name define_benchmark
-##' @title Benchmark Definition: Retrieve or Create Bety Benchmarking Records
-##' @param bm.settings settings list
+##' @param settings settings list
+##' @param bety database connection
+##'
 ##' @return updated settings list
 ##' @author Betsy Cowdery
-##' @export define_benchmark
 ##' @importFrom dplyr tbl filter rename collect select
+##' @export
 define_benchmark <- function(settings, bety){
   
   if (PEcAn.settings::is.MultiSettings(settings)) {

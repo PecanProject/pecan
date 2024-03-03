@@ -2,6 +2,7 @@
 ##' @title Coefficient of Determination (R2)
 ##' @export
 ##' @param metric_dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Betsy Cowdery
 

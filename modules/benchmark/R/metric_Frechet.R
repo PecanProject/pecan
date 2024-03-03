@@ -2,6 +2,7 @@
 ##' @title Frechet Distance
 ##' @export
 ##' @param metric_dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Betsy Cowdery
 

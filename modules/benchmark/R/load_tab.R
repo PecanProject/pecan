@@ -1,15 +1,13 @@
-##' @name load_tab_separated_values
-##' @title load_tab_separated_values
-##' @export
+##' Load files with mime-type 'text/tab-separated-values'
+##'
 ##' @param data.path character
 ##' @param format list
-##' @param start_year numeric
-##' @param end_year numeric
 ##' @param site list
+##' @param vars variable names to load. If NULL, loads all columns
 ##' 
 ##' @author Betsy Cowdery, Mike Dietze
+##' @export
 load_tab_separated_values <- function(data.path, format, site=NULL, vars = NULL) {
-  ## load's mime-type = text/tab-separated-values
   
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   

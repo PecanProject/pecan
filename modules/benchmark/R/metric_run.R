@@ -1,9 +1,9 @@
-##' @name metric_run
-##' @title Model Run Check
-##' @export
+##' Model Run Check
+##'
 ##' @param settings list
 ##' 
 ##' @author Betsy Cowdery
+##' @export
 metric_run <- function(settings){
 
   # The goal of this function is to determine if a model run has been successfully completed. 

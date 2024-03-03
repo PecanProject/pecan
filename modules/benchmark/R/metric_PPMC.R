@@ -2,6 +2,7 @@
 ##' @title Pearson Product Moment Correlation
 ##' @export
 ##' @param metric_dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Betsy Cowdery
 

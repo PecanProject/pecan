@@ -4,7 +4,7 @@
 ##' @param data.path character
 ##' @param format list, not used, for compatibility
 ##' @param site not used, for compatibility
-##' @param vars 
+##' @param vars optional variable names to load. if NULL, returns all variables in file
 ##' 
 ##' @author Istem Fer
 load_rds <- function(data.path, format, site, vars = NULL) {

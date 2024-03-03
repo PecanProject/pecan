@@ -1,15 +1,19 @@
-##' @name load_data
-##' @title load_data
-##' @export
-##' @param data.path character
-##' @param format list
-##' @param start_year numeric
-##' @param end_year numeric
-##' @param site list
-##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
-##' Generic function to convert input files containing observational data to 
-##' a common PEcAn format. 
+#' load data
+#'
+#' Generic function to convert input files containing observational data to
+#' a common PEcAn format.
+#'
+#' @param data.path character
+#' @param format list
+#' @param start_year numeric
+#' @param end_year numeric
+#' @param site list
+#' @param vars.used.index which variables to use? If NULL, these are taken from `format`
+#' @param ... further arguments, currently ignored
+#'
+#' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 #' @importFrom magrittr %>%
+#' @export
 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
                       vars.used.index=NULL, ...) {

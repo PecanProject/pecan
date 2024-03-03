@@ -2,6 +2,9 @@
 ##' @title Linear Regression Diagnostic Plot
 ##' @export
 ##' @param metric_dat data.frame
+##' @param var ignored
+##' @param filename path to save plot, or NA to not save
+##' @param draw.plot logical: return plot object?
 ##' 
 ##' @author Betsy Cowdery
 metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {

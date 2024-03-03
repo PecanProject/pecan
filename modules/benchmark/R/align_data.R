@@ -1,13 +1,14 @@
-##' @name align_data
-##' @title Align timeseries data
-##' @export
+##' Align timeseries data
+##'
 ##' @param model.calc data.frame
 ##' @param obvs.calc data.frame
 ##' @param var data.frame
+##' @param align_method name of function to use for alignment
+##'
 ##' @importFrom rlang .data
 ##' @return dat
 ##' @author Betsy Cowdery
-
+##' @export
 
 ## Align timeseries data using different functions
 

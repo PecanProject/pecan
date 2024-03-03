@@ -1,12 +1,13 @@
-##' @name metric_timeseries_plot
-##' @title Timeseries Plot
-##' @export
-##' @param metric_dat
-##' @param var
-##' @param filename
-##' @param draw.plot
-##' @importFrom ggplot2 ggplot labs geom_path geom_point
+##' Timeseries Plot
+##'
+##' @param metric_dat dataframe to plot, with at least columns `time`, `model`, `obvs`
+##' @param var variable name, used as plot title
+##' @param filename path to save plot, or NA to not save
+##' @param draw.plot logical: Return the plot object?
+##'
 ##' @author Betsy Cowdery
+##' @importFrom ggplot2 ggplot labs geom_path geom_point
+##' @export
 
 metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Timeseries Plot")
