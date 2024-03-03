@@ -26,7 +26,7 @@ metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE
   p2 <- p2 + ggplot2::ggtitle("Normal Q-Q") 
   p2 <- p2 + ggplot2::theme_bw()
   
-  p3 <- ggplot2::ggplot(fit, ggplot2::aes(.fitted, sqrt(abs(.data$.stdresid)))) 
+  p3 <- ggplot2::ggplot(fit, ggplot2::aes(.data$.fitted, sqrt(abs(.data$.stdresid))))
   p3 <- p3 + ggplot2::geom_point(na.rm = TRUE)
   p3 <- p3 + ggplot2::stat_smooth(method = "loess", na.rm = TRUE) 
   p3 <- p3 + ggplot2::xlab("Fitted Value")
