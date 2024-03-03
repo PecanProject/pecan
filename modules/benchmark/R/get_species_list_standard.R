@@ -13,11 +13,11 @@ get_species_list_standard <- function(vars) {
     return('latin_name')
   }else if("species_FIA_symbol" %in% vars){
     return('fia')
-  }else if(!is.null(custom_table)){
-    if("bety_species_id" %in% names(custom_table)){
+  }else if(!is.null(vars)){
+    if("bety_species_id" %in% names(vars)){
       return("custom")
     }else{
-      PEcAn.logger::logger.warn("Note: custom_table does not have column named 'bety_species_id' and cannot be used with match_species_id(). This prohibits species-level mapping, but allows PFT level mapping.")
+      PEcAn.logger::logger.warn("Note: `vars` does not have column named 'bety_species_id' and cannot be used with match_species_id(). This prohibits species-level mapping, but allows PFT level mapping.")
     }
   }else{
     return(FALSE)
