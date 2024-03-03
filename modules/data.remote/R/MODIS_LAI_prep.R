@@ -76,9 +76,9 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
       if (! "try-error" %in% class(try(mean <- MODISTools::mt_dates(product = "MOD11A2",
                                                                     lat = s$lat,
                                                                     lon = s$lon)))) {
-        return(TRUE)
-      } else {
         return(FALSE)
+      } else {
+        return(TRUE)
       }
     }, .progress = T) %>% unlist
   new_site_info <- new_site_info %>% purrr::map(function(x)x[-which(non.reachable.ind)])
