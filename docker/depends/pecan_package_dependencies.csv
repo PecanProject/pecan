@@ -39,7 +39,6 @@
 "datapack","*","modules/data.land","Imports",FALSE
 "DBI","*","base/db","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
-"dbplyr","*","modules/benchmark","Imports",FALSE
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
@@ -352,7 +351,6 @@
 "PEcAn.remote","*","models/stics","Imports",TRUE
 "PEcAn.remote","*","modules/assim.batch","Imports",TRUE
 "PEcAn.remote","*","modules/assim.sequential","Imports",TRUE
-"PEcAn.remote","*","modules/benchmark","Imports",TRUE
 "PEcAn.remote","*","modules/data.atmosphere","Imports",TRUE
 "PEcAn.remote","*","modules/data.land","Imports",TRUE
 "PEcAn.remote","*","modules/data.remote","Imports",TRUE
