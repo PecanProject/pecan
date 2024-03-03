@@ -31,7 +31,7 @@ define_benchmark <- function(settings, bety){
         # Get workflow id from ensemble id
         ens_wf <- dplyr::tbl(bety, 'ensembles') %>% filter(.data$id == bm.settings$ensemble_id) %>% 
           rename(ensemble_id = .data$id) %>% 
-          dplyr::left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = .data$id), by="workflow_id") %>% collect()
+          dplyr::left_join(tbl(bety, "workflows") %>% rename(workflow_id = .data$id), by="workflow_id") %>% collect()
         BRR <- create_BRR(ens_wf, con = bety, user_id = settings$info$userid)
       }else if(dim(bm_ens)[1] == 1){
         BRR <- tbl(bety,"reference_runs") %>% filter(.data$id == bm_ens$reference_run_id) %>% 

@@ -135,9 +135,9 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
         var <- dplyr::filter(format$vars, .data$variable_id == bm$variable_id)[, "pecan_name"]
         var.list <- c(var.list, var)
         
-        obvs.calc <- obvs_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
+        obvs.calc <- obvs_full %>% dplyr::select(dplyr::one_of(c("posix", var)))
         obvs.calc[,var] <- as.numeric(obvs.calc[,var])
-        model.calc <- model_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
+        model.calc <- model_full %>% dplyr::select(dplyr::one_of(c("posix", var)))
         
         # Check that the variables actually got loaded, otherwise don't send to calc_metrics
         

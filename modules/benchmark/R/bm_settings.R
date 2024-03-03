@@ -27,11 +27,11 @@ read_settings_BRR <- function(settings){
     collect()
 
   BRR.settings <- BRR %>% dplyr::pull(settings) %>% unlist() %>%
-    XML::xmlToList(.,"pecan")
+    XML::xmlToList("pecan")
 
   PEcAn.logger::logger.debug(names(BRR.settings))
 
-  settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
+  settings <- append(settings, BRR.settings) %>% PEcAn.settings::Settings()
   invisible(settings)
 }
 

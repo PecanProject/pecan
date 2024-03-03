@@ -36,7 +36,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
   }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
     PEcAn.logger::logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
   }
-  BRR <- ref_run %>% dplyr::rename(.,reference_run_id = .data$id)
+  BRR <- ref_run %>% dplyr::rename(reference_run_id = .data$id)
   return(BRR)
   # }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
   #                            ens_wf$hostname))}

@@ -1,4 +1,4 @@
-* using log directory ‘/tmp/RtmpDKNHFH/file1193d445deea1/PEcAn.benchmark.Rcheck’
+* using log directory ‘/tmp/RtmpuWWZGL/file16d7858a8c49d/PEcAn.benchmark.Rcheck’
 * using R Under development (unstable) (2024-02-17 r85935)
 * using platform: x86_64-pc-linux-gnu
 * R was compiled by
@@ -47,13 +47,9 @@ add_workflow_info: no visible binding for global variable
   ‘add_workflow_id’
 add_workflow_info: no visible binding for global variable ‘.’
 align_data: no visible binding for global variable ‘.’
-calc_benchmark: no visible binding for global variable ‘.’
-create_BRR: no visible binding for global variable ‘.’
-define_benchmark: no visible binding for global variable ‘.’
 load_data: no visible binding for global variable ‘username’
 load_data: no visible binding for global variable ‘password’
 load_data: no visible binding for global variable ‘output_path’
-load_data: no visible binding for global variable ‘.’
 pecan_bench: no visible global function definition for
   ‘validation_check’
 pecan_bench: no visible global function definition for ‘size’
@@ -63,7 +59,6 @@ pecan_bench: no visible binding for global variable
 pecan_bench: no visible binding for global variable
   ‘ratio_dif_uncertainty’
 pecan_bench: no visible binding for global variable ‘ratio_dif’
-read_settings_BRR: no visible binding for global variable ‘.’
 Undefined global functions or variables:
   . add_workflow_id comp_dif_uncertainty comp_value output_path
   password ratio_dif ratio_dif_uncertainty size username
