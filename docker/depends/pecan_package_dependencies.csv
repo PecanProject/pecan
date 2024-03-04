@@ -183,6 +183,7 @@
 "mgcv","*","modules/data.atmosphere","Imports",FALSE
 "minpack.lm","*","modules/rtm","Suggests",FALSE
 "mlegp","*","modules/assim.batch","Imports",FALSE
+"mockery","*","base/all","Suggests",FALSE
 "mockery","*","base/qaqc","Suggests",FALSE
 "mockery","*","base/remote","Suggests",FALSE
 "mockery","*","base/settings","Suggests",FALSE
@@ -526,6 +527,7 @@
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "Rpreles","*","models/preles","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
+"sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
 "sf","*","modules/data.atmosphere","Imports",FALSE
 "sf","*","modules/data.land","Imports",FALSE
