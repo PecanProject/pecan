@@ -1,38 +1,4 @@
 
-get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date, output.dt = 1) {
-  # if(!is.land(lat, lon)) stop('point is in ocean')
-  result <- load.cfmet(lat = lat, lon = lon, met.nc = met.nc, start.date, end.date)
-  downscaled.result <- cfmet.downscale.time(cfmet = result, output.dt = output.dt, lat = lat)
-  weather <- cruncep_dt2weather(downscaled.result)
-} # get.weather
-
-
-is.land <- function(lat, lon) {
-  Lat <- ncdf4::ncvar_get(nc = met.nc, varid = "lat")
-  Lon <- ncdf4::ncvar_get(nc = met.nc, varid = "lon")
-  lati <- which.min(abs(Lat - lat))
-  loni <- which.min(abs(Lon - lon))
-  mask <- ncdf4::ncvar_get(nc = met.nc, varid = "mask", start = c(loni, lati), count = c(1, 1))
-  return(mask >= 0)
-} # is.land
-
-get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon) {
-  lat <- c(mean(Lat[lati:(lati - 1)]), mean(Lat[lati:(lati + 1)]))
-  lon <- c(mean(Lon[loni:(loni - 1)]), mean(Lon[loni:(loni + 1)]))
-  return(c(sort(lat), sort(lon)))
-} # get.latlonbox
-
-get.cruncep <- function(lat, lon, start.date, end.date) {
-  result <- load.cfmet(lat, lon)
-  Lat <- ncdf4::ncvar_get(nc = met.nc, varid = "lat")
-  Lon <- ncdf4::ncvar_get(nc = met.nc, varid = "lon")
-  lati <- which.min(abs(Lat - lat))
-  
-  hourly.result <- cruncep_hourly(result, lat = Lat[lati])
-  weather <- cruncep_dt2weather(hourly.result)
-  return(weather)
-} # get.cruncep
-
 ##' Simulates the light macro environment
 ##'
 ##' Simulates light macro environment based on latitude, day of the year.
