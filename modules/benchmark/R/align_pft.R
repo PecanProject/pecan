@@ -60,7 +60,9 @@
 #' }
 #' 
 #' @export
-align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE, comparison_type="data_to_data", ...){
+align_pft<-function(con, observation_one, observation_two, custom_table = NULL, 
+                    format_one, format_two, subset_is_ok=FALSE, 
+                    comparison_type="data_to_data", ...){
 
   if(comparison_type == "data_to_model"){
     
@@ -69,7 +71,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
   
     
   }else if (comparison_type == "data_to_data"){
-    
+
     align_data_to_data_pft(con, observation_one, observation_two, custom_table, format_one, format_two, subset_is_ok=FALSE)
     
   }else if (comparison_type == "model_to_model"){
@@ -80,6 +82,7 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL, fo
     
   }else{
     PEcAn.logger::logger.severe("comparison_type must be set to either 'data_to_model', 'data_to_data', or model_to_model")
+
   }
 
 }

@@ -15,6 +15,7 @@ align_pft(
   comparison_type = "data_to_data",
   ...
 )
+
 }
 \arguments{
 \item{con}{database connection}
