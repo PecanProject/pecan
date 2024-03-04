@@ -1028,9 +1028,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=dat.pred$Date, ymin=dat.pred$lwr, ymax=dat.pred$upr, fill="corrected"), alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=dat.pred$Date, y=mean, color="corrected"), size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=dat.pred$Date, y=dat.pred$obs, color="original"), size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=.data$Date, ymin=.data$lwr, ymax=.data$upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=.data$obs, color="original"), size=0.5) +
           ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::guides(fill=F) +
@@ -1053,7 +1053,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
-          ggplot2::geom_line(ggplot2::aes(x=stack.sims$Date, y=values, color=ind), size=0.2, alpha=0.8) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=values, color=ind), size=0.2, alpha=0.8) +
           ggplot2::ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
           ggplot2::theme_bw()
       )
@@ -1068,9 +1068,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.yr[,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=dat.pred$Year, ymin=dat.yr$lwr, ymax=dat.yr$upr, fill="corrected"), alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=dat.pred$Year, y=mean, color="corrected"), size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=dat.pred$Year, y=dat.yr$obs, color="original"), size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=.data$Year, ymin=.data$lwr, ymax=.data$upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Year, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Year, y=.data$obs, color="original"), size=0.5) +
           ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::guides(fill=F) +
