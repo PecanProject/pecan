@@ -1,12 +1,13 @@
-##' @name metric_timeseries_plot
-##' @title Timeseries Plot
-##' @export
-##' @param metric_dat
-##' @param var
-##' @param filename
-##' @param draw.plot
-##' @importFrom ggplot2 ggplot labs geom_path geom_point
+##' Timeseries Plot
+##'
+##' @param metric_dat dataframe to plot, with at least columns `time`, `model`, `obvs`
+##' @param var variable name, used as plot title
+##' @param filename path to save plot, or NA to not save
+##' @param draw.plot logical: Return the plot object?
+##'
 ##' @author Betsy Cowdery
+##' @importFrom ggplot2 ggplot labs geom_path geom_point
+##' @export
 
 metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Timeseries Plot")
@@ -19,17 +20,17 @@ metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = i
     metric_dat$time <- date.time
   }
   
-  p <- ggplot(data = metric_dat, aes(x = time)) 
+  p <- ggplot(data = metric_dat, ggplot2::aes(x = .data$time)) 
   p <- p + labs(title = var, y = "") 
-  p <- p + geom_path(aes(y = model, colour = "Model"), size = 2) 
-  p <- p + geom_point(aes(y = model, colour = "Model"), size = 4) 
-  p <- p + geom_path(aes(y = obvs, colour = "Observed"), size = 2) 
-  p <- p + geom_point(aes(y = obvs, colour = "Observed"), size = 4)
+  p <- p + geom_path(ggplot2::aes(y = .data$model, colour = "Model"), size = 2) 
+  p <- p + geom_point(ggplot2::aes(y = .data$model, colour = "Model"), size = 4) 
+  p <- p + geom_path(ggplot2::aes(y = .data$obvs, colour = "Observed"), size = 2) 
+  p <- p + geom_point(ggplot2::aes(y = .data$obvs, colour = "Observed"), size = 4)
   
   if (!is.na(filename)) {
-    pdf(filename, width = 10, height = 6)
+    grDevices::pdf(filename, width = 10, height = 6)
     plot(p)
-    dev.off()
+    grDevices::dev.off()
   }
   
   if (draw.plot) {

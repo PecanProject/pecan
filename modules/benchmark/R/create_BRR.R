@@ -1,10 +1,10 @@
-##-------------------------------------------------------------------------------------------------#
+##' Create benchmark reference run and ensemble
+##'
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name create_BRR
-##' @title Create benchmark reference run and ensemble
 ##' @param ens_wf table made from joining ensemble and workflow tables 
 ##' @param con database connection
+##' @param user_id Optional user id to use for this record in reference_runs table
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
@@ -36,7 +36,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
   }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
     PEcAn.logger::logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
   }
-  BRR <- ref_run %>% dplyr::rename(.,reference_run_id = id)
+  BRR <- ref_run %>% dplyr::rename(reference_run_id = .data$id)
   return(BRR)
   # }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
   #                            ens_wf$hostname))}

@@ -4,7 +4,7 @@
 ##' @param data.path character
 ##' @param format list, not used, for compatibility
 ##' @param site not used, for compatibility
-##' @param vars 
+##' @param vars optional variable names to load. if NULL, returns all variables in file
 ##' 
 ##' @author Istem Fer
 load_rds <- function(data.path, format, site, vars = NULL) {
@@ -14,7 +14,7 @@ load_rds <- function(data.path, format, site, vars = NULL) {
   dat <- readRDS(data.path)
 
   if(!is.null(vars)){
-    return(dplyr::select(dat, one_of(vars)))
+    return(dplyr::select(dat, dplyr::one_of(vars)))
   }else{
     return(dat)
   }

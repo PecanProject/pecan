@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_netcdf.R
 \name{load_x_netcdf}
 \alias{load_x_netcdf}
-\title{load_x_netcdf}
+\title{Load from netCDF}
 \usage{
 load_x_netcdf(data.path, format, site, vars = NULL)
 }
@@ -14,13 +14,9 @@ load_x_netcdf(data.path, format, site, vars = NULL)
 \item{site}{list}
 
 \item{vars}{character}
-
-\item{start_year}{numeric}
-
-\item{end_year}{numeric}
 }
 \description{
-load_x_netcdf
+Load from netCDF
 }
 \author{
 Istem Fer

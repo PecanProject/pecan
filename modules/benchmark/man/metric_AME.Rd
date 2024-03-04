@@ -8,6 +8,8 @@ metric_AME(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Absolute Maximum Error
