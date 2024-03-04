@@ -8,6 +8,12 @@ metric_lmDiag_plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
 \item{metric_dat}{data.frame}
+
+\item{var}{ignored}
+
+\item{filename}{path to save plot, or NA to not save}
+
+\item{draw.plot}{logical: return plot object?}
 }
 \description{
 Linear Regression Diagnostic Plot

@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_tab.R
 \name{load_tab_separated_values}
 \alias{load_tab_separated_values}
-\title{load_tab_separated_values}
+\title{Load files with mime-type 'text/tab-separated-values'}
 \usage{
 load_tab_separated_values(data.path, format, site = NULL, vars = NULL)
 }
@@ -13,12 +13,10 @@ load_tab_separated_values(data.path, format, site = NULL, vars = NULL)
 
 \item{site}{list}
 
-\item{start_year}{numeric}
-
-\item{end_year}{numeric}
+\item{vars}{variable names to load. If NULL, loads all columns}
 }
 \description{
-load_tab_separated_values
+Load files with mime-type 'text/tab-separated-values'
 }
 \author{
 Betsy Cowdery, Mike Dietze

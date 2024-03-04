@@ -26,12 +26,12 @@ read_settings_BRR <- function(settings){
     filter(.data$id == settings$benchmarking$reference_run_id) %>%
     collect()
 
-  BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
-    xmlToList(.,"pecan")
+  BRR.settings <- BRR %>% dplyr::pull(settings) %>% unlist() %>%
+    XML::xmlToList("pecan")
 
   PEcAn.logger::logger.debug(names(BRR.settings))
 
-  settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
+  settings <- append(settings, BRR.settings) %>% PEcAn.settings::Settings()
   invisible(settings)
 }
 
@@ -86,8 +86,8 @@ clean_settings_BRR <- function(inputfile){
 ##' @author Betsy Cowdery
 
 add_workflow_info <- function(settings, bety){
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, add_workflow_id))
+  if (PEcAn.settings::is.MultiSettings(settings)) {
+    return(PEcAn.settings::papply(settings, add_workflow_id))
   }
   if(!as.logical(settings$benchmarking$new_run)){
     settings$workflow$id <- tbl(bety,"ensembles") %>%
@@ -109,8 +109,8 @@ add_workflow_info <- function(settings, bety){
 ##' @author Betsy Cowdery
 
 bm_settings2pecan_settings <- function(bm.settings){
-  if (is.MultiSettings(bm.settings)) {
-    return(papply(bm.settings, bm_settings2pecan_settings))
+  if (PEcAn.settings::is.MultiSettings(bm.settings)) {
+    return(PEcAn.settings::papply(bm.settings, bm_settings2pecan_settings))
   }
   out <- bm.settings["reference_run_id"]
   for(i in grep("benchmark", names(bm.settings))){

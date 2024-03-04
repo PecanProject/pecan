@@ -14,7 +14,9 @@ or all tags that have it as a substring?}
 }
 \value{
 data frame with columns for package name, expected version(s),
-and installed version
+and installed version.
+If the \code{sessioninfo} package is installed, a fourth column reports where
+each package was installed from: local, github, CRAN, etc.
 }
 \description{
 Reports the currently installed or loaded version(s) of each PEcAn package,
@@ -34,7 +36,8 @@ This can occur if you have installed different versions to different
 locations in \code{.libPaths()}, or if you've loaded a new version into your
 current session by loading it from its source directory without installing
 it to the R library.
-If you see multiple rows unexpectedly, try \verb{find.package(<pkgname>, verbose = TRUE)} to see where each version was found.
+If you see multiple rows unexpectedly, try
+\verb{find.package(<pkgname>, verbose = TRUE)} to see where each version was found.
 }
 \examples{
 pecan_version()

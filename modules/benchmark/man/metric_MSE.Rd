@@ -8,6 +8,8 @@ metric_MSE(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Mean Square Error

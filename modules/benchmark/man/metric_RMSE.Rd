@@ -8,6 +8,8 @@ metric_RMSE(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Root Mean Square Error

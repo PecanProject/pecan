@@ -1,10 +1,10 @@
-##-------------------------------------------------------------------------------------------------#
+##' Calculate benchmarking statistics
+##'
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name calc_benchmark 
-##' @title Calculate benchmarking statistics
-##' @param bm.ensemble object, either from create_BRR or start.bm.ensemle
+##' @param settings settings object describing the run to calculate
 ##' @param bety database connection
+##' @param start_year,end_year time range to read. If NA, these are taken from `settings`
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
@@ -135,9 +135,9 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
         var <- dplyr::filter(format$vars, .data$variable_id == bm$variable_id)[, "pecan_name"]
         var.list <- c(var.list, var)
         
-        obvs.calc <- obvs_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
+        obvs.calc <- obvs_full %>% dplyr::select(dplyr::one_of(c("posix", var)))
         obvs.calc[,var] <- as.numeric(obvs.calc[,var])
-        model.calc <- model_full %>% dplyr::select(., dplyr::one_of(c("posix", var)))
+        model.calc <- model_full %>% dplyr::select(dplyr::one_of(c("posix", var)))
         
         # Check that the variables actually got loaded, otherwise don't send to calc_metrics
         
@@ -157,7 +157,7 @@ calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
                                          bm_dir)
         
         for(metric.id in metrics$id){
-          metric.name <- filter(metrics,id == metric.id)[["name"]]
+          metric.name <- dplyr::filter(metrics,.data$id == metric.id)[["name"]]
           score <- out.calc_metrics[["benchmarks"]] %>% 
             dplyr::filter(.data$metric == metric.name) %>% 
             dplyr::select(score)
