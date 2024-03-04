@@ -231,7 +231,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
                                                     ".Rdata"))
       if(file.exists(model.file)) {
         env = new.env()
-        load(model.file, env = env)
+        load(model.file, envir = env)
         mod.save <- env$mod.save
       }
 
