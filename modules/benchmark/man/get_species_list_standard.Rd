@@ -7,20 +7,12 @@
 get_species_list_standard(vars)
 }
 \arguments{
-\item{observation_one}{a vector of plant fucntional types, or species}
-
-\item{observation_two}{anouther vector of plant fucntional types, or species}
-
-\item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
-In the second case, must be passable to match_species_id.}
+\item{vars}{format to be matched}
 }
 \value{
 \code{character} Returns "usda", "latin_name", "fia" or "custom"
 }
 \description{
-get_species_list_standard
-}
-\details{
 Returns the format type for convience of use with match_species_id
 }
 \author{

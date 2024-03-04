@@ -7,9 +7,11 @@
 calc_benchmark(settings, bety, start_year = NA, end_year = NA)
 }
 \arguments{
+\item{settings}{settings object describing the run to calculate}
+
 \item{bety}{database connection}
 
-\item{bm.ensemble}{object, either from create_BRR or start.bm.ensemle}
+\item{start_year, end_year}{time range to read. If NA, these are taken from `settings`}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores

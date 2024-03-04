@@ -8,6 +8,8 @@ metric_PPMC(metric_dat, ...)
 }
 \arguments{
 \item{metric_dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Pearson Product Moment Correlation
