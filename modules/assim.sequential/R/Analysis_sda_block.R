@@ -322,17 +322,24 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
         block.list[[i]]$constant$q.type <- 3
         next
       }
-      #check NAs.
-      na.site.ind <- which(obs_per_site[block.list[[i]]$site.ids] == 0)
-      na.ind <- which(is.na(block.list[[i]]$data$y.censored))
-      if (length(na.site.ind) > 0) {
-        site.inds <- block.list[[i]]$sites.per.block[na.site.ind]
-        y.2.muf.ind <- f.2.y.ind %>% purrr::map(function(start){
-          seq(start, length(mu.f), length(var.names))[site.inds]
-        }) %>% unlist() %>% sort()
-        block.list[[i]]$data$y.censored[na.ind] <- mu.f[y.2.muf.ind]
-        block.list[[i]]$data$r[na.ind, na.ind] <- Pf[y.2.muf.ind, y.2.muf.ind]
-      }
+      # #check NAs.
+      # na.ind <- which(is.na(block.list[[i]]$data$y.censored))
+      # if (length(na.ind) > 0) {
+      #     block.list[[i]]$constant$YN <- block.list[[i]]$constant$YN - length(na.ind)
+      #     block.list[[i]]$constant$H <- block.list[[i]]$constant$H[-na.ind]
+      #     block.list[[i]]$data$y.censored <- block.list[[i]]$data$y.censored[-na.ind]
+      #     block.list[[i]]$data$r <- diag(diag(block.list[[i]]$data$r)[-na.ind])
+      # }
+      # na.site.ind <- which(obs_per_site[block.list[[i]]$site.ids] == 0)
+      # na.ind <- which(is.na(block.list[[i]]$data$y.censored))
+      # if (length(na.site.ind) > 0) {
+      #   site.inds <- block.list[[i]]$sites.per.block[na.site.ind]
+      #   y.2.muf.ind <- f.2.y.ind %>% purrr::map(function(start){
+      #     seq(start, length(mu.f), length(var.names))[site.inds]
+      #   }) %>% unlist() %>% sort()
+      #   block.list[[i]]$data$y.censored[na.ind] <- mu.f[y.2.muf.ind]
+      #   block.list[[i]]$data$r[na.ind, na.ind] <- Pf[y.2.muf.ind, y.2.muf.ind]
+      # }
     }
   }
   #return values.
