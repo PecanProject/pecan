@@ -1,0 +1,202 @@
+#' Prepare MODIS AGB data for the SDA workflow.
+#'
+#' @param site_info Bety list of site info including site_id, lon, and lat.
+#' @param time_points A vector contains each time point within the start and end date.
+#' @param outdir Where the final CSV file will be stored.
+#' @param search_window search window for locate available AGB values.
+#' @param export_csv Decide if we want to export the CSV file.
+#'
+#' @return A data frame containing AGB and sd for each site and each time step.
+#' @export
+#' 
+#' @examples
+#' @author Dongchen Zhang & Tami Gordon [02/08/24]
+#' @importFrom magrittr %>%
+#' 
+
+setwd("/Users/tamigordon/Desktop/rGEDI/")
+GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE){
+  #initialize future parallel computation.
+  if (future::supportsMulticore()) {
+    future::plan(future::multicore, workers = 10)
+  } else {
+    future::plan(future::multisession, workers = 10) #10 is the maximum number of requests permitted for the MODIS server.
+  }
+  
+
+  
+  #if we export CSV but didn't provide any path
+  if(as.logical(export_csv) && is.null(outdir)){
+    PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
+    return(0)
+  }
+    ## Logger helps with printing in a way that is more sophisticated 
+ 
+  
+   #convert time points into paired start and end dates.
+  start.end.dates <- data.frame()
+  for (i in seq_along(time_points)) {
+    start.end.dates <- rbind(start.end.dates,
+                             list(start_date = as.character(time_points[i] - lubridate::days(search_window)),
+                                  end_date = as.character(time_points[i] + lubridate::days(search_window))))
+    
+  }
+  ## To save a copy of the site data as a csv - purely just for validation purposes 
+call_data <- function(site){
+  write.csv(capture.output(site_info, FILE = "GEDI.csv"), file = "GEDI.csv")
+  read.csv("GEDI.csv")
+  site_info <- as.data.frame(site_info)
+}
+call_data(site_info)
+
+
+  #grab previous data to see which site has incomplete observations, if so, download the site for the whole time period.
+  #if we have previous downloaded CSV file
+  if(file.exists(file.path(outdir, "GEDI.csv"))){
+    PEcAn.logger::logger.info("Extracting previous AGB file!")
+    Previous_CSV <- utils::read.csv("GEDI.csv")
+    GEDI_Output <- matrix(as.matrix(site_info), length(site_info$site_id), ncol = 3) %>% 
+      `colnames<-`(c("site_id", "lat", "lon")) %>% as.data.frame()#we need: site_id, lat,lon
+    GEDI_Output$site_id <- site_info$site_id
+
+  }else{#we don't have any previous downloaded CSV file.
+    GEDI_Output <- matrix(NA, length(site_info$site_id), length(site_info$site_id)) %>% 
+      `colnames<-`(c("site_id", "lat", "lon")) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
+    GEDI_Output$site_id <- site_info$site_id
+  }
+  
+  
+  
+  #only Site that has NA for any time points need to be downloaded.
+  new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(GEDI_Output)])
+  ## map creates lists; if cases are not complete it will filter them out into a seperate list
+  #filter out unreachable sites.
+  PEcAn.logger::logger.info("filter out unreachable sites!")
+  non.reachable.ind <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
+    furrr::future_map(function(s){
+      if (! "try-error" %in% class(try(mean <- MODISTools::mt_dates(product = "MOD11A2",
+                                                                    lat = s$lat,
+                                                                    lon = s$lon)))) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }, .progress = T) %>% unlist
+  new_site_info <- new_site_info %>% purrr::map(function(x)x[-which(non.reachable.ind)])
+  #if we have any site missing previously
+  #TODO: only download data for specific date when we have missing data.
+  if(length(new_site_info$site_id) != 0){
+    product <- "MCD15A3H"
+    PEcAn.logger::logger.info("Extracting AGB mean products!")
+    AGB_mean <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
+      furrr::future_map(function(s){
+        split(as.data.frame(start.end.dates), seq(nrow(as.data.frame(start.end.dates)))) %>% 
+          purrr::map(function(dates){
+            if (! "try-error" %in% class(try(mean <- MODISTools::mt_subset(product = product,
+                                                                           lat = s$lat,
+                                                                           lon = s$lon,
+                                                                           band = "AGB_500m",
+                                                                           start = dates$start_date,
+                                                                           end = dates$end_date,
+                                                                           progress = FALSE)))) {
+              return(list(mean = mean$value, date = mean$calendar_date))
+            } else {
+              return(NA)
+            }
+          }) %>% dplyr::bind_rows()
+      }, .progress = T)
+    PEcAn.logger::logger.info("Extracting AGB std products!")
+    AGB_std <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
+      furrr::future_map(function(s){
+        split(as.data.frame(start.end.dates), seq(nrow(as.data.frame(start.end.dates)))) %>% 
+          purrr::map(function(dates){
+            if (! "try-error" %in% class(try(std <- MODISTools::mt_subset(product = product,
+                                                                          lat = s$lat,
+                                                                          lon = s$lon,
+                                                                          band = "AGBStdDev_500m",
+                                                                          start = dates$start_date,
+                                                                          end = dates$end_date,
+                                                                          progress = FALSE)))) {
+              return(std$value)
+            } else {
+              return(NA)
+            }
+          }) %>% unlist %>% set_names(NULL)
+      }, .progress = T)
+    PEcAn.logger::logger.info("Extracting AGB qc products!")
+    AGB_qc <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
+      furrr::future_map(function(s){
+        split(as.data.frame(start.end.dates), seq(nrow(as.data.frame(start.end.dates)))) %>% 
+          purrr::map(function(dates){
+            if (! "try-error" %in% class(try(qc <- MODISTools::mt_subset(product = product,
+                                                                         lat = s$lat,
+                                                                         lon = s$lon,
+                                                                         band = "FparAGB_QC",
+                                                                         start = dates$start_date,
+                                                                         end = dates$end_date,
+                                                                         progress = FALSE)))) {
+              qc$value %>% purrr::map(function(v){
+                qc_flag <- intToBits(as.integer(v)) # NB big-endian (ones place first)
+                qc_flag <- as.integer(rev(utils::head(qc_flag, 3))) # now ones place last
+                paste(qc_flag, collapse = "")
+              })
+            } else {
+              return(NA)
+            }
+          }) %>% unlist %>% set_names(NULL)
+      }, .progress = T)
+    # AGB <- data.frame(matrix(NA, 0, 6)) %>% `colnames<-`(c("date", "site_id", "lat", "lon", "AGB", "sd"))
+    AGB <- data.frame()
+    for (i in seq_along(AGB_std)) {
+      for (j in seq_along(AGB_std[[i]])) {
+        # skip pixels with NA observation.
+        if (is.na(AGB_std[[i]][j])) {
+          next
+        }
+        # skip bad pixels based on qc band.
+        if (! AGB_qc[[i]][j] %in% c("000")) {
+          next
+        }
+        AGB <- rbind(AGB, list(date = AGB_mean[[i]]$date[j],
+                               site_id = site_info$site_id[i],
+                               lat = site_info$lat[i],
+                               lon = site_info$lon[i],
+                               AGB = AGB_mean[[i]]$mean[j]*0.1,
+                               sd = AGB_std[[i]][j]*0.1))
+      }
+    }
+    #Compare with existing CSV file. (We name the CSV file as AGB.csv)
+    if(as.logical(export_csv)){
+      if(exists("Previous_CSV")){#we already read the csv file previously.
+        Current_CSV <- rbind(Previous_CSV, AGB)
+        Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
+        utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
+      }else{
+        Current_CSV <- AGB
+        utils::write.csv(Current_CSV, file = file.path(outdir, "AGB.csv"), row.names = FALSE)
+      }
+    } else {
+      Current_CSV <- AGB
+    }
+    #Calculate AGB for each time step and site.
+    #loop over time and site
+    for (i in seq_along(time_points)) {
+      t <- time_points[i]#otherwise the t will be number instead of date.
+      for (id in new_site_info$site_id) {
+        site_AGB <- Current_CSV[which(Current_CSV$site_id == id),]
+        site_AGB$sd[which(site_AGB$sd<=0.66)] <- 0.66
+        diff_days <- abs(lubridate::days(lubridate::date(site_AGB$date)-lubridate::date(t))@day)
+        if(sum(diff_days <= as.numeric(search_window))){#data found
+          IND <- which((diff_days <= as.numeric(search_window)))
+          IND1 <- which(site_AGB$AGB[IND] == max(site_AGB$AGB[IND]))[1]
+          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_AGB")] <- max(site_AGB$AGB[IND[IND1]])
+          AGB_Output[which(AGB_Output$site_id==id), paste0(t, "_SD")] <- site_AGB$sd[IND[IND1]]
+        }
+      }
+    }
+  }
+  PEcAn.logger::logger.info("MODIS AGB Prep Completed!")
+  list(AGB_Output = AGB_Output, time_points = time_points, var = "AGB")
+}
+
+
