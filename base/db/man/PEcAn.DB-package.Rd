@@ -23,7 +23,7 @@ Authors:
   \item Alexey Shiklomanov \email{alexey.shiklomanov@pnnl.gov}
   \item Tony Gardella \email{tonygard@bu.edu}
   \item Chris Black \email{chris@ckblack.org}
-  \item Liam Burke \email{liam.burke24@gmail.com>}
+  \item Liam Burke \email{liam.burke24@gmail.com}
   \item Ryan Kelly \email{rykelly@bu.edu}
   \item Dan Wang
   \item Carl Davidson \email{davids14@illinois.edu}

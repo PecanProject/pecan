@@ -12,6 +12,6 @@ generalized_plate_model <- function(k, refractive, N) {
     length(N) == 1
   )
   RT <- matrix(0, 2101, 2)
-  outlist <- .Fortran("gpm", k, refractive, N, RT)
+  outlist <- .Fortran("gpm", k, refractive, N, RT, PACKAGE="PEcAnRTM")
   spectra(outlist[[4]], 400:2500)
 }

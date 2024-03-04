@@ -13,7 +13,7 @@ load_rds(data.path, format, site, vars = NULL)
 
 \item{site}{not used, for compatibility}
 
-\item{vars}{}
+\item{vars}{optional variable names to load. if NULL, returns all variables in file}
 }
 \description{
 load_rds

@@ -1,55 +1,12 @@
-* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.assim.sequential.Rcheck’
-* using R version 4.2.1 (2022-06-23)
+* using log directory ‘/tmp/RtmpDf3LIm/PEcAnAssimSequential.Rcheck’
+* using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
-* checking for file ‘PEcAn.assim.sequential/DESCRIPTION’ ... OK
+* checking for file ‘PEcAnAssimSequential/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘PEcAnAssimSequential’ version ‘1.7.2’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... WARNING
-Maintainer: ‘Mike Dietze <dietze@bu.edu>’
-
-New submission
-
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
-Strong dependencies not in mainstream repositories:
-  PEcAn.DB, PEcAn.logger, PEcAn.remote, PEcAn.settings, PEcAn.workflow
-Suggests or Enhances not in mainstream repositories:
-  PEcAn.benchmark, PEcAn.data.remote
-
-The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -81,7 +38,6 @@ Use \uxxxx escapes for other characters.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking use of S3 registration ... OK
 * checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
@@ -112,491 +68,25 @@ GEF.MultiSite: no visible binding for global variable
   ‘samplerNumberOffset_tobit2space’
 GEF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF.MultiSite: no visible binding for global variable ‘nt’
-GEF.MultiSite: no visible global function definition for ‘modify’
-GEF.MultiSite: no visible global function definition for ‘modify_if’
 GEF.MultiSite: no visible binding for global variable ‘distances’
 GEF.MultiSite: no visible binding for global variable ‘obs.mean’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘samplerNumberOffset’
-GEF.MultiSite: no visible binding for '<<-' assignment to ‘Rmcmc’
-GEF.MultiSite: no visible binding for '<<-' assignment to ‘Cmcmc’
-GEF.MultiSite: no visible binding for global variable ‘Rmcmc’
-GEF.MultiSite: no visible binding for global variable ‘Cmcmc’
-GEF.MultiSite: no visible binding for global variable
-  ‘samplerNumberOffset’
-Obs.data.prepare.MultiSite: no visible global function definition for
-  ‘filter’
-Obs.data.prepare.MultiSite: no visible binding for global variable
-  ‘Site_ID’
-Obs.data.prepare.MultiSite: no visible global function definition for
-  ‘na.omit’
-Obs.data.prepare.MultiSite: no visible global function definition for
-  ‘map_chr’
 Obs.data.prepare.MultiSite: no visible binding for global variable ‘.’
-Obs.data.prepare.MultiSite: no visible global function definition for
-  ‘map’
-Obs.data.prepare.MultiSite : <anonymous>: no visible global function
-  definition for ‘map’
-Obs.data.prepare.MultiSite : <anonymous>: no visible global function
-  definition for ‘setNames’
 Obs.data.prepare.MultiSite : <anonymous>: no visible binding for global
   variable ‘.’
-Obs.data.prepare.MultiSite: no visible global function definition for
-  ‘setNames’
-SDA_remote_launcher: no visible global function definition for
-  ‘read.settings’
-SDA_remote_launcher: no visible global function definition for
-  ‘test_remote’
-SDA_remote_launcher: no visible global function definition for
-  ‘remote.execute.R’
-SDA_remote_launcher: no visible global function definition for
-  ‘remote.copy.to’
-SDA_remote_launcher: no visible global function definition for ‘walk’
-SDA_remote_launcher: no visible global function definition for
-  ‘is.MultiSettings’
-SDA_remote_launcher: no visible global function definition for ‘map’
-SDA_remote_launcher: no visible global function definition for
-  ‘map_lgl’
-SDA_remote_launcher : <anonymous>: no visible global function
-  definition for ‘remote.execute.R’
-SDA_remote_launcher: no visible global function definition for
-  ‘qsub_get_jobid’
 SDA_remote_launcher: no visible binding for global variable
   ‘stop.on.error’
-adj.ens: no visible global function definition for ‘logger.warn’
-adj.ens: no visible global function definition for ‘cov’
-alltocs: no visible global function definition for ‘map_dfr’
-alltocs: no visible global function definition for ‘mutate’
-alltocs: no visible binding for global variable ‘TimeElapsed’
-alltocs: no visible global function definition for ‘write.table’
-assessParams: no visible global function definition for ‘cov’
-assessParams: no visible global function definition for ‘par’
-assessParams: no visible global function definition for ‘abline’
-assessParams: no visible global function definition for ‘cov2cor’
-assessParams: no visible binding for global variable ‘quantile’
-assessParams: no visible global function definition for ‘lines’
-assessParams: no visible global function definition for ‘points’
-assessParams: no visible global function definition for ‘plot.new’
-assessParams: no visible global function definition for ‘legend’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘pink’
 generate_colors_sda: no visible global function definition for
   ‘col2rgb’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphapink’
 generate_colors_sda: no visible global function definition for ‘rgb’
-generate_colors_sda: no visible binding for global variable ‘pink’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘green’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphagreen’
-generate_colors_sda: no visible binding for global variable ‘green’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘blue’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphablue’
-generate_colors_sda: no visible binding for global variable ‘blue’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘purple’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphapurple’
-generate_colors_sda: no visible binding for global variable ‘purple’
-generate_colors_sda: no visible binding for '<<-' assignment to ‘brown’
-generate_colors_sda: no visible binding for '<<-' assignment to
-  ‘alphabrown’
-generate_colors_sda: no visible binding for global variable ‘brown’
-get_ensemble_weights: no visible global function definition for
-  ‘read.csv’
-hop_test: no visible global function definition for ‘run.write.configs’
-hop_test: no visible global function definition for ‘read.table’
-hop_test: no visible global function definition for ‘read.output’
-hop_test: no visible global function definition for ‘pdf’
-hop_test: no visible global function definition for ‘par’
-hop_test: no visible global function definition for ‘points’
-hop_test: no visible global function definition for ‘abline’
-hop_test: no visible global function definition for ‘legend’
-hop_test: no visible global function definition for ‘title’
-hop_test: no visible global function definition for ‘cor’
-hop_test: no visible global function definition for ‘dev.off’
-interactive.plotting.sda: no visible global function definition for
-  ‘na.omit’
-interactive.plotting.sda: no visible global function definition for
-  ‘par’
-interactive.plotting.sda : <anonymous>: no visible global function
-  definition for ‘quantile’
-interactive.plotting.sda: no visible global function definition for
-  ‘ciEnvelope’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphagreen’
-interactive.plotting.sda: no visible global function definition for
-  ‘lines’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphablue’
-interactive.plotting.sda: no visible binding for global variable
-  ‘alphapink’
-load_data_paleon_sda: no visible global function definition for
-  ‘db.query’
 load_data_paleon_sda: no visible binding for global variable
   ‘MCMC_iteration’
 load_data_paleon_sda: no visible binding for global variable ‘site_id’
-load_data_paleon_sda: no visible global function definition for
-  ‘match_species_id’
-load_data_paleon_sda: no visible global function definition for
-  ‘match_pft’
 load_data_paleon_sda: no visible binding for global variable ‘pft.cat’
-load_data_paleon_sda : <anonymous>: no visible global function
-  definition for ‘cov’
-load_data_paleon_sda: no visible global function definition for ‘CRS’
-load_data_paleon_sda: no visible global function definition for
-  ‘ncvar_get’
-load_data_paleon_sda : ESS_calc: no visible binding for global variable
-  ‘var’
-load_data_paleon_sda: no visible global function definition for ‘cov’
-load_data_paleon_sda: no visible global function definition for
-  ‘na.omit’
-outlier.detector.boxplot: no visible global function definition for
-  ‘map’
-outlier.detector.boxplot : <anonymous>: no visible global function
-  definition for ‘map_dfc’
-outlier.detector.boxplot : <anonymous> : <anonymous>: no visible global
-  function definition for ‘boxplot’
-outlier.detector.boxplot : <anonymous> : <anonymous>: no visible global
-  function definition for ‘median’
 piecew.poly.local: no visible binding for global variable ‘rloc’
-post.analysis.ggplot : <anonymous> : <anonymous>: no visible binding
-  for global variable ‘quantile’
-post.analysis.ggplot : <anonymous> : <anonymous>: no visible global
-  function definition for ‘mutate’
-post.analysis.ggplot : <anonymous>: no visible global function
-  definition for ‘mutate’
-post.analysis.ggplot: no visible global function definition for
-  ‘setNames’
-post.analysis.ggplot: no visible global function definition for
-  ‘bind_rows’
-post.analysis.ggplot: no visible global function definition for ‘walk’
-post.analysis.ggplot: no visible global function definition for
-  ‘ggplot’
-post.analysis.ggplot: no visible global function definition for ‘aes’
-post.analysis.ggplot: no visible global function definition for
-  ‘geom_ribbon’
-post.analysis.ggplot: no visible binding for global variable ‘2.5%’
-post.analysis.ggplot: no visible binding for global variable ‘97.5%’
-post.analysis.ggplot: no visible binding for global variable ‘Type’
-post.analysis.ggplot: no visible global function definition for
-  ‘geom_line’
-post.analysis.ggplot: no visible binding for global variable ‘means’
-post.analysis.ggplot: no visible global function definition for
-  ‘geom_point’
-post.analysis.ggplot: no visible global function definition for
-  ‘scale_fill_manual’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphapink’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphagreen’
-post.analysis.ggplot: no visible binding for global variable
-  ‘alphablue’
-post.analysis.ggplot: no visible global function definition for
-  ‘scale_color_manual’
-post.analysis.ggplot: no visible global function definition for
-  ‘theme_bw’
-post.analysis.ggplot: no visible global function definition for
-  ‘facet_wrap’
-post.analysis.ggplot: no visible global function definition for ‘theme’
-post.analysis.ggplot: no visible global function definition for
-  ‘element_blank’
-post.analysis.ggplot: no visible global function definition for ‘labs’
-post.analysis.ggplot: no visible global function definition for ‘pdf’
-post.analysis.ggplot: no visible global function definition for
-  ‘dev.off’
-post.analysis.ggplot.violin : <anonymous>: no visible global function
-  definition for ‘mutate’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Variables’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Value’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘Type’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘setNames’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘walk’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘ggplot’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘aes’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘geom_ribbon’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘means’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘2.5%’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘97.5%’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘geom_line’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘geom_violin’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘position_dodge’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘geom_jitter’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘position_jitterdodge’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘scale_fill_manual’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphapink’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphagreen’
-post.analysis.ggplot.violin: no visible binding for global variable
-  ‘alphablue’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘scale_color_manual’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘facet_wrap’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘theme_bw’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘theme’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘element_blank’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘labs’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘pdf’
-post.analysis.ggplot.violin: no visible global function definition for
-  ‘dev.off’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘map’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘map_df’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous> :
-  <anonymous>: no visible global function definition for ‘mutate’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Variable’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Value’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Site’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘group_by’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘summarise’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘quantile’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘mutate’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘setNames’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘map_dfr’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Variable’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Means’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Site’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘right_join’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Sd’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Sd’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘bind_rows’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘map_df’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘map_df’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘mutate’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘walk’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘filter’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘ggplot’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘aes’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘geom_ribbon’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Lower’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Upper’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘Type’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘geom_line’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘geom_point’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘scale_fill_manual’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphabrown’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphapink’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphagreen’
-post.analysis.multisite.ggplot : <anonymous>: no visible binding for
-  global variable ‘alphablue’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘scale_color_manual’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘theme_bw’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘labs’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘theme’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘element_blank’
-post.analysis.multisite.ggplot : <anonymous>: no visible global
-  function definition for ‘facet_wrap’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘filter’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘ggplot’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘aes’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘geom_ribbon’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Lower’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Upper’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Type’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘geom_line’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘Means’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘geom_point’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘scale_fill_manual’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphabrown’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphapink’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphagreen’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  binding for global variable ‘alphablue’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘scale_color_manual’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘theme_bw’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘labs’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘theme’
-post.analysis.multisite.ggplot : <anonymous> : <anonymous>: no visible
-  global function definition for ‘element_blank’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘map_dfr’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘mutate’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘coordinates<-’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘proj4string<-’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘CRS’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘spTransform’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Site’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘ggplot’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘geom_sf’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘aes’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘NA_L1CODE’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘geom_point’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Lon’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Lat’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Name’
-post.analysis.multisite.ggplot: no visible binding for global variable
-  ‘Data’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘scale_fill_manual’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘scale_color_manual’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘theme_minimal’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘theme’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘element_blank’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘pdf’
-post.analysis.multisite.ggplot: no visible global function definition
-  for ‘dev.off’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘pdf’
-postana.bias.plotting.sda : <anonymous>: no visible global function
-  definition for ‘quantile’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘lm’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘ciEnvelope’
-postana.bias.plotting.sda: no visible binding for global variable
-  ‘alphabrown’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘abline’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘mtext’
-postana.bias.plotting.sda: no visible binding for global variable
-  ‘alphapurple’
-postana.bias.plotting.sda: no visible global function definition for
-  ‘dev.off’
-postana.bias.plotting.sda.corr: no visible global function definition
-  for ‘pdf’
-postana.bias.plotting.sda.corr: no visible global function definition
-  for ‘cov2cor’
-postana.bias.plotting.sda.corr: no visible global function definition
-  for ‘par’
-postana.bias.plotting.sda.corr: no visible global function definition
-  for ‘dev.off’
-postana.timeser.plotting.sda: no visible global function definition for
-  ‘pdf’
-postana.timeser.plotting.sda : <anonymous>: no visible global function
-  definition for ‘quantile’
-postana.timeser.plotting.sda: no visible global function definition for
-  ‘ciEnvelope’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphagreen’
-postana.timeser.plotting.sda: no visible global function definition for
-  ‘lines’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphablue’
-postana.timeser.plotting.sda: no visible binding for global variable
-  ‘alphapink’
-postana.timeser.plotting.sda: no visible global function definition for
-  ‘legend’
-postana.timeser.plotting.sda: no visible global function definition for
-  ‘dev.off’
-sample.parameters: no visible global function definition for ‘db.query’
 sample.parameters: no visible binding for global variable ‘post.distns’
 sample_met: no visible binding for global variable ‘host’
 sda.enkf: no visible binding for global variable ‘ensemble.samples’
-sda.enkf: no visible global function definition for
-  ‘write.ensemble.configs’
-sda.enkf: no visible global function definition for ‘logger.severe’
-sda.enkf: no visible global function definition for ‘cov’
-sda.enkf: no visible global function definition for ‘rmvnorm’
-sda.enkf.original: no visible global function definition for ‘db.open’
 sda.enkf.original: no visible global function definition for ‘is’
-sda.enkf.original: no visible global function definition for ‘db.close’
-sda.enkf.original: no visible global function definition for
-  ‘check.workflow.settings’
-sda.enkf.original: no visible global function definition for ‘db.query’
-sda.enkf.original: no visible global function definition for
-  ‘get.parameter.samples’
-sda.enkf.original: no visible global function definition for ‘tail’
 sda.enkf.original : <anonymous>: no visible global function definition
   for ‘returnType’
 sda.enkf.original: no visible binding for global variable ‘N’
@@ -604,87 +94,28 @@ sda.enkf.original: no visible binding for global variable ‘YN’
 sda.enkf.original: no visible binding for global variable ‘J’
 sda.enkf.original: no visible binding for global variable ‘lambda_0’
 sda.enkf.original: no visible binding for global variable ‘nu_0’
-sda.enkf.original: no visible global function definition for ‘col2rgb’
-sda.enkf.original: no visible global function definition for ‘rgb’
 sda.enkf.original: no visible global function definition for ‘cov’
-sda.enkf.original: no visible global function definition for ‘na.omit’
-sda.enkf.original: no visible global function definition for ‘pdf’
-sda.enkf.original: no visible global function definition for ‘dev.off’
-sda.enkf.original: no visible global function definition for
-  ‘logger.warn’
-sda.enkf.original: no visible global function definition for ‘rnorm’
-sda.enkf.original: no visible global function definition for ‘quantile’
-sda.enkf.original: no visible global function definition for ‘rmvnorm’
-sda.enkf.original: no visible global function definition for ‘par’
 sda.enkf.original : <anonymous>: no visible global function definition
   for ‘quantile’
-sda.enkf.original: no visible global function definition for
-  ‘ciEnvelope’
-sda.enkf.original: no visible global function definition for ‘lines’
-sda.enkf.original: no visible global function definition for ‘legend’
-sda.enkf.original: no visible global function definition for ‘lm’
-sda.enkf.original: no visible global function definition for ‘abline’
-sda.enkf.original: no visible global function definition for ‘mtext’
-sda.enkf.original: no visible global function definition for ‘cov2cor’
-sda.particle: no visible global function definition for ‘read.output’
-sda.particle: no visible global function definition for
-  ‘read.ensemble.ts’
-sda.particle: no visible global function definition for ‘rnorm’
-sda.particle: no visible binding for global variable ‘yrvec’
-sda.particle: no visible binding for global variable ‘mNPP’
-sda.particle: no visible binding for global variable ‘sNPP’
-sda.particle: no visible global function definition for ‘dnorm’
-sda.particle: no visible global function definition for ‘weighted.mean’
-sda.particle: no visible binding for global variable ‘quantile’
-sda.particle: no visible global function definition for ‘pdf’
-sda.particle: no visible binding for global variable ‘outfolder’
-sda.particle: no visible global function definition for ‘par’
-sda.particle: no visible global function definition for ‘lines’
-sda.particle: no visible global function definition for ‘legend’
-sda.particle: no visible global function definition for ‘abline’
-sda.particle: no visible global function definition for ‘hist’
-sda.particle: no visible global function definition for ‘dev.off’
 simple.local: no visible binding for global variable ‘rloc’
 Undefined global functions or variables:
-  . 2.5% 97.5% CRS Cmcmc Cmcmc_tobit2space Data J Lat Lon Lower
-  MCMC_iteration Means N NA_L1CODE Name Rmcmc Rmcmc_tobit2space Sd Site
-  Site_ID TimeElapsed Type Upper Value Var1 Var2 Variable Variables YN
-  abline aes alphablue alphabrown alphagreen alphapink alphapurple
-  bind_rows blocked.dis blue boxplot brown check.workflow.settings
-  ciEnvelope col2rgb conf_tobit2space coordinates<- cor cov cov2cor
-  db.close db.open db.query dev.off distances dnorm element_blank
-  ensemble.samples facet_wrap filter geom_jitter geom_line geom_point
-  geom_ribbon geom_sf geom_violin get.parameter.samples ggplot green
-  group_by hist host input.ens.gen is is.MultiSettings labs lambda_0
-  legend lines lm logger.severe logger.warn mNPP map map_chr map_dbl
-  map_df map_dfc map_dfr map_lgl match_pft match_species_id means
-  median modify modify_if mtext multiprocess mutate na.omit ncvar_get
-  nt nu_0 obs.mean outfolder par pdf pft.cat pink plot.new points
-  position_dodge position_jitterdodge post.distns proj4string<- purple
-  qsub_get_jobid quantile read.csv read.ensemble.ts read.output
-  read.settings read.table remote.copy.to remote.execute.R returnType
-  rgb right_join rloc rmvnorm rnorm run.write.configs sNPP
-  samplerNumberOffset samplerNumberOffset_tobit2space
-  scale_color_manual scale_fill_manual setNames settings site.ids
-  site_id spTransform stop.on.error summarise tail test_remote theme
-  theme_bw theme_minimal title tobit2space_pred var walk weighted.mean
-  write.ensemble.configs write.table yrvec
+  . Cmcmc_tobit2space J MCMC_iteration N Rmcmc_tobit2space YN abline
+  blocked.dis col2rgb conf_tobit2space cov distances ensemble.samples
+  host is lambda_0 nt nu_0 obs.mean pft.cat post.distns quantile
+  returnType rgb rloc samplerNumberOffset_tobit2space site_id
+  stop.on.error tobit2space_pred
 Consider adding
-  importFrom("grDevices", "col2rgb", "dev.off", "pdf", "rgb")
-  importFrom("graphics", "abline", "boxplot", "hist", "legend", "lines",
-             "mtext", "par", "plot.new", "points", "title")
+  importFrom("grDevices", "col2rgb", "rgb")
+  importFrom("graphics", "abline")
   importFrom("methods", "is")
-  importFrom("stats", "cor", "cov", "cov2cor", "dnorm", "filter", "lm",
-             "median", "na.omit", "quantile", "rnorm", "setNames", "var",
-             "weighted.mean")
-  importFrom("utils", "read.csv", "read.table", "tail", "write.table")
+  importFrom("stats", "cov", "quantile")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
 
 Found the following assignments to the global environment:
-File ‘PEcAnAssimSequential/R/Analysis_sda_multiSite.R’:
-  assign(name, dots[[name]], pos = 1)
 File ‘PEcAnAssimSequential/R/Analysis_sda.R’:
+  assign(name, dots[[name]], pos = 1)
+File ‘PEcAnAssimSequential/R/Analysis_sda_multiSite.R’:
   assign(name, dots[[name]], pos = 1)
 * checking Rd files ... OK
 * checking Rd metadata ... OK
@@ -706,9 +137,7 @@ Undocumented arguments in documentation object 'hop_test'
   ‘ens.runid’
 
 Undocumented arguments in documentation object 'interactive.plotting.sda'
-  ‘obs.times’ ‘aqq’ ‘bqq’ ‘facetg’ ‘readsFF’
-Documented arguments not in \usage in documentation object 'interactive.plotting.sda':
-  ‘obs.time’
+  ‘aqq’ ‘bqq’ ‘facetg’ ‘readsFF’
 
 Undocumented arguments in documentation object 'sda.enkf'
   ‘...’
@@ -728,4 +157,9 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 3 WARNINGs, 1 NOTE
+Status: 2 WARNINGs, 1 NOTE
+See
+  ‘/tmp/RtmpDf3LIm/PEcAnAssimSequential.Rcheck/00check.log’
+for details.
+
+

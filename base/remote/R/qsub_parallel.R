@@ -103,7 +103,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
   folders <- file.path(settings$host$outdir, run_list)
   L_folder <- length(folders)
   pb <- utils::txtProgressBar(min = 0, max = L_folder, style = 3)
-  pbi <- 0
   #here we not only detect if the target files are generated.
   #we also detect if the jobs are still existed on the server.
   if (is_rabbitmq) {
@@ -121,7 +120,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
   } else {
     L_jobid <- length(jobids)
     pb1 <- utils::txtProgressBar(min = 0, max = L_jobid, style = 3)
-    pb1 <- 0
     if (hybrid) {
       while ((L_folder - length(folders)) < L_folder & 
              (L_jobid - length(jobids)) < L_jobid) {

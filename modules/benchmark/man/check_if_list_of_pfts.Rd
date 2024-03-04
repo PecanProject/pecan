@@ -7,20 +7,12 @@
 check_if_list_of_pfts(vars)
 }
 \arguments{
-\item{observation_one}{a vector of plant fucntional types, or species}
-
-\item{observation_two}{anouther vector of plant fucntional types, or species}
-
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
-In the second case, must be passable to match_species_id.}
+\item{vars}{names to check}
 }
 \value{
 \code{boolean}
 }
 \description{
-check_if_list_of_pfts
-}
-\details{
 Checks if format contains a variable named "plant_functional_type"
 }
 \author{

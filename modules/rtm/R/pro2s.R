@@ -40,7 +40,7 @@ pro2s <- function(param, prospect.version = 5) {
   plist$Ti <- numeric(nw)
   plist$Ac <- numeric(nw)
   plist$Ai <- numeric(nw)
-  inlist   <- c(modname, plist)
+  inlist   <- c(modname, plist, PACKAGE="PEcAnRTM")
   outlist  <- do.call(.Fortran, inlist)
   out.mat  <- do.call(cbind, outlist[out.names])
   spectra(out.mat, 400:2500)

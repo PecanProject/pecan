@@ -130,6 +130,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   
   #Handle observation
+  #observation number per site
+  obs_per_site <- purrr::map_int(obs.mean[[t]], length)
   #if we do free run or the current obs.mean are all NULL.
   if (as.logical(settings$state.data.assimilation$free.run) | all(is.null(unlist(obs.mean[[t]])))) {
     obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
@@ -167,16 +169,24 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       } else {y.ind[i] <- y.censored[i] <- 0}
     }
     #create H
-    H <- construct_nimble_H(site.ids = site.ids,
-                            var.names = var.names,
-                            obs.t = obs.mean[[t]],
-                            pft.path = settings[[1]]$run$inputs$pft.site$path,
-                            by = "block_pft_var")
+    # if there is any site that has zero observation.
+    if (any(obs_per_site == 0)) {
+      #name matching between observation names and state variable names.
+      f.2.y.ind <- obs.mean[[t]] %>% 
+        purrr::map(\(x)which(var.names %in% names(x))) %>% 
+        base::unlist %>% 
+        base::unique
+      H <- list(ind = f.2.y.ind %>% purrr::map(function(start){
+        seq(start, length(site.ids) * length(var.names), length(var.names))
+      }) %>% unlist() %>% sort)
+    } else {
+      H <- construct_nimble_H(site.ids = site.ids,
+                              var.names = var.names,
+                              obs.t = obs.mean[[t]],
+                              pft.path = settings[[1]]$run$inputs$pft.site$path,
+                              by = "block_pft_var")
+    }
   }
-  #observation number per site
-  obs_per_site <- obs.mean[[t]] %>% 
-    purrr::map(function(site.obs){length(site.obs)}) %>% 
-    unlist()
   
   #start the blocking process
   #should we consider interactions between sites?
@@ -266,7 +276,10 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       # H
       if (any(is.na(y.block))) {
         block.h <- matrix(0, 1, length(ids)*length(var.names))#matrix(1, 1, length(var.names))
-        f.2.y.ind <- which(grepl(unique(names(unlist(obs.mean[[t]] %>% purrr::set_names(NULL)))), var.names, fixed = T))
+        f.2.y.ind <- obs.mean[[t]] %>% 
+          purrr::map(\(x)which(var.names %in% names(x))) %>% 
+          base::unlist %>% 
+          base::unique
         seq.ind <- f.2.y.ind %>% purrr::map(function(start){
           seq(start, dim(block.h)[2], length(var.names))
         }) %>% unlist()
@@ -339,11 +352,11 @@ MCMC_Init <- function (block.list, X) {
     }
     #initialize q.
     #if we want the vector q.
-    if (block.list[[i]]$constant$q.type == 1) {
+    if (block.list[[i]]$constant$q.type == 3) {
       for (j in seq_along(block.list[[i]]$data$y.censored)) {
         block.list[[i]]$Inits$q <- c(block.list[[i]]$Inits$q, stats::rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j]))
       }
-    } else if (block.list[[i]]$constant$q.type == 2) {
+    } else if (block.list[[i]]$constant$q.type == 4) {
       #if we want the wishart Q.
       if ("try-error" %in% class(try(block.list[[i]]$Inits$q <- 
                                      stats::rWishart(1, df = block.list[[i]]$data$bq, Sigma = block.list[[i]]$data$aq)[,,1], silent = T))) {

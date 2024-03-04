@@ -189,10 +189,9 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
 ##' with CF-compliant variable names
 ##'
 ##' @title Get time series vector from netCDF file
-##' @param var
-##' @param lati
-##' @param loni
-##' @param run.dates
+##' @param var name of variable to extract
+##' @param lati,loni latitude and longitude to extract
+##' @param run.dates data.table of dates to read
 ##' @param met.nc netcdf file with CF variable names
 ##' @return numeric vector
 ##' @export
