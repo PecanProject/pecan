@@ -5,7 +5,7 @@
 ##' @param data  In quotes, file path for .rds containing ensemble data.
 ##' @param focus_year In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates: In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.
+##' @param covariates In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.
 ##' @param cords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
