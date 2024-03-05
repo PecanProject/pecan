@@ -1,14 +1,12 @@
-##' @name format_wide2long
-##' @title format_wide2long
+##' Function to convert wide format to long format
 ##' 
 ##' @param out wide format data
 ##' @param format as returned by query.format.vars
-##' @param vars_used 
-##' @param time.row
+##' @param vars_used data frame mapping `input_name` to `bety_name`
+##' @param time.row ignored; value in output is set from `format$vars$storage_type`
 ##' @return list of updated values
 ##' @export
 ##' @author Istem Fer
-##' Function to convert wide format to long format
 format_wide2long <- function(out, format, vars_used, time.row){
   
   # GapMacro example:

@@ -2,7 +2,7 @@
 % Please edit documentation in R/align_pft.R
 \name{align_pft}
 \alias{align_pft}
-\title{align_pft}
+\title{Align vectors of Plant Functional Type and species.}
 \usage{
 align_pft(
   con,
@@ -32,6 +32,10 @@ In the second case, must be passable to match_species_id.}
 
 \item{subset_is_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
 set to FALSE by default.}
+
+\item{comparison_type}{one of "data_to_model", "data_to_data", or "model_to_model"}
+
+\item{...}{other arguments, currently ignored}
 }
 \value{
 \code{list} containing the following columns:
@@ -43,10 +47,9 @@ set to FALSE by default.}
 }
 }
 \description{
-align_pft
+Align vectors of Plant Functional Type and species.
 }
 \details{
-Aligns vectors of Plant Fucntional Typed and species.
 Can align: 
 - two vectors of plant fucntional types (pft's) if a custom map is provided
 - a list of species (usda, fia, or latin_name format) to a plant fucntional type
