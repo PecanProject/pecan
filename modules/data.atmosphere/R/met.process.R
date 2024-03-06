@@ -234,18 +234,18 @@ met.process <- function(site, input_met, start_date, end_date, model,
                          values = c(mimetypeid, "CF Meteorology"), con = con)
       
       machine.id <- PEcAn.DB::get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
-      # Fidning the tiles.
-      raw.tiles <- tbl(con, "inputs") %>%
-        filter(
+      # Finding the tiles.
+      raw.tiles <- dplyr::tbl(con, "inputs") %>%
+        dplyr::filter(
           .data$site_id == register$ParentSite,
           start_date >= start_date,
           end_date <= end_date,
           .data$format_id == formatid
         ) %>%
-        filter(grepl(met, "name")) %>%
-        inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
-        filter(.data$machine_id == machine.id) %>%
-        collect()
+        dplyr::filter(grepl(met, "name")) %>%
+        dplyr::inner_join(dplyr::tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
+        dplyr::filter(.data$machine_id == machine.id) %>%
+        dplyr::collect()
       
       cf.id <- raw.id <- list(input.id = raw.tiles$id.x, dbfile.id = raw.tiles$id.y)
     }
