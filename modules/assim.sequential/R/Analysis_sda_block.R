@@ -102,7 +102,6 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   } else if (settings$state.data.assimilation$q.type == "wishart") {
     q.type <- 4
   }
-  
   #grab basic arguments based on X.
   site.ids <- unique(attributes(X)$Site)
   var.names <- unique(attributes(X)$dimnames[[2]])
@@ -112,7 +111,6 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5 #fixing det(Pf)==0
     PEcAn.logger::logger.warn("The zero variances in Pf is being replaced by one fifth of the minimum variance in those matrices respectively.")
   }
-  
   #distance calculations and localization
   site.locs <- settings$run %>% 
     purrr::map('site') %>% 
@@ -128,14 +126,16 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     blocked.dis <- block_matrix(dis.matrix %>% as.numeric(), rep(length(var.names), length(site.ids)))
     Pf <- Localization.FUN(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
-  
   #Handle observation
   #observation number per site
-  obs_per_site <- purrr::map_int(obs.mean[[t]], length)
+  #free run special case.
+  if (is.null(obs.mean[[t]])) {
+    obs_per_site <- rep(0, length(site.ids)) %>% purrr::set_names(site.ids)
+  } else {
+    obs_per_site <- purrr::map_int(obs.mean[[t]], length)
+  }
   #if we do free run or the current obs.mean are all NULL.
   if (as.logical(settings$state.data.assimilation$free.run) | all(is.null(unlist(obs.mean[[t]])))) {
-    obs.mean[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
-    obs.cov[[t]] <- vector("list", length(site.ids)) %>% `names<-`(site.ids)
     H <- list(ind = seq_along(rep(var.names, length(site.ids))))
     Y <- rep(NA, length(H$ind))
     R <- diag(1, length(H$ind))
@@ -174,8 +174,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       #name matching between observation names and state variable names.
       f.2.y.ind <- obs.mean[[t]] %>% 
         purrr::map(\(x)which(var.names %in% names(x))) %>% 
-        base::unlist %>% 
-        base::unique
+        unlist %>% 
+        unique
       H <- list(ind = f.2.y.ind %>% purrr::map(function(start){
         seq(start, length(site.ids) * length(var.names), length(var.names))
       }) %>% unlist() %>% sort)
@@ -187,7 +187,6 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
                               by = "block_pft_var")
     }
   }
-  
   #start the blocking process
   #should we consider interactions between sites?
   if(as.numeric(settings$state.data.assimilation$scalef) == 0){
@@ -198,28 +197,32 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$sites.per.block <- i
       block.list[[i]]$site.ids <- site.ids[i]
       block.list[[i]]$t <- t
-      
       #fill in mu.f and Pf
       f.start <- (i - 1) * length(var.names) + 1
       f.end <- i * length(var.names)
       block.list[[i]]$data$muf <- mu.f[f.start:f.end]
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
-      
+      #find indexs for Y.
+      y.start <- sum(obs_per_site[1:i])
+      y.end <- y.start + obs_per_site[i] - 1
       #fill in y and r
-      if (obs_per_site[i] == 0) {
-        y.start <- 1
-        y.end <- length(var.names)
-        block.list[[i]]$data$y.censored <- rep(NA, length(var.names))
-        block.list[[i]]$data$r <- diag(1, length(var.names))
-        block.h <- matrix(1, 1, length(var.names))
+      #if there is no observation for this site.
+      if (y.end < y.start) {
+        #if every site has zero observation/free run.
+        if (max(obs_per_site) == 0) {
+          block.list[[i]]$data$y.censored <- rep(NA, length(var.names))
+          block.list[[i]]$data$r <- diag(1, length(var.names))
+          block.h <- matrix(1, 1, length(var.names))
+        } else {
+          block.list[[i]]$data$y.censored <- rep(NA, max(obs_per_site))
+          block.list[[i]]$data$r <- diag(1, max(obs_per_site))
+          block.h <- matrix(1, 1, max(obs_per_site))
+        }
       } else {
-        y.start <- sum(obs_per_site[1:i-1]) + 1#obs_per_site[i] * (i - 1) + 1
-        y.end <- y.start + obs_per_site[i] - 1#obs_per_site[i] * i
         block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
         block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
         block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
       }
-      
       #fill in constants.
       block.list[[i]]$H <- block.h
       block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
@@ -253,15 +256,9 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       for (j in seq_along(ids)) {
         f.start <- (ids[j] - 1) * length(var.names) + 1
         f.end <- ids[j] * length(var.names)
-        # site.ind <- ids[j]
-        
         y.start <- sum(obs_per_site[1:ids[j]])
         y.end <- y.start + obs_per_site[ids[j]] - 1
-        # y.start <- obs_per_site[ids[j]] * (ids[j] - 1) + 1
-        # y.end <- obs_per_site[ids[j]] * ids[j]
-        
         f.ind <- c(f.ind, f.start:f.end)
-        
         #if the current site has greater or equal than 1 observation.
         if (y.end >= y.start) {
           # y.ind <- c(y.ind, y.start:y.end)
@@ -269,17 +266,28 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
           r.block <- c(r.block, diag(R)[y.start:y.end])
         } else {
           #if the current site has zero observation.
-          y.block <- c(y.block, rep(NA, max(obs_per_site)))
-          r.block <- c(r.block, rep(1, max(obs_per_site)))
+          #if for free run.
+          if (max(obs_per_site) == 0) {
+            y.block <- c(y.block, rep(NA, length(var.names)))
+            r.block <- c(r.block, rep(1, length(var.names)))
+          } else {
+            y.block <- c(y.block, rep(NA, max(obs_per_site)))
+            r.block <- c(r.block, rep(1, max(obs_per_site)))
+          }
         }
       }
-      # H
+      #if we have NA for y, we will build H differently.
       if (any(is.na(y.block))) {
-        block.h <- matrix(0, 1, length(ids)*length(var.names))#matrix(1, 1, length(var.names))
-        f.2.y.ind <- obs.mean[[t]] %>% 
-          purrr::map(\(x)which(var.names %in% names(x))) %>% 
-          base::unlist %>% 
-          base::unique
+        block.h <- matrix(0, 1, length(ids)*length(var.names))
+        #if for free run.
+        if (is.null(obs.mean[[t]])) {
+          f.2.y.ind <- seq_along(var.names)
+        } else {
+          f.2.y.ind <- obs.mean[[t]] %>% 
+            purrr::map(\(x)which(var.names %in% names(x))) %>% 
+            unlist %>% 
+            unique
+        }
         seq.ind <- f.2.y.ind %>% purrr::map(function(start){
           seq(start, dim(block.h)[2], length(var.names))
         }) %>% unlist()
@@ -287,29 +295,16 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       } else {
         block.h <- Construct.H.multisite(site.ids[ids], var.names, obs.mean[[t]])
       }
-      
       #fill in  mu.f and Pf
       block.list[[i]]$data$muf <- mu.f[f.ind]
       block.list[[i]]$data$pf <- GrabFillMatrix(Pf, f.ind)
-      
       #fill in y and R
-      # y.block[which(is.na(y.block))] <- mu.f[f.ind[seq.ind[which(is.na(y.block))]]]
-      # r.block[which(is.na(r.block))] <- diag(Pf)[f.ind[seq.ind[which(is.na(r.block))]]]
-      block.list[[i]]$data$y.censored <- y.block#y.censored[y.ind]
+      block.list[[i]]$data$y.censored <- y.block
       if (length(r.block)  == 1) {
         block.list[[i]]$data$r <- 1/r.block
       } else {
-        block.list[[i]]$data$r <- solve(diag(r.block))#GrabFillMatrix(solve(R), y.ind)
+        block.list[[i]]$data$r <- solve(diag(r.block))
       }
-      
-      #fill in constants
-      # if (all(is.na(y.block))) {
-      #   block.h <- matrix(0, 1, length(ids)*length(var.names))#matrix(1, 1, length(var.names))
-      #   f.2.y.ind <- which(grepl(unique(names(unlist(obs.mean[[t]] %>% set_names(NULL)))), var.names, fixed = T))
-      #   block.h[1, seq(f.2.y.ind, dim(block.h)[2], length(var.names))] <- 1
-      # } else {
-      #   block.h <- Construct.H.multisite(site.ids[ids], var.names, obs.mean[[t]])
-      # }
       block.list[[i]]$H <- block.h
       block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
       block.list[[i]]$constant$N <- length(f.ind)
@@ -317,7 +312,36 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$constant$q.type <- q.type
     }
   }
-  
+  #if it's Wishart Q, we need to replace any NA Y with corresponding muf, and r with Pf.
+  #also, if length of observation is 1, the Wishart Q is not suitable for the MCMC.
+  #we will then need to change the Q type to 3, which is the vector Q.
+  if (q.type == 4) {
+    for (i in seq_along(block.list)) {
+      #check length.
+      if (block.list[[i]]$constant$YN == 1) {
+        block.list[[i]]$constant$q.type <- 3
+        next
+      }
+      # #check NAs.
+      # na.ind <- which(is.na(block.list[[i]]$data$y.censored))
+      # if (length(na.ind) > 0) {
+      #     block.list[[i]]$constant$YN <- block.list[[i]]$constant$YN - length(na.ind)
+      #     block.list[[i]]$constant$H <- block.list[[i]]$constant$H[-na.ind]
+      #     block.list[[i]]$data$y.censored <- block.list[[i]]$data$y.censored[-na.ind]
+      #     block.list[[i]]$data$r <- diag(diag(block.list[[i]]$data$r)[-na.ind])
+      # }
+      # na.site.ind <- which(obs_per_site[block.list[[i]]$site.ids] == 0)
+      # na.ind <- which(is.na(block.list[[i]]$data$y.censored))
+      # if (length(na.site.ind) > 0) {
+      #   site.inds <- block.list[[i]]$sites.per.block[na.site.ind]
+      #   y.2.muf.ind <- f.2.y.ind %>% purrr::map(function(start){
+      #     seq(start, length(mu.f), length(var.names))[site.inds]
+      #   }) %>% unlist() %>% sort()
+      #   block.list[[i]]$data$y.censored[na.ind] <- mu.f[y.2.muf.ind]
+      #   block.list[[i]]$data$r[na.ind, na.ind] <- Pf[y.2.muf.ind, y.2.muf.ind]
+      # }
+    }
+  }
   #return values.
   block.list.all[[t]] <- block.list
   return(list(block.list.all = block.list.all, H = H, Y = Y, R = R))

@@ -12,6 +12,8 @@ align_data(model.calc, obvs.calc, var, align_method = "match_timestep")
 \item{obvs.calc}{data.frame}
 
 \item{var}{data.frame}
+
+\item{align_method}{name of function to use for alignment}
 }
 \value{
 dat
