@@ -15,7 +15,7 @@ NA_downscale(data, cords, covariates, focus_year, C_pool)
 
 \item{covariates}{In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.}
 
-\item{cords:}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
+\item{cords}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
 }
 \value{
 It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
