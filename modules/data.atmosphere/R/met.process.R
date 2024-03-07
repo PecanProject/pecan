@@ -238,8 +238,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       raw.tiles <- dplyr::tbl(con, "inputs") %>%
         dplyr::filter(
           .data$site_id == register$ParentSite,
-          start_date >= start_date,
-          end_date <= end_date,
+          .data$start_date <= .env$start_date,
+          .data$end_date >= .env$end_date,
           .data$format_id == formatid
         ) %>%
         dplyr::filter(grepl(met, "name")) %>%
