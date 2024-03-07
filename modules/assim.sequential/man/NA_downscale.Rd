@@ -13,7 +13,7 @@ NA_downscale(data, cords, covariates, focus_year, C_pool)
 
 \item{C_pool}{In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.}
 
-\item{covariates:}{In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.}
+\item{covariates}{In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.}
 
 \item{cords:}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
 }
