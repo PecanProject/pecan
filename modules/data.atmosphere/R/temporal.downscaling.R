@@ -120,7 +120,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
 cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   
   tint <- 24/output.dt
-  tseq <- 0:(23 * output.dt)/output.dt
+  tseq <- seq(from = 0, to = 23, by = output.dt)
   
   data.table::setkeyv(dailymet, c("year", "doy"))
   
