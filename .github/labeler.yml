@@ -5,12 +5,12 @@
 # Add 'Documentation' label to any changes in the documentation
 
 'Documentation':
+  - book_source/**
   - documentation/**
   - CONTRIBUTING.md
   - DEBUGING.md
   - DEV-INTRO.md
   - README.md
-  - book_source/**
 
 # Add 'Dockerfile' label to any changes in the docker directory
 'Dockerfile':
@@ -51,5 +51,7 @@
 
 'Tests':
   - tests/**
+  - '**/tests/**'
+  - '!**/tests/Rcheck_reference.log'
 
 
