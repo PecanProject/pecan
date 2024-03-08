@@ -20,6 +20,7 @@
 ##' @param sitelat latitude of the site
 ##' @param sitelon longitude of the site
 ##' @param co2_file path to daily atmospheric CO2 concentration file, optional, defaults to 350 ppm when missing
+##' @param write_raw_output write raw output in csv or not
 ##' 
 ##' @export
 ##' @useDynLib PEcAn.BASGRA, .registration = TRUE
