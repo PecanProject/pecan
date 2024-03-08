@@ -112,7 +112,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     PEcAn.logger::logger.warn("The zero variances in Pf is being replaced by one fifth of the minimum variance in those matrices respectively.")
   }
   #distance calculations and localization
-  site.locs <- settings  %>% map(~.x[['run']] ) %>%
+  site.locs <- settings$run %>%
     purrr::map('site') %>%
     purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>%
     t %>%
