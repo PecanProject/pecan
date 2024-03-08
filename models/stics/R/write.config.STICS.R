@@ -1678,10 +1678,10 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     for(clim in seq_along(usm_years)){
       # currently assuming only first year file has been passed to the settings, modify met2model if changing the logic
       met_file  <- gsub(paste0(lubridate::year(settings$run$start.date), ".climate"), paste0(usm_years[clim], ".climate"), met_path)
-      clim_list[[clim]] <- read.table(met_file)
+      clim_list[[clim]] <- utils::read.table(met_file)
     }
     clim_run <- do.call("rbind", clim_list)
-    write.table(clim_run, file.path(usmdirs[usmi], "climat.txt"), col.names = FALSE, row.names = FALSE)
+    utils::write.table(clim_run, file.path(usmdirs[usmi], "climat.txt"), col.names = FALSE, row.names = FALSE)
     
   }
   

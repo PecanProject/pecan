@@ -131,7 +131,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # column 6: minimum temperature (°C)
       Tair   <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
       Tair   <- Tair[ydays %in% simdays]
-      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+      Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
       t_dmin <- round(tapply(Tair_C, ind, min, na.rm = TRUE), digits = 2) # maybe round these numbers 
       weather_df[ ,6] <- t_dmin
         

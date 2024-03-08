@@ -29,7 +29,7 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
   out_files <- list.files(outdir)
   
   stics_out_file <- file.path(outdir, out_files[grepl("mod_s.*", out_files)])
-  stics_output   <- lapply(stics_out_file, read.table, header = TRUE, sep = ";")
+  stics_output   <- lapply(stics_out_file, utils::read.table, header = TRUE, sep = ";")
   stics_output  <- do.call("rbind", stics_output)
   # probably already ordered, but order by year and DoY
   stics_output <-  stics_output[order(stics_output[,1], stics_output[,4]), ]
