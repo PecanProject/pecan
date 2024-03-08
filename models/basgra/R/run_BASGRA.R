@@ -24,7 +24,7 @@
 ##' 
 ##' @export
 ##' @useDynLib PEcAn.BASGRA, .registration = TRUE
-##' @author Istem Fer
+##' @author Istem Fer, Julius Vira
 ##-------------------------------------------------------------------------------------------------#
 
 run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_date, end_date, outdir, 
