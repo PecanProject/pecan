@@ -43,28 +43,28 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
                                 parentid = NA, con, hostname = PEcAn.remote::fqdn(), allow.conflicting.dates = FALSE, ens = FALSE) {
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
-
+  
   # find mimetype, if it does not exist, it will create one
   mimetypeid <- get.id("mimetypes", "type_string", mimetype, con, create = TRUE)
-
+  
   # find appropriate format, create if it does not exist
   formatid <- get.id(
     table = "formats",
     colnames = c("mimetype_id", "name"),
-    values = c(format(mimetypeid), formatname),
+    values = c(mimetypeid, formatname),
     con = con,
     create = TRUE,
     dates = TRUE
   )
-
-
+  
+  
   # setup parent part of query if specified
   if (is.na(parentid)) {
     parent <- ""
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input, if not in database, insert new input
   existing.input <- db.query(
     query = paste0(
@@ -75,7 +75,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     ),
     con = con
   )
-
+  
   inputid <- NULL
   if (nrow(existing.input) > 0) {
     # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
@@ -87,7 +87,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     }
     existing.input$start_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$start_date), tzone = "UTC")
     existing.input$end_date <- lubridate::force_tz(time = lubridate::as_date(existing.input$end_date), tzone = "UTC")
-
+    
     for (i in seq_len(nrow(existing.input))) {
       existing.input.i <- existing.input[i, ]
       if (is.na(existing.input.i$start_date) && is.null(startdate)) {
@@ -96,7 +96,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         inputid <- existing.input.i[["id"]]
       }
     }
-
+    
     if (is.null(inputid) && !allow.conflicting.dates) {
       print(existing.input, digits = 10)
       PEcAn.logger::logger.error(paste0(
@@ -110,7 +110,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       return(NULL)
     }
   }
-
+  
   if (is.null(inputid)) {
     # Either there was no existing input, or there was but the dates don't match and
     # allow.conflicting.dates==TRUE. So, insert new input record.
@@ -145,7 +145,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     # This is the id that we just registered
     inserted.id <- db.query(query = cmd, con = con)
     name.s <- name
-
+    
     if (is.null(startdate)) {
       inputid <- db.query(
         query = paste0(
@@ -169,7 +169,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   } else {
     inserted.id <- data.frame(id = inputid) # in the case that inputid is not null then this means that there was an exsiting input
   }
-
+  
   if (length(inputid) > 1 && !ens) {
     PEcAn.logger::logger.warn(paste0(
       "Multiple input files found matching parameters format_id = ", formatid,
@@ -181,17 +181,17 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   } else if (ens) {
     inputid <- inserted.id$id
   }
-
+  
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check(type = "Input", container.id = inputid, con = con, hostname = hostname)
-
+  
   if (nrow(dbfile) > 0 & !ens) {
     if (nrow(dbfile) > 1) {
       print(dbfile)
       PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile), ]
     }
-
+    
     if (dbfile$file_name != in.prefix || dbfile$file_path != in.path && !ens) {
       print(dbfile, digits = 10)
       PEcAn.logger::logger.error(paste0(
@@ -210,7 +210,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       con = con, reuse = TRUE, hostname = hostname
     )
   }
-
+  
   invisible(list(input.id = inputid, dbfile.id = dbfileid))
 }
 
@@ -241,26 +241,26 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetype, formatname, parentid = NA,
                                con, hostname = PEcAn.remote::fqdn(), exact.dates = FALSE, pattern = NULL, return.all = FALSE) {
   hostname <- default_hostname(hostname)
-
+  
   mimetypeid <- get.id(table = "mimetypes", colnames = "type_string", values = mimetype, con = con)
   if (is.null(mimetypeid)) {
     return(invisible(data.frame()))
   }
-
+  
   # find appropriate format
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
-
+  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
-
+  
   # setup parent part of query if specified
   if (is.na(parentid)) {
     parent <- ""
   } else {
     parent <- paste0(" AND parent_id=", parentid)
   }
-
+  
   # find appropriate input
   if (exact.dates) {
     if (!is.null(enddate)) {
@@ -287,15 +287,15 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
     }
   } else { # not exact dates
     inputs <- db.query(
-        query = paste0(
-          "SELECT * FROM inputs WHERE site_id=", siteid,
-          " AND format_id=", formatid,
-          parent
-        ),
-        con = con
+      query = paste0(
+        "SELECT * FROM inputs WHERE site_id=", siteid,
+        " AND format_id=", formatid,
+        parent
+      ),
+      con = con
     )
   }
-
+  
   if (is.null(inputs) | length(inputs$id) == 0) {
     return(data.frame())
   } else {
@@ -303,12 +303,12 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
       ## Case where pattern is not NULL
       inputs <- inputs[grepl(pattern, inputs$name), ]
     }
-
+    
     ## parent check when NA
     # if (is.na(parentid)) {
     #   inputs <- inputs[is.na(inputs$parent_id),]
     # }
-
+    
     if (length(inputs$id) > 1) {
       PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
       print(inputs)
@@ -317,7 +317,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
       #   for(i in seq_len(ni)){
       #     dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
       # }
-
+      
       dbfile <-
         dbfile.check(
           type = "Input",
@@ -327,8 +327,8 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
           machine.check = TRUE,
           return.all = return.all
         )
-
-
+      
+      
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures a empty data.frame is returned
@@ -336,10 +336,10 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check(type = "Input", container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
-
+      
       return(dbfile)
     } else if (length(inputs$id) == 0) {
-
+      
       # need this third case here because prent check above can return an empty inputs
       return(data.frame())
     } else {
@@ -353,7 +353,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         machine.check = TRUE,
         return.all = return.all
       )
-
+      
       if (nrow(dbfile) == 0) {
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures an empty data.frame is returned
@@ -361,7 +361,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
         PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check(type = "Input", container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
-
+      
       return(dbfile)
     }
   }
@@ -388,28 +388,28 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
 ##' }
 dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname = PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
-
+  
   # find appropriate pft
   pftid <- get.id("pfts", "name", pft, con)
   if (is.null(pftid)) {
     PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
   }
-
+  
   mimetypeid <- get.id(
     table = "mimetypes", colnames = "type_string", values = mimetype,
     con = con, create = TRUE
   )
-
+  
   # find appropriate format
   formatid <- get.id(
     table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname),
     con = con, create = TRUE, dates = TRUE
   )
-
+  
   # find appropriate posterior
   # NOTE: This is defined but not used
   # posterior_ids <- get.id("posteriors", "pft_id", pftid, con)
-
+  
   posteriorid_query <- paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pftid,
     " AND format_id=", formatid
@@ -426,7 +426,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
     )
     posteriorid <- db.query(posteriorid_query, con)[["id"]]
   }
-
+  
   # NOTE: Modified by Alexey Shiklomanov.
   # I'm not sure how this is supposed to work, but I think it's like this
   invisible(dbfile.insert(
@@ -455,24 +455,24 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' }
 dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
-
+  
   # find appropriate pft
   pftid <- get.id(table = "pfts", values = "name", colnames = pft, con = con)
   if (is.null(pftid)) {
     invisible(data.frame())
   }
-
+  
   # find appropriate format
   mimetypeid <- get.id(table = "mimetypes", values = "type_string", colnames = mimetype, con = con)
   if (is.null(mimetypeid)) {
     PEcAn.logger::logger.error("mimetype ", mimetype, "does not exist")
   }
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
-
+  
   if (is.null(formatid)) {
     invisible(data.frame())
   }
-
+  
   # find appropriate posterior
   posteriorid <- db.query(
     query = paste0(
@@ -484,7 +484,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   if (is.null(posteriorid)) {
     invisible(data.frame())
   }
-
+  
   invisible(dbfile.check(type = "Posterior", container.id = posteriorid, con = con, hostname = hostname))
 }
 
@@ -509,14 +509,14 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
 ##' }
 dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname = PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
-
+  
   if (substr(in.path, 1, 1) != "/") {
     PEcAn.logger::logger.error("path to dbfiles:", in.path, " is not a valid full path")
   }
-
+  
   # find appropriate host
   hostid <- get.id(table = "machines", colnames = "hostname", values = hostname, con = con, create = TRUE, dates = TRUE)
-
+  
   # Query for existing dbfile record with same file_name, file_path, machine_id ,
   # container_type, and container_id.
   dbfile <- invisible(db.query(
@@ -528,10 +528,10 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
     ),
     con = con
   ))
-
+  
   if (nrow(dbfile) == 0) {
     # If no existing record, insert one
-
+    
     insert_result <- db.query(
       query = paste0(
         "INSERT INTO dbfiles ",
@@ -541,7 +541,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
       ),
       con = con
     )
-
+    
     file.id <- insert_result[["id"]]
   } else if (!reuse) {
     # If there is an existing record but reuse==FALSE, return NA.
@@ -559,7 +559,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
       file.id <- dbfile[["id"]]
     }
   }
-
+  
   # Return the new dbfile ID, or the one that existed already (reuse==T), or NA (reuse==F)
   return(file.id)
 }
@@ -591,34 +591,34 @@ dbfile.check <- function(type, container.id, con,
                          machine.check = TRUE,
                          return.all = FALSE) {
   type <- match.arg(type, c("Input", "Posterior", "Model"))
-
+  
   hostname <- default_hostname(hostname)
-
+  
   # find appropriate host
   hostid <- get.id(table = "machines", colnames = "hostname", values = hostname, con = con)
   if (is.null(hostid)) {
     return(data.frame())
   }
-
+  
   dbfiles <- dplyr::tbl(con, "dbfiles") %>%
     dplyr::filter(
       .data$container_type == !!type,
       .data$container_id %in% !!container.id
     )
-
+  
   if (machine.check) {
     dbfiles <- dbfiles %>%
       dplyr::filter(.data$machine_id == !!hostid)
   }
-
+  
   dbfiles <- dplyr::collect(dbfiles)
-
+  
   if (nrow(dbfiles) > 1 && !return.all) {
     PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
     dbfiles <- dbfiles %>%
       dplyr::filter(.data$updated_at == max(.data$updated_at))
   }
-
+  
   dbfiles
 }
 
@@ -643,9 +643,9 @@ dbfile.check <- function(type, container.id, con,
 ##' }
 dbfile.file <- function(type, id, con, hostname = PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
-
+  
   files <- dbfile.check(type = type, container.id = id, con = con, hostname = hostname)
-
+  
   if (nrow(files) > 1) {
     PEcAn.logger::logger.warn("multiple files found for", id, "returned; using the first one found")
     invisible(file.path(files[1, "file_path"], files[1, "file_name"]))
@@ -667,13 +667,13 @@ dbfile.file <- function(type, id, con, hostname = PEcAn.remote::fqdn()) {
 ##' }
 dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
-
+  
   # find appropriate host
   hostid <- db.query(query = paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con = con)[["id"]]
   if (is.null(hostid)) {
     invisible(NA)
   }
-
+  
   # find file
   file_name <- basename(file)
   file_path <- dirname(file)
@@ -686,7 +686,7 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
     ),
     con = con
   )
-
+  
   if (nrow(ids) > 1) {
     PEcAn.logger::logger.warn("multiple ids found for", file, "returned; using the first one found")
     invisible(ids[1, "container_id"])
@@ -727,58 +727,58 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
 
 
 dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = FALSE) {
-
-
+  
+  
   # create nulls for file movement and error info
   error <- 0
   files.sym <- 0
   files.changed <- 0
   files.reg <- 0
   files.indb <- 0
-
+  
   # check for file type and update to make it *.file type
   if (file.type != "clim" | file.type != "nc") {
     PEcAn.logger::logger.error("File type not supported by move at this time. Currently only supports NC and CLIM files")
     error <- 1
   }
   file.pattern <- paste0("*.", file.type)
-
-
-
+  
+  
+  
   # create new directory if it doesn't exist
   if (!dir.exists(new.dir)) {
     dir.create(new.dir)
   }
-
-
+  
+  
   # check to make sure both directories exist
   if (!dir.exists(old.dir)) {
     PEcAn.logger::logger.error("Old File directory does not exist. Please enter valid file path")
     error <- 1
   }
-
+  
   if (!dir.exists(new.dir)) {
     PEcAn.logger::logger.error("New File directory does not exist. Please enter valid file path")
     error <- 1
   }
-
+  
   if (basename(new.dir) != basename(old.dir)) {
     PEcAn.logger::logger.error("Basenames of files do not match")
   }
-
+  
   # list files in the old directory
   old.files <- list.files(path = old.dir, pattern = file.pattern)
-
+  
   # check to make sure there are files
   if (length(old.files) == 0) {
     PEcAn.logger::logger.warn("No files found")
     error <- 1
   }
-
+  
   # create full file path
   full.old.file <- file.path(old.dir, old.files)
-
-
+  
+  
   ### Get BETY information ###
   con <- db.open(
     params = list(
@@ -788,46 +788,46 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
       user     = "bety",
       password = "bety")
   )
-
+  
   # get matching dbfiles from BETY
   dbfile.path <- dirname(full.old.file)
   dbfiles <- dplyr::tbl(con, "dbfiles") %>%
     dplyr::collect() %>%
     dplyr::filter(.data$file_name %in% basename(full.old.file)) %>%
     dplyr::filter(.data$file_path %in% dbfile.path)
-
-
+  
+  
   # if there are matching db files
   if (dim(dbfiles)[1] > 0) {
-
+    
     # Check to make sure files line up
     if (dim(dbfiles)[1] != length(full.old.file)) {
       PEcAn.logger::logger.warn("Files to be moved don't match up with BETY files, only moving the files that match")
-
+      
       # IF DB FILES AND FULL FILES DONT MATCH, remove those not in BETY - will take care of the rest below
       index <- which(basename(full.old.file) %in% dbfiles$file_name)
       index1 <- seq(1, length(full.old.file))
       check <- index1[-which(index1 %in% index)]
       full.old.file <- full.old.file[-check]
-
+      
       # record the number of files that are being moved
       files.changed <- length(full.old.file)
     }
-
+    
     # Check to make sure the files line up
     if (dim(dbfiles)[1] != length(full.old.file)) {
       PEcAn.logger::logger.error("Files to be moved don't match up with BETY files, canceling move")
       error <- 1
     }
-
-
+    
+    
     # Make sure the files line up
     dbfiles <- dbfiles[order(dbfiles$file_name), ]
     full.old.file <- sort(full.old.file)
-
+    
     # Record number of files moved and changed in BETY
     files.indb <- dim(dbfiles)[1]
-
+    
     # Move files and update BETY
     if (error == 0) {
       for (i in 1:length(full.old.file)) {
@@ -836,40 +836,40 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
       } # end i loop
     } # end error if statement
   } # end dbfile loop
-
-
+  
+  
   # if there are files that are in the folder but not in BETY, we can either register them or not
   if (dim(dbfiles)[1] == 0 | files.changed > 0) {
-
+    
     # Recheck what files are in the directory since others may have been moved above
     old.files <- list.files(path = old.dir, pattern = file.pattern)
-
+    
     # Recreate full file path
     full.old.file <- file.path(old.dir, old.files)
-
-
+    
+    
     # Error check again to make sure there aren't any matching dbfiles
     dbfile.path <- dirname(full.old.file)
     dbfiles <- dplyr::tbl(con, "dbfiles") %>%
       dplyr::collect() %>%
       dplyr::filter(.data$file_name %in% basename(full.old.file)) %>%
       dplyr::filter(.data$file_path %in% dbfile.path)
-
+    
     if (dim(dbfiles)[1] > 0) {
       PEcAn.logger::logger.error("There are still dbfiles matching these files! Canceling link or registration")
       error <- 1
     }
-
-
+    
+    
     if (error == 0 & register == TRUE) {
-
+      
       # Record how many files are being registered to BETY
       files.reg <- length(full.old.file)
-
+      
       for (i in 1:length(full.old.file)) {
         file_path <- dirname(full.old.file[i])
         file_name <- basename(full.old.file[i])
-
+        
         if (file.type == "nc") {
           mimetype <- "application/x-netcdf"
           formatname <- "CF Meteorology application"
@@ -881,8 +881,8 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
         else {
           PEcAn.logger::logger.error("File Type is currently not supported")
         }
-
-
+        
+        
         dbfile.input.insert(
           in.path = file_path,
           in.prefix = file_name,
@@ -900,26 +900,26 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
       } # end i loop
     } # end error loop
   } # end register == TRUE
-
+  
   if (error == 0 & register == FALSE) {
     # Create file path for symbolic link
     full.new.file <- file.path(new.dir, old.files)
-
+    
     # Record number of files that will have a symbolic link made
     files.sym <- length(full.new.file)
-
+    
     # Line up files
     full.new.file <- sort(full.new.file)
     full.old.file <- sort(full.old.file)
-
+    
     # Check to make sure the files are the same length
     if (length(full.new.file) != length(full.old.file)) {
       PEcAn.logger::logger.error("Files to be moved don't match up with BETY. Canceling Move")
       error <- 1
     }
-
+    
     # Move file and create symbolic link if there are no errors
-
+    
     if (error == 0) {
       for (i in 1:length(full.old.file)) {
         fs::file_move(full.old.file[i], new.dir)
@@ -927,12 +927,12 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
       } # end i loop
     } # end error loop
   } # end Register == FALSE
-
-
+  
+  
   if (error > 0) {
     PEcAn.logger::logger.error("There was an error, files were not moved or linked")
   }
-
+  
   if (error == 0) {
     PEcAn.logger::logger.info(paste0(files.changed + files.indb, " files were moved and updated on BETY,  ", files.sym, " were moved and had a symbolic link created, and ", files.reg, " files were moved and then registered in BETY"))
   }
