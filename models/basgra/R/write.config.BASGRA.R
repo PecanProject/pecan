@@ -384,13 +384,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     if ("CropYield"  %in% ic.names) {
-      run_params[names(run_params) == "YIELDI"] <- udunits2::ud.convert(IC$CropYield, "kg", "g")
+      run_params[names(run_params) == "YIELDI"] <- PEcAn.utils::ud_convert(IC$CropYield, "kg", "g")
     }else{
       run_params[names(run_params) == "YIELDI"]  <- last_vals[names(last_vals) == "YIELD_POT"]
     }
     
     if ("litter_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLITT0"] <- udunits2::ud.convert(IC$litter_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CLITT0"] <- PEcAn.utils::ud_convert(IC$litter_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
     }
@@ -398,7 +398,7 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     run_params[which(names(run_params) == "NLITT0")] <- last_vals[names(last_vals) == "NLITT"]
     
     if ("stubble_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSTUBI"] <- udunits2::ud.convert(IC$stubble_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSTUBI"] <- PEcAn.utils::ud_convert(IC$stubble_carbon_content, "kg", "g")
     }else{
       run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
     }
