@@ -23,7 +23,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   run_file <- file.path(settings$rundir, "runs.txt")
   # check if runs need to be done
-  if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+  if (!file.exists(run_file)) {
     PEcAn.logger::logger.warn(
       "runs.txt not found, assuming no runs need to be done")
     return()
@@ -301,7 +301,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-      
+        
         # TODO check output log
         if (is_rabbitmq) {
           data <- readLines(file.path(jobids[run], "rabbitmq.out"))

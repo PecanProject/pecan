@@ -212,12 +212,14 @@ GEF.MultiSite.Nimble <-  nimbleCode({
       q[i] ~ dgamma(shape = aq[i], rate = bq[i])
       if (length(H) == 1) {
         X[i]  ~ dnorm(X.mod[H], sd = 1/sqrt(q[i]))
+        #likelihood
+        y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i]))
       } else {
         #sample latent variable X.
         X[i]  ~ dnorm(X.mod[H[i]], sd = 1/sqrt(q[i]))
+        #likelihood
+        y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))
       }
-      #likelihood
-      y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))
     }
   } else if (q.type == 4) {#Wishart Q
     #if it's a Wishart Q.

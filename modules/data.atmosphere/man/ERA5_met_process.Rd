@@ -4,7 +4,7 @@
 \alias{ERA5_met_process}
 \title{Met Processes for ERA5 data}
 \usage{
-ERA5_met_process(settings, in.path, out.path, Write = FALSE)
+ERA5_met_process(settings, in.path, out.path, write.db = FALSE, write = TRUE)
 }
 \arguments{
 \item{settings}{a multi-settings object}
@@ -13,11 +13,16 @@ ERA5_met_process(settings, in.path, out.path, Write = FALSE)
 
 \item{out.path}{output path}
 
-\item{Write}{if write into Bety database}
+\item{write.db}{if write into Bety database}
+
+\item{write}{if write the settings into pecan.xml file in the outdir of settings.}
 }
 \value{
-if Write is True then return input IDs with physical paths; if Write is False then return just physical paths of extracted ERA5 clim files.
+if write.db is True then return input IDs with physical paths; if write.db is False then return just physical paths of extracted ERA5 clim files.
 }
 \description{
 Met Processes for ERA5 data
+}
+\author{
+Dongchen Zhang
 }

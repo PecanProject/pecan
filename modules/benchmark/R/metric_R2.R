@@ -2,6 +2,7 @@
 ##' @title Coefficient of Determination (R2)
 ##' @export
 ##' @param metric_dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Betsy Cowdery
 
@@ -13,7 +14,7 @@ metric_R2 <- function(metric_dat, ...) {
   out <- (numer / denom) ^ 2
   
   if(is.na(out)){
-    fit <- lm(metric_dat$model ~ metric_dat$obvs)
+    fit <- stats::lm(metric_dat$model ~ metric_dat$obvs)
     out <- summary(fit)$r.squared
   }
   

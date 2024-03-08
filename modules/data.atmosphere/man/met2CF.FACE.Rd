@@ -16,8 +16,31 @@ met2CF.FACE(
   ...
 )
 }
+\arguments{
+\item{in.path}{directory in which to find inputs (as `*.nc`)}
+
+\item{in.prefix}{pattern to match to select a file within `in.path`}
+
+\item{outfolder}{path to write output.
+Should contain the substring "FACE", which will be rewritten to "FACE_a" and "FACE_e"
+ for the corresponding treatments.}
+
+\item{start_date, end_date}{ignored. Time is taken from the input files.}
+
+\item{input.id}{ignored}
+
+\item{site}{list[like]. Only components `lat` and `lon` (both in decimal degrees) are currently used}
+
+\item{format}{specification of variable names and units in the format returned by `PEcAn.DB::query.format.vars`}
+
+\item{...}{other arguments, currently ignored}
+}
 \description{
-convert FACE files to CF files
+Note: `in.path` and `in.prefix` together must identify exactly one file,
+  or this function returns NULL.
+Further note that despite its name, `in.prefix` will match anywhere in
+  the filename: met2CF.FACE("dir", "a", ...)` will find both `dir/a_b.nc`
+  and `dir/b_a.nc`!
 }
 \author{
 Elizabeth Cowdery

@@ -1,0 +1,30 @@
+#Define the colour of labels over here
+
+labels:
+
+  - name: "Documentation"
+    color: a2dcf2
+
+  - name: "Dockerfile"
+    color: 0052CC
+
+  - name: "Website"
+    color: 84b6eb
+
+  - name: "Base"
+    color: 1ED626
+
+  - name: "Models"
+    color: C5DEF5
+
+  - name: "Modules"
+    color: FBCA04
+
+  - name: "GitHub Actions"
+    color: 84b6eb
+
+  - name: "Scripts"
+    color: 3B8924
+
+  - name: "Tests"
+    color: ff8c00

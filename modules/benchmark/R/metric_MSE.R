@@ -2,6 +2,7 @@
 ##' @title Mean Square Error
 ##' @export
 ##' @param dat dataframe
+##' @param ... ignored
 ##' 
 ##' @author Betsy Cowdery
 

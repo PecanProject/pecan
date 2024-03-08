@@ -22,14 +22,15 @@
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
 ##' @param obs_time obervation timepoints
 ##' @param update_phenology TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA
+##' @param verbose decide if we want to print the outputs.
 ##'
 ##' @description Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
 ##' 
 ##' @return NONE
 ##' @export
 write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state,
-                                 RENAME = TRUE, new.params = FALSE, inputs, obs_time=NULL, update_phenology=NULL) {
-  
+                                 RENAME = TRUE, new.params = FALSE, inputs, obs_time=NULL, update_phenology=NULL, verbose = FALSE) {
+
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
@@ -66,10 +67,10 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("NEE")
   }
   
- if ("AbvGrndWood" %in% variables) {
-     AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
-     analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
-     names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
+  if ("AbvGrndWood" %in% variables) {
+    AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
+    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood
+    names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
   }
   
   if ("LeafC" %in% variables) {
@@ -122,8 +123,10 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save.mat <- NULL
   }
 
-  print(runid %>% as.character())
-  print(analysis.save.mat)
+  if (verbose) {
+    print(runid %>% as.character())
+    print(analysis.save.mat)
+  }
   do.call(write.config.SIPNET, args = list(defaults = NULL,
                                            trait.values = new.params,
                                            settings = settings,

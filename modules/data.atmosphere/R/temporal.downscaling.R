@@ -120,7 +120,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
 cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
   
   tint <- 24/output.dt
-  tseq <- 0:(23 * output.dt)/output.dt
+  tseq <- seq(from = 0, to = 23, by = output.dt)
   
   data.table::setkeyv(dailymet, c("year", "doy"))
   
@@ -189,10 +189,9 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
 ##' with CF-compliant variable names
 ##'
 ##' @title Get time series vector from netCDF file
-##' @param var
-##' @param lati
-##' @param loni
-##' @param run.dates
+##' @param var name of variable to extract
+##' @param lati,loni latitude and longitude to extract
+##' @param run.dates data.table of dates to read
 ##' @param met.nc netcdf file with CF variable names
 ##' @return numeric vector
 ##' @export
