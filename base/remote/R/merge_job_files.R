@@ -1,14 +1,13 @@
-#' merge_job_files
 #' Merge multiple job.sh files into one larger file.
+#'
 #' @param settings PEcAn.settings object with host section.
 #' @param jobs_per_file the number of files you want to merge.
 #' @param outdir output directory of merged job files.
 #'
-#' @return
+#' @return vector of the newly created filenames
 #' @export
 #' @author Dongchen Zhang
 #'
-#' @examples
 merge_job_files <- function(settings, jobs_per_file = 10, outdir = NULL){
   # default outdir
   if(is.null(outdir)){

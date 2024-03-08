@@ -1,6 +1,4 @@
-##' @name met.process
-##' @title met.process
-##' 
+##' met.process
 ##'
 ##' @param site Site info from settings file
 ##' @param input_met Which data source to process. 
@@ -556,19 +554,19 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
 
 ################################################################################################################################# 
 
-##' @name site_from_tag
-##' @title site_from_tag
-##' @export
-##' @param sitename
-##' @param tag
-##' @author Betsy Cowdery
-##'
 ##' Function to find the site code for a specific tag
+##'
 ##' Example:
 ##'   sitename = 'Rhinelander Aspen FACE Experiment (FACE-RHIN)'
 ##'   tag = 'FACE'
 ##'   site_from_tag(sitename,tag) = 'RHIN'
 ##' Requires that site names be set up specifically with (tag-sitecode) - this may change
+##'
+##' @param sitename full name of site
+##' @param tag abbreviated name of site
+##' @author Betsy Cowdery
+##'
+##' @export
 site_from_tag <- function(sitename, tag) {
   temp <- regmatches(sitename, gregexpr("(?<=\\().*?(?=\\))", sitename, perl = TRUE))[[1]]
   pref <- paste0(tag, "-")

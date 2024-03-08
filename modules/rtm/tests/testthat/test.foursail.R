@@ -30,14 +30,16 @@ refl <- LRT[,1]
 length(refl)
 tran <- LRT[,2]
 
-# generate 4SAIL canopy spectra
-sail_spec <- foursail(refl, tran, rsoil, params)
+test_that("standalone SAIL RTM", {
+  # generate 4SAIL canopy spectra
+  sail_spec <- foursail(refl, tran, rsoil, params)
 
-expect_true(is_spectra(sail_spec))
-expect_true(nrow(sail_spec) == 2101)
-expect_true(ncol(sail_spec) == 4)
-expect_true(all(is.finite(sail_spec)))
-expect_true(all(sail_spec > 0))
+  expect_true(is_spectra(sail_spec))
+  expect_true(nrow(sail_spec) == 2101)
+  expect_true(ncol(sail_spec) == 4)
+  expect_true(all(is.finite(sail_spec)))
+  expect_true(all(sail_spec > 0))
+})
 
 # plot results
 if (interactive()) {

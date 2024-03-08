@@ -1,14 +1,16 @@
-#'  check_if_legal_table
+#' check_if_legal_table
+#'
 #' @details
 #' Checks if custom_table:
 #' 1. is formated correctly
 #' 2. is complete (has all of the species/pft's in both observations)
 #' 3. is condense-able (Could be represented as a hierachry)
 #' 
+#' @param table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes.
+#'   In the second case, must be passable to match_species_id.
 #' @param observation_one a vector of plant functional types, or species
 #' @param observation_two anouther vector of plant functional types, or species
-#' @param custom_table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
-#' In the second case, must be passable to match_species_id. 
+#'
 #' @return \code{boolean} 
 #' @author Tempest McCabe
 check_if_legal_table<-function(table, observation_one, observation_two){

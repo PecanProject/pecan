@@ -64,6 +64,7 @@ Depends:
 Imports:
     utils
 Suggests:
+    mockery,
     PEcAn.ED2,
     PEcAn.SIPNET,
     PEcAn.BIOCRO,
@@ -71,6 +72,7 @@ Suggests:
     PEcAn.LINKAGES,
     PEcAn.allometry,
     PEcAn.photosynthesis,
+    sessioninfo,
     testthat
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

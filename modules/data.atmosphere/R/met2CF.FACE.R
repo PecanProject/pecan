@@ -1,11 +1,25 @@
-##' convert FACE files to CF files
-##' @export
-##' 
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
-##' @author Elizabeth Cowdery
-
+#' convert FACE files to CF files
+#'
+#' Note: `in.path` and `in.prefix` together must identify exactly one file,
+#'   or this function returns NULL.
+#' Further note that despite its name, `in.prefix` will match anywhere in
+#'   the filename: met2CF.FACE("dir", "a", ...)` will find both `dir/a_b.nc`
+#'   and `dir/b_a.nc`!
+#'
+#' @param in.path directory in which to find inputs (as `*.nc`)
+#' @param in.prefix pattern to match to select a file within `in.path`
+#'
+#' @param outfolder path to write output.
+#'   Should contain the substring "FACE", which will be rewritten to "FACE_a" and "FACE_e"
+#'    for the corresponding treatments.
+#' @param start_date,end_date ignored. Time is taken from the input files.
+#' @param input.id ignored
+#' @param site list[like]. Only components `lat` and `lon` (both in decimal degrees) are currently used
+#' @param format specification of variable names and units in the format returned by `PEcAn.DB::query.format.vars`
+#' @param ... other arguments, currently ignored
+#' @author Elizabeth Cowdery
+#'
+#' @export
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
   
   files <- dir(in.path, in.prefix)
