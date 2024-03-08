@@ -13,7 +13,8 @@
             <climate  source="climate.txt" />
             <event  source="events.xml" />
             <speciesparameters  source="speciesparameters.xml" />
-            <siteparameters source="siteparameters.xml" /> 
+            <siteparameters source="siteparameters.xml" />
+            '@Groundwater@'
         </sources>    
     </input>
 

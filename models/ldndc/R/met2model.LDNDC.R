@@ -213,8 +213,8 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         prefix_latitude <- paste0('\t latitude = "', lat, '"')
         prefix_longitude <- paste0('\t longitude = "', lon, '"')
         
-        data_prefix <- paste(#"%global", prefix_global, # global includes the global time, but this is already got
-                             # from elsewhere and not necessary here.
+        data_prefix <- paste("%global", prefix_global, # global includes the global time, but this is already got
+                              #from elsewhere and not necessary here(?).
                              "%climate", prefix_climate,
                              "%attributes", prefix_latitude, prefix_longitude,
                              "%data \n", sep = "\n")
@@ -223,13 +223,14 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         cat(data_prefix, file = file.path(outfolder, out.file))
         
         # For the first year, keep col.names as TRUE
-        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
-                           sep = "\t", col.names = T, append = T)
+        readr::write_delim(x = data, file = file.path(outfolder, out.file),
+                         delim = "\t", append = T, quote = "none")
+        
         
       }else{
-        # For the other year, col.names are FALSE
-        data.table::fwrite(x = data, file = file.path(outfolder, out.file),
-                           sep = "\t", col.names = F, append = T)
+        # For the other years, col.names are FALSE
+        readr::write_delim(x = data, file = file.path(outfolder, out.file),
+                           delim = "\t", col_names = F, append = T)
       }
       
       
@@ -251,7 +252,7 @@ met2model.LDNDC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 # netcdf file's starting date and simulation's starting date and converting that
 # difference to seconds. Returns +1 index based on the matching seconds.
 start_index <- function(units, start_date, sec){
-  timediff <-(PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400
+  timediff <-round((PEcAn.utils::datetime2cf(start_date, units, tz = "UTC"))*86400)
   if(timediff == 0){
     return(1)
   }else{
@@ -262,6 +263,6 @@ start_index <- function(units, start_date, sec){
 
 end_index <- function(units, start_date, end_date, sec, tstep){
   #if(lubridate::year(start_date) == lubridate::year(end_date)){
-  timediff <-(PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")+1)*86400
+  timediff <- round((PEcAn.utils::datetime2cf(end_date, units, tz = "UTC")+1)*86400)
   return(which(sec == (timediff-86400/tstep)))
 }

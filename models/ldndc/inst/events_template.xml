@@ -1,29 +1,8 @@
 <?xml version="1.0"?>
 <ldndcevent>
-
-    <global time="@Startdate@" />
-
+  <global time='@time@' />
     <event  id="0" >
-
-	<event type="plant" time="@Startdate@" >
-            <plant name="perg" type="perg" >
-                <grass initialbiomass="500" />
-            </plant>
-        </event>
-
-        <event type="cut" time="@Event_1_Time@">
-	       <cut remains_relative="0.1"/>
-        </event>
-   
-	<event type="manure" time="@Event_2_Time@" >
-		<manure type="slurry" c="300" cn="10" availc="60" availn="4.44" />
-	</event>
-
-	<event type="cut" time="@Event_3_Time@" >
-		<cut remains_relative="0.3" />
-	</event>
-
+      '@Info@'
     </event>
-
 </ldndcevent>
 

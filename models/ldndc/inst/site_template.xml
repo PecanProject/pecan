@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<site>
+  <soil>
+  <general usehistory=@Info_Use_History@ soil=@Soil_Type@ lheight=@Litter_Height@ />
+    <layers>
+      @Info_Surface_Layer@
+    </layers>
+  </soil>
+</site>
