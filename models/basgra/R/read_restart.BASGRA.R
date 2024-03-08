@@ -141,6 +141,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
   } 
+
+  if ("harvest_carbon_flux" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$harvest_carbon_flux[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("harvest_carbon_flux")
+  }
   
   PEcAn.logger::logger.info(runid)
   
