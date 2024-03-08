@@ -1,7 +1,6 @@
-#################################################################
-#'align_pft
+#' Align vectors of Plant Functional Type and species.
+#'
 #'@details
-#' Aligns vectors of Plant Fucntional Typed and species.
 #' Can align: 
 #' - two vectors of plant fucntional types (pft's) if a custom map is provided
 #' - a list of species (usda, fia, or latin_name format) to a plant fucntional type
@@ -28,6 +27,9 @@
 #' @param format_two The output of query.format.vars() of observation two of the form output$vars$bety_names
 #' @param subset_is_ok When aligning two species lists, this allows for alignement when species lists aren't identical. 
 #' set to FALSE by default. 
+#' @param comparison_type one of "data_to_model", "data_to_data", or "model_to_model"
+#' @param ... other arguments, currently ignored
+#'
 #' @return \code{list} containing the following columns:
 #' \describe{
 #'  \item{\code{$original}}{Will spit back out original vectors pre-alignment}

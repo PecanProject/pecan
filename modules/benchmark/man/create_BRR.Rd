@@ -10,6 +10,8 @@ create_BRR(ens_wf, con, user_id = "")
 \item{ens_wf}{table made from joining ensemble and workflow tables}
 
 \item{con}{database connection}
+
+\item{user_id}{Optional user id to use for this record in reference_runs table}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores

@@ -39,7 +39,6 @@
 "datapack","*","modules/data.land","Imports",FALSE
 "DBI","*","base/db","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
-"dbplyr","*","modules/benchmark","Imports",FALSE
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
@@ -184,6 +183,7 @@
 "mgcv","*","modules/data.atmosphere","Imports",FALSE
 "minpack.lm","*","modules/rtm","Suggests",FALSE
 "mlegp","*","modules/assim.batch","Imports",FALSE
+"mockery","*","base/all","Suggests",FALSE
 "mockery","*","base/qaqc","Suggests",FALSE
 "mockery","*","base/remote","Suggests",FALSE
 "mockery","*","base/settings","Suggests",FALSE
@@ -352,7 +352,6 @@
 "PEcAn.remote","*","models/stics","Imports",TRUE
 "PEcAn.remote","*","modules/assim.batch","Imports",TRUE
 "PEcAn.remote","*","modules/assim.sequential","Imports",TRUE
-"PEcAn.remote","*","modules/benchmark","Imports",TRUE
 "PEcAn.remote","*","modules/data.atmosphere","Imports",TRUE
 "PEcAn.remote","*","modules/data.land","Imports",TRUE
 "PEcAn.remote","*","modules/data.remote","Imports",TRUE
@@ -438,6 +437,7 @@
 "purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
 "pwr","*","modules/rtm","Suggests",FALSE
 "R.utils","*","base/db","Imports",FALSE
+"randomForest","*","modules/assim.sequential","Suggests",FALSE
 "randtoolbox","*","base/utils","Suggests",FALSE
 "randtoolbox","*","modules/uncertainty","Imports",FALSE
 "raster","*","base/visualization","Suggests",FALSE
@@ -446,6 +446,7 @@
 "raster","*","modules/data.land","Suggests",FALSE
 "raster","*","modules/data.remote","Suggests",FALSE
 "rcrossref","*","base/db","Suggests",FALSE
+"readr","*","modules/assim.sequential","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -528,6 +529,7 @@
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "Rpreles","*","models/preles","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
+"sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
 "sf","*","modules/data.atmosphere","Imports",FALSE
 "sf","*","modules/data.land","Imports",FALSE
@@ -554,6 +556,7 @@
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
 "swfscMisc","*","modules/data.land","Imports",FALSE
+"terra","*","modules/assim.sequential","Suggests",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
 "terra","*","modules/data.land","Imports",FALSE
 "terra","*","modules/data.remote","Imports",FALSE
@@ -639,6 +642,7 @@
 "withr","*","base/settings","Suggests",FALSE
 "withr","*","base/utils","Suggests",FALSE
 "withr","*","base/visualization","Suggests",FALSE
+"withr","*","base/workflow","Suggests",FALSE
 "withr","*","models/ed","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
