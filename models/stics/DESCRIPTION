@@ -17,11 +17,12 @@ Imports:
     lubridate,
     ncdf4,
     XML,
-    dplyr
+    dplyr,
 Suggests:
     testthat (>= 1.0.2)
 Remotes:
-    github::SticsRPacks/SticsRPacks
+    github::SticsRPacks/SticsRFiles,
+    github::SticsRPacks/SticsOnR
 SystemRequirements: STICS
 OS_type: unix
 License: BSD_3_clause + file LICENSE
