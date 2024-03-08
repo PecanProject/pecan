@@ -1289,28 +1289,28 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
  
     sapply(1:5, function(x) SticsRFiles::set_soil_txt(file = sols_file, param="epc", value=20, layer = x)) 
     
-    # water_concentration_at_field_capacity
-    hccf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_field_capacity")
+    # volume_fraction_of_water_in_soil_at_field_capacity
+    hccf    <- ncdf4::ncvar_get(ic_nc, "volume_fraction_of_water_in_soil_at_field_capacity")
     hccf    <- round(hccf*100, digits = 2)
     sapply(seq_along(hccf), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="hccf", value=hccf[x], layer = x)) 
     
-    # water_concentration_at_wilting_point
-    hminf    <- ncdf4::ncvar_get(ic_nc, "water_concentration_at_wilting_point")
+    # volume_fraction_of_condensed_water_in_soil_at_wilting_point
+    hminf    <- ncdf4::ncvar_get(ic_nc, "volume_fraction_of_condensed_water_in_soil_at_wilting_point")
     hminf    <- round(hminf*100, digits = 2)
     sapply(seq_along(hminf), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="hminf", value=hminf[x], layer = x)) 
     
     # soil_organic_nitrogen_content
-    Norg    <- ncdf4::ncvar_get(ic_nc, "soil_nitrogen_content")
+    Norg    <- ncdf4::ncvar_get(ic_nc, "soil_organic_nitrogen_content")
     Norg    <- round(Norg[1]*100, digits = 2) # STICS uses 1 Norg value
     SticsRFiles::set_soil_txt(file = sols_file, param="Norg", value=Norg) 
 
-    # soil_clay_content
-    argi    <- ncdf4::ncvar_get(ic_nc, "soil_clay_content")
+    # mass_fraction_of_clay_in_soil
+    argi    <- ncdf4::ncvar_get(ic_nc, "mass_fraction_of_clay_in_soil")
     argi    <- round(argi[1]*100, digits = 0) # STICS uses 1 argi value
     SticsRFiles::set_soil_txt(file = sols_file, param="argi", value=argi) 
     
-    # soil_bulk_density (kg m-3 --> g cm-3)
-    DAF    <- ncdf4::ncvar_get(ic_nc, "soil_bulk_density")
+    # soil_density (kg m-3 --> g cm-3)
+    DAF    <- ncdf4::ncvar_get(ic_nc, "soil_density")
     DAF    <- round(udunits2::ud.convert(DAF, "kg m-3", "g cm-3"), digits = 1)
     sapply(seq_along(DAF), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="DAF", value=DAF[x], layer = x)) 
     

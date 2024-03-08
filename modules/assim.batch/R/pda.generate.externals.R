@@ -55,8 +55,9 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, varn = "NEE", varid = 297, n_eff = 106.9386, external.formats = TRUE,
-##'                                         model_data_diag = TRUE, model.out = "/data/workflows/PEcAn_15000000111/out/15000186876",
+##' pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, varn = "NEE", varid = 297, n_eff = 106.9386, 
+##'                                         external.formats = TRUE, model_data_diag = TRUE, 
+##'                                         model.out = "/data/workflows/PEcAn_15000000111/out/15000186876",
 ##'                                         start_date = "2017-01-01", end_date = "2018-12-31")
 ##' }
 
