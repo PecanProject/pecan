@@ -343,7 +343,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefun
         
         
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
-        ynew   <- get_y(newSS, xnew, llik.fn, priors, currllp)
+        ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
           xcurr  <- xnew
           currSS <- newSS
