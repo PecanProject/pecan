@@ -51,7 +51,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   # more than one site, more than one variable we want to track) so we need flexibility.  More
   # generally, files should never be hardcoded since these tests will run on many different machines
   
-  obs_file <- read.table("Location of the data table")
+  obs_file <- utils::read.table("Location of the data table")
   obs_value <- obs_file$value
   N <- size(obs_value)
   
@@ -70,7 +70,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   # purpose of that run was recorded elsewhere.  seems like it would be much better to have all that
   # in one place
   
-  bench_file <- read.table("Location of the data table", bench_id)
+  bench_file <- utils::read.table("Location of the data table", bench_id)
   bench_value <- bench_file$value
   
   # First calculate the differences between the current benchmark run and the observed values
@@ -179,8 +179,8 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   # calculate the
   
   if (bench_ratio_mean < imp_limit & bench_ratio_count > 0.8) {
-    Set_Bench(...)  #Subroutine which sets the current run to be the new benchmark comparison run as well as saves the previous benchmark comparison run a database
-    Compare_Bench(...)  #Subroutine which calculates a new vector of values which are essentially the benchmark ratios between old runs and the current comparison run.
+    #Set_Bench(...)  #Subroutine which sets the current run to be the new benchmark comparison run as well as saves the previous benchmark comparison run a database
+    #Compare_Bench(...)  #Subroutine which calculates a new vector of values which are essentially the benchmark ratios between old runs and the current comparison run.
   }
   ## MCD: I wonder if this should be automatic (i.e. every time the model does better it becomes the
   ## new benchmark) or whether it should be something where the user is prompted to confirm that we

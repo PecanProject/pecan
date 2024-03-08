@@ -21,6 +21,32 @@ test_that(
   expect_equal(b[,signif(range(wind), 2)], c(0.066, 6.60))
 })
 
+test_that("downscaling with timestep", {
+  df <- data.table::data.table(
+    year = 2020, doy = 100,
+    air_temperature_min = 293.15, air_temperature_max = 303.15, air_temperature = 298.15,
+    surface_downwelling_shortwave_flux_in_air = 1000,
+    air_pressure = 1030,
+    wind_speed = 0,
+    relative_humidity = 0.5,
+    precipitation_flux = 2 / (60 * 60)) # units: mm/sec
+
+  r1 <- cfmet.downscale.daily(df, output.dt = 1, lat = 40)
+  r6 <- cfmet.downscale.daily(df, output.dt = 6, lat = 40)
+  r12 <- cfmet.downscale.daily(df, output.dt = 12, lat = 40)
+
+  expect_equal(nrow(r1), 24)
+  expect_equal(nrow(r6), 4)
+  expect_equal(nrow(r12), 2)
+
+  list(r1, r6,r12) %>%
+  purrr::walk(~{
+    expect_equal(mean(.$air_temperature), (df$air_temperature - 273.15)) # input is K, output is C
+    expect_equal(sum(.$precipitation_flux), df$precipitation_flux)
+    expect_true(all(.$air_pressure == df$air_pressure))
+  })
+
+})
 
 test_that("get.ncvector works",{
   run.dates <- data.table::data.table(index = 1:2, date = c(lubridate::ymd("1951-01-01 UTC"), lubridate::ymd("1951-01-02 UTC")))
