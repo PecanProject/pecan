@@ -60,15 +60,15 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     outlist[[length(outlist)+1]] <- stics_output[thisyear, "lai.n."]  # LAI in (m2 m-2)
     
     # daily amount of CO2-C emitted due to soil mineralisation (humus and organic residues) (kg ha-1 d-1)
-    HeteroResp <- udunits2::ud.convert(stics_output[thisyear, "CO2sol"],  "ha-1 day-1", "m-2 s-1")
+    HeteroResp <- PEcAn.utils::ud_convert(stics_output[thisyear, "CO2sol"],  "ha-1 day-1", "m-2 s-1")
     
     outlist[[length(outlist)+1]] <- HeteroResp
     
     
     # dltams(n): daily growth rate of the plant (t.ha-1.d-1) 
-    dltams      <- udunits2::ud.convert(stics_output[thisyear, "dltams.n."], "ton", "kg") * 0.48 # ton to kgC
+    dltams      <- PEcAn.utils::ud_convert(stics_output[thisyear, "dltams.n."], "ton", "kg") * 0.48 # ton to kgC
     # dltaremobil: daily amount of perennial reserves remobilised (t.ha-1.d-1)
-    dltaremobil <- udunits2::ud.convert(stics_output[thisyear, "dltaremobil"], "ton", "kg") * 0.48 # ton to kgC
+    dltaremobil <- PEcAn.utils::ud_convert(stics_output[thisyear, "dltaremobil"], "ton", "kg") * 0.48 # ton to kgC
 
     NPP <- dltams - dltaremobil # kgC ha-1 d-1
     NPP[NPP<0] <- 0
@@ -79,7 +79,7 @@ model2netcdf.STICS <- function(outdir, sitelat, sitelon, start_date, end_date, o
     ## should be roughly equal to this:
     #diff(stics_output[thisyear, "masec.n."])+ diff(stics_output[thisyear, "msrac.n."]) # t.ha-1
     
-    NPP <- udunits2::ud.convert(NPP, "ha-1 day-1", "m-2 s-1") # kg C m-2 s-1  
+    NPP <- PEcAn.utils::ud_convert(NPP, "ha-1 day-1", "m-2 s-1") # kg C m-2 s-1  
     outlist[[length(outlist)+1]] <- NPP
     
     NEE <- -1*(NPP-HeteroResp)

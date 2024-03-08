@@ -542,14 +542,14 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # maximum SLA (specific leaf area) of green leaves (cm2 g-1)
     if ("SLAMAX" %in% pft.names) {
       slamax <- pft.traits[which(pft.names == "SLAMAX")]
-      slamax <- udunits2::ud.convert(udunits2::ud.convert(slamax, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
+      slamax <- PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(slamax, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
       SticsRFiles::set_param_xml(plant_file, "slamax", slamax, overwrite = TRUE)
     }
     
     # minimum SLA (specific leaf area) of green leaves (cm2 g-1)
     if ("SLAMIN" %in% pft.names) {
       slamin <- pft.traits[which(pft.names == "SLAMIN")]
-      slamin <- udunits2::ud.convert(udunits2::ud.convert(slamin, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
+      slamin <- PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(slamin, "m2", "cm2"), "kg-1", "g-1") # m2 kg-1 to cm2 g-1
       SticsRFiles::set_param_xml(plant_file, "slamin", slamin, overwrite = TRUE)
     }
     
@@ -598,7 +598,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # longsperac - specific root length (cm g-1)
     if ("SRL" %in% pft.names) {
-      srl_val  <- udunits2::ud.convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
+      srl_val  <- PEcAn.utils::ud_convert(pft.traits[which(pft.names == "SRL")], "m", "cm")
       SticsRFiles::set_param_xml(plant_file, "longsperac", srl_val, overwrite = TRUE)
     }
     
@@ -1207,24 +1207,24 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       
       # initial aerial biomass (kg m-2 --> t ha-1)
       masec0    <- ncdf4::ncvar_get(ic_nc, "AGB")
-      SticsRFiles::set_param_xml(file = ini_file, param = "masec0", values = udunits2::ud.convert(masec0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE)
+      SticsRFiles::set_param_xml(file = ini_file, param = "masec0", values = PEcAn.utils::ud_convert(masec0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE)
       
       # initial depth of root apex of the crop (m --> cm)
       zrac0    <- ncdf4::ncvar_get(ic_nc, "rooting_depth")
       if(zrac0 < 0.2) zrac0 <- 0.2
-      SticsRFiles::set_param_xml(file = ini_file, param = "zrac0", values = udunits2::ud.convert(zrac0, "m", "cm"), select = "plante", select_value = "1", overwrite = TRUE) 
+      SticsRFiles::set_param_xml(file = ini_file, param = "zrac0", values = PEcAn.utils::ud_convert(zrac0, "m", "cm"), select = "plante", select_value = "1", overwrite = TRUE) 
       
       # initial grain dry weight - haven't started any simulations from this stage yet
       # SticsRFiles::set_param_xml(file = ini_file, param = "magrain0",   values = 0, select = "plante", select_value = "1", overwrite = TRUE)    
       
       # initial N amount in the plant (kg m-2 --> kg ha-1)
       QNplante0    <- ncdf4::ncvar_get(ic_nc, "plant_nitrogen_content")
-      SticsRFiles::set_param_xml(file = ini_file, param = "QNplante0",  values = udunits2::ud.convert(QNplante0, "kg m-2", "kg ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
+      SticsRFiles::set_param_xml(file = ini_file, param = "QNplante0",  values = PEcAn.utils::ud_convert(QNplante0, "kg m-2", "kg ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
       
       # Not anymore
       # initial reserve of biomass (kg m-2 --> t ha-1)
       #resperenne0    <- ncdf4::ncvar_get(ic_nc, "reserve_biomass")
-      #SticsRFiles::set_param_xml(file = ini_file, param = "resperenne0", values = udunits2::ud.convert(resperenne0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
+      #SticsRFiles::set_param_xml(file = ini_file, param = "resperenne0", values = PEcAn.utils::ud_convert(resperenne0, "kg m-2", "t ha-1"), select = "plante", select_value = "1", overwrite = TRUE) 
       
       # initial root density in each of the five soil layers
       densinitial    <- ncdf4::ncvar_get(ic_nc, "root_density")
@@ -1311,7 +1311,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # soil_density (kg m-3 --> g cm-3)
     DAF    <- ncdf4::ncvar_get(ic_nc, "soil_density")
-    DAF    <- round(udunits2::ud.convert(DAF, "kg m-3", "g cm-3"), digits = 1)
+    DAF    <- round(PEcAn.utils::ud_convert(DAF, "kg m-3", "g cm-3"), digits = 1)
     sapply(seq_along(DAF), function(x) SticsRFiles::set_soil_txt(file = sols_file, param="DAF", value=DAF[x], layer = x)) 
     
     # c2n_humus
