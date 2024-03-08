@@ -217,7 +217,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       codeplante <- 'fou'
       codeperenne <- 2
     }else{
-      codeplante <- substr(names(trait.values)[pft],1,3)
+      codeplante <- base::substr(names(trait.values)[pft],1,3)
       codeperenne <- 1
     }
     codebfroid <- 2 # vernalization requirement, hardcoding for now, 2==yes
@@ -732,6 +732,21 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(plant_file, "croirac", pft.traits[which(pft.names == "croirac")], overwrite = TRUE)
     }
     
+    # extinction coefficient connecting LAI to crop height
+    if ("LAI2height" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "khaut", pft.traits[which(pft.names == "LAI2height")], overwrite = TRUE)
+    }
+    
+    # average root radius
+    if ("rayon" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "rayon", pft.traits[which(pft.names == "rayon")], overwrite = TRUE)
+    }
+    
+    # minimal value for drought stress index
+    if ("swfacmin" %in% pft.names) {
+      SticsRFiles::set_param_xml(plant_file, "swfacmin", pft.traits[which(pft.names == "swfacmin")], overwrite = TRUE)
+    }
+    
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
       SticsRFiles::convert_xml2txt(file = plant_file, javastics = javastics_path)
@@ -791,12 +806,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(gen_file, "y0msrac", pft.traits[which(pft.names == "rootmin_harvest")], overwrite = TRUE)
     }
     
-    # move to plt!!! file  
-    # extinction coefficient connecting LAI to crop height
-    if ("LAI2height" %in% pft.names) {
-      SticsRFiles::set_param_xml(gen_file, "khaut", pft.traits[which(pft.names == "LAI2height")], overwrite = TRUE)
-    }
-    
     ### Root growth
     
     # bulk density of soil below which root growth is reduced due to a lack of soil cohesion (g.cm-3)
@@ -824,12 +833,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # root length density (RLD) above which water and N uptake are maximum and independent of RLD
     if ("lvopt" %in% pft.names) {
       SticsRFiles::set_param_xml(gen_file, "lvopt", pft.traits[which(pft.names == "lvopt")], overwrite = TRUE)
-    }
-  
-    # move to plt!!! file
-    # average root radius
-    if ("rayon" %in% pft.names) {
-      SticsRFiles::set_param_xml(gen_file, "rayon", pft.traits[which(pft.names == "rayon")], overwrite = TRUE)
     }
 
     # diffusion coefficient of nitrate N in soil at field capacity
@@ -891,29 +894,24 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       SticsRFiles::set_param_xml(gen_file, "TREFr", soil_params[which(soil.names == "T_r_ORdecomp")], overwrite = TRUE)
     }
     
-    # not used anymore, or at least not with this name!!!
-    # initial fraction of soil organic N inactive for mineralisation (= stable SON/ total SON)
-    if ("FINERT" %in% soil.names) {
-      SticsRFiles::set_param_xml(gen_file, "FINERT", soil_params[which(soil.names == "FINERT")], overwrite = TRUE)
-    }
-    
-    # not used anymore, or at least not with this name!!!
-    # relative potential mineralization rate: K2 = fmin1 * exp(- fmin2*argi) / (1+fmin3*calc)
-    if ("FMIN1" %in% soil.names) {
-      SticsRFiles::set_param_xml(gen_file, "FMIN1", soil_params[which(soil.names == "FMIN1")], overwrite = TRUE)
-    }
-
-    # not used anymore, or at least not with this name!!!
-    # parameter defining the effect of clay on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
-    if ("FMIN2" %in% soil.names) {
-      SticsRFiles::set_param_xml(gen_file, "FMIN2", soil_params[which(soil.names == "FMIN2")], overwrite = TRUE)
-    }
-    
-    # not used anymore, or at least not with this name!!!
-    # parameter defining the effect of CaCO3 on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
-    if ("FMIN3" %in% soil.names) {
-      SticsRFiles::set_param_xml(gen_file, "FMIN3", soil_params[which(soil.names == "FMIN3")], overwrite = TRUE)
-    }
+    # TODO: come back to these
+    # # not used anymore, or at least not with this name!!!
+    # # relative potential mineralization rate: K2 = fmin1 * exp(- fmin2*argi) / (1+fmin3*calc)
+    # if ("FMIN1" %in% soil.names) {
+    #   SticsRFiles::set_param_xml(gen_file, "FMIN1", soil_params[which(soil.names == "FMIN1")], overwrite = TRUE)
+    # }
+    # 
+    # # not used anymore, or at least not with this name!!!
+    # # parameter defining the effect of clay on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
+    # if ("FMIN2" %in% soil.names) {
+    #   SticsRFiles::set_param_xml(gen_file, "FMIN2", soil_params[which(soil.names == "FMIN2")], overwrite = TRUE)
+    # }
+    # 
+    # # not used anymore, or at least not with this name!!!
+    # # parameter defining the effect of CaCO3 on the potential mineralization rate: K2 = fmin1 * exp(-fmin2*argi) / (1+fmin3*calc)
+    # if ("FMIN3" %in% soil.names) {
+    #   SticsRFiles::set_param_xml(gen_file, "FMIN3", soil_params[which(soil.names == "FMIN3")], overwrite = TRUE)
+    # }
     
     # N/C ratio of soil humus
     if ("Wh" %in% soil.names) {
@@ -1165,13 +1163,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     })
     
     ### new formulations 
-    
-    # move to plt!!! file
-    # minimal value for drought stress index
-    if ("swfacmin" %in% pft.names) {
-      SticsRFiles::set_param_xml(newf_file, "swfacmin", pft.traits[which(pft.names == "swfacmin")], overwrite = TRUE)
-    }
-    
     # DO NOTHING ELSE FOR NOW
     
     SticsRFiles::convert_xml2txt(file = newf_file, javastics = javastics_path)
@@ -1267,6 +1258,12 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   #### THERE IS SOME BUG IN SticsRFiles::convert_xml2txt FOR SOLS.XML
   #### I NOW PUT TXT VERSION TO THE MODEL PACKAGE: param.sol
   #### TODO: revise others to have txt templates directly in the package
+  
+  # # changed from FINERT to finert and moved to the sols.xml
+  # # initial fraction of soil organic N inactive for mineralisation (= stable SON/ total SON)
+  # if ("FINERT" %in% soil.names) {
+  #   SticsRFiles::set_param_xml(gen_file, "finert", soil_params[which(soil.names == "FINERT")], overwrite = TRUE)
+  # }
   
   sols_file <- file.path(rundir, "param.sol")
   
@@ -1577,7 +1574,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # Type of LAI simulation 
     # 0 = culture (LAI calculated by the model), 1 = feuille (LAI forced)
-    SticsRFiles::set_usm_txt(usm_file, "codesimul", 0, append = FALSE) # hardcode for now
+    SticsRFiles::set_usm_txt(usm_file, "codesimul", "culture", append = FALSE) # hardcode for now
     
     # use optimization
     # 0 = no;  1 = yes main plant; 2 = yes associated plant
