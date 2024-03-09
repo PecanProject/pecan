@@ -66,8 +66,6 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                                   outfolder, yrs.save=NULL, ens.name, ens.mems=NULL, force.sanity=TRUE, sanity.tries=25, sanity.sd=8, lat.in, lon.in,
                                   save.diagnostics=TRUE, path.diagnostics=NULL,
                                   parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE) {
-  library(MASS)
-  library(mgcv)
 
   set.seed(seed)
 

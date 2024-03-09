@@ -178,7 +178,6 @@
 "methods","*","modules/allometry","Imports",FALSE
 "methods","*","modules/assim.batch","Imports",FALSE
 "methods","*","modules/assim.sequential","Suggests",FALSE
-"methods","*","modules/data.atmosphere","Depends",FALSE
 "methods","*","modules/emulator","Imports",FALSE
 "mgcv","*","modules/data.atmosphere","Imports",FALSE
 "minpack.lm","*","modules/rtm","Suggests",FALSE
