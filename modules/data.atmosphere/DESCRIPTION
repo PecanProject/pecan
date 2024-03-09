@@ -69,7 +69,8 @@ Suggests:
     parallel,
     PEcAn.settings,
     progress,
-    reticulate
+    reticulate,
+    withr
 Remotes:
     github::adokter/suntools,
     github::chuhousen/amerifluxr,

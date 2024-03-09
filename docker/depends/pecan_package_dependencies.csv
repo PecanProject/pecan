@@ -645,6 +645,7 @@
 "withr","*","models/ed","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
+"withr","*","modules/data.atmosphere","Suggests",FALSE
 "XML","*","base/db","Imports",FALSE
 "XML","*","base/workflow","Imports",FALSE
 "XML","*","models/biocro","Imports",FALSE
