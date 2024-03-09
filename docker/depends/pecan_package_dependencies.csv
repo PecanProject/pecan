@@ -157,7 +157,6 @@
 "magrittr","*","models/ed","Imports",FALSE
 "magrittr","*","modules/assim.sequential","Imports",FALSE
 "magrittr","*","modules/benchmark","Imports",FALSE
-"magrittr","*","modules/data.atmosphere","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
 "markdown","*","modules/allometry","Suggests",FALSE
