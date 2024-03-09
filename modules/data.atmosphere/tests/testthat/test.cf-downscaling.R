@@ -11,14 +11,14 @@ test_that(
         "actual values will need to be revised if (when) algorithms change"), 
 {
   b <- cfmet.downscale.time(cfmet = daily.cf, lat = 40)
-  expect_equal(b[,unique(year)], 1951)
-  expect_equal(b[,range(doy)], c(2,151))
-  expect_equal(b[,unique(hour)], 0:23)
-  expect_equal(b[,round(range(downwelling_photosynthetic_photon_flux))], c(0, 2061))
-  expect_equal(b[,round(range(air_temperature))], c(-22, 31))
-  #  expect_equal(b[,round(range(relative_humidity))], c(0.30569194491299, 1))
-  expect_equal(b[,signif(range(precipitation_flux), 3)], c(0, 1.67e-05))
-  expect_equal(b[,signif(range(wind), 2)], c(0.066, 6.60))
+  expect_equal(unique(b$year), 1951)
+  expect_equal(range(b$doy), c(2,151))
+  expect_equal(unique(b$hour), 0:23)
+  expect_equal(round(range(b$downwelling_photosynthetic_photon_flux)), c(0, 2061))
+  expect_equal(round(range(b$air_temperature)), c(-22, 31))
+  #  expect_equal(round(range(b$relative_humidity)), c(0.30569194491299, 1))
+  expect_equal(signif(range(b$precipitation_flux), 3), c(0, 1.67e-05))
+  expect_equal(signif(range(b$wind), 2), c(0.066, 6.60))
 })
 
 test_that("downscaling with timestep", {
@@ -46,6 +46,24 @@ test_that("downscaling with timestep", {
     expect_true(all(.$air_pressure == df$air_pressure))
   })
 
+})
+
+test_that("output for a given day not affected by adjacent days", {
+  df <- data.frame(
+    year = 2020, doy = 100:101,
+    air_temperature_min = 293.15 + c(0, 10),
+    air_temperature_max = 303.15 + c(0, 10),
+    air_temperature = 298.15 + c(0, 10),
+    surface_downwelling_shortwave_flux_in_air = c(1000, 2000),
+    air_pressure = 1030,
+    wind_speed = 0,
+    relative_humidity = 0.5,
+    precipitation_flux = c(0, 2 / (60 * 60)))
+
+  # print(cfmet.downscale.daily(df[2,], 6, 40))
+  # print(cfmet.downscale.daily(df, 6, 40))
+  expect_equal(cfmet.downscale.daily(df[1,], 6, 40), cfmet.downscale.daily(df, 6, 40)[1:4,])
+  expect_equal(cfmet.downscale.daily(df[2,], 6, 40), cfmet.downscale.daily(df, 6, 40)[5:8,])
 })
 
 test_that("get.ncvector works",{
