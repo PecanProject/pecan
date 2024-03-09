@@ -43,7 +43,7 @@ test_that("downscaling with timestep", {
   purrr::walk(~{
     expect_equal(mean(.$air_temperature), (df$air_temperature - 273.15)) # input is K, output is C
     expect_equal(sum(.$precipitation_flux), df$precipitation_flux)
-    expect_true(all(.$air_pressure == df$air_pressure))
+    expect_true(all(.$wind == df$wind_speed))
   })
 
 })
