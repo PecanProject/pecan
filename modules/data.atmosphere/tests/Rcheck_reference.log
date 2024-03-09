@@ -54,8 +54,12 @@ extract.nc.ERA5 : <anonymous>: no visible binding for global variable
 get_NARR_thredds: no visible binding for global variable ‘latitude’
 get_NARR_thredds: no visible binding for global variable ‘longitude’
 met2CF.FACE: no visible binding for global variable ‘x’
+met_temporal_downscale.Gaussian_ensemble: no visible binding for global
+  variable ‘temp_max’
+met_temporal_downscale.Gaussian_ensemble: no visible binding for global
+  variable ‘temp_min’
 Undefined global functions or variables:
-  . GCM latitude longitude values x
+  . GCM latitude longitude temp_max temp_min values x
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
