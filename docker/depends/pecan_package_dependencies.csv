@@ -33,7 +33,6 @@
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
 "data.table","*","models/ldndc","Imports",FALSE
-"data.table","*","modules/data.atmosphere","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
@@ -55,10 +54,10 @@
 "dplyr","*","models/stics","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
-"dplyr","*","modules/data.atmosphere","Imports",FALSE
 "dplyr","*","modules/data.land","Imports",FALSE
 "dplyr","*","modules/data.remote","Suggests",FALSE
 "dplyr","*","modules/uncertainty","Imports",FALSE
+"dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "emdbook","*","modules/assim.sequential","Suggests",FALSE

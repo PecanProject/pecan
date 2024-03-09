@@ -22,7 +22,7 @@ test_that(
 })
 
 test_that("downscaling with timestep", {
-  df <- data.table::data.table(
+  df <- data.frame(
     year = 2020, doy = 100,
     air_temperature_min = 293.15, air_temperature_max = 303.15, air_temperature = 298.15,
     surface_downwelling_shortwave_flux_in_air = 1000,
@@ -67,7 +67,7 @@ test_that("output for a given day not affected by adjacent days", {
 })
 
 test_that("get.ncvector works",{
-  run.dates <- data.table::data.table(index = 1:2, date = c(lubridate::ymd("1951-01-01 UTC"), lubridate::ymd("1951-01-02 UTC")))
+  run.dates <- data.frame(index = 1:2, date = c(lubridate::ymd("1951-01-01 UTC"), lubridate::ymd("1951-01-02 UTC")))
   res <- get.ncvector("air_temperature", lati = 1, loni = 1, run.dates, met.nc = daily.nc)
   expect_type(res, "double")
   expect_equal(length(res), nrow(run.dates))
