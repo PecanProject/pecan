@@ -102,8 +102,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
   
-  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
-  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
+  if(!is.identical(cpruncmd, character(0)) {
+    jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  }
+  if(!is.identical(cpoutcmd, character(0)) {     
+    jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
+  }
   jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
   jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
   
