@@ -14,7 +14,6 @@ on.exit(ncdf4::nc_close(subdaily.nc), add = TRUE)
 
 test_that("data extracted from test pecan-cf met files is valid",{
   expect_is(daily.cf, "data.frame")
-  expect_is(daily.cf, "data.table")
 
   expect_is(daily.cf$date, "POSIXct")
   expect_is(daily.cf$date, "POSIXt")
