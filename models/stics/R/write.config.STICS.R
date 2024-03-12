@@ -48,7 +48,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   ########## Determining number of USMs (could be made its own function)
   
-  # In STICS, it is 1 UMS per crop cycle, where each cycle can be 2-years max
+  # In STICS, it is 1 USM per crop cycle, where each cycle can be 2-years max
   # If we have a consecutive monoculture for > 2 years, we still need to divide it into 2-year USMs
   # If there are multiple pfts, this is a strong clue that there are multiple crop cycles
   # but it can also be the case that there is one cycle with intercropping
