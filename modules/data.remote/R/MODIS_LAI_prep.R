@@ -69,20 +69,6 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
   }
   #only Site that has NA for any time points need to be downloaded.
   new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(LAI_Output)])
-  #filter out unreachable sites.
-  PEcAn.logger::logger.info("filter out unreachable sites!")
-  non.reachable.ind <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
-    furrr::future_map(function(s){
-      if (! "try-error" %in% class(try(mean <- MODISTools::mt_dates(product = "MOD11A2",
-                                                                    lat = s$lat,
-                                                                    lon = s$lon)))) {
-        return(FALSE)
-      } else {
-        return(TRUE)
-      }
-    }, .progress = T) %>% unlist
-  new_site_info <- new_site_info %>% purrr::map(function(x)x[-which(non.reachable.ind)])
-  #if we have any site missing previously
   #TODO: only download data for specific date when we have missing data.
   if(length(new_site_info$site_id) != 0){
     product <- "MCD15A3H"
