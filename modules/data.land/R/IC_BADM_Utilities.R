@@ -156,7 +156,7 @@ Read.IC.info.BADM <-function(lat, long){
             Site = Gdf$SITE_ID %>% unique(),
             Var = Gdf$VARIABLE[1],
             Date = Date.in,
-            Organ = Organ.in,
+            # Organ = Organ.in,
             AGB = PlantWoodIni,
             soil_organic_carbon_content = SoilIni,
             litter_carbon_content = litterIni
@@ -239,15 +239,19 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #' @export
 #'
 BADM_IC_process <- function(settings, dir, overwrite=TRUE){
-  
-  
-  new.site <-
-    data.frame(
-      id = settings$run$site$id %>% as.numeric(),
-      lat = settings$run$site$lat ,
-      lon = settings$run$site$lon %>% as.numeric()
-    )
-  
+  # create site info.
+  new.site <- 
+    settings %>% 
+    purrr::map(~.x[['run']] ) %>% 
+    purrr::map('site')%>% 
+    purrr::map(function(site.list){
+      #conversion from string to number
+      site.list$lat <- as.numeric(site.list$lat)
+      site.list$lon <- as.numeric(site.list$lon)
+      list(id=site.list$id, lat=site.list$lat, lon=site.list$lon)
+    })%>% 
+    dplyr::bind_rows() %>% 
+    as.list()
 
   out.ense <- seq_len(settings$ensemble$size) %>%
     purrr::map(~ netcdf.writer.BADM(new.site$lat,
@@ -273,7 +277,11 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
 #' @export
 #'
-EPA_ecoregion_finder <- function(Lat, Lon){
+EPA_ecoregion_finder <- function(Lat, Lon, filenames = c("NA_CEC_Eco_Level1.shp", "NA_CEC_Eco_Level2.shp")){
+  #try eco-region map for just CONUS US.
+  if (is.null(filenames)) {
+    filenames = c("eco-region.json", "eco-regionl2.json")
+  }
   #lat long to spatial point
   U.S.SB.sp <-
     data.frame(Lati = Lat %>% as.numeric(),
@@ -281,28 +289,37 @@ EPA_ecoregion_finder <- function(Lat, Lon){
   
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
   
-
   # L1 layer
-  L1 <-
-    sf::read_sf(system.file("extdata","eco-region.json", package = "PEcAn.data.land")) %>%
-    sf::st_set_crs(
-      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-    ) %>%
-    sf::st_transform("+proj=longlat +datum=WGS84")
+  if (length(filenames) >= 1) {
+    L1 <-
+      sf::read_sf(system.file("extdata",filenames[1], package = "PEcAn.data.land")) %>%
+      sf::st_set_crs(
+        "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+      ) %>%
+      sf::st_transform("+proj=longlat +datum=WGS84")
+    #reproject points based on projection of the eco-region map.
+    sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
+    # finding the code for each site
+    over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))
+  } else {
+    PEcAn.logger::logger.info("Please provide file name to the Level 1 eco-region map!")
+    return(0)
+  }
+  
   # L2 layer
-  L2 <-
-    sf::read_sf(system.file("extdata","eco-regionl2.json", package = "PEcAn.data.land")) %>%
-    sf::st_set_crs(
-      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-    ) %>%
-    sf::st_transform("+proj=longlat +datum=WGS84")
-  
-  sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
-  # finding the code for each site
-  over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))
-  over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
-  
-  return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
+  if (length(filenames) > 1) {
+    L2 <-
+      sf::read_sf(system.file("extdata",filenames[2], package = "PEcAn.data.land")) %>%
+      sf::st_set_crs(
+        "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+      ) %>%
+      sf::st_transform("+proj=longlat +datum=WGS84")
+    # finding the code for each site
+    over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
+    return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
+  } else {
+    return(data.frame(L1 = over.out.L1$NA_L1CODE))
+  }
 }
 
 
