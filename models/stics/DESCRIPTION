@@ -17,7 +17,7 @@ Imports:
     lubridate,
     ncdf4,
     XML,
-    dplyr,
+    dplyr
 Suggests:
     SticsRFiles,
     testthat (>= 1.0.2)
