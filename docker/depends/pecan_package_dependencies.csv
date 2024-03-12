@@ -33,7 +33,6 @@
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
 "data.table","*","models/ldndc","Imports",FALSE
-"data.table","*","modules/data.atmosphere","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
@@ -55,10 +54,10 @@
 "dplyr","*","models/stics","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
-"dplyr","*","modules/data.atmosphere","Imports",FALSE
 "dplyr","*","modules/data.land","Imports",FALSE
 "dplyr","*","modules/data.remote","Suggests",FALSE
 "dplyr","*","modules/uncertainty","Imports",FALSE
+"dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "emdbook","*","modules/assim.sequential","Suggests",FALSE
@@ -157,7 +156,6 @@
 "magrittr","*","models/ed","Imports",FALSE
 "magrittr","*","modules/assim.sequential","Imports",FALSE
 "magrittr","*","modules/benchmark","Imports",FALSE
-"magrittr","*","modules/data.atmosphere","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
 "markdown","*","modules/allometry","Suggests",FALSE
@@ -178,7 +176,6 @@
 "methods","*","modules/allometry","Imports",FALSE
 "methods","*","modules/assim.batch","Imports",FALSE
 "methods","*","modules/assim.sequential","Suggests",FALSE
-"methods","*","modules/data.atmosphere","Depends",FALSE
 "methods","*","modules/emulator","Imports",FALSE
 "mgcv","*","modules/data.atmosphere","Imports",FALSE
 "minpack.lm","*","modules/rtm","Suggests",FALSE
@@ -646,6 +643,7 @@
 "withr","*","models/ed","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
+"withr","*","modules/data.atmosphere","Suggests",FALSE
 "XML","*","base/db","Imports",FALSE
 "XML","*","base/workflow","Imports",FALSE
 "XML","*","models/biocro","Imports",FALSE
