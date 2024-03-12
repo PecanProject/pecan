@@ -27,7 +27,7 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
   dat.subset$year <- as.ordered(dat.subset$year) 
   if (v == "air_temperature") {
     
-    mod.doy <- lm(air_temperature ~ as.ordered(hour) * air_temperature_max.day * 
+    mod.doy <- stats::lm(air_temperature ~ as.ordered(hour) * air_temperature_max.day * 
                     (lag.air_temperature + lag.air_temperature_min + air_temperature_min.day) + 
                     as.ordered(hour) * air_temperature_min.day * next.air_temperature_max - 
                     1 - as.ordered(hour) - lag.air_temperature - lag.air_temperature_min - 
@@ -41,7 +41,7 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
     hrs.day <- unique(dat.subset[dat.subset$surface_downwelling_shortwave_flux_in_air > 
                                    threshold, "hour"])
     
-    mod.doy <- lm(surface_downwelling_shortwave_flux_in_air ~ 
+    mod.doy <- stats::lm(surface_downwelling_shortwave_flux_in_air ~ 
                     as.ordered(hour) * surface_downwelling_shortwave_flux_in_air.day - 
                     1 - surface_downwelling_shortwave_flux_in_air.day - 
                     as.ordered(hour), data = dat.subset[dat.subset$hour %in% 
@@ -49,7 +49,7 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
   }
   
   if (v == "surface_downwelling_longwave_flux_in_air") {
-    mod.doy <- lm(sqrt(surface_downwelling_longwave_flux_in_air) ~ 
+    mod.doy <- stats::lm(sqrt(surface_downwelling_longwave_flux_in_air) ~ 
                     as.ordered(hour) * surface_downwelling_longwave_flux_in_air.day * 
                     (lag.surface_downwelling_longwave_flux_in_air + next.surface_downwelling_longwave_flux_in_air) - 
                     as.ordered(hour) - 1 - lag.surface_downwelling_longwave_flux_in_air - 
@@ -66,25 +66,25 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
     # fraction of precip occuring in each hour we're going to estimate the
     # probability distribution of rain occuring in a given hour
     dat.subset$rain.prop <- dat.subset$precipitation_flux/(dat.subset$precipitation_flux.day)
-    mod.doy <- lm(rain.prop ~ as.ordered(hour) - 1 , data = dat.subset)
+    mod.doy <- stats::lm(rain.prop ~ as.ordered(hour) - 1 , data = dat.subset)
   }
   
   if (v == "air_pressure") {
-    mod.doy <- lm(air_pressure ~ as.ordered(hour) * (air_pressure.day + 
+    mod.doy <- stats::lm(air_pressure ~ as.ordered(hour) * (air_pressure.day + 
                                                        lag.air_pressure + next.air_pressure) - as.ordered(hour) - 
                     1 - air_pressure.day - lag.air_pressure - next.air_pressure, 
                   data = dat.subset)
   }
   
   if (v == "specific_humidity") {
-    mod.doy <- lm(log(specific_humidity) ~ as.ordered(hour) * 
+    mod.doy <- stats::lm(log(specific_humidity) ~ as.ordered(hour) * 
                     specific_humidity.day * (lag.specific_humidity + next.specific_humidity + 
                                                air_temperature_max.day) - as.ordered(hour) - 1 - air_temperature_max.day, 
                   data = dat.subset)
   }
   
   if (v == "wind_speed") {
-    mod.doy <- lm(sqrt(wind_speed) ~ as.ordered(hour) * wind_speed.day * 
+    mod.doy <- stats::lm(sqrt(wind_speed) ~ as.ordered(hour) * wind_speed.day * 
                     (lag.wind_speed + next.wind_speed) - as.ordered(hour) - 
                     1 - wind_speed.day - lag.wind_speed - next.wind_speed - 
                     wind_speed.day * lag.wind_speed - wind_speed.day * next.wind_speed, 
@@ -104,13 +104,13 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
   # coefficients that we can pull from without needing to do this step
   # every day
   if(n.beta>1){
-    mod.coef <- coef(mod.doy)
-    mod.cov <- vcov(mod.doy)
+    mod.coef <- stats::coef(mod.doy)
+    mod.cov <- stats::vcov(mod.doy)
     piv <- as.numeric(which(!is.na(mod.coef)))
     Rbeta <- MASS::mvrnorm(n = n.beta, mod.coef[piv], mod.cov[piv,piv])
   } else {
-    Rbeta <- matrix(coef(mod.doy), nrow=1)
-    colnames(Rbeta) <- names(coef(mod.doy))
+    Rbeta <- matrix(stats::coef(mod.doy), nrow=1)
+    colnames(Rbeta) <- names(stats::coef(mod.doy))
   }
   
   list.out <- list(model = mod.doy, betas = Rbeta)
@@ -120,15 +120,15 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
   if (resids == TRUE) {
     if (v == "air_temperature") {
       dat.subset[!is.na(dat.subset$lag.air_temperature) & !is.na(dat.subset$next.air_temperature_max), 
-                 "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * (air_temperature_max.day * 
+                 "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * (air_temperature_max.day * 
                                                       air_temperature_min.day) - 1, data = dat.subset[!is.na(dat.subset$lag.air_temperature), 
                                                                                                       ])
     }
     
     if (v == "surface_downwelling_shortwave_flux_in_air") {
-      dat.subset[dat.subset$hour %in% hrs.day, "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * surface_downwelling_shortwave_flux_in_air.day - 
+      dat.subset[dat.subset$hour %in% hrs.day, "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * surface_downwelling_shortwave_flux_in_air.day - 
                           1, data = dat.subset[dat.subset$hour %in% hrs.day, 
                                                ])
     }
@@ -136,47 +136,47 @@ model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL
     if (v == "surface_downwelling_longwave_flux_in_air") {
       dat.subset[!is.na(dat.subset$lag.surface_downwelling_longwave_flux_in_air) & 
                    !is.na(dat.subset$next.surface_downwelling_longwave_flux_in_air), 
-                 "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * surface_downwelling_longwave_flux_in_air.day - 
+                 "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * surface_downwelling_longwave_flux_in_air.day - 
                           1, data = dat.subset[, ])
     }
     
     if (v == "precipitation_flux") {
-      dat.subset[, "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * precipitation_flux.day - 
+      dat.subset[, "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * precipitation_flux.day - 
                           1, data = dat.subset[, ])
     }
     
     if (v == "air_pressure") {
       dat.subset[!is.na(dat.subset$lag.air_pressure) & !is.na(dat.subset$next.air_pressure), 
-                 "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * air_pressure.day - 
+                 "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * air_pressure.day - 
                           1, data = dat.subset[, ])
     }
     
     if (v == "specific_humidity") {
       dat.subset[!is.na(dat.subset$lag.specific_humidity) & 
-                   !is.na(dat.subset$next.specific_humidity), "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * specific_humidity.day - 
+                   !is.na(dat.subset$next.specific_humidity), "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * specific_humidity.day - 
                           1, data = dat.subset[, ])
     }
     
     if (v == "wind_speed") {
       dat.subset[!is.na(dat.subset$lag.wind_speed) & !is.na(dat.subset$next.wind_speed), 
-                 "resid"] <- resid(mod.doy)
-      resid.model <- lm(resid ~ as.ordered(hour) * wind_speed.day - 
+                 "resid"] <- stats::resid(mod.doy)
+      resid.model <- stats::lm(resid ~ as.ordered(hour) * wind_speed.day - 
                           1, data = dat.subset[, ])
     }
     
     if(n.beta>1){
-      res.coef <- coef(resid.model)
-      res.cov <- vcov(resid.model)
+      res.coef <- stats::coef(resid.model)
+      res.cov <- stats::vcov(resid.model)
       res.piv <- as.numeric(which(!is.na(res.coef)))
       
       beta.resid <- MASS::mvrnorm(n = n.beta, res.coef[res.piv], res.cov)      
     } else {
-      beta.resid <- matrix(coef(resid.model), nrow=1)
-      colnames(beta.resid) <- names(coef(mod.doy))
+      beta.resid <- matrix(stats::coef(resid.model), nrow=1)
+      colnames(beta.resid) <- names(stats::coef(mod.doy))
     }
 
     

@@ -19,6 +19,7 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+##' @importFrom rlang .data .env
 ##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
@@ -227,25 +228,25 @@ met.process <- function(site, input_met, start_date, end_date, model,
       cf.id <- raw.id <- db.file
     }else{ 
       # I did this bc dbfile.input.check does not cover the between two time periods situation
-      mimetypeid <- get.id(table = "mimetypes", colnames = "type_string", 
+      mimetypeid <- PEcAn.DB::get.id(table = "mimetypes", colnames = "type_string", 
                            values = "application/x-netcdf", con = con)
 
-      formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"),
+      formatid <- PEcAn.DB::get.id(table = "formats", colnames = c("mimetype_id", "name"),
                          values = c(mimetypeid, "CF Meteorology"), con = con)
       
-      machine.id <- get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
-      # Fidning the tiles.
-      raw.tiles <- tbl(con, "inputs") %>%
-        filter(
-          site_id == register$ParentSite,
-          start_date >= start_date,
-          end_date <= end_date,
-          format_id == formatid
+      machine.id <- PEcAn.DB::get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
+      # Finding the tiles.
+      raw.tiles <- dplyr::tbl(con, "inputs") %>%
+        dplyr::filter(
+          .data$site_id == register$ParentSite,
+          .data$start_date <= .env$start_date,
+          .data$end_date >= .env$end_date,
+          .data$format_id == formatid
         ) %>%
-        filter(grepl(met, "name")) %>%
-        inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
-        filter(machine_id == machine.id) %>%
-        collect()
+        dplyr::filter(grepl(met, "name")) %>%
+        dplyr::inner_join(dplyr::tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
+        dplyr::filter(.data$machine_id == machine.id) %>%
+        dplyr::collect()
       
       cf.id <- raw.id <- list(input.id = raw.tiles$id.x, dbfile.id = raw.tiles$id.y)
     }
