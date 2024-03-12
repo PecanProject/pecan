@@ -122,13 +122,13 @@ extract.nc.ERA5 <-
               # send out as xts object
               xts::xts(all.data.point, order.by = timestamp)
             }) %>%
-            setNames(paste0("ERA_ensemble_", ensemblesN))
+            stats::setNames(paste0("ERA_ensemble_", ensemblesN))
           
           #Merge mean and the speard
           return(point.data)
           
         }) %>%
-        setNames(years)
+        stats::setNames(years)
       
       
       # The order of one.year.out is year and then Ens - Mainly because of the spead  / I wanted to touch each file just once.
