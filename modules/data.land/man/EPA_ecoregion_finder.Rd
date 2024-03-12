@@ -4,7 +4,11 @@
 \alias{EPA_ecoregion_finder}
 \title{EPA_ecoregion_finder}
 \usage{
-EPA_ecoregion_finder(Lat, Lon)
+EPA_ecoregion_finder(
+  Lat,
+  Lon,
+  filenames = c("NA_CEC_Eco_Level1.shp", "NA_CEC_Eco_Level2.shp")
+)
 }
 \arguments{
 \item{Lat}{numeric latitude}

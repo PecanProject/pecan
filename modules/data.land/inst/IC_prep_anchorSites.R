@@ -1,0 +1,117 @@
+#read settings.
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
+#grab settings info.
+site_info <- settings %>% 
+  purrr::map(~.x[['run']] ) %>% 
+  purrr::map('site')%>% 
+  purrr::map(function(site.list){
+    #conversion from string to number
+    site.list$lat <- as.numeric(site.list$lat)
+    site.list$lon <- as.numeric(site.list$lon)
+    list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+  })%>% 
+  dplyr::bind_rows() %>% 
+  as.list()
+#setup configurations.
+time_poimt <- as.Date("2011-07-15")
+ens <- 100
+source <- "RS_veg"
+Write_into_settings <- TRUE
+outfolder <- "/projectnb/dietzelab/dongchen/anchorSites/IC/IC"
+
+#read parameters and pfts.
+load("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/samples.Rdata")
+pft <- read.csv("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv")
+#prepare LAI
+LAI_df <- PEcAn.data.remote::MODIS_LAI_prep(site_info = site_info, 
+                                            time_points = time_poimt, 
+                                            outdir = "/projectnb/dietzelab/dongchen/anchorSites/IC/LAI/",
+                                            export_csv = T)
+#sample LAI IC
+LAI_IC <- data.frame(matrix(NA, ens, length(site_info$site_id))) %>% `colnames<-`(site_info$site_id)
+for (i in seq_along(LAI_df$LAI_Output$site_id)) {
+  if (is.na(LAI_df$LAI_Output[i,2])) {
+    next
+  } else {
+    LAI_IC[,i] <- rnorm(ens, LAI_df$LAI_Output[i,2], LAI_df$LAI_Output[i,3])
+  }
+}
+#prepare AGB
+AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_geotiff(site.info = site_info, 
+                                                      paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
+                                                                        uncertainty = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010_uncertainty.tif"), 
+                                                      ens = 100)
+#prepare SM
+SM_df <- PEcAn.data.land::extract_SM_CDS(site_info = site_info, 
+                                         time.points = time_poimt, 
+                                         in.path = "/projectnb/dietzelab/dongchen/anchorSites/IC/SM", 
+                                         search_window = 30)
+#sample SM IC
+SM_IC <- data.frame(matrix(NA, ens, length(site_info$site_id))) %>% `colnames<-`(site_info$site_id)
+for (i in seq_along(site_info$site_id)) {
+  if (is.na(SM_df$sm.mean[i])) {
+    next
+  } else {
+    SM_IC[,i] <- rnorm(ens, SM_df$sm.mean[i], SM_df$sm.uncertainty[i])
+  }
+}
+#prepare SOC
+SOC_IC <- PEcAn.data.land::IC_ISCN_SOC(site_info = site_info)
+# write with ensemble number
+for (i in seq_along(site_info$site_id)) {
+  #create new folder for each site.
+  if(!file.exists(file.path(outfolder, site_info$site_id[i]))) {
+    dir.create(file.path(outfolder, site_info$site_id[i]))
+  } else {
+    #if folder already exists, go to the next.
+    next
+  }
+  #grab SLA from parameter file.
+  site_pft <- pft$pft[which(pft$site == site_info$site_id[i])]
+  sla <- ensemble.samples[[site_pft]]$SLA
+  paths <- c()
+  for (j in 1:ens) {
+    #unit conversion for AGB.
+    AGB <- ifelse(is.na(AGB_IC[j, i]), NULL, PEcAn.utils::ud_convert(AGB_IC[j, i], "Mg ha-1", "kg m-2"))
+    leaf_carbon_content <- ifelse(is.na(LAI_IC[j, i]), NULL, LAI_IC[j, i]/sla)#calculate leaf C based on LAI and SLA.
+    #woody biomass calculation based on leaf and aboveground biomass densities.
+    if (!is.null(AGB)) {
+      if (!is.null(leaf_carbon_content)) {
+        wood_carbon_content <- AGB - leaf_carbon_content
+      } else {
+        wood_carbon_content <- AGB
+      }
+    } else {
+      wood_carbon_content <- NULL
+    }
+    #assemble poolinfo and write into NC files.
+    dims <- list(time =1) #Time dimension may be irrelevant
+    variables <-list(AbvGrndWood = AGB, 
+                     wood_carbon_content = wood_carbon_content, 
+                     leaf_carbon_content = leaf_carbon_content, 
+                     soil_organic_carbon_content = ifelse(is.na(SM_IC[j, i]), NULL, SM_IC[j, i]))
+    poolinfo <- list(dims = dims, vals = variables)
+    out <- PEcAn.SIPNET::veg2model.SIPNET(file.path(outfolder, site_info$site_id[i]), 
+                                          poolinfo, as.numeric(site_info$site_id[i]), 
+                                          ens = j)
+    #record paths.
+    paths <- c(out$file, paths)
+  }
+  #write paths of initial conditions into settings.
+  if(Write_into_settings){
+    #populated IC file paths into settings
+    Create_mult_list <- function(list.names, paths){
+      out <- as.list(paths)
+      names(out) <- list.names
+      out
+    }
+    settings[[i]]$run$inputs$poolinitcond$source <- source
+    settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
+    settings[[i]]$run$inputs$poolinitcond$ensemble <- ens
+    settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", ens), paths)
+  }
+}
+#write settings.
+if(Write_into_settings){
+  write.settings(settings, outputdir = file.path(outdir), outputfile = "pecan.xml")
+}
