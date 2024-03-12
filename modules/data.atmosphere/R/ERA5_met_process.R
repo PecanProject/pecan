@@ -10,7 +10,7 @@
 #' @export
 #' 
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #'
 ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write = TRUE){
   #Initialize the multicore computation.

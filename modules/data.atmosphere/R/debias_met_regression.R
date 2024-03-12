@@ -66,8 +66,6 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                                   outfolder, yrs.save=NULL, ens.name, ens.mems=NULL, force.sanity=TRUE, sanity.tries=25, sanity.sd=8, lat.in, lon.in,
                                   save.diagnostics=TRUE, path.diagnostics=NULL,
                                   parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE) {
-  library(MASS)
-  library(mgcv)
 
   set.seed(seed)
 
@@ -190,9 +188,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       } # end y loop
 
       # Hard-coding in some sort of max for precipitaiton
-      rain.max <- max(train.data$precipitation_flux) + sd(train.data$precipitation_flux)
-      rainless.min <- ifelse(min(rainless)-sd(rainless)>=0, min(rainless)-sd(rainless), max(min(rainless)-sd(rainless)/2, 0))
-      rainless.max <- ifelse(max(rainless)+sd(rainless)<=365, max(rainless)+sd(rainless), min(max(rainless)+sd(rainless)/2, 365))
+      rain.max <- max(train.data$precipitation_flux) + stats::sd(train.data$precipitation_flux)
+      rainless.min <- ifelse(min(rainless)-stats::sd(rainless)>=0, min(rainless)-stats::sd(rainless), max(min(rainless)-stats::sd(rainless)/2, 0))
+      rainless.max <- ifelse(max(rainless)+stats::sd(rainless)<=365, max(rainless)+stats::sd(rainless), min(max(rainless)+stats::sd(rainless)/2, 365))
     }
     # -------------
 
@@ -216,7 +214,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # adjustment & anomaly as fraction of total annual precipitation
     if(v == "precipitation_flux"){
       # Find total annual preciptiation
-      precip.ann <- aggregate(met.train$Y, by=met.train[,c("year", "ind")], FUN=sum)
+      precip.ann <- stats::aggregate(met.train$Y, by=met.train[,c("year", "ind")], FUN=sum)
       names(precip.ann)[3] <- "Y.tot"
 
       met.train <- merge(met.train, precip.ann, all=T)
@@ -224,7 +222,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     }
 
     # Aggregate to get rid of years so that we can compare climatic means; bring in covariance among climatic predictors
-    dat.clim <- aggregate(met.train[,"Y"], by=met.train[,c("doy", "ind")], FUN=mean)
+    dat.clim <- stats::aggregate(met.train[,"Y"], by=met.train[,c("doy", "ind")], FUN=mean)
     # dat.clim[,v] <- 1
     names(dat.clim)[3] <- "Y"
     # -----
@@ -241,7 +239,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # met.src[,v] <-
 
     if(v=="precipitation_flux"){
-      src.ann <- aggregate(met.src$X, by=met.src[,c("year", "ind.src")], FUN=sum)
+      src.ann <- stats::aggregate(met.src$X, by=met.src[,c("year", "ind.src")], FUN=sum)
       names(src.ann)[3] <- "X.tot"
 
       met.src <- merge(met.src, src.ann, all.x=T)
@@ -281,7 +279,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     met.src[,v] <- 0
 
     # Aggregate to get rid of years so that we can compare climatic means
-    clim.src <- aggregate(met.src[met.src$year %in% yrs.overlap,c("X", vars.debias)],
+    clim.src <- stats::aggregate(met.src[met.src$year %in% yrs.overlap,c("X", vars.debias)],
                            by=met.src[met.src$year %in% yrs.overlap,c("doy", "ind", "ind.src")],
                            FUN=mean, na.rm=T)
     clim.src[,vars.debias[!vars.debias %in% names(dat.out)]] <- 0
@@ -350,29 +348,29 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # summary(mod.bias)
 
       # Saving the mean predicted & residuals
-      dat.clim[dat.clim$ind == ind, "pred"]  <- predict(mod.bias)
-      dat.clim[dat.clim$ind == ind, "resid"] <- resid(mod.bias)
+      dat.clim[dat.clim$ind == ind, "pred"]  <- stats::predict(mod.bias)
+      dat.clim[dat.clim$ind == ind, "resid"] <- stats::resid(mod.bias)
       # summary(dat.clim)
 
       # Storing the model residuals to add in some extra error
-      resid.bias <- resid(mod.bias)
+      resid.bias <- stats::resid(mod.bias)
 
       # # Checking the residuals to see if we can assume normality
       # plot(resid ~ pred, data=dat.clim); abline(h=0, col="red")
       # plot(resid ~ doy, data=dat.clim); abline(h=0, col="red")
       # hist(dat.clim$resid)
-      met.src  [met.src  $ind == ind, "pred"] <- predict(mod.bias, newdata=met.src  [met.src  $ind == ind, ])
-      met.train[met.train$ind == ind, "pred"] <- predict(mod.bias, newdata=met.train[met.train$ind == ind, ])
+      met.src  [met.src  $ind == ind, "pred"] <- stats::predict(mod.bias, newdata=met.src  [met.src  $ind == ind, ])
+      met.train[met.train$ind == ind, "pred"] <- stats::predict(mod.bias, newdata=met.train[met.train$ind == ind, ])
 
       # For Precip we need to bias-correct the total annual preciptiation + seasonal distribution
       if(v == "precipitation_flux"){
-        mod.ann <- lm(Y.tot ~ X.tot , data=dat.ann[dat.ann$ind==ind,])
+        mod.ann <- stats::lm(Y.tot ~ X.tot , data=dat.ann[dat.ann$ind==ind,])
         # summary(mod.ann)
 
-        dat.ann[dat.ann$ind==ind,"pred.ann"] <- predict(mod.ann)
-        dat.ann[dat.ann$ind==ind,"resid.ann"] <- resid(mod.ann)
+        dat.ann[dat.ann$ind==ind,"pred.ann"] <- stats::predict(mod.ann)
+        dat.ann[dat.ann$ind==ind,"resid.ann"] <- stats::resid(mod.ann)
 
-        met.src[met.src$ind==ind,"pred.ann"] <- predict(mod.ann, newdata=met.src[met.src$ind==ind,])
+        met.src[met.src$ind==ind,"pred.ann"] <- stats::predict(mod.ann, newdata=met.src[met.src$ind==ind,])
       }
       # ---------
 
@@ -394,8 +392,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         met.train[met.train$ind==ind,"anom.train"] <- met.train[met.train$ind==ind,"X"]
         met.src[met.src$ind==ind, "anom.raw"] <- met.src[met.src$ind==ind, "X"]
       } else {
-        met.train[met.train$ind==ind,"anom.train"] <- resid(anom.train)
-        met.src[met.src$ind==ind, "anom.raw"] <- met.src[met.src$ind==ind, "X"] - predict(anom.src, newdata=met.src[met.src$ind==ind, ])
+        met.train[met.train$ind==ind,"anom.train"] <- stats::resid(anom.train)
+        met.src[met.src$ind==ind, "anom.raw"] <- met.src[met.src$ind==ind, "X"] - stats::predict(anom.src, newdata=met.src[met.src$ind==ind, ])
       }
       # par(mfrow=c(2,1))
       # plot(anom.train~doy, data=met.train)
@@ -414,8 +412,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         anom.train2 <- mgcv::gam(Q ~ s(doy, k=6), data=met.train[met.train$ind==ind,])
         anom.src2   <- mgcv::gam(Q ~ s(doy, k=6), data=met.src[met.src$year %in% yrs.overlap & met.src$ind==ind,])
 
-        met.train[met.train$ind==ind, paste0(j, ".anom")] <- resid(anom.train2)
-        met.src[met.src$ind==ind, paste0(j, ".anom")] <- met.src[met.src$ind==ind,"Q"] - predict(anom.src2, newdata=met.src[met.src$ind==ind,])
+        met.train[met.train$ind==ind, paste0(j, ".anom")] <- stats::resid(anom.train2)
+        met.src[met.src$ind==ind, paste0(j, ".anom")] <- met.src[met.src$ind==ind,"Q"] - stats::predict(anom.src2, newdata=met.src[met.src$ind==ind,])
 
         rm(anom.train2, anom.src2)
       }
@@ -445,7 +443,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         # abline(lm(anom.train ~ anom.raw, data=dat.anom), col="red", lty="dashed")
 
         # Modeling in the predicted value from mod.bias
-        dat.anom$pred <- predict(mod.bias, newdata=dat.anom)
+        dat.anom$pred <- stats::predict(mod.bias, newdata=dat.anom)
 
         if (v %in% c("air_temperature", "air_temperature_maximum", "air_temperature_minimum")){
           # ** We want to make sure we do these first **
@@ -506,16 +504,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # summary(mod.anom)
       # plot(mod.anom, pages=1)
       # pred.anom <- predict(mod.anom)
-      resid.anom <- resid(mod.anom)
+      resid.anom <- stats::resid(mod.anom)
       # ---------
 
       # --------
       # Predicting a bunch of potential posteriors over the full dataset
       # --------
       # Get the model coefficients
-      coef.gam <- coef(mod.bias)
-      coef.anom <- coef(mod.anom)
-      if(v == "precipitation_flux") coef.ann <- coef(mod.ann)
+      coef.gam <- stats::coef(mod.bias)
+      coef.anom <- stats::coef(mod.anom)
+      if(v == "precipitation_flux") coef.ann <- stats::coef(mod.ann)
 
       # Setting up a case where if sanity checks fail, we pull more ensemble members
       n.new <- 1
@@ -531,11 +529,11 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
         # set.seed=42
         if(n.ens==1 | uncert.prop=="mean"){
-          Rbeta <- matrix(coef(mod.bias), ncol=length(coef(mod.bias)))
+          Rbeta <- matrix(stats::coef(mod.bias), ncol=length(stats::coef(mod.bias)))
         } else {
-          Rbeta <- matrix(MASS::mvrnorm(n=n.new, coef(mod.bias), vcov(mod.bias)), ncol=length(coef(mod.bias)))
+          Rbeta <- matrix(MASS::mvrnorm(n=n.new, stats::coef(mod.bias), stats::vcov(mod.bias)), ncol=length(stats::coef(mod.bias)))
         }
-        dimnames(Rbeta)[[2]] <- names(coef(mod.bias))
+        dimnames(Rbeta)[[2]] <- names(stats::coef(mod.bias))
 
         #   # Filter our betas to remove outliers
         #   ci.beta <- matrix(apply(Rbeta, 2, quantile, c(0.01, 0.99)), nrow=2)
@@ -553,11 +551,11 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Generate a random distribution of betas using the covariance matrix
           # I think the anomalies might be problematic, so lets get way more betas than we need and trim the distribution
         if(n.ens==1){
-          Rbeta.anom <- matrix(coef(mod.anom), ncol=length(coef(mod.anom)))
+          Rbeta.anom <- matrix(stats::coef(mod.anom), ncol=length(stats::coef(mod.anom)))
         } else {
-          Rbeta.anom <- matrix(MASS::mvrnorm(n=n.new, coef(mod.anom), vcov(mod.anom)), ncol=length(coef(mod.anom)))
+          Rbeta.anom <- matrix(MASS::mvrnorm(n=n.new, stats::coef(mod.anom), stats::vcov(mod.anom)), ncol=length(stats::coef(mod.anom)))
         }
-        dimnames(Rbeta.anom)[[2]] <- names(coef(mod.anom))
+        dimnames(Rbeta.anom)[[2]] <- names(stats::coef(mod.anom))
         #   # Filter our betas to remove outliers
         #   ci.anom <- matrix(apply(Rbeta.anom, 2, quantile, c(0.01, 0.99)), nrow=2)
         #
@@ -575,9 +573,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
 
         if(v == "precipitation_flux"){
           if(n.ens==1){
-            Rbeta.ann <- matrix(coef(mod.ann), ncol=length(coef.ann))
+            Rbeta.ann <- matrix(stats::coef(mod.ann), ncol=length(coef.ann))
           } else {
-            Rbeta.ann <- matrix(MASS::mvrnorm(n=n.new, coef(mod.ann), vcov(mod.ann)), ncol=length(coef(mod.ann)))
+            Rbeta.ann <- matrix(MASS::mvrnorm(n=n.new, stats::coef(mod.ann), stats::vcov(mod.ann)), ncol=length(stats::coef(mod.ann)))
           }
           # ci.ann <- matrix(apply(Rbeta.ann, 2, quantile, c(0.01, 0.99)), nrow=2)
           # Rbeta.ann <- Rbeta.ann[which(apply(Rbeta.ann, 1, function(x) all(x > ci.ann[1,] & x < ci.ann[2,]))),]
@@ -585,16 +583,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         }
 
         # Create the prediction matrix
-        Xp <- predict(mod.bias, newdata=met.src[met.src$ind==ind,], type="lpmatrix")
-        Xp.anom <- predict(mod.anom, newdata=met.src[met.src$ind==ind,], type="lpmatrix")
+        Xp <- stats::predict(mod.bias, newdata=met.src[met.src$ind==ind,], type="lpmatrix")
+        Xp.anom <- stats::predict(mod.anom, newdata=met.src[met.src$ind==ind,], type="lpmatrix")
         if(v == "precipitation_flux"){
           # Linear models have a bit of a difference in how we get the info out
           # Xp.ann <- predict(mod.ann, newdata=met.src, type="lpmatrix")
 
           met.src[met.src$ind==ind,"Y.tot"] <- met.src[met.src$ind==ind,"pred.ann"]
-          mod.terms <- terms(mod.ann)
-          m <- model.frame(mod.terms, met.src[met.src$ind==ind,], xlev=mod.ann$xlevels)
-          Xp.ann <- model.matrix(mod.terms, m, constrasts.arg <- mod.ann$contrasts)
+          mod.terms <- stats::terms(mod.ann)
+          m <- stats::model.frame(mod.terms, met.src[met.src$ind==ind,], xlev=mod.ann$xlevels)
+          Xp.ann <- stats::model.matrix(mod.terms, m, constrasts.arg <- mod.ann$contrasts)
         }
 
         # -----
@@ -644,7 +642,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # sim1b.norm <- apply(sim1b, 1, mean)
           # What we need is to remove the mean-trend from the anomalies and then add the trend (with uncertinaties) back in
           # Note that for a single-member ensemble, this just undoes itself
-          anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - predict(mod.anom)
+          anom.detrend <- met.src[met.src$ind==ind,"anom.raw"] - stats::predict(mod.anom)
 
           # NOTE: This section can probably be removed and simplified since it should always be a 1-column array now
           if(length(cols.redo)>1){
@@ -689,8 +687,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # max air temp = 70 C; hottest temperature from sattellite; very ridiculous
           # min air temp = -95 C; colder than coldest natural temperature recorded in Antarctica
           cols.redo <- which(apply(sim1, 2, function(x) min(x) < 273.15-95 | max(x) > 273.15+70 |
-                                                        min(x) < mean(met.train$X) - sanity.sd*sd(met.train$X) |
-                                                        max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
+                                                        min(x) < mean(met.train$X) - sanity.sd*stats::sd(met.train$X) |
+                                                        max(x) > mean(met.train$X) + sanity.sd*stats::sd(met.train$X)
                                    ))
         }
         #"specific_humidity",
@@ -699,8 +697,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Also, the minimum humidity can't be 0 so lets just make it extremely dry; lets set this for 1 g/Mg
 
           cols.redo <- which(apply(sim1, 2, function(x) min(x^2) < 1e-6  | max(x^2) > 40e-3 |
-                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2)
                                    ))
         }
         #"surface_downwelling_shortwave_flux_in_air",
@@ -709,8 +707,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # Lets round 1360 and divide that by 2 (because it should be a daily average) and conservatively assume albedo of 20% (average value is more like 30)
           # Source http://eesc.columbia.edu/courses/ees/climate/lectures/radiation/
           cols.redo <- which(apply(sim1, 2, function(x) max(x^2) > 1360/2*0.8 |
-                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2)
                                    ))
         }
         if(v == "air_pressure"){
@@ -718,8 +716,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           #  - Lets round up to 1100 hPA
           # Also according to Wikipedia, the lowest non-tornadic pressure ever measured was 870 hPA
           cols.redo <- which(apply(sim1, 2, function(x) min(x) < 870*100  | max(x) > 1100*100 |
-                                                        min(x) < mean(met.train$X) - sanity.sd*sd(met.train$X) |
-                                                        max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
+                                                        min(x) < mean(met.train$X) - sanity.sd*stats::sd(met.train$X) |
+                                                        max(x) > mean(met.train$X) + sanity.sd*stats::sd(met.train$X)
                                    ))
         }
         if(v == "surface_downwelling_longwave_flux_in_air"){
@@ -728,16 +726,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # ED2 sanity checks boudn longwave at 40 & 600
 
           cols.redo <- which(apply(sim1, 2, function(x) min(x^2) < 40  | max(x^2) > 600 |
-                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2)
                                    ))
 
         }
         if(v == "wind_speed"){
           # According to wikipedia, the hgihest wind speed ever recorded is a gust of 113 m/s; the maximum 5-mind wind speed is 49 m/s
           cols.redo <- which(apply(sim1, 2, function(x) max(x^2) > 50/2 |
-                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*sd(met.train$X^2) |
-                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*sd(met.train$X^2)
+                                                        min(x^2) < mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2) |
+                                                        max(x^2) > mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2)
                                    ))
         }
         if(v == "precipitation_flux"){
@@ -745,8 +743,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # https://www.wunderground.com/blog/weatherhistorian/what-is-the-most-rain-to-ever-fall-in-one-minute-or-one-hour.html
           # 16/2 = round number; x25.4 = inches to mm; /(60*60) = hr to sec
           cols.redo <- which(apply(sim1, 2, function(x) max(x) > 16/2*25.4/(60*60) |
-                                                        min(x) < min(met.train$X) - sanity.sd*sd(met.train$X) |
-                                                        max(x) > max(met.train$X) + sanity.sd*sd(met.train$X)
+                                                        min(x) < min(met.train$X) - sanity.sd*stats::sd(met.train$X) |
+                                                        max(x) > max(met.train$X) + sanity.sd*stats::sd(met.train$X)
                                    ))
         }
         n.new = length(cols.redo)
@@ -769,12 +767,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # for known problem variables, lets force sanity as a last resort
           if(v %in% c("air_temperature", "air_temperature_maximum", "air_temperature_minimum")){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1) < max(184, mean(met.train$X) - sanity.sd*sd(met.train$X))) {
-              qtrim <- max(184, mean(met.train$X) - sanity.sd*sd(met.train$X)) + 1e-6
+            if(min(sim1) < max(184, mean(met.train$X) - sanity.sd*stats::sd(met.train$X))) {
+              qtrim <- max(184, mean(met.train$X) - sanity.sd*stats::sd(met.train$X)) + 1e-6
               sim1[sim1 < qtrim] <- qtrim
             }
-            if(max(sim1) > min(331, mean(met.train$X) + sd(met.train$X^2))) {
-              qtrim <- min(331, mean(met.train$X) + sanity.sd*sd(met.train$X)) - 1e-6
+            if(max(sim1) > min(331, mean(met.train$X) + stats::sd(met.train$X^2))) {
+              qtrim <- min(331, mean(met.train$X) + sanity.sd*stats::sd(met.train$X)) - 1e-6
               sim1[sim1 > qtrim] <- qtrim
             }
           } else if(v == "surface_downwelling_shortwave_flux_in_air"){
@@ -786,12 +784,12 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             #                              max(x) > mean(met.train$X) + sanity.sd*sd(met.train$X)
             #   ))
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1^2) < max(mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
-              qtrim <- max(mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
+            if(min(sim1^2) < max(mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- max(mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(1500*0.8, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
-              qtrim <- min(1500*0.8, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))
+            if(max(sim1^2) > min(1500*0.8, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- min(1500*0.8, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
 
@@ -800,43 +798,43 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             # ED2 sanity checks boudn longwave at 40 & 600
 
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1^2) < max(40, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
-              qtrim <- max(40, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
+            if(min(sim1^2) < max(40, mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- max(40, mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(600, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
-              qtrim <- min(600, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))
+            if(max(sim1^2) > min(600, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- min(600, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
           } else if(v=="specific_humidity"){
             warning(paste("Forcing Sanity:", v))
             # I'm having a hell of a time trying to get SH to fit sanity bounds, so lets brute-force fix outliers
-            if(min(sim1^2) < max(1e-6, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))) {
-              qtrim <- max(1e-6, mean(met.train$X^2) - sanity.sd*sd(met.train$X^2))
+            if(min(sim1^2) < max(1e-6, mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- max(1e-6, mean(met.train$X^2) - sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 < qtrim] <- sqrt(qtrim)
             }
-            if(max(sim1^2) > min(3.2e-2, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))) {
-              qtrim <- min(3.2e-2, mean(met.train$X^2) + sanity.sd*sd(met.train$X^2))
+            if(max(sim1^2) > min(3.2e-2, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))) {
+              qtrim <- min(3.2e-2, mean(met.train$X^2) + sanity.sd*stats::sd(met.train$X^2))
               sim1[sim1^2 > qtrim] <- sqrt(qtrim)
             }
           } else if(v=="air_pressure"){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1)< max(45000, mean(met.train$X) - sanity.sd*sd(met.train$X))){
-              qtrim <- min(45000, mean(met.train$X) - sanity.sd*sd(met.train$X))
+            if(min(sim1)< max(45000, mean(met.train$X) - sanity.sd*stats::sd(met.train$X))){
+              qtrim <- min(45000, mean(met.train$X) - sanity.sd*stats::sd(met.train$X))
               sim1[sim1 < qtrim] <- qtrim
             }
-            if(max(sim1) < min(11000000, mean(met.train$X) + sanity.sd*sd(met.train$X))){
-              qtrim <- min(11000000, mean(met.train$X) + sanity.sd*sd(met.train$X))
+            if(max(sim1) < min(11000000, mean(met.train$X) + sanity.sd*stats::sd(met.train$X))){
+              qtrim <- min(11000000, mean(met.train$X) + sanity.sd*stats::sd(met.train$X))
               sim1[sim1 > qtrim] <- qtrim
             }
           } else if(v=="wind_speed"){
             warning(paste("Forcing Sanity:", v))
-            if(min(sim1)< max(0, mean(met.train$X) - sanity.sd*sd(met.train$X))){
-              qtrim <- min(0, mean(met.train$X) - sanity.sd*sd(met.train$X))
+            if(min(sim1)< max(0, mean(met.train$X) - sanity.sd*stats::sd(met.train$X))){
+              qtrim <- min(0, mean(met.train$X) - sanity.sd*stats::sd(met.train$X))
               sim1[sim1 < qtrim] <- qtrim
             }
-            if(max(sim1) < min(sqrt(85), mean(met.train$X) + sanity.sd*sd(met.train$X))){
-              qtrim <- min(sqrt(85), mean(met.train$X) + sanity.sd*sd(met.train$X))
+            if(max(sim1) < min(sqrt(85), mean(met.train$X) + sanity.sd*stats::sd(met.train$X))){
+              qtrim <- min(sqrt(85), mean(met.train$X) + sanity.sd*stats::sd(met.train$X))
               sim1[sim1 > qtrim] <- qtrim
             }
           } else {
@@ -880,14 +878,14 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
             }
 
             # n.now = number of rainless days for this sim
-            n.now <- round(rnorm(1, mean(rainless, na.rm=T), sd(rainless, na.rm=T)), 0)
+            n.now <- round(stats::rnorm(1, mean(rainless, na.rm=T), stats::sd(rainless, na.rm=T)), 0)
             if(n.now < rainless.min) n.now <- rainless.min # Make sure we don't have negative or no rainless days
             if(n.now > rainless.max) n.now <- rainless.max # Make sure we have at least one day with rain
 
             # We're having major seasonality issues, so lets randomly redistribute our precip
             # Pull ~twice what we need and randomly select from that so that we don't have such clean cuttoffs
             # set.seed(12)
-            cutoff <- quantile(sim1[rows.yr, j], min(n.now/366*2.5, max(0.75, n.now/366)), na.rm=T)
+            cutoff <- stats::quantile(sim1[rows.yr, j], min(n.now/366*2.5, max(0.75, n.now/366)), na.rm=T)
             if(length(which(sim1[rows.yr,j]>0)) < n.now){
               # if we need to re-distribute our rain (make more rainy days), use the inverse of the cutoff
               # cutoff <- 1-cutoff
@@ -940,7 +938,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                 } # end z
 
                 # If we have a worryingly high number of consequtive wet days (outside of 6 sd); try a new dry
-                if(max(ens.wet) > max(cons.wet)+sd(cons.wet) ){
+                if(max(ens.wet) > max(cons.wet)+stats::sd(cons.wet) ){
                   # print("redistributing dry days")
                   # If we have a wet period that's too long, lets find the random dry that's
                   # closest to the midpoint of the longest
@@ -1021,16 +1019,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dat.pred$Date <- as.POSIXct(dat.pred$Date)
       dat.pred$obs  <- apply(source.data[[v]], 1, mean, na.rm=T)
       dat.pred$mean <- apply(dat.out[[v]], 1, mean, na.rm=T)
-      dat.pred$lwr  <- apply(dat.out[[v]], 1, quantile, 0.025, na.rm=T)
-      dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975, na.rm=T)
+      dat.pred$lwr  <- apply(dat.out[[v]], 1, stats::quantile, 0.025, na.rm=T)
+      dat.pred$upr  <- apply(dat.out[[v]], 1, stats::quantile, 0.975, na.rm=T)
 
       # Plotting the observed and the bias-corrected 95% CI
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.pred[dat.pred$Year>=mean(dat.pred$Year)-1 & dat.pred$Year<=mean(dat.pred$Year)+1,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=Date, ymin=lwr, ymax=upr, fill="corrected"), alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Date, y=mean, color="corrected"), size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Date, y=obs, color="original"), size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=.data$Date, ymin=.data$lwr, ymax=.data$upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=.data$obs, color="original"), size=0.5) +
           ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::guides(fill=F) +
@@ -1053,14 +1051,14 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "day2.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=stack.sims[stack.sims$Year>=mean(stack.sims$Year)-2 & stack.sims$Year<=mean(stack.sims$Year)+2,]) +
-          ggplot2::geom_line(ggplot2::aes(x=Date, y=values, color=ind), size=0.2, alpha=0.8) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=values, color=ind), size=0.2, alpha=0.8) +
           ggplot2::ggtitle(paste0(v, " - example ensemble members (daily slice)")) +
           ggplot2::theme_bw()
       )
       grDevices::dev.off()
 
       # Looking tat the annual means over the whole time series to make sure we're getting decent interannual variability
-      dat.yr <- aggregate(dat.pred[,c("obs", "mean", "lwr", "upr")],
+      dat.yr <- stats::aggregate(dat.pred[,c("obs", "mean", "lwr", "upr")],
                           by=list(dat.pred$Year),
                           FUN=mean)
       names(dat.yr)[1] <- "Year"
@@ -1068,9 +1066,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       grDevices::png(file.path(path.diagnostics, paste(ens.name, v, "annual.png", sep="_")), height=6, width=6, units="in", res=220)
       print(
         ggplot2::ggplot(data=dat.yr[,]) +
-          ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lwr, ymax=upr, fill="corrected"), alpha=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Year, y=mean, color="corrected"), size=0.5) +
-          ggplot2::geom_line(ggplot2::aes(x=Year, y=obs, color="original"), size=0.5) +
+          ggplot2::geom_ribbon(ggplot2::aes(x=.data$Year, ymin=.data$lwr, ymax=.data$upr, fill="corrected"), alpha=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Year, y=mean, color="corrected"), size=0.5) +
+          ggplot2::geom_line(ggplot2::aes(x=.data$Year, y=.data$obs, color="original"), size=0.5) +
           ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::guides(fill=F) +
