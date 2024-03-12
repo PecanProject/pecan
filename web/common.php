@@ -207,19 +207,19 @@ function get_page_acccess_level() {
 function make_rabbitmq_connection($rabbitmq_uri) {
   $rabbitmq = parse_url($rabbitmq_uri);
   $connection = new AMQPConnection();
-  if ($rabbitmq['host']) {
+  if (!empty($rabbitmq['host'])) {
     $connection->setHost($rabbitmq['host']);
   }
-  if ($rabbitmq['port']) {
+  if (!empty($rabbitmq['port'])) {
     $connection->setPort($rabbitmq['port']);
   }
-  if ($rabbitmq['path']) {
+  if (!empty($rabbitmq['path'])) {
     $connection->setVhost(urldecode(ltrim($rabbitmq['path'], '/')));
   }
-  if ($rabbitmq['user']) {
+  if (!empty($rabbitmq['user'])) {
     $connection->setLogin($rabbitmq['user']);
   }
-  if ($rabbitmq['pass']) {
+  if (!empty($rabbitmq['pass'])) {
     $connection->setPassword($rabbitmq['pass']);
   }
   $connection->connect();
