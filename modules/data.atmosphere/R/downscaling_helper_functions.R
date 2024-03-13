@@ -112,7 +112,7 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
   t0 <- min(df$time)
 
   df <- df %>%
-    dplyr::select("time", all_of(varName)) %>%
+    dplyr::select("time", tidyselect::all_of(varName)) %>%
     #Calculate time difference
     dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
     #Shift valued back because the 6hr value represents the average over the

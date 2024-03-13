@@ -23,7 +23,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   run_file <- file.path(settings$rundir, "runs.txt")
   # check if runs need to be done
-  if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+  if (!file.exists(run_file)) {
     PEcAn.logger::logger.warn(
       "runs.txt not found, assuming no runs need to be done")
     return()
@@ -292,7 +292,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       job_finished <- FALSE
       if (is_rabbitmq) {
         job_finished <- 
-          file.exists(file.path(settings$modeloutdir, run, "rabbitmq.out"))
+          file.exists(file.path(jobids[run], "rabbitmq.out"))
       } else if (is_qsub) {
         job_finished <- PEcAn.remote::qsub_run_finished(
           run = jobids[run],
@@ -301,10 +301,10 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
       if (job_finished) {
-      
+        
         # TODO check output log
         if (is_rabbitmq) {
-          data <- readLines(file.path(settings$modeloutdir, run, "rabbitmq.out"))
+          data <- readLines(file.path(jobids[run], "rabbitmq.out"))
           if (data[-1] == "ERROR") {
             msg <- paste("Run", run, "has an ERROR executing")
             if (stop.on.error) {

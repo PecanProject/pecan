@@ -243,25 +243,30 @@ process_gridded_noaa_download <- function(lat_list,
     
     for(hr in 1:length(curr_hours)){
       file_name <- paste0(base_filename2, curr_hours[hr])
+      grib_file_name <- paste0(working_directory,"/", file_name,".grib")
       
-      if(file.exists(paste0(working_directory,"/", file_name,".grib"))){
-        grib <- rgdal::readGDAL(paste0(working_directory,"/", file_name,".grib"), silent = TRUE)
-        lat_lon <- sp::coordinates(grib)
+      if(file.exists(grib_file_name)){
+        grib_data <- terra::rast(grib_file_name)
+        
+        ## Convert to data frame
+        grib_data_df <- terra::as.data.frame(grib_data, xy=TRUE)
+        lat_lon <- grib_data_df[, c("x", "y")]
+        
         for(s in 1:length(site_id)){
           
           index <- which(lat_lon[,2] == lats[s] & lat_lon[,1] == lons[s])
           
-          pressfc[s, hr]  <- grib$band1[index]
-          tmp2m[s, hr] <- grib$band2[index]
-          rh2m[s, hr]  <- grib$band3[index]
-          ugrd10m[s, hr]  <- grib$band4[index]
-          vgrd10m[s, hr]  <- grib$band5[index]
+          pressfc[s, hr]  <- grib_data_df$`SFC=Ground or water surface; Pressure [Pa]`[index]
+          tmp2m[s, hr]    <- grib_data_df$`2[m] HTGL=Specified height level above ground; Temperature [C]`[index]
+          rh2m[s, hr]     <- grib_data_df$`2[m] HTGL=Specified height level above ground; Relative humidity [%]`[index]
+          ugrd10m[s, hr]  <- grib_data_df$`10[m] HTGL=Specified height level above ground; u-component of wind [m/s]`[index]
+          vgrd10m[s, hr]  <- grib_data_df$`10[m] HTGL=Specified height level above ground; v-component of wind [m/s]`[index]
           
           if(curr_hours[hr] != "000"){
-            apcpsfc[s, hr]  <- grib$band6[index]
-            tcdcclm[s, hr]  <-  grib$band7[index]
-            dswrfsfc[s, hr]  <- grib$band8[index]
-            dlwrfsfc[s, hr]  <- grib$band9[index]
+            apcpsfc[s, hr]  <- grib_data_df$`SFC=Ground or water surface; 03 hr Total precipitation [kg/(m^2)]`[index]
+            tcdcclm[s, hr]  <- grib_data_df$`RESERVED(10) (Reserved); Total cloud cover [%]`[index]
+            dswrfsfc[s, hr] <- grib_data_df$`SFC=Ground or water surface; Downward Short-Wave Rad. Flux [W/(m^2)]`[index]
+            dlwrfsfc[s, hr] <- grib_data_df$`SFC=Ground or water surface; Downward Long-Wave Rad. Flux [W/(m^2)]`[index]
           }
         }
       }
@@ -528,7 +533,6 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param overwrite, logical stating to overwrite any existing output_file
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #' @importFrom rlang .data 
-#' @import tidyselect
 #' 
 #' @author Quinn Thomas
 #'

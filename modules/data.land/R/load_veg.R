@@ -1,6 +1,6 @@
-##' Function uses load_data{benchmark} to get veg data
-##' @name load_veg
-##' @title load_veg
+##' load_veg
+##'
+##' uses `PEcAn.benchmark::load_data()` to get veg data
 ##' @export
 ##' @author Istem Fer
 load_veg <- function(new_site, start_date, end_date,

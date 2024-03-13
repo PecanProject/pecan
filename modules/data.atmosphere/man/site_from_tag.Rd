@@ -2,20 +2,22 @@
 % Please edit documentation in R/met.process.R
 \name{site_from_tag}
 \alias{site_from_tag}
-\title{site_from_tag}
+\title{Function to find the site code for a specific tag}
 \usage{
 site_from_tag(sitename, tag)
 }
-\description{
-site_from_tag
-}
-\author{
-Betsy Cowdery
+\arguments{
+\item{sitename}{full name of site}
 
-Function to find the site code for a specific tag
+\item{tag}{abbreviated name of site}
+}
+\description{
 Example:
   sitename = 'Rhinelander Aspen FACE Experiment (FACE-RHIN)'
   tag = 'FACE'
   site_from_tag(sitename,tag) = 'RHIN'
 Requires that site names be set up specifically with (tag-sitecode) - this may change
+}
+\author{
+Betsy Cowdery
 }

@@ -20,13 +20,19 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   ##### Regular Run
   ##### 
   if(is.null(ens.runid)){
-    run.write.configs(settings, write = settings$database$bety$write)
+    PEcAn.workflow::run.write.configs(settings, write = settings$database$bety$write)
     
     PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
     
-    ens.runid <- read.table(file.path(settings$rundir,'runs.txt'))
+    ens.runid <- utils::read.table(file.path(settings$rundir,'runs.txt'))
   }
-  ens <- read.output(runid = ens.runid, 
+  if (!requireNamespace("PEcAn.utils", quietly = TRUE)) {
+    PEcAn.logger::logger.error(
+      "Can't find package 'PEcAn.utils',",
+      "needed by `PEcAnAssimSequential::hop_test()`.",
+      "Please install it and try again.")
+  }
+  ens <- PEcAn.utils::read.output(runid = ens.runid, 
                      outdir = file.path(settings$outdir,'out', ens.runid), 
                      start.year = lubridate::year(settings$run$start.date), 
                      end.year = lubridate::year(settings$run$end.date), 
@@ -45,8 +51,8 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   ##### 
   PEcAnAssimSequential::sda.enkf(settings = settings, obs.mean = obs.mean, obs.cov = obs.cov)
   
-  hop.runid <- read.table(file.path(settings$rundir,'runs.txt'))
-  hop.ens <- read.output(runid = hop.runid, 
+  hop.runid <- utils::read.table(file.path(settings$rundir,'runs.txt'))
+  hop.ens <- PEcAn.utils::read.output(runid = hop.runid, 
                      outdir = file.path(settings$outdir,'out', hop.runid), 
                      start.year = lubridate::year(settings$run$start.date), 
                      end.year = reg_run_end, 
@@ -61,8 +67,8 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
   
   plot_years <- lubridate::year(settings$run$start.date):reg_run_end
   
-  pdf('hop_test_results.pdf')
-  par(mfrow=c(2,1))
+  grDevices::pdf('hop_test_results.pdf')
+  graphics::par(mfrow=c(2,1))
   for(p in seq_along(hop_var)){
     
     hop_var_use <- unlist(hop_var[p])
@@ -73,24 +79,24 @@ hop_test <- function(settings, ens.runid = NULL, nyear){
          ens[[hop_var_use]],
          pch=19,ylim=c(range(ens,hop.ens)),
          ylab = hop_var_use, xlab = 'Years')
-    points(plot_years,
+    graphics::points(plot_years,
            hop.ens[[hop_var_use]],col='red')
-    abline(v=year(settings$run$end.date),col='blue',lwd=2)
-    legend('topleft', c('Regular Run','Hop Run','Test Start'), pch=c(19,1,19),col=c('black','red','blue'))
-    title(paste('Hop Test Comparision',hop_var[p]))
+    graphics::abline(v=year(settings$run$end.date),col='blue',lwd=2)
+    graphics::legend('topleft', c('Regular Run','Hop Run','Test Start'), pch=c(19,1,19),col=c('black','red','blue'))
+    graphics::title(paste('Hop Test Comparision',hop_var[p]))
     
-    hop_cor <- cor(ens.plot,hop.ens.plot)
+    hop_cor <- stats::cor(ens.plot,hop.ens.plot)
 
     plot(ens.plot,hop.ens.plot,
          xlab = paste('Regular Run',hop_var_use),
          ylab = paste('Hop Run',hop_var_use),pch=19,cex=1.5)
     
-    abline(a=0,b=1,col='red',lwd=2)
-    legend('topleft',paste('Correlation =',hop_cor))
+    graphics::abline(a=0,b=1,col='red',lwd=2)
+    graphics::legend('topleft',paste('Correlation =',hop_cor))
     
-    title(paste('Hop Test Correlation',hop_var[p]))
+    graphics::title(paste('Hop Test Correlation',hop_var[p]))
   }
-  dev.off()
+  grDevices::dev.off()
   
 }
 

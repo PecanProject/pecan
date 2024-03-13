@@ -11,7 +11,6 @@
 #'
 #' @export
 #' 
-#' @examples
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
     # open netcdf
@@ -230,7 +229,7 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   }
   
   #ShortWave.ds <- dplyr::select(data.hrly, time, surface_downwelling_shortwave_flux_in_air)
-  ShortWave.ds <- data.hrly %>% select("time", "surface_downwelling_shortwave_flux_in_air")
+  ShortWave.ds <- data.hrly %>% dplyr::select("time", "surface_downwelling_shortwave_flux_in_air")
   # data.hrly$group_6hr <- NA
   # 
   # group <- 0
@@ -278,7 +277,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   t0 <- min(df$time)
   
   df <- df %>%
-    dplyr::select("time", all_of(varName)) %>%
+    dplyr::select("time", tidyselect::all_of(varName)) %>%
     #Calculate time difference
     dplyr::mutate(days_since_t0 = difftime(.data$time, t0, units = "days")) %>%
     #Shift valued back because the 6hr value represents the average over the

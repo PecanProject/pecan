@@ -100,7 +100,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
 
   # retrieve model type info
   if(is.null(model)){
-    modeltype_id <- db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
+    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
     model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
   }
 

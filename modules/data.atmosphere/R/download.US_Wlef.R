@@ -2,7 +2,7 @@
 ##' 
 ##' @section General Description:
 ##' Obtains data from Ankur Desai's WLEF/ Parks Fall flux tower, and selects certain variables (NEE and LE) to return
-##' Data is retruned at the given timestep in the given range.
+##' Data is returned at the given timestep in the given range.
 ##' 
 ##' This data includes information on a number of flux variables.
 ##' 
@@ -35,7 +35,7 @@ download.US_Wlef <- function(start_date, end_date, timestep = 1) {
     url <- paste0(base_url, year,"/flux_", year, ".txt") #Build proper url
     PEcAn.logger::logger.info(paste0("Reading data for year ", year))
     print(url)
-    influx <- tryCatch(read.table(url, header = T, sep = ""), error=function(e) {NULL}, warning=function(e) {NULL})
+    influx <- tryCatch(utils::read.table(url, header = T, sep = ""), error=function(e) {NULL}, warning=function(e) {NULL})
     if (is.null(influx)) { #Error encountered in data fetching.
       PEcAn.logger::logger.warn(paste0("Data not avaliable for year ", year, ". All values for ", year, " will be NA."))
       # Determine the number of days in the year

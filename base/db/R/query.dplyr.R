@@ -61,7 +61,7 @@ dplyr.count <- function(df) {
 #' @param unit string containing CF-style time unit including origin (e.g. "days since 2010-01-01")
 #' @export
 ncdays2date <- function(time, unit) {
-  date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
+  date    <- lubridate::parse_date_time(unit, c("ymd_HMS", "ymd_H", "ymd"))
   days    <- PEcAn.utils::ud_convert(time, unit, paste("days since ", date))
   seconds <- PEcAn.utils::ud_convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
@@ -124,7 +124,7 @@ workflows <- function(bety, ensemble = FALSE) {
 #' @export
 workflow <- function(bety, workflow_id) {
   workflows(bety) %>%
-    dplyr::filter(.data$workflow_id == !!.data$workflow_id)
+    dplyr::filter(.data$workflow_id == !!workflow_id)
 }  # workflow
 
 

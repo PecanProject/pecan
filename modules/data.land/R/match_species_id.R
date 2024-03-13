@@ -67,7 +67,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                   'be appended with ".translation_table" for disambiguation')
       }
       bety_species <- dplyr::tbl(bety, 'species') %>%
-        dplyr::filter(id %in% !!translation_table[['bety_species_id']]) %>%
+        dplyr::filter(.data$id %in% !!translation_table[['bety_species_id']]) %>%
         dplyr::select(bety_species_id = "id", "genus", "species") %>%
         dplyr::collect()
       translation <- dplyr::left_join(translation_table, bety_species,
