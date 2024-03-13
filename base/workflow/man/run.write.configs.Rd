@@ -9,7 +9,8 @@ run.write.configs(
   write = TRUE,
   ens.sample.method = "uniform",
   posterior.files = rep(NA, length(settings$pfts)),
-  overwrite = TRUE
+  overwrite = TRUE,
+  use.existing.samples = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ run.write.configs(
 analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)}
 
 \item{overwrite}{logical: Replace output files that already exist?}
+
+\item{use.existing.samples}{FALSE (default), TRUE, or filename}
 }
 \value{
 an updated settings list, which includes ensemble IDs for SA and ensemble analysis

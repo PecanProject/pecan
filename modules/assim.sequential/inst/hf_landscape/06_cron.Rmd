@@ -5,9 +5,46 @@ output: html_notebook
 
 ```{r}
 library(cronR)
+```
 
+
+## Hello World
+```{r}
+cmd <- cronR::cron_rscript("/home/dietze/pecan/modules/assim.sequential/inst/hf_landscape/HelloWorld.R")
+cron_add(command = cmd, frequency = '*/5 * * * *', id = 'HelloWorld', description = "Every 5 min")
+cron_njobs()
+cron_ls()
+## wait for cron to run successfully then remove from queue
+cron_rm("HelloWorld")
+```
+
+## Met forecast (taking over for Alexis)
+```{r}
+cmd <- cronR::cron_rscript("/home/dietze/pecan/scripts/HARV_metdownload_efi.R")
+cron_add(command = cmd, frequency = '0 */6 * * *', id = 'NOAA_GEFS', description = "NOAA GEFS forecasts via EFI server; update every 6 hr")
+cron_njobs()
+cron_ls()
+
+```
+
+## manual catchup on met
+```{r}
+runDays <- seq(as.Date("2023-06-24"), as.Date("2023-07-09"), by="days")
+for (s in seq_along(runDays)) {
+  msg = system2(file.path(pecanhome,"scripts/HARV_metdownload_efi.R"),
+                paste("--start.date",runDays[s]),
+                wait=TRUE)#,
+             #   stdout="stdout.log",
+            #    stderr="stderr.log")
+  print(msg)
+}
+```
+
+
+
+```{r}
 ### NO ASSIMILATION FORECAST
-cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/05C_SDA_Workflow_NA.forecast.R")
+cmd <- cronR::cron_rscript("/home/dietze/pecan/modules/assim.sequential/inst/hf_landscape/05C_SDA_Workflow_NA.forecast.R")
 cron_add(command = cmd, frequency = 'daily', at='4AM', id = 'HARV_FNA', description = "Harvard Forest landscape forecast, No Assimilated data")
 cron_njobs()
 cron_ls()
@@ -16,7 +53,7 @@ cron_ls()
 
 ## SMAP DATA DOWNLOAD
 ```{r}
-cmd <- cronR::cron_rscript("~/pecan/modules/assim.sequential/inst/hf_landscape/07_SMAP.R")
+cmd <- cronR::cron_rscript("/home/dietze/pecan/modules/assim.sequential/inst/hf_landscape/07_SMAP.R")
 cronR::cron_add(command = cmd, frequency = 'daily', at='11PM', id = 'SMAP', description = "SMAP download")
 cronR::cron_njobs()
 cronR::cron_ls()

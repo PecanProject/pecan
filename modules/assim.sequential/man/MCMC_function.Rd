@@ -4,10 +4,10 @@
 \alias{MCMC_function}
 \title{MCMC_function}
 \usage{
-MCMC_function(data)
+MCMC_function(dat)
 }
 \arguments{
-\item{data}{list containing everything needed for the MCMC sampling.}
+\item{dat}{list containing everything needed for the MCMC sampling.}
 }
 \description{
 MCMC_function

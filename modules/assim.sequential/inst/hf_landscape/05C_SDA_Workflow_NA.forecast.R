@@ -1,13 +1,44 @@
+#!/usr/bin/env Rscript
 ## Forecast helper script around 05_SDA_Workflow_NA
-runDays = Sys.Date()
+.libPaths(c("/projectnb/dietzelab/dietze/test-pecan/R/library",.libPaths()))
+
+## forecast configuration
+projectdir = "/projectnb/dietzelab/dietze/hf_landscape_SDA/test02/" ## main folder
+set = readRDS(file.path(projectdir,"pecan.RDS"))
+pecanhome = "/home/dietze/pecan"  ## directory where pecan is installed 
+
+## S3 bucket for output
+minio_host <- Sys.getenv("MINIO_HOST", "test-pecan.bu.edu")
+minio_port <- Sys.getenv("MINIO_PORT", "9000")
+minio_arrow_bucket <- Sys.getenv("MINIO_ARROW_BUCKET", "hf-landscape-none")
+
+################# Initial configuration (one time): ############################
+##  * update local paths (uncomment, run once, recomment)
+  # set$outdir = projectdir
+  # for(i in seq_along(set$pfts)){
+  #   set$pfts[[i]]$posterior.files = file.path(projectdir,"pfts",basename(set$pfts[[i]]$posterior.files))
+  # }
+  # set$model$binary = file.path(projectdir,"model",basename(set$model$binary))
+  # set$model$jobtemplate = file.path(projectdir,"template.job")
+  # for(i in seq_along(set$run)){
+  #   set$run[[i]]$inputs$pft.site = file.path(projectdir,"site_pft.csv")
+  #   set$run[[i]]$inputs$poolinitcond$path = file.path(projectdir,"IC",basename(set$run[[i]]$inputs$poolinitcond$path))
+  #   set$run[[i]]$inputs$met$path = file.path(projectdir,"GEFS")
+  # }
+  # saveRDS(set,file=file.path(projectdir,"pecan.RDS"))  
+##  * update set$database$bety$host
+##  * set up separate cron jobs for input prep (met, constraints)
+
+###################  TODAY'S SETTINGS  ########################
+runDays = Sys.Date()  ## for test case set this to 2022-05-22
 FORCE = FALSE  ## should we overwrite previously completed runs
 
 ## check for missed days
 start_date = runDays
 success = FALSE
-NoMet = read.csv("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/NO_MET",header=FALSE)[,1]
+NoMet = read.csv(file.path(projectdir,"NO_MET"),header=FALSE)[,1]
 while(!success & runDays - start_date < lubridate::days(35) ){
-  this.out = dir(file.path(paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",start_date),"out"),full.names = TRUE)
+  this.out = dir(file.path(paste0(projectdir,"/FNA",start_date),"out"),full.names = TRUE)
   if(length(this.out) > 0 & !FORCE) { ## this day ran successfully
     success = TRUE
     break
@@ -16,21 +47,20 @@ while(!success & runDays - start_date < lubridate::days(35) ){
 }
 runDays = seq(from=start_date,to=runDays,by="1 day")
 
-## run forecast
+#####################  run forecast  #####################
 for (s in seq_along(runDays)) {
   ## did we do this run already?
-  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",runDays[s])
+  now  = paste0(projectdir,"/FNA",runDays[s])
   print(now)
   this.out = dir(file.path(now,"out"),full.names = TRUE)
-  if(length(this.out) > 0 & !FORCE) break
+  if(length(this.out) > 0 & !FORCE) next
   
   ## find previous run
   yesterday = runDays[s] - lubridate::days(1)
-  NoMet = read.csv("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/NO_MET",header=FALSE)[,1]
   while(as.character(yesterday) %in% NoMet & yesterday - runDays[s] < lubridate::days(35) ){
     yesterday = yesterday - lubridate::days(1)
   }
-  prev = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",yesterday)
+  prev = paste0(projectdir,"/FNA",yesterday)
   if(dir.exists(prev)){
     ## is there output there?
     prev.out = dir(file.path(prev,"out"),full.names = TRUE)
@@ -39,17 +69,40 @@ for (s in seq_along(runDays)) {
       if(min(prev.files)>0){
         
         #########   RUN FORECAST   ########
-        msg = system2("/home/dietze/pecan/modules/assim.sequential/inst/hf_landscape/05_SDA_Workflow_NA.R",
-                      paste("--start.date",runDays[s],"--prev",prev),
+        msg = system2(file.path(pecanhome,"modules/assim.sequential/inst/hf_landscape/05_SDA_Workflow_NA.R"),
+                      paste("--start.date",runDays[s],
+                            "--prev",prev,
+                            "--settings",file.path(projectdir,"pecan.RDS")),
                       wait=TRUE,
                       stdout="stdout.log",
                       stderr="stderr.log")
         print(msg)
         
+        
+        ## check that model2netcdf was run
+        this.out = dir(file.path(now,"out"),full.names = TRUE)
+        for(i in seq_along(this.out)){
+          ## get files
+          ncf = dir(this.out[i],pattern = "*.nc$",full.names = TRUE)
+          out = dir(this.out[i],pattern = "*.out$",full.names = TRUE)
+          if(length(out) >= 1 & length(ncf) == 0){
+              PEcAn.SIPNET::model2netcdf.SIPNET(outdir = this.out[i],
+                                                sitelat=set[[1]]$run$site$lat,   ## works for HF but need to generalize this hard coding to match site
+                                                sitelon=set[[1]]$run$site$lat,
+                                                start_date = runDays[s],
+                                                end_date   = as.Date(runDays[s]) + lubridate::days(35),
+                                                revision   = "ssr",
+                                                delete.raw = FALSE,
+                                                conflict   = TRUE
+              )
+          }
+        }
+        
+        
       }
     } else { break }
-  } else {mc("ls minio")
-    ## previous run didn't occur
+  } else {
+    print("previous run didn't occur")
     break
   }
   
@@ -60,14 +113,7 @@ for (s in seq_along(runDays)) {
 ##########################################
 
 ## minio settings and helper functions
-source("~/pecan/modules/assim.sequential/inst/hf_landscape/PEcAn2EFI.R")
-source("~/pecan/modules/assim.sequential/inst/hf_landscape/minio_secrets.R")
-## minio_secrets contains the following:
-#minio_key <- Sys.getenv("MINIO_ACCESS_KEY", "username")
-#minio_secret <- Sys.getenv("MINIO_SECRET_KEY", "password")
-minio_host <- Sys.getenv("MINIO_HOST", "test-pecan.bu.edu")
-minio_port <- Sys.getenv("MINIO_PORT", "9000")
-minio_arrow_bucket <- Sys.getenv("MINIO_ARROW_BUCKET", "hf-landscape-none")
+source(file.path(pecanhome,"modules/assim.sequential/inst/hf_landscape/PEcAn2EFI.R"))
 # helper function for minio URIs
 minio_path <- function(...) paste(minio_arrow_bucket, ..., sep = "/")
 minio_uri <- function(...) {
@@ -82,7 +128,7 @@ minio_uri_public <- function(...) {
 ## loop over dates
 for (s in seq_along(runDays)) {
   ## did we do this run already?
-  now  = paste0("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/FNA",runDays[s])
+  now  = paste0(projectdir,"/FNA",runDays[s])
   print(now)
   this.out = dir(file.path(now,"out"),full.names = TRUE)
   if(length(this.out) == 0){
@@ -91,12 +137,15 @@ for (s in seq_along(runDays)) {
   } 
   
   ## did we write this run to minio already?
-  ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) %>% 
-    dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) %>%  
-    dplyr::distinct(parameter) %>% dplyr::collect()
-  if(length(ens$parameter)>0) {
-    print(paste("skipping",length(ens$parameter)))
-    next
+  if(!FORCE){  ## if not overwriting
+    ens = arrow::open_dataset(minio_uri_public(), format = "parquet" ) |> 
+      dplyr::filter(lubridate::as_datetime(reference_datetime) == runDays[s]) |>  
+      dplyr::distinct(parameter) |>
+      dplyr::collect()
+    if(length(ens$parameter)>0) {
+      print(paste("skipping",length(ens$parameter)))
+      next
+    }
   }
   
   ## identify runs in the output folder
@@ -112,9 +161,16 @@ for (s in seq_along(runDays)) {
                                    start_date = runDays[s])
   }
   out = dplyr::bind_rows(out)
+  if(!is.numeric(nrow(out)) | nrow(out) == 0) next  ## don't insert empty days into minio
+  out = out %>% dplyr::relocate(parameter) |> 
+    dplyr::relocate(site_id) |>
+    dplyr::relocate(time_bounds) |> 
+    dplyr::rename(datetime=time_bounds) |>
+    dplyr::relocate(reference_datetime)
+  out = tidyr::pivot_longer(out,5:ncol(out),names_to = "variable",values_to = "prediction")
   
   ## push to container in parquet format
-  out %>% dplyr::group_by(reference_datetime) %>% arrow::write_dataset(minio_uri(),format="parquet")
+  out |> dplyr::group_by(reference_datetime) |> arrow::write_dataset(minio_uri(),format="parquet")
   
 }
 
