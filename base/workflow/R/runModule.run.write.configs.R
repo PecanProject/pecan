@@ -12,7 +12,11 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE, use.existing
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
       unlink(file.path(settings$rundir, "runs.txt"))
     }
-    return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = overwrite,use.existing.samples=use.existing.samples))
+    return(PEcAn.settings::papply(
+      settings,
+      runModule.run.write.configs,
+      overwrite = overwrite,
+      use.existing.samples = use.existing.samples))
   } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
     # double check making sure we have method for parameter sampling
