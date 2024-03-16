@@ -32,9 +32,9 @@ echo "Res: @RES@ "
 echo "Compset: @COMPSET@ "
 echo "Machine: @MACHINE@ "
 echo "Compiler: @COMPILER@ "
-echo "Project_name: @PROJECT@ "
+echo "Project_name: @PROJECT@ " ## delete?
 echo "--------------------------"
-./create_newcase --case @CASEDIR@ --res @RES@ --compset @COMPSET@ --mach @MACHINE@ --compiler @COMPILER@ --project @PROJECT@ --run-unsupported
+./create_newcase --case @CASEDIR@ --res @RES@ --compset @COMPSET@ --mach @MACHINE@ --compiler @COMPILER@ --project @PROJECT@ --driver nuopc --run-unsupported
   
 cd "@RUNDIR@"
   
@@ -80,8 +80,27 @@ echo "*** Modify XMLs ***"
 ./xmlchange --file env_run.xml --id LND_DOMAIN_FILE --val 'domain.lnd.@SITE_NAME@.nc'
 ./xmlchange --file env_run.xml --id LND_DOMAIN_PATH --val '@INDIR@/share/domains/domain.clm/'
 ./xmlchange --file env_run.xml --id CLM_USRDAT_NAME --val '@SITE_NAME@'
-## END REFCASE  
-  
+## END REFCASE
+## NEW_xmlchange"---------------"
+./xmlchange CLM_USRDAT_DIR=/ctsm-api/resources/data/SOD1
+
+./xmlchange PTS_LON=26.6385
+
+./xmlchange PTS_LAT=67.3623
+
+./xmlchange MPILIB=mpich # need rebuild
+
+./xmlchange RUN_STARTDATE="2014-01-01"
+
+./xmlchange STOP_OPTION="ndays"
+
+./xmlchange STOP_N="365"
+
+./xmlchange DATM_YR_START="2014"
+
+./xmlchange DATM_YR_END="2014"
+## "--------------------------"
+
 ## ENV_BUILD update configurations
 ./xmlchange --file env_build.xml --id CIME_OUTPUT_ROOT --val @CASEDIR@
 ./xmlchange --file env_build.xml --id EXEROOT --val @CASEDIR@/bld # temporary fix
