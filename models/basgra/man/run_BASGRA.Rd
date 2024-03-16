@@ -14,7 +14,8 @@ run_BASGRA(
   outdir,
   sitelat,
   sitelon,
-  co2_file = NULL
+  co2_file = NULL,
+  write_raw_output = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ run_BASGRA(
 \item{sitelon}{longitude of the site}
 
 \item{co2_file}{path to daily atmospheric CO2 concentration file, optional, defaults to 350 ppm when missing}
+
+\item{write_raw_output}{write raw output in csv or not}
 }
 \description{
 BASGRA wrapper function. Runs and writes model outputs in PEcAn standard.
@@ -49,5 +52,5 @@ write.config.BASGRA modifies args of this function through template.job
 then job.sh runs calls this function to run the model
 }
 \author{
-Istem Fer
+Istem Fer, Julius Vira
 }

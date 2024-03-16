@@ -15,7 +15,7 @@ if [ ! -e "@OUTDIR@/results.csv" ]; then
     
     # convert to MsTMIP
   echo "library (PEcAn.BASGRA)
-run_BASGRA('@SITE_MET@', @RUN_PARAMS@, '@SITE_HARVEST@', '@SITE_FERTILIZE@', '@START_DATE@', '@END_DATE@', '@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@SITE_CO2FILE@')
+run_BASGRA('@SITE_MET@', @RUN_PARAMS@, '@SITE_HARVEST@', '@SITE_FERTILIZE@', '@START_DATE@', '@END_DATE@', '@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@SITE_CO2FILE@', @WRITE_RAW_OUTPUT@)
 " | R --vanilla
 
   STATUS=$?

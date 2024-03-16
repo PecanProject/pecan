@@ -31,10 +31,13 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   outdir <- file.path(settings$host$outdir, run.id)
   
   # load default(!) BASGRA params
-  run_params <- PEcAn.utils::load_local(system.file("BASGRA_params.Rdata", package = "PEcAn.BASGRA"))$default_params
-  
+  if (!is.null(settings$run$inputs$defaults$path)) {
+    df_run_params <- utils::read.csv(settings$run$inputs$defaults$path)
+  } else {
+    df_run_params <- utils::read.csv(system.file("BASGRA_params.csv", package = "PEcAn.BASGRA"))
+  }
+  run_params <- stats::setNames(df_run_params[,2], df_run_params[,1])
   run_params[which(names(run_params) == "LAT")] <- as.numeric(settings$run$site$lat)
-  
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
     
@@ -161,6 +164,30 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "TVERN")] <- pft.traits[which(pft.names == "vernalization_threshold")]
     }
     
+    if ("hardening_parameter" %in% pft.names) {
+      run_params[which(names(run_params) == "Hparam")] <- pft.traits[which(pft.names == "hardening_parameter")]
+    }
+    
+    if ("max_res_abg" %in% pft.names) {
+      run_params[which(names(run_params) == "COCRESMX")] <- pft.traits[which(pft.names == "max_res_abg")]
+    }
+    
+    if ("max_size_etil" %in% pft.names) {
+      run_params[which(names(run_params) == "CSTAVM")] <- pft.traits[which(pft.names == "max_size_etil")]
+    }
+    
+    if ("maxSLAmin" %in% pft.names) {
+      run_params[which(names(run_params) == "FSLAMIN")] <- pft.traits[which(pft.names == "maxSLAmin")]
+    }
+    
+    if ("rehardening_disappears" %in% pft.names) {
+      run_params[which(names(run_params) == "reHardRedDay")] <- pft.traits[which(pft.names == "rehardening_disappears")]
+    }
+    
+    if ("LUE_increase" %in% pft.names) {
+      run_params[which(names(run_params) == "KLUETILG")] <- pft.traits[which(pft.names == "LUE_increase")]
+    }
+    
     
     ##### Soil parameters
     
@@ -248,79 +275,274 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     if ("etil_resv_harv" %in% pft.names) {
       run_params[which(names(run_params) == "HAGERE")] <- pft.traits[which(pft.names == "etil_resv_harv")]
     }
+
+    # Yasso decomposition parameters
+    param_pairs <- list(
+      c('som_a_decomp_rate', 'yasso_alpha_a'), c('som_w_decomp_rate', 'yasso_alpha_w'),
+      c('som_e_decomp_rate', 'yasso_alpha_e'), c('som_n_decomp_rate', 'yasso_alpha_n'),
+      c('yasso_rate_pc', 'yasso_rate_pc'), c('yasso_tresp_pc', 'yasso_tres_pc')
+    )
+    for (param_pair in param_pairs) {
+      # Yasso-specific params
+      if (param_pair[1] %in% pft.names) {
+        run_params[which(names(run_params) == param_pair[2])] <- pft.traits[which(pft.names == param_pair[1])]
+      }
+    }
     
   } #### End parameter update
-  
-  
-  
+
   #### Update initial conditions
   if (!is.null(IC)) {
     
     ic.names <- names(IC)
     
+    # let's combine these here
+    last_vals <- c()
+    last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
+    
+    if(!file.exists(last_states_file) & is.null(IC$test_vals)){
+      PEcAn.logger::logger.severe("Last step output values are missing for restart.")
+    }else if(!is.null(IC$test_vals)){
+      # for package testing
+      last_vals <- IC$test_vals
+    }else{
+      load(last_states_file)
+    }
+    
     if ("LAI"  %in% ic.names) {
       run_params[names(run_params) == "LOG10LAII"] <- IC$LAI
+    }else{
+      run_params[names(run_params) == "LOG10LAII"] <- last_vals[names(last_vals) == "LAI"]
     }
     
-    if ("fast_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMF0"] <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g")
-    }
-    
-    if ("slow_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMS0"] <- PEcAn.utils::ud_convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+    # For Yasso restart
+    if(run_params[names(run_params) == "use_yasso"]){
+      
+      last_somf <- sum(last_vals[names(last_vals) == "CSOM_A"],
+                       last_vals[names(last_vals) == "CSOM_W"],
+                       last_vals[names(last_vals) == "CSOM_E"],
+                       last_vals[names(last_vals) == "CSOM_N"])
+      
+      last_soms <- last_vals[names(last_vals) == "CSOM_H"]
+      
+      if ("fast_soil_pool_carbon_content"  %in% ic.names & "slow_soil_pool_carbon_content"  %in% ic.names) {
+        
+        new_somf <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g") 
+        new_soms <- PEcAn.utils::ud_convert(IC$slow_soil_pool_carbon_content, "kg", "g") 
+        
+        ratio_somf <- new_somf / last_somf
+        
+        # update via ratio
+        run_params[names(run_params) == "CSOM_A"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_A"]
+        run_params[names(run_params) == "CSOM_W"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_W"]
+        run_params[names(run_params) == "CSOM_E"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_E"]
+        run_params[names(run_params) == "CSOM_N"] <- ratio_somf * last_vals[names(last_vals) == "CSOM_N"]
+        run_params[names(run_params) == "CSOM_H"] <- new_soms
+        
+        run_params[names(run_params) == "NSOM"] <- ((new_somf+new_soms)/(last_somf+last_soms)) * last_vals[names(last_vals) == "NSOM"]
+        
+      }else{
+        
+        run_params[names(run_params) == "CSOM_A"] <- last_vals[names(last_vals) == "CSOM_A"]
+        run_params[names(run_params) == "CSOM_W"] <- last_vals[names(last_vals) == "CSOM_W"]
+        run_params[names(run_params) == "CSOM_E"] <- last_vals[names(last_vals) == "CSOM_E"]
+        run_params[names(run_params) == "CSOM_N"] <- last_vals[names(last_vals) == "CSOM_N"]
+        run_params[names(run_params) == "CSOM_H"] <- last_soms
+        
+        run_params[names(run_params) == "NSOM"] <- last_vals[names(last_vals) == "NSOM"]
+        
+      }
+      
+      # #else-if ("TotSoilCarb"  %in% ic.names)?
+      # new_totc <- PEcAn.utils::ud_convert(IC$TotSoilCarb, "kg", "g") 
+      # 
+      # ratio_soc <- new_totc / (last_somf + last_soms)
+      # 
+      # # update via ratio
+      # run_params[names(run_params) == "CSOM_A"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_A"]
+      # run_params[names(run_params) == "CSOM_W"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_W"]
+      # run_params[names(run_params) == "CSOM_E"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_E"]
+      # run_params[names(run_params) == "CSOM_N"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_N"]
+      # run_params[names(run_params) == "CSOM_H"] <- ratio_soc * last_vals[names(last_vals) == "CSOM_H"]
+      
+      
+    }else{ # no Yasso
+      if ("fast_soil_pool_carbon_content"  %in% ic.names) {
+        run_params[names(run_params) == "CSOMF0"] <- PEcAn.utils::ud_convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+      }else{
+        run_params[names(run_params) == "CSOMF0"] <- last_vals[names(last_vals) == "CSOMF"]
+      }
+      run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
+      
+      if ("slow_soil_pool_carbon_content"  %in% ic.names) {
+        run_params[names(run_params) == "CSOMS0"] <- PEcAn.utils::ud_convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+      }else{
+        run_params[names(run_params) == "CSOMS0"] <- last_vals[names(last_vals) == "CSOMS"]
+      }
+      run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
+      
     }
     
     if ("CropYield"  %in% ic.names) {
-       run_params[names(run_params) == "YIELDI"] <-  PEcAn.utils::ud_convert(IC$CropYield, "kg", "g")
+      run_params[names(run_params) == "YIELDI"] <- PEcAn.utils::ud_convert(IC$CropYield, "kg", "g")
+    }else{
+      run_params[names(run_params) == "YIELDI"]  <- last_vals[names(last_vals) == "YIELD_POT"]
     }
     
     if ("litter_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLITT0"] <-  PEcAn.utils::ud_convert(IC$litter_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CLITT0"] <- PEcAn.utils::ud_convert(IC$litter_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "CLITT0"] <- last_vals[names(last_vals) == "CLITT"]
     }
+    #run_params[names(run_params) == "NLITT0"] <- run_params[names(run_params) == "CLITT0"] / run_params[names(run_params) == "CNLITT0"]
+    run_params[which(names(run_params) == "NLITT0")] <- last_vals[names(last_vals) == "NLITT"]
     
-    # not as important as others but you can throw this into the SDA too, then comment out last value overwriting below
-    # if ("stubble_carbon_content"  %in% ic.names) {
-    #   run_params[names(run_params) == "CSTUBI"] <-  PEcAn.utils::ud_convert(IC$stubble_carbon_content, "kg", "g")
-    # }
+    if ("stubble_carbon_content"  %in% ic.names) {
+      run_params[names(run_params) == "CSTUBI"] <- PEcAn.utils::ud_convert(IC$stubble_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"]
+    }
    
     if ("stem_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSTI"] <-  PEcAn.utils::ud_convert(IC$stem_carbon_content, "kg", "g")
+      run_params[names(run_params) == "CSTI"] <- PEcAn.utils::ud_convert(IC$stem_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "CSTI"] <- last_vals[names(last_vals) == "CST"]
     }
     
+    # NRT        = NCR * CRTI
+    #run_params[names(run_params) == "NCR"] <- last_vals[names(last_vals) == "NRT"] / last_vals[names(last_vals) == "CRT"] 
     if ("root_carbon_content"  %in% ic.names) {
       run_params[names(run_params) == "LOG10CRTI"] <-  PEcAn.utils::ud_convert(IC$root_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "LOG10CRTI"] <- last_vals[names(last_vals) == "CRT"]
     }
+    run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*run_params[names(run_params) == "NCR"]
+   # if(run_params[which(names(run_params) == "NRTI")] <= 0) run_params[which(names(run_params) == "NRTI")] <- 0.0001
+
+    # # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
+    # # NSH      = NCSHI * (CLVI+CSTI)
+    lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
+    ncshi <- run_params[names(run_params) == "NCSHMAX"] *
+      (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
+    run_params[which(names(run_params) == "NSHI")] <- ncshi *
+      ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
+    
 
     if ("reserve_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CRESI"] <-  PEcAn.utils::ud_convert(IC$reserve_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CRESI"] <- PEcAn.utils::ud_convert(IC$reserve_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "LOG10CRESI"] <- last_vals[names(last_vals) == "CRES"]
     }
     
     if ("leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "LOG10CLVI"] <-  PEcAn.utils::ud_convert(IC$leaf_carbon_content, "kg", "g")
+      run_params[names(run_params) == "LOG10CLVI"] <- PEcAn.utils::ud_convert(IC$leaf_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "LOG10CLVI"] <- last_vals[names(last_vals) == "CLV"]
     }
     
     if ("dead_leaf_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CLVDI"] <-  PEcAn.utils::ud_convert(IC$dead_leaf_carbon_content, "kg", "g")
-    }
-
-    if ("nonelongating_generative_tiller"  %in% ic.names) {
-      run_params[names(run_params) == "TILG1I"] <-  IC$nonelongating_generative_tiller
-    }
-
-    if ("elongating_generative_tiller"  %in% ic.names) {
-      run_params[names(run_params) == "TILG2I"] <-  IC$elongating_generative_tiller
-    }
-
-    if ("nonelongating_vegetative_tiller"  %in% ic.names) {
-      run_params[names(run_params) == "TILVI"] <-  IC$nonelongating_vegetative_tiller
+      run_params[names(run_params) == "CLVDI"] <- PEcAn.utils::ud_convert(IC$dead_leaf_carbon_content, "kg", "g")
+    }else{
+      run_params[names(run_params) == "CLVDI"] <- last_vals[names(last_vals) == "CLVD"]
     }
     
     if ("tiller_density"  %in% ic.names) {
-      run_params[names(run_params) == "TILTOTI"] <-  IC$tiller_density
+      run_params[names(run_params) == "TILTOTI"] <- IC$tiller_density # all the tillers are updated from this with respect to model preserved ratios
+    }else{
+      run_params[names(run_params) == "TILTOTI"] <- last_vals[names(last_vals) == "TILTOT"]
     }
 
+    run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
+    
+    if(run_params[names(run_params) == "FRTILGI"] == 0) run_params[names(run_params) == "FRTILGI"] <- 0.01
+    
+    #TILV       = TILTOTI * (1. - FRTILGI)
+    if ("nonelongating_vegetative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILVI"] <-  IC$nonelongating_vegetative_tiller
+      # preserve ratio
+      #run_params[names(run_params) == "FRTILGI"] <- 1 - (run_params[names(run_params) == "TILVI"]/run_params[names(run_params) == "TILTOTI"])
+    }else{
+      run_params[names(run_params) == "TILVI"]  <- run_params[names(run_params) == "TILTOTI"] * (1-run_params[names(run_params) == "FRTILGI"])
+    }
+    
+    gtil <- run_params[names(run_params) == "TILTOTI"] - run_params[names(run_params) == "TILVI"]
+    
+    #TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
+    if ("nonelongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG1I"] <-  IC$nonelongating_generative_tiller
+      # can also update FRTILGG1I but I don't throw these into the state matrix anymore and TILG1I is initialized from its own variable, not derived from fractions
+    }else{
+      run_params[names(run_params) == "TILG1I"] <- gtil*(last_vals[names(last_vals) == "TILG1"]  / 
+                                                           (last_vals[names(last_vals) == "TILG1"]+last_vals[names(last_vals) == "TILG2"]))
+      if(is.nan(run_params[names(run_params) == "TILG1I"])) run_params[names(run_params) == "TILG1I"] <- 1
+      #if(is.infinite(run_params[names(run_params) == "TILG1I"])) run_params[names(run_params) == "TILG1I"] <- 1
+    }
+    
+    #TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
+    if ("elongating_generative_tiller"  %in% ic.names) {
+      run_params[names(run_params) == "TILG2I"] <-  IC$elongating_generative_tiller
+    }else{
+      run_params[names(run_params) == "TILG2I"] <- gtil*(last_vals[names(last_vals) == "TILG2"]  / 
+                                                           (last_vals[names(last_vals) == "TILG1"]+last_vals[names(last_vals) == "TILG2"]))
+      if(is.nan(run_params[names(run_params) == "TILG2I"])) run_params[names(run_params) == "TILG2I"] <- 1
+      #  if(is.infinite(run_params[names(run_params) == "TILG2I"])) run_params[names(run_params) == "TILG2I"] <- 1
+    }
+    
     if ("phenological_stage"  %in% ic.names) {
-      run_params[names(run_params) == "PHENI"] <-  IC$phenological_stage
+      run_params[names(run_params) == "PHENI"] <- IC$phenological_stage
+    }else{
+      run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
+    }
+
+    if ("lethal_temperature50"  %in% ic.names) {
+      run_params[names(run_params) == "LT50I"] <- IC$lethal_temperature50
+    }else{
+      run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
+    }
+    
+    
+    if ("rooting_depth"  %in% ic.names) {
+      run_params[names(run_params) == "ROOTDM"] <- IC$rooting_depth
+    }else{
+      run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"] # this doesn't change
+    }
+    
+    # these change too
+    run_params[names(run_params) == "TEMPR30"]  <- last_vals[names(last_vals) == "TEMPR30"]
+    run_params[names(run_params) == "PRECIP30"]  <- last_vals[names(last_vals) == "PRECIP30"]
+    
+    run_params[names(run_params) == "DAYLI"]  <- last_vals[names(last_vals) == "DAYL"]
+    
+    run_params[names(run_params) == "NMIN0"]  <- last_vals[names(last_vals) == "NMIN"]
+    
+    run_params[names(run_params) == "O2I"]    <- last_vals[names(last_vals) == "O2"]
+    
+    
+    # water stuff, to be in SDA 
+    
+    run_params[names(run_params) == "DRYSTORI"] <- last_vals[names(last_vals) == "DRYSTOR"]
+    run_params[names(run_params) == "FdepthI"]  <- last_vals[names(last_vals) == "Fdepth"]
+    run_params[names(run_params) == "SDEPTHI"]  <- last_vals[names(last_vals) == "Sdepth"]
+    run_params[names(run_params) == "TANAERI"]  <- last_vals[names(last_vals) == "TANAER"]
+    run_params[names(run_params) == "WAPLI"]    <- last_vals[names(last_vals) == "WAPL"]
+    run_params[names(run_params) == "WAPSI"]    <- last_vals[names(last_vals) == "WAPS"]
+    run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
+    run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
+    
+    #  WAL        = 1000. * ROOTDM * WCI
+    if ("SoilMoistFrac"  %in% ic.names) {
+      run_params[names(run_params) == "WCI"] <-  IC$SoilMoistFrac
+      run_params[names(run_params) == "WALI"]  <- 1000. * (run_params[names(run_params) == "ROOTDM"] - run_params[names(run_params) == "FdepthI"]) * run_params[names(run_params) == "WCI"]
+    }else{
+      run_params[names(run_params) == "WALI"]  <- last_vals[names(last_vals) == "WAL"] 
+      run_params[names(run_params) == "WCI"]   <- run_params[names(run_params) == "WALI"] / (1000 * (run_params[names(run_params) == "ROOTDM"]- run_params[names(run_params) == "FdepthI"]))
+    }
+    
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')
+    for (p in yasso_pools) {
+      if (p %in% ic.names) {
+        run_params[names(run_params) == p] <- IC[[p]]
+      }
     }
     
 
@@ -372,9 +594,15 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     }
     
     # Initial mineral N
-    nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_nitrogen_content"), silent = TRUE)
+    nmin0 <- try(ncdf4::ncvar_get(IC.nc, "soil_inorganic_nitrogen_content"), silent = TRUE)
     if (!is.na(nmin0) && is.numeric(nmin0)) {
       run_params[which(names(run_params) == "NMIN0")] <- PEcAn.utils::ud_convert(nmin0, "kg", "g")
+    }
+    
+        # Initial organic N
+    nsom0 <- try(ncdf4::ncvar_get(IC.nc, "soil_organic_nitrogen_content"), silent = TRUE)
+    if (!is.na(nsom0) && is.numeric(nsom0)) {
+      run_params[which(names(run_params) == "NSOM")] <- PEcAn.utils::ud_convert(nsom0, "kg", "g")
     }
     
     # Rooting depth (m)
@@ -393,6 +621,21 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     tiltoti <- try(ncdf4::ncvar_get(IC.nc, "tiller_density"), silent = TRUE)
     if (!is.na(tiltoti) && is.numeric(tiltoti)) {
       run_params[which(names(run_params) == "TILTOTI")] <- tiltoti
+    }
+    
+    tilg1 <- try(ncdf4::ncvar_get(IC.nc, "nonelongating_generative_tiller"), silent = TRUE)
+    if (!is.na(tilg1) && is.numeric(tilg1)) {
+      run_params[names(run_params) == "TILG1I"] <-  tilg1
+    }
+    
+    tilg2 <- try(ncdf4::ncvar_get(IC.nc, "elongating_generative_tiller"), silent = TRUE)
+    if (!is.na(tilg2) && is.numeric(tilg2)) {
+      run_params[names(run_params) == "TILG2I"] <-  tilg2
+    }
+    
+    tilv <- try(ncdf4::ncvar_get(IC.nc, "nonelongating_vegetative_tiller"), silent = TRUE)
+    if (!is.na(tilv) && is.numeric(tilv)) {
+      run_params[names(run_params) == "TILVI"] <-  tilv
     }
     
     # Phenological stage
@@ -440,98 +683,20 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[which(names(run_params) == "FWCWP")] <- wcwp / wcst 
     }
 
+    yasso_pools <- c('CSOM_A', 'CSOM_W', 'CSOM_E', 'CSOM_N', 'CSOM_H', 'NSOM', 'TEMPR30', 'PRECIP30')
+    for (p in yasso_pools) {
+      value <- try(ncdf4::ncvar_get(IC.nc, p), silent=TRUE)
+      if (!is.na(value) && is.numeric(value)) {
+        run_params[names(run_params) == p] <- value
+      }
+    }
   }
+
   
-  # THESE "PARAMETERS" (IN FACT, INITIAL CONDITIONS) WERE NOT PART OF THE ORIGINAL VECTOR
-  # THESE DERIVATIONS WERE PART OF THE BASGRA CODE, NOW TAKEN OUT HERE BECAUSE OF SDA
-  # BUT WHEN NOT DOING SDA WE STILL NEED TO PASS THEM
-  
-  # NRT        = NCR * CRTI
-  run_params[which(names(run_params) == "NRTI")] <- run_params[names(run_params) == "LOG10CRTI"]*
-    run_params[names(run_params) == "NCR"]
-  
-  # NCSHI    = NCSHMAX * (1-EXP(-K*LAII)) / (K*LAII)
-  # NSH      = NCSHI * (CLVI+CSTI)
-  lai_tmp <- run_params[names(run_params) == "LOG10LAII"]
-  ncshi <- run_params[names(run_params) == "NCSHMAX"] * 
-    (1-exp(-run_params[names(run_params) == "K"]*lai_tmp)) / (run_params[names(run_params) == "K"]*lai_tmp)
-  run_params[which(names(run_params) == "NSHI")] <- ncshi * 
-    ((run_params[names(run_params) == "LOG10CLVI"]) + run_params[names(run_params) == "CSTI"])
-  
-  #  WAL        = 1000. * ROOTDM * WCI
-  run_params[names(run_params) == "WALI"]  <- 1000. * run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "WCI"]
-  
-  # O2         = FGAS * ROOTDM * FO2MX * 1000./22.4
-  run_params[names(run_params) == "O2I"]  <- run_params[names(run_params) == "FGAS"] * 
-    run_params[names(run_params) == "ROOTDM"] * run_params[names(run_params) == "FO2MX"] * 1000./22.4
-  
-  #NLITT      = CLITT0 / CNLITT0
-  run_params[names(run_params) == "NLITT0"]  <- run_params[names(run_params) == "CLITT0"] / run_params[names(run_params) == "CNLITT0"]
-  
-  #NSOMF      = (CSOM0 *    FCSOMF0)  / CNSOMF0
-  run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
-  run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
-  
-  
-  
-  ##################################################################
-  ######################### PREVIOUS STATE #########################
-  ##################################################################
-  
-  # overwrite initial values with previous time steps
-  # as model2netcdf is developed, some or all of these can be dropped?
-  last_vals <- c()
-  last_states_file <- file.path(outdir, "last_vals_basgra.Rdata")
-  
-  if(file.exists(last_states_file)){
-    
-    # TODO: certain variables should be thrown into the state matrix in SDA together
-    # but in case someone forgot to do so, make sure those missing values are passed from where we left off here
-    
-    load(last_states_file)
-    
-    # SDA handles this now
-    # PHENI	   = pa(6) 
-    run_params[names(run_params) == "PHENI"] <- last_vals[names(last_vals) == "PHEN"]
-    
-    # LT50I      = pa(9)
-    run_params[names(run_params) == "LT50I"] <- last_vals[names(last_vals) == "LT50"]
-    
-    run_params[names(run_params) == "CSTUBI"] <- last_vals[names(last_vals) == "CSTUB"] 
-    
-    run_params[names(run_params) == "ROOTDM"] <- last_vals[names(last_vals) == "ROOTD"]
-    
-    run_params[names(run_params) == "DRYSTORI"] <- last_vals[names(last_vals) == "DRYSTOR"]
-    run_params[names(run_params) == "FdepthI"]  <- last_vals[names(last_vals) == "Fdepth"]
-    run_params[names(run_params) == "SDEPTHI"]  <- last_vals[names(last_vals) == "Sdepth"]
-    run_params[names(run_params) == "TANAERI"]  <- last_vals[names(last_vals) == "TANAER"]
-    run_params[names(run_params) == "WAPLI"]    <- last_vals[names(last_vals) == "WAPL"]
-    run_params[names(run_params) == "WAPSI"]    <- last_vals[names(last_vals) == "WAPS"]
-    run_params[names(run_params) == "WASI"]     <- last_vals[names(last_vals) == "WAS"]
-    run_params[names(run_params) == "WETSTORI"] <- last_vals[names(last_vals) == "WETSTOR"]
-  
-    
-    run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
-    
-    #TILV       = TILTOTI * (1. - FRTILGI)
-    #TILG1      = TILTOTI *       FRTILGI *    FRTILGG1I
-    #TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
-    
-    run_params[names(run_params) == "TILVI"]  <- run_params[names(run_params) == "TILTOTI"] * (1-run_params[names(run_params) == "FRTILGI"])
-    gtil <- run_params[names(run_params) == "TILTOTI"] - run_params[names(run_params) == "TILVI"]
-    run_params[names(run_params) == "TILG1I"] <- gtil*last_vals[names(last_vals) == "TILG1"]  / 
-      (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
-    run_params[names(run_params) == "TILG2I"] <- gtil*last_vals[names(last_vals) == "TILG2"]  / 
-      (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
-    
-    run_params[names(run_params) == "DAYLI"]  <- last_vals[names(last_vals) == "DAYL"]
-    
-    run_params[names(run_params) == "NMIN0"] <- last_vals[names(last_vals) == "NMIN"]
-    
-    run_params[names(run_params) == "WALI"]        <- last_vals[names(last_vals) == "WAL"] 
-    run_params[names(run_params) == "WCI"]  <- last_vals[names(last_vals) == "WAL"] / (1000 * last_vals[names(last_vals) == "ROOTD"])
-    run_params[names(run_params) == "O2I"]         <- last_vals[names(last_vals) == "O2"]
-    
+  # if the default parameter file is set to force some parameter values, override the trait.values here:
+  if ('force' %in% colnames(df_run_params)) {
+    mask <- as.logical(df_run_params$force)
+    run_params[mask] <- df_run_params$value[mask]
   }
   
   
@@ -583,12 +748,16 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
   
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
+  if (!is.null(settings$run$write.raw.output)) {
+    jobsh <- gsub("@WRITE_RAW_OUTPUT@", settings$run$write.raw.output, jobsh)
+  } else {
+    jobsh <- gsub("@WRITE_RAW_OUTPUT@", FALSE, jobsh)
+  }
   
   jobsh <- gsub(
     "@RUN_PARAMS@",
     paste0("c(", PEcAn.utils::listToArgString(run_params), ")"),
     jobsh)
-  
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   

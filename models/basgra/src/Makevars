@@ -9,7 +9,8 @@ PKG_FCFLAGS = -x f95-cpp-input -fdefault-real-8
 
 PARAMS = \
     parameters_site.o \
-    parameters_plant.o
+    parameters_plant.o \
+    yasso.o
 
 NEEDS_PARAMS = \
     environment.o \

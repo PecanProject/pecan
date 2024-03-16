@@ -22,7 +22,7 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
-    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0.00001
+    if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0.0001
     names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
@@ -36,6 +36,18 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save[[length(analysis.save) + 1]] <- new.state$slow_soil_pool_carbon_content
     if (new.state$slow_soil_pool_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("slow_soil_pool_carbon_content")
+  }
+  
+  if ("soil_organic_nitrogen_content" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$soil_nitrogen_content
+    if (new.state$soil_nitrogen_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("soil_nitrogen_content")
+  }
+  
+  if ("TotSoilCarb" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$TotSoilCarb
+    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("TotSoilCarb")
   }
   
   if ("CropYield" %in% variables) {
@@ -64,19 +76,19 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("root_carbon_content" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$root_carbon_content
-    if (new.state$root_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$root_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0.0001
     names(analysis.save[[length(analysis.save)]]) <- c("root_carbon_content")
   }
   
   if ("reserve_carbon_content" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$reserve_carbon_content
-    if (new.state$reserve_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$reserve_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 1e-05
     names(analysis.save[[length(analysis.save)]]) <- c("reserve_carbon_content")
   }
   
   if ("leaf_carbon_content" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$leaf_carbon_content
-    if (new.state$leaf_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$leaf_carbon_content < 0) analysis.save[[length(analysis.save)]] <- 0.001
     names(analysis.save[[length(analysis.save)]]) <- c("leaf_carbon_content")
   }
 
@@ -112,8 +124,16 @@ write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("phenological_stage" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$phenological_stage
-    if (new.state$phenological_stage < 0) analysis.save[[length(analysis.save)]] <- 0.01
+    if (new.state$phenological_stage < 0) analysis.save[[length(analysis.save)]] <- 0
+    if (new.state$phenological_stage > 1) analysis.save[[length(analysis.save)]] <- 1
     names(analysis.save[[length(analysis.save)]]) <- c("phenological_stage")
+  }
+  
+  if ("SoilMoistFrac" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac
+    if (new.state$SoilMoistFrac < 0) analysis.save[[length(analysis.save)]] <- 0.001
+    if (new.state$SoilMoistFrac > 1) analysis.save[[length(analysis.save)]] <- 1
+    names(analysis.save[[length(analysis.save)]]) <- c("SoilMoistFrac")
   }
   
   if (!is.null(analysis.save) && length(analysis.save) > 0){

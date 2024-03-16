@@ -6,7 +6,7 @@
 extern void F77_NAME(basgra)(void *, void *, void *, void *, void *, void *, void *, void *);
 
 static const R_FortranMethodDef FortranEntries[] = {
-    {"basgra", (DL_FUNC) &F77_NAME(basgra), 8},
+    {"basgra", (DL_FUNC) &F77_NAME(basgra), 10},
     {NULL, NULL, 0}
 };
 
