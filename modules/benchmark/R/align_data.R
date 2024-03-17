@@ -1,13 +1,14 @@
-##' @name align_data
-##' @title Align timeseries data
-##' @export
+##' Align timeseries data
+##'
 ##' @param model.calc data.frame
 ##' @param obvs.calc data.frame
 ##' @param var data.frame
+##' @param align_method name of function to use for alignment
+##'
 ##' @importFrom rlang .data
 ##' @return dat
 ##' @author Betsy Cowdery
-
+##' @export
 
 ## Align timeseries data using different functions
 
@@ -43,15 +44,19 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
   coarse.unit <- compare$diff_units[coarse]
   
   # Round to the larger time step (experimental)
-  obvs.calc$round.posix  <- as.POSIXct(round(obvs.calc$posix,  units = coarse.unit))
-  model.calc$round.posix <- as.POSIXct(round(model.calc$posix, units = coarse.unit))
+  # Note: Oddly, the second argument to `round()` has to be unnamed here
+  #   because of an inconsistency in base R's rounding methods.
+  #   The generic `round()` expects the second arg to be called `digits`,
+  #   but then dispatches to `round.POSIXt`, which takes `units`.
+  obvs.calc$round.posix  <- as.POSIXct(round(obvs.calc$posix,  coarse.unit))
+  model.calc$round.posix <- as.POSIXct(round(model.calc$posix, coarse.unit))
   
   
   # Determine the overlaping range of dates
   # Compare the rounded dates because you can't compare dates of different units with range
   rng_obvs  <- range(unique(obvs.calc$round.posix))
   rng_model <- range(unique(model.calc$round.posix))
-  rng_dat   <- sort(c(rng_obvs, rng_model))[c(2, 3)] %>% lubridate::with_tz(., tzone = "UTC")
+  rng_dat   <- sort(c(rng_obvs, rng_model))[c(2, 3)] %>% lubridate::with_tz(tzone = "UTC")
   
   # Special case for annual timestep
   if(setequal(c(365,366), compare$diff_days[coarse]) | setequal(c(365), compare$diff_days[coarse]) | 
@@ -79,7 +84,7 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
     filter(coarse_range_check[1] <= .data$round.posix)  %>% 
     filter(coarse_range_check[2] >= .data$round.posix)
   
-  out1 <- date_subsets[[compare$type[coarse]]] %>% dplyr::select(.,one_of(var))
+  out1 <- date_subsets[[compare$type[coarse]]] %>% dplyr::select(dplyr::one_of(var))
   colnames(out1) <- paste0(colnames(out1), ".", compare$type[coarse])
   
   
@@ -89,7 +94,7 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
     date.coarse <- date_subsets[[compare$type[coarse]]]$round.posix
     date.fine   <- date_subsets[[compare$type[fine]]]$round.posix
     
-    data.fine   <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of(var))
+    data.fine   <- date_subsets[[compare$type[fine]]] %>% dplyr::select(dplyr::one_of(var))
     colnames(data.fine) <- paste0(colnames(data.fine), ".", compare$type[fine])
     
     out2 <- apply(data.fine, 2, 
@@ -104,10 +109,10 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
     
   } else if (mode.o == mode.m) { # here coarse and fine are just index values but but the time steps are the same size
     
-    out2 <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of(var))
+    out2 <- date_subsets[[compare$type[fine]]] %>% dplyr::select(dplyr::one_of(var))
     colnames(out2) <- paste0(colnames(out2), ".", compare$type[fine])
     dat <- cbind(out1, out2)
-    dat$posix <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of("round.posix")) %>% .[,1]
+    dat$posix <- date_subsets[[compare$type[fine]]] %>% dplyr::select(dplyr::one_of("round.posix")) %>% .[,1]
     
   }
   

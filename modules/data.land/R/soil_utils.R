@@ -26,30 +26,30 @@
 #' soil_params(sand=sand,clay=clay)
 soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL){
   ## load soil parameters
-  soil_data <- new.env()
-  load(system.file("data/soil_class.RData",package = "PEcAn.data.land"), envir = soil_data)
   mysoil <- list()
-  air.cond <- soil_data$air.cond
-  air.hcap <- soil_data$air.hcap
-  clay.cond <- soil_data$clay.cond
-  clay.hcap <- soil_data$clay.hcap
-  fieldcp.K <- soil_data$fieldcp.K
-  grav <- soil_data$grav
-  h2o.cond <- soil_data$h2o.cond
-  kair <- soil_data$kair
-  kclay <- soil_data$kclay
-  ksand <- soil_data$ksand
-  ksilt <- soil_data$ksilt
-  sand.cond <- soil_data$sand.cond
-  sand.hcap <- soil_data$sand.hcap
-  silt.cond <- soil_data$silt.cond
-  silt.hcap <- soil_data$silt.hcap
-  soil.name <- soil_data$soil.name
-  soilcp.MPa <- soil_data$soilcp.MPa
-  soilwp.MPa <- soil_data$soilwp.MPa
-  texture <- soil_data$texture
-  xclay.def <- soil_data$xclay.def
-  xsand.def <- soil_data$xsand.def
+  # 'soil_class' is package data, lazy-loaded here when needed
+  #   see data-raw/build_soil_texture_variables.R
+  air.cond <- PEcAn.data.land::soil_class$air.cond
+  air.hcap <- PEcAn.data.land::soil_class$air.hcap
+  clay.cond <- PEcAn.data.land::soil_class$clay.cond
+  clay.hcap <- PEcAn.data.land::soil_class$clay.hcap
+  fieldcp.K <- PEcAn.data.land::soil_class$fieldcp.K
+  grav <- PEcAn.data.land::soil_class$grav
+  h2o.cond <- PEcAn.data.land::soil_class$h2o.cond
+  kair <- PEcAn.data.land::soil_class$kair
+  kclay <- PEcAn.data.land::soil_class$kclay
+  ksand <- PEcAn.data.land::soil_class$ksand
+  ksilt <- PEcAn.data.land::soil_class$ksilt
+  sand.cond <- PEcAn.data.land::soil_class$sand.cond
+  sand.hcap <- PEcAn.data.land::soil_class$sand.hcap
+  silt.cond <- PEcAn.data.land::soil_class$silt.cond
+  silt.hcap <- PEcAn.data.land::soil_class$silt.hcap
+  soil.name <- PEcAn.data.land::soil_class$soil.name
+  soilcp.MPa <- PEcAn.data.land::soil_class$soilcp.MPa
+  soilwp.MPa <- PEcAn.data.land::soil_class$soilwp.MPa
+  texture <- PEcAn.data.land::soil_class$texture
+  xclay.def <- PEcAn.data.land::soil_class$xclay.def
+  xsand.def <- PEcAn.data.land::soil_class$xsand.def
   
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #

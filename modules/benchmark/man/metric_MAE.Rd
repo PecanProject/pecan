@@ -8,6 +8,8 @@ metric_MAE(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Mean Absolute Error

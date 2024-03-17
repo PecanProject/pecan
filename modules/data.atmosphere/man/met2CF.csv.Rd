@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.csv.R
 \name{met2CF.csv}
 \alias{met2CF.csv}
-\title{met2CF.csv}
+\title{Convert met data from CSV to CF}
 \usage{
 met2CF.csv(
   in.path,
@@ -19,27 +19,61 @@ met2CF.csv(
 )
 }
 \arguments{
-\item{format}{data frame or list with elements as described below
-format is output from db/R/query.format.vars, and should have:
-  REQUIRED:
-  format$lat = latitude of site (unless passed by lat)
-  format$lon = longitude of site (unless passed by lon)
-  format$header = number of lines of header
-  format$vars is a data.frame with lists of information for each variable to read, at least airT is required
-    format$vars$input_name = Name in CSV file
-    format$vars$input_units = Units in CSV file
-    format$vars$bety_name = Name in BETY - see https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html for allowable ones
-  OPTIONAL:
-  format$na.strings = list of missing values to convert to NA, such as -9999
-  format$skip = lines to skip excluding header
-  format$vars$column_number = Column number in CSV file (optional, will use header name first)
-Columns with NA for bety variable name are dropped. 
-Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
+\item{in.path}{directory in which to find met csv files}
+
+\item{in.prefix}{pattern to match to find met files inside `in.path`}
+
+\item{outfolder}{directory name to write CF outputs}
+
+\item{start_date, end_date}{when to start and stop conversion.
+Specify as `Date` objects, but only the year component is used}
+
+\item{format}{data frame or list produced by `PEcAn.DB::query.format.vars`.
+See details}
+
+\item{lat, lon}{latitude and longitude of site, in decimal degrees.
+If not provided, these are taken from `format`.}
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
+
+\item{overwrite}{Logical: Redo conversion if output file already exists?}
+
+\item{...}{other arguments, currently ignored}
 }
 \description{
-met2CF.csv
+Convert met data from CSV to CF
+}
+\details{
+The `format` argument takes an output from `PEcAn.DB::query.format.vars`,
+   and should have the following components:
+
+REQUIRED:
+\itemize{
+  \item `format$lat`: latitude of site (unless passed by `lat`)
+  \item `format$lon`: longitude of site (unless passed by `lon`)
+  \item `format$header`: number of lines of header
+  \item `format$vars`: a data.frame with lists of information for each
+        variable to read. At least `airT` is required
+  \item `format$vars$input_name`: name in CSV file
+  \item `format$vars$input_units`: units in CSV file
+  \item `format$vars$bety_name`: name in BETY.
+      See https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html
+      for allowable names.
+}
+
+OPTIONAL:
+\itemize{
+  \item `format$na.strings`: list of missing values to convert to NA,
+        such as -9999
+  \item `format$skip`: lines to skip excluding header
+  \item `format$vars$column_number`: column number in CSV file
+        (optional, will use header name first)
+}
+
+Columns with NA for bety variable name are dropped.
+
+Units for datetime field are the lubridate function that will be used to
+   parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).
 }
 \examples{
 \dontrun{
@@ -50,7 +84,7 @@ start_date <- lubridate::ymd_hm('200401010000')
 end_date <- lubridate::ymd_hm('200412312330')
 file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
 in.path <- '~/'
-in.prefix <- file$dbfile.name 
+in.prefix <- file$dbfile.name
 outfolder <- '~/'
 format.id <- 5000000001
 format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
@@ -62,6 +96,7 @@ results <- PEcAn.data.atmosphere::met2CF.csv(
   start_date, end_date, format,
   overwrite=TRUE)
 }
+
 }
 \author{
 Mike Dietze, David LeBauer, Ankur Desai

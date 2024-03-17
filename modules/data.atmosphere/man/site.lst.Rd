@@ -2,9 +2,14 @@
 % Please edit documentation in R/site.lst.R
 \name{site.lst}
 \alias{site.lst}
-\title{site.lst}
+\title{Find time zone for a site}
 \usage{
 site.lst(site.id, con)
+}
+\arguments{
+\item{site.id}{bety id of site to look up}
+
+\item{con}{betydb connection object}
 }
 \description{
 Find time zone for a site

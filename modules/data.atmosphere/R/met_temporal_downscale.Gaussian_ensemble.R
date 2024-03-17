@@ -3,18 +3,18 @@ substrRight <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
-##' met_temporal_downscale.Gaussian_ensemble takes source data and a training dataset from the same site and temporally 
+##' met_temporal_downscale.Gaussian_ensemble
+##'
+##' takes source data and a training dataset from the same site and temporally
 ##'    downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
-##' @name met_temporal_downscale.Gaussian_ensemble
-##' @title met_temporal_downscale.Gaussian_ensemble
+##'
 ##' @export
-##' @param in.path 
-##' @param in.prefix 
+##' @param in.path ignored
+##' @param in.prefix ignored
 ##' @param outfolder path to directory in which to store output. Will be created if it does not exist
 ##' @param input_met - the source dataset that will temporally downscaled by the train_met dataset
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
 ##'                    (see download.Fluxnet2015 or download.Ameriflux) 
-##' @param site.id
 ##' @param overwrite logical: replace output file if it already exists? 
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
 ##'   print debugging information as they run?
@@ -169,7 +169,10 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       if (highday > reso_len) {
         highday <- reso_len
       }
-      dwnsc_day <- rand_vect_cont(div, source$precipitation_flux[x], sd = sd(train$precipitation_flux[lowday:highday]))
+      dwnsc_day <- rand_vect_cont(
+        div,
+        source$precipitation_flux[x],
+        sd = stats::sd(train$precipitation_flux[lowday:highday]))
       precip <- append(precip, dwnsc_day)
     }
     df$precipitation_flux <- precip
@@ -196,7 +199,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
           }
           dwnsc_day <- vector()
           for (n in seq_len(div)) {
-            dwnsc_day[n] <- rnorm(1, mean = sour[x], sd = sd(a[lowday:highday]))
+            dwnsc_day[n] <- stats::rnorm(1, mean = sour[x], sd = stats::sd(a[lowday:highday]))
           }
           train_vec <- append(train_vec, dwnsc_day)
         }

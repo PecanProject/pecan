@@ -31,8 +31,7 @@ Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
                                               ids = site_ID, .con = con))
-  suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-  suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+  suppressWarnings(qry_results <- PEcAn.DB::db.query(site_qry, con))
   site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
                     lon=qry_results$lon, time_zone=qry_results$time_zone)
   

@@ -26,7 +26,7 @@ test_that("pecan_version", {
   # tags substring matched only when exact = FALSE
   expect_named(
     pecan_version("v1.5"),
-    c("package", paste0("v1.5.", 0:3), "installed")
+    c("package", paste0("v1.5.", 0:3), "installed", "source")
   )
   expect_error(
     pecan_version("v1.5", exact = TRUE),
@@ -34,14 +34,14 @@ test_that("pecan_version", {
   )
   expect_named(
     pecan_version("v1.3", exact = TRUE),
-    c("package", "v1.3", "installed")
+    c("package", "v1.3", "installed", "source")
   )
 
   # returns current release if no args given
   noargs <- pecan_version()
   expected_tag <- tail(PEcAn.all::pecan_releases, 1)$tag
-  expect_length(noargs, 3)
-  expect_named(noargs, c("package", expected_tag, "installed"))
+  expect_length(noargs, 4)
+  expect_named(noargs, c("package", expected_tag, "installed", "source"))
 
   # Why the `any()`s below?
   # Because R CMD check runs tests with local test dir added to .libPaths,
@@ -67,3 +67,27 @@ test_that("pecan_version", {
     )
   )
 })
+
+
+test_that("pecan_version without sessioninfo", {
+
+  with_sessinfo <- pecan_version()
+
+  # make pecan_version think the sessioninfo package is unavailable
+  mockery::stub(pecan_version, 'requireNamespace', FALSE)
+  without_sessinfo <- pecan_version()
+
+  expect_length(with_sessinfo, 4)
+  expect_length(without_sessinfo, 3)
+  expect_equal(
+    with_sessinfo[, colnames(with_sessinfo) != "source"],
+    without_sessinfo)
+})
+
+# TODO: Would be nice to add a check here that will notice if the list of PEcAn
+# releases falls out of date, but it's not clear what other source of truth
+# to consult to determine that.
+#
+# The approach that failed just before I wrote this note:
+# No, the version of PEcAn.all (1.8.1.9000 today) is not reliably in sync with
+# the PEcAn version last tagged as a release (1.7.2 today).
