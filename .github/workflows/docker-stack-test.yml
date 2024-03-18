@@ -1,0 +1,97 @@
+name: Docker-Stack-Test
+
+on:
+  #  every Monday at 4:30 AM
+  
+   schedule:
+    - cron: '30 4 * * 1'
+
+
+env:
+  R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: en_US.UTF-8
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
+
+jobs:
+ 
+
+  # ----------------------------------------------------------------------
+  # DOCKER STACK TESTS
+  # ----------------------------------------------------------------------
+  Stack-Test:
+
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    strategy:
+      fail-fast: false
+  
+
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    container: 
+      image: pecan/depends
+
+    steps:
+    # checkout source code
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v3
+      with:
+        set-safe-directory: false
+
+    - name: Set up Docker Compose
+      run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
+    - name: Build and run containers
+      run: |
+        docker system prune --all --force
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+        echo "UID=$(id -u)" >> .env
+        echo "GID=$(id -g)" >> .env
+        docker-compose up -d postgres
+        docker run --rm --network pecan_pecan pecan/db
+        
+        docker-compose run  bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+        
+        docker-compose run  bety user carya illinois "Carya Demo User" carya@example.com 1 1
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
+
+        docker run --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+
+        docker-compose up -d 
+
+
+    - name: Wait for services to start
+      run: |
+       
+        docker-compose ps
+        sleep 20 # Adjust the duration as needed
+        docker-compose ps
+        sleep 20
+        docker-compose ps
+        sleep 20
+      
+    
+    - name: Display running containers
+      run: |
+        docker-compose ps
+        docker network ls 
+        docker network inspect bridge
+    
+    # run tests against the full docker stack
+    - name: Run Integration Test
+      run: |
+          chmod +x ./tests/Docker-Stack-Test.sh
+          ./tests/Docker-Stack-Test.sh
+      
