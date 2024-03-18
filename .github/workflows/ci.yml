@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - develop
 
     tags:
       - '*'
@@ -12,10 +11,6 @@ on:
   pull_request:
 
   merge_group:
-
-  issue_comment:
-    types:
-      - created
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
