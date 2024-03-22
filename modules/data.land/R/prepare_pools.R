@@ -7,7 +7,7 @@
 ##' @param constants list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon
 ##' @return list of pool values in kg C / m2 with generic names
 ##' @author Anne Thomas
-prepare_pools <- function(nc.path, constants = NULL){
+prepare_pools <- function(nc.path, settings, constants = NULL){
   #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
@@ -77,11 +77,18 @@ prepare_pools <- function(nc.path, constants = NULL){
           PEcAn.logger::logger.error("TotLivBiom is less than sum of AbvGrndWood and roots; will use default for leaf biomass")
         }
       }
+      #Initial LAI at the beginning of year is set as 0 for deciduous forests and grasslands
+      site_pft <- utils::read.csv(settings$run$inputs$pft.site$path)
+      site.pft.name <- site_pft$pft[site_pft$site == settings$run$site$id]
+      if (site.pft.name!="boreal.coniferous") { 
+        leaf <- 0
+        IC.params[["leaf"]] <- leaf        
+      }
+      
       #Calculate LAI given leaf and sla
       sla <- constants$sla
       if (!is.null(sla) && is.valid(leaf)) {
-        LAI <- PEcAn.utils::ud_convert(leaf * sla, "g", "kg") #convert from g to kg
-        
+        LAI <- leaf * sla
         IC.params[["LAI"]] <- LAI
       }
       

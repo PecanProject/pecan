@@ -541,7 +541,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
 
-    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, settings, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
