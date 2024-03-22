@@ -1,16 +1,16 @@
-## ensures data.table objects treated as such http://stackoverflow.com/q/24501245/513006
-.datatable.aware <- TRUE
 
 ##' Load met data from PEcAn formatted met driver
 ##'
-##' subsets a PEcAn formatted met driver file and converts to a data.table / data.frame object
-##' @title load CF met
+##' subsets a PEcAn formatted met driver file and converts to a data.frame object
+##'
 ##' @param met.nc object of class ncdf4 representing an open CF compliant, PEcAn standard netcdf file with met data
-##' @param lat numeric value of latutude
+##' @param lat numeric value of latitude
 ##' @param lon numeric value of longitude
 ##' @param start.date format is 'YYYY-MM-DD'
 ##' @param end.date format is 'YYYY-MM-DD'
-##' @return data.table of met data
+##' @return data frame of met data
+##' @importFrom rlang .data
+##' @importFrom dplyr %>%
 ##' @export
 ##' @author David LeBauer
 load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
@@ -43,15 +43,13 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   base.units      <- strsplit(basetime.string, " since ")[[1]][1]
 
   ## convert to days
-  if (!base.units == "days") {
+  if (base.units != "days") {
     time.idx <- PEcAn.utils::ud_convert(time.idx, basetime.string, paste("days since ", base.date))
   }
   time.idx <- PEcAn.utils::ud_convert(time.idx, "days", "seconds")
-  date <- as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
+  date <- as.POSIXct.numeric(round(time.idx), origin = base.date, tz = "UTC")
 
-  ## data table warns not to use POSIXlt, which is induced by round() 
-  ## but POSIXlt moves times off by a second
-  suppressWarnings(all.dates <- data.table::data.table(index = seq(time.idx), date = round(date)))
+  all.dates <- data.frame(index = seq_along(time.idx), date = date)
   
   if (start.date + lubridate::days(1) < min(all.dates$date)) {
    PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
@@ -60,15 +58,15 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
    PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
-  run.dates <- all.dates[date >= start.date & date <= end.date,
-                         list(index, 
-                              date = date, 
-                              doy = lubridate::yday(date),
-                              year = lubridate::year(date),
-                              month = lubridate::month(date),
-                              day  = lubridate::day(date), 
-                              hour = lubridate::hour(date) + lubridate::minute(date) / 60)]
-  
+  run.dates <- all.dates %>%
+    dplyr::filter(.data$date >= start.date & .data$date <= end.date) %>%
+    dplyr::mutate(
+      doy = lubridate::yday(.data$date),
+      year = lubridate::year(.data$date),
+      month = lubridate::month(.data$date),
+      day  = lubridate::day(.data$date),
+      hour = lubridate::hour(.data$date) + lubridate::minute(.data$date) / 60)
+
   results <- list()
 
 
@@ -83,5 +81,5 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   names(vars) <- gsub("surface_pressure", "air_pressure", variables)
 
-  return(cbind(run.dates, data.table::as.data.table(vars[!sapply(vars, is.null)])))
+  return(cbind(run.dates, vars[!sapply(vars, is.null)]))
 } # load.cfmet

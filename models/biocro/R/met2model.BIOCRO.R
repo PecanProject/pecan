@@ -142,6 +142,11 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
 
+  if (!data.table::is.data.table(met)) {
+    met <- data.table::copy(met)
+    data.table::setDT(met)
+  }
+
   if ((!is.null(longitude)) & zulu2solarnoon) {
     solarnoon_offset <- PEcAn.utils::ud_convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = met$date + lubridate::minutes(solarnoon_offset))]
