@@ -2,42 +2,57 @@
 ##' @title download.LandTrendr.AGB
 ##' @name  download.LandTrendr.AGB
 ##' 
-##' @param outdir Where to place output
-##' @param target_dataset Which LandTrendr dataset to download?  Default = "biomass"
+##' @param outdir Where to store the output - the downloaded LandTrendr AGB raster data
+##' @param target_dataset Use these argument to select which LandTrendr dataset to download. 
+##' For v1 the default is "biomass" For v2 you should use "biomassfiaald"
 ##' @param product_dates What data product dates to download
-##' @param product_version Optional. LandTrend AGB is provided with two versions, 
-##' v0 and v1 (latest version)
-##' @param con Optional database connection. If specified then the code will check to see 
-## if the file already exists in PEcAn before downloading, and will also create a database 
-## entry for new downloads
+##' @param product_version Optional. LandTrend AGB is provided with three versions, 
+##' v0, v1, and v2 (latest version)
 ##' @param run_parallel Logical. Download and extract files in parallel?
 ##' @param ncores Optional. If run_parallel=TRUE how many cores to use?  If left as NULL will select max number -1
 ##' @param overwrite Logical. Overwrite existing files and replace with new versions
+##' @param con Optional BETYdb database connection. If specified then the code will check to see if the file already exists in 
+##' PEcAn before downloading, 
+##' and will also create a database entry for new downloads
+##' @param hostname Optional. When checking for existing files on a host you can select either a specific host using hostname
+##' or the default (when NULL) is to check the localhost 
 ##' 
-##' @return data.frame summarize the results of the function call
-##' 
+##' @importFrom PEcAn.logger logger.severe logger.info
+##' @importFrom PEcAn.utils download.file
+##' @importFrom PEcAn.DB dbfile.check db.query db.close
+##' @importFrom parallel detectCores makeCluster
+##' @importFrom RCurl getURL
+##' @importFrom purrr negate %>%
+##' @importFrom foreach %dopar% foreach
+##'  
 ##' @examples
 ##' \dontrun{
 ##' outdir <- "~/scratch/abg_data/"
 ##' product_dates <- c(1990, 1991, 1995)  # using discontinous, or specific years
 ##' product_dates2 <- seq(1992, 1995, 1)  # using a date sequence for selection of years
-##' product_version = "v1"
+##' product_version = "v2"
+##' target_dataset = "biomassfiaald"
 ##' 
-##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir,
+##'            target_dataset=target_dataset,
 ##'            product_dates = product_dates, 
 ##'            product_version = product_version)
 ##' 
 ##' results <- PEcAn.data.remote::download.LandTrendr.AGB(outdir=outdir, 
+##'            target_dataset=target_dataset,
 ##'            product_dates = product_dates2, 
 ##'            product_version = product_version)
 ##' }
+##' 
+##' @return data.frame summarizing the results of the function call
 ##' 
 ##' @export
 ##' @author Shawn Serbin
 ##'
 download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_dates = NULL, 
-                                    product_version = "v1", con = NULL, run_parallel = TRUE, 
-                                    ncores = NULL, overwrite = FALSE) {
+                                    product_version = "v1", run_parallel = TRUE, 
+                                    ncores = NULL, overwrite = FALSE, con = NULL, 
+                                    hostname = NULL) {
   
   # steps to implement:
   # check if files exist locally, also are they valid?  Check DB for file location
@@ -64,7 +79,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
     if (!is.null(ncores)) {
       ncores <- ncores
     } else {
-      ncores <- parallel::detectCores() -1
+      ncores <- parallel::detectCores()-1
     }
     PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
   }
@@ -74,14 +89,11 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
   URL <- "ftp://islay.ceoas.oregonstate.edu/cms"
 
   # setup product defaults
-  #target_dataset <- "biomassfiaald"  # looks like they changed the directory structure
-  #target_dataset <- "biomass"         # now just "biomass"  --- now an argument
   target_filename_prefix <- "biomassfiaald"
   file_ext <- ".zip"
   obs_files <- paste0(target_filename_prefix,"_",target_download_years,"_median",file_ext)  # hard-coded name matching source, OK?
   err_files <- paste0(target_filename_prefix,"_",target_download_years,"_stdv",file_ext)    # hard-coded name matching source, OK?
   files_to_download <- c(obs_files,err_files)
-  local_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
   
   prod_obs_urls <- paste(URL,product_version,target_dataset,"median",obs_files,sep="/")
   prod_err_urls <- paste(URL,product_version,target_dataset,"stdv",err_files,sep="/")
@@ -113,17 +125,86 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
                                       download_urls[missing]))
   }
   
-  ## check for local files exist - do we want to do this?  Or use DB? Or both?
-  # use this to subset the files that need to be downloaded. Check file size first?
-  # ok to do this in one shot or need to check file by file....think this is OK
-  if (!all(file.exists(local_files)) && !isTRUE(overwrite)) {
-    files_to_download_final <- files_to_download[!file.exists(local_files)]
-    download_urls_final <- download_urls[!file.exists(local_files)]
-  } else {
-    files_to_download_final <- files_to_download
-    download_urls_final <- download_urls
+  # ------ new way using the database
+  if (product_version == "v1") {
+    median_input_id <- 2000000234
+    sdev_input_id <- 2000000396
+  } else if (product_version == "v2") {
+    median_input_id <- 2000000395
+    sdev_input_id <- 2000000397
   }
+  
+  ## before downloading, check if the file already exists on this host
+  if (!is.null(con)) {
+    if (!is.null(hostname)) {
+      median_input_chk_list <- PEcAn.DB::dbfile.check("Input", median_input_id, 
+                                                      hostname=hostname, con=con, return.all=T)
+      med_chk <- length(median_input_chk_list)==0
+      sdev_input_chk_list <- PEcAn.DB::dbfile.check("Input", sdev_input_id, 
+                                                    hostname=hostname, con=con, return.all=T)
+      sdev_chk <- length(sdev_input_chk_list)==0
+    } else {
+      median_input_chk_list <- PEcAn.DB::dbfile.check("Input", median_input_id, 
+                                                      hostname=PEcAn.remote::fqdn(), con=con, return.all=T)
+      med_chk <- length(median_input_chk_list)==0
+      sdev_input_chk_list <- PEcAn.DB::dbfile.check("Input", median_input_id, 
+                                                    hostname=PEcAn.remote::fqdn(), con=con, return.all=T)
+      sdev_chk <- length(sdev_input_chk_list)==0
+    }
+    #if (!all(file.exists(local_files)) && !isTRUE(overwrite)) {
+    #  files_to_download_final <- files_to_download[!file.exists(local_files)]
+    #  download_urls_final <- download_urls[!file.exists(local_files)]
+    #}
+    #remote_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
+    #db_med_files <- file.path(median_input_chk_list$file_path, median_input_chk_list$file_name)
+    remote_files <- file.path(gsub(".zip", ".tif",files_to_download))
+    db_med_files <- suppressWarnings(file.path(median_input_chk_list$file_name))
+    db_sdev_files <- suppressWarnings(file.path(sdev_input_chk_list$file_name))
+    files_to_download_final <- setdiff(remote_files,c(db_med_files,db_sdev_files))
 
+    grep(files_to_download_final,download_urls)
+    download_urls
+    
+    if (!all(remote_files %in% db_med_files)) && !isTRUE(overwrite)) {
+      files_to_download_final <- setdiff(remote_files,db_med_files)
+      
+      
+      files_to_download_final <- remote_files[!file.exists(local_files)]
+      download_urls_final <- download_urls[!file.exists(local_files)]
+      
+    }
+    
+    #!file.exists(db_med_files)
+    
+  } else {
+    ## check for local files exist without using BETYdb
+    local_files <- file.path(outdir,gsub(".zip", ".tif",files_to_download))
+    if (!all(file.exists(local_files)) && !isTRUE(overwrite)) {
+      files_to_download_final <- files_to_download[!file.exists(local_files)]
+      download_urls_final <- download_urls[!file.exists(local_files)]
+    } else {
+      files_to_download_final <- files_to_download
+      download_urls_final <- download_urls
+    }
+  } # end if/else
+    
+    
+  #   chk <- dbfile.check(type = "Input", id = input.id, con = con)
+  #   if (nrow(chk) > 0) {
+  #     machines <- db.query(paste("SELECT * from machines where id in (", 
+  #                                paste(chk$machine_id, sep = ","), ")"), con)
+  #     if (PEcAn.remote::fqdn() %in% machines$hostname) {
+  #       ## record already exists on this host
+  #       return(chk$id[PEcAn.remote::fqdn() == machines$hostname])
+  #     }
+  #   }
+  # }
+  # ------ 
+
+  
+  
+  
+  
   # setup download
   if (length(files_to_download_final)<1) {
     PEcAn.logger::logger.info("*** Requested files already exist on this host, providing file paths ***")
@@ -190,6 +271,8 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
     results$formatname[i] <- out_formats[i]
   }
   
+  suppressWarnings(PEcAn.DB::db.close(con, showWarnings = FALSE)) # why isnt TRUE invisible? 
+  #DBI::dbDisconnect(con) # or should we just do this?
   return(results)
 }
 #
@@ -198,7 +281,9 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @title extract.LandTrendr.AGB
 ##' @name  extract.LandTrendr.AGB
 ##' 
-##' @param site_info list of site info for parsing AGB data: list(site_id, site_name, lat, lon, time_zone)
+##' @param site_info A BETYdb site info dataframe containing at least each site ID, sitename, 
+##' latitude, longitude, and time_zone. e.g. c(site_qry$id, site_qry$sitename, site_qry$lon,
+##' site_qry$lat, site_qry$time_zone)
 ##' @param dataset Which LandTrendr dataset to parse, "median" or "stdv".Default: "median"
 ##' @param buffer Optional. operate over desired buffer area (not yet implemented)
 ##' @param fun Optional function to apply to buffer area.  Default - mean
@@ -208,8 +293,8 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the 
 ##' output extraction list (see return)
 ##' 
-##' @return list of two containing the median AGB values per pixel and the corresponding 
-##' standard deviation values (uncertainties)
+##' @importFrom sp SpatialPoints proj4string CRS spTransform
+##' @importFrom raster raster crs stack extract
 ##' 
 ##' @examples
 ##' \dontrun{
@@ -227,8 +312,6 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' ids = site_ID, .con = con))
 ##' suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
 ##' suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
-##' site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat, 
-##' lon=qry_results$lon, time_zone=qry_results$time_zone)
 ##' data_dir <- "~/scratch/agb_data/"
 ##' 
 ##' results <- extract.LandTrendr.AGB(site_info, "median", buffer = NULL, fun = "mean", 
@@ -236,14 +319,18 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' 
 ##' }
 ##' 
+##' @return list of two containing the median AGB values per pixel and the corresponding 
+##' standard deviation values (uncertainties)
+##' 
 ##' @export
 ##' @author Shawn Serbin, Alexey Shiklomanov
 ##' 
-extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL, fun = "mean", 
+extract.LandTrendr.AGB <- function(site_info=NULL, dataset = "median", buffer = NULL, fun = "mean", 
                                    data_dir = NULL, product_dates = NULL, output_file = NULL, 
                                    ...) {
 
-  ## get coordinates and provide spatial info
+  ## get coordinates and provide spatial info - should harmonize what packages we use in all data.remote functions
+  site_info <- site_info
   site_coords <- data.frame(site_info$lon, site_info$lat)
   names(site_coords) <- c("Longitude","Latitude")
   coords_latlong <- sp::SpatialPoints(site_coords)
@@ -273,7 +360,10 @@ extract.LandTrendr.AGB <- function(site_info, dataset = "median", buffer = NULL,
   
   ## extract
   agb_pixel <- raster::extract(x = raster_data_stack, 
-                                      y = coords_AEA, buffer=buffer, fun=NULL, df=FALSE)
+                               y = coords_AEA,
+                               buffer = buffer,
+                               fun = NULL,
+                               df = FALSE)
   if(is.null(buffer)){
     processed_years <- unlist(regmatches(names(data.frame(agb_pixel)), 
                                          gregexpr("\\d{4}", names(data.frame(agb_pixel)))))
