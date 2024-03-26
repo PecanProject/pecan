@@ -23,6 +23,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
+    assertthat,
     arrow,
     curl,
     dplyr (>= 0.8.1),
@@ -50,7 +51,6 @@ Imports:
     stringr (>= 1.1.0),
     suntools,
     terra,
-    testthat (>= 2.0.0),
     tibble,
     tidyr,
     tidyselect,
@@ -68,6 +68,7 @@ Suggests:
     PEcAn.settings,
     progress,
     reticulate,
+    testthat (>= 2.0.0),
     withr
 Remotes:
     github::adokter/suntools,
