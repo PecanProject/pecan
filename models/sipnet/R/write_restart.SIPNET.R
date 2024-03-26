@@ -20,6 +20,8 @@
 ##' @param RENAME flag to either rename output file or not
 ##' @param new.params list of parameters to convert between different states 
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
+##' @param obs_time obervation timepoints
+##' @param update_phenology TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA
 ##' @param verbose decide if we want to print the outputs.
 ##'
 ##' @description Write restart files for SIPNET. WARNING: Some variables produce illegal values < 0 and have been hardcoded to correct these values!!
@@ -27,8 +29,8 @@
 ##' @return NONE
 ##' @export
 write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state,
-                                 RENAME = TRUE, new.params = FALSE, inputs, verbose = FALSE) {
-  
+                                 RENAME = TRUE, new.params = FALSE, inputs, obs_time=NULL, update_phenology=NULL, verbose = FALSE) {
+
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
   # values that will be used for updating other states deterministically depending on the SDA states
@@ -59,7 +61,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
-  
+
   if ("NEE" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$NEE
     names(analysis.save[[length(analysis.save)]]) <- c("NEE")
@@ -67,7 +69,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   
   if ("AbvGrndWood" %in% variables) {
     AbvGrndWood <- PEcAn.utils::ud_convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
-    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 	  
+    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood
     names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
   }
   
@@ -106,7 +108,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     if (analysis.save[[length(analysis.save)]] < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("SWE")
   }
-  
+
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
     if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
@@ -120,7 +122,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }else{
     analysis.save.mat <- NULL
   }
-  
+
   if (verbose) {
     print(runid %>% as.character())
     print(analysis.save.mat)
@@ -130,6 +132,8 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
                                            settings = settings,
                                            run.id = runid,
                                            inputs = inputs,
-                                           IC = analysis.save.mat))
+                                           IC = analysis.save.mat,
+                                           obs_time=obs_time,
+					                                 update_phenology=update_phenology))
   print(runid)
 } # write_restart.SIPNET

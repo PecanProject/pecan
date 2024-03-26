@@ -240,8 +240,9 @@ template <- PEcAn.settings::Settings(list(
                          type = "SIPNET",
                          revision = "ssr",
                          delete.raw = FALSE,
-                         binary = model_binary,
-                         jobtemplate = "~/sipnet_geo.job"
+                         binary = "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if",
+                         jobtemplate = "~/sipnet_geo.job",
+                         leaf_phenology=structure(list(outdir="USER_DEFINED"))
   )),
   
   ###########################################################################

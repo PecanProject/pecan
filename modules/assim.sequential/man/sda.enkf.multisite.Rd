@@ -14,7 +14,8 @@ sda.enkf.multisite(
   ensemble.samples = NULL,
   control = list(trace = TRUE, TimeseriesPlot = FALSE, debug = FALSE, pause = FALSE,
     Profiling = FALSE, OutlierDetection = FALSE, parallel_qsub = TRUE, send_email = NULL,
-    keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL),
+    keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL,
+    update_phenology = TRUE),
   ...
 )
 }

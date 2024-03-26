@@ -50,7 +50,8 @@ sda.enkf.multisite <- function(settings,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
                                             run_parallel = TRUE,
-                                            MCMC.args = NULL),
+                                            MCMC.args = NULL,
+                                            update_phenology = TRUE),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -296,7 +297,8 @@ sda.enkf.multisite <- function(settings,
             settings = settings,
             model = settings$model$type,
             write.to.db = settings$database$bety$write,
-            restart = restart.arg
+            restart = restart.arg,
+            update_phenology=control$update_phenology
           )
         }) %>%
         stats::setNames(site.ids)
@@ -420,7 +422,9 @@ sda.enkf.multisite <- function(settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
-              rename = TRUE
+              rename = TRUE,
+              time = obs.year,
+              update_phenology=control$update_phenology
             )
           }) %>%
           stats::setNames(site.ids)
@@ -530,7 +534,7 @@ sda.enkf.multisite <- function(settings,
           if (is.null(control$MCMC.args)) {
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
-                              nchain = 3,
+                              nchain = 1,
                               nburnin = 5e4)
           } else {
             MCMC.args <- control$MCMC.args

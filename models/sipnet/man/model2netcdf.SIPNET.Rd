@@ -14,7 +14,7 @@ model2netcdf.SIPNET(
   revision,
   prefix = "sipnet.out",
   overwrite = FALSE,
-  conflict = FALSE
+  conflict = TRUE
 )
 }
 \arguments{
@@ -36,7 +36,8 @@ model2netcdf.SIPNET(
 
 \item{overwrite}{Flag for overwriting nc files or not}
 
-\item{conflict}{Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.}
+\item{conflict}{Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
+conflict is set to TRUE to enable the assimilation of monthly data.}
 }
 \description{
 Convert SIPNET output to netCDF

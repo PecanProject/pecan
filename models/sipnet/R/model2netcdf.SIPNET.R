@@ -97,13 +97,14 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
 ##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
+##' conflict is set to TRUE to enable the assimilation of monthly data.
 ##' @param prefix prefix to read the output files
 ##' @param delete.raw Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
-                                overwrite = FALSE, conflict = FALSE) {
+                                overwrite = FALSE, conflict = TRUE) {
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
@@ -296,13 +297,19 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       close(varfile)
       ncdf4::nc_close(nc)
       
-      #merge nc files
+      #merge nc files of the same year together to enable the assimilation of subannual data
       if(file.exists(file.path(outdir, "previous.nc"))){
         files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
       }else{
         files <- file.path(outdir, "current.nc")
       }
       mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      #The command "cdo" in mergeNC will automatically rename "time_bounds" to "time_bnds". However, "time_bounds" is used 
+      #in read_restart codes later. So we need to read the new NetCDF file and convert the variable name back. 
+      nc<- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")),write=TRUE)
+      nc<-ncdf4::ncvar_rename(nc,"time_bnds","time_bounds")
+      ncdf4::ncatt_put(nc, "time", "bounds","time_bounds", prec=NA)
+      ncdf4::nc_close(nc)
       unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
