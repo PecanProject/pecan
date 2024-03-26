@@ -58,10 +58,10 @@ get.parameter.samples <- function(settings,
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
       # Load specified file
-      load(posterior.files[i])
+      load(posterior.files[i], envir = distns)
       fname <- file.path(outdirs[i], "post.distns.Rdata")
       if (file.exists(fname)) {
-        load(fname)
+        load(fname, envir = distns)
         prior.distns <- post.distns
       }
       if (exists("trait.mcmc") & exists("post.distns")) {
