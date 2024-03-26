@@ -1,7 +1,5 @@
 ##' Get MODIS phenology data by date and location  
 ##' 
-##' @name phenology_MODIS_extract
-##' @title phenology_MODIS_extract
 ##' @export
 ##' @param settings PEcAn settings
 ##' @param run_parallel optional method to download data parallely. Only works if more than 1 
@@ -9,7 +7,7 @@
 ##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the 
 ##' number of CPU's available, enter NULL. 
 ##' 
-##' The output file will be added to the folder defined in settings.
+##' The output file will be saved to the folder defined in settings.
 ##' 
 ##' @examples
 ##' \dontrun{
@@ -19,7 +17,8 @@
 ##'   run_parallel = TRUE,
 ##'   ncores = NULL)
 ##' }
-##' @return NONE
+##' @return a dataframe containing phenology dates and corresponding QA. 
+##' Output column names are "year", "site_id", "lat", "lon", "leafonday","leafoffday","leafon_qa","leafoff_qa"
 ##' @author Qianyu Li
 ##'
 
@@ -38,7 +37,9 @@ phenology_MODIS_extract<- function(settings,run_parallel = TRUE,ncores = NULL){
     as.list()
   #Set up the outdir to store leaf phenology data file           
   outdir<-settings$model$leaf_phenology$outdir
-  if (!is.null(outdir)) {
+  if (is.null(outdir)) {
+    PEcAn.logger::logger.error("No output directory found. Please set it up in pecan.xml under the model tag.")
+  } else {
     #Set up the start and end date of the extraction
     start_date <- as.Date(settings$state.data.assimilation$start.date, tz="UTC")
     end_date <- as.Date(settings$state.data.assimilation$end.date, tz="UTC")
@@ -108,8 +109,6 @@ phenology_MODIS_extract<- function(settings,run_parallel = TRUE,ncores = NULL){
     
     PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"leaf_phenology.csv")))
     utils::write.csv(leafphdata, file = file.path(outdir, "leaf_phenology.csv"), row.names = FALSE)
-  }
-  else {
-    PEcAn.logger::logger.error("No output directory found. Please set it up in pecan.xml under the model tag.")
+    return(leafphdata)
   }
 }

@@ -11,6 +11,16 @@
 ##' Writes a configuration files for your model
 ##' @name write.config.SIPNET
 ##' @title Writes a configuration files for SIPNET model
+##' @param defaults pft
+##' @param trait.values vector of samples for a given trait
+##' @param settings PEcAn settings object
+##' @param run.id run ID
+##' @param inputs list of model inputs
+##' @param IC initial condition
+##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param spinup
+##' @param obs_time obervation timepoints
+##' @param update_phenology TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,

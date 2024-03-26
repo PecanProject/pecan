@@ -17,6 +17,25 @@ write.config.SIPNET(
   update_phenology = NULL
 )
 }
+\arguments{
+\item{defaults}{pft}
+
+\item{trait.values}{vector of samples for a given trait}
+
+\item{settings}{PEcAn settings object}
+
+\item{run.id}{run ID}
+
+\item{inputs}{list of model inputs}
+
+\item{IC}{initial condition}
+
+\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
+
+\item{obs_time}{obervation timepoints}
+
+\item{update_phenology}{TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA}
+}
 \description{
 Writes a configuration files for your model
 }

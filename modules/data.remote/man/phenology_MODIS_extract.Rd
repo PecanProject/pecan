@@ -2,7 +2,7 @@
 % Please edit documentation in R/phenology_MODIS_extract.R
 \name{phenology_MODIS_extract}
 \alias{phenology_MODIS_extract}
-\title{phenology_MODIS_extract}
+\title{Get MODIS phenology data by date and location}
 \usage{
 phenology_MODIS_extract(settings, run_parallel = TRUE, ncores = NULL)
 }
@@ -15,10 +15,11 @@ site is needed and there are >1 CPUs available.}
 \item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
 number of CPU's available, enter NULL. 
 
-The output file will be added to the folder defined in settings.}
+The output file will be saved to the folder defined in settings.}
 }
 \value{
-NONE
+a dataframe containing phenology dates and corresponding QA. 
+Output column names are "year", "site_id", "lat", "lon", "leafonday","leafoffday","leafon_qa","leafoff_qa"
 }
 \description{
 Get MODIS phenology data by date and location
