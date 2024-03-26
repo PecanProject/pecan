@@ -1,176 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<fichierparamgen>
-<formalisme nom="Specificities of cut crops">
-    <option choix="1" nom="reference thermal time to compute cutting dates " nomParam="codetempfauche">
-        <choix code="1" nom="in upvt"/>
-            <choix code="2" nom="in udevair"/>
-        </option>
-        <param format="real" max="1.0" min="0.0" nom="coefracoupe(1)">0.5</param>
-        <param format="real" max="1.0" min="0.0" nom="coefracoupe(2)">0.5</param>
-    </formalisme>
-    <formalisme nom="Specificities of Quinoa">
+<fichierparamgen version="10.0">
+  <formalisme nom="Specificities of Quinoa">
     <option choix="2" nom="Option to replace rainfall by irrigation at hole depth in the case of hole sowing" nomParam="codepluiepoquet">
-        <choix code="1" nom="yes">
-            <param format="integer" max="0" min="0" nom="nbjoursrrversirrig">15</param>
-            </choix>
-            <choix code="2" nom="no"/>
+      <choix code="1" nom="yes">
+        <param format="integer" max="0" min="0" nom="nbjoursrrversirrig">15</param>
+      </choix>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="Fertilisation driving">
+    <option choix="2" nom="automatic calculation of fertilisation" nomParam="codecalferti">
+      <choix code="1" nom="yes">
+        <param format="real" max="1.0" min="0.2" nom="ratiolN">0.00000</param>
+        <param format="real" max="500.0" min="5.0" nom="dosimxN">40.00000</param>
+        <option choix="1" nom="automatic N fertilisation (1 = based on rainfall, 2 = based on soil water content)" nomParam="codetesthumN">
+          <choix code="1" nom="minimum rainfall threshold"/>
+          <choix code="2" nom="soil moisture threshold"/>
         </option>
-    </formalisme>
-    <formalisme nom="Activation of the module simulating tiller dynamics">
-    <param format="real" max="1.0" min="0.0" nom="swfacmin">0.1</param>
-        <param format="integer" max="2" min="1" nom="codetranspitalle">2</param>
-        <option choix="2" nom="Activation for the main crop" nomParam="codedyntalle(1)">
-        <choix code="1" nom="yes">
-            <param nom="SurfApex(1)">5e-6</param>
-                <param nom="SeuilMorTalle(1)">0.02</param>
-                <param nom="SigmaDisTalle(1)">0.1</param>
-                <param nom="VitReconsPeupl(1)">1e-5</param>
-                <param nom="SeuilReconsPeupl(1)">800.0</param>
-                <param nom="MaxTalle(1)">4000.0</param>
-                <param nom="SeuilLAIapex(1)">1.0</param>
-                <param format="real" max="3.0" min="1.0E-4" nom="tigefeuilcoupe(1)">5.0</param>
-            </choix>
-            <choix code="2" nom="no"/>
-        </option>
-        <option choix="2" nom="Activation for the associated crop" nomParam="codedyntalle(2)">
-        <choix code="1" nom="yes">
-            <param nom="SurfApex(2)">0.0</param>
-                <param nom="SeuilMorTalle(2)">0.0</param>
-                <param nom="SigmaDisTalle(2)">0.0</param>
-                <param nom="VitReconsPeupl(2)">0.0</param>
-                <param nom="SeuilReconsPeupl(2)">0.0</param>
-                <param nom="MaxTalle(2)">0.0</param>
-                <param nom="SeuilLAIapex(2)">1.0</param>
-                <param format="real" max="3.0" min="1.0E-4" nom="tigefeuilcoupe(2)">5.0</param>
-            </choix>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="Calculation of the maximal reserve compartment during reproductive stages">
-    <param format="real" max="100.0" min="0.0" nom="resplmax(1)">0.66</param>
-        <param format="real" max="100.0" min="0.0" nom="resplmax(2)">0.66</param>
-    </formalisme>
-    <formalisme nom="Calculation of the stem elongation stage for perenial grasslands">
-    <option choix="2" nom="Activation for the main crop" nomParam="codemontaison(1)">
-        <choix code="1" nom="yes"/>
-            <choix code="2" nom="no"/>
-        </option>
-        <option choix="2" nom="Activation for the associated crop" nomParam="codemontaison(2)">
-        <choix code="1" nom="yes"/>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="Moisture test for sowing decision">
-    <param format="integer" max="20" min="1" nom="nbj_pr_apres_semis">3</param>
-        <param format="integer" max="20" min="0" nom="eau_mini_decisemis">10</param>
-        <param format="real" max="1.0" min="0.0" nom="humirac_decisemis">0.75</param>
-    </formalisme>
-    <formalisme nom="Fertilisation driving">
-    <option choix="2" nom="Automatic calculation of fertilisation requirements" nomParam="codecalferti">
-        <choix code="1" nom="yes">
-            <param format="real" max="1.0" min="0.2" nom="ratiolN">0.00000</param>
-                <param format="real" max="500.0" min="5.0" nom="dosimxN">40.00000</param>
-                <option choix="1" nom="soil moisture test" nomParam="codetesthumN">
-                <choix code="1" nom="minimum rainfall threshold"/>
-                    <choix code="2" nom="soil moisture threshold"/>
-                </option>
-            </choix>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="Residues decomposition">
+      </choix>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="Residues decomposition">
     <option choix="2" nom="Limitation of N availability for residues decomposition in soil" nomParam="codeNmindec">
-        <choix code="1" nom="yes">
-            <param format="real" max="1.0" min="0.0" nom="rapNmindec">0.00100</param>
-                <param format="real" max="1.0" min="0.0" nom="fNmindecmin">0.10000</param>
-            </choix>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="coupling with pathogen models">
+      <choix code="1" nom="yes">
+        <param format="real" max="1.0" min="0.0" nom="rapNmindec">0.00100</param>
+        <param format="real" max="1.0" min="0.0" nom="fNmindecmin">0.10000</param>
+      </choix>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="coupling with pathogen models">
     <option choix="1" nom="calculation of hourly dew temperature" nomParam="codetrosee">
-        <choix code="1" nom="linear interpolation(actual calculation)"/>
-            <choix code="2" nom="sinusoidal interpolation (Debele Bekele et al.,2007)"/>
-        </option>
-        <option choix="2" nom="calculation of surface wetness duration" nomParam="codeSWDRH">
-        <choix code="1" nom="yes"/>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="automatic irrigations (associated with the options of automatic irrigation in tec file)">
-    <option choix="3" nom="dates to drive automatic irrigations" nomParam="P_codedate_irrigauto">
-        <choix code="1" nom="dates">
-            <param format="integer" max="731" min="0.0" nom="datedeb_irrigauto">0</param>
-                <param format="integer" max="731" min="0.0" nom="datefin_irrigauto">0</param>
-            </choix>
-            <choix code="2" nom="stages">
-            <param format="integer" max="731" min="0.0" nom="stage_start_irrigauto">0</param>
-                <param format="integer" max="731" min="0.0" nom="stage_end_irrigauto">0</param>
-            </choix>
-            <choix code="3" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="calculation of the root death at cutting date for grasslands">
-    <option choix="1" nom="choice for dry matter" nomParam="codemortalracine">
-        <choix code="1" nom="masec"/>
-            <choix code="2" nom="masectot"/>
-        </option>
-    </formalisme>
-    <formalisme nom="option for several thinning ">
-    <option choix="2" nom="activation of several thinning" nomParam="option_thinning">
-        <choix code="1" nom="yes"/>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="option for several fertilizer type ">
-    <option choix="2" nom="activation of several fertilizer type" nomParam="option_engrais_multiple">
-        <choix code="1" nom="yes"/>
-            <choix code="2" nom="no"/>
-        </option>
-    </formalisme>
-    <formalisme nom="option for pasture ">
+      <choix code="1" nom="linear interpolation(actual calculation)"/>
+      <choix code="2" nom="sinusoidal interpolation (Debele Bekele et al.,2007)"/>
+    </option>
+    <option choix="2" nom="calculation of surface wetness duration" nomParam="codeSWDRH">
+      <choix code="1" nom="yes"/>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="option for pasture ">
     <option choix="2" nom="activation of pasture" nomParam="option_pature">
-        <choix code="1" nom="yes">
-            <param format="integer" max="1" min="10" nom="coderes_pature">3</param>
-                <param format="real" max="0" min="1" nom="pertes_restit_ext">0.2</param>
-                <param format="real" max="0" min="20.0" nom="Crespc_pature">7.4</param>
-                <param format="real" max="0" min="1.0" nom="Nminres_pature">0.45</param>
-                <param format="real" max="0" min="100.0" nom="eaures_pature">87.0</param>
-                <param format="real" max="1" min="10.0" nom="coef_calcul_qres">7.53</param>
-                <param format="integer" max="1" min="10" nom="engrais_pature">3</param>
-                <param format="real" max="1" min="30.0" nom="coef_calcul_doseN">16.25</param>
-            </choix>
-            <choix code="2" nom="no"/>
+      <choix code="1" nom="yes">
+        <param format="integer" max="1" min="10" nom="coderes_pature">3</param>
+        <param format="real" max="0" min="1" nom="pertes_restit_ext">0.2</param>
+        <param format="real" max="0" min="20.0" nom="Crespc_pature">7.4</param>
+        <param format="real" max="0" min="1.0" nom="Nminres_pature">0.45</param>
+        <param format="real" max="0" min="100.0" nom="eaures_pature">87.0</param>
+        <param format="real" max="1" min="10.0" nom="coef_calcul_qres">7.53</param>
+        <param format="integer" max="1" min="10" nom="engrais_pature">3</param>
+        <param format="real" max="1" min="30.0" nom="coef_calcul_doseN">16.25</param>
+      </choix>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="Mineralization models">
+    <option choix="2" nom="CsurNsol dynamic" nomParam="code_CsurNsol_dynamic">
+      <choix code="1" nom="yes"/>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
+  <formalisme nom="New Roots">
+    <param format="integer" max="1.0" min="0.0" nom="humirac">1</param>
+  </formalisme>
+  <formalisme nom="ISOP">
+    <option choix="2" nom="activation of ISOP equations" nomParam="code_ISOP">
+      <choix code="1" nom="yes">
+        <option choix="2" nom="activation of legume fixation in grassland" nomParam="code_pct_legume">
+          <choix code="1" nom="yes">
+            <param format="real" max="1.0" min="0.0" nom="pct_legum">0.5</param>
+          </choix>
+          <choix code="2" nom="no"/>
         </option>
-    </formalisme>
-    <formalisme nom="Mineralization models">
-        <option choix="1" nom="New mineralization of soil organic matter " nomParam="codemineralOM">
-            <choix code="1" nom="yes">
-                <param format="real" max="1.0" min="0.0" nom="GMIN1">0.0007</param>
-                <param format="real" max="1.0" min="0.0" nom="GMIN2">0.02519</param>
-                <param format="real" max="1.0" min="0.0" nom="GMIN3">0.015</param>
-                <param format="real" max="1.0" min="0.0" nom="GMIN4">0.11200</param>
-                <param format="real" max="11.0" min="3.0" nom="GMIN5">8.50000</param>
-                <param format="real" max="1.0" min="0.0" nom="GMIN6">0.06000</param>
-                <param format="real" max="35.0" min="5.0" nom="GMIN7">11.00000</param>
-            </choix>
-            <choix code="2" nom="no"/>
-		</option>
-    </formalisme>
-    <formalisme nom="residue incorporation">
-    <option choix="1" nom="depht of residue incorporation plant 1 " nomParam="code_auto_profres(1)">
-        <choix code="1" nom="profres in tec file"/>
-        <choix code="2" nom="Function of protrav">
-            <param format="real" max="0.0" min="1.0" nom="resk(1)">0.14</param>
-            <param format="real" max="0.0" min="10.0" nom="resz(1)">5.00000</param>
-		</choix>
-    </option>	
-	<option choix="1" nom="depht of residue incorporation plant 2 " nomParam="code_auto_profres(2)">
-	    <choix code="1" nom="profres in tec file"/>
-        <choix code="2" nom="Function of protrav">
-            <param format="real" max="0.0" min="1.0" nom="resk(2)">0.14</param>
-            <param format="real" max="0.0" min="10.0" nom="resz(2)">5.00000</param>
-		</choix>
-    </option>	
-    </formalisme>
+      </choix>
+      <choix code="2" nom="no"/>
+    </option>
+  </formalisme>
 </fichierparamgen>
+

@@ -1,59 +1,86 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<initialisations>
-    <nbplantes>1</nbplantes>
-    <plante dominance="1">
-        <stade0>lev</stade0>
-        <lai0>0.0000</lai0>
+<initialisations version="10.0">
+  <nbplantes>1</nbplantes>
+  <plante dominance="1">
+    <stade0>lev</stade0>
+    <lai0>0.0000</lai0>
+    <zrac0>50.0000</zrac0>
+    <option choix="2" nom="Simulation of Nitrogen and Carbon reserves" nomParam="code_acti_reserve">
+      <choix code="1" nom="yes">
+        <maperenne0>0</maperenne0>
+        <QNperenne0>0</QNperenne0>
+        <masecnp0>0</masecnp0>
+        <QNplantenp0>0</QNplantenp0>
+      </choix>
+      <choix code="2" nom="no">
         <masec0>0.0000</masec0>
-        <zrac0>50.0000</zrac0>
-        <magrain0>0.0000</magrain0>
         <QNplante0>13.0000</QNplante0>
-        <resperenne0>1.0000</resperenne0>
-        <densinitial>
-            <horizon nh="1">30.0000</horizon>
-            <horizon nh="2">15.0000</horizon>
-            <horizon nh="3">0.0000</horizon>
-            <horizon nh="4">0.0000</horizon>
-            <horizon nh="5">0.0000</horizon>
-        </densinitial>
-    </plante>
-    <plante dominance="2">
-        <stade0>snu</stade0>
-        <lai0/>
+        <restemp0>1.0000</restemp0>
+      </choix>
+    </option>
+    <magrain0>0.0000</magrain0>
+    <densinitial>
+      <horizon nh="1">30.0000</horizon>
+      <horizon nh="2">15.0000</horizon>
+      <horizon nh="3">0.0000</horizon>
+      <horizon nh="4">0.0000</horizon>
+      <horizon nh="5">0.0000</horizon>
+    </densinitial>
+  </plante>
+  <plante dominance="2">
+    <stade0>snu</stade0>
+    <lai0/>
+    <zrac0/>
+    <option choix="2" nom="Simulation of Nitrogen and Carbon reserves" nomParam="code_acti_reserve">
+      <choix code="1" nom="yes">
+        <maperenne0>0</maperenne0>
+        <QNperenne0>0</QNperenne0>
+        <masecnp0>0</masecnp0>
+        <QNplantenp0>0</QNplantenp0>
+      </choix>
+      <choix code="2" nom="no">
         <masec0/>
-        <zrac0/>
-        <magrain0/>
         <QNplante0/>
-        <resperenne0/>
-        <densinitial>
-            <horizon nh="1"/>
-            <horizon nh="2"/>
-            <horizon nh="3"/>
-            <horizon nh="4"/>
-            <horizon nh="5"/>
-        </densinitial>
-    </plante>
-    <sol>
-        <hinit>
-            <horizon nh="1">0.0000</horizon>
-            <horizon nh="2">0.0000</horizon>
-            <horizon nh="3">0.0000</horizon>
-            <horizon nh="4">0.0000</horizon>
-            <horizon nh="5">0.0000</horizon>
-        </hinit>
-        <NO3init>
-            <horizon nh="1">10.0000</horizon>
-            <horizon nh="2">5.0000</horizon>
-            <horizon nh="3">5.0000</horizon>
-            <horizon nh="4">0.0000</horizon>
-            <horizon nh="5">0.0000</horizon>
-        </NO3init>
-        <NH4init>
-            <horizon nh="1">10.0000</horizon>
-            <horizon nh="2">5.0000</horizon>
-            <horizon nh="3">5.0000</horizon>
-            <horizon nh="4">0.0000</horizon>
-            <horizon nh="5">0.0000</horizon>
-        </NH4init>
-    </sol>
+        <restemp0/>
+      </choix>
+    </option>
+    <magrain0/>
+    <densinitial>
+      <horizon nh="1"/>
+      <horizon nh="2"/>
+      <horizon nh="3"/>
+      <horizon nh="4"/>
+      <horizon nh="5"/>
+    </densinitial>
+  </plante>
+  <sol>
+    <Hinitf>
+      <horizon nh="1">0.0000</horizon>
+      <horizon nh="2">0.0000</horizon>
+      <horizon nh="3">0.0000</horizon>
+      <horizon nh="4">0.0000</horizon>
+      <horizon nh="5">0.0000</horizon>
+    </Hinitf>
+    <NO3initf>
+      <horizon nh="1">10.0000</horizon>
+      <horizon nh="2">5.0000</horizon>
+      <horizon nh="3">5.0000</horizon>
+      <horizon nh="4">0.0000</horizon>
+      <horizon nh="5">0.0000</horizon>
+    </NO3initf>
+    <NH4initf>
+      <horizon nh="1">10.0000</horizon>
+      <horizon nh="2">5.0000</horizon>
+      <horizon nh="3">5.0000</horizon>
+      <horizon nh="4">0.0000</horizon>
+      <horizon nh="5">0.0000</horizon>
+    </NH4initf>
+  </sol>
+  <snow>
+    <Sdepth0>0.0</Sdepth0>
+    <Sdry0>0.0</Sdry0>
+    <Swet0>0.0</Swet0>
+    <ps0>0.0</ps0>
+  </snow>
 </initialisations>
+

@@ -1,65 +1,86 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<fichiersta>
-    <formalisme nom="Weather station">
-        <param format="real" max="10.0" min="2.0" nom="zr">2.50000</param>
-        <param format="real" max="10.0" min="0.0" nom="NH3ref">0.00000</param>
-        <param format="real" max="90.0" min="-90.0" nom="latitude">46.50000</param>
-        <param format="real" max="1200.0" min="800.0" nom="patm">1000.00000</param>
-        <param format="real" max="25.0" min="4.0" nom="aclim">20.000000</param>
-    </formalisme>
-    <formalisme nom="climate">
-        <option choix="4" nom="calculation of potential evapotranspiraton" nomParam="codeetp">
-            <choix code="1" nom="Penman-reading"/>
-            <choix code="2" nom="Penman-calculate"/>
-            <choix code="3" nom="Shutwall-and-Wallace"/>
-            <choix code="4" nom="Prestley-Taylor">
-                <param format="real" max="2.0" min="1.0" nom="alphapt">1.26000</param>
-            </choix>
+<fichiersta version="10.0">
+  <formalisme nom="Weather station">
+    <param format="real" max="10.0" min="2.0" nom="zr">2.50000</param>
+    <param format="real" max="10.0" min="0.0" nom="NH3ref">0.00000</param>
+    <param format="real" max="3.0" min="0.0" nom="concrr">0.02</param>
+    <param format="real" max="90.0" min="-90.0" nom="latitude">43.90000</param>
+    <param format="real" max="1200.0" min="800.0" nom="patm">1000.00000</param>
+    <param format="real" max="25.0" min="4.0" nom="aclim">20.000000</param>
+  </formalisme>
+  <formalisme nom="climate">
+    <option choix="4" nom="reading OR calculation of PET" nomParam="codeetp">
+      <choix code="1" nom="PET-Penman_reading"/>
+      <choix code="2" nom="PET-Penman_calculation"/>
+      <choix code="3" nom="PET-Shuttleworth-Wallace_calculation"/>
+      <choix code="4" nom="PET-Priestley-Taylor_calculation">
+        <param format="real" max="2.0" min="1.0" nom="alphapt">1.26</param>
+      </choix>
+    </option>
+    <option choix="1" nom="climate change" nomParam="codeclichange">
+      <choix code="1" nom="no"/>
+      <choix code="2" nom="yes"/>
+    </option>
+    <option choix="1" nom="climate in altitude" nomParam="codaltitude">
+      <choix code="1" nom="no"/>
+      <choix code="2" nom="yes">
+        <param format="real" max="2000.0" min="0.0" nom="altistation">440.00000</param>
+        <param format="real" max="2000.0" min="0.0" nom="altisimul">800.00000</param>
+        <param format="real" max="3.0" min="0.1" nom="gradtn">-0.50000</param>
+        <param format="real" max="3.0" min="0.1" nom="gradtx">-0.55000</param>
+        <param format="real" max="2000.0" min="0.0" nom="altinversion">500.00000</param>
+        <param format="real" max="3.0" min="0.1" nom="gradtninv">1.30000</param>
+        <param format="real" max="1.0" min="0.0" nom="cielclair">0.80000</param>
+        <option choix="1" nom="option.adret.or.ubac" nomParam="codadret">
+          <choix code="1" nom="adret(south)"/>
+          <choix code="2" nom="ubac(north)">
+            <param format="real" max="5.0" min="-5.0" nom="ombragetx">-1.40000</param>
+          </choix>
         </option>
-        <option choix="1" nom="climate change" nomParam="codeclichange">
-            <choix code="1" nom="no"/>
-            <choix code="2" nom="yes"/>
-        </option>
-        <option choix="1" nom="climate in altitude" nomParam="codaltitude">
-            <choix code="1" nom="no"/>
-            <choix code="2" nom="yes">
-                <param format="real" max="2000.0" min="0.0" nom="altistation">440.00000</param>
-                <param format="real" max="2000.0" min="0.0" nom="altisimul">800.00000</param>
-                <param format="real" max="3.0" min="0.1" nom="gradtn">-0.50000</param>
-                <param format="real" max="3.0" min="0.1" nom="gradtx">-0.55000</param>
-                <param format="real" max="2000.0" min="0.0" nom="altinversion">500.00000</param>
-                <param format="real" max="3.0" min="0.1" nom="gradtninv">1.30000</param>
-                <param format="real" max="1.0" min="0.0" nom="cielclair">0.80000</param>
-                <option choix="1" nom="option.adret.or.ubac" nomParam="codadret">
-                    <choix code="1" nom="adret(south)"/>
-                    <choix code="2" nom="ubac(north)">
-                        <param format="real" max="5.0" min="-5.0" nom="ombragetx">-1.40000</param>
-                    </choix>
-                </option>
-            </choix>
-        </option>
-    </formalisme>
-    <formalisme nom="Microclimate">
-        <param format="real" max="70.0" min="10.0" nom="ra">50.00000</param>
-        <param format="real" max="0.3" min="0.05" nom="albveg">0.23000</param>
-        <param format="real" max="0.9" min="0.0" nom="aangst">0.18000</param>
-        <param format="real" max="1.0" min="0.0" nom="bangst">0.62000</param>
-        <param format="real" max="5.0" min="-5.0" nom="corecTrosee">1.00000</param>
-        <option choix="1" nom="calculation of crop temperature" nomParam="codecaltemp">
-            <choix code="1" nom="empirical relation"/>
-            <choix code="2" nom="energy balance"/>
-        </option>
-        <option choix="2" nom="calculation of net radiation" nomParam="codernet">
-            <choix code="1" nom="Brunt"/>
-            <choix code="2" nom="Brutsaert"/>
-        </option>
-    </formalisme>
-    <formalisme nom="climate under a shelter">
-        <param format="real" max="1.2" min="0.3" nom="coefdevil">0.70000</param>
-        <param format="real" max="100.0" min="0.01" nom="aks">6.00000</param>
-        <param format="real" max="100.0" min="0.0" nom="bks">0.50000</param>
-        <param format="real" max="1.0" min="0.001" nom="cvent">0.16000</param>
-        <param format="real" max="0.01" min="0.0" nom="phiv0">0.00400</param>
-        <param format="real" max="1.0" min="0.001" nom="coefrnet">0.59000</param>
-    </formalisme>
+      </choix>
+    </option>
+  </formalisme>
+  <formalisme nom="Microclimate">
+    <param format="real" max="70.0" min="10.0" nom="ra">50.00000</param>
+    <param format="real" max="0.3" min="0.05" nom="albveg">0.23000</param>
+    <param nom="aangst">0.18000</param>
+    <param format="real" max="1.0" min="0.0" nom="bangst">0.62000</param>
+    <param format="real" max="5.0" min="-5.0" nom="corecTrosee">1.00000</param>
+    <option choix="1" nom="calculation of crop temperature" nomParam="codecaltemp">
+      <choix code="1" nom="empirical relation"/>
+      <choix code="2" nom="energy balance"/>
+    </option>
+    <option choix="2" nom="calculation of net radiation" nomParam="codernet">
+      <choix code="1" nom="Brunt"/>
+      <choix code="2" nom="Brutsaert"/>
+    </option>
+  </formalisme>
+  <formalisme nom="climate under a shelter">
+    <param format="real" max="1.2" min="0.3" nom="coefdevil">0.70000</param>
+    <param format="real" max="100.0" min="0.01" nom="aks">6.00000</param>
+    <param format="real" max="100.0" min="0.0" nom="bks">0.50000</param>
+    <param format="real" max="1.0" min="0.0010" nom="cvent">0.16000</param>
+    <param format="real" max="0.01" min="0.0" nom="phiv0">0.00400</param>
+    <param format="real" max="1.0" min="0.0010" nom="coefrnet">0.59000</param>
+  </formalisme>
+  <formalisme nom="Climate with snow">
+    <option choix="3" nom="Select snow model" nomParam="codemodlsnow">
+      <choix code="1" nom="1-Unused"/>
+      <choix code="2" nom="2-Unused"/>
+      <choix code="3" nom="3-My only choice">
+        <param format="real" max="-0.5" min="-3" nom="tsmax">-2</param>
+        <param format="real" max="1.5" min="0.5" nom="trmax">1</param>
+        <param format="real" max="2" min="1" nom="DKmax">1.50000</param>
+        <param format="real" max="2.5" min="1.5" nom="Kmin">2</param>
+        <param format="real" max="1" min="0" nom="Tmf">0.5</param>
+        <param format="real" max="0.01" min="0" nom="SWrf">0.01</param>
+        <param format="real" max="200" min="10" nom="Pns">100</param>
+        <param format="real" max="0.05" min="0" nom="E">0.02</param>
+        <param format="real" max="15" min="5" nom="prof">10</param>
+        <param format="real" max="0" min="-1" nom="tminseuil">-0.5</param>
+        <param format="real" max="0.5" min="-0.5" nom="tmaxseuil">0</param>
+      </choix>
+    </option>
+  </formalisme>
 </fichiersta>
+

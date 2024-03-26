@@ -101,3 +101,12 @@ e.g. ind.list <-  list(temperate.deciduous = c(2), temperate.conifer = c(1,2))}
 This is a helper function for preparing PDA external objects, but it doesn't cover all the cases yet, use it with care
 You can use this function just to generate either one of the external.* PDA objects, but note that some args cannot be blank depending on what you aim to generate
 }
+\examples{
+\dontrun{
+pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, 
+varn = "NEE", varid = 297, n_eff = 106.9386,
+external.formats = TRUE, model_data_diag = TRUE, 
+model.out = "/tmp/out/outdir",
+start_date = "2017-01-01", end_date = "2018-12-31")
+}
+}
