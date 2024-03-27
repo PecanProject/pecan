@@ -213,7 +213,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE,time=NULL,update_phenology=NULL) {
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE, time = NULL, update_phenology = FALSE) {
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -410,10 +410,10 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
-                                            settings = settings, 
+                                            settings = settings,
                                             run.id = run.id,
-					                                  obs_time = time,
-					                                  update_phenology=update_phenology
+                                            obs_time = time,
+                                            update_phenology=update_phenology
       )
       )
       cat(format(run.id, scientific = FALSE), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
@@ -464,8 +464,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
                            inputs =list(met=list(path=inputs$samples[[i]])), 
                            RENAME = rename,
-			                     obs_time = time,
-			                     update_phenology = update_phenology)#for restart from previous model runs, not sharing the same outdir
+                           obs_time = time,
+                           update_phenology = update_phenology)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params
