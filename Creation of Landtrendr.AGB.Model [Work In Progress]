@@ -1,0 +1,203 @@
+---
+title: "GEDI4R Code"
+author: "Tami Gordon"
+date: "2024-03-18"
+output: html_document
+#' Prepare MODIS AGB data for the SDA workflow.
+#'
+#' @param outdir Where the final CSV file will be stored.
+#' @param country String value to determine depth of bounding box 
+#' @param start_date String value to determine start date of data sequestration  
+#' @param end_date String value to determine end date of data sequestration 
+#' @param site_info Bety list of file names with the h5 extension
+#' @param focus_sites Bety list of file names with the zip extension within GEDI4R package 
+#' @param export_csv Decide if we want to export the CSV file.
+#'Suggests: rmarkdown, knitr, testthat (>= 3.0.0)
+#' @export
+#' 
+#' @examples
+#' @author Tami Gordon [02/08/24]
+#' @importFrom magrittr %>%
+#' 
+---
+
+```{r setup, include= TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+## Getting Started
+install.packages("devtools")
+devtools::install_github("VangiElia/GEDI4R")
+#loading GEDI4R package
+library(GEDI4R)
+library(magrittr)
+```
+
+```{r}
+## Setting Parameters 
+    country = 'ITA'
+    start_date = "2020-01-01"
+    end_date = "2020-01-31"
+    
+    ## Specific Sites you want to focus on 
+      focus_sites = c("GEDI04_A_2020036151358_O06515_02_T00198_02_002_01_V002.zip",
+                      "GEDI04_A_2021150031254_O13948_03_T06447_02_002_01_V002.zip" )
+      
+    export_csv = TRUE
+    outdir = tempdir
+    ## saved as HDF5 file format 
+      #if we export CSV but didn't provide any path
+      if(as.logical(export_csv) && is.null(outdir)){
+        PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
+        return(0)
+      }
+    outdir = tempdir()
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+ # Using data from GEDI4R package dataset (NASA website)
+  ## Create bounding box (search window) using varname 'country'
+    country_bound <- sf::st_as_sf(raster::getData('GADM', country = country, level = 1))
+         ## raster::getData; get geographic data for anywhere in the world; GADM (database) needs "country ="and level of subdivision 
+    #extract extent
+    e <- raster::extent(country_bound)
+    ## extent creates a matrix 
+    ul_lat <- e@ymax
+    lr_lat <- e@ymin
+    ul_lon <- e@xmin
+    lr_lon <- e@xmax
+    
+    #Get the list of all files available for the study area in the period selected,
+    #using just_path = T
+    file_path <- l4_download(
+      ul_lat,
+      lr_lat,
+      ul_lon,
+      lr_lon,
+      outdir = outdir,
+      from = start_date,
+      to = end_date,
+      just_path = T
+    )
+    
+    #download the first 4 files
+    file_download <- l4_download(
+      ul_lat,
+      lr_lat,
+      ul_lon,
+      lr_lon,
+      ncore = parallel::detectCores()-1,
+      outdir = outdir,
+      from = start_date,
+      to = end_date,
+      just_path = F,
+      subset=1:4
+    )
+    
+      l4_zip <- system.file("extdata",
+                          focus_sites,
+                          package="GEDI4R")
+    
+    #Unzipping GEDI level4A data
+    l4 <- lapply(l4_zip,unzip,exdir = outdir)
+    
+     ## Add columns not previously shown in gediL4 path data set
+    col <-
+      c(
+        "lat_lowestmode",
+        "lon_lowestmode",
+        "delta_time",
+        "agbd_pi_lower",
+        "agbd_pi_upper",
+        "agbd"
+      )
+    
+     gediL4_output <- l4_getmulti(l4,add_col = col, source= T)
+```
+```{r}
+# If using predownloaded dataset (saved as HDF5 file format) - (!) Could be automated to ask or check computer for file paths 
+    site_info = list.files(path =".", pattern = "h5", all.files = T, full.names = T)
+    View(site_info)
+    if(length(site_info) != 0){
+       dataname <- l4_getmulti(site_info[[1]],just_colnames = T)
+      gediL4_path <- l4_getmulti(site_info, catch = T, merge=T)
+      ## Dataset with predownloaded data
+        gediL4_pre <- l4_getmulti(site_info,just_colnames = F, add_col = col, source=T, catch = T)
+        rbind(gediL4_output, add_col = gediL4_pre, use.names = FALSE, fill = T) 
+    }
+   
+  
+
+```
+
+```{r}
+ ## Find and download GEDI Data within your study area:
+    ## site_info (list as data.table) tells the model the data files' site_id and its site_info 
+      #list all dataset in h5 file
+ 
+  ## Clipping Dataset
+  l4_data <- l4_getmulti(l4)
+  #clip using vector of coordinates
+  b_box <- c(-50,35,52,37)
+  clipped <- l4_clip(l4_data,clip=b_box)
+  
+  #using Shapefile to clip
+  bound <- system.file("extdata","bound4326.shp",package="GEDI4R")
+  #with  extension
+  clipped <- l4_clip(l4_data,clip=bound,usegeometry = F)
+  #with  polygon boundaries
+  clipped2 <- l4_clip(l4_data,clip=bound,usegeometry = T)
+  
+  ## l4_convert, which can also reproject the data to a user-defined coordinate reference system
+  converted <- l4_convert(l4_data,epsg = 4326, filename=paste0(outdir,"/example.shp"),return_path = T)
+  example <- sf::read_sf(converted)
+  file.remove(list.files(outdir,pattern = "example",full.names = T))  
+
+## Subset of variables needed for gediL4 output 
+ var_needed <-
+  c("lat_lowestmode",
+    "lon_lowestmode",
+    "delta_time",
+    "agbd_pi_lower",
+    "agbd_pi_upper",
+    "agbd",
+    "date",
+    "source")
+gediL4 <- gediL4_output[,..var_needed]
+
+
+## Save file as csv 
+write.csv(gediL4, "gediL4_output.csv")
+```
+
+```{r}
+## Plotting Data
+
+#footprints locations and AGBD distribution against elevation
+l4_plotagb(gedil4,type="distribution")
+
+```
+
+```{r}
+## Check for old CSV and create new CSV 
+outdir = "/Users/tamigordon/Desktop/rGEDI/data files"
+
+ if(file.exists(file.path(outdir, "AGB.csv"))){
+   time_points = rbind(start_date, end_date)
+    PEcAn.logger::logger.info("Extracting previous AGB file!")
+    Previous_CSV <- utils::read.csv(file.path(outdir, "AGB.csv"))
+    AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
+      cnames<-(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% cnames <- as.data.frame(cnames)#we need: site_id, LAI, std, target time point.
+    AGB_Output$site_id <- site_info$site_id
+    
+ }else{#we don't have any previous downloaded CSV file.
+    AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
+      `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    AGB_Output$site_id <- site_info$site_id
+  }
+```
+
