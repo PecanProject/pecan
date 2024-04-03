@@ -2,26 +2,37 @@
 % Please edit documentation in R/solar_angle.R
 \name{cos_solar_zenith_angle}
 \alias{cos_solar_zenith_angle}
-\title{Cosine of solar zenith angle}
+\title{Cosine of Solar Zenith Angle}
 \usage{
 cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 }
 \arguments{
-\item{doy}{Day of year}
+\item{doy}{Day of year. Integer representing the day of the year (1-365).}
 
-\item{lat}{Latitude}
+\item{lat}{Latitude in degrees. Positive for the Northern Hemisphere and negative for the Southern Hemisphere.}
 
-\item{lon}{Longitude}
+\item{lon}{Longitude in degrees. Positive for East and negative for West.}
 
-\item{dt}{Timestep}
+\item{dt}{Time interval in seconds. Represents the duration over which the measurement is averaged or integrated.}
 
-\item{hr}{Hours timestep}
+\item{hr}{Hour of the day (0-23). Specifies the specific hour for which the calculation is made.}
 }
 \value{
-`numeric(1)` of cosine of solar zenith angle
+Numeric value representing the cosine of the solar zenith angle.
 }
 \description{
+Calculates the cosine of the solar zenith angle based on the given parameters. 
+This angle is crucial in determining the amount of solar radiation reaching a point on Earth.
+}
+\details{
 For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
+}
+\examples{
+cos_solar_zenith_angle(doy = 150, lat = 45, lon = -93, dt = 3600, hr = 12)
+
+}
+\references{
+"Understanding Solar Position and Solar Radiation" - RAMMB: [Link](https://rammb.cira.colostate.edu/wmovl/vrl/tutorials/euromet/courses/english/nwp/n5720/n5720005.htm)
 }
 \author{
 Alexey Shiklomanov

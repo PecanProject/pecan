@@ -42,7 +42,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       PEcAn.logger::logger.severe(paste0("No files found matching ", in.prefix, "; cannot process data."))
     }
     
-    # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
+    # This function is supposed to process netcdf files, so we'll search for files with the extension .nc and use those first.
     nc_file = grep("\\.nc$", matching_files)
     if (length(nc_file) > 0) {
       if (grepl("\\.nc$", in.prefix)) {
@@ -54,7 +54,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
       PEcAn.logger::logger.warn(matching_files)
-      in.prefix <- matching_files[i]
+      in.prefix <- matching_files[1]
     }
   } else { # Default behavior
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
