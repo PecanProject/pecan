@@ -45,7 +45,8 @@ jobs:
     - name: check for out-of-date dependencies files
       uses: infotroph/tree-is-clean@v1
     - name: install newly-added dependencies
-      run: Rscript docker/depends/pecan.depends.R
+      working-directory: docker/depends
+      run: Rscript pecan.depends.R
 
     # initialize database
     - name: db setup

@@ -40,7 +40,7 @@ jobs:
     - name: install utils
       run: apt-get update && apt-get install -y postgresql-client qpdf
     - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
+      run: Rscript scripts/generate_dependencies.R && cd docker/depends && Rscript pecan.depends.R
 
     # initialize database
     - name: db setup
