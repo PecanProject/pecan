@@ -6,13 +6,6 @@ on:
    schedule:
     - cron: '30 4 * * 1'
 
-env:
-  R_LIBS_USER: /usr/local/lib/R/site-library
-  LC_ALL: en_US.UTF-8
-  NCPUS: 2
-  PGHOST: postgres
-  CI: true
-
 jobs:
   test:
     strategy:
