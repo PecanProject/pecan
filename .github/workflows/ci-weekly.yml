@@ -13,7 +13,7 @@ jobs:
       matrix:
         R:
           - "devel"
-    uses: ./.github/workflows/reused/test.yml
+    uses: ./.github/workflows/test.yml
     with:
       R-version: ${{ matrix.R }}
     secrets: inherit
@@ -24,7 +24,7 @@ jobs:
       matrix:
         R:
           - "devel"
-    uses: ./.github/workflows/reused/check.yml
+    uses: ./.github/workflows/check.yml
     with:
       R-version: ${{ matrix.R }}
       make-grouping: ${{ matrix.package }}
@@ -36,7 +36,7 @@ jobs:
       matrix:
         R:
           - "devel"
-    uses: ./.github/workflows/reused/sipnet.yml
+    uses: ./.github/workflows/sipnet.yml
     with:
       R-version: ${{ matrix.R }}
     secrets: inherit
