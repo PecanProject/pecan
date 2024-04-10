@@ -25,55 +25,17 @@ jobs:
       R-version: ${{ matrix.R }}
     secrets: inherit
 
-  # ----------------------------------------------------------------------
-  # R CHECK
-  # ----------------------------------------------------------------------
   check:
-    if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
         R:
           - "devel"
-
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      _R_CHECK_LENGTH_1_CONDITION_: true
-      _R_CHECK_LENGTH_1_LOGIC2_: true
-      # Avoid compilation check warnings that come from the system Makevars
-      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
-      # Keep R checks from trying to consult the very flaky worldclockapi.com
-      _R_CHECK_SYSTEM_CLOCK_: 0
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - name: work around https://github.com/actions/checkout/issues/766
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v4
-      with:
-        set-safe-directory: false
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && cd docker/depends && Rscript pecan.depends.R
-
-    # run PEcAn checks
-    - name: check
-      run: make -j1 check
-      env:
-        REBUILD_DOCS: "FALSE"
-        RUN_TESTS: "FALSE"
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
-
+    uses: ./.github/workflows/reused/check.yml
+    with:
+      R-version: ${{ matrix.R }}
+      make-grouping: ${{ matrix.package }}
+    secrets: inherit
 
   # ----------------------------------------------------------------------
   # SIPNET TESTS
