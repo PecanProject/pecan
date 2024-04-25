@@ -4,14 +4,14 @@
 \alias{Prep_AGB_IC_from_geotiff}
 \title{Extract above ensemble ground biomass density from pre-existing GeoTIFF file for the SDA workflow.}
 \usage{
-Prep_AGB_IC_from_geotiff(site.info, paths.list, ens)
+Prep_AGB_IC_from_geotiff(site_info, paths.list, ens)
 }
 \arguments{
+\item{site_info}{Bety list of site info including site_id, lon, and lat.}
+
 \item{paths.list}{list containing file paths for `mean` and `uncertainty` datasets.}
 
 \item{ens}{ensemble number.}
-
-\item{site_info}{Bety list of site info including site_id, lon, and lat.}
 }
 \value{
 A data frame containing sampled above ground biomass densities, each column represent each site.

@@ -10,7 +10,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-Prep_AGB_IC_from_geotiff <- function(site.info, paths.list, ens) {
+Prep_AGB_IC_from_geotiff <- function(site_info, paths.list, ens) {
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore)
@@ -36,6 +36,6 @@ Prep_AGB_IC_from_geotiff <- function(site.info, paths.list, ens) {
     ens_sample <- rnorm(ens, pixel["mean"], pixel["uncertainty"])
     ens_sample[which(ens_sample<0)] <- 0
     ens_sample
-  }) %>% dplyr::bind_cols() %>% `colnames<-`(site_info$site_id)
+  }, .progress = T) %>% dplyr::bind_cols() %>% `colnames<-`(site_info$site_id)
   return(sampled_ic)
 }
