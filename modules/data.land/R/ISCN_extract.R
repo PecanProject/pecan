@@ -2,6 +2,7 @@
 #'
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param ens ensemble number.
+#' @param ecoregion.path path to the directory where you store the shape files of L1 and L2 ecoregion maps.
 #'
 #' @return A data frame containing sampled SOC, each row represent each site.
 #' @export
@@ -9,9 +10,9 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-IC_ISCN_SOC <- function(site_info, ens = 100) {
+IC_ISCN_SOC <- function(site_info, ens = 100, ecoregion.path = NULL) {
   iscn_soc <- PEcAn.data.land::iscn_soc
-  site_eco <- PEcAn.data.land::EPA_ecoregion_finder(site_info$lat, site_info$lon)
+  site_eco <- PEcAn.data.land::EPA_ecoregion_finder(site_info$lat, site_info$lon, ecoregion.path)
   soc <- iscn_soc %>%
     dplyr::filter(
       .data$NA_L2CODE %in% site_eco$L2
@@ -23,9 +24,11 @@ IC_ISCN_SOC <- function(site_info, ens = 100) {
   for (i in seq_along(site_eco$L2)) {
     if (is.na(site_eco$L2[i])) {
       next
-    } else {
-      ic_sample_soc[,i] <- sample(soc$`soc (g cm-2)`[which(soc$NA_L2CODE == site_eco$L2[i])], ens, replace = T)
     }
+    if (length(soc$`soc (g cm-2)`[which(soc$NA_L2CODE == site_eco$L2[i])]) == 0) {
+      next
+    }
+    ic_sample_soc[,i] <- PEcAn.utils::ud_convert(sample(soc$`soc (g cm-2)`[which(soc$NA_L2CODE == site_eco$L2[i])], ens, replace = T), "g cm-2", "kg m-2")
   }
   return(ic_sample_soc)
 }

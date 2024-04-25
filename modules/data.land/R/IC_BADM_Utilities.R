@@ -270,6 +270,7 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
 #'
 #' @param Lat numeric latitude
 #' @param Lon numeric longitude
+#' @param folder.path path to the directory where you store the shape files of L1 and L2 ecoregion maps.
 #' @description This function is designed to find the level1 and level2 code ecoregions for a given lat and long. 
 #' You can learn more about ecoregions here: \url{https://www.epa.gov/eco-research/ecoregions}.
 
@@ -277,10 +278,14 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
 #' @export
 #'
-EPA_ecoregion_finder <- function(Lat, Lon, filenames = c("NA_CEC_Eco_Level1.shp", "NA_CEC_Eco_Level2.shp")){
+EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
+  #if we don't specify the folder path to the shapefiles.
   #try eco-region map for just CONUS US.
-  if (is.null(filenames)) {
-    filenames = c("eco-region.json", "eco-regionl2.json")
+  if (is.null(folder.path)) {
+    file.paths <- system.file("extdata",c("eco-region.json", "eco-regionl2.json"), package = "PEcAn.data.land")
+  } else {
+    #if we have pre-downloaded shapefiles for the ecoregion map.
+    file.paths <- file.path(folder.path, c("NA_CEC_Eco_Level1.shp", "NA_CEC_Eco_Level2.shp"))
   }
   #lat long to spatial point
   U.S.SB.sp <-
@@ -288,38 +293,27 @@ EPA_ecoregion_finder <- function(Lat, Lon, filenames = c("NA_CEC_Eco_Level1.shp"
                Long = Lon %>% as.numeric())
   
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
-  
   # L1 layer
-  if (length(filenames) >= 1) {
-    L1 <-
-      sf::read_sf(system.file("extdata",filenames[1], package = "PEcAn.data.land")) %>%
-      sf::st_set_crs(
-        "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-      ) %>%
-      sf::st_transform("+proj=longlat +datum=WGS84")
-    #reproject points based on projection of the eco-region map.
-    sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
-    # finding the code for each site
-    over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))
-  } else {
-    PEcAn.logger::logger.info("Please provide file name to the Level 1 eco-region map!")
-    return(0)
-  }
-  
+  L1 <-
+    sf::read_sf(system.file("extdata",file.paths[1], package = "PEcAn.data.land")) %>%
+    sf::st_set_crs(
+      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+    ) %>%
+    sf::st_transform("+proj=longlat +datum=WGS84")
+  #reproject points based on projection of the eco-region map.
+  sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
+  # finding the code for each site
+  over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))  
   # L2 layer
-  if (length(filenames) > 1) {
-    L2 <-
-      sf::read_sf(system.file("extdata",filenames[2], package = "PEcAn.data.land")) %>%
-      sf::st_set_crs(
-        "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-      ) %>%
-      sf::st_transform("+proj=longlat +datum=WGS84")
-    # finding the code for each site
-    over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
-    return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
-  } else {
-    return(data.frame(L1 = over.out.L1$NA_L1CODE))
-  }
+  L2 <-
+    sf::read_sf(system.file("extdata",file.paths[2], package = "PEcAn.data.land")) %>%
+    sf::st_set_crs(
+      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+    ) %>%
+    sf::st_transform("+proj=longlat +datum=WGS84")
+  # finding the code for each site
+  over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
+  return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
 }
 
 
