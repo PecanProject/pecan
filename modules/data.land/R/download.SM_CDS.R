@@ -9,7 +9,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE) {
   #load cdsapi from python environment.
   tryCatch({

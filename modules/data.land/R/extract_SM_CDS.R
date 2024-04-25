@@ -12,7 +12,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 extract_SM_CDS <- function(site_info,
                            time.points, 
                            in.path, 

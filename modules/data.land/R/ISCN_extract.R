@@ -9,7 +9,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 IC_ISCN_SOC <- function(site_info, ens = 100, ecoregion.path = NULL) {
   iscn_soc <- PEcAn.data.land::iscn_soc
   site_eco <- PEcAn.data.land::EPA_ecoregion_finder(site_info$lat, site_info$lon, ecoregion.path)

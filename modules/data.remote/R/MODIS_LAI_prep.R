@@ -12,7 +12,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, skip_high_sd = FALSE){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
