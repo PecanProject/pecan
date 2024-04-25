@@ -2,7 +2,9 @@
 % Please edit documentation in R/Prep_AGB_IC_from_geotiff.R
 \name{Prep_AGB_IC_from_geotiff}
 \alias{Prep_AGB_IC_from_geotiff}
-\title{Extract above ensemble ground biomass density from pre-existing GeoTIFF file for the SDA workflow.}
+\title{Extract ensemble above ground biomass density from pre-existing GeoTIFF files for the SDA workflow.
+Note that, this function only works for those products who have both mean and uncertainty GeoTIFF images prepared.
+For example, products like: DOI: https://doi.org/10.3334/ORNLDAAC/1763.}
 \usage{
 Prep_AGB_IC_from_geotiff(site_info, paths.list, ens)
 }
@@ -17,7 +19,9 @@ Prep_AGB_IC_from_geotiff(site_info, paths.list, ens)
 A data frame containing sampled above ground biomass densities, each column represent each site.
 }
 \description{
-Extract above ensemble ground biomass density from pre-existing GeoTIFF file for the SDA workflow.
+Extract ensemble above ground biomass density from pre-existing GeoTIFF files for the SDA workflow.
+Note that, this function only works for those products who have both mean and uncertainty GeoTIFF images prepared.
+For example, products like: DOI: https://doi.org/10.3334/ORNLDAAC/1763.
 }
 \author{
 Dongchen Zhang
