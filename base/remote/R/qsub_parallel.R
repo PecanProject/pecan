@@ -119,7 +119,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
     }
   } else {
     L_jobid <- length(jobids)
-    pb1 <- utils::txtProgressBar(min = 0, max = L_jobid, style = 3)
     if (hybrid) {
       while ((L_folder - length(folders)) < L_folder & 
              (L_jobid - length(jobids)) < L_jobid) {
@@ -148,9 +147,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
         #compare two progresses and set the maximum progress for the progress bar.
         pbi <- L_folder - length(folders)
         utils::setTxtProgressBar(pb, pbi)
-        
-        pbi1 <- L_jobid - length(jobids)
-        utils::setTxtProgressBar(pb1, pbi1)
       }
     } else {
       #special case that only detect the job ids on the server.
