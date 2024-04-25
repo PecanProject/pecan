@@ -1,3 +1,13 @@
+---
+title: "Initial condition prep script for NA anchor sites"
+author: "Dongchen Zhang"
+date: '2024-04-25'
+output: html_document
+---
+
+# setup environments.
+
+```{r setup, include=FALSE}
 #read settings.
 settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
 #grab settings info.
@@ -22,6 +32,11 @@ outfolder <- "/projectnb/dietzelab/dongchen/anchorSites/IC/IC"
 #read parameters and pfts.
 load("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/samples.Rdata")
 pft <- read.csv("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv")
+```
+
+# Prep LAI initial conditions using the MODIS LAI prep function.
+
+```{r}
 #prepare LAI
 LAI_df <- PEcAn.data.remote::MODIS_LAI_prep(site_info = site_info, 
                                             time_points = time_poimt, 
@@ -30,17 +45,30 @@ LAI_df <- PEcAn.data.remote::MODIS_LAI_prep(site_info = site_info,
 #sample LAI IC
 LAI_IC <- data.frame(matrix(NA, ens, length(site_info$site_id))) %>% `colnames<-`(site_info$site_id)
 for (i in seq_along(LAI_df$LAI_Output$site_id)) {
+  #remove NA.
   if (is.na(LAI_df$LAI_Output[i,2])) {
     next
   } else {
     LAI_IC[,i] <- rnorm(ens, LAI_df$LAI_Output[i,2], LAI_df$LAI_Output[i,3])
   }
 }
+```
+
+# Prep AGB initial condition using GeoTIFF images.
+# DOI: https://doi.org/10.3334/ORNLDAAC/1763
+
+```{r}
 #prepare AGB
 AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_geotiff(site.info = site_info, 
                                                       paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
                                                                         uncertainty = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010_uncertainty.tif"), 
                                                       ens = 100)
+```
+
+# Pre soil moisture initial condition through the CDS server.
+# DOI: 10.24381/cds.d7782f18
+
+```{r}
 #prepare SM
 SM_df <- PEcAn.data.land::extract_SM_CDS(site_info = site_info, 
                                          time.points = time_poimt, 
@@ -55,8 +83,19 @@ for (i in seq_along(site_info$site_id)) {
     SM_IC[,i] <- rnorm(ens, SM_df$sm.mean[i], SM_df$sm.uncertainty[i])
   }
 }
+```
+
+# Prep SOC initial conditions from the ISCN database.
+
+```{r}
 #prepare SOC
-SOC_IC <- PEcAn.data.land::IC_ISCN_SOC(site_info = site_info)
+ecoregion.path <- "~/ecoregionMap/"
+SOC_IC <- PEcAn.data.land::IC_ISCN_SOC(site_info = site_info, ens = ens, ecoregion.path = ecoregion.path)
+```
+
+# Convert and write IC files into local directory and into settings.
+
+```{r}
 # write with ensemble number
 for (i in seq_along(site_info$site_id)) {
   #create new folder for each site.
@@ -115,3 +154,4 @@ for (i in seq_along(site_info$site_id)) {
 if(Write_into_settings){
   write.settings(settings, outputdir = file.path(outdir), outputfile = "pecan.xml")
 }
+```
