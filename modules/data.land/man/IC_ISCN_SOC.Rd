@@ -4,12 +4,14 @@
 \alias{IC_ISCN_SOC}
 \title{Extract ISCN SOC initial conditions from existing ISCN database.}
 \usage{
-IC_ISCN_SOC(site_info, ens = 100)
+IC_ISCN_SOC(site_info, ens = 100, ecoregion.path = NULL)
 }
 \arguments{
 \item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
 \item{ens}{ensemble number.}
+
+\item{ecoregion.path}{path to the directory where you store the shape files of L1 and L2 ecoregion maps.}
 }
 \value{
 A data frame containing sampled SOC, each row represent each site.
