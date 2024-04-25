@@ -9,7 +9,8 @@ MODIS_LAI_prep(
   time_points,
   outdir = NULL,
   search_window = 30,
-  export_csv = FALSE
+  export_csv = FALSE,
+  skip_high_sd = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ MODIS_LAI_prep(
 \item{search_window}{search window for locate available LAI values.}
 
 \item{export_csv}{Decide if we want to export the CSV file.}
+
+\item{skip_high_sd}{if we want to skip observations with high standard error.}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

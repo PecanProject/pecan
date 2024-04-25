@@ -5,6 +5,7 @@
 #' @param outdir Where the final CSV file will be stored.
 #' @param search_window search window for locate available LAI values.
 #' @param export_csv Decide if we want to export the CSV file.
+#' @param skip_high_sd if we want to skip observations with high standard error.
 #'
 #' @return A data frame containing LAI and sd for each site and each time step.
 #' @export
@@ -12,14 +13,13 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE){
+MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, skip_high_sd = FALSE){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore, workers = 10)
   } else {
     future::plan(future::multisession, workers = 10) #10 is the maximum number of requests permitted for the MODIS server.
   }
-  
   #if we export CSV but didn't provide any path
   if(as.logical(export_csv) && is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
@@ -38,6 +38,10 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
   if(file.exists(file.path(outdir, "LAI.csv"))){
     PEcAn.logger::logger.info("Extracting previous LAI file!")
     Previous_CSV <- utils::read.csv(file.path(outdir, "LAI.csv"))
+    if (skip_high_sd) {
+      PEcAn.logger::logger.info("filtering out records with high standard errors!")
+      Previous_CSV <- Previous_CSV[-which(Previous_CSV$sd >= 10),]
+    }
     LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
     LAI_Output$site_id <- site_info$site_id
@@ -139,13 +143,18 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
           next
         }
         # skip bad pixels based on qc band.
-        if (! lai_qc[[i]][j] %in% c("000")) {
+        if (! lai_qc[[i]][j] %in% c("000", "001")) {
           next
         }
+        if (skip_high_sd) {
+          if (lai_std >= 10) {
+            next
+          }
+        }
         LAI <- rbind(LAI, list(date = lai_mean[[i]]$date[j],
-                               site_id = site_info$site_id[i],
-                               lat = site_info$lat[i],
-                               lon = site_info$lon[i],
+                               site_id = new_site_info$site_id[i],
+                               lat = new_site_info$lat[i],
+                               lon = new_site_info$lon[i],
                                lai = lai_mean[[i]]$mean[j]*0.1,
                                sd = lai_std[[i]][j]*0.1))
       }
