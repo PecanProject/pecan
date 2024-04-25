@@ -119,6 +119,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
     }
   } else {
     L_jobid <- length(jobids)
+    pb1 <- utils::txtProgressBar(min = 0, max = L_jobid, style = 3)
     if (hybrid) {
       while ((L_folder - length(folders)) < L_folder & 
              (L_jobid - length(jobids)) < L_jobid) {
