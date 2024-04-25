@@ -136,14 +136,14 @@ MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, export_csv = FA
         }
         if (qc.filter) {
           # skip bad pixels based on qc band.
-          if (! qc.list[[i]][j] %in% c("000")) {
+          if (! qc.list[[i]][j] %in% c("000", "001")) {
             next
           }
         }
         LC <- rbind(LC, list(date = lc.list[[i]]$date[j],
-                             site_id = site_info$site_id[i],
-                             lat = site_info$lat[i],
-                             lon = site_info$lon[i],
+                             site_id = new_site_info$site_id[i],
+                             lat = new_site_info$lat[i],
+                             lon = new_site_info$lon[i],
                              lc = LC.types[[lc.list[[i]]$value[j]]]))
       }
     }
