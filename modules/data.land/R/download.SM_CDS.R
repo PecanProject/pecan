@@ -32,6 +32,8 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE) {
   # `conda activate myenv`
   #9. Install the cdsapi package.
   # `pip install cdsapi`
+  # in the meantime, you might encounter several issues saying XXXX dependency is not available.
+  # to solve this issue, you just need to install those dependencies before hand.
   #10. Create CDS account.
   # go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
   # create an account.
