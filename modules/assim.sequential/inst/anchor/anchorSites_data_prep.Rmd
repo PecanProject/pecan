@@ -1,0 +1,174 @@
+---
+title: "prep data for anchor sites SDA run"
+author: "Dongchen Zhang"
+date: '2024-04-25'
+output: html_document
+---
+
+# setup environment.
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+library(googlesheets4)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+#previous site info
+#here we need to create the oldpecan.xml file using the Create_multi_settings.R script for the anchor site group on the Bety DB.
+setwd("/projectnb/dietzelab/dongchen/anchorSites/")
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/oldpecan.xml")
+pre_site_info <- settings %>% 
+  purrr::map(~.x[['run']] ) %>% 
+  purrr::map('site')%>% 
+  purrr::map(function(site.list){
+    #conversion from string to number
+    site.list$lat <- as.numeric(site.list$lat)
+    site.list$lon <- as.numeric(site.list$lon)
+    list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+  })%>% 
+  dplyr::bind_rows() %>% 
+  as.list()
+```
+
+# Pull new sites (not in Bety) into the current site_info object.
+
+```{r}
+#new added site info from google sheet
+gs4_deauth()
+extra_sites = read_sheet("https://docs.google.com/spreadsheets/d/1n7pVUcrYrB0S8bqrj77tUNrLHA2c_yqzkZL8mgdVDjs/edit#gid=0","To Add")
+
+#create unique ids for NA ids.
+total_site_ids <- na.omit(c(pre_site_info$site_id, extra_sites$id))
+tempIds <- which(!1:1000 %in% total_site_ids)
+extra_sites$id[which(is.na(extra_sites$id))] <- tempIds[1:length(which(is.na(extra_sites$id)))]
+
+#combine those two into a larger site info
+for (i in 1:dim(extra_sites)[1]) {
+  #remove duplicates
+  if (extra_sites$id[i] %in% pre_site_info$site_id) {
+    next
+  }
+  pre_site_info$site_id <- c(pre_site_info$site_id, extra_sites$id[i])
+  pre_site_info$lat <- c(pre_site_info$lat, extra_sites$lat[i])
+  pre_site_info$lon <- c(pre_site_info$lon, extra_sites$lon[i])
+  pre_site_info$site_name <- c(pre_site_info$site_name, extra_sites$sitename[i])
+}
+```
+
+# Filter the combined sites by NA boundary and land cover types.
+
+```{r}
+#filter based on NA boundary, LC.
+#boundary
+site_eco <- PEcAn.data.land::EPA_ecoregion_finder(pre_site_info$lat, pre_site_info$lon)
+
+bound.ind.rm <- unique(which(is.na(site_eco$L2)))
+#lc
+LC <- PEcAn.data.remote::MODIS_LC_prep(site_info = pre_site_info, time_points = settings$state.data.assimilation$start.date, qc.filter = F)
+
+#tweak LC to actual pfts
+LC[which(LC[,2] %in% c("Deciduous Broadleaf Forests", 
+                       "Deciduous Needleleaf Forests", 
+                       "Mixed Forests")), 2] <- "temperate.deciduous.HPDA"
+LC[which(LC[,2] %in% c("Evergreen Broadleaf Forests", 
+                       "Evergreen Needleleaf Forests")), 2] <- "boreal.coniferous"
+LC[which(LC[,2] %in% c("Closed Shrublands", 
+                       "Open Shrublands", 
+                       "Woody Savannas", 
+                       "Savannas", 
+                       "Grasslands",
+                       "Permanent Wetlands",
+                       "Croplands",
+                       "Cropland/Natural Vegetation Mosaics")), 2] <- "semiarid.grassland_HPDA"
+LC[which(LC[,2] %in% c("Urban and Built-up Lands", 
+                       "Permanent Snow and Ice", 
+                       "Barren",
+                       "Water Bodies")), 2] <- NA
+lc.ind.rm <- which(is.na(LC[,2]))
+tot.ind.rm <- sort(unique(c(bound.ind.rm, lc.ind.rm)))
+LC <- LC[-tot.ind.rm,]
+colnames(LC) <- c("site", "pft")
+#write settings and PFT file.
+write.csv(LC, file = settings$run$settings.1$inputs$pft.site[[1]], row.names = F)
+
+#write new site info into settings.
+site_info <- pre_site_info %>% purrr::map(function(l){
+  l <- l[-tot.ind.rm]
+  l
+})
+```
+
+# Write the new site_info object into a new pecan.xml file.
+
+```{r}
+# you will first need to run the Create_Multi_settings script to get the template for the multi-settings
+new.settings <- PEcAn.settings::createMultiSiteSettings(templateSettings = template, siteIds = site_info$site_id)
+
+#write Lat and Lon into the settings
+for (i in 1:length(site_info$site_id)) {
+  temp_ID <- new.settings[[i]]$run$site$id
+  index_site_info <- which(site_info$site_id==temp_ID)
+  new.settings[[i]]$run$site$lat <- site_info$lat[index_site_info]
+  new.settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
+  new.settings[[i]]$run$site$name <- site_info$site_name[index_site_info]#temp_ID
+}
+
+#write out settings
+PEcAn.settings::write.settings(new.settings, outputfile = "newpecan.xml")
+```
+
+# Prep the ERA5 data for the sites.
+# Using ~/pecan/modules/data.atmosphere/inst/ERA5/ERA5_NA.download.R script for download.
+
+```{r}
+#read settings
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/newpecan.xml")
+
+#Path for the downloaded ERA5 NC files.
+in.path <- "/projectnb/dietzelab/dongchen/anchorSites/ERA5"
+#Path for the extracted ERA5 files.
+out.path <- "/projectnb/dietzelab/dongchen/anchorSites//ERA5_2012_2021"
+
+# prepare ERA5
+paths <- PEcAn.data.atmosphere::ERA5_met_process(settings = settings, in.path = in.path, out.path = out.path, write.db = F, write = T)
+```
+
+# Prep observations for SDA (obs.mean and obs.cov).
+
+```{r}
+#prepare sites.csv for SMAP_gee.csv download.
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
+df <- data.frame()
+for (i in seq_along(settings)) {
+  df <- rbind(df, list(id = settings[[i]]$run$site$id,
+                       lat = as.numeric(settings[[i]]$run$site$lat),
+                       lon = as.numeric(settings[[i]]$run$site$lon)))
+}
+write.csv(df, file = "/projectnb/dietzelab/dongchen/anchorSites/sites.csv", row.names = F)
+
+#prepare observations
+obs <- PEcAnAssimSequential::SDA_OBS_Assembler(settings)
+```
