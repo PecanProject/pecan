@@ -38,10 +38,9 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE) {
   # go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
   # create an account.
   #11. Create CDS personel token.
+  # run this function.
   # go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
-  # create local file using `touch $HOME/.cdsapirc`
-  #12 open token file and add your token to it.
-  # `vim $HOME/.cdsapirc`, copy and paste text to the target file, type `:wq`.
+  # copy and paste url and key to the prompt window.
   ################################################################################################################################
   #load cdsapi from python environment.
   tryCatch({
@@ -56,12 +55,32 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE) {
       conditionMessage(e)
     )
   })
+  #define function for building credential file.
+  getnetrc <- function (dl_dir) {
+    netrc <- file.path(dl_dir, ".cdsapirc")
+    if (file.exists(netrc) == FALSE) {
+      netrc_conn <- file(netrc)
+      writeLines(c(
+        sprintf(
+          "url: %s",
+          getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+        ),
+        sprintf(
+          "key: %s",
+          getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+        )
+      ),
+      netrc_conn)
+      close(netrc_conn)
+      message(
+        "A netrc file with your Earthdata Login credentials was stored in the output directory "
+      )
+    }
+    return(netrc)
+  }
   #check if the token exists for the cdsapi.
   if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")))
-    PEcAn.logger::logger.severe(
-      "Please create a `${HOME}/.cdsapirc` file as described here:",
-      "https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key."
-    )
+    getnetrc(Sys.getenv("HOME"))
   #grab the client object.
   tryCatch({
     cclient <- cdsapi$Client()
