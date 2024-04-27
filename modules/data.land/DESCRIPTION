@@ -61,9 +61,12 @@ Imports:
     XML (>= 3.98-1.4)      
 Suggests:
     dataone,
+    getPass,
+    glue,
     PEcAn.settings,
     redland,
     raster,
+    reticulate,
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
