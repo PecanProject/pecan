@@ -11,7 +11,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom dplyr %>%
+#' @importFrom magrittr %>%
 MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, export_csv = FALSE, qc.filter = FALSE){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {

@@ -11,7 +11,7 @@
 #' 
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom dplyr %>%
+#' @importFrom magrittr %>%
 Prep_AGB_IC_from_geotiff <- function(site_info, paths.list, ens) {
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {

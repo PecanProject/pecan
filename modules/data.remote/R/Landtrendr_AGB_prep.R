@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' @author Dongchen Zhang
-#' @importFrom dplyr %>%
+#' @importFrom magrittr %>%
 Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points, 
                                 AGB_indir, outdir = NULL, export_csv = TRUE, 
                                 allow_download = FALSE, buffer = NULL, skip_buffer = TRUE){
