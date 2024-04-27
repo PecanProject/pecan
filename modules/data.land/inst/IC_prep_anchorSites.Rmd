@@ -8,6 +8,7 @@ output: html_document
 # setup environments.
 
 ```{r setup, include=FALSE}
+library(purrr)
 #read settings.
 settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
 #grab settings info.
