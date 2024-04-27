@@ -35,7 +35,7 @@ Prep_AGB_IC_from_geotiff <- function(site_info, paths.list, ens) {
   agb_pixel <- raster::extract(x = raster_data_stack, 
                                y = coords_AEA, buffer=0, fun=NULL, df=FALSE)
   sampled_ic <- agb_pixel %>% furrr::future_map(function(pixel){
-    ens_sample <- rnorm(ens, pixel["mean"], pixel["uncertainty"])
+    ens_sample <- stats::rnorm(ens, pixel["mean"], pixel["uncertainty"])
     ens_sample[which(ens_sample<0)] <- 0
     ens_sample
   }, .progress = T) %>% dplyr::bind_cols() %>% `colnames<-`(site_info$site_id)
