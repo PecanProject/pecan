@@ -295,7 +295,7 @@ EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
   # L1 layer
   L1 <-
-    sf::read_sf(system.file("extdata",file.paths[1], package = "PEcAn.data.land")) %>%
+    sf::read_sf(file.paths[1]) %>%
     sf::st_set_crs(
       "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
     ) %>%
@@ -306,7 +306,7 @@ EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
   over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))  
   # L2 layer
   L2 <-
-    sf::read_sf(system.file("extdata",file.paths[2], package = "PEcAn.data.land")) %>%
+    sf::read_sf(file.paths[2]) %>%
     sf::st_set_crs(
       "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
     ) %>%
