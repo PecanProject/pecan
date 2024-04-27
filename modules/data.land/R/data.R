@@ -26,7 +26,7 @@
 #' Contains 200 ensemble SOC data from 43 level 2 ecoregions across North America.
 #' Variable include SOC densities in g/cm2.
 #'
-#' @format ## `BADM`
+#' @format ## `iscn_soc`
 #' A data frame with 200 rows and 43 columns:
 #' \describe{
 #'   \item{rows}{1 to 200 ensemble members}
