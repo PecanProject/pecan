@@ -1,7 +1,7 @@
 #' Download CDS soil moisture data for the SDA workflow.
 #'
 #' @param outfolder physical paths to where the unziped soil moisture files are downloaded.
-#' @param time_points A vector contains each time point within the start and end date.
+#' @param time.points A vector contains each time point within the start and end date.
 #' @param overwrite flag determine if we want to overwrite existing files when downloading.
 #' @param auto.create.key flag determine if we want to automatically create the credential file.
 #'

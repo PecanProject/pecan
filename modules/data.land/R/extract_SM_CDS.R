@@ -1,7 +1,7 @@
 #' Extract CDS soil moisture data for the SDA workflow.
 #'
 #' @param site_info Bety list of site info including site_id, lon, and lat.
-#' @param time_points A vector contains each time point within the start and end date.
+#' @param time.points A vector contains each time point within the start and end date.
 #' @param in.path physical paths to where the unziped soil moisture files are downloaded.
 #' @param out.path Where the final CSV file will be stored.
 #' @param allow.download Flag determine if we want to automatic download files if they are not available.

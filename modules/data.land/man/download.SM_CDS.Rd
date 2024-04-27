@@ -14,11 +14,11 @@ download.SM_CDS(
 \arguments{
 \item{outfolder}{physical paths to where the unziped soil moisture files are downloaded.}
 
+\item{time.points}{A vector contains each time point within the start and end date.}
+
 \item{overwrite}{flag determine if we want to overwrite existing files when downloading.}
 
 \item{auto.create.key}{flag determine if we want to automatically create the credential file.}
-
-\item{time_points}{A vector contains each time point within the start and end date.}
 }
 \value{
 A vector containing file paths to the downloaded files.

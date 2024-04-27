@@ -16,6 +16,8 @@ extract_SM_CDS(
 \arguments{
 \item{site_info}{Bety list of site info including site_id, lon, and lat.}
 
+\item{time.points}{A vector contains each time point within the start and end date.}
+
 \item{in.path}{physical paths to where the unziped soil moisture files are downloaded.}
 
 \item{out.path}{Where the final CSV file will be stored.}
@@ -23,8 +25,6 @@ extract_SM_CDS(
 \item{allow.download}{Flag determine if we want to automatic download files if they are not available.}
 
 \item{search_window}{search window for locate available soil moisture values.}
-
-\item{time_points}{A vector contains each time point within the start and end date.}
 }
 \value{
 A data frame containing soil moisture and sd for each site and each time step.
