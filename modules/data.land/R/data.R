@@ -21,6 +21,19 @@
 #'  but the provenence and age of this specific file is not clear.
 "BADM"
 
+#' Soil organic carbon (SOC) density based on ecoregion level 2 code from the ISCN database.
+#'
+#' Contains 200 ensemble SOC data from 43 level 2 ecoregions across North America.
+#' Variable include SOC densities in g/cm2.
+#'
+#' @format ## `BADM`
+#' A data frame with 200 rows and 43 columns:
+#' \describe{
+#'   \item{rows}{1 to 200 ensemble members}
+#'   \item{columns}{43 level 2 ecoregion codes across North America}
+#' @source https://iscn.fluxdata.org/wp-content/uploads/sites/23/2019/05/ISCN_ALL_DATA_DATASET_1-1.xlsx
+"iscn_soc"
+
 
 #' Default parameters for calculating soil properties from sand & clay content
 #'
