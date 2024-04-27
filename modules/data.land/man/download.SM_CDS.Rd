@@ -4,12 +4,19 @@
 \alias{download.SM_CDS}
 \title{Download CDS soil moisture data for the SDA workflow.}
 \usage{
-download.SM_CDS(outfolder, time.points, overwrite = FALSE)
+download.SM_CDS(
+  outfolder,
+  time.points,
+  overwrite = FALSE,
+  auto.create.key = FALSE
+)
 }
 \arguments{
 \item{outfolder}{physical paths to where the unziped soil moisture files are downloaded.}
 
 \item{overwrite}{flag determine if we want to overwrite existing files when downloading.}
+
+\item{auto.create.key}{flag determine if we want to automatically create the credential file.}
 
 \item{time_points}{A vector contains each time point within the start and end date.}
 }
