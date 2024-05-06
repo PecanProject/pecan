@@ -162,7 +162,6 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   
   # stics and javastics path
   stics_path <- settings$model$binary
-  javastics_path <-  gsub("bin","", dirname(stics_path))
 
   
   # Per STICS development team, there are two types of STICS inputs
@@ -749,7 +748,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     
     # convert xml2txt
     if(names(trait.values)[pft] != "env"){
-      SticsRFiles::convert_xml2txt(file = plant_file, javastics = javastics_path)
+      SticsRFiles::convert_xml2txt(file = plant_file)
       # do I also need to move the file out of the plant folder to main rundir?
     }
     
@@ -1155,7 +1154,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     # skipping, Qmulchdec:
     # maximal amount of decomposable mulch
       
-    SticsRFiles::convert_xml2txt(file = gen_file, javastics = javastics_path)
+    SticsRFiles::convert_xml2txt(file = gen_file)
     
     this_usm <- grep(names(trait.values)[pft], usmdirs)
     sapply(this_usm, function(x){
@@ -1165,7 +1164,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
     ### new formulations 
     # DO NOTHING ELSE FOR NOW
     
-    SticsRFiles::convert_xml2txt(file = newf_file, javastics = javastics_path)
+    SticsRFiles::convert_xml2txt(file = newf_file)
     sapply(this_usm, function(x){
       file.copy(file.path(rundir, "tempoparv6.sti"), file.path(usmdirs[x], "tempoparv6.sti"), overwrite = TRUE)
     })
@@ -1246,7 +1245,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
       ncdf4::nc_close(ic_nc)
     }
     
-    SticsRFiles::convert_xml2txt(file = ini_file, javastics = javastics_path)
+    SticsRFiles::convert_xml2txt(file = ini_file)
     file.rename(file.path(rundir, "ficini.txt"), file.path(usmdirs[i], "ficini.txt"))
   }
 
@@ -1347,7 +1346,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   # change latitude
   SticsRFiles::set_param_xml(sta_file, "latitude", settings$run$site$lat, overwrite = TRUE)
   
-  SticsRFiles::convert_xml2txt(file = sta_file, javastics = javastics_path)
+  SticsRFiles::convert_xml2txt(file = sta_file)
   file.copy(file.path(rundir, "station.txt"), file.path(usmdirs, "station.txt"))
   
   # another way to change latitute
@@ -1548,8 +1547,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
         
         # TODO: more than 1 USM, rbind
         
-        SticsRFiles::convert_xml2txt(file = file.path(usmdirs[usmi], "tmp_tec.xml"), 
-                                     javastics = javastics_path)
+        SticsRFiles::convert_xml2txt(file = file.path(usmdirs[usmi], "tmp_tec.xml"))
         
       
      } # end-loop over usms
