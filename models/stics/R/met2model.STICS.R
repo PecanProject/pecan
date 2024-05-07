@@ -121,7 +121,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       if(unlist(strsplit(nc$dim$time$units, " "))[1] %in% c("days", "day")){
         #this should always be the case, but just in case
-        origin_dt <- (as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC") + 60*60*24) - dt
+        origin_dt <- as.POSIXct(unlist(strsplit(nc$dim$time$units, " "))[3], "%Y-%m-%d", tz="UTC")
         ydays <- lubridate::yday(origin_dt + sec)
         
       }else{
