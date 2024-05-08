@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/check.yml
     with:
       R-version: ${{ matrix.R }}
-      make-grouping: ${{ matrix.package }}
+      make-grouping: "check"
     secrets: inherit
 
   sipnet:
