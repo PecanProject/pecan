@@ -22,6 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        package: [check]
         R:
           - "devel"
     uses: ./.github/workflows/check.yml
