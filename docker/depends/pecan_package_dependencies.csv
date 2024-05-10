@@ -113,6 +113,7 @@
 "httr","*","modules/data.land","Imports",FALSE
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
+"jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
 "knitr",">= 1.42","base/qaqc","Suggests",FALSE
@@ -268,7 +269,6 @@
 "PEcAn.DB","*","base/settings","Imports",TRUE
 "PEcAn.DB","*","base/workflow","Imports",TRUE
 "PEcAn.DB","*","models/biocro","Suggests",TRUE
-"PEcAn.DB","*","models/stics","Imports",TRUE
 "PEcAn.DB","*","models/template","Imports",TRUE
 "PEcAn.DB","*","modules/allometry","Imports",TRUE
 "PEcAn.DB","*","modules/assim.batch","Imports",TRUE
@@ -426,7 +426,6 @@
 "purrr","*","base/settings","Imports",FALSE
 "purrr","*","base/utils","Imports",FALSE
 "purrr","*","models/ed","Imports",FALSE
-"purrr","*","models/stics","Imports",FALSE
 "purrr","*","modules/assim.sequential","Imports",FALSE
 "purrr","*","modules/data.land","Imports",FALSE
 "purrr","*","modules/data.remote","Imports",FALSE
@@ -543,6 +542,7 @@
 "stats","*","modules/assim.batch","Imports",FALSE
 "stats","*","modules/assim.sequential","Suggests",FALSE
 "stats","*","modules/photosynthesis","Imports",FALSE
+"SticsRFiles","*","models/stics","Suggests",FALSE
 "stringi","*","base/logger","Imports",FALSE
 "stringi","*","base/utils","Imports",FALSE
 "stringr","*","models/fates","Imports",FALSE
