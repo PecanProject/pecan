@@ -1,0 +1,61 @@
+name: test
+
+on:
+  workflow_call:
+    inputs:
+      R-version:
+        required: true
+        type: string
+
+env:
+  R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: en_US.UTF-8
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    container: 
+      image: pecan/depends:R${{ inputs.R-version }}
+
+    steps:
+    # checkout source code
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v4
+      with:
+        set-safe-directory: false
+
+    # install additional tools needed
+    - name: install utils
+      run: apt-get update && apt-get install -y postgresql-client qpdf
+    - name: update dependency lists
+      run: Rscript scripts/generate_dependencies.R
+    - name: check for out-of-date dependencies files
+      uses: infotroph/tree-is-clean@v1
+    - name: install newly-added dependencies
+      working-directory: docker/depends
+      run: Rscript pecan.depends.R
+
+    # initialize database
+    - name: db setup
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
+
+    # run PEcAn tests
+    - name: test
+      run: make -j1 test
+    - name: check for out-of-date files
+      uses: infotroph/tree-is-clean@v1
