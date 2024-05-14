@@ -135,11 +135,12 @@ contains
     ! Solve the equilibrium condition Ax + b = 0
     call solve(matrix, neg_c_input_yr, cstate)
     totc = sum(cstate)
-    !print *, 'totc before adjust', totc, totc_min
+    !dblepr1('totc before adjust', -1, totc)
+    !dblepr1('totc_min before adjust', -1, totc_min)
     if (totc_min > 0.0 .and. totc < totc_min) then
        cstate(5) = cstate(5) + totc_min - totc
     end if
-    !print *, 'totc after adjust', sum(cstate)
+    !dblepr1('totc after adjust', -1, sum(cstate))
 
     ! Nitrogen
     !
@@ -214,12 +215,12 @@ contains
     
     call evaluate_matrix_mean_tempr(param, tempr_c, precip_day * days_yr,tempr_ampl, matrix)
     if (fract_root_input < 0.0 .or. fract_root_input > 1) then
-       print *, 'Bad fract_root_input:', fract_root_input
-       error stop
+       call dblepr1('Bad fract_root_input:', -1, fract_root_input)
+       call rexit('Bad fract_root_input')
     end if
     if (fract_legacy_soc < 0.0 .or. fract_legacy_soc > 1) then
-       print *, 'Bad fract_legacy_soc:', fract_legacy_soc
-       error stop
+       call dblepr1('Bad fract_legacy_soc:', -1, fract_legacy_soc)
+       call rexit('Bad fract_legacy_soc')
     end if
     
     unit_input = fract_root_input * awenh_fineroot + (1.0 - fract_root_input) * awenh_leaf
@@ -231,12 +232,12 @@ contains
     cstate = fract_legacy_soc * legacy_state * totc + (1.0 - fract_legacy_soc) * eqstate
     nstate = fract_legacy_soc * totc * nc_h_max + (1.0 - fract_legacy_soc) * eqnitr
 
-    print *, 'TOTC INITIALIZATION'
-    print *, 'CSTATE:', cstate
-    print *, 'C:N ratio:', sum(cstate)/nstate
-    print *, 'Equlibrium C input:', eqfac
-    print *, 'legacy fraction:', fract_legacy_soc
-    print *, 'equilibrium state:', eqstate
+    call labelpr('TOTC INITIALIZATION', -1)
+    call dblepr('CSTATE:', -1, cstate, statesize_yasso)
+    call dblepr1('C:N ratio:', -1, sum(cstate)/nstate)
+    call dblepr1('Equlibrium C input:', -1, eqfac)
+    call dblepr1('legacy fraction:', -1, fract_legacy_soc)
+    call dblepr('equilibrium state:', -1, eqstate, statesize_yasso)
   end subroutine initialize_totc
 
   subroutine inputs_to_fractions(leaf, root, soluble, compost, fract)
@@ -469,12 +470,12 @@ contains
     integer, intent(inout) :: met_ind     ! a counter, must be 1 on first call, not changed outside
 
     if (met_ind < 1 .or. met_ind > aver_size+1) then
-       print *, 'something wrong with met_ind: ', met_ind
-       error stop
+       call intpr1('something wrong with met_ind:', -1, met_ind)
+       call rexit('something wrong with met_ind')
     end if
     if (size(met_state, 2) /= aver_size + 1 .or. size(met_state, 1) /= size(met_rolling)) then
-       print *, 'met_state has wrong size', shape(met_state)
-       error stop
+       call intpr('met_state has wrong size', -1, shape(met_state), 2)
+       call rexit('met_state has wrong size')
     end if
     
     if (met_ind <= aver_size) then
@@ -500,12 +501,10 @@ contains
     real :: alpha_smooth1=0.05, alpha_smooth2=0.005
     
     if (size(met_rolling) /= 2) then
-       print *, 'met_rolling has wrong shape'
-       error stop
+       call rexit('met_rolling has wrong shape')
     end if
     if (size(met_daily) /= 2) then
-       print *, 'met_daily has wrong shape'
-       error stop
+       call rexit('met_daily has wrong shape')
     end if
     
     met_rolling(1) = alpha_smooth1 * met_daily(1) + (1-alpha_smooth1) * met_rolling(1)
@@ -554,7 +553,7 @@ contains
     DO k = 1,n-1
        CALL pivot(U,c,k) ! do pivoting (though may not be necessary in our case)
        IF (ABS(U(k,k)) <= tol) THEN
-          write(*,*) 'Warning!!! Matrix is singular to working precision!'
+          call rwarn('Warning!!! Matrix is singular to working precision!')
        END IF
        U(k+1:n,k) = U(k+1:n,k)/U(k,k)
        DO j = k+1,n
@@ -573,15 +572,15 @@ contains
     INTEGER,INTENT(IN) :: k
     INTEGER :: q, pk
 
-    !write(*,*) 'Pivot elements are: ', A(k:n,k)
+    !call dblepr('Pivot elements are: ', -1, A(k:n,k), size(A(k:n,k)))
     q = MAXLOC(ABS(A(k:n,k)),1)
-    !write(*,*) q
+    !call intpr('', -1, q, 1)
     IF (q > 1) THEN
        pk = k-1+q
        A(k:pk:pk-k,:) = A(pk:k:k-pk,:)
        b(k:pk:pk-k) = b(pk:k:k-pk)
     END IF
-    !write(*,*) 'Pivot elements are: ', A(k:n,k)
+    !call dblepr('Pivot elements are: ', -1, A(k:n,k), size(A(k:n,k)))
   END SUBROUTINE pivot
   
 end module yasso
