@@ -97,8 +97,7 @@ real :: yasso_param(num_params_y20)
 real :: org_n_to_yasso
 
 if (NOUT < 118) then
-   print *, 'NOUT < 118 too small:', NOUT
-   error stop
+   call rexit('NOUT < 118 too small')
 end if
 
 ! Parameters
@@ -155,8 +154,7 @@ DM_MAX     = 0
 if (use_yasso) then
    ! Yasso currently requires DELT = 1
    if (abs(DELT - 1.0) > 1e-6) then
-      print *, 'Yasso soil model requires DELT = 1'
-      error stop
+      call rexit('Yasso soil model requires DELT = 1')
    end if
    yasso_met_ind = 1
    call get_params(param_y20_map, yasso_alpha_awen, yasso_beta12, yasso_decomp_pc, yasso_param)
@@ -172,8 +170,7 @@ if (use_yasso) then
    if (sum(yasso_cstate_init) > 0.0) then
       yasso_cstate = yasso_cstate_init
       if (.not. yasso_nstate_init > 0.0) then
-         print *, 'yasso initial nstate is zero but cstate is not'
-         error stop
+         call rexit('yasso initial nstate is zero but cstate is not')
       end if
       yasso_nstate = yasso_nstate_init
    else

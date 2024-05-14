@@ -372,6 +372,10 @@ run_BASGRA <- function(run_met, run_params, site_harvest, site_fertilize, start_
   if (length(run_params) != NPARAMS) {
     PEcAn.logger::logger.severe(sprintf('%i parameters required, %i given', NPARAMS, length(run_params)))
   }
+  if (NOUT < 118) { # from BASGRA.f90
+    PEcAn.logger::logger.severe("at least 118 parameters required,", NOUT, "given")
+  }
+
 
   output <- .Fortran('BASGRA',
                      run_params,
