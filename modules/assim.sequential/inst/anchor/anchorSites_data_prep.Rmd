@@ -88,7 +88,8 @@ for (i in 1:dim(extra_sites)[1]) {
 ```{r}
 #filter based on NA boundary, land cover.
 #boundary
-site_eco <- PEcAn.data.land::EPA_ecoregion_finder(pre_site_info$lat, pre_site_info$lon)
+ecoregion.path <- "~/ecoregionMap/"
+site_eco <- PEcAn.data.land::EPA_ecoregion_finder(pre_site_info$lat, pre_site_info$lon, ecoregion.path)
 
 bound.ind.rm <- unique(which(is.na(site_eco$L2)))
 #land cover
